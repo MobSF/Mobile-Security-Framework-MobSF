@@ -1,0 +1,139 @@
+#
+# dictionary.patton
+#               Dictionary for Patton IADs.
+#               Written by Pawel Pierscionek <pawel@voiceworks.pl>
+#               based on specifications available from vendor
+#
+# Version:      @(#)dictionary.patton  5.00  urtho  20-Jan-2010
+# Version:      @(#)dictionary.patton  1.00  urtho  08-Sep-2006
+#  $Id$
+
+VENDOR		Patton				1768
+
+BEGIN-VENDOR	Patton
+
+ATTRIBUTE	Patton-Setup-Time			32	string
+ATTRIBUTE	Patton-Connect-Time			33	string
+ATTRIBUTE	Patton-Disconnect-Time			34	string
+ATTRIBUTE	Patton-Disconnect-Cause			35	integer
+ATTRIBUTE	Patton-Disconnect-Source		36	string
+ATTRIBUTE	Patton-Called-Unique-Id			48	string
+ATTRIBUTE	Patton-Called-IP-Address		49	ipaddr
+ATTRIBUTE	Patton-Called-Numbering-Plan		50	string
+ATTRIBUTE	Patton-Called-Type-Of-Number		51	string
+ATTRIBUTE	Patton-Called-Name			52	string
+ATTRIBUTE	Patton-Called-Rx-Octets			64	integer
+ATTRIBUTE	Patton-Called-Tx-Octets			65	integer
+ATTRIBUTE	Patton-Called-Rx-Packets		66	integer
+ATTRIBUTE	Patton-Called-Tx-Packets		67	integer
+ATTRIBUTE	Patton-Called-Rx-Lost-Packets		68	integer
+ATTRIBUTE	Patton-Called-Tx-Lost-Packets		69	integer
+ATTRIBUTE	Patton-Called-Rx-Jitter			70	integer
+ATTRIBUTE	Patton-Called-Tx-Jitter			71	integer
+ATTRIBUTE	Patton-Called-Codec			72	string
+ATTRIBUTE	Patton-Called-MOS			77	integer
+ATTRIBUTE	Patton-Called-Round-Trip-Time		78	integer
+ATTRIBUTE	Patton-Calling-Unique-Id		80	string
+ATTRIBUTE	Patton-Calling-IP-Address		81	ipaddr
+ATTRIBUTE	Patton-Calling-Numbering-Plan		82	string
+ATTRIBUTE	Patton-Calling-Type-Of-Number		83	string
+ATTRIBUTE	Patton-Calling-Presentation-Indicator	88	string
+ATTRIBUTE	Patton-Calling-Screening-Indicator	89	string
+ATTRIBUTE	Patton-Calling-Name			84	string
+ATTRIBUTE	Patton-Calling-Rx-Octets		96	integer
+ATTRIBUTE	Patton-Calling-Tx-Octets		97	integer
+ATTRIBUTE	Patton-Calling-Rx-Packets		98	integer
+ATTRIBUTE	Patton-Calling-Tx-Packets		99	integer
+ATTRIBUTE	Patton-Calling-Lost-Tx-Packets		100	integer
+ATTRIBUTE	Patton-Calling-Lost-Rx-Packets		101	integer
+ATTRIBUTE	Patton-Calling-Rx-Jitter		102	integer
+ATTRIBUTE	Patton-Calling-Tx-Jitter		103	integer
+ATTRIBUTE	Patton-Calling-Codec			104	string
+ATTRIBUTE	Patton-Calling-MOS			109	integer
+ATTRIBUTE	Patton-Calling-Round-Trip-Time		110	integer
+
+VALUE	Patton-Disconnect-Cause		Valid-cause-code-not-yet-received 0x00
+VALUE	Patton-Disconnect-Cause		Unallocated-runassigned-number 0x01
+VALUE	Patton-Disconnect-Cause		No-route-to-specified-transit-network-WAN 0x02
+VALUE	Patton-Disconnect-Cause		No-route-to-destination	0x03
+VALUE	Patton-Disconnect-Cause		send-special-information-tone 0x04
+VALUE	Patton-Disconnect-Cause		misdialled-trunk-prefix	0x05
+VALUE	Patton-Disconnect-Cause		Channel-unacceptable	0x06
+VALUE	Patton-Disconnect-Cause		Call-awarded-and-being-delivered-in-an-established-channel 0x07
+VALUE	Patton-Disconnect-Cause		Prefix-0-dialed-but-not-allowed 0x08
+VALUE	Patton-Disconnect-Cause		Prefix-1-dialed-but-not-allowed 0x09
+VALUE	Patton-Disconnect-Cause		Prefix-1-dialed-but-not-required 0x0A
+VALUE	Patton-Disconnect-Cause		More-digits-received-than-allowed-call-is-proceeding 0x0B
+VALUE	Patton-Disconnect-Cause		Normal-call-clearing	0x10
+VALUE	Patton-Disconnect-Cause		User-busy		0x11
+VALUE	Patton-Disconnect-Cause		No-user-responding	0x12
+VALUE	Patton-Disconnect-Cause		no-answer-from-user	0x13
+VALUE	Patton-Disconnect-Cause		Call-rejected		0x15
+VALUE	Patton-Disconnect-Cause		Number-changed		0x16
+VALUE	Patton-Disconnect-Cause		Reverse-charging-rejected 0x17
+VALUE	Patton-Disconnect-Cause		Call-suspended		0x18
+VALUE	Patton-Disconnect-Cause		Call-resumed		0x19
+VALUE	Patton-Disconnect-Cause		Non-selected-user-clearing 0x1A
+VALUE	Patton-Disconnect-Cause		Destination-out-of-order 0x1B
+VALUE	Patton-Disconnect-Cause		Invalid-number-format-incomplete-number 0x1C
+VALUE	Patton-Disconnect-Cause		Facility-rejected	0x1D
+VALUE	Patton-Disconnect-Cause		Response-to-STATUS-ENQUIRY 0x1E
+VALUE	Patton-Disconnect-Cause		Normal-unspecified	0x1F
+VALUE	Patton-Disconnect-Cause		Circuit-out-of-order	0x21
+VALUE	Patton-Disconnect-Cause		No-circuit/channel-available 0x22
+VALUE	Patton-Disconnect-Cause		Destination-unattainable 0x23
+VALUE	Patton-Disconnect-Cause		Degraded-service	0x25
+VALUE	Patton-Disconnect-Cause		Network-WAN-out-of-order 0x26
+VALUE	Patton-Disconnect-Cause		Transit-delay-range-cannot-be-achieved 0x27
+VALUE	Patton-Disconnect-Cause		Throughput-range-cannot-be-achieved 0x28
+VALUE	Patton-Disconnect-Cause		Temporary-failure	0x29
+VALUE	Patton-Disconnect-Cause		Switching-equipment-congestion 0x2A
+VALUE	Patton-Disconnect-Cause		Access-information-discarded 0x2B
+VALUE	Patton-Disconnect-Cause		Requested-circuit-channel-not-available 0x2C
+VALUE	Patton-Disconnect-Cause		Pre-empted		0x2D
+VALUE	Patton-Disconnect-Cause		Precedence-call-blocked	0x2E
+VALUE	Patton-Disconnect-Cause		Resource-unavailable-unspecified 0x2F
+VALUE	Patton-Disconnect-Cause		Quality-of-service-unavailable 0x31
+VALUE	Patton-Disconnect-Cause		Requested-facility-not-subscribed 0x32
+VALUE	Patton-Disconnect-Cause		Reverse-charging-not-allowed 0x33
+VALUE	Patton-Disconnect-Cause		Outgoing-calls-barred	0x34
+VALUE	Patton-Disconnect-Cause		Outgoing-calls-barred-within-CUG 0x35
+VALUE	Patton-Disconnect-Cause		Incoming-calls-barred	0x36
+VALUE	Patton-Disconnect-Cause		Incoming-calls-barred-within-CUG 0x37
+VALUE	Patton-Disconnect-Cause		Call-waiting-not-subscribed 0x38
+VALUE	Patton-Disconnect-Cause		Bearer-capability-not-authorized 0x39
+VALUE	Patton-Disconnect-Cause		Bearer-capability-not-presently-available 0x3A
+VALUE	Patton-Disconnect-Cause		Service-or-option-not-available-unspecified 0x3F
+VALUE	Patton-Disconnect-Cause		Bearer-service-not-implemented 0x41
+VALUE	Patton-Disconnect-Cause		Channel-type-not-implemented 0x42
+VALUE	Patton-Disconnect-Cause		Transit-network-selection-not-implemented 0x43
+VALUE	Patton-Disconnect-Cause		Message-not-implemented	0x44
+VALUE	Patton-Disconnect-Cause		Requested-facility-not-implemented 0x45
+VALUE	Patton-Disconnect-Cause		Only-restricted-digital-information-bearer-capability-is-avail 0x46
+VALUE	Patton-Disconnect-Cause		Service-or-option-not-implemented-unspecified 0x4F
+VALUE	Patton-Disconnect-Cause		Invalid-call-reference-value 0x51
+VALUE	Patton-Disconnect-Cause		Identified-channel-does-not-exist 0x52
+VALUE	Patton-Disconnect-Cause		A-suspended-call-exists-but-this-call-identity-does-not 0x53
+VALUE	Patton-Disconnect-Cause		Call-identity-in-use	0x54
+VALUE	Patton-Disconnect-Cause		No-call-suspended	0x55
+VALUE	Patton-Disconnect-Cause		Call-having-the-requested-call-identity-has-been-cleared 0x56
+VALUE	Patton-Disconnect-Cause		Called-user-not-member-of-CUG 0x57
+VALUE	Patton-Disconnect-Cause		Incompatible-destination 0x58
+VALUE	Patton-Disconnect-Cause		Non-existent-abbreviated-address-entry 0x59
+VALUE	Patton-Disconnect-Cause		Destination-address-missing-and-direct-call-not-subscribed 0x5A
+VALUE	Patton-Disconnect-Cause		Invalid-transit-network-selection-national-use 0x5B
+VALUE	Patton-Disconnect-Cause		Invalid-facility-parameter 0x5C
+VALUE	Patton-Disconnect-Cause		Mandatory-information-element-is-missing 0x5D
+VALUE	Patton-Disconnect-Cause		Invalid-message-unspecified 0x5F
+VALUE	Patton-Disconnect-Cause		Mandatory-information-element-is-missing-2 0x60
+VALUE	Patton-Disconnect-Cause		Message-type-non-existent-or-not-implemented 0x61
+VALUE	Patton-Disconnect-Cause		Message-not-compatible-with-call-state 0x62
+VALUE	Patton-Disconnect-Cause		information-element-nonexistant-or-not-implemented 0x63
+VALUE	Patton-Disconnect-Cause		Invalid-information-element-contents 0x64
+VALUE	Patton-Disconnect-Cause		Message-not-compatible-with-call-state-2 0x65
+VALUE	Patton-Disconnect-Cause		Recovery-on-timer-expiry 0x66
+VALUE	Patton-Disconnect-Cause		parameter-non-existent-or-not-implemented-passed-on 0x67
+VALUE	Patton-Disconnect-Cause		Protocol-error-unspecified 0x6F
+VALUE	Patton-Disconnect-Cause		Internetworking-unspecified 0x7F
+
+END-VENDOR	Patton

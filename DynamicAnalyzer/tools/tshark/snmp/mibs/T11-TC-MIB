@@ -1,0 +1,69 @@
+T11-TC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, Unsigned32, mib-2
+                                     FROM SNMPv2-SMI  -- [RFC2578]
+    TEXTUAL-CONVENTION               FROM SNMPv2-TC;  -- [RFC2579]
+
+t11TcMIB MODULE-IDENTITY
+    LAST-UPDATED "200603020000Z"
+    ORGANIZATION "T11"
+    CONTACT-INFO
+            "     Claudio DeSanti
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA 95134 USA
+                  Phone: +1 408 853-9172
+                  EMail: cds@cisco.com
+
+                  Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA USA 95134
+                  Phone: +1 408-526-5260
+                  EMail: kzm@cisco.com"
+    DESCRIPTION
+           "This module defines textual conventions used in T11 MIBs.
+
+           Copyright (C) The Internet Society (2006).  This version
+           of this MIB module is part of RFC 4439;  see the RFC
+           itself for full legal notices."
+    REVISION    "200603020000Z"
+    DESCRIPTION
+           "Initial version of this MIB module, published as RFC 4439."
+    ::= { mib-2 136 }
+
+T11FabricIndex ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT  "d"
+    STATUS    current
+    DESCRIPTION
+           "A Fabric Index that is used as a unique
+           index value to identify a particular Fabric within
+           one (or more) physical infrastructures.
+
+           In an environment that is conformant to FC-SW-3, where
+
+
+
+           there is always exactly one Fabric in a single physical
+           infrastructure, the value of this Fabric Index will
+           always be 1.
+
+           However, the current standard, FC-SW-4, defines
+           how multiple Fabrics, each with its own management
+           instrumentation, could operate within one (or more)
+           physical infrastructures.  When such multiple Fabrics
+           are in use, this index value is used to uniquely
+           identify a particular Fabric within a physical
+           infrastructure.
+
+           Note that the value of this textual convention has a
+           range of (0..4095) so as to be consistent with FC-SW-4,
+           which says that a 'VF_ID Bitmap' is 512 bytes long, with
+           the high-order bit representing VF_ID zero, and the
+           low-order bit representing 4095."
+    REFERENCE   "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+                 ANSI INCITS 418-2006, section 6.1.27.2.4."
+    SYNTAX      Unsigned32 (0..4095)
+
+END

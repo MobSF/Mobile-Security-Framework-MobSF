@@ -1,0 +1,221 @@
+INTEGRATED-SERVICES-GUARANTEED-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+            MODULE-IDENTITY, OBJECT-TYPE             FROM SNMPv2-SMI
+            RowStatus                                FROM SNMPv2-TC
+            MODULE-COMPLIANCE, OBJECT-GROUP          FROM SNMPv2-CONF
+            intSrv                        FROM INTEGRATED-SERVICES-MIB
+            ifIndex                                  FROM IF-MIB;
+
+--  This MIB module uses the extended OBJECT-TYPE macro as
+--  defined in [9].
+
+intSrvGuaranteed MODULE-IDENTITY
+        LAST-UPDATED "9511030500Z" -- Thu Aug 28 09:04:22 PDT 1997
+        ORGANIZATION "IETF Integrated Services Working Group"
+        CONTACT-INFO
+       "       Fred Baker
+       Postal: Cisco Systems
+               519 Lado Drive
+               Santa Barbara, California 93111
+       Tel:    +1 805 681 0115
+       E-Mail: fred@cisco.com"
+    DESCRIPTION
+       "The MIB module to describe the Guaranteed Service of
+       the Integrated Services Protocol"
+    ::= { intSrv 5 }
+
+intSrvGuaranteedObjects          OBJECT IDENTIFIER
+                                 ::= { intSrvGuaranteed 1 }
+intSrvGuaranteedNotifications    OBJECT IDENTIFIER
+                                 ::= { intSrvGuaranteed 2 }
+intSrvGuaranteedConformance      OBJECT IDENTIFIER
+                                 ::= { intSrvGuaranteed 3 }
+
+
+--      The Integrated Services Interface Attributes Database
+--      contains information that is shared with other reservation
+--      procedures such as ST-II.
+
+
+    intSrvGuaranteedIfTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF IntSrvGuaranteedIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The attributes of the system's interfaces  ex-
+           ported by the Guaranteed Service."
+       ::= { intSrvGuaranteedObjects 1 }
+
+
+    intSrvGuaranteedIfEntry OBJECT-TYPE
+        SYNTAX      IntSrvGuaranteedIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The reservable attributes of  a  given  inter-
+           face."
+       INDEX { ifIndex }
+       ::= { intSrvGuaranteedIfTable 1 }
+
+IntSrvGuaranteedIfEntry ::=
+    SEQUENCE {
+        intSrvGuaranteedIfBacklog INTEGER,
+        intSrvGuaranteedIfDelay   INTEGER,
+        intSrvGuaranteedIfSlack   INTEGER,
+        intSrvGuaranteedIfStatus  RowStatus
+    }
+
+    intSrvGuaranteedIfBacklog OBJECT-TYPE
+        SYNTAX      INTEGER (0..'0FFFFFFF'h)
+        UNITS       "bytes"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The Backlog  parameter  is  the  data  backlog
+           resulting  from  the vagaries of how a specific
+           implementation deviates from a  strict  bit-by-
+           bit  service.  So, for instance, for packetized
+           weighted fair queueing, Backlog is set  to  the
+           Maximum Packet Size.
+
+           The Backlog term is measured in units of bytes.
+           An  individual  element can advertise a Backlog
+           value between 1 and 2**28 (a  little  over  250
+           megabytes)  and  the  total added over all ele-
+           ments can range as high as  (2**32)-1.   Should
+           the  sum of the different elements delay exceed
+           (2**32)-1, the end-to-end error term should  be
+           (2**32)-1."
+       ::= { intSrvGuaranteedIfEntry 1 }
+
+    intSrvGuaranteedIfDelay OBJECT-TYPE
+        SYNTAX      INTEGER (0..'0FFFFFFF'h)
+        UNITS       "microseconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The Delay parameter at  each  service  element
+           should  be  set  to the maximum packet transfer
+           delay (independent of bucket size) through  the
+           service  element.   For  instance,  in a simple
+           router, one might compute the worst case amount
+           of  time  it  make  take  for a datagram to get
+           through the input interface to  the  processor,
+           and how long it would take to get from the pro-
+           cessor to the outbound interface (assuming  the
+           queueing  schemes work correctly).  For an Eth-
+           ernet, it might represent the worst case  delay
+           if  the maximum number of collisions is experi-
+           enced.
+
+           The Delay term is measured in units of one  mi-
+           crosecond.  An individual element can advertise
+           a delay value between  1  and  2**28  (somewhat
+           over two minutes) and the total delay added all
+           elements  can  range  as  high  as   (2**32)-1.
+           Should  the sum of the different elements delay
+           exceed (2**32)-1, the end-to-end  delay  should
+           be (2**32)-1."
+       ::= { intSrvGuaranteedIfEntry 2 }
+
+    intSrvGuaranteedIfSlack OBJECT-TYPE
+        SYNTAX      INTEGER (0..'0FFFFFFF'h)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If a network element uses a certain amount  of
+           slack,  Si,  to  reduce the amount of resources
+           that it has reserved for a particular flow,  i,
+           the  value  Si  should be stored at the network
+           element.   Subsequently,  if  reservation   re-
+           freshes  are  received  for flow i, the network
+           element must use the same slack Si without  any
+           further computation. This guarantees consisten-
+           cy in the reservation process.
+
+           As an example for the use of  the  slack  term,
+           consider the case where the required end-to-end
+           delay, Dreq, is larger than the  maximum  delay
+           of the fluid flow system.  In this, Ctot is the
+           sum of the Backlog terms end to end,  and  Dtot
+           is the sum of the delay terms end to end.  Dreq
+           is obtained by setting R=r in the  fluid  delay
+           formula, and is given by
+
+                        b/r + Ctot/r + Dtot.
+
+           In this case the slack term is
+
+                  S = Dreq - (b/r + Ctot/r + Dtot).
+
+           The slack term may be used by the network  ele-
+           ments  to  adjust  their local reservations, so
+           that they can admit flows that would  otherwise
+           have been rejected. A service element at an in-
+           termediate network element that can  internally
+           differentiate between delay and rate guarantees
+           can now take advantage of this  information  to
+           lower the amount of resources allocated to this
+           flow. For example, by taking an amount of slack
+           s  <= S, an RCSD scheduler [5] can increase the
+           local delay bound, d, assigned to the flow,  to
+           d+s. Given an RSpec, (Rin, Sin), it would do so
+           by setting Rout = Rin and Sout = Sin - s.
+
+           Similarly,  a  network  element  using  a   WFQ
+           scheduler  can  decrease  its local reservation
+           from Rin to Rout by using some of the slack  in
+           the  RSpec.  This  can be accomplished by using
+           the transformation rules given in the  previous
+           section,  that ensure that the reduced reserva-
+           tion level will not increase the  overall  end-
+           to-end delay."
+       ::= { intSrvGuaranteedIfEntry 3 }
+
+
+    intSrvGuaranteedIfStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "'valid' on interfaces that are configured  for
+           the Guaranteed Service."
+       ::= { intSrvGuaranteedIfEntry 4 }
+
+--      No notifications are currently defined
+
+-- conformance information
+intSrvGuaranteedGroups      OBJECT IDENTIFIER
+                            ::= { intSrvGuaranteedConformance 1 }
+intSrvGuaranteedCompliances OBJECT IDENTIFIER
+                            ::= { intSrvGuaranteedConformance 2 }
+
+-- compliance statements
+
+    intSrvGuaranteedCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+           "The compliance statement "
+       MODULE  -- this module
+       MANDATORY-GROUPS {
+           intSrvGuaranteedIfAttribGroup
+           }
+       ::= { intSrvGuaranteedCompliances 1 }
+
+
+    intSrvGuaranteedIfAttribGroup OBJECT-GROUP
+         OBJECTS {
+            intSrvGuaranteedIfBacklog,
+            intSrvGuaranteedIfDelay,
+            intSrvGuaranteedIfSlack,
+            intSrvGuaranteedIfStatus
+        }
+        STATUS  current
+        DESCRIPTION
+           "These objects are required  for  Systems  sup-
+           porting the Guaranteed Service of the Integrat-
+           ed Services Architecture."
+       ::= { intSrvGuaranteedGroups 2 }
+
+END

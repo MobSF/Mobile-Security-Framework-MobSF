@@ -1,0 +1,24 @@
+{% extends "skelton_base.html" %}
+   {% block content %}
+</br>  
+	 <div class="page-header">
+      </div> 
+    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-list-alt"></span> JAVA SOURCE</h3>
+                            </div>
+                            <div class="panel-body">
+								  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        
+                                        <tbody>
+										{{ files | safe}}
+										</tbody>
+										</table>
+                                
+                            </div>
+                        </div>
+                    </div>
+					</div>
+   {% endblock %}

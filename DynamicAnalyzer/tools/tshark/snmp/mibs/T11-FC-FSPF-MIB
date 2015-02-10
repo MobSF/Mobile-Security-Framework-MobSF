@@ -1,0 +1,1234 @@
+T11-FC-FSPF-MIB DEFINITIONS ::= BEGIN
+--
+-- For management of FSPF, the Fibre Channel routing protocol.
+--
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Counter32, Integer32, Unsigned32, TimeTicks,
+    Gauge32, mib-2                     FROM SNMPv2-SMI   -- [RFC2578]
+    MODULE-COMPLIANCE, OBJECT-GROUP,
+    NOTIFICATION-GROUP                 FROM SNMPv2-CONF  -- [RFC2580]
+    TEXTUAL-CONVENTION, RowStatus, StorageType,
+    TruthValue                         FROM SNMPv2-TC    -- [RFC2579]
+    ifIndex, InterfaceIndex            FROM IF-MIB       -- [RFC2863]
+    fcmInstanceIndex, fcmSwitchIndex,
+    FcDomainIdOrZero                   FROM FC-MGMT-MIB  -- [FC-MGMT]
+    T11FabricIndex                     FROM T11-TC-MIB   -- [RFC4439]
+    t11FamConfigDomainId
+                       FROM T11-FC-FABRIC-ADDR-MGR-MIB;  -- [RFC4439]
+
+t11FcFspfMIB MODULE-IDENTITY
+    LAST-UPDATED "200608140000Z"
+    ORGANIZATION "T11"
+    CONTACT-INFO
+                   "Claudio DeSanti
+                    Cisco Systems, Inc.
+                    170 West Tasman Drive
+                    San Jose, CA 95134 USA
+                    EMail: cds@cisco.com
+
+
+
+
+                    Keith McCloghrie
+                    Cisco Systems, Inc.
+                    170 West Tasman Drive
+                    San Jose, CA USA 95134
+                    Email: kzm@cisco.com"
+    DESCRIPTION
+           "The MIB module for managing the Fabric Shortest Path
+           First (FSPF) protocol.  FSPF is specified in FC-SW-4.
+
+           Copyright (C) The Internet Society (2006).  This version of
+           this MIB module is part of RFC 4626;  see the RFC itself for
+           full legal notices."
+    REVISION   "200608140000Z"
+    DESCRIPTION
+           "Initial version of this MIB module published as RFC4626."
+
+    ::= { mib-2 143 }
+
+t11FspfNotifications      OBJECT IDENTIFIER ::= { t11FcFspfMIB 0 }
+t11FspfObjects            OBJECT IDENTIFIER ::= { t11FcFspfMIB 1 }
+t11FspfConformance        OBJECT IDENTIFIER ::= { t11FcFspfMIB 2 }
+t11FspfConfiguration      OBJECT IDENTIFIER ::= { t11FspfObjects 1 }
+t11FspfDatabase           OBJECT IDENTIFIER ::= { t11FspfObjects 2 }
+
+--
+-- TEXTUAL CONVENTIONS
+
+T11FspfLsrType ::= TEXTUAL-CONVENTION
+    STATUS    current
+    DESCRIPTION
+           "Type of the Link State Record.
+
+           FC-SW-4 defines two types of LSRs and allows for the
+           possibility for more will be defined in the future:
+
+               01      - Switch Link Record
+               02      - Obsolete
+               240 - 255 - Vendor Specific
+               others  - Reserved.
+           "
+    REFERENCE
+           "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+            ANSI INCITS 418-2006, section 6.1.9.3."
+    SYNTAX    Integer32 (0..255)
+
+T11FspfLinkType ::= TEXTUAL-CONVENTION
+    STATUS    current
+    DESCRIPTION
+
+
+
+           "Type of an the FSPF Link.  Presently defined values:
+
+               1           - Point-to-Point
+               240-255     - Vendor Specific
+               all others  - Reserved.
+           "
+    REFERENCE
+           "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+           ANSI INCITS 418-2006, section 6.1.9.4."
+    SYNTAX    Integer32 (0..255)
+
+T11FspfInterfaceState ::= TEXTUAL-CONVENTION
+    STATUS    current
+    DESCRIPTION
+           "The state of the FSPF Neighbor Finite State Machine
+           for the neighbor (switch) on a particular interface.
+           Possible values are :
+
+                down(1)         - Down
+                init(2)         - Init
+                dbExchange(3)   - Database Exchange
+                dbAckwait(4)    - Database AckWait
+                dbWait(5)       - Database Wait
+                full(6)         - Full (Connected)
+           "
+    REFERENCE
+           "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+           ANSI INCITS 418-2006, section 8.7."
+    SYNTAX  INTEGER {
+                   down(1),
+                   init(2),
+                   dbExchange(3),
+                   dbAckwait(4),
+                   dbWait(5),
+                   full(6)
+            }
+
+T11FspfLastCreationTime ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+           "This TC describes an object that stores the last time
+           it, and the row containing it, was created.
+
+           This can be used by management applications to determine
+           that a row has been deleted and re-created between reads,
+           causing an otherwise undetectable discontinuity in the
+           data."
+    SYNTAX  TimeTicks
+
+
+
+--
+-- t11FspfTable
+
+t11FspfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF T11FspfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "This table allows the users to configure and monitor FSPF's
+           per-Fabric parameters and statistics on all Fabrics known to
+           locally managed switches.
+
+           Entries are created/removed by the agent if and when
+           (Virtual) Fabrics are created/deleted."
+    ::= { t11FspfConfiguration 1 }
+
+t11FspfEntry OBJECT-TYPE
+    SYNTAX      T11FspfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "An entry containing FSPF variables, parameters, and
+           statistics on a particular switch (identified by values
+           of fcmInstanceIndex and fcmSwitchIndex) for a particular
+           Fabric (identified by a t11FspfFabricIndex value).
+
+           (Note that the local switch's per-fabric Domain-ID is
+           available in t11FamConfigDomainId, which is defined in
+           T11-FC-FABRIC-ADDR-MGR-MIB.)"
+    INDEX      { fcmInstanceIndex, fcmSwitchIndex, t11FspfFabricIndex }
+    ::= { t11FspfTable 1 }
+
+T11FspfEntry ::= SEQUENCE  {
+    t11FspfFabricIndex                 T11FabricIndex,
+    t11FspfMinLsArrival                Unsigned32,
+    t11FspfMinLsInterval               Unsigned32,
+    t11FspfLsRefreshTime               Unsigned32,
+    t11FspfMaxAge                      Unsigned32,
+    t11FspfMaxAgeDiscards              Counter32,
+    t11FspfPathComputations            Counter32,
+    t11FspfChecksumErrors              Counter32,
+    t11FspfLsrs                        Gauge32,
+    t11FspfCreateTime                  T11FspfLastCreationTime,
+    t11FspfAdminStatus                 INTEGER,
+    t11FspfOperStatus                  INTEGER,
+    t11FspfNbrStateChangNotifyEnable   TruthValue,
+    t11FspfSetToDefault                INTEGER,
+    t11FspfStorageType                 StorageType
+
+
+
+}
+
+t11FspfFabricIndex OBJECT-TYPE
+    SYNTAX      T11FabricIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "A unique index value that uniquely identifies a
+           particular Fabric.
+
+           In a Fabric conformant to FC-SW-4, multiple Virtual Fabrics
+           can operate within one (or more) physical infrastructures.
+           In such a case, index value is used to uniquely identify a
+           particular Fabric within a physical infrastructure.
+
+           In a Fabric that has (can have) only a single Fabric
+           operating within the physical infrastructure, the
+           value of this Fabric Index will always be 1."
+    ::= { t11FspfEntry 1 }
+
+t11FspfMinLsArrival OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..65535)
+    UNITS       "milliSeconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "The minimum time after accepting a Link State Record
+           (LSR) on this Fabric before accepting another update of
+           the same LSR on the same Fabric.
+
+           An LSR update that is not accepted because of this time
+           interval is discarded."
+    REFERENCE  "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+               ANSI INCITS 418-2006, sections 8.6.4.5 & 15.1."
+    DEFVAL     {1000}
+    ::= { t11FspfEntry 2 }
+
+t11FspfMinLsInterval OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..65535)
+    UNITS       "milliSeconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "The minimum time after this switch sends an LSR on this
+           Fabric before it will send another update of the same LSR
+           on the same Fabric."
+    REFERENCE  "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+               ANSI INCITS 418-2006, section 15.1."
+
+
+
+    DEFVAL     {5000}
+    ::= { t11FspfEntry 3 }
+
+t11FspfLsRefreshTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "Minutes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The interval between transmission of refresh LSRs on this
+           Fabric."
+    REFERENCE  "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+               ANSI INCITS 418-2006, sections 8.5.1 & 15.1."
+    DEFVAL     {30}
+    ::= { t11FspfEntry 4 }
+
+t11FspfMaxAge OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "Minutes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The maximum age an LSR will be retained in the FSPF
+           database on this Fabric.  An LSR is removed from the
+           database after MaxAge is reached."
+    REFERENCE  "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+               ANSI INCITS 418-2006, section 15.1."
+    DEFVAL     {60}
+    ::= { t11FspfEntry 5 }
+
+t11FspfMaxAgeDiscards OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of LSRs discarded due to their age reaching
+           t11FspfMaxAge in this Fabric.  The last discontinuity of
+           this counter is indicated by t11FspfCreateTime."
+    ::= { t11FspfEntry 6 }
+
+t11FspfPathComputations OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of times that the path computation algorithm
+           has been invoked by this Switch on this Fabric to compute
+           a set of minimum cost paths for this Fabric.  The last
+
+
+
+           discontinuity of this counter is indicated by
+           t11FspfCreateTime."
+    REFERENCE  "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+               ANSI INCITS 418-2006, section 8.1.1."
+    ::= { t11FspfEntry 7 }
+
+t11FspfChecksumErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of FSPF checksum errors that were detected
+           locally (and therefore discarded) on this Fabric.
+           The last discontinuity of this counter is indicated by
+           t11FspfCreateTime."
+    REFERENCE  "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+               ANSI INCITS 418-2006, section 8.5.4."
+    ::= { t11FspfEntry 8 }
+
+t11FspfLsrs OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The current number of entries for this Fabric in the
+           t11FspfLsrTable."
+    ::= { t11FspfEntry 9 }
+
+t11FspfCreateTime OBJECT-TYPE
+    SYNTAX      T11FspfLastCreationTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The value of sysUpTime when this entry was last created."
+    ::= { t11FspfEntry 10 }
+
+t11FspfAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    up(1),
+                    down(2)
+                    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "The desired state of FSPF in this Fabric.  If value of
+           this object is set to 'up', then FSPF is enabled in
+           this Fabric.  If set to 'down', then FSPF is disabled
+           in this Fabric -- when FSPF is disabled, FSPF provides
+
+
+
+           no routes to be included in the T11-FC-ROUTE-MIB module.
+           (see the T11-FC-ROUTE-MIB)."
+    REFERENCE  "T11-FC-ROUTE-MIB, The Fibre Channel Routing
+                Information MIB, RFC4625."
+    DEFVAL {up}
+    ::= { t11FspfEntry 11 }
+
+t11FspfOperStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                      up(1),
+                      down(2)
+                     }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "State of FSPF in this Fabric.  If 't11FspfAdminStatus' is
+           'down', then the 't11FspfOperStatus' should be 'down'.
+           If 't11FspfAdminStatus' is changed to 'up', then
+           't11FspfOperStatus' should change to 'up' as and when
+           FSPF is active in this Fabric."
+    ::= { t11FspfEntry 12 }
+
+t11FspfNbrStateChangNotifyEnable OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+           "Specifies whether or not the local agent should
+           issue the notification 't11FspfNbrStateChangNotify'
+           when the local switch learns of a change of state
+           in the FSPF Neighbor Finite State Machine on an
+           interface in this Fabric.
+           If the value of the object is 'true, then the
+           notification is generated.  If the value is 'false',
+           notification is not generated."
+    DEFVAL { false }
+    ::= { t11FspfEntry 13 }
+
+t11FspfSetToDefault OBJECT-TYPE
+    SYNTAX      INTEGER {
+                     default(1),
+                     noOp(2)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "Setting this value to 'default' changes the value of each
+           and every writable object in this row to its default
+
+
+
+           value.
+
+           No action is taken if this object is set to 'noOp'.
+           The value of the object, when read, is always 'noOp'."
+    ::= { t11FspfEntry 14 }
+
+t11FspfStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "The storage type for read-write objects in this
+           conceptual row.
+
+           Conceptual rows having the value 'permanent' need not
+           allow write-access to any columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { t11FspfEntry 15 }
+
+--
+-- t11FspfIfTable
+
+t11FspfIfTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FspfIfEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+           "This table allows the users to configure and monitor
+           the FSPF parameters that are per-interface (identified
+           by a t11FspfIfIndex value), per-Fabric (identified by a
+           t11FspfFabricIndex value), and per-switch (identified by
+           values of fcmInstanceIndex and fcmSwitchIndex).
+
+           Creating a row in this table via t11FspfIfRowStatus
+           provides the means to specify non-default parameter value(s)
+           for an interface at a time when the relevant row in this
+           table would not otherwise exist because the interface is
+           either down or it is not an E_Port, but the corresponding
+           row in the t11FspfTable must already exist.
+
+           After the non-default values have been specified for a
+           port's parameters, they need to be retained in this table,
+           even when the port becomes 'isolated'.  However, having
+           unnecessary rows in this table clutters it up and makes
+           those rows that are useful harder for an NMS to find.
+           Therefore, when an E_Port becomes isolated, its row gets
+           deleted if and only if all of its parameter values are the
+           default values; also, when an E_Port becomes non-isolated
+
+
+
+           in a particular Fabric, a row in this table needs to exist
+           and is automatically created, if necessary.
+
+           The specific conditions for an automated/implicit deletion
+           of a row are:
+           a) if the corresponding interface is no longer an E_Port
+              (e.g., a G_Port which is dynamically determined to be an
+              F_Port), and all configurable parameters have default
+              values; or
+           b) if the interface identified by t11FspfIfIndex no longer
+              exists (e.g., because a line-card is physically removed);
+              or
+           c) if the corresponding row in the t11FspfTable is deleted.
+           "
+    ::= { t11FspfConfiguration 2 }
+
+t11FspfIfEntry OBJECT-TYPE
+    SYNTAX      T11FspfIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "An entry containing FSPF information for the interface
+           identified by t11FspfIfIndex, on the fabric identified
+           by t11FspfFabricIndex, on the switch identified by
+           fcmSwitchIndex."
+    INDEX       { fcmInstanceIndex, fcmSwitchIndex,
+                  t11FspfFabricIndex, t11FspfIfIndex }
+    ::= { t11FspfIfTable 1 }
+
+T11FspfIfEntry ::= SEQUENCE {
+    t11FspfIfIndex                     InterfaceIndex,
+    t11FspfIfHelloInterval             Unsigned32,
+    t11FspfIfDeadInterval              Unsigned32,
+    t11FspfIfRetransmitInterval        Unsigned32,
+    t11FspfIfInLsuPkts                 Counter32,
+    t11FspfIfInLsaPkts                 Counter32,
+    t11FspfIfOutLsuPkts                Counter32,
+    t11FspfIfOutLsaPkts                Counter32,
+    t11FspfIfOutHelloPkts              Counter32,
+    t11FspfIfInHelloPkts               Counter32,
+    t11FspfIfRetransmittedLsuPkts      Counter32,
+    t11FspfIfInErrorPkts               Counter32,
+    t11FspfIfNbrState                  T11FspfInterfaceState,
+    t11FspfIfNbrDomainId               FcDomainIdOrZero,
+    t11FspfIfNbrPortIndex              Unsigned32,
+    t11FspfIfAdminStatus               INTEGER,
+    t11FspfIfCreateTime                T11FspfLastCreationTime,
+    t11FspfIfSetToDefault              INTEGER,
+
+
+
+    t11FspfIfLinkCostFactor            Unsigned32,
+    t11FspfIfStorageType               StorageType,
+    t11FspfIfRowStatus                 RowStatus
+}
+
+t11FspfIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "The value of ifIndex that identifies the local
+           Fibre Channel interface for which this entry
+           contains FSPF information."
+    ::= { t11FspfIfEntry 1 }
+
+t11FspfIfHelloInterval OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..65535)
+    UNITS       "Seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Interval between the periodic HELLO messages sent on this
+           interface in this Fabric to verify the link health.  Note
+           that this value must be same at both ends of a link in
+           this Fabric."
+    DEFVAL {20}
+    ::= { t11FspfIfEntry 2 }
+
+t11FspfIfDeadInterval OBJECT-TYPE
+    SYNTAX      Unsigned32 (2..65535)
+    UNITS       "Seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Maximum time for which no HELLO messages can be received
+           on this interface in this Fabric.  After this time, the
+           interface is assumed to be broken and removed from the
+           database.  Note that this value must be greater than the
+           HELLO interval specified on this interface in this Fabric."
+    DEFVAL {80}
+    ::= { t11FspfIfEntry 3 }
+
+t11FspfIfRetransmitInterval OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..65535)
+    UNITS       "Seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+
+
+
+           "The time after which an unacknowledged LSR is
+           retransmitted on this interface in this Fabric."
+    DEFVAL {5}
+    ::= { t11FspfIfEntry 4 }
+
+t11FspfIfInLsuPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of Link State Update (LSU) packets received on
+           this interface in this Fabric.  The last discontinuity
+           of this counter is indicated by t11FspfIfCreateTime."
+    ::= { t11FspfIfEntry 5 }
+
+t11FspfIfInLsaPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of Link State Acknowledgement (LSA) packets
+           received on this interface in this Fabric.  The last
+           discontinuity of this counter is indicated by
+           t11FspfIfCreateTime."
+    ::= { t11FspfIfEntry 6 }
+
+t11FspfIfOutLsuPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of Link State Update (LSU) packets transmitted
+           on this interface in this Fabric.  The last
+           discontinuity of this counter is indicated by
+           t11FspfIfCreateTime."
+    ::= { t11FspfIfEntry 7 }
+
+t11FspfIfOutLsaPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of Link State Acknowledgement (LSA) packets
+           transmitted on this interface in this Fabric.  The
+           last discontinuity of this counter is indicated by
+           t11FspfIfCreateTime."
+    ::= { t11FspfIfEntry 8 }
+
+
+
+
+t11FspfIfOutHelloPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of HELLO packets transmitted on this interface in
+           this Fabric.  The last discontinuity of this counter is
+           indicated by t11FspfIfCreateTime."
+    ::= { t11FspfIfEntry 9 }
+
+t11FspfIfInHelloPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of HELLO packets received on this interface in
+           this Fabric.  The last discontinuity of this counter is
+           indicated by t11FspfIfCreateTime."
+    ::= { t11FspfIfEntry 10 }
+
+t11FspfIfRetransmittedLsuPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of LSU packets that contained one or more
+           retransmitted LSRs, and that were transmitted on this
+           interface in this Fabric.  The last discontinuity of
+           this counter is indicated by t11FspfIfCreateTime."
+    ::= { t11FspfIfEntry 11 }
+
+t11FspfIfInErrorPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of invalid FSPF control packets received on this
+           interface in this Fabric.  The last discontinuity of
+           this counter is indicated by t11FspfIfCreateTime."
+    ::= { t11FspfIfEntry 12 }
+
+t11FspfIfNbrState OBJECT-TYPE
+    SYNTAX      T11FspfInterfaceState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The state of FSPF's 'neighbor state machine', which is
+           the operational state of the interaction with the
+
+
+
+           neighbor's interface that is connected to this interface.
+
+           If the 't11FspfIfAdminStatus' is 'down', then this object
+           should be 'down'.  If the 't11FspfIfAdminStatus' is 'up',
+           then this object's value depends on the state of FSPF's
+           'neighbor state machine' on this interface in this
+           Fabric."
+    REFERENCE  "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+               ANSI INCITS 418-2006, section 8.7"
+    ::= { t11FspfIfEntry 13 }
+
+t11FspfIfNbrDomainId OBJECT-TYPE
+    SYNTAX      FcDomainIdOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The Domain Id of the neighbor in this Fabric."
+    ::= { t11FspfIfEntry 14 }
+
+t11FspfIfNbrPortIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..16777215)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The index, as known by the neighbor, of the neighbor's
+           interface that is connected to this interface in this
+           Fabric."
+    REFERENCE  "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+               ANSI INCITS 418-2006, section 6.1.9.4."
+    ::= { t11FspfIfEntry 15 }
+
+t11FspfIfAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                up(1),
+                down(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The desired state of FSPF on this interface in this
+           Fabric, whenever 't11FspfAdminStatus' is 'up'.
+           If the value of this object is set to 'up', then FSPF is
+           enabled on this interface in this Fabric.  If set to
+           'down', then FSPF is disabled on this interface in this
+           Fabric.  Note that the operational state of FSPF on an
+           interface is given by t11FspfIfNbrState."
+    DEFVAL  {up}
+    ::= { t11FspfIfEntry 16 }
+
+
+
+t11FspfIfCreateTime OBJECT-TYPE
+    SYNTAX      T11FspfLastCreationTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The value of sysUpTime when this entry was last
+           created."
+    ::= { t11FspfIfEntry 17 }
+
+t11FspfIfSetToDefault OBJECT-TYPE
+    SYNTAX      INTEGER {
+                     default(1),
+                     noOp(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Setting this value to 'default' changes the value of each
+           and every writable object in this row to its default
+           value.
+
+           If all the configuration parameters have their default
+           values, and if the interface is down, then the row is
+           deleted automatically.
+
+           No action is taken if this object is set to 'noOp'.
+           The value of the object, when read, is always 'noOp'."
+    ::= { t11FspfIfEntry 18 }
+
+t11FspfIfLinkCostFactor OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The administrative factor used in calculating the cost
+           of sending a frame on this interface in this Fabric.
+
+           The formula used to calculate the link cost is:
+
+                    Link Cost = S * (1.0625e12 / ifSpeed)
+           where:
+             S = (the value of this object / 100)
+             ifSpeed = interface speed (as defined in the IF-MIB).
+           "
+    REFERENCE
+           "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+            ANSI INCITS 418-2006, section 8.5.5; and
+            IF-MIB, RFC 2863."
+
+
+
+    DEFVAL { 100 }
+    ::= { t11FspfIfEntry 19 }
+
+t11FspfIfStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The storage type for this conceptual row.
+            Conceptual rows having the value 'permanent' need not
+            allow write-access to any columnar objects in the row."
+       DEFVAL { nonVolatile }
+    ::= { t11FspfIfEntry 20 }
+
+t11FspfIfRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The status of the conceptual row.
+
+           This object can be used to create an entry only if there
+           is an entry in the t11FspfTable for the corresponding
+           Fabric, and if the interface is either isolated or is a
+           non-E_port.
+
+           Setting this object to 'destroy' will typically fail;
+           to reverse the creation process, set the corresponding
+           instance of t11FspfIfSetToDefault to 'default'."
+    ::= { t11FspfIfEntry 21 }
+
+--
+-- t11FspfLsrTable
+
+t11FspfLsrTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FspfLsrEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+           "This table is the database of all the latest
+           incarnations of the Link State Records (LSRs) that
+           are currently contained in the topology database,
+           for all interfaces on all Fabrics known to
+           locally managed switches.
+
+           A Fabric's topology database contains the LSRs that
+           have been either issued or received by a local switch on
+           that Fabric, and that have not reached t11FspfMaxAge."
+
+
+
+    ::= { t11FspfDatabase 1 }
+
+t11FspfLsrEntry OBJECT-TYPE
+    SYNTAX      T11FspfLsrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "This gives information for the most recent update of an
+           LSR.  There is one entry for every LSR issued or received
+           by a locally managed switch (identified by
+           fcmInstanceIndex and fcmSwitchIndex) in a Fabric
+           (identified by t11FspfFabricIndex)."
+    INDEX      { fcmInstanceIndex, fcmSwitchIndex, t11FspfFabricIndex,
+                 t11FspfLsrDomainId, t11FspfLsrType }
+    ::= { t11FspfLsrTable 1 }
+
+T11FspfLsrEntry ::= SEQUENCE {
+    t11FspfLsrDomainId           FcDomainIdOrZero,
+    t11FspfLsrType               T11FspfLsrType,
+    t11FspfLsrAdvDomainId        FcDomainIdOrZero,
+    t11FspfLsrAge                Unsigned32,
+    t11FspfLsrIncarnationNumber  Unsigned32,
+    t11FspfLsrCheckSum           Unsigned32,
+    t11FspfLsrLinks              Unsigned32
+}
+
+t11FspfLsrDomainId OBJECT-TYPE
+    SYNTAX      FcDomainIdOrZero
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Domain Id of the LSR owner in this Fabric.  It is the
+           Link State Id of this LSR."
+    ::= { t11FspfLsrEntry 1 }
+
+t11FspfLsrType OBJECT-TYPE
+    SYNTAX      T11FspfLsrType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Type of this LSR."
+    ::= { t11FspfLsrEntry 2 }
+
+t11FspfLsrAdvDomainId OBJECT-TYPE
+    SYNTAX      FcDomainIdOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+
+
+
+           "Domain Id of the switch that is advertising the LSR on
+           the behalf of the switch owning it."
+    ::= { t11FspfLsrEntry 3 }
+
+t11FspfLsrAge OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..65535)
+    UNITS       "Seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The time since this LSR was inserted into the database."
+    ::= { t11FspfLsrEntry 4 }
+
+t11FspfLsrIncarnationNumber OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The link state incarnation number of this LSR.  This is
+           used to identify most recent instance of an LSR while
+           updating the topology database when an LSR is received.
+           The updating of an LSR includes incrementing its
+           incarnation number prior to transmission of the updated
+           LSR.  So, the most recent LSR is the one with the
+           largest incarnation number."
+    ::= { t11FspfLsrEntry 5 }
+
+t11FspfLsrCheckSum OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The checksum of the LSR."
+    ::= { t11FspfLsrEntry 6 }
+
+t11FspfLsrLinks OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..65355)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of entries in the t11FspfLinkTable associated with
+           this LSR."
+    ::= { t11FspfLsrEntry 7 }
+--
+-- t11FspfLinkTable
+
+t11FspfLinkNumber  OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..2147483647)
+
+
+
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of rows in the t11FspfLinkTable."
+        ::= { t11FspfDatabase 3 }
+
+t11FspfLinkTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FspfLinkEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+           "This table contains the list of Inter-Switch Links and
+           their information that is part of an LSR, either
+           received or transmitted."
+    ::= { t11FspfDatabase 4 }
+
+t11FspfLinkEntry OBJECT-TYPE
+    SYNTAX      T11FspfLinkEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "An entry that contains information about a link
+           contained in an LSR in this Fabric.  An entry is created
+           whenever a new link appears in an (issued or received)
+           LSR.  An entry is deleted when a link no longer appears
+           in an (issued or received) LSR."
+    INDEX      { fcmInstanceIndex, fcmSwitchIndex, t11FspfFabricIndex,
+                 t11FspfLsrDomainId, t11FspfLsrType, t11FspfLinkIndex}
+    ::= { t11FspfLinkTable 1 }
+
+T11FspfLinkEntry ::= SEQUENCE {
+    t11FspfLinkIndex             Unsigned32,
+    t11FspfLinkNbrDomainId       FcDomainIdOrZero,
+    t11FspfLinkPortIndex         Unsigned32,
+    t11FspfLinkNbrPortIndex      Unsigned32,
+    t11FspfLinkType              T11FspfLinkType,
+    t11FspfLinkCost              Integer32
+}
+
+t11FspfLinkIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "An arbitrary index of this link."
+    ::= { t11FspfLinkEntry 1 }
+
+t11FspfLinkNbrDomainId OBJECT-TYPE
+
+
+
+    SYNTAX      FcDomainIdOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The Domain Id of the neighbor on the other end of this
+           link in this Fabric."
+    ::= { t11FspfLinkEntry 2 }
+
+t11FspfLinkPortIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..16777215)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The source E_port of this link, as indicated by the index
+           value in the LSR received from the switch identified by
+           't11FspfLsrDomainId'."
+    ::= { t11FspfLinkEntry 3 }
+
+t11FspfLinkNbrPortIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..16777215)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The destination E_port of this link, as indicated by the
+           index value in the LSR received from the switch identified
+           by 't11FspfLinkNbrDomainId'."
+    ::= { t11FspfLinkEntry 4 }
+
+t11FspfLinkType OBJECT-TYPE
+    SYNTAX      T11FspfLinkType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The type of this link."
+    ::= { t11FspfLinkEntry 5 }
+
+t11FspfLinkCost OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The cost of sending a frame on this link in this Fabric.
+           Link cost is calculated using the formula:
+
+                 link cost = S * (1.0625e12 / Signalling Rate)
+
+           For issued LSRs, S is determined by the value of
+           t11FspfIfLinkCostFactor for the corresponding interface
+
+
+
+           and Fabric."
+    ::= { t11FspfLinkEntry 6 }
+
+--
+-- Notification-related object
+
+t11FspfIfPrevNbrState OBJECT-TYPE
+    SYNTAX      T11FspfInterfaceState
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+           "The previous state of FSPF's Neighbor Finite State
+           Machine on an interface.
+
+           This object is only used in the
+           't11FspfNbrStateChangNotify' notification."
+    ::= { t11FspfConfiguration 3 }
+
+--
+-- Notifications
+
+t11FspfNbrStateChangNotify NOTIFICATION-TYPE
+    OBJECTS     { ifIndex,
+                  t11FamConfigDomainId,
+                  t11FspfIfNbrDomainId,
+                  t11FspfIfNbrState,
+                  t11FspfIfPrevNbrState
+    }
+    STATUS      current
+    DESCRIPTION
+           "This notification signifies that there has been a change in
+           the state of an FSPF neighbor.  This is generated when the
+           FSPF state changes to a terminal state, through either
+           regression (i.e., goes from Full to Init or Down) or
+           progression (i.e., from any state to Full).  The value of
+           't11FspfIfNbrState' is the state of the neighbor after the
+           change."
+    ::= { t11FspfNotifications 1 }
+
+--
+-- Conformance
+
+t11FspfMIBCompliances
+    OBJECT IDENTIFIER ::= { t11FspfConformance 1 }
+
+t11FspfMIBGroups
+    OBJECT IDENTIFIER ::= { t11FspfConformance 2 }
+
+
+
+
+t11FspfMIBCompliance MODULE-COMPLIANCE
+    STATUS     current
+    DESCRIPTION
+           "The compliance statement for entities that
+           implement the FSPF."
+    MODULE -- this module
+        MANDATORY-GROUPS { t11FspfGeneralGroup,
+                           t11FspfIfGroup,
+                           t11FspfDatabaseGroup,
+                           t11FspfNotificationGroup }
+
+        GROUP      t11FspfIfCounterGroup
+        DESCRIPTION
+               "These counters, for particular FSPF-packet
+               occurrences on an interface, are mandatory only
+               for those systems that count such events."
+
+        OBJECT     t11FspfIfRowStatus
+        SYNTAX     INTEGER { active(1) }
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required, so only
+               one value needs to be supported."
+
+        OBJECT     t11FspfIfStorageType
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FspfNbrStateChangNotifyEnable
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FspfMinLsArrival
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FspfMinLsInterval
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FspfAdminStatus
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+
+
+        OBJECT     t11FspfSetToDefault
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FspfStorageType
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FspfIfHelloInterval
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FspfIfDeadInterval
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FspfIfRetransmitInterval
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FspfIfAdminStatus
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FspfIfSetToDefault
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FspfIfLinkCostFactor
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        ::= { t11FspfMIBCompliances 1 }
+
+-- Units of Conformance
+
+t11FspfGeneralGroup OBJECT-GROUP
+    OBJECTS  { t11FspfMinLsArrival,
+               t11FspfMinLsInterval,
+               t11FspfLsRefreshTime,
+
+
+
+               t11FspfMaxAge,
+               t11FspfMaxAgeDiscards,
+               t11FspfPathComputations,
+               t11FspfChecksumErrors,
+               t11FspfLsrs,
+               t11FspfCreateTime,
+               t11FspfAdminStatus,
+               t11FspfOperStatus,
+               t11FspfNbrStateChangNotifyEnable,
+               t11FspfSetToDefault,
+               t11FspfStorageType }
+    STATUS   current
+    DESCRIPTION
+           "A collection of objects for displaying and
+           configuring FSPF parameters."
+    ::= { t11FspfMIBGroups 1 }
+
+t11FspfIfGroup OBJECT-GROUP
+    OBJECTS  { t11FspfIfHelloInterval,
+               t11FspfIfDeadInterval,
+               t11FspfIfRetransmitInterval,
+               t11FspfIfNbrState,
+               t11FspfIfNbrDomainId,
+               t11FspfIfNbrPortIndex,
+               t11FspfIfAdminStatus,
+               t11FspfIfCreateTime,
+               t11FspfIfSetToDefault,
+               t11FspfIfLinkCostFactor,
+               t11FspfIfRowStatus,
+               t11FspfIfStorageType,
+               t11FspfIfPrevNbrState }
+    STATUS   current
+    DESCRIPTION
+           "A collection of objects for displaying the FSPF
+           interface information."
+    ::= { t11FspfMIBGroups 2 }
+
+t11FspfIfCounterGroup OBJECT-GROUP
+    OBJECTS  { t11FspfIfInLsuPkts,
+               t11FspfIfInLsaPkts,
+               t11FspfIfOutLsuPkts,
+               t11FspfIfOutLsaPkts,
+               t11FspfIfOutHelloPkts,
+               t11FspfIfInHelloPkts,
+               t11FspfIfRetransmittedLsuPkts,
+               t11FspfIfInErrorPkts  }
+    STATUS   current
+    DESCRIPTION
+
+
+
+            "A collection of objects for counting particular
+            FSPF-packet occurrences on an interface."
+    ::= { t11FspfMIBGroups 3 }
+
+t11FspfDatabaseGroup OBJECT-GROUP
+    OBJECTS  { t11FspfLsrAdvDomainId,
+               t11FspfLsrAge,
+               t11FspfLsrIncarnationNumber,
+               t11FspfLsrCheckSum,
+               t11FspfLsrLinks,
+               t11FspfLinkNbrDomainId,
+               t11FspfLinkPortIndex,
+               t11FspfLinkNbrPortIndex,
+               t11FspfLinkType,
+               t11FspfLinkCost,
+               t11FspfLinkNumber }
+    STATUS   current
+    DESCRIPTION
+           "A collection of objects for displaying the FSPF
+           topology database information."
+    ::= { t11FspfMIBGroups 4 }
+t11FspfNotificationGroup NOTIFICATION-GROUP
+    NOTIFICATIONS  { t11FspfNbrStateChangNotify }
+    STATUS   current
+    DESCRIPTION
+           "A collection of notifications for FSPF."
+    ::= { t11FspfMIBGroups 5 }
+END

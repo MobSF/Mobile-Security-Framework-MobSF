@@ -1,0 +1,824 @@
+RADIUS-AUTH-SERVER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE, OBJECT-IDENTITY,
+       Counter32, Integer32,
+       IpAddress, TimeTicks, mib-2      FROM SNMPv2-SMI
+       SnmpAdminString                  FROM SNMP-FRAMEWORK-MIB
+       InetAddressType, InetAddress     FROM INET-ADDRESS-MIB
+       MODULE-COMPLIANCE, OBJECT-GROUP  FROM SNMPv2-CONF;
+
+radiusAuthServMIB MODULE-IDENTITY
+       LAST-UPDATED "200608210000Z"  -- 21 August 2006
+       ORGANIZATION "IETF RADIUS Extensions Working Group."
+       CONTACT-INFO
+              " Bernard Aboba
+                Microsoft
+                One Microsoft Way
+                Redmond, WA  98052
+                US
+                Phone: +1 425 936 6605
+
+
+
+                EMail: bernarda@microsoft.com"
+       DESCRIPTION
+             "The MIB module for entities implementing the server
+              side of the Remote Authentication Dial-In User
+              Service (RADIUS) authentication protocol.  Copyright
+              (C) The Internet Society (2006).  This version of this
+              MIB module is part of RFC 4669; see the RFC itself for
+              full legal notices."
+       REVISION "200608210000Z"  -- 21 August 2006
+       DESCRIPTION
+             "Revised version as published in RFC 4669.  This
+              version obsoletes that of RFC 2619 by deprecating the
+              MIB table containing IPv4-only address formats and
+              defining a new table to add support for version-neutral
+              IP address formats.  The remaining MIB objects from RFC
+              2619 are carried forward into this version."
+       REVISION "199906110000Z"  -- 11 Jun 1999
+       DESCRIPTION "Initial version as published in RFC 2619."
+       ::= { radiusAuthentication 1 }
+
+radiusMIB  OBJECT-IDENTITY
+       STATUS  current
+       DESCRIPTION
+             "The OID assigned to RADIUS MIB work by the IANA."
+        ::= { mib-2 67 }
+
+radiusAuthentication  OBJECT IDENTIFIER ::= {radiusMIB 1}
+
+radiusAuthServMIBObjects OBJECT IDENTIFIER
+        ::= { radiusAuthServMIB 1 }
+
+radiusAuthServ  OBJECT IDENTIFIER
+        ::= { radiusAuthServMIBObjects 1 }
+
+radiusAuthServIdent OBJECT-TYPE
+       SYNTAX      SnmpAdminString
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+             "The implementation identification string for the
+              RADIUS authentication server software in use on the
+              system, for example, 'FNS-2.1'."
+       ::= {radiusAuthServ 1}
+
+radiusAuthServUpTime OBJECT-TYPE
+       SYNTAX      TimeTicks
+       MAX-ACCESS  read-only
+       STATUS      current
+
+
+
+       DESCRIPTION
+             "If the server has a persistent state (e.g., a
+              process), this value will be the time elapsed (in
+              hundredths of a second) since the server process
+              was started.  For software without persistent state,
+              this value will be zero."
+       ::= {radiusAuthServ 2}
+
+radiusAuthServResetTime OBJECT-TYPE
+       SYNTAX      TimeTicks
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+             "If the server has a persistent state (e.g., a process)
+              and supports a 'reset' operation (e.g., can be told to
+              re-read configuration files), this value will be the
+              time elapsed (in hundredths of a second) since the
+              server was 'reset.'  For software that does not
+              have persistence or does not support a 'reset'
+              operation, this value will be zero."
+       ::= {radiusAuthServ 3}
+
+radiusAuthServConfigReset OBJECT-TYPE
+       SYNTAX INTEGER { other(1),
+                        reset(2),
+                        initializing(3),
+                        running(4)}
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION
+              "Status/action object to reinitialize any persistent
+               server state.  When set to reset(2), any persistent
+               server state (such as a process) is reinitialized as
+               if the server had just been started.  This value will
+               never be returned by a read operation.  When read,
+               one of the following values will be returned:
+                   other(1) - server in some unknown state;
+                   initializing(3) - server (re)initializing;
+                   running(4) - server currently running."
+       ::= {radiusAuthServ 4}
+
+radiusAuthServTotalAccessRequests OBJECT-TYPE
+        SYNTAX Counter32
+        UNITS "packets"
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+               "The number of packets received on the
+
+
+
+                authentication port."
+        REFERENCE "RFC 2865 section 4.1"
+        ::= { radiusAuthServ 5}
+
+radiusAuthServTotalInvalidRequests OBJECT-TYPE
+        SYNTAX Counter32
+        UNITS "packets"
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+              "The number of RADIUS Access-Request packets
+               received from unknown addresses."
+        REFERENCE "RFC 2865 section 4.1"
+        ::= { radiusAuthServ 6 }
+
+radiusAuthServTotalDupAccessRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of duplicate RADIUS Access-Request
+              packets received."
+       REFERENCE "RFC 2865 section 4.1"
+       ::= { radiusAuthServ 7 }
+
+radiusAuthServTotalAccessAccepts OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of RADIUS Access-Accept packets sent."
+       REFERENCE "RFC 2865 section 4.2"
+       ::= { radiusAuthServ 8 }
+
+radiusAuthServTotalAccessRejects OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+            "The number of RADIUS Access-Reject packets sent."
+      REFERENCE "RFC 2865 section 4.3"
+      ::= { radiusAuthServ 9 }
+
+radiusAuthServTotalAccessChallenges OBJECT-TYPE
+      SYNTAX Counter32
+
+
+
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+            "The number of RADIUS Access-Challenge packets sent."
+      REFERENCE "RFC 2865 section 4.4"
+      ::= { radiusAuthServ 10 }
+
+radiusAuthServTotalMalformedAccessRequests OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+            "The number of malformed RADIUS Access-Request
+             packets received.  Bad authenticators
+             and unknown types are not included as
+             malformed Access-Requests."
+      REFERENCE "RFC 2865 section 4.1"
+      ::= { radiusAuthServ 11 }
+
+radiusAuthServTotalBadAuthenticators OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+            "The number of RADIUS Authentication-Request packets
+             that contained invalid Message Authenticator
+             attributes received."
+      REFERENCE "RFC 2865 section 3"
+      ::= { radiusAuthServ 12 }
+
+radiusAuthServTotalPacketsDropped OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+            "The number of incoming packets
+             silently discarded for some reason other
+             than malformed, bad authenticators or
+             unknown types."
+      REFERENCE "RFC 2865 section 3"
+      ::= { radiusAuthServ 13 }
+
+radiusAuthServTotalUnknownTypes OBJECT-TYPE
+      SYNTAX Counter32
+
+
+
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+            "The number of RADIUS packets of unknown type that
+             were received."
+      REFERENCE "RFC 2865 section 4"
+      ::= { radiusAuthServ 14 }
+
+
+radiusAuthClientTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF RadiusAuthClientEntry
+       MAX-ACCESS not-accessible
+       STATUS     deprecated
+       DESCRIPTION
+             "The (conceptual) table listing the RADIUS
+              authentication clients with which the server shares
+              a secret."
+       ::= { radiusAuthServ 15 }
+
+
+radiusAuthClientEntry OBJECT-TYPE
+       SYNTAX     RadiusAuthClientEntry
+       MAX-ACCESS not-accessible
+       STATUS     deprecated
+       DESCRIPTION
+             "An entry (conceptual row) representing a RADIUS
+              authentication client with which the server shares a
+              secret."
+       INDEX      { radiusAuthClientIndex }
+       ::= { radiusAuthClientTable 1 }
+
+RadiusAuthClientEntry ::= SEQUENCE {
+       radiusAuthClientIndex                           Integer32,
+       radiusAuthClientAddress                         IpAddress,
+       radiusAuthClientID                        SnmpAdminString,
+       radiusAuthServAccessRequests                    Counter32,
+       radiusAuthServDupAccessRequests                 Counter32,
+       radiusAuthServAccessAccepts                     Counter32,
+       radiusAuthServAccessRejects                     Counter32,
+       radiusAuthServAccessChallenges                  Counter32,
+       radiusAuthServMalformedAccessRequests           Counter32,
+       radiusAuthServBadAuthenticators                 Counter32,
+       radiusAuthServPacketsDropped                    Counter32,
+       radiusAuthServUnknownTypes                      Counter32
+}
+
+radiusAuthClientIndex OBJECT-TYPE
+
+
+
+       SYNTAX     Integer32 (1..2147483647)
+       MAX-ACCESS not-accessible
+       STATUS     deprecated
+       DESCRIPTION
+             "A number uniquely identifying each RADIUS
+              authentication client with which this server
+              communicates."
+       ::= { radiusAuthClientEntry 1 }
+
+radiusAuthClientAddress OBJECT-TYPE
+       SYNTAX     IpAddress
+       MAX-ACCESS read-only
+       STATUS     deprecated
+       DESCRIPTION
+             "The NAS-IP-Address of the RADIUS authentication client
+              referred to in this table entry."
+       REFERENCE "RFC 2865 section 2"
+       ::= { radiusAuthClientEntry 2 }
+
+radiusAuthClientID OBJECT-TYPE
+       SYNTAX     SnmpAdminString
+       MAX-ACCESS read-only
+       STATUS     deprecated
+       DESCRIPTION
+             "The NAS-Identifier of the RADIUS authentication client
+              referred to in this table entry.  This is not
+              necessarily the same as sysName in MIB II."
+       REFERENCE "RFC 2865 section 5.32"
+       ::= { radiusAuthClientEntry 3 }
+
+-- Server Counters
+
+--
+-- Responses = AccessAccepts + AccessRejects + AccessChallenges
+--
+-- Requests - DupRequests - BadAuthenticators - MalformedRequests -
+-- UnknownTypes -  PacketsDropped - Responses = Pending
+--
+-- Requests - DupRequests - BadAuthenticators - MalformedRequests -
+-- UnknownTypes - PacketsDropped = entries logged
+
+radiusAuthServAccessRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of packets received on the authentication
+
+
+
+              port from this client."
+       REFERENCE "RFC 2865 section 4.1"
+       ::= { radiusAuthClientEntry  4 }
+
+radiusAuthServDupAccessRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of duplicate RADIUS Access-Request
+              packets received from this client."
+       REFERENCE "RFC 2865 section 4.1"
+       ::= { radiusAuthClientEntry  5 }
+
+radiusAuthServAccessAccepts OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of RADIUS Access-Accept packets
+              sent to this client."
+       REFERENCE "RFC 2865 section 4.2"
+       ::= { radiusAuthClientEntry  6 }
+
+radiusAuthServAccessRejects OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS deprecated
+      DESCRIPTION
+             "The number of RADIUS Access-Reject packets
+              sent to this client."
+       REFERENCE "RFC 2865 section 4.3"
+       ::= { radiusAuthClientEntry  7 }
+
+radiusAuthServAccessChallenges OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of RADIUS Access-Challenge packets
+              sent to this client."
+       REFERENCE "RFC 2865 section 4.4"
+       ::= { radiusAuthClientEntry  8 }
+
+
+
+
+radiusAuthServMalformedAccessRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of malformed RADIUS Access-Request
+              packets received from this client.
+              Bad authenticators and unknown types are not included
+              as malformed Access-Requests."
+       REFERENCE "RFC 2865 section 3"
+       ::= { radiusAuthClientEntry  9 }
+
+radiusAuthServBadAuthenticators OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of RADIUS Authentication-Request packets
+              that contained invalid Message Authenticator
+              attributes received from this client."
+       REFERENCE "RFC 2865 section 3"
+       ::= { radiusAuthClientEntry  10 }
+
+radiusAuthServPacketsDropped OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS deprecated
+      DESCRIPTION
+              "The number of incoming packets from this
+               client silently discarded for some reason other
+               than malformed, bad authenticators or
+               unknown types."
+       REFERENCE "RFC 2865 section 3"
+       ::= { radiusAuthClientEntry  11 }
+
+radiusAuthServUnknownTypes OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of RADIUS packets of unknown type that
+              were received from this client."
+       REFERENCE "RFC 2865 section 4"
+       ::= { radiusAuthClientEntry  12 }
+
+
+
+-- New MIB objects added in this revision
+
+radiusAuthClientExtTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF RadiusAuthClientExtEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "The (conceptual) table listing the RADIUS
+              authentication clients with which the server shares
+              a secret."
+       ::= { radiusAuthServ 16 }
+
+radiusAuthClientExtEntry OBJECT-TYPE
+       SYNTAX     RadiusAuthClientExtEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "An entry (conceptual row) representing a RADIUS
+              authentication client with which the server shares a
+              secret."
+       INDEX      { radiusAuthClientExtIndex }
+       ::= { radiusAuthClientExtTable 1 }
+
+RadiusAuthClientExtEntry ::= SEQUENCE {
+       radiusAuthClientExtIndex                 Integer32,
+       radiusAuthClientInetAddressType          InetAddressType,
+       radiusAuthClientInetAddress              InetAddress,
+       radiusAuthClientExtID                    SnmpAdminString,
+       radiusAuthServExtAccessRequests          Counter32,
+       radiusAuthServExtDupAccessRequests       Counter32,
+       radiusAuthServExtAccessAccepts           Counter32,
+       radiusAuthServExtAccessRejects           Counter32,
+       radiusAuthServExtAccessChallenges        Counter32,
+       radiusAuthServExtMalformedAccessRequests Counter32,
+       radiusAuthServExtBadAuthenticators       Counter32,
+       radiusAuthServExtPacketsDropped          Counter32,
+       radiusAuthServExtUnknownTypes            Counter32,
+       radiusAuthServCounterDiscontinuity       TimeTicks
+}
+
+radiusAuthClientExtIndex OBJECT-TYPE
+       SYNTAX     Integer32 (1..2147483647)
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "A number uniquely identifying each RADIUS
+              authentication client with which this server
+              communicates."
+
+
+
+       ::= { radiusAuthClientExtEntry 1 }
+
+radiusAuthClientInetAddressType OBJECT-TYPE
+         SYNTAX     InetAddressType
+         MAX-ACCESS read-only
+         STATUS     current
+         DESCRIPTION
+               "The type of address format used for the
+                radiusAuthClientInetAddress object."
+         ::= { radiusAuthClientExtEntry 2 }
+
+   radiusAuthClientInetAddress OBJECT-TYPE
+         SYNTAX     InetAddress
+         MAX-ACCESS read-only
+         STATUS     current
+         DESCRIPTION
+               "The IP address of the RADIUS authentication
+                client referred to in this table entry, using
+                the version-neutral IP address format."
+         ::= { radiusAuthClientExtEntry 3 }
+
+
+radiusAuthClientExtID OBJECT-TYPE
+       SYNTAX     SnmpAdminString
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The NAS-Identifier of the RADIUS authentication client
+              referred to in this table entry.  This is not
+              necessarily the same as sysName in MIB II."
+       REFERENCE "RFC 2865 section 5.32"
+       ::= { radiusAuthClientExtEntry 4 }
+
+-- Server Counters
+
+--
+-- Responses = AccessAccepts + AccessRejects + AccessChallenges
+--
+-- Requests - DupRequests - BadAuthenticators - MalformedRequests -
+-- UnknownTypes -  PacketsDropped - Responses = Pending
+--
+-- Requests - DupRequests - BadAuthenticators - MalformedRequests -
+-- UnknownTypes - PacketsDropped = entries logged
+
+radiusAuthServExtAccessRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+
+
+
+       STATUS current
+       DESCRIPTION
+             "The number of packets received on the authentication
+              port from this client.  This counter may experience a
+              discontinuity when the RADIUS Server module within the
+              managed entity is reinitialized, as indicated by the
+              current value of radiusAuthServCounterDiscontinuity."
+       REFERENCE "RFC 2865 section 4.1"
+       ::= { radiusAuthClientExtEntry  5 }
+
+radiusAuthServExtDupAccessRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of duplicate RADIUS Access-Request
+              packets received from this client.  This counter may
+              experience a discontinuity when the RADIUS Server
+              module within the managed entity is reinitialized, as
+              indicated by the current value of
+              radiusAuthServCounterDiscontinuity."
+       REFERENCE "RFC 2865 section 4.1"
+       ::= { radiusAuthClientExtEntry  6 }
+
+radiusAuthServExtAccessAccepts OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of RADIUS Access-Accept packets
+              sent to this client.  This counter may experience a
+              discontinuity when the RADIUS Server module within the
+              managed entity is reinitialized, as indicated by the
+              current value of radiusAuthServCounterDiscontinuity."
+       REFERENCE "RFC 2865 section 4.2"
+       ::= { radiusAuthClientExtEntry  7 }
+
+radiusAuthServExtAccessRejects OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The number of RADIUS Access-Reject packets
+              sent to this client.  This counter may experience a
+              discontinuity when the RADIUS Server module within the
+
+
+
+              managed entity is reinitialized, as indicated by the
+              current value of radiusAuthServCounterDiscontinuity."
+       REFERENCE "RFC 2865 section 4.3"
+       ::= { radiusAuthClientExtEntry  8 }
+
+radiusAuthServExtAccessChallenges OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of RADIUS Access-Challenge packets
+              sent to this client.  This counter may experience a
+              discontinuity when the RADIUS Server module within the
+              managed entity is reinitialized, as indicated by the
+              current value of radiusAuthServCounterDiscontinuity."
+       REFERENCE "RFC 2865 section 4.4"
+       ::= { radiusAuthClientExtEntry  9 }
+
+radiusAuthServExtMalformedAccessRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of malformed RADIUS Access-Request
+              packets received from this client.  Bad authenticators
+              and unknown types are not included as malformed
+              Access-Requests.  This counter may experience a
+              discontinuity when the RADIUS Server module within the
+              managed entity is reinitialized, as indicated by the
+              current value of radiusAuthServCounterDiscontinuity."
+       REFERENCE "RFC 2865 sections 3, 4.1"
+       ::= { radiusAuthClientExtEntry  10 }
+
+radiusAuthServExtBadAuthenticators OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of RADIUS Authentication-Request packets
+              that contained invalid Message Authenticator
+              attributes received from this client.  This counter
+              may experience a discontinuity when the RADIUS Server
+              module within the managed entity is reinitialized, as
+              indicated by the current value of
+              radiusAuthServCounterDiscontinuity."
+
+
+
+       REFERENCE "RFC 2865 section 3"
+       ::= { radiusAuthClientExtEntry  11 }
+
+radiusAuthServExtPacketsDropped OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The number of incoming packets from this client
+              silently discarded for some reason other than
+              malformed, bad authenticators or unknown types.
+              This counter may experience a discontinuity when the
+              RADIUS Server module within the managed entity is
+              reinitialized, as indicated by the current value of
+              radiusAuthServCounterDiscontinuity."
+       REFERENCE "RFC 2865 section 3"
+       ::= { radiusAuthClientExtEntry  12 }
+
+radiusAuthServExtUnknownTypes OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of RADIUS packets of unknown type that
+              were received from this client.  This counter may
+              experience a discontinuity when the RADIUS Server
+              module within the managed entity is reinitialized, as
+              indicated by the current value of
+              radiusAuthServCounterDiscontinuity."
+       REFERENCE "RFC 2865 section 4"
+       ::= { radiusAuthClientExtEntry  13 }
+
+radiusAuthServCounterDiscontinuity OBJECT-TYPE
+         SYNTAX TimeTicks
+         UNITS "centiseconds"
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+               "The number of centiseconds since the last
+                discontinuity in the RADIUS Server counters.
+                A discontinuity may be the result of a
+                reinitialization of the RADIUS Server module
+                within the managed entity."
+         ::= { radiusAuthClientExtEntry 14 }
+
+
+
+
+
+-- conformance information
+
+radiusAuthServMIBConformance  OBJECT IDENTIFIER
+       ::= { radiusAuthServMIB 2 }
+
+radiusAuthServMIBCompliances  OBJECT IDENTIFIER
+       ::= { radiusAuthServMIBConformance 1 }
+
+radiusAuthServMIBGroups  OBJECT IDENTIFIER
+       ::= { radiusAuthServMIBConformance 2 }
+
+-- compliance statements
+
+radiusAuthServMIBCompliance MODULE-COMPLIANCE
+            STATUS  deprecated
+            DESCRIPTION
+                  "The compliance statement for authentication
+                   servers implementing the RADIUS Authentication
+                   Server MIB.  Implementation of this module is for
+                   IPv4-only entities, or for backwards compatibility
+                   use with entities that support both IPv4 and
+                   IPv6."
+            MODULE  -- this module
+            MANDATORY-GROUPS { radiusAuthServMIBGroup }
+
+            OBJECT        radiusAuthServConfigReset
+            WRITE-SYNTAX  INTEGER { reset(2) }
+            DESCRIPTION  "The only SETable value is 'reset' (2)."
+
+            ::= { radiusAuthServMIBCompliances 1 }
+
+
+radiusAuthServMIBExtCompliance MODULE-COMPLIANCE
+            STATUS  current
+            DESCRIPTION
+                  "The compliance statement for authentication
+                   servers implementing the RADIUS Authentication
+                   Server IPv6 Extensions MIB.  Implementation of
+                   this module is for entities that support IPv6,
+                   or support IPv4 and IPv6."
+            MODULE  -- this module
+            MANDATORY-GROUPS { radiusAuthServExtMIBGroup }
+
+            OBJECT        radiusAuthServConfigReset
+            WRITE-SYNTAX  INTEGER { reset(2) }
+            DESCRIPTION  "The only SETable value is 'reset' (2)."
+
+            OBJECT radiusAuthClientInetAddressType
+
+
+
+            SYNTAX InetAddressType { ipv4(1), ipv6(2) }
+            DESCRIPTION
+              "An implementation is only required to support
+               IPv4 and globally unique IPv6 addresses."
+
+            OBJECT radiusAuthClientInetAddress
+            SYNTAX InetAddress ( SIZE (4|16) )
+            DESCRIPTION
+              "An implementation is only required to support
+               IPv4 and globally unique IPv6 addresses."
+
+            ::= { radiusAuthServMIBCompliances 2 }
+
+
+-- units of conformance
+
+radiusAuthServMIBGroup OBJECT-GROUP
+      OBJECTS {radiusAuthServIdent,
+               radiusAuthServUpTime,
+               radiusAuthServResetTime,
+               radiusAuthServConfigReset,
+               radiusAuthServTotalAccessRequests,
+               radiusAuthServTotalInvalidRequests,
+               radiusAuthServTotalDupAccessRequests,
+               radiusAuthServTotalAccessAccepts,
+               radiusAuthServTotalAccessRejects,
+               radiusAuthServTotalAccessChallenges,
+               radiusAuthServTotalMalformedAccessRequests,
+               radiusAuthServTotalBadAuthenticators,
+               radiusAuthServTotalPacketsDropped,
+               radiusAuthServTotalUnknownTypes,
+               radiusAuthClientAddress,
+               radiusAuthClientID,
+               radiusAuthServAccessRequests,
+               radiusAuthServDupAccessRequests,
+               radiusAuthServAccessAccepts,
+               radiusAuthServAccessRejects,
+               radiusAuthServAccessChallenges,
+               radiusAuthServMalformedAccessRequests,
+               radiusAuthServBadAuthenticators,
+               radiusAuthServPacketsDropped,
+               radiusAuthServUnknownTypes
+              }
+      STATUS  deprecated
+      DESCRIPTION
+            "The collection of objects providing management of
+             a RADIUS Authentication Server."
+      ::= { radiusAuthServMIBGroups 1 }
+
+
+
+radiusAuthServExtMIBGroup OBJECT-GROUP
+      OBJECTS {radiusAuthServIdent,
+               radiusAuthServUpTime,
+               radiusAuthServResetTime,
+               radiusAuthServConfigReset,
+               radiusAuthServTotalAccessRequests,
+               radiusAuthServTotalInvalidRequests,
+               radiusAuthServTotalDupAccessRequests,
+               radiusAuthServTotalAccessAccepts,
+               radiusAuthServTotalAccessRejects,
+               radiusAuthServTotalAccessChallenges,
+               radiusAuthServTotalMalformedAccessRequests,
+               radiusAuthServTotalBadAuthenticators,
+               radiusAuthServTotalPacketsDropped,
+               radiusAuthServTotalUnknownTypes,
+               radiusAuthClientInetAddressType,
+               radiusAuthClientInetAddress,
+               radiusAuthClientExtID,
+               radiusAuthServExtAccessRequests,
+               radiusAuthServExtDupAccessRequests,
+               radiusAuthServExtAccessAccepts,
+               radiusAuthServExtAccessRejects,
+               radiusAuthServExtAccessChallenges,
+               radiusAuthServExtMalformedAccessRequests,
+               radiusAuthServExtBadAuthenticators,
+               radiusAuthServExtPacketsDropped,
+               radiusAuthServExtUnknownTypes,
+               radiusAuthServCounterDiscontinuity
+              }
+      STATUS  current
+      DESCRIPTION
+            "The collection of objects providing management of
+             a RADIUS Authentication Server."
+      ::= { radiusAuthServMIBGroups 2 }
+
+END

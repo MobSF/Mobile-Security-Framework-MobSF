@@ -1,0 +1,987 @@
+   PPVPN-PIB PIB-DEFINITIONS ::= BEGIN 
+   
+   IMPORTS 
+       Unsigned32, Integer32, MODULE-IDENTITY, MODULE-COMPLIANCE, 
+       OBJECT-TYPE, OBJECT-GROUP, pib, TEXTUAL-CONVENTION 
+               FROM COPS-PR-SPPI 
+       InstanceId, ReferenceId, Prid, TagId, TagReferenceId 
+               FROM COPS-PR-SPPI-TC 
+       zeroDotZero 
+            FROM SNMPv2-SMI 
+       TruthValue 
+               FROM SNMPv2-TC 
+       RoleCombination, PrcIdentifier, AttrIdentifier 
+               FROM FRAMEWORK-TC-PIB
+       InetAddress, InetAddressType
+               FROM INET-ADDRESS-MIB
+   
+   
+   ppvpn2547PolicyPib  MODULE-IDENTITY 
+       SUBJECT-CATEGORIES { tbd } -- PPVPN COPS Client Type 
+                                  -- to be assigned by IANA 
+       LAST-UPDATED "200203081800Z" 
+       ORGANIZATION "IETF PPVPN WG" 
+       CONTACT-INFO " 
+                      Yacine El Mghazli
+                      Alcatel R&I
+                      Route de Nozay
+                      F-91460 Marcoussis - FRANCE
+                      Phone: +33 1 69 63 41 87
+                      Email: yacine.el_mghazli@alcatel.fr"
+       DESCRIPTION 
+            "The PIB module containing a set of provisioning classes 
+            that describe provider provisioned virtual private networks 
+            (PPVPN) policies for BGP/MPLS VPN. It includes general 
+            classes that may be extended by other PIB specifications as 
+            well as a set of PIB classes related to PPVPNs." 
+       REVISION "200203081800Z" 
+       DESCRIPTION 
+            "Initial version, published as RFC xxxx." 
+       ::= { pib xxx } -- xxx to be assigned by IANA 
+   
+   
+-- BGP/MPLS VPN specific Textual Conventions.
+   
+   ppvpn2547RouteDistinguisher ::= TEXTUAL-CONVENTION
+      STATUS        current
+      DESCRIPTION
+          "Syntax for a route distinguisher."
+      SYNTAX  OCTET STRING(SIZE (0..256))
+   
+   ppvpn2547RouteTarget ::= TEXTUAL-CONVENTION
+      STATUS        current
+      DESCRIPTION
+          "Syntax for a route target."
+      SYNTAX  OCTET STRING(SIZE (0..256))
+   
+   
+-- BGP/MPLS VPN PIB module
+   
+   ppvpn2547CapabilityClasses 
+      OBJECT IDENTIFIER ::= { ppvpn2547PolicyPib 1 } 
+   ppvpn2547PolicyClasses 
+      OBJECT IDENTIFIER ::= { ppvpn2547PolicyPib 2 } 
+   ppvpn2547PibConformance 
+      OBJECT IDENTIFIER ::= { ppvpn2547PolicyPib 3 } 
+   
+   
+-- Capabilities Group
+
+-- 
+-- BGP/MPLS VPN PE Routing Capabilities
+-- 
+   
+   ppvpn2547RoutingCapsTable OBJECT-TYPE 
+       SYNTAX         SEQUENCE OF ppvpn2547RoutingCapsEntry 
+       PIB-ACCESS     notify 
+       STATUS         current 
+       DESCRIPTION 
+           "This class represents routing capabilities of a device
+            (PE)."
+       ::= { ppvpn2547CapabilitiesClasses 1 } 
+   
+   ppvpn2547RoutingCapsEntry OBJECT-TYPE 
+      SYNTAX         ppvpn2547RoutingCapsEntry 
+      STATUS         current 
+      DESCRIPTION 
+          "An instance of the ppvpn2547RoutingCaps class." 
+      PIB-INDEX { ppvpn2547RoutingCapsPrid } 
+      ::= { ppvpn2547RoutingCapsTable 1 } 
+   
+   ppvpn2547RoutingCapsEntry ::= SEQUENCE { 
+           ppvpn2547RoutingCapsPrid           InstanceId,
+           ppvpn2547RoutingCapsDistProtocol   BITS,
+           ppvpn2547RoutingCapsMaxRoutes      unsigned32,
+   
+           ppvpn2547RoutingCapsMaxVrfs        unsigned32
+   }
+   
+   ppvpn2547RoutingCapsPrid OBJECT-TYPE 
+       SYNTAX         InstanceId 
+       STATUS         current 
+       DESCRIPTION 
+           "An arbitrary integer index that uniquely identifies an 
+           instance of the class." 
+       ::= { ppvpn2547RoutingCapsEntry 1 } 
+   
+   ppvpn2547RoutingCapsDistProtocol OBJECT-TYPE 
+       SYNTAX         BITS { none  (0),
+                             ebgp  (1),
+                             ospf  (2),
+                             rip   (3),
+                             isis  (4),
+                             other (5)
+       }
+       STATUS         current 
+       DESCRIPTION 
+           "Denotes the route distribution protocol supported by the PE 
+            across the PE-CE links. Note that more than one routing 
+            protocol may be enabled at the same time."
+       ::= { ppvpn2547RoutingCapsEntry 2 } 
+   
+   ppvpn2547RoutingCapsMaxRoutes OBJECT-TYPE 
+       SYNTAX        Unsigned32
+       STATUS        current
+       DESCRIPTION
+          "Denotes maximum number of routes which this PE is 
+           able to hold."
+       ::= { ppvpn2547RoutingCapsEntry 3 } 
+   
+   ppvpn2547RoutingCapsMaxVrfs OBJECT-TYPE 
+       SYNTAX        Unsigned32
+       STATUS        current
+       DESCRIPTION
+          "Denotes maximum number of VRF which this PE is 
+           able to hold."
+       ::= { ppvpn2547RoutingCapsEntry 4 } 
+   
+   
+-- 
+-- PE Interface Capabilities 
+-- 
+   
+   ppvpn2547IfCapsTable OBJECT-TYPE 
+       SYNTAX         SEQUENCE OF ppvpn2547IfCapsEntry 
+       PIB-ACCESS     notify 
+       STATUS         current 
+       DESCRIPTION 
+         " This class represents interfaces capabilities of a device 
+   
+           (PE) in terms of MPLS support." 
+       ::= { ppvpn2547CapabilitiesClasses 2 } 
+   
+   ppvpn2547IfCapsEntry OBJECT-TYPE 
+       SYNTAX         ppvpn2547IfCapsEntry 
+       STATUS         current 
+       DESCRIPTION 
+         "An instance of the ppvpn2547IfCaps class." 
+       PIB-INDEX { ppvpn2547IfCapsPrid } 
+       UNIQUENESS {}
+   ::= { ppvpn2547IfCapsTable 1 } 
+   
+   ppvpn2547IfCapsEntry ::= SEQUENCE { 
+           ppvpn2547IfCapsPrid           InstanceId,
+           ppvpn2547IfCapsMplsSupport    INTEGER,
+           ppvpn2547IfCapsLabelEdgeType  INTEGER
+   } 
+   
+   ppvpn2547IfCapsPrid OBJECT-TYPE 
+       SYNTAX         InstanceId 
+       STATUS         current 
+       DESCRIPTION 
+           "An arbitrary integer index that uniquely identifies an 
+           instance of the class." 
+       ::= { ppvpn2547IfCapsEntry 1 } 
+   
+   ppvpn2547IfCapsMplsSupport OBJECT-TYPE 
+       SYNTAX         INTEGER { nonMpls    (0),
+                                mpls       (1),
+                                mplsTunnel (2)
+       }
+       STATUS         current 
+       DESCRIPTION 
+           " Denotes the interface type in accordance with [IFMIB] which 
+             states that the interfaces tables contains information on 
+             the managed resource's interfaces and each sub-layer bellow 
+             the internetwork layer interface is considered as an  
+             interface." 
+       ::= { ppvpn2547IfCapsEntry 2 } 
+   
+   ppvpn2547IfCapsLabelEdgeType OBJECT-TYPE 
+       SYNTAX         INTEGER { providerEdge (1),
+                                customerEdge (2) 
+       }
+       STATUS         current 
+       DESCRIPTION 
+           " Either the providerEdge(0) or customerEdge(1) bit MUST be 
+             set. Denotes if the interface is an exterior interface 
+            (customerEdge) or a interior interface (providerEdge), 
+            regarding to the provider network."
+       ::= { ppvpn2547IfCapsEntry 3 } 
+   
+   
+   
+-- BGP/MPLS VPN Policy Classes  
+    
+-- 
+-- BGP/MPLS VPN VRF Table 
+-- 
+   
+   ppvpn2547VrfTable OBJECT-TYPE 
+       SYNTAX       SEQUENCE OF ppvpn2547VrfEntry 
+       PIB-ACCESS   install 
+       STATUS       current 
+       DESCRIPTION 
+          "This class specifies BGP/MPLS VPN VRF Table associated 
+           information. Entries in this table define VRF instances 
+           associated with MPLS/VPN interfaces. Note that multiple 
+           interfaces can belong to the same VRF instance." 
+       ::= { ppvpnPolicyClasses 1 } 
+   
+   ppvpn2547VrfEntry OBJECT-TYPE 
+       SYNTAX       ppvpn2547VrfEntry 
+       STATUS       current 
+       DESCRIPTION 
+          "An entry in this table is created by the provider for
+           every VRF capable of supporting MPLS/BGP VPN." 
+       PIB-INDEX {  ppvpn2547VrfPrid } 
+       UNIQUENESS { ppvpn2547VrfId,
+                    ppvpn2547VrfRoles,
+                    ppvpn2547IfName,
+                    ppvpn2547VrfRD }
+       ::= { ppvpn2547VrfTable 1 } 
+    
+   ppvpn2547VrfEntry ::= SEQUENCE  { 
+       ppvpn2547VrfPrid        InstanceId, 
+       ppvpn2547VrfRoles       RoleCombination,
+       ppvpn2547VrfIfName      SnmpAdminString,
+       ppvpn2547VrfId          TagReferenceId, 
+       ppvpn2547VrfDescription SnmpAdminString,
+       ppvpn2547VrfRD          ppvpn2547RouteDistinguisher,
+       ppvpn2547VrfMaxRoutes   Unsigned32,
+   }
+   
+   ppvpn2547VrfPrid OBJECT-TYPE 
+       SYNTAX       InstanceId 
+       STATUS       current 
+       DESCRIPTION 
+          "An arbitrary integer index that uniquely identifies an 
+           instance of the class." 
+       ::= { ppvpn2547VrfEntry 1 } 
+    
+   ppvpn2547VrfRoles OBJECT-TYPE 
+       SYNTAX       RoleCombination 
+       STATUS       current 
+       DESCRIPTION 
+          "The interfaces to which the VRF is attached to, 
+   
+   
+           specified in terms of roles.  There must exist an entry 
+           in the frwkIfRoleComboTable [FR-PIB] specifying 
+           this role combination, together with the interface 
+           capability set specified by ppvpn2547IfName, prior to 
+           association with an instance of this class." 
+       ::= { ppvpn2547VrfEntry 2 }
+
+   ppvpn2547VrfIfName OBJECT-TYPE 
+       SYNTAX       SnmpAdminString 
+       STATUS       current 
+       DESCRIPTION 
+          "The interface capability set to which the VRF is attached to.
+           The interface capability name specified by this attribute 
+           must exist in the frwkIfCapSetTable [FR-PIB] prior to 
+           association with an instance of this class." 
+       ::= { ppvpn2547VrfEntry 3 } 
+   
+   ppvpn2547VrfId OBJECT-TYPE 
+       SYNTAX       TagReferenceId 
+       STATUS       current 
+       DESCRIPTION 
+          "Identifies a VRF instance." 
+       ::= { ppvpn2547VrfEntry 4 } 
+   
+   ppvpn2547VrfDescription OBJECT-TYPE
+       SYNTAX        SnmpAdminString
+       STATUS        current
+       DESCRIPTION
+           "The human-readable description of this VRF."
+       ::= { ppvpn2547VrfEntry 5 }
+   
+   ppvpn2547VrfRD OBJECT-TYPE
+       SYNTAX        Ppvpn2547RouteDistinguisher
+       STATUS        current
+       DESCRIPTION
+           "The route distinguisher for this VRF."
+       ::= { ppvpn2547VrfEntry 6 }
+   
+   ppvpn2547VrfMaxRoutes OBJECT-TYPE
+       SYNTAX        Unsigned32
+       STATUS        current
+       DESCRIPTION
+           "Denotes maximum number of routes which this VRF is 
+            configured to hold."
+       ::= { ppvpn2547VrfEntry 7 }
+   
+   
+-- 
+-- BGP/MPLS VPN Route Target Table
+-- 
+   
+   ppvpn2547RouteTargetTable OBJECT-TYPE
+       SYNTAX        SEQUENCE OF ppvpn2547RouteTargetEntry
+   
+       PIB-ACCESS    install
+       STATUS        current
+       DESCRIPTION
+           "This table specifies per-VRF route target association. Each 
+           entry identifies a connectivity policy supported as part of a 
+           VPN."
+   ::= { ppvpn2547PolicyClasses 2 }
+   
+   ppvpn2547RouteTargetEntry OBJECT-TYPE
+       SYNTAX        ppvpn2547RouteTargetEntry
+       STATUS        current
+       DESCRIPTION
+           "An entry in this table is created for each route target 
+           configured for a VRF supporting a MPLS/BGP VPN instance. The 
+           precedence attribute provides an ordering per-VRF instance."
+      PIB-INDEX  { ppvpn2547RouteTargetPrid}
+      UNIQUENESS { ppvpn2547RouteTargetVrfId,
+                   ppvpn2547RouteTargetType,
+                   ppvpn2547RouteTargetPrecedence,
+                   ppvpn2547RouteTargetRT
+      }
+   ::= { ppvpn2547RouteTargetTable 1 } 
+    
+ppvpn2547RouteTargetEntry ::= SEQUENCE {
+     ppvpn2547RouteTargetPrid       InstanceId, 
+     ppvpn2547RouteTargetType       INTEGER,
+     ppvpn2547RouteTargetVrfId      TagId,
+     ppvpn2547RouteTargetPrecedence unsigned32,
+     ppvpn2547RouteTargetRT         ppvpn2547RouteTarget,
+     ppvpn2547RouteTargetDescr      DisplayString,
+   }
+   
+   ppvpn2547RouteTargetPrid OBJECT-TYPE 
+       SYNTAX       InstanceId 
+       STATUS       current 
+       DESCRIPTION 
+           "An arbitrary integer index that uniquely identifies an 
+           instance of the class." 
+       ::= { ppvpn2547RouteTargetEntry 1 }
+   
+   ppvpn2547RouteTargetType OBJECT-TYPE
+       SYNTAX        INTEGER { import(1),
+                               export(2),
+                               both(3) }
+       STATUS        current
+       DESCRIPTION
+           "The route target distribution type."
+       ::= { ppvpn2547RouteTargetEntry 2 }
+   
+   ppvpn2547RouteTargetVrfId OBJECT-TYPE
+       SYNTAX        TagId
+       STATUS        current
+       DESCRIPTION
+   
+           " A VRF is composed of an import RT list and a export RT 
+           list. Each RT belonging to the same VRF uses the same VRF ID. 
+           Hence, a VRF Id identifies which this RT is a part of. This 
+           needs to be the value of ppvpn2547VrfId attribute for an 
+           existing instance of ppvpn2547VrfEntry."
+   ::= { ppvpn2547RouteTargetEntry 3 }
+   
+   ppvpn2547RouteTargetRT OBJECT-TYPE
+       SYNTAX        ppvpn2547RouteTarget
+       STATUS        current
+       DESCRIPTION
+           "The route target value."
+       ::= { ppvpn2547RouteTargetEntry 4 }
+   
+   ppvpn2547RouteTargetDescr OBJECT-TYPE
+       SYNTAX        DisplayString
+       STATUS        current
+       DESCRIPTION
+           "Description of the route target."
+       ::= { ppvpn2547RouteTargetEntry 5 }
+   
+   
+-- 
+-- BGP/MPLS VPN Interface Table
+-- 
+   
+   ppvpn2547IfTable  OBJECT-TYPE
+       SYNTAX        SEQUENCE OF ppvpn2547IfEntry
+       PIB-ACCESS    install
+       STATUS        current
+       DESCRIPTION
+           "This table specifies per-interface configuration information 
+            related to PE-CE links."
+       ::= { ppvpn2547PolicyClasses 3 }
+   
+   ppvpn2547IfEntry OBJECT-TYPE
+       SYNTAX        ppvpn2547IfEntry
+       STATUS        current
+       DESCRIPTION
+           "An entry in this table is created for every interface type 
+           supporting MPLS/BGP VPN. Each entry in this table is meant to 
+           correspond to an entry in the Interfaces Table."
+       PIB-INDEX { ppvpn2547IfPrid }
+       UNIQUENESS { ppvpn2547IfRoles,
+                    Ppvpn2547IfName }
+       ::= { ppvpn2547IfTable 1 }
+   
+   ppvpn2547IfEntry ::= SEQUENCE {
+           ppvpn2547IfPrid               InstanceId,
+           ppvpn2547IfRoles              RoleCombination,
+           ppvpn2547IfName               SnmpAdminString,
+           ppvpn2547IfVpnClassification  INTEGER,
+           ppvpn2547IfRouteDistProtocol  BITS
+   
+   }
+   
+   ppvpn2547IfPrid OBJECT-TYPE 
+       SYNTAX       InstanceId 
+       STATUS       current 
+       DESCRIPTION 
+          "An arbitrary integer index that uniquely identifies an 
+           instance of the class." 
+       ::= { ppvpn2547IfEntry 1 }
+   
+   ppvpn2547IfName OBJECT-TYPE 
+       SYNTAX       SnmpAdminString 
+       STATUS       current 
+       DESCRIPTION 
+          "The interface capability set to configure. The interface 
+           capability name specified by this attribute must exist in the 
+           frwkIfCapSetTable [FR-PIB] prior to association with an 
+           instance of this class." 
+       ::= { ppvpn2547IfEntry 2 } 
+   
+   
+   ppvpn2547IfRoles OBJECT-TYPE 
+       SYNTAX       RoleCombination 
+       STATUS       current 7
+       DESCRIPTION 
+          "The interfaces to which the VRF is attached to, 
+           specified in terms of roles.  There must exist an entry 
+           in the frwkIfRoleComboTable [FR-PIB] specifying 
+           this role combination, together with the interface 
+           capability set specified by ppvpn2547IfName, prior to 
+           association with an instance of this class." 
+       ::= { ppvpn2547IfEntry 3 }
+   
+   ppvpn2547IfVpnClassification OBJECT-TYPE
+       SYNTAX        INTEGER { carrierOfCarrier (1),
+                               enterprise (2),
+                               interProvider (3)
+       }
+       STATUS        current
+       DESCRIPTION
+           "Denotes whether this link participates in a carrier-of-
+           carrier's, enterprise, or inter-provider scenario."
+       ::= { ppvpn2547IfEntry 4 }
+   
+   ppvpn2547IfRouteDistProtocol OBJECT-TYPE
+       SYNTAX        BITS { none  (0),
+                            ebgp  (1),
+                            ospf  (2),
+                            rip   (3),
+                            isis  (4),
+                            other (5)
+       }
+       STATUS        current
+   
+       DESCRIPTION
+           "Denotes the route distribution protocol across the PE-CE 
+           link. Note that more than one routing protocol may be enabled 
+           at the same time."
+       ::= { ppvpn2547IfEntry 5 }
+   
+   
+-- 
+-- BGP/MPLS VPN BGP Peer Address Table
+-- 
+    
+   ppvpn2547BgpPeerTable OBJECT-TYPE
+       SYNTAX        SEQUENCE OF ppvpn2547BgpPeerEntry
+       PIB-ACCESS    install
+       STATUS        current
+       DESCRIPTION
+           "Each entry in this table specifies a per-interface 
+            MPLS/BGP neighbor."
+       ::= { ppvpnPolicyClasses 4 }
+   
+   ppvpn2547BgpPeerEntry OBJECT-TYPE
+       SYNTAX        ppvpn2547BgpPeerEntry
+       STATUS        current
+       DESCRIPTION
+           "An entry in this table is created by an LSR for
+            every VRF capable of supporting MPLS/BGP VPN. The
+            indexing provides an ordering of VRFs per-VPN
+            interface."
+       PIB-INDEX  { ppvpn2547BgpPeerPrid }
+       UNIQUENESS { ppvpn2547BgpPeerVrfId,
+                    ppvpn2547BgpPeerAddrType,
+                    ppvpn2547BgpPeerAddr
+       }
+       ::= { ppvpn2547BgpPeerTable 1 }
+   
+   ppvpn2547BgpPeerEntry ::= SEQUENCE {
+           ppvpn2547BgpPeerPrid         InstanceId,
+           ppvpn2547BgpPeerVrfId        TagId, 
+           ppvpn2547BgpPeerRole         INTEGER,
+           ppvpn2547BgpPeerAddrType     InetAddressType,
+           ppvpn2547BgpPeerAddr         InetAddress
+   }
+   
+   ppvpn2547BgpPeerPrid OBJECT-TYPE
+       SYNTAX        InstanceId
+       STATUS        current
+       DESCRIPTION
+            "An arbitrary integer index that uniquely identifies an 
+            instance of the class."
+       ::= { ppvpn2547BgpPeerEntry 1 }
+   
+   ppvpn2547BgpPeerVrfId OBJECT-TYPE
+       SYNTAX        TagId
+   
+       STATUS        current
+       DESCRIPTION
+           "Each BGP neighbor to the same VRF uses the same VRF ID. 
+           Hence, a VRF Id identifies which VRF this device is the 
+           neighbor. This needs to be the value of ppvpn2547VrfId
+           attribute for an existing instance of ppvpn2547VrfEntry."
+   ::= { ppvpn2547RouteTargetEntry 2 }
+   
+   ppvpn2547BgpPeerRole  OBJECT-TYPE
+       SYNTAX        INTEGER { ce(1), 
+                               pe(2) 
+       }
+       STATUS        current
+       DESCRIPTION
+           "Denotes the role played by this BGP neighbor
+            with respect to this VRF."
+       ::= { ppvpn2547BgpPeerEntry 3 }
+   
+   ppvpn2547BgpPeerAddrType  OBJECT-TYPE
+       SYNTAX        InetAddressType
+       STATUS        current
+       DESCRIPTION
+           "Denotes the address family of the PE address."
+       ::= { ppvpn2547BgpPeerEntry 4 }
+    
+   ppvpn2547BgpPeerAddr  OBJECT-TYPE
+       SYNTAX        InetAddress
+   STATUS        current
+   DESCRIPTION
+       "Denotes the EBGP neighbor address."
+   ::= { ppvpn2547BgpPeerEntry 5 }
+   
+   
+-- 
+-- VRF Routing Table
+-- 
+   
+   ppvpn2547RouteTable  OBJECT-TYPE
+       SYNTAX        SEQUENCE OF ppvpn2547RouteEntry
+       STATUS        current
+       DESCRIPTION
+           "This table specifies per-VRF MPLS/BGP VPN routing 
+           information. Entries in this table define VRF routing entries 
+           associated with the specified MPLS/VPN interfaces. Note
+           that this table contains both BGP and IGP routes, as both may
+           appear in the same VRF." 
+       ::= { ppvpn2547PolicyClasses 1 }
+   
+   ppvpn2547RouteEntry OBJECT-TYPE
+       SYNTAX        Ppvpn2547RouteEntry 
+       STATUS        current
+       DESCRIPTION
+           "An entry in this table is created by an LSR for every route
+   
+            present configured (either dynamically or statically) within
+            the context of a specific VRF capable of supporting MPLS/BGP
+            VPN. The indexing provides an ordering of VRFs per-VPN
+            interface."
+       PIB-INDEX { ppvpn2547RoutePrid }
+       UNIQUENESS { ppvpn2547RouteVrfId,
+                    ppvpn2547RouteDest,
+                    ppvpn2547RouteMask,
+                    ppvpn2547RouteTos,
+                    ppvpn2547RouteNextHop }
+          ::= { ppvpn2547RouteTable 1 }
+   
+   ppvpn2547RouteEntry ::= SEQUENCE {
+           ppvpn2547RoutePrid               InstanceId,
+           ppvpn2547RouteVrfId              TagId,
+           ppvpn2547RouteDest               InetAddress,
+           ppvpn2547RouteDestAddrType       InetAddressType,
+           ppvpn2547RouteMask               InetAddress,
+           ppvpn2547RouteMaskAddrType       InetAddressType,
+           ppvpn2547RouteTos                Unsigned32,
+           ppvpn2547RouteNextHop            InetAddress,
+           ppvpn2547RouteNextHopAddrType    InetAddressType,
+           ppvpn2547RouteIfIndex            InterfaceIndexOrZero,
+           ppvpn2547RouteType               INTEGER,
+           ppvpn2547RouteProto              INTEGER,
+           ppvpn2547RouteInfo               OBJECT IDENTIFIER,
+           ppvpn2547RouteNextHopAS          Unsigned32,
+           ppvpn2547RouteMetric1            Integer32,
+           ppvpn2547RouteMetric2            Integer32,
+           ppvpn2547RouteMetric3            Integer32,
+           ppvpn2547RouteMetric4            Integer32,
+           ppvpn2547RouteMetric5            Integer32 
+   }
+   
+   ppvpn2547RoutePrid OBJECT-TYPE
+       SYNTAX        InstanceId
+       STATUS        current
+       DESCRIPTION
+            "An arbitrary integer index that uniquely identifies an 
+            instance of the class."
+       ::= { ppvpn2547RouteEntry 1 }
+   
+   ppvpn2547RouteVrfId OBJECT-TYPE
+       SYNTAX        TagId
+       STATUS        current
+       DESCRIPTION
+           "Each route belonging to the same VRF uses the same VRF ID. 
+           Hence, a VRF Id identifies which routing table this route is 
+           a part of. This needs to be the value of ppvpn2547VrfId 
+           attribute for an existing instance of ppvpn2547VrfEntry."
+   ::= { ppvpn2547RouteEntry 2 }
+   
+   ppvpn2547RouteDest  OBJECT-TYPE
+   
+      SYNTAX        InetAddress 
+      STATUS        current
+      DESCRIPTION
+          "The destination IP address of this route.
+           This object may not take a Multicast (Class D)
+           address value.
+           Any assignment (implicit or otherwise) of an
+           instance of this object to a value x must be
+           rejected if the bit-wise logical-AND of x with
+           the value of the corresponding instance of the
+           ppvpn2547RouteMask object is not equal to x."
+      ::= { ppvpn2547RouteEntry 3 }
+   
+   ppvpn2547RouteDestAddrType  OBJECT-TYPE
+      SYNTAX        InetAddressType
+      STATUS        current
+      DESCRIPTION
+          "The address type of the ppvpn2547RouteDest
+           entry."
+      ::= { ppvpn2547RouteEntry 4 }
+   
+   ppvpn2547RouteMask  OBJECT-TYPE
+       SYNTAX        InetAddress 
+       STATUS        current
+       DESCRIPTION
+           "Indicate the mask to be logical-ANDed with the
+           destination  address  before  being compared to
+           the value  in  the  ppvpn2547RouteDest field.
+           For those  systems  that  do  not support
+           arbitrary subnet masks, an agent constructs the
+           value of the ppvpn2547RouteMask by reference
+           to the IP Address Class.
+           Any assignment (implicit or otherwise) of an
+           instance of this object to a value x must be
+           rejected if the bit-wise logical-AND of x with
+           the value of the corresponding instance of the
+           ppvpn2547RouteDest object is not equal to
+           ppvpn2547RouteDest."
+       ::= { ppvpn2547RouteEntry 5 }
+   
+   ppvpn2547RouteMaskAddrType  OBJECT-TYPE
+       SYNTAX        InetAddressType 
+       STATUS        current
+       DESCRIPTION
+           "The address type of ppvpn2547RouteMask."
+       ::= { ppvpn2547RouteEntry 6 }
+   
+   ppvpn2547RouteTos  OBJECT-TYPE
+       SYNTAX        Unsigned32 
+       STATUS        current
+       DESCRIPTION
+          "The IP TOS Field is used to specify the policy to
+          be applied to this route.  The encoding of IP TOS
+   
+   
+          is as specified  by  the  following convention.
+          Zero indicates the default path if no more
+          specific policy applies.
+   
+          +-----+-----+-----+-----+-----+-----+-----+-----+
+          |                 |                       |     |
+          |   PRECEDENCE    |    TYPE OF SERVICE    |  0  |
+          |                 |                       |     |
+          +-----+-----+-----+-----+-----+-----+-----+-----+
+   
+                     IP TOS                IP TOS
+                Field     Policy      Field     Policy
+                Contents    Code      Contents    Code
+                0 0 0 0  ==>   0      0 0 0 1  ==>   2
+                0 0 1 0  ==>   4      0 0 1 1  ==>   6
+                0 1 0 0  ==>   8      0 1 0 1  ==>  10
+                0 1 1 0  ==>  12      0 1 1 1  ==>  14
+                1 0 0 0  ==>  16      1 0 0 1  ==>  18
+                1 0 1 0  ==>  20      1 0 1 1  ==>  22
+                1 1 0 0  ==>  24      1 1 0 1  ==>  26
+                1 1 1 0  ==>  28      1 1 1 1  ==>  30."
+      ::= { ppvpn2547RouteEntry 7 }
+   
+   ppvpn2547RouteNextHop  OBJECT-TYPE
+       SYNTAX        InetAddress 
+       STATUS        current
+       DESCRIPTION
+           "On remote routes, the address of the next
+           system en route; Otherwise, 0.0.0.0. ."
+       ::= { ppvpn2547RouteEntry 8 }
+   
+   ppvpn2547RouteNextHopAddrType  OBJECT-TYPE
+       SYNTAX        InetAddressType 
+       STATUS        current
+       DESCRIPTION
+           "The address type of the ppvpn2547RouteNextHopAddrType
+           object."
+       ::= { ppvpn2547RouteEntry 9 }
+   
+   ppvpn2547RouteIfIndex  OBJECT-TYPE
+       SYNTAX        InterfaceIndexOrZero 
+       STATUS        current
+       DESCRIPTION
+           "The ifIndex value that identifies the local
+           interface  through  which  the next hop of this
+           route should be reached. If this value is set to 0,
+           this indicates that no interface is associated with 
+           this route."
+       ::= { ppvpn2547RouteEntry 10 }
+   
+   ppvpn2547RouteType  OBJECT-TYPE
+       SYNTAX  INTEGER { other  (1), -- not specified
+                         reject (2), -- route to discard traffic
+   
+                         local  (3), -- local interface
+                         remote (4)  -- remote destination
+                       } 
+       STATUS        current
+       DESCRIPTION
+           "The type of route.  Note that local(3)  refers
+           to a route for which the next hop is the final
+           destination; remote(4) refers to a route for
+           that the next  hop is not the final destination.
+           Routes which do not result in traffic forwarding or
+           rejection should not be displayed even if the
+           implementation keeps them stored internally.
+           Reject (2) refers to a route which, if matched,
+           discards the message as unreachable. This is used
+           in some protocols as a means of correctly aggregating
+           routes."
+      ::= { ppvpn2547RouteEntry 11 }
+   
+   ppvpn2547RouteProto  OBJECT-TYPE
+       SYNTAX INTEGER { other     (1),  -- not specified
+                        local     (2),  -- local interface
+                        netmgmt   (3),  -- static route
+                        icmp      (4),  -- result of ICMP Redirect
+   
+                        -- the following are all dynamic
+                        -- routing protocols
+   
+                        egp        (5),  -- Exterior Gateway Protocol
+                        ggp        (6),  -- Gateway-Gateway Protocol
+                        hello      (7),  -- FuzzBall HelloSpeak
+                        rip        (8),  -- Berkeley RIP or RIP-II
+                        isIs       (9),  -- Dual IS-IS
+                        esIs       (10), -- ISO 9542
+                        ciscoIgrp  (11), -- Cisco IGRP
+                        bbnSpfIgp  (12), -- BBN SPF IGP
+                        ospf       (13), -- Open Shortest Path First
+                        bgp        (14), -- Border Gateway Protocol
+                        idpr       (15), -- InterDomain Policy Routing
+                        ciscoEigrp (16)  -- Cisco EIGRP
+                      } 
+       STATUS        current
+       DESCRIPTION
+           "The routing mechanism via which this route was
+           learned.  Inclusion of values for gateway rout-
+           ing protocols is not  intended  to  imply  that
+           hosts should support those protocols."
+       ::= { ppvpn2547RouteEntry 12 }
+   
+   ppvpn2547RouteInfo               OBJECT-TYPE
+       SYNTAX        OBJECT IDENTIFIER 
+       STATUS        current
+       DESCRIPTION
+           "A reference to MIB definitions specific to the
+   
+           particular routing protocol which is responsi-
+           ble for this route, as determined by the  value
+           specified  in the route's ppvpn2547RouteProto
+           value. If this information is not present, its
+           value SHOULD be set to the OBJECT IDENTIFIER
+           { 0 0 }, which is a syntactically valid object
+           identif-ier, and any implementation conforming
+           to ASN.1 and the Basic Encoding Rules must be
+           able to generate and recognize this value."
+       ::= { ppvpn2547RouteEntry 13 }
+   
+   ppvpn2547RouteNextHopAS          OBJECT-TYPE
+       SYNTAX        Unsigned32 
+       STATUS        current
+       DESCRIPTION
+           "The Autonomous System Number of the Next Hop.
+           The semantics of this object are determined by
+           the routing-protocol specified in the route's
+           ppvpn2547RouteProto value. When this object is
+           unknown or not relevant its value should be set
+           to zero."
+       ::= { ppvpn2547RouteEntry 14 }
+   
+   ppvpn2547RouteMetric1  OBJECT-TYPE
+       SYNTAX        Integer32 
+       STATUS        current
+       DESCRIPTION
+           "The primary routing metric for this route.
+           The semantics of this metric are determined by
+           the routing-protocol specified in  the  route's
+           ppvpn2547RouteProto value. If this metric is not
+           used, its value should be set to -1."
+       ::= { ppvpn2547RouteEntry 15 }
+   
+   ppvpn2547RouteMetric2  OBJECT-TYPE
+       SYNTAX        Integer32
+       STATUS        current
+       DESCRIPTION
+           "An alternate routing metric for this route.
+           The semantics of this metric are determined by
+           the routing-protocol specified in  the  route's
+           ppvpn2547RouteProto value. If this metric is not
+           used, its value should be set to -1."
+       ::= { ppvpn2547RouteEntry 16 }
+   
+   ppvpn2547RouteMetric3  OBJECT-TYPE
+       SYNTAX        Integer32
+       STATUS        current
+       DESCRIPTION
+           "An alternate routing metric for this route.
+           The semantics of this metric are determined by
+           the routing-protocol specified in  the  route's
+           ppvpn2547RouteProto value. If this metric is not
+   
+           used, its value should be set to -1."
+       ::= { ppvpn2547RouteEntry 17 }
+   
+   ppvpn2547RouteMetric4  OBJECT-TYPE
+       SYNTAX        Integer32
+       STATUS        current
+       DESCRIPTION
+           "An alternate routing metric for this route.
+           The semantics of this metric are determined by
+           the routing-protocol specified in  the  route's
+           ppvpn2547RouteProto value. If this metric is not
+           used, its value should be set to -1."
+       ::= { ppvpn2547RouteEntry 18 }
+   
+   ppvpn2547RouteMetric5  OBJECT-TYPE
+       SYNTAX        Integer32
+       STATUS        current
+       DESCRIPTION
+           "An alternate routing metric for this route.
+           The semantics of this metric are determined by
+           the routing-protocol specified in  the  route's
+           ppvpn2547RouteProto value. If this metric is not
+           used, its value should be set to -1."
+       ::= { ppvpn2547RouteEntry 19 }
+   
+   
+   -- 
+   -- Conformance Section 
+   -- 
+    
+
+    
+   ppvpn2547PibCompliances 
+       OBJECT IDENTIFIER ::= { ppvpn2547PibConformance 1 } 
+   ppvpn2547PibGroups 
+       OBJECT IDENTIFIER ::= { ppvpn2547PibConformance 2 } 
+   
+   ppvpn2547PibCompliance MODULE-COMPLIANCE 
+       STATUS  current 
+       DESCRIPTION 
+               "Describes the requirements for conformance to the 
+               PPVPN BGP/MPLS VPN Policy PIB." 
+        
+       MODULE  -- this module 
+           MANDATORY-GROUPS { 
+               ppvpn2547PibVrfGroup, 
+               ppvpn2547PibRouteTargetGroup, 
+               ppvpn2547PibIfGroup, 
+               ppvpn2547PibBgpPeerGroup,
+               ppvpn2547PibRouteGroup
+       ::= { ppvpn2547PibCompliances 1 } 
+   
+   ppvpn2547PibVrfGroup OBJECT-GROUP
+       OBJECTS { ppvpn2547VrfRoles,
+   
+                 ppvpn2547VrfIfName,
+                 ppvpn2547VrfId,
+                 ppvpn2547VrfDescription,
+                 ppvpn2547VrfRD,
+                 ppvpn2547VrfMaxRoutes 
+       } 
+       STATUS current 
+       DESCRIPTION 
+          "The VRF Group defines the PIB Objects that describe a VRF." 
+       ::= { ppvpn2547PibGroups 1 }
+
+   ppvpn2547PibRouteTargetGroup OBJECT-GROUP
+       OBJECTS { ppvpn2547RouteTargetType,
+                 ppvpn2547RouteTargetVrfId,
+                 ppvpn2547RouteTargetPrecedence,
+                 ppvpn2547RouteTargetRT,
+                 ppvpn2547RouteTargetDescr
+       } 
+       STATUS current 
+       DESCRIPTION 
+          "The Route Target Group defines the PIB Objects  that describe 
+          a Route Target." 
+       ::= { ppvpn2547PibGroups 2 }
+
+   ppvpn2547PibIfGroup OBJECT-GROUP
+       OBJECTS { ppvpn2547IfRoles,
+                 ppvpn2547IfName,
+                 ppvpn2547IfVrfId,
+                 ppvpn2547IfVpnClassification,
+                 ppvpn2547IfRouteDistProtocol  
+       } 
+       STATUS current 
+       DESCRIPTION 
+          "The Interface Group defines  the  PIB  Objects  that 
+          describe a Interface." 
+       ::= { ppvpn2547PibGroups 3 }
+
+   ppvpn2547PibBgpPeerGroup OBJECT-GROUP
+       OBJECTS { ppvpn2547BgpPeerVrfId,
+                 ppvpn2547BgpPeerRole,
+                 ppvpn2547BgpPeerAddrType,
+                 ppvpn2547BgpPeerAddr         
+       } 
+       STATUS current 
+       DESCRIPTION 
+          "The BGP Peer Group defines  the  PIB  Objects  that 
+          describe a BGP Peer." 
+       ::= { ppvpn2547PibGroups 4 }
+   
+   ppvpn2547PibRouteGroup OBJECT-GROUP
+       OBJECTS { ppvpn2547RouteVrfId,
+                 ppvpn2547RouteDest,
+                 ppvpn2547RouteDestAddrType,
+   
+                 ppvpn2547RouteMask,
+                 ppvpn2547RouteMaskAddrType,
+                 ppvpn2547RouteTos,
+                 ppvpn2547RouteNextHop,
+                 ppvpn2547RouteNextHopAddrType,
+                 ppvpn2547RouteIfIndex,
+
+                 ppvpn2547RouteType,
+                 ppvpn2547RouteProto,
+                 ppvpn2547RouteAge,
+                 ppvpn2547RouteInfo,
+                 ppvpn2547RouteNextHopAS,
+                 ppvpn2547RouteMetric1,
+                 ppvpn2547RouteMetric2,
+                 ppvpn2547RouteMetric3,
+                 ppvpn2547RouteMetric4,
+                 ppvpn2547RouteMetric5
+       } 
+       STATUS current 
+       DESCRIPTION 
+          "The Route Group defines the PIB Objects that 
+          describe a Route." 
+       ::= { ppvpn2547PibGroups 4 }
+
+END

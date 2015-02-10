@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<application id="5" name="EAP Application" uri="http://www.ietf.org/rfc/rfc4072.txt">
+
+		<command name="Diameter-EAP" code="268" vendor-id="None"/>
+
+		<avp name="EAP-Payload" code="462">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="EAP-Reissued-Payload" code="463">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="EAP-Master-Session-Key" code="464">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="Accounting-EAP-Auth-Method" code="465">
+			<type type-name="Unsigned64"/>
+		</avp>
+	</application>

@@ -1,0 +1,1191 @@
+ALARM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+   Integer32, Unsigned32, Gauge32,
+   TimeTicks, Counter32, Counter64,
+   IpAddress, Opaque, mib-2,
+   zeroDotZero
+       FROM SNMPv2-SMI                 -- [RFC2578]
+   DateAndTime,
+   RowStatus, RowPointer,
+   TEXTUAL-CONVENTION
+       FROM SNMPv2-TC                  -- [RFC2579]
+   SnmpAdminString
+       FROM SNMP-FRAMEWORK-MIB         -- [RFC3411]
+   InetAddressType, InetAddress
+       FROM INET-ADDRESS-MIB           -- [RFC3291]
+   MODULE-COMPLIANCE, OBJECT-GROUP,
+   NOTIFICATION-GROUP
+       FROM SNMPv2-CONF                -- [RFC2580]
+   ZeroBasedCounter32
+       FROM RMON2-MIB;                 -- [RFC2021]
+
+  alarmMIB MODULE-IDENTITY
+      LAST-UPDATED "200409090000Z"  -- September 09, 2004
+      ORGANIZATION "IETF Distributed Management Working Group"
+      CONTACT-INFO
+           "WG EMail: disman@ietf.org
+           Subscribe: disman-request@ietf.org
+           http://www.ietf.org/html.charters/disman-charter.html
+
+
+
+           Chair:     Randy Presuhn
+                      randy_presuhn@mindspring.com
+
+           Editors:   Sharon Chisholm
+                      Nortel Networks
+                      PO Box 3511 Station C
+                      Ottawa, Ont.  K1Y 4H7
+                      Canada
+                      schishol@nortelnetworks.com
+
+                      Dan Romascanu
+                      Avaya
+                      Atidim Technology Park, Bldg. #3
+                      Tel Aviv, 61131
+                      Israel
+                      Tel: +972-3-645-8414
+                      Email: dromasca@avaya.com"
+      DESCRIPTION
+           "The MIB module describes a generic solution
+           to model alarms and to store the current list
+           of active alarms.
+
+           Copyright (C) The Internet Society (2004).  The
+           initial version of this MIB module was published
+           in RFC 3877.  For full legal notices see the RFC
+           itself.  Supplementary information may be available on:
+           http://www.ietf.org/copyrights/ianamib.html"
+      REVISION    "200409090000Z"  -- September 09, 2004
+      DESCRIPTION
+          "Initial version, published as RFC 3877."
+      ::= { mib-2 118 }
+
+alarmObjects OBJECT IDENTIFIER ::= { alarmMIB 1 }
+
+alarmNotifications OBJECT IDENTIFIER ::= { alarmMIB 0 }
+
+alarmModel OBJECT IDENTIFIER ::= { alarmObjects 1 }
+
+alarmActive  OBJECT IDENTIFIER ::= { alarmObjects 2 }
+
+alarmClear OBJECT IDENTIFIER ::= { alarmObjects 3 }
+
+-- Textual Conventions
+
+ -- ResourceId is intended to be a general textual convention
+ -- that can be used outside of the set of MIBs related to
+ -- Alarm Management.
+
+
+
+
+ResourceId ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+            "A unique identifier for this resource.
+
+            The type of the resource can be determined by looking
+            at the OID that describes the resource.
+
+            Resources must be identified in a consistent manner.
+            For example, if this resource is an interface, this
+            object MUST point to an ifIndex and if this resource
+            is a physical entity [RFC2737], then this MUST point
+            to an entPhysicalDescr, given that entPhysicalIndex
+            is not accessible.  In general, the value is the
+            name of the instance of the first accessible columnar
+            object in the conceptual row of a table that is
+            meaningful for this resource type, which SHOULD
+            be defined in an IETF standard MIB."
+    SYNTAX         OBJECT IDENTIFIER
+
+ -- LocalSnmpEngineOrZeroLenStr is intended to be a general
+ -- textual convention that can be used outside of the set of
+ -- MIBs related to Alarm Management.
+
+  LocalSnmpEngineOrZeroLenStr ::= TEXTUAL-CONVENTION
+      STATUS current
+      DESCRIPTION
+          "An SNMP Engine ID or a zero-length string.  The
+           instantiation of this textual convention will provide
+           guidance on when this will be an SNMP Engine ID and
+           when it will be a zero lengths string"
+      SYNTAX         OCTET STRING (SIZE(0 | 5..32))
+
+-- Alarm Model
+
+alarmModelLastChanged  OBJECT-TYPE
+      SYNTAX      TimeTicks
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The value of sysUpTime at the time of the last
+         creation, deletion or modification of an entry in
+         the alarmModelTable.
+
+         If the number and content of entries has been unchanged
+         since the last re-initialization of the local network
+         management subsystem, then the value of this object
+         MUST be zero."
+
+
+
+      ::= { alarmModel 1 }
+
+alarmModelTable OBJECT-TYPE
+   SYNTAX      SEQUENCE OF AlarmModelEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "A table of information about possible alarms on the system,
+        and how they have been modelled."
+   ::= { alarmModel 2 }
+
+alarmModelEntry OBJECT-TYPE
+   SYNTAX      AlarmModelEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "Entries appear in this table for each possible alarm state.
+       This table MUST be persistent across system reboots."
+   INDEX       { alarmListName, alarmModelIndex, alarmModelState }
+   ::= { alarmModelTable 1 }
+
+AlarmModelEntry ::= SEQUENCE {
+   alarmModelIndex                 Unsigned32,
+   alarmModelState                 Unsigned32,
+   alarmModelNotificationId        OBJECT IDENTIFIER,
+   alarmModelVarbindIndex          Unsigned32,
+   alarmModelVarbindValue          Integer32,
+   alarmModelDescription           SnmpAdminString,
+   alarmModelSpecificPointer       RowPointer,
+   alarmModelVarbindSubtree        OBJECT IDENTIFIER,
+   alarmModelResourcePrefix        OBJECT IDENTIFIER,
+   alarmModelRowStatus             RowStatus
+   }
+
+alarmModelIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+       "An integer that acts as an alarm Id
+       to uniquely identify each alarm
+       within the named alarm list. "
+   ::= { alarmModelEntry 1 }
+
+alarmModelState OBJECT-TYPE
+   SYNTAX  Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS       current
+
+
+
+   DESCRIPTION
+        "A value of 1 MUST indicate a clear alarm state.
+        The value of this object MUST be less than the
+        alarmModelState of more severe alarm states for
+        this alarm.  The value of this object MUST be more
+        than the alarmModelState of less severe alarm states
+        for this alarm."
+    ::= { alarmModelEntry 2 }
+
+alarmModelNotificationId OBJECT-TYPE
+   SYNTAX      OBJECT IDENTIFIER
+   MAX-ACCESS  read-create
+   STATUS      current
+   DESCRIPTION
+       "The NOTIFICATION-TYPE object identifier of this alarm
+       state transition.  If there is no notification associated
+       with this alarm state, the value of this object MUST be
+       '0.0'"
+   DEFVAL { zeroDotZero }
+   ::= { alarmModelEntry 3 }
+
+alarmModelVarbindIndex  OBJECT-TYPE
+   SYNTAX  Unsigned32
+   MAX-ACCESS   read-create
+   STATUS       current
+   DESCRIPTION
+     "The index into the varbind listing of the notification
+     indicated by alarmModelNotificationId which helps
+     signal that the given alarm has changed state.
+     If there is no applicable varbind, the value of this
+     object MUST be zero.
+
+     Note that the value of alarmModelVarbindIndex acknowledges
+     the existence of the first two obligatory varbinds in
+     the InformRequest-PDU and SNMPv2-Trap-PDU (sysUpTime.0
+     and snmpTrapOID.0).  That is, a value of 2 refers to
+     the snmpTrapOID.0.
+
+     If the incoming notification is instead an SNMPv1 Trap-PDU,
+     then an appropriate value for sysUpTime.0 or snmpTrapOID.0
+     shall be determined by using the rules in section 3.1 of
+     [RFC3584]"
+     DEFVAL { 0 }
+    ::= { alarmModelEntry 4 }
+
+alarmModelVarbindValue OBJECT-TYPE
+   SYNTAX  Integer32
+   MAX-ACCESS   read-create
+
+
+
+   STATUS       current
+   DESCRIPTION
+     "The value that the varbind indicated by
+     alarmModelVarbindIndex takes to indicate
+     that the alarm has entered this state.
+
+     If alarmModelVarbindIndex has a value of 0, so
+     MUST alarmModelVarbindValue.
+     "
+     DEFVAL { 0 }
+    ::= { alarmModelEntry 5 }
+
+alarmModelDescription OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+      "A brief description of this alarm and state suitable
+      to display to operators."
+   DEFVAL { "" }
+   ::= { alarmModelEntry 6 }
+
+alarmModelSpecificPointer OBJECT-TYPE
+   SYNTAX     RowPointer
+   MAX-ACCESS read-create
+   STATUS     current
+   DESCRIPTION
+     "If no additional, model-specific Alarm MIB is supported by
+      the system the value of this object is `0.0'and attempts
+      to set it to any other value MUST be rejected appropriately.
+
+      When a model-specific Alarm MIB is supported, this object
+      MUST refer to the first accessible object in a corresponding
+      row of the model definition in one of these model-specific
+      MIB and attempts to set this object to { 0 0 } or any other
+      value MUST be rejected appropriately."
+   DEFVAL { zeroDotZero }
+   ::= { alarmModelEntry 7 }
+
+  alarmModelVarbindSubtree  OBJECT-TYPE
+     SYNTAX  OBJECT IDENTIFIER
+     MAX-ACCESS   read-create
+     STATUS       current
+     DESCRIPTION
+       "The name portion of each VarBind in the notification,
+        in order, is compared to the value of this object.
+        If the name is equal to or a subtree of the value
+        of this object, for purposes of computing the value
+
+
+
+        of AlarmActiveResourceID the 'prefix' will be the
+        matching portion, and the 'indexes' will be any
+        remainder.  The examination of varbinds ends with
+        the first match.  If the value of this object is 0.0,
+        then the first varbind, or in the case of v2, the
+        first varbind after the timestamp and the trap
+        OID, will always be matched.
+       "
+      DEFVAL { zeroDotZero }
+     ::= { alarmModelEntry 8 }
+
+  alarmModelResourcePrefix  OBJECT-TYPE
+     SYNTAX  OBJECT IDENTIFIER
+     MAX-ACCESS   read-create
+     STATUS       current
+     DESCRIPTION
+       "The value of AlarmActiveResourceId is computed
+        by appending any indexes extracted in accordance
+        with the description of alarmModelVarbindSubtree
+        onto the value of this object.  If this object's
+        value is 0.0, then the 'prefix' extracted is used
+        instead.
+       "
+     DEFVAL { zeroDotZero }
+     ::= { alarmModelEntry 9 }
+
+alarmModelRowStatus OBJECT-TYPE
+   SYNTAX     RowStatus
+   MAX-ACCESS read-create
+   STATUS     current
+   DESCRIPTION
+    "Control for creating and deleting entries.  Entries may be
+    modified while active.  Alarms whose alarmModelRowStatus is
+    not active will not appear in either the alarmActiveTable
+    or the alarmClearTable.  Setting this object to notInService
+    cannot be used as an alarm suppression mechanism.  Entries
+    that are notInService will disappear as described in RFC2579.
+
+    This row can not be modified while it is being
+    referenced by a value of alarmActiveModelPointer.  In these
+    cases, an error of `inconsistentValue' will be returned to
+    the manager.
+
+    This entry may be deleted while it is being
+    referenced by a value of alarmActiveModelPointer.  This results
+    in the deletion of this entry and entries in the active alarms
+    referencing this entry via an alarmActiveModelPointer.
+
+
+
+
+    As all read-create objects in this table have a DEFVAL clause,
+    there is no requirement that any object be explicitly set
+    before this row can become active.  Note that a row consisting
+    only of default values is not very meaningful."
+   ::= { alarmModelEntry 10 }
+
+-- Active Alarm Table --
+
+alarmActiveLastChanged  OBJECT-TYPE
+   SYNTAX      TimeTicks
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+      "The value of sysUpTime at the time of the last
+       creation or deletion of an entry in the alarmActiveTable.
+       If the number of entries has been unchanged since the
+       last re-initialization of the local network management
+       subsystem, then this object contains a zero value."
+   ::= { alarmActive 1 }
+
+ alarmActiveOverflow  OBJECT-TYPE
+     SYNTAX      Counter32
+     UNITS       "active alarms"
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+        "The number of active alarms that have not been put into
+         the alarmActiveTable since system restart as a result
+         of extreme resource constraints."
+     ::= { alarmActive 5 }
+
+alarmActiveTable OBJECT-TYPE
+   SYNTAX      SEQUENCE OF AlarmActiveEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "A table of Active Alarms entries."
+   ::= { alarmActive 2 }
+
+alarmActiveEntry OBJECT-TYPE
+   SYNTAX      AlarmActiveEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "Entries appear in this table when alarms are raised.  They
+        are removed when the alarm is cleared.
+
+        If under extreme resource constraint the system is unable to
+
+
+
+        add any more entries into this table, then the
+        alarmActiveOverflow statistic will be increased by one."
+   INDEX       { alarmListName, alarmActiveDateAndTime,
+                 alarmActiveIndex }
+   ::= { alarmActiveTable 1 }
+
+AlarmActiveEntry ::= SEQUENCE {
+   alarmListName                    SnmpAdminString,
+   alarmActiveDateAndTime           DateAndTime,
+   alarmActiveIndex                 Unsigned32,
+   alarmActiveEngineID              LocalSnmpEngineOrZeroLenStr,
+   alarmActiveEngineAddressType     InetAddressType,
+   alarmActiveEngineAddress         InetAddress,
+   alarmActiveContextName           SnmpAdminString,
+   alarmActiveVariables             Unsigned32,
+   alarmActiveNotificationID        OBJECT IDENTIFIER,
+   alarmActiveResourceId            ResourceId,
+   alarmActiveDescription           SnmpAdminString,
+   alarmActiveLogPointer            RowPointer,
+   alarmActiveModelPointer          RowPointer,
+   alarmActiveSpecificPointer       RowPointer }
+
+alarmListName OBJECT-TYPE
+   SYNTAX     SnmpAdminString (SIZE(0..32))
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+    "The name of the list of alarms.  This SHOULD be the same as
+    nlmLogName if the Notification Log MIB [RFC3014] is supported.
+    This SHOULD be the same as, or contain as a prefix, the
+    applicable snmpNotifyFilterProfileName if the
+    SNMP-NOTIFICATION-MIB DEFINITIONS [RFC3413] is supported.
+
+    An implementation may allow multiple named alarm lists, up to
+    some implementation-specific limit (which may be none).  A
+    zero-length list name is reserved for creation and deletion
+    by the managed system, and MUST be used as the default log
+    name by systems that do not support named alarm lists."
+   ::= { alarmActiveEntry 1 }
+
+alarmActiveDateAndTime OBJECT-TYPE
+   SYNTAX      DateAndTime
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "The local date and time when the error occurred.
+
+       This object facilitates retrieving all instances of
+
+
+
+       alarms that have been raised or have changed state
+       since a given point in time.
+
+       Implementations MUST include the offset from UTC,
+       if available.  Implementation in environments in which
+       the UTC offset is not available is NOT RECOMMENDED."
+   ::= { alarmActiveEntry 2 }
+
+alarmActiveIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+       "A strictly monotonically increasing integer which
+       acts as the index of entries within the named alarm
+       list.  It wraps back to 1 after it reaches its
+       maximum value."
+   ::= { alarmActiveEntry 3 }
+
+alarmActiveEngineID OBJECT-TYPE
+   SYNTAX      LocalSnmpEngineOrZeroLenStr
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The identification of the SNMP engine at which the alarm
+        originated.  If the alarm is from an SNMPv1 system this
+        object is a zero length string."
+   ::= { alarmActiveEntry 4 }
+
+alarmActiveEngineAddressType OBJECT-TYPE
+   SYNTAX      InetAddressType
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+    "This object indicates what type of address is stored in
+    the alarmActiveEngineAddress object - IPv4, IPv6, DNS, etc."
+   ::= { alarmActiveEntry 5 }
+
+alarmActiveEngineAddress OBJECT-TYPE
+   SYNTAX      InetAddress
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+    "The address of the SNMP engine on which the alarm is
+    occurring.
+
+    This object MUST always be instantiated, even if the list
+    can contain alarms from only one engine."
+
+
+
+   ::= { alarmActiveEntry 6 }
+
+alarmActiveContextName OBJECT-TYPE
+   SYNTAX      SnmpAdminString (SIZE(0..32))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The name of the SNMP MIB context from which the alarm came.
+        For SNMPv1 alarms this is the community string from the Trap.
+        Note that care MUST be taken when selecting community
+        strings to ensure that these can be represented as a
+        well-formed SnmpAdminString.  Community or Context names
+        that are not well-formed SnmpAdminStrings will be mapped
+        to zero length strings.
+
+        If the alarm's source SNMP engine is known not to support
+        multiple contexts, this object is a zero length string."
+   ::= { alarmActiveEntry 7 }
+
+alarmActiveVariables OBJECT-TYPE
+   SYNTAX      Unsigned32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The number of variables in alarmActiveVariableTable for this
+       alarm."
+   ::= { alarmActiveEntry 8 }
+
+alarmActiveNotificationID OBJECT-TYPE
+   SYNTAX      OBJECT IDENTIFIER
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The NOTIFICATION-TYPE object identifier of the alarm
+       state transition that is occurring."
+   ::= { alarmActiveEntry 9 }
+
+alarmActiveResourceId    OBJECT-TYPE
+   SYNTAX      ResourceId
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+      "This object identifies the resource under alarm.
+
+      If there is no corresponding resource, then
+      the value of this object MUST be 0.0."
+   ::= { alarmActiveEntry 10 }
+
+
+
+
+alarmActiveDescription    OBJECT-TYPE
+   SYNTAX      SnmpAdminString
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+      "This object provides a textual description of the
+      active alarm.  This text is generated dynamically by the
+      notification generator to provide useful information
+      to the human operator.  This information SHOULD
+      provide information allowing the operator to locate
+      the resource for which this alarm is being generated.
+      This information is not intended for consumption by
+      automated tools."
+   ::= { alarmActiveEntry 11 }
+
+alarmActiveLogPointer OBJECT-TYPE
+   SYNTAX     RowPointer
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+       "A pointer to the corresponding row in a
+       notification logging MIB where the state change
+       notification for this active alarm is logged.
+       If no log entry applies to this active alarm,
+       then this object MUST have the value of 0.0"
+   ::= { alarmActiveEntry 12 }
+
+alarmActiveModelPointer OBJECT-TYPE
+   SYNTAX     RowPointer
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+       "A pointer to the corresponding row in the
+       alarmModelTable for this active alarm.  This
+       points not only to the alarm model being
+       instantiated, but also to the specific alarm
+       state that is active."
+   ::= { alarmActiveEntry 13 }
+
+alarmActiveSpecificPointer OBJECT-TYPE
+   SYNTAX     RowPointer
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+     "If no additional, model-specific, Alarm MIB is supported by
+     the system this object is `0.0'.  When a model-specific Alarm
+     MIB is supported, this object is the instance pointer to the
+     specific model-specific active alarm list."
+
+
+
+   ::= { alarmActiveEntry 14 }
+
+-- Active Alarm Variable Table --
+
+alarmActiveVariableTable OBJECT-TYPE
+   SYNTAX      SEQUENCE OF AlarmActiveVariableEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "A table of variables to go with active alarm entries."
+   ::= { alarmActive 3 }
+
+alarmActiveVariableEntry OBJECT-TYPE
+   SYNTAX      AlarmActiveVariableEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "Entries appear in this table when there are variables in
+       the varbind list of a corresponding alarm in
+       alarmActiveTable.
+
+       Entries appear in this table as though
+       the trap/notification had been transported using a
+       SNMPv2-Trap-PDU, as defined in [RFC3416] - i.e., the
+       alarmActiveVariableIndex 1 will always be sysUpTime
+       and alarmActiveVariableIndex 2 will always be
+       snmpTrapOID.
+
+       If the incoming notification is instead an SNMPv1 Trap-PDU and
+       the value of alarmModelVarbindIndex is 1 or 2, an appropriate
+       value for sysUpTime.0 or snmpTrapOID.0 shall be determined
+       by using the rules in section 3.1 of [RFC3584]."
+   INDEX   {  alarmListName, alarmActiveIndex,
+              alarmActiveVariableIndex }
+   ::= { alarmActiveVariableTable 1 }
+
+AlarmActiveVariableEntry ::= SEQUENCE {
+   alarmActiveVariableIndex                 Unsigned32,
+   alarmActiveVariableID                    OBJECT IDENTIFIER,
+   alarmActiveVariableValueType             INTEGER,
+   alarmActiveVariableCounter32Val          Counter32,
+   alarmActiveVariableUnsigned32Val         Unsigned32,
+   alarmActiveVariableTimeTicksVal          TimeTicks,
+   alarmActiveVariableInteger32Val          Integer32,
+   alarmActiveVariableOctetStringVal        OCTET STRING,
+   alarmActiveVariableIpAddressVal          IpAddress,
+   alarmActiveVariableOidVal                OBJECT IDENTIFIER,
+   alarmActiveVariableCounter64Val          Counter64,
+
+
+
+   alarmActiveVariableOpaqueVal             Opaque }
+
+alarmActiveVariableIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+       "A strictly monotonically increasing integer, starting at
+       1 for a given alarmActiveIndex, for indexing variables
+       within the active alarm variable list. "
+   ::= { alarmActiveVariableEntry 1 }
+
+alarmActiveVariableID OBJECT-TYPE
+   SYNTAX     OBJECT IDENTIFIER
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+       "The alarm variable's object identifier."
+   ::= { alarmActiveVariableEntry 2 }
+
+alarmActiveVariableValueType OBJECT-TYPE
+   SYNTAX      INTEGER {
+         counter32(1),
+         unsigned32(2),
+         timeTicks(3),
+         integer32(4),
+         ipAddress(5),
+         octetString(6),
+         objectId(7),
+         counter64(8),
+         opaque(9)
+         }
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The type of the value.  One and only one of the value
+       objects that follow is used for a given row in this table,
+       based on this type."
+   ::= { alarmActiveVariableEntry 3 }
+
+alarmActiveVariableCounter32Val OBJECT-TYPE
+   SYNTAX      Counter32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The value when alarmActiveVariableType is 'counter32'."
+   ::= { alarmActiveVariableEntry 4 }
+
+
+
+
+alarmActiveVariableUnsigned32Val OBJECT-TYPE
+   SYNTAX      Unsigned32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The value when alarmActiveVariableType is 'unsigned32'."
+   ::= { alarmActiveVariableEntry 5 }
+
+alarmActiveVariableTimeTicksVal OBJECT-TYPE
+   SYNTAX      TimeTicks
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The value when alarmActiveVariableType is 'timeTicks'."
+   ::= { alarmActiveVariableEntry 6 }
+
+alarmActiveVariableInteger32Val OBJECT-TYPE
+   SYNTAX      Integer32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The value when alarmActiveVariableType is 'integer32'."
+   ::= { alarmActiveVariableEntry 7 }
+
+alarmActiveVariableOctetStringVal OBJECT-TYPE
+   SYNTAX      OCTET STRING (SIZE(0..65535))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The value when alarmActiveVariableType is 'octetString'."
+   ::= { alarmActiveVariableEntry 8 }
+
+alarmActiveVariableIpAddressVal OBJECT-TYPE
+   SYNTAX      IpAddress
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The value when alarmActiveVariableType is 'ipAddress'."
+   ::= { alarmActiveVariableEntry 9 }
+
+alarmActiveVariableOidVal OBJECT-TYPE
+   SYNTAX      OBJECT IDENTIFIER
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The value when alarmActiveVariableType is 'objectId'."
+   ::= { alarmActiveVariableEntry 10 }
+
+
+
+
+alarmActiveVariableCounter64Val OBJECT-TYPE
+   SYNTAX      Counter64
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The value when alarmActiveVariableType is 'counter64'."
+   ::= { alarmActiveVariableEntry 11 }
+
+alarmActiveVariableOpaqueVal OBJECT-TYPE
+   SYNTAX      Opaque (SIZE(0..65535))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The value when alarmActiveVariableType is 'opaque'.
+
+       Note that although RFC2578 [RFC2578] forbids the use
+       of Opaque in 'standard' MIB modules, this particular
+       usage is driven by the need to be able to accurately
+       represent any well-formed notification, and justified
+       by the need for backward compatibility."
+   ::= { alarmActiveVariableEntry 12 }
+
+-- Statistics --
+
+alarmActiveStatsTable  OBJECT-TYPE
+      SYNTAX  SEQUENCE OF AlarmActiveStatsEntry
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+         "This table represents the alarm statistics
+         information."
+  ::= { alarmActive 4 }
+
+alarmActiveStatsEntry OBJECT-TYPE
+      SYNTAX  AlarmActiveStatsEntry
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+         "Statistics on the current active alarms."
+      INDEX   { alarmListName }
+
+  ::= {  alarmActiveStatsTable 1 }
+
+AlarmActiveStatsEntry ::=
+      SEQUENCE {
+           alarmActiveStatsActiveCurrent  Gauge32,
+           alarmActiveStatsActives        ZeroBasedCounter32,
+           alarmActiveStatsLastRaise      TimeTicks,
+
+
+
+           alarmActiveStatsLastClear      TimeTicks
+                }
+
+alarmActiveStatsActiveCurrent OBJECT-TYPE
+      SYNTAX Gauge32
+      MAX-ACCESS read-only
+      STATUS  current
+      DESCRIPTION
+         "The total number of currently active alarms on the system."
+       ::= { alarmActiveStatsEntry 1 }
+
+alarmActiveStatsActives OBJECT-TYPE
+      SYNTAX ZeroBasedCounter32
+      MAX-ACCESS read-only
+      STATUS  current
+      DESCRIPTION
+         "The total number of active alarms since system restarted."
+       ::= { alarmActiveStatsEntry 2 }
+
+alarmActiveStatsLastRaise  OBJECT-TYPE
+   SYNTAX      TimeTicks
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+      "The value of sysUpTime at the time of the last
+       alarm raise for this alarm list.
+       If no alarm raises have occurred since the
+       last re-initialization of the local network management
+       subsystem, then this object contains a zero value."
+ ::= { alarmActiveStatsEntry 3 }
+
+alarmActiveStatsLastClear  OBJECT-TYPE
+   SYNTAX      TimeTicks
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+      "The value of sysUpTime at the time of the last
+       alarm clear for this alarm list.
+       If no alarm clears have occurred since the
+       last re-initialization of the local network management
+       subsystem, then this object contains a zero value."
+ ::= { alarmActiveStatsEntry 4 }
+
+-- Alarm Clear
+
+alarmClearMaximum OBJECT-TYPE
+ SYNTAX Unsigned32
+ MAX-ACCESS read-write
+
+
+
+ STATUS current
+ DESCRIPTION
+   "This object specifies the maximum number of cleared
+   alarms to store in the alarmClearTable.  When this
+   number is reached, the cleared alarms with the
+   earliest clear time will be removed from the table."
+ ::= { alarmClear 1 }
+
+alarmClearTable  OBJECT-TYPE
+      SYNTAX  SEQUENCE OF AlarmClearEntry
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+         "This table contains information on
+         cleared alarms."
+  ::= { alarmClear 2 }
+
+alarmClearEntry OBJECT-TYPE
+      SYNTAX  AlarmClearEntry
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+         "Information on a cleared alarm."
+      INDEX   { alarmListName, alarmClearDateAndTime,
+alarmClearIndex }
+
+  ::= {  alarmClearTable 1 }
+
+AlarmClearEntry ::=
+      SEQUENCE {
+   alarmClearIndex                 Unsigned32,
+   alarmClearDateAndTime           DateAndTime,
+   alarmClearEngineID              LocalSnmpEngineOrZeroLenStr,
+   alarmClearEngineAddressType     InetAddressType,
+   alarmClearEngineAddress         InetAddress,
+   alarmClearContextName           SnmpAdminString,
+   alarmClearNotificationID        OBJECT IDENTIFIER,
+   alarmClearResourceId            ResourceId,
+   alarmClearLogIndex              Unsigned32,
+   alarmClearModelPointer          RowPointer
+   }
+
+alarmClearIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+       "An integer which acts as the index of entries within
+
+
+
+       the named alarm list.  It wraps back to 1 after it
+       reaches its maximum value.
+
+       This object has the same value as the alarmActiveIndex that
+       this alarm instance had when it was active."
+   ::= { alarmClearEntry 1 }
+
+alarmClearDateAndTime OBJECT-TYPE
+   SYNTAX      DateAndTime
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "The local date and time when the alarm cleared.
+
+       This object facilitates retrieving all instances of
+       alarms that have been cleared since a given point in time.
+
+       Implementations MUST include the offset from UTC,
+       if available.  Implementation in environments in which
+       the UTC offset is not available is NOT RECOMMENDED."
+   ::= { alarmClearEntry 2 }
+
+alarmClearEngineID OBJECT-TYPE
+   SYNTAX      LocalSnmpEngineOrZeroLenStr
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The identification of the SNMP engine at which the alarm
+        originated.  If the alarm is from an SNMPv1 system this
+        object is a zero length string."
+   ::= { alarmClearEntry 3 }
+
+alarmClearEngineAddressType OBJECT-TYPE
+   SYNTAX      InetAddressType
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+    "This object indicates what type of address is stored in
+    the alarmActiveEngineAddress object - IPv4, IPv6, DNS, etc."
+   ::= { alarmClearEntry 4 }
+
+alarmClearEngineAddress OBJECT-TYPE
+   SYNTAX      InetAddress
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+    "The Address of the SNMP engine on which the alarm was
+    occurring.  This is used to identify the source of an SNMPv1
+
+
+
+    trap, since an alarmActiveEngineId cannot be extracted from the
+    SNMPv1 trap PDU.
+
+    This object MUST always be instantiated, even if the list
+    can contain alarms from only one engine."
+   ::= { alarmClearEntry 5 }
+
+alarmClearContextName OBJECT-TYPE
+   SYNTAX      SnmpAdminString (SIZE(0..32))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The name of the SNMP MIB context from which the alarm came.
+       For SNMPv1 traps this is the community string from the Trap.
+       Note that care needs to be taken when selecting community
+       strings to ensure that these can be represented as a
+       well-formed SnmpAdminString.  Community or Context names
+       that are not well-formed SnmpAdminStrings will be mapped
+       to zero length strings.
+
+       If the alarm's source SNMP engine is known not to support
+       multiple contexts, this object is a zero length string."
+   ::= { alarmClearEntry 6 }
+
+alarmClearNotificationID OBJECT-TYPE
+   SYNTAX      OBJECT IDENTIFIER
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The NOTIFICATION-TYPE object identifier of the alarm
+       clear."
+   ::= { alarmClearEntry 7 }
+
+alarmClearResourceId    OBJECT-TYPE
+   SYNTAX      ResourceId
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+      "This object identifies the resource that was under alarm.
+
+      If there is no corresponding resource, then
+      the value of this object MUST be 0.0."
+   ::= { alarmClearEntry 8 }
+
+alarmClearLogIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (0..4294967295)
+   MAX-ACCESS read-only
+   STATUS     current
+
+
+
+   DESCRIPTION
+       "This number MUST be the same as the log index of the
+       applicable row in the notification log MIB, if it exists.
+       If no log index applies to the trap, then this object
+       MUST have the value of 0."
+   ::= { alarmClearEntry 9 }
+
+alarmClearModelPointer OBJECT-TYPE
+   SYNTAX     RowPointer
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+       "A pointer to the corresponding row in the
+       alarmModelTable for this cleared alarm."
+   ::= { alarmClearEntry 10 }
+
+-- Notifications
+
+alarmActiveState NOTIFICATION-TYPE
+ OBJECTS     { alarmActiveModelPointer,
+               alarmActiveResourceId }
+ STATUS      current
+ DESCRIPTION
+    "An instance of the alarm indicated by
+    alarmActiveModelPointer has been raised
+    against the entity indicated by
+    alarmActiveResourceId.
+
+    The agent must throttle the generation of
+    consecutive alarmActiveState traps so that there is at
+    least a two-second gap between traps of this
+    type against the same alarmActiveModelPointer and
+    alarmActiveResourceId.  When traps are throttled,
+    they are dropped, not queued for sending at a future time.
+
+    A management application should periodically check
+    the value of alarmActiveLastChanged to detect any
+    missed alarmActiveState notification-events, e.g.,
+    due to throttling or transmission loss."
+ ::= { alarmNotifications 2 }
+
+alarmClearState NOTIFICATION-TYPE
+   OBJECTS     { alarmActiveModelPointer,
+                 alarmActiveResourceId }
+   STATUS      current
+   DESCRIPTION
+     "An instance of the alarm indicated by
+     alarmActiveModelPointer has been cleared against
+
+
+
+     the entity indicated by alarmActiveResourceId.
+
+    The agent must throttle the generation of
+    consecutive alarmActiveClear traps so that there is at
+    least a two-second gap between traps of this
+    type against the same alarmActiveModelPointer and
+    alarmActiveResourceId.  When traps are throttled,
+    they are dropped, not queued for sending at a future time.
+
+    A management application should periodically check
+    the value of alarmActiveLastChanged to detect any
+    missed alarmClearState notification-events, e.g.,
+    due to throttling or transmission loss."
+   ::= { alarmNotifications 3 }
+
+-- Conformance
+
+alarmConformance OBJECT IDENTIFIER ::= { alarmMIB 2 }
+
+alarmCompliances OBJECT IDENTIFIER ::= { alarmConformance 1 }
+
+alarmCompliance MODULE-COMPLIANCE
+      STATUS  current
+      DESCRIPTION
+          "The compliance statement for systems supporting
+          the Alarm MIB."
+      MODULE -- this module
+          MANDATORY-GROUPS {
+           alarmActiveGroup,
+           alarmModelGroup
+          }
+      GROUP       alarmActiveStatsGroup
+       DESCRIPTION
+           "This group is optional."
+      GROUP       alarmClearGroup
+       DESCRIPTION
+           "This group is optional."
+      GROUP       alarmNotificationsGroup
+       DESCRIPTION
+           "This group is optional."
+   ::= { alarmCompliances 1 }
+
+alarmGroups OBJECT IDENTIFIER ::= { alarmConformance 2 }
+
+alarmModelGroup OBJECT-GROUP
+   OBJECTS {
+       alarmModelLastChanged,
+       alarmModelNotificationId,
+
+
+
+       alarmModelVarbindIndex,
+       alarmModelVarbindValue,
+       alarmModelDescription,
+       alarmModelSpecificPointer,
+       alarmModelVarbindSubtree,
+       alarmModelResourcePrefix,
+       alarmModelRowStatus
+      }
+    STATUS   current
+    DESCRIPTION
+               "Alarm model group."
+    ::= { alarmGroups 1}
+
+alarmActiveGroup OBJECT-GROUP
+        OBJECTS {
+           alarmActiveLastChanged,
+           alarmActiveOverflow,
+           alarmActiveEngineID,
+           alarmActiveEngineAddressType,
+           alarmActiveEngineAddress,
+           alarmActiveContextName,
+           alarmActiveVariables,
+           alarmActiveNotificationID,
+           alarmActiveResourceId,
+           alarmActiveDescription,
+           alarmActiveLogPointer,
+           alarmActiveModelPointer,
+           alarmActiveSpecificPointer,
+           alarmActiveVariableID,
+           alarmActiveVariableValueType,
+           alarmActiveVariableCounter32Val,
+           alarmActiveVariableUnsigned32Val,
+           alarmActiveVariableTimeTicksVal,
+           alarmActiveVariableInteger32Val,
+           alarmActiveVariableOctetStringVal,
+           alarmActiveVariableIpAddressVal,
+           alarmActiveVariableOidVal,
+           alarmActiveVariableCounter64Val,
+           alarmActiveVariableOpaqueVal
+          }
+          STATUS   current
+          DESCRIPTION
+               "Active Alarm list group."
+          ::= { alarmGroups 2}
+
+    alarmActiveStatsGroup  OBJECT-GROUP
+          OBJECTS  {
+                   alarmActiveStatsActives,
+
+
+
+                   alarmActiveStatsActiveCurrent,
+                   alarmActiveStatsLastRaise,
+                   alarmActiveStatsLastClear
+                    }
+          STATUS   current
+          DESCRIPTION
+               "Active alarm summary group."
+          ::= { alarmGroups 3}
+
+alarmClearGroup  OBJECT-GROUP
+          OBJECTS  {
+   alarmClearMaximum,
+   alarmClearEngineID,
+   alarmClearEngineAddressType,
+   alarmClearEngineAddress,
+   alarmClearContextName,
+   alarmClearNotificationID,
+   alarmClearResourceId,
+   alarmClearLogIndex,
+   alarmClearModelPointer
+                    }
+          STATUS   current
+          DESCRIPTION
+               "Cleared alarm group."
+          ::= { alarmGroups 4}
+
+alarmNotificationsGroup NOTIFICATION-GROUP
+   NOTIFICATIONS { alarmActiveState, alarmClearState }
+   STATUS        current
+   DESCRIPTION
+           "The collection of notifications that can be used to
+           model alarms for faults lacking pre-existing
+           notification definitions."
+   ::= { alarmGroups 6 }
+
+END

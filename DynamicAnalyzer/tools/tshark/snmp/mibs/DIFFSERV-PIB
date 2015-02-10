@@ -1,0 +1,3128 @@
+DIFFSERV-PIB PIB-DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Unsigned32, MODULE-IDENTITY, MODULE-COMPLIANCE,
+    OBJECT-TYPE, OBJECT-GROUP, pib
+            FROM COPS-PR-SPPI
+    InstanceId, Prid, TagId, TagReferenceId
+            FROM COPS-PR-SPPI-TC
+    zeroDotZero
+         FROM SNMPv2-SMI
+    AutonomousType
+            FROM SNMPv2-TC
+    SnmpAdminString
+            FROM SNMP-FRAMEWORK-MIB
+    RoleCombination, PrcIdentifierOid, PrcIdentifierOidOrZero,
+    AttrIdentifier
+            FROM FRAMEWORK-TC-PIB
+    Dscp
+            FROM DIFFSERV-DSCP-TC
+    IfDirection
+            FROM DIFFSERV-MIB
+    BurstSize
+            FROM INTEGRATED-SERVICES-MIB;
+
+
+dsPolicyPib  MODULE-IDENTITY
+    SUBJECT-CATEGORIES { diffServ (2) } -- DiffServ QoS COPS Client Type
+    LAST-UPDATED "200302180000Z"        -- 18 Feb 2003
+    ORGANIZATION "IETF DIFFSERV WG"
+    CONTACT-INFO "
+                  Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive,
+                  San Jose, CA 95134-1706 USA
+                  Phone: +1 408 526 5260
+                  Email: kzm@cisco.com
+
+                  John Seligson
+                  Nortel Networks, Inc.
+                  4401 Great America Parkway
+                  Santa Clara, CA 95054 USA
+                  Phone: +1 408 495 2992
+                  Email: jseligso@nortelnetworks.com
+
+                  Kwok Ho Chan
+                  Nortel Networks, Inc.
+
+
+
+                  600 Technology Park Drive
+                  Billerica, MA 01821 USA
+                  Phone: +1 978 288 8175
+                  Email: khchan@nortelnetworks.com
+
+                  Differentiated Services Working Group:
+                  diffserv@ietf.org"
+    DESCRIPTION
+         "The PIB module containing a set of provisioning classes
+         that describe quality of service (QoS) policies for
+         DiffServ. It includes general classes that may be extended
+         by other PIB specifications as well as a set of PIB
+         classes related to IP processing.
+
+         Copyright (C) The Internet Society (2003). This version of
+         this PIB module is part of RFC 3317; see the RFC itself for
+         full legal notices."
+
+    REVISION "200302180000Z"        -- 18 Feb 2003
+    DESCRIPTION
+         "Initial version, published as RFC 3317."
+    ::= { pib 4 }
+
+dsCapabilityClasses    OBJECT IDENTIFIER ::= { dsPolicyPib 1 }
+dsPolicyClasses        OBJECT IDENTIFIER ::= { dsPolicyPib 2 }
+dsPolicyPibConformance OBJECT IDENTIFIER ::= { dsPolicyPib 3 }
+
+--
+-- Interface Type Capabilities Group
+--
+
+--
+-- Interface Type Capability Tables
+--
+-- The Interface type capability tables define capabilities that may
+-- be associated with interfaces of a specific type.
+-- This PIB defines capability tables for DiffServ Functionalities.
+--
+
+--
+-- The Base Capability Table
+--
+
+dsBaseIfCapsTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF DsBaseIfCapsEntry
+    PIB-ACCESS     notify
+    STATUS         current
+    DESCRIPTION
+
+
+
+      "The Base Interface Type Capability class.  This class
+       represents a generic capability supported by a device in the
+       ingress, egress, or both directions."
+    ::= { dsCapabilityClasses 1 }
+
+dsBaseIfCapsEntry OBJECT-TYPE
+    SYNTAX         DsBaseIfCapsEntry
+    STATUS         current
+    DESCRIPTION
+      "An instance of this class describes the dsBaseIfCaps class."
+
+    PIB-INDEX { dsBaseIfCapsPrid }
+::= { dsBaseIfCapsTable 1 }
+
+DsBaseIfCapsEntry ::= SEQUENCE {
+        dsBaseIfCapsPrid           InstanceId,
+        dsBaseIfCapsDirection      INTEGER
+}
+
+dsBaseIfCapsPrid OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsBaseIfCapsEntry 1 }
+
+
+dsBaseIfCapsDirection OBJECT-TYPE
+    SYNTAX         INTEGER {
+                        inbound(1),
+                        outbound(2),
+                        inAndOut(3)
+                   }
+    STATUS         current
+    DESCRIPTION
+      "This object specifies the direction(s) for which the
+      capability applies. A value of 'inbound(1)' means the
+      capability applies only to the ingress direction.  A value of
+      'outbound(2)' means the capability applies only to the egress
+      direction.  A value of 'inAndOut(3)' means the capability
+      applies to both directions."
+    ::= { dsBaseIfCapsEntry 2 }
+
+--
+-- The Classification Capability Table
+--
+
+
+
+
+dsIfClassificationCapsTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF DsIfClassificationCapsEntry
+    PIB-ACCESS     notify
+    STATUS         current
+    DESCRIPTION
+        "This class specifies the classification capabilities of
+        a Capability Set."
+    ::= { dsCapabilityClasses 2 }
+
+
+dsIfClassificationCapsEntry OBJECT-TYPE
+    SYNTAX         DsIfClassificationCapsEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of this class describes the classification
+        capabilities of a Capability Set."
+
+
+    EXTENDS { dsBaseIfCapsEntry }
+    UNIQUENESS { dsBaseIfCapsDirection,
+                 dsIfClassificationCapsSpec }
+    ::= { dsIfClassificationCapsTable 1 }
+
+DsIfClassificationCapsEntry ::= SEQUENCE {
+        dsIfClassificationCapsSpec BITS
+}
+
+dsIfClassificationCapsSpec OBJECT-TYPE
+    SYNTAX       BITS {
+                       ipSrcAddrClassification(0),
+                       -- indicates the ability to classify based on
+                       -- IP source addresses
+                       ipDstAddrClassification(1),
+                       -- indicates the ability to classify based on
+                       -- IP destination addresses
+                       ipProtoClassification(2),
+                       -- indicates the ability to classify based on
+                       -- IP protocol numbers
+                       ipDscpClassification(3),
+                       -- indicates the ability to classify based on
+                       -- IP DSCP
+                       ipL4Classification(4),
+                       -- indicates the ability to classify based on
+                       -- IP layer 4 port numbers for UDP and TCP
+                       ipV6FlowID(5)
+                       -- indicates the ability to classify based on
+                       -- IPv6 FlowIDs.
+                      }
+
+
+
+    STATUS         current
+    DESCRIPTION
+      "Bit set of supported classification capabilities.  In
+      addition to these capabilities, other PIBs may define other
+      capabilities that can then be specified in addition to the
+      ones specified here (or instead of the ones specified here if
+      none of these are specified)."
+    ::= { dsIfClassificationCapsEntry 1 }
+
+--
+-- Metering Capabilities
+--
+
+dsIfMeteringCapsTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF DsIfMeteringCapsEntry
+    PIB-ACCESS     notify
+    STATUS         current
+    DESCRIPTION
+        "This class specifies the metering capabilities of a
+        Capability Set."
+    ::= { dsCapabilityClasses 3 }
+
+dsIfMeteringCapsEntry OBJECT-TYPE
+    SYNTAX         DsIfMeteringCapsEntry
+    STATUS         current
+    DESCRIPTION
+      "An instance of this class describes the metering
+      capabilities of a Capability Set."
+
+    EXTENDS { dsBaseIfCapsEntry }
+    UNIQUENESS { dsBaseIfCapsDirection,
+                 dsIfMeteringCapsSpec }
+    ::= { dsIfMeteringCapsTable 1 }
+
+DsIfMeteringCapsEntry ::= SEQUENCE {
+        dsIfMeteringCapsSpec       BITS
+}
+
+dsIfMeteringCapsSpec OBJECT-TYPE
+    SYNTAX  BITS {
+                  zeroNotUsed(0),
+                  simpleTokenBucket(1),
+                  avgRate(2),
+                  srTCMBlind(3),
+                  srTCMAware(4),
+                  trTCMBlind(5),
+                  trTCMAware(6),
+                  tswTCM(7)
+
+
+
+                 }
+    STATUS       current
+    DESCRIPTION
+      "Bit set of supported metering capabilities.  As with
+      classification capabilities, these metering capabilities may
+      be augmented by capabilities specified in other PRCs (in other
+      PIBs)."
+    ::= { dsIfMeteringCapsEntry 1 }
+
+--
+-- Algorithmic Dropper Capabilities
+--
+
+dsIfAlgDropCapsTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF DsIfAlgDropCapsEntry
+    PIB-ACCESS     notify
+    STATUS         current
+    DESCRIPTION
+        "This class specifies the algorithmic dropper
+        capabilities of a Capability Set.
+
+        This capability table indicates the types of algorithmic
+        drop supported by a Capability Set for a specific flow
+        direction.
+        Additional capabilities affecting the drop functionalities
+        are determined based on queue capabilities associated with
+        specific instance of a dropper, hence not specified by
+        this class."
+    ::= { dsCapabilityClasses 4 }
+
+dsIfAlgDropCapsEntry OBJECT-TYPE
+    SYNTAX         DsIfAlgDropCapsEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of this class describes the algorithmic dropper
+        capabilities of a Capability Set."
+    EXTENDS { dsBaseIfCapsEntry }
+    UNIQUENESS { dsBaseIfCapsDirection,
+                 dsIfAlgDropCapsType,
+                 dsIfAlgDropCapsMQCount }
+    ::= { dsIfAlgDropCapsTable 1 }
+
+DsIfAlgDropCapsEntry ::= SEQUENCE {
+        dsIfAlgDropCapsType                BITS,
+        dsIfAlgDropCapsMQCount             Unsigned32
+}
+
+dsIfAlgDropCapsType OBJECT-TYPE
+
+
+
+    SYNTAX      BITS {
+                     zeroNotUsed(0),
+                     oneNotUsed(1),
+                     tailDrop(2),
+                     headDrop(3),
+                     randomDrop(4),
+                     alwaysDrop(5),
+                     mQDrop(6) }
+    STATUS      current
+    DESCRIPTION
+      "The type of algorithm that droppers associated with queues
+      may use.
+
+      The tailDrop(2) algorithm means that packets are dropped from
+      the tail of the queue when the associated queue's MaxQueueSize
+      is exceeded.  The headDrop(3) algorithm means that packets are
+      dropped from the head of the queue when the associated queue's
+      MaxQueueSize is exceeded. The randomDrop(4) algorithm means
+      that an algorithm is executed which may randomly
+      drop the packet, or  drop  other  packet(s) from  the  queue
+      in  its place.  The specifics of the algorithm may be
+      proprietary.  However, parameters would be specified in the
+      dsRandomDropTable.  The alwaysDrop(5) will drop every packet
+      presented to it.  The mQDrop(6) algorithm will drop packets
+      based on measurement from multiple queues."
+    ::= { dsIfAlgDropCapsEntry 1 }
+
+dsIfAlgDropCapsMQCount OBJECT-TYPE
+    SYNTAX      Unsigned32  (1..4294967295)
+    STATUS      current
+    DESCRIPTION
+      "Indicates the number of queues measured for the drop
+      algorithm.
+      This attribute is ignored when alwaysDrop(5) algorithm is
+      used.  This attribute contains the value of 1 for all drop
+      algorithm types except for mQDrop(6), where this attribute
+      is used to indicate the maximum number of dsMQAlgDropEntry
+      that can be chained together."
+    ::= { dsIfAlgDropCapsEntry 2 }
+
+--
+-- Queue Capabilities
+--
+
+dsIfQueueCapsTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF DsIfQueueCapsEntry
+    PIB-ACCESS     notify
+    STATUS         current
+
+
+
+    DESCRIPTION
+        "This class specifies the queueing capabilities of a
+        Capability Set."
+    ::= { dsCapabilityClasses 5 }
+
+dsIfQueueCapsEntry OBJECT-TYPE
+    SYNTAX         DsIfQueueCapsEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of this class describes the queue
+        capabilities of a Capability Set."
+    EXTENDS { dsBaseIfCapsEntry }
+    UNIQUENESS { dsBaseIfCapsDirection,
+                 dsIfQueueCapsMinQueueSize,
+                 dsIfQueueCapsMaxQueueSize,
+                 dsIfQueueCapsTotalQueueSize }
+    ::= { dsIfQueueCapsTable 1 }
+
+DsIfQueueCapsEntry ::= SEQUENCE {
+        dsIfQueueCapsMinQueueSize          Unsigned32,
+        dsIfQueueCapsMaxQueueSize          Unsigned32,
+        dsIfQueueCapsTotalQueueSize        Unsigned32
+}
+
+dsIfQueueCapsMinQueueSize OBJECT-TYPE
+    SYNTAX      Unsigned32  (0..4294967295)
+    UNITS       "Bytes"
+    STATUS      current
+    DESCRIPTION
+        "Some interfaces may allow the size of a queue to be
+        configured.  This attribute specifies the minimum size that
+        can be configured for a queue, specified in bytes.
+        dsIfQueueCapsMinQueueSize must be less than or equals to
+        dsIfQueueCapsMaxQueueSize when both are specified.
+        A zero value indicates not specified."
+    ::= { dsIfQueueCapsEntry 1 }
+
+dsIfQueueCapsMaxQueueSize OBJECT-TYPE
+    SYNTAX      Unsigned32  (0..4294967295)
+    UNITS       "Bytes"
+    STATUS      current
+    DESCRIPTION
+        "Some interfaces may allow the size of a queue to be
+        configured.  This attribute specifies the maximum size that
+        can be configured for a queue, specified in bytes.
+        dsIfQueueCapsMinQueueSize must be less than or equals to
+        dsIfQueueCapsMaxQueueSize when both are specified.
+        A zero value indicates not specified."
+
+
+
+    ::= { dsIfQueueCapsEntry 2 }
+
+dsIfQueueCapsTotalQueueSize OBJECT-TYPE
+    SYNTAX      Unsigned32  (0..4294967295)
+    UNITS       "Bytes"
+    STATUS      current
+    DESCRIPTION
+        "Some interfaces may have a limited buffer space to be
+        shared amongst all queues of that interface while also
+        allowing the size of each queue to be configurable.  To
+        prevent the situation where the PDP configures the sizes of
+        the queues in excess of the total buffer available to the
+        interface, the PEP can report the total buffer space in
+        bytes available with this capability.
+        A zero value indicates not specified."
+    ::= { dsIfQueueCapsEntry 3 }
+
+--
+-- Scheduler Capabilities
+--
+
+dsIfSchedulerCapsTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF DsIfSchedulerCapsEntry
+    PIB-ACCESS     notify
+    STATUS         current
+    DESCRIPTION
+      "This class specifies the scheduler capabilities of a
+      Capability Set."
+    ::= { dsCapabilityClasses 6 }
+
+dsIfSchedulerCapsEntry OBJECT-TYPE
+    SYNTAX         DsIfSchedulerCapsEntry
+    STATUS         current
+    DESCRIPTION
+      "An instance of this class describes the scheduler
+      capabilities of a Capability Set."
+    EXTENDS { dsBaseIfCapsEntry }
+    UNIQUENESS { dsBaseIfCapsDirection,
+                 dsIfSchedulerCapsServiceDisc,
+                 dsIfSchedulerCapsMaxInputs }
+    ::= { dsIfSchedulerCapsTable 1 }
+
+DsIfSchedulerCapsEntry ::= SEQUENCE {
+        dsIfSchedulerCapsServiceDisc      AutonomousType,
+        dsIfSchedulerCapsMaxInputs        Unsigned32,
+        dsIfSchedulerCapsMinMaxRate       INTEGER
+}
+
+
+
+
+dsIfSchedulerCapsServiceDisc OBJECT-TYPE
+    SYNTAX      AutonomousType
+    STATUS      current
+    DESCRIPTION
+      "The scheduling discipline for which the set of capabilities
+      specified in this object apply. Object identifiers for several
+      general purpose and well-known scheduling disciplines are
+      shared with and defined in the DiffServ MIB.
+
+      These include diffServSchedulerPriority,
+      diffServSchedulerWRR, diffServSchedulerWFQ."
+    ::= { dsIfSchedulerCapsEntry 1 }
+
+dsIfSchedulerCapsMaxInputs OBJECT-TYPE
+    SYNTAX      Unsigned32  (0..4294967295)
+    STATUS      current
+    DESCRIPTION
+      "The maximum number of queues and/or schedulers that can
+      feed into a scheduler indicated by this capability entry.
+      A value of zero means there is no maximum."
+    ::= { dsIfSchedulerCapsEntry 2 }
+
+dsIfSchedulerCapsMinMaxRate OBJECT-TYPE
+    SYNTAX      INTEGER {
+                      minRate(1),
+                      maxRate(2),
+                      minAndMaxRates(3)
+                }
+    STATUS      current
+    DESCRIPTION
+      "Scheduler capability indicating ability to handle inputs
+      with minimum rate, maximum rate, or both."
+    ::= { dsIfSchedulerCapsEntry 3 }
+
+--
+-- Maximum Rate Capabilities
+--
+
+dsIfMaxRateCapsTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF DsIfMaxRateCapsEntry
+    PIB-ACCESS     notify
+    STATUS         current
+    DESCRIPTION
+        "This class specifies the maximum rate capabilities of a
+        Capability Set."
+    ::= { dsCapabilityClasses 7 }
+
+dsIfMaxRateCapsEntry OBJECT-TYPE
+
+
+
+    SYNTAX         DsIfMaxRateCapsEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of this class describes the maximum rate
+        capabilities of a Capability Set."
+    EXTENDS { dsBaseIfCapsEntry }
+    UNIQUENESS { dsBaseIfCapsDirection,
+                 dsIfMaxRateCapsMaxLevels }
+    ::= { dsIfMaxRateCapsTable 1 }
+
+DsIfMaxRateCapsEntry ::= SEQUENCE {
+        dsIfMaxRateCapsMaxLevels           Unsigned32
+}
+
+dsIfMaxRateCapsMaxLevels OBJECT-TYPE
+    SYNTAX      Unsigned32  (1..4294967295)
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of levels a maximum rate specification
+        may have for this Capability Set and flow direction."
+    ::= { dsIfMaxRateCapsEntry 1 }
+
+--
+-- DataPath Element Linkage Capabilities
+--
+
+--
+-- DataPath Element Cascade Depth
+--
+
+dsIfElmDepthCapsTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF DsIfElmDepthCapsEntry
+    PIB-ACCESS     notify
+    STATUS         current
+    DESCRIPTION
+        "This class specifies the number of elements of the same
+        type that can be cascaded together in a datapath."
+    ::= { dsCapabilityClasses 8 }
+
+dsIfElmDepthCapsEntry OBJECT-TYPE
+    SYNTAX         DsIfElmDepthCapsEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of this class describes the cascade depth
+        for a particular functional datapath element PRC.  A
+        functional datapath element not represented in this
+        class can be assumed to have no specific maximum
+        depth."
+
+
+
+    EXTENDS { dsBaseIfCapsEntry }
+    UNIQUENESS { dsBaseIfCapsDirection,
+                 dsIfElmDepthCapsPrc }
+    ::= { dsIfElmDepthCapsTable 1 }
+
+DsIfElmDepthCapsEntry ::= SEQUENCE {
+        dsIfElmDepthCapsPrc                PrcIdentifierOid,
+        dsIfElmDepthCapsCascadeMax         Unsigned32
+}
+
+dsIfElmDepthCapsPrc OBJECT-TYPE
+    SYNTAX         PrcIdentifierOid
+    STATUS         current
+    DESCRIPTION
+      "The object identifier of a PRC that represents a functional
+      datapath element.  This may be one of:  dsClfrElementEntry,
+      dsMeterEntry, dsActionEntry, dsAlgDropEntry, dsQEntry, or
+      dsSchedulerEntry.
+      There may not be more than one instance of this class with
+      the same value of dsIfElmDepthCapsPrc and same value of
+      dsBaseIfCapsDirection.  Must not contain the value of
+      zeroDotZero."
+    ::= { dsIfElmDepthCapsEntry 1 }
+
+dsIfElmDepthCapsCascadeMax OBJECT-TYPE
+    SYNTAX         Unsigned32  (0..4294967295)
+    STATUS         current
+    DESCRIPTION
+      "The maximum number of elements of type dsIfElmDepthCapsPrc
+      that can be linked consecutively in a data path.  A value of
+      zero indicates there is no specific maximum."
+    ::= { dsIfElmDepthCapsEntry 2 }
+
+--
+-- DataPath Element Linkage Types
+--
+
+dsIfElmLinkCapsTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF DsIfElmLinkCapsEntry
+    PIB-ACCESS     notify
+    STATUS         current
+    DESCRIPTION
+        "This class specifies what types of datapath functional
+        elements may be used as the next downstream element for
+        a specific type of functional element."
+    ::= { dsCapabilityClasses 9 }
+
+dsIfElmLinkCapsEntry OBJECT-TYPE
+
+
+
+    SYNTAX         DsIfElmLinkCapsEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of this class specifies a PRC that may
+         be used as the next functional element after a specific
+         type of element in a data path."
+    EXTENDS { dsBaseIfCapsEntry }
+    UNIQUENESS { dsBaseIfCapsDirection,
+                 dsIfElmLinkCapsPrc,
+                 dsIfElmLinkCapsAttr,
+                 dsIfElmLinkCapsNextPrc }
+    ::= { dsIfElmLinkCapsTable 1 }
+
+DsIfElmLinkCapsEntry ::= SEQUENCE {
+        dsIfElmLinkCapsPrc               PrcIdentifierOid,
+        dsIfElmLinkCapsAttr              AttrIdentifier,
+        dsIfElmLinkCapsNextPrc           PrcIdentifierOidOrZero
+}
+
+dsIfElmLinkCapsPrc OBJECT-TYPE
+    SYNTAX         PrcIdentifierOid
+    STATUS         current
+    DESCRIPTION
+      " The object identifier of a PRC that represents a functional
+      datapath element.  This may be one of:  dsClfrElementEntry,
+      dsMeterEntry, dsActionEntry, dsAlgDropEntry, dsQEntry, or
+      dsSchedulerEntry.
+      This must not have the value zeroDotZero."
+    ::= { dsIfElmLinkCapsEntry 1 }
+
+dsIfElmLinkCapsAttr OBJECT-TYPE
+    SYNTAX         AttrIdentifier
+    STATUS         current
+    DESCRIPTION
+      "The value represents the attribute in the PRC
+      indicated by dsIfElmLinkCapsPrc that is used to
+      specify the next functional element in the datapath."
+    ::= { dsIfElmLinkCapsEntry 2 }
+
+dsIfElmLinkCapsNextPrc OBJECT-TYPE
+    SYNTAX         PrcIdentifierOidOrZero
+    STATUS         current
+    DESCRIPTION
+      "The value is the OID of a PRC table entry from which
+      instances can be referenced by the attribute indicated
+      by dsIfElmLinkCapsPrc and dsIfElmLinkAttr.
+
+      For example, suppose a meter's success output can be an
+
+
+
+      action or another meter, and the fail output can only be
+      an action.  This can be expressed as follows:
+
+      Prid Prc             Attr                  NextPrc
+      1    dsMeterEntry   dsMeterSucceedNext   dsActionEntry
+      2    dsMeterEntry   dsMeterSucceedNext   dsMeterEntry
+      3    dsMeterEntry   dsMeterFailNext      dsActionEntry.
+
+      zeroDotZero is a valid value for this attribute to
+      specify that the PRC specified in dsIfElmLinkCapsPrc
+      is the last functional data path element."
+    ::= { dsIfElmLinkCapsEntry 3 }
+
+--
+-- Policy Classes
+--
+
+--
+-- Data Path Table
+--
+
+dsDataPathTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsDataPathEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "The data path table indicates the start of
+       functional data paths in this device.
+
+       The Data Path Table enumerates the Differentiated
+       Services Functional Data Paths within this device.
+       Each entry specifies the first functional datapath
+       element to process data flow for each specific datapath.
+       Each datapath is defined by the interface set's capability
+       set name, role combination, and direction. This class can
+       therefore have up to two entries for each interface set,
+       ingress and egress."
+    ::= { dsPolicyClasses 1 }
+
+dsDataPathEntry OBJECT-TYPE
+    SYNTAX       DsDataPathEntry
+    STATUS       current
+    DESCRIPTION
+       "Each entry in this class indicates the start of a single
+       functional data path, defined by its capability set name,
+       role combination and traffic direction.  The first
+       functional datapath element to handle traffic for each
+       data path is defined by the dsDataPathStart attribute
+
+
+
+       of each table entry.
+       Notice for each entry:
+       1. dsDataPathCapSetName must reference an existing capability
+          set name in frwkCapabilitySetTable [FR-PIB].
+       2. dsDataPathRoles must reference existing Role Combination
+          in frwkIfRoleComboTable [FR-PIB].
+       3. dsDataPathStart must reference an existing entry in a
+          functional data path element table.
+       If any one or more of these three requirements is not
+       satisfied, the dsDataPathEntry will not be installed."
+    PIB-INDEX { dsDataPathPrid }
+    UNIQUENESS { dsDataPathCapSetName,
+                 dsDataPathRoles,
+                 dsDataPathIfDirection }
+    ::= { dsDataPathTable 1 }
+
+DsDataPathEntry ::= SEQUENCE  {
+    dsDataPathPrid           InstanceId,
+    dsDataPathCapSetName     SnmpAdminString,
+    dsDataPathRoles          RoleCombination,
+    dsDataPathIfDirection    IfDirection,
+    dsDataPathStart          Prid
+}
+
+dsDataPathPrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+       "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsDataPathEntry 1 }
+
+dsDataPathCapSetName OBJECT-TYPE
+    SYNTAX       SnmpAdminString
+    STATUS       current
+    DESCRIPTION
+       "The capability set associated with this data path entry.
+        The capability set name specified by this attribute
+        must exist in the frwkCapabilitySetTable [FR-PIB]
+        prior to association with an instance of this class."
+    ::= { dsDataPathEntry 2 }
+
+dsDataPathRoles OBJECT-TYPE
+    SYNTAX       RoleCombination
+    STATUS       current
+    DESCRIPTION
+       "The interfaces to which this data path entry applies,
+        specified in terms of roles.  There must exist an entry
+
+
+
+        in the frwkIfRoleComboTable [FR-PIB] specifying
+        this role combination, together with the capability
+        set specified by dsDataPathCapSetName, prior to
+        association with an instance of this class."
+    ::= { dsDataPathEntry 3 }
+
+dsDataPathIfDirection OBJECT-TYPE
+    SYNTAX       IfDirection
+    STATUS       current
+    DESCRIPTION
+       "Specifies the direction for which this data path
+       entry applies."
+    ::= { dsDataPathEntry 4 }
+
+dsDataPathStart OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+       "This selects the first functional datapath element
+       to  handle traffic for this data path.   This
+       Prid should point to an instance of one of:
+         dsClfrEntry
+         dsMeterEntry
+         dsActionEntry
+         dsAlgDropEntry
+         dsQEntry
+
+       The PRI pointed to must exist prior to the installation of
+       this datapath start element."
+    ::= { dsDataPathEntry 5 }
+
+--
+-- Classifiers
+--
+-- Classifier allows multiple classifier elements, of same or
+-- different types, to be used together.
+-- A classifier must completely classify all packets presented to
+-- it. This means all traffic handled by a classifier must match
+-- at least one classifier element within the classifier,
+-- with the classifier element parameters specified by a filter.
+-- It is the PDP's responsibility to create a _catch all_ classifier
+-- element and filter that matches all packet.  This _catch all_
+-- classifier element should have the lowest Precedence value.
+--
+-- If there is ambiguity between classifier elements of different
+-- classifier, classifier linkage order indicates their precedence;
+-- the first classifier in the link is applied to the traffic first.
+--
+
+
+
+-- Each entry in the classifier table represents a classifier, with
+-- classifier element table handling the fan-out functionality of a
+-- classifier, and filter table defining the classification
+-- patterns.
+--
+
+--
+-- Classifier Table
+--
+
+dsClfrTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsClfrEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "This table enumerates all the DiffServ classifier functional
+       data path elements of this device.  The actual classification
+       definitions are detailed in dsClfrElementTable entries
+       belonging to each classifier.  Each classifier is referenced
+       by its classifier elements using its classifier ID.
+
+       An entry in this table, referenced by an upstream functional
+       data path element or a datapath table entry, is the entry
+       point to the classifier functional data path element.
+
+       The dsClfrId of each entry is used to organize all
+       classifier elements belonging to the same classifier."
+    REFERENCE
+        "An Informal Management Model for Diffserv Routers,
+        RFC 3290, section 4.1"
+    ::= { dsPolicyClasses 2 }
+
+dsClfrEntry OBJECT-TYPE
+    SYNTAX       DsClfrEntry
+    STATUS       current
+    DESCRIPTION
+       "An entry in the classifier table describes a single
+       classifier. Each classifier element belonging to this
+       classifier must have its dsClfrElementClfrId attribute equal
+       to dsClfrId."
+    PIB-INDEX { dsClfrPrid }
+    UNIQUENESS { dsClfrId }
+    ::= { dsClfrTable 1 }
+
+DsClfrEntry ::= SEQUENCE  {
+    dsClfrPrid            InstanceId,
+    dsClfrId              TagReferenceId
+}
+
+
+
+
+dsClfrPrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+       "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsClfrEntry 1 }
+
+dsClfrId OBJECT-TYPE
+    SYNTAX       TagReferenceId
+    PIB-TAG      { dsClfrElementClfrId }
+    STATUS       current
+    DESCRIPTION
+       "Identifies a Classifier.  A  Classifier must be
+       complete, this means all traffic handled by a
+       Classifier must match at least  one  Classifier
+       Element within  the  Classifier."
+    ::= { dsClfrEntry 2 }
+
+--
+-- Classifier Element Table
+--
+
+dsClfrElementTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsClfrElementEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "Entries in the classifier element table serves as
+       the anchor for each classification pattern, defined
+       in filter table entries.  Each classifier element
+       table entry also specifies the subsequent downstream
+       diffserv functional datapath element when the
+       classification pattern is satisfied.  Hence
+       the classifier element table enumerates the relationship
+       between classification patterns and subsequent downstream
+       diffserv functional data path elements, describing one
+       branch of the fan-out characteristic of a classifier
+       indicated in [Model].
+
+       Classification parameters are defined by entries of filter
+       tables pointed to by dsClfrElementSpecific.  There can be
+       filter tables of different types, and they can be inter-mixed
+       and used within a classifier. An example of a filter table is
+       the frwkIpFilterTable [FR-PIB], for IP Multi-Field
+       Classifiers (MFCs).
+
+
+
+
+       If there is ambiguity between classifier elements of the same
+       classifier, then dsClfrElementPrecedence needs to be used."
+    ::= { dsPolicyClasses 3 }
+
+dsClfrElementEntry OBJECT-TYPE
+    SYNTAX       DsClfrElementEntry
+    STATUS       current
+    DESCRIPTION
+       "An entry in the classifier element table describes a
+       single element of the classifier."
+    PIB-INDEX { dsClfrElementPrid }
+    UNIQUENESS { dsClfrElementClfrId,
+                 dsClfrElementPrecedence,
+                 dsClfrElementSpecific }
+    ::= { dsClfrElementTable 1 }
+
+DsClfrElementEntry ::= SEQUENCE  {
+    dsClfrElementPrid        InstanceId,
+    dsClfrElementClfrId      TagId,
+    dsClfrElementPrecedence  Unsigned32,
+    dsClfrElementNext        Prid,
+    dsClfrElementSpecific    Prid
+}
+
+dsClfrElementPrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+       "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsClfrElementEntry 1 }
+
+dsClfrElementClfrId OBJECT-TYPE
+    SYNTAX       TagId
+    STATUS       current
+    DESCRIPTION
+       "A classifier is composed of one or more classifier
+        elements. Each classifier element belonging to
+        the same classifier uses the same classifier ID.
+
+        Hence, A classifier Id identifies which classifier
+        this classifier element is a part of. This must be
+        the value of dsClfrId attribute for an existing
+        instance of dsClfrEntry."
+    ::= { dsClfrElementEntry 2 }
+
+dsClfrElementPrecedence OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+
+
+
+    STATUS       current
+    DESCRIPTION
+       "The relative order in which classifier elements are
+       applied: higher numbers represent classifier elements
+       with higher precedence.  Classifier elements with the
+       same precedence must be unambiguous i.e., they must
+       define non-overlapping patterns, and are considered to
+       be applied  simultaneously  to the traffic stream.
+       Classifier elements with different precedence may
+       overlap in their filters: the classifier element with
+       the highest precedence that matches is taken.
+
+       On a given interface, there must be a complete
+       classifier in place at all times in the ingress
+       direction.  This means that there will always be one
+       or more filters that match every possible pattern
+       that could be presented in an incoming packet.
+       There is no such requirement in the egress direction."
+    ::= { dsClfrElementEntry 3 }
+
+dsClfrElementNext OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+       "This attribute provides one branch  of  the  fan-out
+       functionality  of  a  classifier described in Diffserv
+       Model section 4.1.
+
+       This selects the next diffserv functional datapath
+       element  to  handle traffic for this data path.
+
+       A value of zeroDotZero marks the end of DiffServ processing
+       for this data path.  Any other value must point to a
+       valid (pre-existing) instance of one of:
+         dsClfrEntry
+         dsMeterEntry
+         dsActionEntry
+         dsAlgDropEntry
+         dsQEntry."
+    DEFVAL      { zeroDotZero }
+    ::= { dsClfrElementEntry 4 }
+
+dsClfrElementSpecific OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+       "A pointer to a valid entry  in  another  table  that
+       describes  the applicable classification filter, e.g.,
+
+
+
+       an entry in frwkIpFilterTable (Framework PIB).
+
+       The PRI pointed to must exist prior to the installation of
+       this classifier element.
+
+       The value zeroDotZero is interpreted  to  match  any-
+       thing  not  matched  by another classifier element - only one
+       such entry  may exist for each classifier."
+    ::= { dsClfrElementEntry 5 }
+
+--
+-- Meters
+--
+-- This PIB supports a variety of Meters.  It includes a
+-- specific definition for Meters whose parameter set can
+-- be modeled using Token Bucket parameters.
+-- Other metering parameter sets can be defined by other PIBs.
+--
+-- Multiple meter elements may be logically cascaded
+-- using their dsMeterSucceedNext and dsMeterFailNext pointers if
+-- required.
+-- One example of this might be for an AF PHB implementation
+-- that uses multiple level conformance meters.
+--
+-- Cascading of individual meter elements in the PIB is intended
+-- to be functionally equivalent to multiple level conformance
+-- determination of a packet.  The sequential nature of the
+-- representation is merely a notational convenience for this PIB.
+--
+-- srTCM meters (RFC 2697) can be specified using two sets of
+-- dsMeterEntry and dsTBParamEntry. First set specifies the
+-- Committed Information Rate and Committed Burst Size
+-- token-bucket.  Second set specifies the Excess Burst
+-- Size token-bucket.
+--
+-- trTCM meters (RFC 2698) can be specified using two sets of
+-- dsMeterEntry and dsTBParamEntry. First set specifies the
+-- Committed Information Rate and Committed Burst Size
+-- token-bucket.  Second set specifies the Peak Information
+-- Rate and Peak Burst Size token-bucket.
+--
+-- tswTCM meters (RFC 2859) can be specified using two sets of
+-- dsMeterEntry and dsTBParamEntry. First set specifies the
+-- Committed Target Rate token-bucket. Second set specifies the
+-- Peak Target Rate token-bucket. dsTBParamInterval in each
+-- token bucket reflects the Average Interval.
+
+dsMeterTable OBJECT-TYPE
+
+
+
+    SYNTAX       SEQUENCE OF DsMeterEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "This class enumerates specific meters that a system
+       may use to police a stream of traffic. The traffic
+       stream to be metered is determined by the element(s)
+       upstream of the meter i.e., by the object(s) that
+       point to each entry in this class. This may include
+       all traffic on an interface.
+
+       Specific meter details are to be found in table entry
+       referenced by dsMeterSpecific."
+   REFERENCE
+       "An Informal Management Model for Diffserv Routers,
+       RFC 3290, section 5"
+    ::= { dsPolicyClasses 4 }
+
+dsMeterEntry OBJECT-TYPE
+    SYNTAX       DsMeterEntry
+    STATUS       current
+    DESCRIPTION
+       "An entry in the meter table describes a single
+       conformance level of a meter."
+    PIB-INDEX { dsMeterPrid }
+    UNIQUENESS { dsMeterSucceedNext,
+                 dsMeterFailNext,
+                 dsMeterSpecific }
+    ::= { dsMeterTable 1 }
+
+DsMeterEntry ::= SEQUENCE  {
+    dsMeterPrid              InstanceId,
+    dsMeterSucceedNext       Prid,
+    dsMeterFailNext          Prid,
+    dsMeterSpecific          Prid
+}
+
+dsMeterPrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+       "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsMeterEntry 1 }
+
+dsMeterSucceedNext OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "If the traffic does conform, this selects  the  next
+       diffserv functional datapath element to handle
+       traffic for this data path.
+
+       The value zeroDotZero in this variable indicates no
+       further DiffServ treatment is performed on traffic of
+       this datapath.  Any other value must point to a valid
+       (pre-existing) instance of one of:
+         dsClfrEntry
+         dsMeterEntry
+         dsActionEntry
+         dsAlgDropEntry
+         dsQEntry."
+    DEFVAL      { zeroDotZero }
+    ::= { dsMeterEntry 2 }
+
+dsMeterFailNext OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+       "If the traffic does not conform, this selects the
+       next diffserv functional datapath element to handle
+       traffic for this data path.
+
+       The value zeroDotZero in this variable indicates no
+       further DiffServ treatment is performed on traffic of
+       this datapath.  Any other value must point to a valid
+       (pre-existing) instance of one of:
+         dsClfrEntry
+         dsMeterEntry
+         dsActionEntry
+         dsAlgDropEntry
+         dsQEntry."
+    DEFVAL      { zeroDotZero }
+    ::= { dsMeterEntry 3 }
+
+dsMeterSpecific OBJECT-TYPE
+    SYNTAX       Prid
+     STATUS       current
+    DESCRIPTION
+       "This indicates the behaviour of the meter by point-
+       ing to an entry containing detailed parameters. Note
+       that entries in that specific table must be managed
+       explicitly.
+
+       For example, dsMeterSpecific may point to an
+       entry in dsTBMeterTable, which contains an
+
+
+
+       instance of a single set of Token Bucket parameters.
+
+       The PRI pointed to must exist prior to installing this
+       Meter datapath element."
+    ::= { dsMeterEntry 4 }
+
+--
+-- Token-Bucket Parameter Table
+--
+-- Each entry in the Token Bucket Parameter Table parameterizes
+-- a single token bucket.  Multiple token buckets can be
+-- used together to parameterize multiple levels of
+-- conformance.
+--
+-- Note that an entry in the Token Bucket Parameter Table can
+-- be shared, pointed to, by multiple dsMeterTable entries.
+--
+
+dsTBParamTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsTBParamEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "This table enumerates token-bucket meter parameter sets
+       that a system may use to police a stream of traffic.
+       Such parameter sets are modelled here as each having a single
+       rate and a single burst size.  Multiple entries are used
+       when multiple rates/burst sizes are needed."
+    REFERENCE
+        "An Informal Management Model for Diffserv Routers,
+        RFC 3290, section 5.1"
+    ::= { dsPolicyClasses 5 }
+
+dsTBParamEntry OBJECT-TYPE
+    SYNTAX       DsTBParamEntry
+    STATUS       current
+    DESCRIPTION
+       "An entry that describes a single token-bucket
+       parameter set."
+    PIB-INDEX { dsTBParamPrid }
+    UNIQUENESS { dsTBParamType,
+                 dsTBParamRate,
+                 dsTBParamBurstSize,
+                 dsTBParamInterval }
+    ::= { dsTBParamTable 1 }
+
+DsTBParamEntry ::= SEQUENCE  {
+    dsTBParamPrid            InstanceId,
+
+
+
+    dsTBParamType            AutonomousType,
+    dsTBParamRate            Unsigned32,
+    dsTBParamBurstSize       BurstSize,
+    dsTBParamInterval        Unsigned32
+}
+
+dsTBParamPrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+       "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsTBParamEntry 1 }
+
+dsTBParamType OBJECT-TYPE
+    SYNTAX       AutonomousType
+    STATUS       current
+    DESCRIPTION
+      "The Metering algorithm associated with the
+      Token-Bucket parameters.  zeroDotZero indicates this
+      is unknown.
+
+      Standard values for generic algorithms are as follows:
+
+      diffServTBParamSimpleTokenBucket, diffServTBParamAvgRate,
+      diffServTBParamSrTCMBlind, diffServTBParamSrTCMAware,
+      diffServTBParamTrTCMBlind, diffServTBParamTrTCMAware,
+      diffServTBParamTswTCM
+
+      These are specified in the DiffServ MIB."
+    REFERENCE
+        "An Informal Management Model for Diffserv Routers,
+        RFC 3290, section 5.1"
+    ::= { dsTBParamEntry 2 }
+
+dsTBParamRate OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "kilobits per second"
+    STATUS       current
+    DESCRIPTION
+       "The token-bucket rate, in kilobits per second
+       (kbps).  This attribute is used for:
+       1. CIR in RFC 2697 for srTCM
+       2. CIR and PIR in RFC 2698 for trTCM
+       3. CTR and PTR in RFC 2859 for TSWTCM
+       4. AverageRate in RFC 3290, section 5.1.1"
+    ::= { dsTBParamEntry 3 }
+
+
+
+
+dsTBParamBurstSize OBJECT-TYPE
+    SYNTAX       BurstSize
+    UNITS        "Bytes"
+    STATUS       current
+    DESCRIPTION
+       "The maximum number of bytes in a single transmission
+       burst.  This attribute is used for:
+       1. CBS and EBS in RFC 2697 for srTCM
+       2. CBS and PBS in RFC 2698 for trTCM
+       3. Burst Size in RFC 3290, section 5."
+    ::= { dsTBParamEntry 4 }
+
+dsTBParamInterval OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "microseconds"
+    STATUS       current
+    DESCRIPTION
+       "The time interval used with the token bucket.  For:
+       1. Average Rate Meter, RFC 3290, section 5.1.1,
+         -Delta.
+       2. Simple Token Bucket Meter, RFC 3290, section
+          5.1.3, - time interval t.
+       3. RFC 2859  TSWTCM, -  AVG_INTERVAL.
+       4. RFC 2697 srTCM, RFC 2698 trTCM, - token
+          bucket update time interval."
+    ::= { dsTBParamEntry 5 }
+
+--
+-- Actions
+--
+
+--
+-- The Action Table allows enumeration of the different
+-- types of actions to be applied to a traffic flow.
+--
+
+dsActionTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsActionEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "The Action Table enumerates actions that can be per-
+       formed to a stream of traffic.  Multiple actions can
+       be concatenated.
+
+       Specific actions are indicated by dsAction-
+       Specific which points to an entry of a specific
+       action type parameterizing the action in detail."
+
+
+
+    REFERENCE
+        "An Informal Management Model for Diffserv Routers,
+        RFC 3290, section 6."
+    ::= { dsPolicyClasses 6 }
+
+dsActionEntry OBJECT-TYPE
+    SYNTAX       DsActionEntry
+    STATUS       current
+    DESCRIPTION
+       "Each entry in the action table allows description of
+       one specific action to be applied to traffic."
+    PIB-INDEX { dsActionPrid }
+    UNIQUENESS { dsActionNext,
+                 dsActionSpecific }
+    ::= { dsActionTable 1 }
+
+DsActionEntry ::= SEQUENCE  {
+    dsActionPrid              InstanceId,
+    dsActionNext              Prid,
+    dsActionSpecific          Prid
+}
+
+dsActionPrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+       "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsActionEntry 1 }
+
+dsActionNext OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+       "This selects the next diffserv functional datapath
+       element to handle traffic for this data path.
+
+       The value zeroDotZero in this variable indicates no
+       further DiffServ treatment is performed on traffic of
+       this datapath.  Any other value must point to a valid
+       (pre-existing) instance of one of:
+         dsClfrEntry
+         dsMeterEntry
+         dsActionEntry
+         dsAlgDropEntry
+         dsQEntry."
+    DEFVAL      { zeroDotZero }
+    ::= { dsActionEntry 2 }
+
+
+
+
+dsActionSpecific OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+       "A pointer to an object instance providing additional
+       information for the type of action indicated by this
+       action table entry.
+
+       For the standard actions defined by this PIB module,
+       this should point to an instance of dsDscpMarkActEntry.
+       For other actions, it may point to an instance of a
+       PRC defined in some other PIB.
+
+       The PRI pointed to must exist prior to installing this
+       action datapath entry."
+    ::= { dsActionEntry 3 }
+
+-- DSCP Mark Action Table
+--
+-- Rows of this class are pointed to by dsActionSpecific
+-- to provide detailed parameters specific to the DSCP
+-- Mark action.
+-- This class should at most contain one entry for each supported
+-- DSCP value.  These entries should be reused by different
+-- dsActionEntry in same or different data paths.
+--
+
+dsDscpMarkActTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsDscpMarkActEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "This class enumerates specific DSCPs used for marking or
+       remarking the DSCP field of IP packets. The entries of this
+       table may be referenced by a dsActionSpecific attribute."
+    REFERENCE
+        "An Informal Management Model for Diffserv Routers,
+        RFC 3290, section 6.1"
+    ::= { dsPolicyClasses 7 }
+
+dsDscpMarkActEntry OBJECT-TYPE
+    SYNTAX       DsDscpMarkActEntry
+    STATUS       current
+    DESCRIPTION
+      "An entry in the DSCP mark action table that describes a
+      single DSCP used for marking."
+    PIB-INDEX { dsDscpMarkActPrid }
+
+
+
+    UNIQUENESS { dsDscpMarkActDscp }
+    ::= { dsDscpMarkActTable 1 }
+
+DsDscpMarkActEntry ::= SEQUENCE  {
+    dsDscpMarkActPrid          InstanceId,
+    dsDscpMarkActDscp          Dscp
+}
+
+dsDscpMarkActPrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+       "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsDscpMarkActEntry 1 }
+
+dsDscpMarkActDscp OBJECT-TYPE
+    SYNTAX       Dscp
+    STATUS       current
+    DESCRIPTION
+       "The DSCP that this Action uses for marking/remarking
+       traffic.  Note that a DSCP value of -1 is not permit-
+       ted in this class.  It is quite possible that the
+       only packets subject to this Action are already
+       marked with this DSCP.  Note also that DiffServ may
+       result in packet remarking both on ingress to a net-
+       work and on egress from it and it is quite possible
+       that ingress and egress would occur in the same
+       router."
+    ::= { dsDscpMarkActEntry 2 }
+
+--
+-- Algorithmic Drop Table
+--
+
+-- Algorithmic Drop Table is the entry point for the Algorithmic
+-- Dropper functional data path element.
+
+-- For a simple algorithmic dropper, a single algorithmic drop entry
+-- will be sufficient to parameterize the dropper.
+
+-- For more complex algorithmic dropper, the dsAlgDropSpecific
+-- attribute can be used to reference an entry in a parameter table,
+-- e.g., dsRandomDropTable for random dropper.
+
+-- For yet more complex dropper, for example, dropper that measures
+-- multiple queues, each queue with its own algorithm, can use a
+-- dsAlgDropTable entry as the entry point for Algorithmic Dropper
+
+
+
+-- functional data path element, leaving the dropper parameters
+-- for each queue be specified by entries of dsMQAlgDropTable.
+-- In such usage, the anchoring dsAlgDropEntry's dsAlgDropType
+-- should be mQDrop, and its dsAlgDropQMeasure should reference
+-- the subsequent dsMQAlgDropEntry's, its dsAlgDropSpecific
+-- should be used to reference parameters applicable to all the
+-- queues being measured.
+-- The subsequent dsMQAlgDropEntry's will provide the parameters,
+-- one for each queue being measured.  The dsMQAlgDropEntry's are
+-- chained using their dsMQAlgDropNext attributes.
+--
+
+dsAlgDropTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsAlgDropEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "The algorithmic drop table contains entries describ-
+       ing a functional data path element that drops
+       packets according to some algorithm."
+    REFERENCE
+        "An Informal Management Model for Diffserv Routers,
+        RFC 3290, section 7.1.3"
+    ::= { dsPolicyClasses 8 }
+
+dsAlgDropEntry OBJECT-TYPE
+    SYNTAX       DsAlgDropEntry
+    STATUS       current
+    DESCRIPTION
+       "An entry describes a process that drops packets
+       according to some algorithm.  Further details of the
+       algorithm type are to be found in dsAlgDropType
+       and with more detail parameter entry pointed to by
+       dsAlgDropSpecific when necessary."
+    PIB-INDEX { dsAlgDropPrid }
+    UNIQUENESS { dsAlgDropType,
+                 dsAlgDropNext,
+                 dsAlgDropQMeasure,
+                 dsAlgDropQThreshold,
+                 dsAlgDropSpecific }
+    ::= { dsAlgDropTable 1 }
+
+DsAlgDropEntry ::= SEQUENCE  {
+    dsAlgDropPrid             InstanceId,
+    dsAlgDropType             INTEGER,
+    dsAlgDropNext             Prid,
+    dsAlgDropQMeasure         Prid,
+    dsAlgDropQThreshold       Unsigned32,
+
+
+
+    dsAlgDropSpecific         Prid
+}
+
+dsAlgDropPrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+       "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsAlgDropEntry 1 }
+
+dsAlgDropType OBJECT-TYPE
+    SYNTAX       INTEGER {
+                     other(1),
+                     tailDrop(2),
+                     headDrop(3),
+                     randomDrop(4),
+                     alwaysDrop(5),
+                     mQDrop(6)
+                 }
+    STATUS       current
+    DESCRIPTION
+       "The type of algorithm used by this dropper. A value
+       of tailDrop(2), headDrop(3), or alwaysDrop(5) represents
+       an algorithm that is completely specified by this PIB.
+
+       A value of other(1) indicates that the specifics of
+       the drop algorithm are specified in some other PIB
+       module, and that the dsAlgDropSpecific attribute
+       points to an instance of a PRC in that PIB that
+       specifies the information necessary to implement the
+       algorithm.
+
+       The tailDrop(2) algorithm is described as follows:
+       dsAlgDropQThreshold represents the depth of the
+       queue, pointed to by dsAlgDropQMeasure, at
+       which all newly arriving packets will be dropped.
+
+       The headDrop(3) algorithm is described as follows: if
+       a packet arrives when the current depth of the queue,
+       pointed to by dsAlgDropQMeasure, is at
+       dsAlgDropQThreshold, packets currently at the head of
+       the queue are dropped to make room for the new packet
+       to be enqueued at the tail of the queue.
+
+       The randomDrop(4) algorithm is described as follows:
+       on packet arrival, an algorithm is executed which may
+       randomly drop the packet, or drop other packet(s)
+
+
+
+       from the queue in its place.  The specifics of the
+       algorithm may be proprietary.  For this algorithm,
+       dsAlgDropSpecific points to a dsRandomDropEntry
+       that describes the algorithm.  For this
+       algorithm, dsAlgQThreshold is understood to be
+       the absolute maximum size of the queue and additional
+       parameters are described in dsRandomDropTable.
+
+       The alwaysDrop(5) algorithm always drops packets. In
+       this case, the other configuration values in this Entry
+       are not meaningful; The queue is not used, therefore,
+       dsAlgDropNext, dsAlgDropQMeasure, and
+       dsAlgDropSpecific should be all set to zeroDotZero.
+
+       The mQDrop(6) algorithm measures multiple queues for
+       the drop algorithm.  The queues measured are represented
+       by having dsAlgDropQMeasure referencing a dsMQAlgDropEntry.
+       Each of the chained dsMQAlgDropEntry is used to describe
+       the drop algorithm for one of the measured queues."
+
+    ::= { dsAlgDropEntry 2 }
+
+dsAlgDropNext OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+       "This selects the next diffserv functional datapath
+       element to handle traffic for this data path.
+
+       The value zeroDotZero in this attribute indicates no
+       further DiffServ treatment is performed on traffic of
+       this datapath.  Any other value must point to a valid
+       (pre-existing) instance of one of:
+         dsClfrEntry
+         dsMeterEntry
+         dsActionEntry
+         dsAlgDropEntry
+         dsQEntry.
+
+       When dsAlgDropType is alwaysDrop(5), this attribute is
+       Ignored."
+    DEFVAL      { zeroDotZero }
+    ::= { dsAlgDropEntry 3 }
+
+dsAlgDropQMeasure OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+
+
+
+       "Points to a PRI to indicate the queues that a drop algorithm
+       is to monitor when deciding whether to drop a packet.
+
+       For alwaysDrop(5), this attribute should be zeroDotZero.
+       For tailDrop(2), headDrop(3), randomDrop(4), this should
+       point to an entry in the dsQTable.
+       For mQDrop(6), this should point to a dsMQAlgDropEntry that
+       Describe one of the queues being measured for multiple
+       queue dropper.
+
+       The PRI pointed to must exist prior to installing
+       this dropper element."
+    ::= { dsAlgDropEntry 4 }
+
+dsAlgDropQThreshold OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "Bytes"
+    STATUS       current
+    DESCRIPTION
+       "A threshold on the depth in bytes of the queue being
+       measured at which a trigger is generated to the drop-
+       ping algorithm, unless dsAlgDropType is alwaysDrop(5)
+       where this attribute is ignored.
+
+       For the tailDrop(2) or headDrop(3) algorithms, this
+       represents the depth of the queue, pointed to by
+       dsAlgDropQMeasure, at which the drop action
+       will take place. Other algorithms will need to define
+       their own semantics for this threshold."
+    ::= { dsAlgDropEntry 5 }
+
+dsAlgDropSpecific OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+       "Points to a table entry that provides further detail
+       regarding a drop algorithm.  The PRI pointed to
+       must exist prior to installing this dropper element.
+
+       Entries with dsAlgDropType equal to other(1) must
+       have this point to an instance of a PRC defined
+       in another PIB module.
+
+       Entries with dsAlgDropType equal to random-
+       Drop(4) must have this point to an entry in
+       dsRandomDropTable.
+
+       Entries with dsAlgDropType equal to mQDrop(6) can use this
+
+
+
+       attribute to reference parameters that is used by all the
+       queues of the multiple queues being measured.
+
+       For all other algorithms, this should take the value
+       zeroDotZero."
+    ::= { dsAlgDropEntry 6 }
+
+--
+-- Multiple Queue Algorithmic Drop Table
+--
+-- Entries of this table should be referenced by dsAlgDropQMeasure
+-- when dsAlgDropType is mQDrop(6) for droppers measuring multiple
+-- queues for its drop algorithm.
+-- Each entry of the table is used to describe the drop algorithm
+-- for a single queue within the multiple queues being measured.
+--
+-- Entries of this table, dsMQAlgDropEntry, is extended from
+-- dsAlgDropEntry, with usage of corresponding parameters the same
+-- except:
+--   dsAlgDropNext is used to point to the next diffserv
+--     functional data path element when the packet is not dropped.
+--   dsMQAlgDropExceedNext is used to point to the next
+--     dsMQAlgDropEntry for chaining together the multiple
+--     dsMQAlgDropEntry's for the multiple queues being measured.
+--
+
+dsMQAlgDropTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsMQAlgDropEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "The multiple queue algorithmic drop table contains entries
+       describing each queue being measured for the multiple queue
+       algorithmic dropper."
+    ::= { dsPolicyClasses 9 }
+
+dsMQAlgDropEntry OBJECT-TYPE
+    SYNTAX       DsMQAlgDropEntry
+    STATUS       current
+    DESCRIPTION
+       "An entry describes a process that drops packets
+       according to some algorithm.  Each entry is used for
+       each of the multiple queues being measured.  Each entry
+       extends the basic dsAlgDropEntry with adding of a
+       dsMQAlgDropExceedNext attribute.
+
+       Further details of the algorithm type are to be found in
+       dsAlgDropType and with more detail parameter entry pointed
+
+
+
+       to by dsMQAlgDropSpecific when necessary."
+    EXTENDS { dsAlgDropEntry }
+    UNIQUENESS { dsMQAlgDropExceedNext }
+    ::= { dsMQAlgDropTable 1 }
+
+DsMQAlgDropEntry ::= SEQUENCE  {
+    dsMQAlgDropExceedNext     Prid
+}
+
+dsMQAlgDropExceedNext OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+       "Used for linking of multiple dsMQAlgDropEntry for mQDrop.
+       A value of zeroDotZero indicates this is the last of a
+       chain of dsMQAlgDropEntry."
+    DEFVAL      { zeroDotZero }
+    ::= { dsMQAlgDropEntry 1 }
+
+--
+-- Random Drop Table
+--
+
+dsRandomDropTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsRandomDropEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "The random drop table contains entries describing a
+       process that drops packets randomly. Entries in this
+       table is intended to be pointed to by dsAlgDropSpecific
+       when dsAlgDropType is randomDrop(4)."
+    REFERENCE
+        "An Informal Management Model for Diffserv Routers,
+        RFC 3290, section 7.1.3"
+    ::= { dsPolicyClasses 10 }
+
+dsRandomDropEntry OBJECT-TYPE
+    SYNTAX       DsRandomDropEntry
+    STATUS       current
+    DESCRIPTION
+       "An entry describes a process that drops packets
+       according to a random algorithm."
+    PIB-INDEX { dsRandomDropPrid }
+    UNIQUENESS { dsRandomDropMinThreshBytes,
+                 dsRandomDropMinThreshPkts,
+                 dsRandomDropMaxThreshBytes,
+                 dsRandomDropMaxThreshPkts,
+
+
+
+                 dsRandomDropProbMax,
+                 dsRandomDropWeight,
+                 dsRandomDropSamplingRate
+               }
+    ::= { dsRandomDropTable 1 }
+
+DsRandomDropEntry ::= SEQUENCE  {
+    dsRandomDropPrid             InstanceId,
+    dsRandomDropMinThreshBytes   Unsigned32,
+    dsRandomDropMinThreshPkts    Unsigned32,
+    dsRandomDropMaxThreshBytes   Unsigned32,
+    dsRandomDropMaxThreshPkts    Unsigned32,
+    dsRandomDropProbMax          Unsigned32,
+    dsRandomDropWeight           Unsigned32,
+    dsRandomDropSamplingRate     Unsigned32
+}
+
+dsRandomDropPrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+       "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsRandomDropEntry 1 }
+
+dsRandomDropMinThreshBytes OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "bytes"
+    STATUS       current
+    DESCRIPTION
+       "The average queue depth in bytes, beyond which traffic has a
+       non-zero probability of being dropped."
+     ::= { dsRandomDropEntry 2 }
+
+dsRandomDropMinThreshPkts OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "packets"
+    STATUS       current
+    DESCRIPTION
+      "The average queue depth in packets, beyond which traffic has
+      a non-zero probability of being dropped."
+    ::= { dsRandomDropEntry 3 }
+
+dsRandomDropMaxThreshBytes OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "bytes"
+    STATUS       current
+    DESCRIPTION
+
+
+
+      "The average queue depth beyond which traffic has a
+      probability indicated by dsRandomDropProbMax of being dropped
+      or marked.  Note that this differs from the physical queue
+      limit, which is stored in dsAlgDropQThreshold."
+    ::= { dsRandomDropEntry 4 }
+
+dsRandomDropMaxThreshPkts OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "packets"
+    STATUS       current
+    DESCRIPTION
+      "The average queue depth beyond which traffic has a
+      probability indicated by dsRandomDropProbMax of being dropped
+      or marked.  Note that this differs from the physical queue
+      limit, which is stored in dsAlgDropQThreshold."
+    ::= { dsRandomDropEntry 5 }
+
+dsRandomDropProbMax OBJECT-TYPE
+    SYNTAX       Unsigned32  (0..1000)
+    STATUS       current
+    DESCRIPTION
+      "The worst case random drop probability, expressed in drops
+      per thousand packets.
+
+      For example, if every packet may be dropped in the worst case
+      (100%), this has the value 1000. Alternatively, if in the
+      worst case one percent (1%) of traffic may be dropped, it has
+      the value 10."
+    ::= { dsRandomDropEntry 6 }
+
+dsRandomDropWeight OBJECT-TYPE
+    SYNTAX       Unsigned32  (0..4294967295)
+    STATUS       current
+    DESCRIPTION
+      "The weighting of past history in affecting the Exponentially
+      Weighted Moving Average function which calculates the current
+      average queue depth.  The equation uses
+      dsRandomDropWeight/MaxValue as the coefficient for the new
+      sample in the equation, and
+      (MaxValue - dsRandomDropWeight)/MaxValue as the coefficient
+      of the old value, where, MaxValue is determined via capability
+      reported by the PEP.
+
+      Implementations may further limit the values of
+      dsRandomDropWeight via the capability tables."
+    ::= { dsRandomDropEntry 7 }
+
+dsRandomDropSamplingRate OBJECT-TYPE
+
+
+
+    SYNTAX       Unsigned32  (0..1000000)
+    STATUS       current
+    DESCRIPTION
+      "The number of times per second the queue is sampled for queue
+      average calculation. A value of zero means the queue is
+      sampled approximately each time a packet is enqueued (or
+      dequeued)."
+    ::= { dsRandomDropEntry 8 }
+
+--
+-- Queue Table
+--
+
+--
+-- An entry of dsQTable represents a FIFO queue diffserv
+-- functional data path element as described in [MODEL] section
+-- 7.1.1.
+-- Notice the specification of scheduling parameters for a queue
+-- as part of the input to a scheduler functional data path
+-- element as described in [MODEL] section 7.1.2.  This allows
+-- building of hierarchical queuing/scheduling.
+-- A queue therefore is parameterized by:
+-- 1. Which scheduler will service this queue, dsQNext.
+-- 2. How the scheduler will service this queue, with respect
+--    to all the other queues the same scheduler needs to service,
+--    dsQMinRate and dsQMaxRate.
+--
+-- Notice one or more upstream diffserv functional data path element
+-- may share, point to, a dsQTable entry as described in [MODEL]
+-- section 7.1.1.
+--
+
+dsQTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsQEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+    "The Queue Table enumerates the queues."
+    ::= { dsPolicyClasses 11 }
+
+dsQEntry OBJECT-TYPE
+    SYNTAX       DsQEntry
+    STATUS       current
+    DESCRIPTION
+       "An entry in the Queue Table describes a single queue
+       as a functional data path element."
+    PIB-INDEX { dsQPrid }
+    UNIQUENESS { dsQNext,
+
+
+
+                 dsQMinRate,
+                 dsQMaxRate }
+    ::= { dsQTable 1 }
+
+DsQEntry ::= SEQUENCE  {
+    dsQPrid                    InstanceId,
+    dsQNext                    Prid,
+    dsQMinRate                 Prid,
+    dsQMaxRate                 Prid
+}
+
+dsQPrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+        "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsQEntry 1 }
+
+dsQNext OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+       "This selects the next diffserv scheduler.  This must point
+       to a dsSchedulerEntry.
+
+       A value of zeroDotZero in this attribute indicates an
+       incomplete dsQEntry instance.  In such a case, the entry
+       has no operational effect, since it has no parameters to
+       give it meaning."
+    ::= { dsQEntry 2 }
+
+dsQMinRate OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+       "This Prid indicates the entry in dsMinRateTable
+       the scheduler, pointed to by dsQNext, should use to service
+       this queue.
+       If this value is zeroDotZero
+       then minimum rate and priority is unspecified.
+       If this value is not zeroDotZero then the instance pointed to
+       must exist prior to installing this entry."
+    ::= { dsQEntry 3 }
+
+dsQMaxRate OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "This Prid indicates the entry in dsMaxRateTable
+       the scheduler, pointed to by dsQNext, should use to service
+       this queue.
+       If this value is zeroDotZero, then the maximum rate is the
+       line speed of the interface.
+       If this value is not zeroDotZero, then the instance pointed
+       to must exist prior to installing this entry."
+    ::= { dsQEntry 4 }
+
+--
+-- Scheduler Table
+--
+--
+-- The Scheduler Table is used for representing packet schedulers:
+-- it provides flexibility for multiple scheduling algorithms, each
+-- servicing multiple queues, to be used on the same
+-- logical/physical interface of a data path.
+--
+-- Notice the servicing parameters the scheduler uses is
+-- specified by each of its upstream functional data path elements,
+-- queues or schedulers of this PIB.
+-- The coordination and coherency between the servicing parameters
+-- of the scheduler's upstream functional data path elements must
+-- be maintained for the scheduler to function correctly.
+--
+-- The dsSchedulerMinRate and dsSchedulerMaxRate attributes are
+-- used for specifying the servicing parameters for output of a
+-- scheduler when its downstream functional data path element
+-- is another scheduler.
+-- This is used for building hierarchical queue/scheduler.
+--
+-- More discussion of the scheduler functional data path element
+-- is in [MODEL] section 7.1.2.
+--
+
+dsSchedulerTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsSchedulerEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "The Scheduler Table enumerates packet schedulers.
+       Multiple scheduling algorithms can be used on a given
+       datapath, with each algorithm described by one
+       dsSchedulerEntry."
+    REFERENCE
+        "An Informal Management Model for Diffserv Routers,
+        RFC 3290, section 7.1.2"
+
+
+
+    ::= { dsPolicyClasses 12 }
+
+dsSchedulerEntry OBJECT-TYPE
+    SYNTAX       DsSchedulerEntry
+    STATUS       current
+    DESCRIPTION
+       "An entry in the Scheduler Table describing a single
+       instance of a scheduling algorithm."
+    PIB-INDEX { dsSchedulerPrid }
+    UNIQUENESS { dsSchedulerNext,
+                 dsSchedulerMethod,
+                 dsSchedulerMinRate,
+                 dsSchedulerMaxRate }
+    ::= { dsSchedulerTable 1 }
+
+DsSchedulerEntry ::= SEQUENCE  {
+    dsSchedulerPrid                 InstanceId,
+    dsSchedulerNext                 Prid,
+    dsSchedulerMethod               AutonomousType,
+    dsSchedulerMinRate              Prid,
+    dsSchedulerMaxRate              Prid
+}
+
+dsSchedulerPrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+        "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsSchedulerEntry 1 }
+
+dsSchedulerNext OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+       "This selects the next diffserv functional datapath
+       element to handle traffic for this data path.
+
+       This attribute normally have a value of zeroDotZero to
+       indicate no further DiffServ treatment is performed on
+       traffic of this datapath.  The use of zeroDotZero is the
+       normal usage for the last functional datapath element.
+       Any value other than zeroDotZero must point to a valid
+       (pre-existing) instance of one of:
+         dsSchedulerEntry
+         dsQEntry,
+
+       or:
+
+
+
+         dsClfrEntry
+         dsMeterEntry
+         dsActionEntry
+         dsAlgDropEntry
+
+       This points to another dsSchedulerEntry
+       for implementation of multiple scheduler methods for
+       the same data path, and for implementation of
+       hierarchical schedulers."
+    DEFVAL       { zeroDotZero }
+    ::= { dsSchedulerEntry 2 }
+
+dsSchedulerMethod OBJECT-TYPE
+    SYNTAX       AutonomousType
+    STATUS       current
+    DESCRIPTION
+      "The scheduling algorithm used by this Scheduler.
+      Standard values for generic algorithms:
+        diffServSchedulerPriority,
+        diffServSchedulerWRR,
+        diffServSchedulerWFQ
+      are specified in the DiffServ MIB.
+      Additional values may be further specified in other PIBs.
+      A value of zeroDotZero indicates this is unknown."
+    REFERENCE
+        "An Informal Management Model for Diffserv Routers,
+        RFC 3290, section 7.1.2"
+    ::= { dsSchedulerEntry 3 }
+
+dsSchedulerMinRate OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+      "This Prid indicates the entry in dsMinRateTable
+       which indicates the priority or minimum output rate from this
+       scheduler.  This attribute is used only when there is more
+       than one level of scheduler.
+
+       When it has the value zeroDotZero, it indicates that no
+       Minimum rate or priority is imposed."
+    DEFVAL      { zeroDotZero }
+    ::= { dsSchedulerEntry 4 }
+
+dsSchedulerMaxRate OBJECT-TYPE
+    SYNTAX       Prid
+    STATUS       current
+    DESCRIPTION
+      "This Prid indicates the entry in dsMaxRateTable
+
+
+
+       which indicates the maximum output rate from this scheduler.
+       When more than one maximum rate applies (e.g., a multi-rate
+       shaper is used), it points to the first of the rate entries.
+       This attribute is only used when there is more than one level
+       of scheduler.
+
+       When it has the value zeroDotZero, it indicates that no
+       Maximum rate is imposed."
+     DEFVAL      { zeroDotZero }
+    ::= { dsSchedulerEntry 5 }
+
+--
+-- Minimum Rate Parameters Table
+--
+-- The parameters used by a scheduler for its inputs or outputs are
+-- maintained separately from the Queue or Scheduler table entries
+-- for reusability reasons and so that they may be used by both
+-- queues and schedulers.  This follows the approach for separation
+-- of data path elements from parameterization that is used
+-- throughout this PIB.
+-- Use of these Minimum Rate Parameter Table entries by Queues and
+-- Schedulers allows the modeling of hierarchical scheduling
+-- systems.
+--
+-- Specifically, a Scheduler has one or more inputs and one output.
+-- Any queue feeding a scheduler, or any scheduler which feeds a
+-- second scheduler, might specify a minimum transfer rate by
+-- pointing to a Minimum Rate Parameter Table entry.
+--
+-- The dsMinRatePriority/Absolute/Relative attributes are used as
+-- parameters to the work-conserving portion of a scheduler:
+-- "work-conserving" implies that the scheduler can continue to emit
+-- data as long as there is data available at its input(s).  This
+-- has the effect of guaranteeing a certain priority relative to
+-- other scheduler inputs and/or a certain minimum proportion of the
+-- available output bandwidth.  Properly configured, this means a
+-- certain minimum rate, which may be exceeded should traffic be
+-- available should there be spare bandwidth after all other classes
+-- have had opportunities to consume their own minimum rates.
+--
+
+dsMinRateTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsMinRateEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "The Minimum Rate Table enumerates individual
+       sets of scheduling parameter that can be used/reused
+
+
+
+       by Queues and Schedulers."
+    ::= { dsPolicyClasses 13 }
+
+dsMinRateEntry OBJECT-TYPE
+    SYNTAX       DsMinRateEntry
+    STATUS       current
+    DESCRIPTION
+       "An entry in the Minimum Rate Table describes
+       a single set of scheduling parameter for use by
+       queues and schedulers."
+    PIB-INDEX { dsMinRatePrid }
+    UNIQUENESS { dsMinRatePriority,
+                 dsMinRateAbsolute,
+                 dsMinRateRelative }
+    ::= { dsMinRateTable 1 }
+
+DsMinRateEntry ::= SEQUENCE  {
+    dsMinRatePrid            InstanceId,
+    dsMinRatePriority        Unsigned32,
+    dsMinRateAbsolute        Unsigned32,
+    dsMinRateRelative        Unsigned32
+}
+
+dsMinRatePrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+        "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsMinRateEntry 1 }
+
+dsMinRatePriority OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4294967295)
+    STATUS       current
+    DESCRIPTION
+      "The priority of this input to the associated scheduler,
+      relative to the scheduler's other inputs. Higher Priority
+      value indicates the associated queue/scheduler will get
+      service first before others with lower Priority values."
+    ::= { dsMinRateEntry 2 }
+
+dsMinRateAbsolute OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4294967295)
+    UNITS        "kilobits per second"
+    STATUS       current
+    DESCRIPTION
+      "The minimum absolute rate, in kilobits/sec, that a downstream
+      scheduler element should allocate to this queue. If the value
+
+
+
+      is zero, then there is effectively no minimum rate guarantee.
+      If the value is non-zero, the scheduler will assure the
+      servicing of this queue to at least this rate.
+
+      Note that this attribute's value is coupled to that
+      of dsMinRateRelative:  changes to one will affect the value
+      of the other.
+
+      [IFMIB] defines ifSpeed as Gauge32 in units of bits per
+      second, and ifHighSpeed as Gauge32 in units of 1,000,000 bits
+      per second.
+      This yields the following equations:
+
+      RateRelative  = [ (RateAbsolute * 1000) / ifSpeed ] * 1,000
+
+      Where, 1000 is for converting kbps used by RateAbsolute to bps
+      used by ifSpeed, 1,000 is for 'in units of 1/1,000 of 1' for
+      RateRelative.
+
+      or, if appropriate:
+
+      RateRelative  =
+         { [ (RateAbsolute * 1000) / 1,000,000 ] / ifHIghSpeed } *
+         1,000
+
+      Where, 1000 and 1,000,000 is for converting kbps used by
+      RateAbsolute to 1 million bps used by ifHighSpeed, 1,000 is
+      for 'in units of 1/1,000 of 1' for RateRelative."
+    REFERENCE
+        "ifSpeed, ifHighSpeed from the IF-MIB, RFC 2863."
+    ::= { dsMinRateEntry 3 }
+
+dsMinRateRelative OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4294967295)
+    STATUS       current
+    DESCRIPTION
+      "The minimum rate that a downstream scheduler element
+      should allocate to this queue, relative to the max-
+      imum rate of the interface as reported by ifSpeed or
+      ifHighSpeed, in units of 1/1,000 of 1.  If the value
+      is zero, then there is effectively no minimum rate
+      guarantee.   If the value is non-zero, the scheduler
+      will assure the servicing of this queue to at least
+      this rate.
+
+      Note that this attribute's value is coupled to that
+      of dsMinRateAbsolute:  changes to one will
+      affect the value of the other.
+
+
+
+
+      [IFMIB] defines ifSpeed as Gauge32 in units of bits per
+      second, and ifHighSpeed as Gauge32 in units of 1,000,000 bits
+      per second.
+      This yields the following equations:
+
+      RateRelative  = [ (RateAbsolute * 1000) / ifSpeed ] * 1,000
+
+      Where, 1000 is for converting kbps used by RateAbsolute to bps
+      used by ifSpeed, 1,000 is for 'in units of 1/1,000 of 1' for
+      RateRelative.
+
+      or, if appropriate:
+
+      RateRelative  =
+         { [ (RateAbsolute * 1000) / 1,000,000 ] / ifHIghSpeed } *
+         1,000
+
+      Where, 1000 and 1,000,000 is for converting kbps used by
+      RateAbsolute to 1 million bps used by ifHighSpeed, 1,000 is
+      for 'in units of 1/1,000 of 1' for RateRelative."
+    REFERENCE
+        "ifSpeed, ifHighSpeed from the IF-MIB, RFC 2863."
+    ::= { dsMinRateEntry 4 }
+
+--
+-- Maximum Rate Parameters Table
+--
+-- The parameters used by a scheduler for its inputs or outputs are
+-- maintained separately from the Queue or Scheduler table entries
+-- for reusability reasons and so that they may be used by both
+-- queues and schedulers.  This follows the approach for separation
+-- of data path elements from parameterization that is used
+-- throughout this PIB.
+--
+-- Use of these Maximum Rate Parameter Table entries by Queues and
+-- Schedulers allows the modeling of hierarchical scheduling
+-- systems.
+--
+-- Specifically, a Scheduler has one or more inputs and one output.
+-- Any queue feeding a scheduler, or any scheduler which feeds a
+-- second scheduler, might specify a maximum transfer rate by
+-- pointing to a Maximum Rate Parameter Table entry.  Multi-rate
+-- shapers, such as a Dual Leaky Bucket algorithm, specify their
+-- rates using multiple Maximum Rate Parameter Entries with the same
+-- dsMaxRateId but different dsMaxRateLevels.
+--
+-- The dsMaxRateLevel/Absolute/Relative attributes are used as
+
+
+
+-- parameters to the non-work-conserving portion of a scheduler:
+-- non-work-conserving implies that the scheduler may sometimes not
+-- emit a packet, even if there is data available at its input(s).
+-- This has the effect of limiting the servicing of the
+-- queue/scheduler input or output, in effect performing shaping of
+-- the packet stream passing through the queue/scheduler, as
+-- described in the Informal Differentiated Services Model
+-- section 7.2.
+--
+
+dsMaxRateTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DsMaxRateEntry
+    PIB-ACCESS   install
+    STATUS       current
+    DESCRIPTION
+       "The Maximum Rate Table enumerates individual
+       sets of scheduling parameter that can be used/reused
+       by Queues and Schedulers."
+    ::= { dsPolicyClasses 14 }
+
+dsMaxRateEntry OBJECT-TYPE
+    SYNTAX       DsMaxRateEntry
+    STATUS       current
+    DESCRIPTION
+       "An entry in the Maximum Rate Table describes
+       a single set of scheduling parameter for use by
+       queues and schedulers."
+    PIB-INDEX { dsMaxRatePrid }
+    UNIQUENESS { dsMaxRateId,
+                 dsMaxRateLevel,
+                 dsMaxRateAbsolute,
+                 dsMaxRateRelative,
+                 dsMaxRateThreshold }
+    ::= { dsMaxRateTable 1 }
+
+DsMaxRateEntry ::= SEQUENCE  {
+    dsMaxRatePrid            InstanceId,
+    dsMaxRateId              Unsigned32,
+    dsMaxRateLevel           Unsigned32,
+    dsMaxRateAbsolute        Unsigned32,
+    dsMaxRateRelative        Unsigned32,
+    dsMaxRateThreshold       BurstSize
+}
+
+dsMaxRatePrid OBJECT-TYPE
+    SYNTAX       InstanceId
+    STATUS       current
+    DESCRIPTION
+
+
+
+        "An arbitrary integer index that uniquely identifies an
+        instance of the class."
+    ::= { dsMaxRateEntry 1 }
+
+dsMaxRateId OBJECT-TYPE
+    SYNTAX       Unsigned32  (0..4294967295)
+    STATUS       current
+    DESCRIPTION
+      "An identifier used together with dsMaxRateLevel for
+      representing a multi-rate shaper.  This attribute is used for
+      associating all the rate attributes of a multi-rate shaper.
+      Each dsMaxRateEntry of a multi-rate shaper must have the same
+      value in this attribute.  The different rates of a multi-rate
+      shaper is identified using dsMaxRateLevel.
+      This attribute uses the value of zero to indicate this
+      attribute is not used, for single rate shaper."
+    DEFVAL { 0 }
+    ::= { dsMaxRateEntry 2 }
+
+dsMaxRateLevel OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..32)
+    STATUS       current
+    DESCRIPTION
+      "An index that indicates which level of a multi-rate shaper is
+      being given its parameters. A multi-rate shaper has some
+      number of rate levels. Frame Relay's dual rate specification
+      refers to a 'committed' and an 'excess' rate; ATM's dual rate
+      specification refers to a 'mean' and a 'peak' rate. This table
+      is generalized to support an arbitrary number of rates. The
+      committed or mean rate is level 1, the peak rate (if any) is
+      the highest level rate configured, and if there are other
+      rates they are distributed in monotonically increasing order
+      between them.
+      When the entry is used for a single rate shaper, this
+      attribute contains a value of one."
+    DEFVAL { 1 }
+    ::= { dsMaxRateEntry 3 }
+
+dsMaxRateAbsolute OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4294967295)
+    UNITS        "kilobits per second"
+    STATUS       current
+    DESCRIPTION
+      "The maximum rate in kilobits/sec that a downstream
+      scheduler element should allocate to this queue. If
+      the value is zero, then there is effectively no max-
+      imum rate limit and that the scheduler should attempt
+      to be work-conserving for this queue.  If the value
+
+
+
+      is  non-zero, the scheduler will limit the servicing
+      of this queue to, at most, this rate in a non-work-
+      conserving manner.
+
+      Note that this attribute's value is coupled to that
+      of dsMaxRateRelative:  changes to one will
+      affect the value of the other.
+
+      [IFMIB] defines ifSpeed as Gauge32 in units of bits per
+      second, and ifHighSpeed as Gauge32 in units of 1,000,000 bits
+      per second.
+      This yields the following equations:
+
+      RateRelative  = [ (RateAbsolute * 1000) / ifSpeed ] * 1,000
+
+      Where, 1000 is for converting kbps used by RateAbsolute to bps
+      used by ifSpeed, 1,000 is for 'in units of 1/1,000 of 1'
+      for RateRelative.
+
+      or, if appropriate:
+
+      RateRelative  =
+         { [ (RateAbsolute * 1000) / 1,000,000 ] / ifHIghSpeed } *
+         1,000
+
+      Where, 1000 and 1,000,000 is for converting kbps used by
+      RateAbsolute to 1 million bps used by ifHighSpeed, 1,000 is
+      for 'in units of 1/1,000 of 1' for RateRelative."
+    ::= { dsMaxRateEntry 4 }
+
+dsMaxRateRelative OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4294967295)
+    STATUS       current
+    DESCRIPTION
+      "The maximum rate that a downstream scheduler element
+      should allocate to this queue, relative to the max-
+      imum rate of the interface as reported by ifSpeed or
+      ifHighSpeed, in units of 1/1,000 of 1.  If the value
+      is zero, then there is effectively no maximum rate
+      limit and the scheduler should attempt to be work-
+      conserving for this queue.  If the value is non-zero,
+      the scheduler will limit the servicing of this queue
+      to, at most, this rate in a non-work-conserving
+      manner.
+
+      Note that this attribute's value is coupled to that
+      of dsMaxRateAbsolute:  changes to one will
+      affect the value of the other.
+
+
+
+
+      [IFMIB] defines ifSpeed as Gauge32 in units of bits per
+      second, and ifHighSpeed as Gauge32 in units of 1,000,000 bits
+      per second.
+      This yields the following equations:
+
+      RateRelative  = [ (RateAbsolute * 1000) / ifSpeed ] * 1,000
+
+      Where, 1000 is for converting kbps used by RateAbsolute to bps
+      used by ifSpeed, 1,000 is for 'in units of 1/1,000 of 1' for
+      RateRelative.
+
+      or, if appropriate:
+
+      RateRelative  =
+         { [ (RateAbsolute * 1000) / 1,000,000 ] / ifHIghSpeed } *
+         1,000
+
+      Where, 1000 and 1,000,000 is for converting kbps used by
+      RateAbsolute to 1 million bps used by ifHighSpeed, 1,000 is
+      for 'in units of 1/1,000 of 1' for RateRelative."
+    REFERENCE
+        "ifSpeed, ifHighSpeed from the IF-MIB, RFC 2863."
+    ::= { dsMaxRateEntry 5 }
+
+dsMaxRateThreshold OBJECT-TYPE
+    SYNTAX       BurstSize
+    UNITS        "Bytes"
+    STATUS       current
+    DESCRIPTION
+      "The number of bytes of queue depth at which the rate of a
+      multi-rate scheduler will increase to the next output rate. In
+      the last PRI for such a shaper, this threshold is
+      ignored and by convention is zero."
+    REFERENCE
+        "Adaptive Rate Shaper, RFC 2963"
+ ::= { dsMaxRateEntry 6 }
+
+--
+-- Conformance Section
+--
+
+dsPolicyPibCompliances
+                OBJECT IDENTIFIER ::= { dsPolicyPibConformance 1 }
+dsPolicyPibGroups
+                OBJECT IDENTIFIER ::= { dsPolicyPibConformance 2 }
+
+dsPolicyPibCompliance MODULE-COMPLIANCE
+
+
+
+    STATUS  current
+    DESCRIPTION
+            "Describes the requirements for conformance to the
+            QoS Policy PIB."
+
+    MODULE FRAMEWORK-PIB
+        MANDATORY-GROUPS {
+            frwkPrcSupportGroup,
+            frwkPibIncarnationGroup,
+            frwkDeviceIdGroup,
+            frwkCompLimitsGroup,
+            frwkCapabilitySetGroup,
+            frwkRoleComboGroup,
+            frwkIfRoleComboGroup,
+            frwkBaseFilterGroup,
+            frwkIpFilterGroup }
+
+    OBJECT frwkPibIncarnationLongevity
+    PIB-MIN-ACCESS  notify
+    DESCRIPTION
+       "Install support is required if policy expiration is to
+       be supported."
+
+    OBJECT frwkPibIncarnationTtl
+    PIB-MIN-ACCESS  notify
+    DESCRIPTION
+       "Install support is required if policy expiration is to
+       be supported."
+
+    MODULE DIFFSERV-PIB -- this module
+        MANDATORY-GROUPS {
+            dsPibBaseIfCapsGroup,
+            dsPibIfClassificationCapsGroup,
+            dsPibIfAlgDropCapsGroup,
+            dsPibIfQueueCapsGroup,
+            dsPibIfSchedulerCapsGroup,
+            dsPibIfMaxRateCapsGroup,
+            dsPibIfElmDepthCapsGroup,
+            dsPibIfElmLinkCapsGroup,
+            dsPibDataPathGroup,
+            dsPibClfrGroup,
+            dsPibClfrElementGroup,
+            dsPibActionGroup,
+            dsPibAlgDropGroup,
+            dsPibQGroup,
+            dsPibSchedulerGroup,
+            dsPibMinRateGroup,
+            dsPibMaxRateGroup }
+
+
+
+
+    GROUP dsPibIfMeteringCapsGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement
+       metering functions."
+
+    GROUP dsPibMeterGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement
+       metering functions."
+
+    GROUP dsPibTBParamGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement
+       token-bucket metering functions."
+
+    GROUP dsPibDscpMarkActGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement
+       DSCP-Marking functions."
+
+    GROUP dsPibMQAlgDropGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement
+       Multiple Queue Measured Algorithmic Drop functions."
+
+    GROUP dsPibRandomDropGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement
+       Random Drop functions."
+
+    OBJECT dsClfrId
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsClfrElementClfrId
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsClfrElementPrecedence
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsClfrElementNext
+    PIB-MIN-ACCESS not-accessible
+
+
+
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsClfrElementSpecific
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsMeterSucceedNext
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsMeterFailNext
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsMeterSpecific
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsTBParamType
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsTBParamRate
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsTBParamBurstSize
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsTBParamInterval
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsActionNext
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+
+
+
+    OBJECT dsActionSpecific
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsAlgDropType
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsAlgDropNext
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsAlgDropQMeasure
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsAlgDropQThreshold
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsAlgDropSpecific
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsRandomDropMinThreshBytes
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsRandomDropMinThreshPkts
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsRandomDropMaxThreshBytes
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsRandomDropMaxThreshPkts
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+
+
+
+       "Install support is not required."
+
+    OBJECT dsRandomDropProbMax
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsRandomDropWeight
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsRandomDropSamplingRate
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsQNext
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsQMinRate
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsQMaxRate
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsSchedulerNext
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsSchedulerMethod
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsSchedulerMinRate
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsSchedulerMaxRate
+
+
+
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsMinRatePriority
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsMinRateAbsolute
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsMinRateRelative
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsMaxRateId
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsMaxRateLevel
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsMaxRateAbsolute
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsMaxRateRelative
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    OBJECT dsMaxRateThreshold
+    PIB-MIN-ACCESS not-accessible
+    DESCRIPTION
+       "Install support is not required."
+
+    ::= { dsPolicyPibCompliances 1 }
+
+dsPibBaseIfCapsGroup OBJECT-GROUP
+    OBJECTS {
+
+
+
+        dsBaseIfCapsPrid, dsBaseIfCapsDirection
+    }
+    STATUS current
+    DESCRIPTION
+       "The Base Interface Capability Group defines the PIB
+       Objects that describe the base for interface capabilities."
+    ::= { dsPolicyPibGroups 1 }
+
+dsPibIfClassificationCapsGroup OBJECT-GROUP
+    OBJECTS {
+        dsIfClassificationCapsSpec
+    }
+    STATUS current
+    DESCRIPTION
+       "The Classification Capability Group defines the PIB
+       Objects that describe the classification capabilities."
+    ::= { dsPolicyPibGroups 2 }
+
+dsPibIfMeteringCapsGroup OBJECT-GROUP
+    OBJECTS {
+        dsIfMeteringCapsSpec
+    }
+    STATUS current
+    DESCRIPTION
+       "The Metering Capability Group defines the PIB
+       Objects that describe the metering capabilities."
+    ::= { dsPolicyPibGroups 3 }
+
+dsPibIfAlgDropCapsGroup OBJECT-GROUP
+    OBJECTS {
+        dsIfAlgDropCapsType, dsIfAlgDropCapsMQCount
+    }
+    STATUS current
+    DESCRIPTION
+       "The Algorithmic Dropper Capability Group defines the
+       PIB Objects that describe the algorithmic dropper
+       capabilities."
+    ::= { dsPolicyPibGroups 4 }
+
+dsPibIfQueueCapsGroup OBJECT-GROUP
+    OBJECTS {
+        dsIfQueueCapsMinQueueSize, dsIfQueueCapsMaxQueueSize,
+        dsIfQueueCapsTotalQueueSize
+    }
+    STATUS current
+    DESCRIPTION
+       "The Queueing Capability Group defines the PIB
+       Objects that describe the queueing capabilities."
+
+
+
+    ::= { dsPolicyPibGroups 5 }
+
+dsPibIfSchedulerCapsGroup OBJECT-GROUP
+    OBJECTS {
+        dsIfSchedulerCapsServiceDisc, dsIfSchedulerCapsMaxInputs,
+        dsIfSchedulerCapsMinMaxRate
+    }
+    STATUS current
+    DESCRIPTION
+       "The Scheduler Capability Group defines the PIB
+       Objects that describe the scheduler capabilities."
+    ::= { dsPolicyPibGroups 6 }
+
+dsPibIfMaxRateCapsGroup OBJECT-GROUP
+    OBJECTS {
+        dsIfMaxRateCapsMaxLevels
+    }
+    STATUS current
+    DESCRIPTION
+       "The Max Rate Capability Group defines the PIB
+       Objects that describe the max rate capabilities."
+    ::= { dsPolicyPibGroups 7 }
+
+dsPibIfElmDepthCapsGroup OBJECT-GROUP
+    OBJECTS {
+        dsIfElmDepthCapsPrc, dsIfElmDepthCapsCascadeMax
+    }
+    STATUS current
+    DESCRIPTION
+       "The DataPath Element Depth Capability Group defines the PIB
+       Objects that describe the datapath element depth
+       capabilities."
+    ::= { dsPolicyPibGroups 8 }
+
+dsPibIfElmLinkCapsGroup OBJECT-GROUP
+    OBJECTS {
+        dsIfElmLinkCapsPrc, dsIfElmLinkCapsAttr,
+        dsIfElmLinkCapsNextPrc
+    }
+    STATUS current
+    DESCRIPTION
+       "The DataPath Element Linkage Capability Group defines the
+       PIB Objects that describe the datapath element linkage
+       capabilities."
+    ::= { dsPolicyPibGroups 9 }
+
+dsPibDataPathGroup OBJECT-GROUP
+    OBJECTS {
+
+
+
+        dsDataPathPrid, dsDataPathCapSetName,
+        dsDataPathRoles, dsDataPathIfDirection,
+        dsDataPathStart
+    }
+    STATUS current
+    DESCRIPTION
+       "The Data Path Group defines the PIB Objects that
+       describe a data path."
+    ::= { dsPolicyPibGroups 10 }
+
+dsPibClfrGroup OBJECT-GROUP
+    OBJECTS {
+        dsClfrPrid, dsClfrId
+    }
+    STATUS current
+    DESCRIPTION
+       "The Classifier Group defines the PIB Objects that
+       describe a generic classifier."
+    ::= { dsPolicyPibGroups 11 }
+
+dsPibClfrElementGroup OBJECT-GROUP
+    OBJECTS {
+        dsClfrElementPrid, dsClfrElementClfrId,
+        dsClfrElementPrecedence, dsClfrElementNext,
+        dsClfrElementSpecific
+    }
+    STATUS current
+    DESCRIPTION
+       "The Classifier Group defines the PIB Objects that
+       describe a generic classifier."
+    ::= { dsPolicyPibGroups 12 }
+
+dsPibMeterGroup OBJECT-GROUP
+    OBJECTS {
+        dsMeterPrid, dsMeterSucceedNext,
+        dsMeterFailNext, dsMeterSpecific
+    }
+    STATUS current
+    DESCRIPTION
+       "The Meter Group defines the objects used in describ-
+       ing a generic meter element."
+    ::= { dsPolicyPibGroups 13 }
+
+dsPibTBParamGroup OBJECT-GROUP
+    OBJECTS {
+        dsTBParamPrid, dsTBParamType, dsTBParamRate,
+        dsTBParamBurstSize, dsTBParamInterval
+    }
+
+
+
+    STATUS current
+    DESCRIPTION
+       "The Token-Bucket Parameter Group defines the objects
+       used in describing a single-rate token bucket meter
+       element."
+    ::= { dsPolicyPibGroups 14 }
+
+dsPibActionGroup OBJECT-GROUP
+    OBJECTS {
+        dsActionPrid, dsActionNext, dsActionSpecific
+    }
+    STATUS current
+    DESCRIPTION
+       "The  Action Group defines the objects used in
+       describing a generic action element."
+    ::= { dsPolicyPibGroups 15 }
+
+dsPibDscpMarkActGroup OBJECT-GROUP
+    OBJECTS {
+        dsDscpMarkActPrid, dsDscpMarkActDscp
+    }
+    STATUS current
+    DESCRIPTION
+       "The DSCP Mark Action Group defines the objects used
+       in describing a DSCP Marking Action element."
+    ::= { dsPolicyPibGroups 16 }
+
+dsPibAlgDropGroup OBJECT-GROUP
+    OBJECTS {
+        dsAlgDropPrid, dsAlgDropType, dsAlgDropNext,
+        dsAlgDropQMeasure, dsAlgDropQThreshold,
+        dsAlgDropSpecific
+    }
+    STATUS current
+    DESCRIPTION
+       "The Algorithmic Drop Group contains the objects that
+       describe algorithmic dropper operation and configura-
+       tion."
+    ::= { dsPolicyPibGroups 17 }
+
+dsPibMQAlgDropGroup OBJECT-GROUP
+    OBJECTS {
+        dsMQAlgDropExceedNext
+    }
+    STATUS current
+    DESCRIPTION
+       "The Multiple Queue Measured Algorithmic Drop Group
+       contains the objects that describe multiple queue
+
+
+
+       measured algorithmic dropper operation and configuration."
+    ::= { dsPolicyPibGroups 18 }
+
+dsPibRandomDropGroup OBJECT-GROUP
+    OBJECTS {
+        dsRandomDropPrid,
+        dsRandomDropMinThreshBytes,
+        dsRandomDropMinThreshPkts,
+        dsRandomDropMaxThreshBytes,
+        dsRandomDropMaxThreshPkts,
+        dsRandomDropProbMax,
+        dsRandomDropWeight,
+        dsRandomDropSamplingRate
+    }
+    STATUS current
+    DESCRIPTION
+       "The Random Drop Group augments the Algorithmic Drop Group
+       for random dropper operation and configuration."
+    ::= { dsPolicyPibGroups 19 }
+
+dsPibQGroup OBJECT-GROUP
+    OBJECTS {
+        dsQPrid, dsQNext, dsQMinRate, dsQMaxRate
+    }
+    STATUS current
+    DESCRIPTION
+       "The Queue Group contains the objects that describe
+       an interface type's queues."
+    ::= { dsPolicyPibGroups 20 }
+
+dsPibSchedulerGroup OBJECT-GROUP
+    OBJECTS {
+        dsSchedulerPrid, dsSchedulerNext, dsSchedulerMethod,
+        dsSchedulerMinRate, dsSchedulerMaxRate
+    }
+    STATUS current
+    DESCRIPTION
+       "The Scheduler Group contains the objects that
+       describe packet schedulers on interface types."
+    ::= { dsPolicyPibGroups 21 }
+
+dsPibMinRateGroup OBJECT-GROUP
+    OBJECTS {
+        dsMinRatePrid, dsMinRatePriority,
+        dsMinRateAbsolute, dsMinRateRelative
+    }
+    STATUS current
+    DESCRIPTION
+
+
+
+       "The Minimum Rate Group contains the objects
+       that describe packet schedulers' parameters on interface
+       types."
+    ::= { dsPolicyPibGroups 22 }
+
+dsPibMaxRateGroup OBJECT-GROUP
+    OBJECTS {
+        dsMaxRatePrid, dsMaxRateId, dsMaxRateLevel,
+        dsMaxRateAbsolute, dsMaxRateRelative,
+        dsMaxRateThreshold
+    }
+    STATUS current
+    DESCRIPTION
+       "The Maximum Rate Group contains the objects
+       that describe packet schedulers' parameters on interface
+       types."
+    ::= { dsPolicyPibGroups 23 }
+
+END

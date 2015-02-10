@@ -1,0 +1,553 @@
+T11-FC-VIRTUAL-FABRIC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Unsigned32, mib-2
+                            FROM SNMPv2-SMI         -- [RFC2578]
+    MODULE-COMPLIANCE, OBJECT-GROUP
+                            FROM SNMPv2-CONF        -- [RFC2580]
+    RowStatus, StorageType  FROM SNMPv2-TC          -- [RFC2579]
+    InterfaceIndex          FROM IF-MIB             -- [RFC2863]
+    fcmInstanceIndex, FcNameIdOrZero,
+    fcmPortEntry, fcmSwitchEntry
+                            FROM FC-MGMT-MIB        -- [RFC4044]
+    T11FabricIndex          FROM T11-TC-MIB;        -- [RFC4439]
+
+t11FcVirtualFabricMIB  MODULE-IDENTITY
+    LAST-UPDATED    "200611100000Z"
+    ORGANIZATION    "IETF IMSS (Internet and Management Support
+                     for Storage) Working Group"
+    CONTACT-INFO
+            "
+                     Scott Kipp
+                     McDATA Corporation
+                Tel: +1 720 558-3452
+             E-mail: scott.kipp@mcdata.com
+             Postal: 4 McDATA Parkway
+                     Broomfield, CO USA 80021
+
+                     G D Ramkumar
+                     SnapTell, Inc.
+                Tel: +1 650-326-7627
+             E-mail: gramkumar@stanfordalumni.org
+             Postal: 2741 Middlefield Rd, Suite 200
+                     Palo Alto, CA USA 94306
+
+                     Keith McCloghrie
+                     Cisco Systems, Inc.
+                Tel: +1 408 526-5260
+             E-mail: kzm@cisco.com
+             Postal: 170 West Tasman Drive
+                     San Jose, CA USA 95134
+            "
+
+    DESCRIPTION
+        "This module defines management information specific to
+         Fibre Channel Virtual Fabrics.  A Virtual Fabric is a
+
+
+
+         Fabric composed of partitions of switches, links and
+         N_Ports with a single Fabric management domain, Fabric
+         Services and independence from other Virtual Fabrics.
+
+         Copyright (C) The IETF Trust (2006).  This version of
+         this MIB module is part of RFC 4747; see the RFC itself for
+         full legal notices."
+    REVISION        "200611100000Z"
+    DESCRIPTION
+        "Initial version of this MIB module, published as RFC 4747."
+    ::= { mib-2 147 }
+
+t11vfObjects       OBJECT IDENTIFIER ::= { t11FcVirtualFabricMIB 1 }
+t11vfConformance   OBJECT IDENTIFIER ::= { t11FcVirtualFabricMIB 2 }
+
+--********************************
+--  MIB object definitions
+--
+
+t11vfCoreSwitchTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF T11vfCoreSwitchEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of core switches supported by the current
+         management entity."
+    ::= { t11vfObjects 1 }
+
+t11vfCoreSwitchEntry OBJECT-TYPE
+    SYNTAX      T11vfCoreSwitchEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry represents one core switch."
+    INDEX   { fcmInstanceIndex, t11vfCoreSwitchSwitchName }
+    ::= { t11vfCoreSwitchTable 1}
+
+T11vfCoreSwitchEntry ::=
+    SEQUENCE {
+       t11vfCoreSwitchSwitchName   FcNameIdOrZero,
+       t11vfCoreSwitchMaxSupported Unsigned32,
+      t11vfCoreSwitchStorageType  StorageType
+    }
+
+t11vfCoreSwitchSwitchName OBJECT-TYPE
+    SYNTAX      FcNameIdOrZero (SIZE(8 | 16))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+
+
+
+    DESCRIPTION
+        "The Core Switch_Name (WWN) of this Core Switch."
+    ::= { t11vfCoreSwitchEntry 1 }
+
+t11vfCoreSwitchMaxSupported OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4095)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "In switches that do not support Virtual Fabrics,
+         this object has the value of 1.  If Virtual Fabrics
+         are supported, this object is the maximum number of
+         Virtual Fabrics supported by the Core Switch.  For
+         the purpose of this count, the Control VF_ID is
+         ignored."
+    ::= { t11vfCoreSwitchEntry 2 }
+
+t11vfCoreSwitchStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The storage type for this conceptual row.
+         Conceptual rows having the value 'permanent' need not
+         allow write-access to any columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { t11vfCoreSwitchEntry 3 }
+
+-- Virtual Switch table
+
+t11vfVirtualSwitchTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF T11vfVirtualSwitchEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of Virtual Switches.  When one Core Switch
+         provides switching functions for multiple Virtual Fabrics,
+         that Core Switch is modeled as containing multiple
+         Virtual Switches, one for each Virtual Fabric.  This table
+         contains one row for every Virtual Switch on every Core
+         Switch.  This table augments the basic switch information in
+         the fcmSwitchTable Table in the FC-MGMT-MIB."
+    REFERENCE
+        "fcmSwitchTable is defined in the FC-MGMT-MIB [RFC4044]."
+    ::= { t11vfObjects 2 }
+
+t11vfVirtualSwitchEntry OBJECT-TYPE
+    SYNTAX      T11vfVirtualSwitchEntry
+
+
+
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry of the Virtual Switch table.  Each row is for a
+         Virtual Switch.
+
+         This table augments the fcmSwitchTable, i.e., every entry
+         in this table has a one-to-one correspondence with an
+         entry in the fcmSwitchTable.  At the time when the
+         fcmSwitchTable was defined, it applied to physical
+         switches.  With the definition and usage of virtual
+         switches, fcmSwitchTable now applies to virtual switches
+         as well as physical switches, and (in contrast to physical
+         switches) it is appropriate to provide the capability for
+         virtual switches to be created via remote management
+         applications, e.g., via SNMP.
+
+         So, this entry contains a RowStatus object (to allow the
+         creation of a virtual switch), as well as a StorageType
+         object.  Obviously, if a row is created/deleted in this
+         table, the corresponding row in the fcmSwitchTable will
+         be created/deleted."
+    REFERENCE
+        "fcmSwitchEntry is defined in the FC-MGMT-MIB module
+         [RFC4044]."
+    AUGMENTS   { fcmSwitchEntry }
+    ::= { t11vfVirtualSwitchTable 1}
+
+T11vfVirtualSwitchEntry ::=
+    SEQUENCE {
+        t11vfVirtualSwitchVfId               T11FabricIndex,
+        t11vfVirtualSwitchCoreSwitchName     FcNameIdOrZero,
+        t11vfVirtualSwitchRowStatus          RowStatus,
+        t11vfVirtualSwitchStorageType       StorageType
+    }
+
+t11vfVirtualSwitchVfId OBJECT-TYPE
+    SYNTAX      T11FabricIndex
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The VF_ID of the Virtual Fabric for which this virtual
+         switch performs its switching function.  The Control
+         VF_ID is implicitly enabled and is not set.
+         Communication with the Control VF_ID is required."
+    REFERENCE
+        "FC-SW-4, REV 7.5, section 12.2"
+    ::= { t11vfVirtualSwitchEntry 1 }
+
+
+
+
+t11vfVirtualSwitchCoreSwitchName OBJECT-TYPE
+    SYNTAX      FcNameIdOrZero (SIZE(8 | 16))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Core Switch_Name (WWN) of the Core Switch that
+         contains this Virtual Switch."
+    REFERENCE
+        "FC-SW-4, REV 7.5, section 12.2."
+    ::= { t11vfVirtualSwitchEntry 2 }
+
+t11vfVirtualSwitchRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The status of this row."
+        ::= { t11vfVirtualSwitchEntry 3 }
+
+t11vfVirtualSwitchStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The storage type for this conceptual row.
+         Conceptual rows having the value 'permanent' need not
+         allow write-access to any columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { t11vfVirtualSwitchEntry 4 }
+
+-- Port table
+
+t11vfPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF T11vfPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of Port attributes related to Virtual Fabrics."
+    ::= { t11vfObjects 3 }
+
+t11vfPortEntry OBJECT-TYPE
+    SYNTAX      T11vfPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry represents a physical Port on a switch.
+         Switches that support Virtual Fabrics would add
+
+
+
+         these four additional columns to the fcmPortEntry
+         row."
+    REFERENCE
+        "fcmPortEntry is defined in the FC-MGMT-MIB module."
+    AUGMENTS   { fcmPortEntry }
+    ::= { t11vfPortTable 1}
+
+T11vfPortEntry ::=
+    SEQUENCE {
+        t11vfPortVfId                T11FabricIndex,
+        t11vfPortTaggingAdminStatus   INTEGER,
+        t11vfPortTaggingOperStatus    INTEGER,
+        t11vfPortStorageType        StorageType
+    }
+
+t11vfPortVfId OBJECT-TYPE
+    SYNTAX      T11FabricIndex
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The Port VF_ID assigned to this Port.  The Port VF_ID is the
+         default Virtual Fabric that is assigned to untagged frames
+         arriving at this Port.  The Control VF_ID is implicitly
+         enabled and is not set.  Communication with the Control
+         VF_ID is required."
+    REFERENCE
+        "FC-SW-4, REV 7.5, section 12.1"
+    DEFVAL    {1}
+    ::= { t11vfPortEntry 1 }
+
+t11vfPortTaggingAdminStatus OBJECT-TYPE
+    SYNTAX INTEGER {
+        off(1),
+        on(2),
+        auto(3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object is used to configure the administrative status
+         of Virtual Fabric tagging on this Port.
+
+         SET operation   Description
+         --------------  -------------------------------------------
+         off(1)          To disable Virtual Fabric tagging on this
+                         Port.
+
+         on(2)           To enable Virtual Fabric tagging on this
+
+
+
+                         Port if the attached Port doesn't
+                         prohibit it.
+
+         auto(3)         To enable Virtual Fabric tagging if the
+                         peer requests it."
+    REFERENCE
+        "FC-SW-4, REV 7.5, section 12.4"
+    ::= { t11vfPortEntry 2 }
+
+ t11vfPortTaggingOperStatus OBJECT-TYPE
+    SYNTAX INTEGER {
+        off(1),
+        on(2)
+            }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object is used to report the operational status of
+         Virtual Fabric tagging on this Port.
+
+         SET operation   Description
+         --------------  -------------------------------------------
+         off(1)          Virtual Fabric tagging is disabled on this
+                         Port.
+
+         on(2)           Virtual Fabric tagging is enabled on this
+                         Port."
+    REFERENCE
+        "FC-SW-4, REV 7.5, section 12.4"
+    ::= { t11vfPortEntry 3 }
+
+t11vfPortStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The storage type for this conceptual row, and for the
+         corresponding row in the augmented fcmPortTable.
+
+         Conceptual rows having the value 'permanent' need not
+         allow write-access to any columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { t11vfPortEntry 4 }
+
+
+-- Locally Enabled Table
+
+t11vfLocallyEnabledTable OBJECT-TYPE
+
+
+
+    SYNTAX      SEQUENCE OF T11vfLocallyEnabledEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table for assigning and reporting operational status of
+         locally-enabled Virtual Fabric IDs to Ports.  The set of
+         Virtual Fabrics operational on the Port is the bit-wise
+         'AND' of the set of locally-enabled VF_IDs of this Port
+         and the locally-enabled VF_IDs of the attached Port."
+    ::= { t11vfObjects 4 }
+
+t11vfLocallyEnabledEntry OBJECT-TYPE
+    SYNTAX      T11vfLocallyEnabledEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for each locally-enabled VF_ID on
+         each Port."
+    REFERENCE
+        "FC-SW-4, REV 7.5, section 12.4"
+    INDEX { t11vfLocallyEnabledPortIfIndex, t11vfLocallyEnabledVfId }
+
+    ::= { t11vfLocallyEnabledTable 1}
+
+T11vfLocallyEnabledEntry ::=
+    SEQUENCE {
+        t11vfLocallyEnabledPortIfIndex    InterfaceIndex,
+        t11vfLocallyEnabledVfId           T11FabricIndex,
+        t11vfLocallyEnabledOperStatus     INTEGER,
+        t11vfLocallyEnabledRowStatus      RowStatus,
+        t11vfLocallyEnabledStorageType    StorageType
+    }
+
+t11vfLocallyEnabledPortIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of the ifIndex that identifies the Port."
+    ::= { t11vfLocallyEnabledEntry 1 }
+
+t11vfLocallyEnabledVfId OBJECT-TYPE
+    SYNTAX      T11FabricIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A locally-enabled VF_ID on this Port."
+    ::= { t11vfLocallyEnabledEntry 2 }
+
+
+
+
+t11vfLocallyEnabledOperStatus OBJECT-TYPE
+    SYNTAX INTEGER {
+        off(1),
+        on(2)
+            }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object is used to report the operational status of
+         Virtual Fabric tagging on this Port.
+
+         SET operation   Description
+         --------------  -------------------------------------------
+         off(1)          Virtual Fabric tagging is disabled on this
+                         Port.
+
+         on(2)           Virtual Fabric tagging is enabled on this
+                         Port."
+    REFERENCE
+        "FC-SW-4, REV 7.3, section 12.4"
+    ::= { t11vfLocallyEnabledEntry 3 }
+
+t11vfLocallyEnabledRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The status of this conceptual row.
+
+             When a row in this table is in 'active(1)' state,
+             no object in that row can be modified except
+             t11vfLocallyEnabledRowStatus and
+             t11vfLocallyEnabledStorageType."
+        ::= { t11vfLocallyEnabledEntry 4 }
+
+t11vfLocallyEnabledStorageType OBJECT-TYPE
+        SYNTAX      StorageType
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The storage type for this conceptual row.
+             Conceptual rows having the value 'permanent' need not
+             allow write-access to any columnar objects in the row."
+        DEFVAL { nonVolatile }
+        ::= { t11vfLocallyEnabledEntry 5 }
+
+--********************************
+
+
+
+-- Conformance Section
+--
+
+t11vfMIBCompliances OBJECT IDENTIFIER ::= { t11vfConformance 1 }
+t11vfMIBGroups      OBJECT IDENTIFIER ::= { t11vfConformance 2 }
+
+t11vfMIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "Describes the requirements for compliance to the
+         Fibre Channel Virtual Fabric MIB."
+    MODULE  -- this module
+        MANDATORY-GROUPS { t11vfGeneralGroup }
+
+        OBJECT t11vfCoreSwitchMaxSupported
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT t11vfCoreSwitchStorageType
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT t11vfVirtualSwitchVfId
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT t11vfVirtualSwitchRowStatus
+        SYNTAX RowStatus { active(1) }
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT t11vfVirtualSwitchStorageType
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT t11vfPortVfId
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT t11vfPortTaggingAdminStatus
+        MIN-ACCESS read-only
+        DESCRIPTION
+
+
+
+            "Write access is not required."
+
+        OBJECT t11vfPortStorageType
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT t11vfLocallyEnabledRowStatus
+        SYNTAX       RowStatus { active(1) }
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT t11vfLocallyEnabledStorageType
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "Write access is not required."
+
+    ::= { t11vfMIBCompliances 1 }
+
+-- Units of conformance
+
+    t11vfGeneralGroup  OBJECT-GROUP
+        OBJECTS { t11vfCoreSwitchMaxSupported,
+                  t11vfVirtualSwitchVfId,
+                  t11vfVirtualSwitchCoreSwitchName,
+                  t11vfVirtualSwitchRowStatus,
+                  t11vfPortVfId,
+                  t11vfPortTaggingAdminStatus,
+                  t11vfLocallyEnabledOperStatus,
+                  t11vfPortTaggingOperStatus,
+                  t11vfLocallyEnabledRowStatus,
+               t11vfCoreSwitchStorageType,
+                   t11vfVirtualSwitchStorageType,
+                  t11vfPortStorageType,
+                  t11vfLocallyEnabledStorageType
+
+        }
+        STATUS current
+        DESCRIPTION
+            "A collection of objects for monitoring and
+             configuring Virtual Fabrics in a Fibre Channel switch."
+        ::= { t11vfMIBGroups 1 }
+
+END

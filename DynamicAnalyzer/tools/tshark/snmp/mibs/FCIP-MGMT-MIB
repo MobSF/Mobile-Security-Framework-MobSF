@@ -1,0 +1,1122 @@
+FCIP-MGMT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE,
+    MODULE-IDENTITY,
+    Unsigned32,
+    Counter32,
+    mib-2               FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION,
+    TruthValue, RowStatus, TimeStamp  FROM SNMPv2-TC
+    InetAddressType,
+    InetAddress,
+    InetPortNumber FROM INET-ADDRESS-MIB
+    FcNameIdOrZero FROM FC-MGMT-MIB
+    InterfaceIndex FROM IF-MIB
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP FROM SNMPv2-CONF
+    SnmpAdminString FROM SNMP-FRAMEWORK-MIB;
+
+fcipMIB MODULE-IDENTITY
+    LAST-UPDATED "200602060000Z"
+    ORGANIZATION "IETF IPFC Working Group"
+    CONTACT-INFO "Anil Rijhsinghani
+                  Accton Technology Corporation
+                  5 Mount Royal Ave
+                  Marlboro, MA 01752 USA.
+
+
+
+                  Ravi Natarajan
+                  F5 Networks
+                  2460 North First Street, Suite 100
+                  San Jose, CA 95131 USA."
+    DESCRIPTION
+        "The module defines management information specific to
+         FCIP devices.
+
+         Copyright(C) The Internet Society (2006).  This version
+         of this MIB module is part of RFC 4404; see the RFC
+         itself for full legal notices."
+    REVISION        "200602060000Z"
+    DESCRIPTION
+        "Initial version of this module, published as RFC 4404."
+    ::= { mib-2 224 }
+
+fcipObjects       OBJECT IDENTIFIER ::= { fcipMIB 1 }
+fcipConformance   OBJECT IDENTIFIER ::= { fcipMIB 2 }
+fcipConfig        OBJECT IDENTIFIER ::= { fcipObjects 1 }
+
+
+-- ******************************************************************
+-- Textual conventions
+--
+
+FcipDomainIdInOctetForm ::= TEXTUAL-CONVENTION
+    STATUS    current
+    DESCRIPTION
+        "The Domain ID of a FC entity in octet form
+         to support the concatenation(000000h||Domain_ID)
+         format defined in the FSPF routing protocol."
+    REFERENCE
+        "FC-SW-3 section 4.8"
+    SYNTAX    OCTET STRING (SIZE(1))
+
+FcipEntityMode ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "The type of port mode provided by an FCIP Entity
+         for an FCIP Link.  An FCIP Entity can be an E-Port
+         mode for one of its FCIP Link Endpoints or a B-Port
+         mode for another of its FCIP Link Endpoints."
+    REFERENCE
+        "FC-BB, rev 4.7, 2 May 1997, section 3."
+    SYNTAX INTEGER {
+                ePortMode(1),
+                bPortMode(2)
+                   }
+
+
+
+FcipEntityId  ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "The FCIP entity identifier as defined in RFC 3821."
+    REFERENCE
+        "RFC 3821, Section 7.1, FCIP Special Frame Format"
+    SYNTAX OCTET STRING (SIZE(8))
+
+
+-- ******************************************************************
+-- The FCIP group
+--
+-- This group defines the global scalar objects applicable to FCIP
+-- devices only
+--
+
+fcipDynIpConfType   OBJECT-TYPE
+    SYNTAX INTEGER {
+                slpv2(1),
+                none(2)
+    }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The type of discovery protocol used to discover remote
+         FCIP entities.  The value of this object is persistent
+         across system restarts."
+    ::= { fcipConfig 1 }
+
+fcipDeviceWWN   OBJECT-TYPE
+    SYNTAX FcNameIdOrZero
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The World Wide Name of this FCIP device."
+    ::= { fcipConfig 2 }
+
+fcipEntitySACKOption   OBJECT-TYPE
+    SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indication of whether the TCP Selective Acknowledgement
+         Option is enabled at this FCIP device to let the receiver
+         acknowledge multiple lost packets in a single ACK for faster
+
+
+
+         recovery."
+    REFERENCE
+        "The Selective Ack option is defined in RFC 2883."
+    ::= { fcipConfig 3 }
+
+
+-- ******************************************************************
+-- The FCIP Entity Table
+--
+
+fcipEntityInstanceTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF FcipEntityInstanceEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Information about this FCIP device's existing instances of
+         FCIP entities."
+    REFERENCE
+        "RFC 3821, Section 5.4, FCIP Entity"
+    ::= { fcipConfig 4 }
+
+fcipEntityInstanceEntry OBJECT-TYPE
+    SYNTAX FcipEntityInstanceEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A conceptual row of the FCIP entity table with information
+         about a particular FCIP entity.  Once a row has been
+         created, it is non-volatile across agent restarts until it
+         is deleted."
+    INDEX { fcipEntityId }
+    ::= { fcipEntityInstanceTable 1 }
+
+FcipEntityInstanceEntry ::=
+    SEQUENCE {
+                fcipEntityId                  FcipEntityId,
+                fcipEntityName                SnmpAdminString,
+                fcipEntityAddressType         InetAddressType,
+                fcipEntityAddress             InetAddress,
+                fcipEntityTcpConnPort         InetPortNumber,
+                fcipEntitySeqNumWrap          TruthValue,
+                fcipEntityPHBSupport          TruthValue,
+                fcipEntityStatus              RowStatus
+           }
+
+fcipEntityId   OBJECT-TYPE
+    SYNTAX FcipEntityId
+    MAX-ACCESS not-accessible
+
+
+
+    STATUS current
+    DESCRIPTION
+        "The FCIP entity identifier."
+    REFERENCE
+        "RFC 3821, Section 7.1, FCIP Special Frame Format"
+    ::= { fcipEntityInstanceEntry 1 }
+
+fcipEntityName   OBJECT-TYPE
+    SYNTAX SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "An administratively-assigned name for this FCIP entity."
+    ::= { fcipEntityInstanceEntry 2 }
+
+fcipEntityAddressType   OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The type of Internet address by which the entity is
+         reachable.  Only address types IPv4 and IPv6 are supported."
+    ::= { fcipEntityInstanceEntry 3 }
+
+fcipEntityAddress   OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The Internet address for the entity, if configured.  The
+         format of this address is determined by the value of the
+         fcipEntityAddressType object."
+    ::= { fcipEntityInstanceEntry 4 }
+
+fcipEntityTcpConnPort   OBJECT-TYPE
+    SYNTAX InetPortNumber
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "A TCP port other than the FCIP Well-Known port on which the
+         FCIP entity listens for new TCP connection requests.  It
+         contains the value zero(0) if the FCIP Entity only listens
+         on the Well-Known port."
+    DEFVAL  { 0 }
+    ::= { fcipEntityInstanceEntry 5 }
+
+fcipEntitySeqNumWrap   OBJECT-TYPE
+    SYNTAX TruthValue
+
+
+
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "An indication of whether the FCIP Entity supports protection
+         against sequence number wrap."
+    REFERENCE
+        "The PAWS option is defined in RFC 1323."
+    ::= { fcipEntityInstanceEntry 6 }
+
+fcipEntityPHBSupport   OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "An indication of whether the FCIP Entity supports PHB IP
+         quality of service (QoS)."
+    REFERENCE
+        "Per hop behavior is defined in RFC 2474, definition of the
+         Differentiated Services Field."
+    ::= { fcipEntityInstanceEntry 7 }
+
+fcipEntityStatus   OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+        "This object specifies the operational status of the row.
+
+         When a management station sets the status to active(1), then
+         the values for the objects fcipEntityName,
+         fcipEntityAddressType, and fcipEntityAddress should be
+         supplied as part of the set request.  The values of the
+         objects fcipEntityName, fcipEntityAddressType, and
+         fcipEntityAddress can be changed if the row status is in
+         active state.  The object fcipEntityTcpConnPort takes the
+         default value zero(0), if no value is supplied at the time
+         of row creation.
+
+         Setting the status to destroy(6) deletes the specified FCIP
+         entity instance row from the table.  It also deletes all the
+         rows corresponding to the specified FCIP entity from the
+         fcipLinkTable and fcipTcpConnTable tables."
+    ::= { fcipEntityInstanceEntry 8 }
+
+
+
+
+
+
+
+
+-- ******************************************************************
+-- The FCIP Link Table
+--
+
+fcipLinkTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF FcipLinkEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Information about FCIP links that exist on this device."
+    ::= { fcipConfig 5 }
+
+fcipLinkEntry OBJECT-TYPE
+    SYNTAX FcipLinkEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A conceptual row of the FCIP link table containing
+         information about a particular FCIP link.  The values of the
+         read-create objects in this table are persistent across
+         system restarts."
+    INDEX { fcipEntityId, fcipLinkIndex }
+    ::= { fcipLinkTable 1 }
+
+FcipLinkEntry ::=
+    SEQUENCE {
+                fcipLinkIndex                       Unsigned32,
+                fcipLinkIfIndex                     InterfaceIndex,
+                fcipLinkCost                        Unsigned32,
+                fcipLinkLocalFcipEntityMode         FcipEntityMode,
+                fcipLinkLocalFcipEntityAddressType  InetAddressType,
+                fcipLinkLocalFcipEntityAddress      InetAddress,
+                fcipLinkRemFcipEntityWWN            FcNameIdOrZero,
+                fcipLinkRemFcipEntityId             FcipEntityId,
+                fcipLinkRemFcipEntityAddressType    InetAddressType,
+                fcipLinkRemFcipEntityAddress        InetAddress,
+                fcipLinkStatus                      RowStatus,
+                fcipLinkCreateTime                  TimeStamp
+}
+
+fcipLinkIndex     OBJECT-TYPE
+    SYNTAX Unsigned32 (1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An arbitrary integer that uniquely identifies one FCIP link
+         within an FCIP entity."
+    ::= { fcipLinkEntry 1 }
+
+
+
+fcipLinkIfIndex     OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The ifIndex value of the virtual interface corresponding to
+         the FCIP Link running over TCP/IP."
+    ::= { fcipLinkEntry 2 }
+
+fcipLinkCost     OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The FSPF cost associated with this FCIP Link."
+    DEFVAL  { 0 }
+    ::= { fcipLinkEntry 3 }
+
+fcipLinkLocalFcipEntityMode   OBJECT-TYPE
+    SYNTAX FcipEntityMode
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+        "The mode of the local end of the FCIP link."
+    ::= { fcipLinkEntry 4 }
+
+fcipLinkLocalFcipEntityAddressType   OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The type of Internet address contained in the corresponding
+         instance of fcipLinkLocalFcipEntityAddress.  Only address
+         types IPv4 and IPv6 are supported."
+    ::= { fcipLinkEntry 5 }
+
+fcipLinkLocalFcipEntityAddress   OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The Internet address for the local end of this FCIP Link.
+         The format of this object is determined by the value of the
+         fcipLinkLocalFcipEntityAddressType object."
+    ::= { fcipLinkEntry 6 }
+
+fcipLinkRemFcipEntityWWN   OBJECT-TYPE
+    SYNTAX FcNameIdOrZero
+
+
+
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The World Wide Name of the remote FC Fabric Entity."
+    REFERENCE
+        "RFC 3821, Section 7.1, FCIP Special Frame Format"
+    ::= { fcipLinkEntry 7 }
+
+fcipLinkRemFcipEntityId   OBJECT-TYPE
+    SYNTAX FcipEntityId
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The remote FCIP entity's identifier."
+    REFERENCE
+        "RFC 3821, Section 7.1, FCIP Special Frame Format"
+    ::= { fcipLinkEntry 8 }
+
+fcipLinkRemFcipEntityAddressType   OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The type of Internet address contained in the corresponding
+         instance of fcipLinkRemFcipEntityAddress.  Only address
+         types IPv4 and IPv6 are supported."
+    ::= { fcipLinkEntry 9 }
+
+fcipLinkRemFcipEntityAddress   OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The Internet address for the remote end of this FCIP Link.
+         The format of this object is determined by the value of the
+         fcipLinkRemFcipEntityAddressType object."
+    ::= { fcipLinkEntry 10 }
+
+fcipLinkStatus   OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+        "This object specifies the operational status of the row.
+
+         The values of objects fcipLinkLocalFcipEntityAddressType,
+         fcipLinkLocalFcipEntityAddress, fcipLinkRemFcipEntityWWN,
+         fcipLinkRemFcipEntityId, fcipLinkRemFcipEntityAddressType,
+
+
+
+         and fcipLinkRemFcipEntityAddress can be changed if the row
+         is in active(1) state.  The object fcipLinkCost is set to
+         the value zero(0) if no value is supplied at the time of row
+         creation.
+
+         Setting the status to destroy(6) deletes the specified FCIP
+         link from the table.  It also deletes all rows corresponding
+         to the specified FCIP link from the fcipTcpConnTable table."
+    ::= { fcipLinkEntry 11 }
+
+fcipLinkCreateTime OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of sysUpTime when this entry was last created."
+    ::= { fcipLinkEntry 12 }
+
+
+-- ******************************************************************
+-- The TCP Connection Table
+--
+
+fcipTcpConnTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF FcipTcpConnEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Information about existing TCP connections.  Each FCIP link
+         within an FCIP entity manages one or more TCP connections.
+         The FCIP entity employs a Data Engine for each TCP
+         connection for handling FC frame encapsulation,
+         de-encapsulation, and transmission of FCIP frames on the
+         connection."
+    ::= { fcipConfig 6 }
+
+fcipTcpConnEntry OBJECT-TYPE
+    SYNTAX FcipTcpConnEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A conceptual row of the FCIP TCP Connection table containing
+         information about a particular TCP connection."
+    INDEX { fcipEntityId,
+            fcipLinkIndex,
+            fcipTcpConnLocalPort,
+            fcipTcpConnRemPort}
+    ::= { fcipTcpConnTable 1 }
+
+
+
+FcipTcpConnEntry ::=
+    SEQUENCE {
+                fcipTcpConnLocalPort      InetPortNumber,
+                fcipTcpConnRemPort        InetPortNumber,
+                fcipTcpConnRWSize         Unsigned32,
+                fcipTcpConnMSS            Unsigned32
+}
+
+fcipTcpConnLocalPort     OBJECT-TYPE
+    SYNTAX InetPortNumber
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The local port number for this TCP connection."
+    ::= { fcipTcpConnEntry 1 }
+
+fcipTcpConnRemPort     OBJECT-TYPE
+    SYNTAX InetPortNumber
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The remote port number for this TCP connection."
+    ::= { fcipTcpConnEntry 2 }
+
+fcipTcpConnRWSize     OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The default maximum TCP Receiver Window size for this TCP
+         connection."
+    ::= { fcipTcpConnEntry 3 }
+
+fcipTcpConnMSS     OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The TCP Maximum Segment Size (MSS) for this TCP connection."
+    ::= { fcipTcpConnEntry 4 }
+
+
+
+
+
+
+
+
+
+
+
+-- ******************************************************************
+-- The Dynamic Route Table
+--
+
+fcipDynamicRouteTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF FcipDynamicRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Information about dynamically discovered routing
+         information.  The FCIP device may use the SLPv2 protocol in
+         conjunction with other protocols (say, FSPF) for dynamically
+         discovering other FCIP entities and may populate this table
+         with FCIP link information for each Destination Address
+         Identifier."
+    ::= { fcipConfig 7 }
+
+fcipDynamicRouteEntry OBJECT-TYPE
+    SYNTAX FcipDynamicRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A conceptual row of the FCIP Dynamic Route Table containing
+         information about a particular FCIP route."
+    INDEX { fcipEntityId, fcipDynamicRouteDID }
+    ::= { fcipDynamicRouteTable 1 }
+
+FcipDynamicRouteEntry ::=
+    SEQUENCE {
+                fcipDynamicRouteDID          FcipDomainIdInOctetForm,
+                fcipDynamicRouteLinkIndex    Unsigned32
+            }
+
+fcipDynamicRouteDID    OBJECT-TYPE
+    SYNTAX FcipDomainIdInOctetForm
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "8-bit ID of a Fibre Channel Domain that is reachable from
+         this FCIP device."
+    ::= { fcipDynamicRouteEntry  1 }
+
+fcipDynamicRouteLinkIndex    OBJECT-TYPE
+    SYNTAX Unsigned32 (1..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The FCIP Link used to reach the domain specified by the
+
+
+
+         corresponding instance of fcipDynamicRouteDID.  The link
+         identified by a value of this object is the same FCIP link
+         as identified by the same value of fcipLinkIndex for the
+         same FCIP entity."
+    ::= { fcipDynamicRouteEntry  2 }
+
+
+-- ******************************************************************
+-- The Static Route Table
+--
+
+fcipStaticRouteTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF FcipStaticRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Information about static route entries configured by the
+         Network Admin.  In the absence of dynamic discovery of
+         remote FCIP entities, the Network Manager will figure out
+         all remote FCIP devices that are reachable from this device
+         and populate this table with FCIP link information for each
+         Domain ID.  At any time, both static and dynamic routing
+         can be active, and an entry in the static route table for a
+         given DID takes precedence over the entry in the dynamic
+         route table for the same Domain ID."
+    ::= { fcipConfig 8 }
+
+fcipStaticRouteEntry OBJECT-TYPE
+    SYNTAX FcipStaticRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A conceptual row of the FCIP Static Route Table containing
+         information about a particular FCIP route.  The values of
+         the read-create objects in this table are persistent across
+         system restarts."
+    INDEX { fcipEntityId, fcipStaticRouteDID }
+    ::= { fcipStaticRouteTable 1 }
+
+FcipStaticRouteEntry ::=
+    SEQUENCE {
+                fcipStaticRouteDID           FcipDomainIdInOctetForm,
+                fcipStaticRouteLinkIndex     Unsigned32,
+                fcipStaticRouteStatus        RowStatus
+            }
+
+fcipStaticRouteDID    OBJECT-TYPE
+    SYNTAX FcipDomainIdInOctetForm
+
+
+
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "8-bit ID of a Fibre Channel Domain that is reachable from
+         this FCIP device."
+    ::= { fcipStaticRouteEntry  1 }
+
+fcipStaticRouteLinkIndex    OBJECT-TYPE
+    SYNTAX Unsigned32 (1..4294967295)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The FCIP Link used to reach the domain specified by the
+         corresponding instance of fcipStaticRouteDID.  The link
+         identified by a value of this object is the same FCIP link
+         as identified by the same value of fcipLinkIndex for the
+         same FCIP entity."
+    ::= { fcipStaticRouteEntry  2 }
+
+fcipStaticRouteStatus   OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+        "This object specifies the operational status of the row.
+
+         When a management station sets the status to active(1),
+         the values for the object fcipStaticRouteLinkIndex should be
+         supplied as part of the set request.
+
+         Setting the status to destroy(6) deletes the specified FCIP
+         static route entry from the table."
+    ::= { fcipStaticRouteEntry  3 }
+
+
+-- ******************************************************************
+-- The FCIP Discovery Domain Table
+--
+
+fcipDiscoveryDomainTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF FcipDiscoveryDomainEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Information about FCIP Discovery Domains.  Each FCIP
+         Discovery Domain is associated with one or more FCIP
+         entities."
+    ::= { fcipConfig 9 }
+
+
+
+fcipDiscoveryDomainEntry OBJECT-TYPE
+    SYNTAX FcipDiscoveryDomainEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A conceptual row of the FCIP Discovery Domain Table
+         containing information about a particular FCIP Discovery
+         Domain that is associated with one or more FCIP entities.
+         The values of the read-write object fcipDiscoveryDomainName
+         are persistent across system restarts."
+    INDEX { fcipEntityId, fcipDiscoveryDomainIndex }
+    ::= { fcipDiscoveryDomainTable 1 }
+
+FcipDiscoveryDomainEntry ::=
+    SEQUENCE {
+        fcipDiscoveryDomainIndex        Unsigned32,
+        fcipDiscoveryDomainName         SnmpAdminString
+    }
+
+fcipDiscoveryDomainIndex OBJECT-TYPE
+    SYNTAX     Unsigned32 (1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An integer that uniquely identifies an FCIP Discovery Domain
+         associated with this FCIP entity."
+    ::= { fcipDiscoveryDomainEntry 1 }
+
+fcipDiscoveryDomainName   OBJECT-TYPE
+    SYNTAX SnmpAdminString (SIZE (0..128))
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The name of this FCIP Discovery Domain."
+    REFERENCE
+        "RFC 3822, Section 4.1.1, FCIP Discovery Domains"
+    ::= { fcipDiscoveryDomainEntry 2 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- ******************************************************************
+-- The FCIP Link Errors
+--
+
+fcipLinkErrorsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF FcipLinkErrorsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A list of error counters for FCIP Links.  Each counter
+         records the number of times a particular error happened that
+         caused a TCP connection to close down."
+    REFERENCE
+        "RFC 3821, Section 5.2, FCIP Link"
+    ::= { fcipConfig 10 }
+
+fcipLinkErrorsEntry OBJECT-TYPE
+    SYNTAX FcipLinkErrorsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A conceptual row of the FCIP Link Errors Table containing
+         error counters for an FCIP Link."
+    INDEX { fcipEntityId, fcipLinkIndex }
+    ::= { fcipLinkErrorsTable 1 }
+
+FcipLinkErrorsEntry ::=
+    SEQUENCE {
+        fcipLinkFcipLossofFcSynchs            Counter32,
+        fcipLinkFcipEncapErrors               Counter32,
+        fcipLinkFcipNotReceivedSfResps        Counter32,
+        fcipLinkFcipSfRespMismatches          Counter32,
+        fcipLinkFcipSfInvalidNonces           Counter32,
+        fcipLinkFcipReceivedSfDuplicates      Counter32,
+        fcipLinkFcipSfInvalidWWNs             Counter32,
+        fcipLinkFcipBB2LkaTimeOuts            Counter32,
+        fcipLinkFcipSntpExpiredTimeStamps     Counter32,
+        fcipLinkTcpTooManyErrors              Counter32,
+        fcipLinkTcpExcessiveDroppedDatagrams  Counter32,
+        fcipLinkTcpSaParamMismatches          Counter32
+    }
+
+fcipLinkFcipLossofFcSynchs OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times FC synchronization was lost on this FCIP
+
+
+
+         Link.  The last discontinuity of this counter is indicated
+         by fcipLinkCreateTime."
+    ::= { fcipLinkErrorsEntry 1 }
+
+fcipLinkFcipEncapErrors OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of FCIP frames received with encapsulation errors
+         such as improper header, format, or length.  The last
+         discontinuity of this counter is indicated by
+         fcipLinkCreateTime."
+    ::= { fcipLinkErrorsEntry 2 }
+
+fcipLinkFcipNotReceivedSfResps OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times an FCIP Special Frame Response was
+         expected but not received on this FCIP Link.  The last
+         discontinuity of this counter is indicated by
+         fcipLinkCreateTime."
+    ::= { fcipLinkErrorsEntry 3 }
+
+fcipLinkFcipSfRespMismatches OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times FCIP Special Frame Bytes mismatch
+         happened on this FCIP Link.  The last discontinuity of this
+         counter is indicated by fcipLinkCreateTime."
+    ::= { fcipLinkErrorsEntry 4 }
+
+fcipLinkFcipSfInvalidNonces OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times FCIP Special Frame Invalid Connection
+         Nonce happened on this FCIP Link.  The last discontinuity
+         of this counter is indicated by fcipLinkCreateTime."
+    ::= { fcipLinkErrorsEntry 5 }
+
+fcipLinkFcipReceivedSfDuplicates OBJECT-TYPE
+    SYNTAX     Counter32
+
+
+
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times duplicate FCIP Special Frames were
+         received on this FCIP Link.  The last discontinuity of this
+         counter is indicated by fcipLinkCreateTime."
+    ::= { fcipLinkErrorsEntry 6 }
+
+fcipLinkFcipSfInvalidWWNs OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times FCIP Special Frames with invalid
+         destination FC Fabric Entity WWN were received on this FCIP
+         Link.  The last discontinuity of this counter is indicated
+         by fcipLinkCreateTime."
+    ::= { fcipLinkErrorsEntry 7 }
+
+fcipLinkFcipBB2LkaTimeOuts OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of FC Keep Alive Time-outs that occurred on
+         this FCIP Link.  The last discontinuity of this counter
+         is indicated by fcipLinkCreateTime."
+    ::= { fcipLinkErrorsEntry 8 }
+
+fcipLinkFcipSntpExpiredTimeStamps OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of frames discarded due to an expired Simple
+         Network Time Protocol (SNTP) timestamp on this FCIP Link.
+         The last discontinuity of this counter is indicated by
+         fcipLinkCreateTime."
+    ::= { fcipLinkErrorsEntry 9 }
+
+fcipLinkTcpTooManyErrors OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of TCP connections that closed down on this
+         FCIP Link due to too many errors on the connection.  The
+         last discontinuity of this counter is indicated by
+
+
+
+         fcipLinkCreateTime."
+    ::= { fcipLinkErrorsEntry 10  }
+
+fcipLinkTcpExcessiveDroppedDatagrams OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of TCP connections that closed down on this
+         FCIP Link due to an excessive number of dropped FCIP
+         packets.  The last discontinuity of this counter is
+         indicated by fcipLinkCreateTime."
+    ::= { fcipLinkErrorsEntry 11  }
+
+fcipLinkTcpSaParamMismatches OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times TCP connections with Security
+         Association parameter mismatches were closed down on this
+         FCIP Link.  The last discontinuity of this counter is
+         indicated by fcipLinkCreateTime."
+    REFERENCE
+        "RFC 3821, Section 9.4.2, TCP Connection Security
+         Associations (SAs)"
+    ::= { fcipLinkErrorsEntry 12  }
+
+
+-- ******************************************************************
+-- Conformance Statements
+--
+
+fcipCompliances   OBJECT IDENTIFIER ::= { fcipConformance 1 }
+fcipGroups        OBJECT IDENTIFIER ::= { fcipConformance 2 }
+
+fcipCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+        "Compliance statement for FCIP MIB."
+    MODULE       -- this module
+        MANDATORY-GROUPS {
+            fcipEntityScalarGroup,
+            fcipEntityInstanceGroup,
+            fcipLinkGroup,
+            fcipTcpConnGroup,
+            fcipDiscoveryDomainGroup,
+            fcipLinkErrorsGroup
+
+
+
+        }
+
+        GROUP   fcipDynamicRouteGroup
+        DESCRIPTION
+            "This group is mandatory only for systems that do not
+             have these objects in any other FC MIB.  It may be
+             implemented even in that case for convenience."
+
+        GROUP   fcipStaticRouteGroup
+        DESCRIPTION
+            "This group is mandatory only for systems that do not
+             have these objects in any other FC MIB.  It may be
+             implemented even in that case for convenience."
+
+       OBJECT   fcipEntityAddressType
+       SYNTAX   INTEGER { ipv4(1), ipv6(2) }
+       DESCRIPTION
+           "Only IPv4 and IPv6 address types need to be supported for
+            addressing FCIP entities."
+
+       OBJECT   fcipEntityAddress
+       SYNTAX   InetAddress (SIZE(4|16))
+       DESCRIPTION
+           "Size of FCIP entity's IP address depends on address type.
+            FCIP entity address size is four if the IP address is
+            IPv4 and sixteen if the IP address type is IPv6."
+
+       OBJECT   fcipLinkLocalFcipEntityAddressType
+       SYNTAX   INTEGER { ipv4(1), ipv6(2) }
+       DESCRIPTION
+           "Only IPv4 and IPv6 address types need to be supported for
+            addressing the local FCIP entities."
+
+       OBJECT   fcipLinkLocalFcipEntityAddress
+       SYNTAX   InetAddress (SIZE(4|16))
+       DESCRIPTION
+           "Size of FCIP entity's IP address depends on address type.
+            FCIP entity address size is four if the IP address is
+            IPv4 and sixteen if the IP address type is IPv6."
+
+       OBJECT   fcipLinkRemFcipEntityAddressType
+       SYNTAX   INTEGER { ipv4(1), ipv6(2) }
+       DESCRIPTION
+           "Only IPv4 and IPv6 address types need to be supported for
+            addressing the remote FCIP entities."
+
+       OBJECT   fcipLinkRemFcipEntityAddress
+       SYNTAX   InetAddress (SIZE(4|16))
+
+
+
+       DESCRIPTION
+           "Size of FCIP entity's IP address depends on the address
+            type.  FCIP entity address size is four if the IP address
+            is IPv4 and sixteen if the IP address type is IPv6."
+
+    ::= { fcipCompliances 1 }
+
+fcipEntityScalarGroup OBJECT-GROUP
+    OBJECTS {   fcipDynIpConfType,
+                fcipDeviceWWN,
+                fcipEntitySACKOption
+    }
+    STATUS current
+    DESCRIPTION
+        "Collection of scalar objects applicable to all FCIP
+         instances."
+::= { fcipGroups 1 }
+
+fcipEntityInstanceGroup OBJECT-GROUP
+    OBJECTS {
+                fcipEntityName,
+                fcipEntityAddressType,
+                fcipEntityAddress,
+                fcipEntityTcpConnPort,
+                fcipEntitySeqNumWrap,
+                fcipEntityPHBSupport,
+                fcipEntityStatus
+    }
+    STATUS current
+    DESCRIPTION
+        "A collection of objects providing information about FCIP
+         instances."
+::= { fcipGroups 2 }
+
+fcipLinkGroup OBJECT-GROUP
+    OBJECTS {
+                fcipLinkIfIndex,
+                fcipLinkCost,
+                fcipLinkLocalFcipEntityMode,
+                fcipLinkLocalFcipEntityAddressType,
+                fcipLinkLocalFcipEntityAddress,
+                fcipLinkRemFcipEntityWWN,
+                fcipLinkRemFcipEntityId,
+                fcipLinkRemFcipEntityAddressType,
+                fcipLinkRemFcipEntityAddress,
+                fcipLinkStatus,
+                fcipLinkCreateTime
+    }
+
+
+
+    STATUS current
+    DESCRIPTION
+        "A collection of objects providing information about FCIP
+         Links."
+::= { fcipGroups 3 }
+
+fcipTcpConnGroup OBJECT-GROUP
+    OBJECTS {
+                fcipTcpConnRWSize,
+                fcipTcpConnMSS
+    }
+    STATUS current
+    DESCRIPTION
+        "A collection of objects providing information about FCIP
+         TCP connections."
+::= { fcipGroups 4 }
+
+fcipDiscoveryDomainGroup OBJECT-GROUP
+    OBJECTS {
+                fcipDiscoveryDomainName
+    }
+    STATUS current
+    DESCRIPTION
+        "A collection of objects providing information about FCIP
+         Discovery Domains."
+::= { fcipGroups 5 }
+
+fcipLinkErrorsGroup OBJECT-GROUP
+    OBJECTS {
+        fcipLinkFcipLossofFcSynchs,
+        fcipLinkFcipEncapErrors,
+        fcipLinkFcipNotReceivedSfResps,
+        fcipLinkFcipSfRespMismatches,
+        fcipLinkFcipSfInvalidNonces,
+        fcipLinkFcipReceivedSfDuplicates,
+        fcipLinkFcipSfInvalidWWNs,
+        fcipLinkFcipBB2LkaTimeOuts,
+        fcipLinkFcipSntpExpiredTimeStamps,
+        fcipLinkTcpTooManyErrors,
+        fcipLinkTcpExcessiveDroppedDatagrams,
+        fcipLinkTcpSaParamMismatches
+    }
+    STATUS current
+    DESCRIPTION
+        "A collection of objects providing information about FCIP
+         link errors."
+::= { fcipGroups 6 }
+
+
+
+
+fcipDynamicRouteGroup OBJECT-GROUP
+    OBJECTS {
+                fcipDynamicRouteLinkIndex
+    }
+    STATUS current
+    DESCRIPTION
+        "A collection of objects providing information about FCIP
+         dynamic routes."
+::= { fcipGroups 7 }
+
+fcipStaticRouteGroup OBJECT-GROUP
+    OBJECTS {
+                fcipStaticRouteLinkIndex,
+                fcipStaticRouteStatus
+    }
+    STATUS current
+    DESCRIPTION
+        "A collection of objects providing information about FCIP
+         static routes."
+::= { fcipGroups 8 }
+
+END

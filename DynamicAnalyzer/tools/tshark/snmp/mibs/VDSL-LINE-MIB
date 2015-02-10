@@ -1,0 +1,3014 @@
+VDSL-LINE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+
+MODULE-IDENTITY,
+OBJECT-TYPE,
+Gauge32,
+Integer32,
+Unsigned32,
+NOTIFICATION-TYPE,
+transmission                    FROM SNMPv2-SMI          -- [RFC2578]
+ZeroBasedCounter64              FROM HCNUM-TC            -- [RFC2856]
+TEXTUAL-CONVENTION,
+RowStatus,
+TruthValue                      FROM SNMPv2-TC           -- [RFC2579]
+HCPerfValidIntervals,
+HCPerfInvalidIntervals,
+HCPerfTimeElapsed,
+
+
+
+HCPerfIntervalThreshold,
+HCPerfCurrentCount,
+HCPerfIntervalCount             FROM HC-PerfHist-TC-MIB  -- [RFC3705]
+MODULE-COMPLIANCE,
+OBJECT-GROUP,
+NOTIFICATION-GROUP              FROM SNMPv2-CONF         -- [RFC2580]
+ifIndex                         FROM IF-MIB              -- [RFC2863]
+SnmpAdminString                 FROM SNMP-FRAMEWORK-MIB; -- [RFC3411]
+
+vdslMIB MODULE-IDENTITY
+   LAST-UPDATED "200402190000Z" -- February 19, 2004
+   ORGANIZATION "ADSLMIB Working Group"
+   CONTACT-INFO "WG-email:  adslmib@ietf.org
+          Info:      https://www1.ietf.org/mailman/listinfo/adslmib
+
+          Chair:     Mike Sneed
+                     Sand Channel Systems
+          Postal:    P.O.  Box 37324
+                     Raleigh, NC 27627-7324
+                     USA
+          Email:     sneedmike@hotmail.com
+          Phone:     +1 206 600 7022
+
+          Co-editor: Bob Ray
+                     PESA Switching Systems, Inc.
+          Postal:    330-A Wynn Drive
+                     Huntsville, AL 35805
+                     USA
+          Email:     rray@pesa.com
+          Phone:     +1 256 726 9200 ext.  142
+
+          Co-editor: Rajesh Abbi
+                     Alcatel USA
+          Postal:    2301 Sugar Bush Road
+                     Raleigh, NC 27612-3339
+                     USA
+          Email:     Rajesh.Abbi@alcatel.com
+          Phone:     +1 919 850 6194
+        "
+DESCRIPTION
+    "The MIB module defining objects for the management of a pair
+    of VDSL transceivers at each end of the VDSL line.  Each such
+    line has an entry in an ifTable which may include multiple
+    transceiver lines.  An agent may reside at either end of the
+    VDSL line.  However, the MIB is designed to require no
+    management communication between them beyond that inherent in
+    the low-level VDSL line protocol.  The agent may monitor and
+    control this protocol for its needs.
+
+
+
+    VDSL lines may support optional Fast or Interleaved channels.
+    If these are supported, additional entries corresponding to the
+    supported channels must be created in the ifTable.  Thus a VDSL
+    line that supports both channels will have three entries in the
+    ifTable, one for each physical, fast, and interleaved, whose
+    ifType values are equal to vdsl(97), fast(125), and
+    interleaved(124), respectively.  The ifStackTable is used to
+    represent the relationship between the entries.
+
+    Naming Conventions:
+        Vtuc -- (VTUC) transceiver at near (Central) end of line
+        Vtur -- (VTUR) transceiver at Remote end of line
+        Vtu  -- One of either Vtuc or Vtur
+        Curr -- Current
+        Prev -- Previous
+        Atn  -- Attenuation
+        ES   -- Errored Second.
+        SES  -- Severely Errored Second
+        UAS  -- Unavailable Second
+        LCS  -- Line Code Specific
+        Lof  -- Loss of Frame
+        Lol  -- Loss of Link
+        Los  -- Loss of Signal
+        Lpr  -- Loss of Power
+        xxxs -- Sum of Seconds in which xxx has occured
+                (e.g., xxx = Lof, Los, Lpr, Lol)
+        Max  -- Maximum
+        Mgn  -- Margin
+        Min  -- Minimum
+        Psd  -- Power Spectral Density
+        Snr  -- Signal to Noise Ratio
+        Tx   -- Transmit
+        Blks -- Blocks
+
+    Copyright (C) The Internet Society (2004).  This version
+    of this MIB module is part of RFC 3728: see the RFC
+    itself for full legal notices."
+       REVISION "200402190000Z" -- February 19, 2004
+       DESCRIPTION "Initial version, published as RFC 3728."
+   ::= { transmission 97 }
+
+vdslLineMib    OBJECT IDENTIFIER ::= { vdslMIB 1 }
+vdslMibObjects OBJECT IDENTIFIER ::= { vdslLineMib 1 }
+
+--
+-- textual conventions used in this MIB
+--
+
+
+
+
+VdslLineCodingType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This data type is used as the syntax for the VDSL Line
+        Code.  Attributes with this syntax identify the line coding
+        used.  Specified as an INTEGER, the three values are:
+
+        other(1)  -- none of the following
+        mcm(2)    -- Multiple Carrier Modulation
+        scm(3)    -- Single Carrier Modulation"
+    SYNTAX  INTEGER
+        {
+        other(1),
+        mcm(2),
+        scm(3)
+        }
+
+VdslLineEntity ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Identifies a transceiver as being either Vtuc or Vtur.
+        A VDSL line consists of two transceivers, a Vtuc and a
+        Vtur.  Attributes with this syntax reference the two sides
+        of a line.  Specified as an INTEGER, the two values are:
+
+        vtuc(1)  -- central site transceiver
+        vtur(2)  -- remote site transceiver"
+    SYNTAX  INTEGER
+        {
+        vtuc(1),
+        vtur(2)
+        }
+
+--
+-- objects
+--
+
+vdslLineTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslLineEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table includes common attributes describing
+        both ends of the line.  It is required for all VDSL
+        physical interfaces.  VDSL physical interfaces are
+        those ifEntries where ifType is equal to vdsl(97)."
+    ::= { vdslMibObjects 1 }
+
+
+
+
+vdslLineEntry OBJECT-TYPE
+    SYNTAX       VdslLineEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION  "An entry in the vdslLineTable."
+    INDEX { ifIndex }
+    ::= { vdslLineTable 1 }
+
+VdslLineEntry ::=
+    SEQUENCE
+        {
+        vdslLineCoding                 VdslLineCodingType,
+        vdslLineType                   INTEGER,
+        vdslLineConfProfile            SnmpAdminString,
+        vdslLineAlarmConfProfile       SnmpAdminString
+        }
+
+vdslLineCoding OBJECT-TYPE
+    SYNTAX       VdslLineCodingType
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Specifies the VDSL coding type used on this line."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslLineEntry 1 }
+
+vdslLineType OBJECT-TYPE
+    SYNTAX       INTEGER
+        {
+        noChannel(1),         -- no channels exist
+        fastOnly(2),          -- only fast channel exists
+        interleavedOnly(3),   -- only interleaved channel exists
+        fastOrInterleaved(4), -- either fast or interleaved channel
+                              -- exist, but only one at a time
+        fastAndInterleaved(5) -- both fast and interleaved channels
+                              -- exist
+        }
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Defines the type of VDSL physical line entity that exists,
+        by defining whether and how the line is channelized.  If
+
+
+
+
+
+
+
+
+
+        the line is channelized,  the value will be other than
+        noChannel(1).  This object defines which channel type(s)
+        are supported.  Defined values are:
+
+        noChannel(1)          -- no channels exist
+        fastOnly(2)           -- only fast channel exists
+        interleavedOnly(3)    -- only interleaved channel exists
+        fastOrInterleaved(4)  -- either fast or interleaved channel
+                              -- exist, but only one at a time
+        fastAndInterleaved(5) -- both fast and interleaved channels
+                              -- exist
+
+        Note that 'slow' and 'interleaved' refer to the same
+        channel.  In the case that the line is channelized, the
+        manager can use the ifStackTable to determine the ifIndex
+        for the associated channel(s)."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslLineEntry 2 }
+
+vdslLineConfProfile OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE(1..32))
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+        "The value of this object identifies the row in the VDSL
+        Line Configuration Profile Table, vdslLineConfProfileTable,
+        which applies for this VDSL line, and channels if
+        applicable.
+
+        This object MUST be maintained in a persistent manner."
+    DEFVAL       { "DEFVAL" }
+    ::= { vdslLineEntry 3 }
+
+vdslLineAlarmConfProfile OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE(1..32))
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+        "The value of this object identifies the row in the VDSL
+        Line Alarm Configuration Profile Table,
+        vdslLineAlarmConfProfileTable, which applies to this
+        VDSL line, and channels if applicable.
+
+        This object MUST be maintained in a persistent manner."
+    DEFVAL       { "DEFVAL" }
+    ::= { vdslLineEntry 4 }
+
+vdslPhysTable OBJECT-TYPE
+
+
+
+    SYNTAX       SEQUENCE OF VdslPhysEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table provides one row for each Vtu.  Each row
+        contains the Physical Layer Parameters table for that
+        Vtu.  VDSL physical interfaces are those ifEntries where
+        ifType is equal to vdsl(97)."
+    ::= { vdslMibObjects 2 }
+
+vdslPhysEntry OBJECT-TYPE
+    SYNTAX       VdslPhysEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION  "An entry in the vdslPhysTable."
+    INDEX { ifIndex,
+            vdslPhysSide }
+    ::= { vdslPhysTable 1 }
+
+VdslPhysEntry ::=
+    SEQUENCE
+        {
+        vdslPhysSide                   VdslLineEntity,
+        vdslPhysInvSerialNumber        SnmpAdminString,
+        vdslPhysInvVendorID            SnmpAdminString,
+        vdslPhysInvVersionNumber       SnmpAdminString,
+        vdslPhysCurrSnrMgn             Integer32,
+        vdslPhysCurrAtn                Gauge32,
+        vdslPhysCurrStatus             BITS,
+        vdslPhysCurrOutputPwr          Integer32,
+        vdslPhysCurrAttainableRate     Gauge32,
+        vdslPhysCurrLineRate           Gauge32
+        }
+
+vdslPhysSide OBJECT-TYPE
+    SYNTAX       VdslLineEntity
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Identifies whether the transceiver is the Vtuc or Vtur."
+    ::= { vdslPhysEntry 1 }
+
+vdslPhysInvSerialNumber OBJECT-TYPE
+    SYNTAX       SnmpAdminString(SIZE (0..32))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The vendor specific string that identifies the
+
+
+
+        vendor equipment."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPhysEntry 2 }
+
+vdslPhysInvVendorID OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE (0..16))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The vendor ID code is a copy of the binary vendor
+        identification field expressed as readable characters
+        in hexadecimal notation."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPhysEntry 3 }
+
+vdslPhysInvVersionNumber OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE (0..16))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The vendor specific version number sent by this Vtu
+        as part of the initialization messages.  It is a copy
+        of the binary version number field expressed as
+        readable characters in hexadecimal notation."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPhysEntry 4 }
+
+vdslPhysCurrSnrMgn OBJECT-TYPE
+    SYNTAX       Integer32 (-127..127)
+    UNITS        "0.25dBm"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Noise Margin as seen by this Vtu with respect to its
+        received signal in 0.25dB.  The effective range is
+        -31.75 to +31.75 dB."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+     ::= { vdslPhysEntry 5 }
+
+vdslPhysCurrAtn OBJECT-TYPE
+    SYNTAX       Gauge32 (0..255)
+    UNITS        "0.25dBm"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Measured difference in the total power transmitted by
+        the peer Vtu and the total power received by this Vtu.
+        The effective range is 0 to +63.75 dB."
+
+
+
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+     ::= { vdslPhysEntry 6 }
+
+vdslPhysCurrStatus OBJECT-TYPE
+    SYNTAX       BITS
+        {
+        noDefect(0),
+        lossOfFraming(1),
+        lossOfSignal(2),
+        lossOfPower(3),
+        lossOfSignalQuality(4),
+        lossOfLink(5),
+        dataInitFailure(6),
+        configInitFailure(7),
+        protocolInitFailure(8),
+        noPeerVtuPresent(9)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Indicates current state of the Vtu line.  This is a
+        bit-map of possible conditions.  The various bit
+        positions are:
+
+        0   noDefect             There are no defects on the line.
+
+        1   lossOfFraming        Vtu failure due to not receiving
+                                 a valid frame.
+
+        2   lossOfSignal         Vtu failure due to not receiving
+                                 signal.
+
+        3   lossOfPower          Vtu failure due to loss of power.
+
+        4   lossOfSignalQuality  Loss of Signal Quality is declared
+                                 when the Noise Margin falls below
+                                 the Minimum Noise Margin, or the
+                                 bit-error-rate exceeds 10^-7.
+
+        5   lossOfLink           Vtu failure due to inability to
+                                 link with peer Vtu.  Set whenever
+                                 the transceiver is in the 'Warm
+                                 Start' state.
+
+        6   dataInitFailure      Vtu failure during initialization
+                                 due to bit errors corrupting
+                                 startup exchange data.
+
+
+
+
+        7   configInitFailure    Vtu failure during initialization
+                                 due to peer Vtu not able to
+                                 support requested configuration.
+
+        8   protocolInitFailure  Vtu failure during initialization
+                                 due to incompatible protocol used
+                                 by the peer Vtu.
+
+        9   noPeerVtuPresent     Vtu failure during initialization
+                                 due to no activation sequence
+                                 detected from peer Vtu.
+
+        This is intended to supplement ifOperStatus."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+     ::= { vdslPhysEntry 7 }
+
+vdslPhysCurrOutputPwr OBJECT-TYPE
+    SYNTAX       Integer32 (0..160)
+    UNITS        "0.1dBm"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Measured total output power transmitted by this VTU.
+        This is the measurement that was reported during
+        the last activation sequence."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPhysEntry 8 }
+
+vdslPhysCurrAttainableRate OBJECT-TYPE
+    SYNTAX       Gauge32
+    UNITS        "kbps"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Indicates the maximum currently attainable data rate
+        in steps of 1000 bits/second by the Vtu.  This value
+        will be equal to or greater than vdslPhysCurrLineRate.
+        Note that for SCM, the minimum and maximum data rates
+        are equal.  Note: 1 kbps = 1000 bps."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPhysEntry 9 }
+
+vdslPhysCurrLineRate OBJECT-TYPE
+    SYNTAX       Gauge32
+    UNITS        "kbps"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+
+
+
+        "Indicates the current data rate in steps of 1000
+        bits/second by the Vtu.  This value will be less than
+        or equal to vdslPhysCurrAttainableRate.  Note: 1 kbps =
+        1000 bps."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPhysEntry 10 }
+
+vdslChanTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslChanEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table provides one row for each Vtu channel.
+        VDSL channel interfaces are those ifEntries where
+        ifType is equal to interleave(124) or fast(125)."
+    ::= { vdslMibObjects 3 }
+
+vdslChanEntry OBJECT-TYPE
+    SYNTAX       VdslChanEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "An entry in the vdslChanTable."
+    INDEX { ifIndex,
+            vdslPhysSide }
+    ::= { vdslChanTable 1 }
+
+VdslChanEntry ::=
+    SEQUENCE
+        {
+        vdslChanInterleaveDelay        Gauge32,
+        vdslChanCrcBlockLength         Gauge32,
+        vdslChanCurrTxRate             Gauge32,
+        vdslChanCurrTxSlowBurstProtect Gauge32,
+        vdslChanCurrTxFastFec          Gauge32
+        }
+
+vdslChanInterleaveDelay OBJECT-TYPE
+    SYNTAX       Gauge32
+    UNITS        "milliseconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Interleave Delay for this channel.
+
+        Interleave delay applies only to the interleave
+        (slow) channel and defines the mapping (relative
+        spacing) between subsequent input bytes at the
+
+
+
+        interleaver input and their placement in the bit
+        stream at the interleaver output.  Larger numbers
+        provide greater separation between consecutive
+        input bytes in the output bit stream allowing for
+        improved impulse noise immunity at the expense of
+        payload latency.
+
+        In the case where the ifType is fast(125), return
+        a value of zero."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslChanEntry 1 }
+
+vdslChanCrcBlockLength OBJECT-TYPE
+    SYNTAX       Gauge32
+    UNITS        "bytes"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Indicates the length of the channel data-block
+        on which the CRC operates."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslChanEntry 2 }
+
+vdslChanCurrTxRate OBJECT-TYPE
+    SYNTAX       Gauge32
+    UNITS        "kbps"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Actual transmit data rate on this channel.  Note: 1
+        kbps = 1000 bps."
+    ::= { vdslChanEntry 3 }
+
+vdslChanCurrTxSlowBurstProtect OBJECT-TYPE
+    SYNTAX       Gauge32 (0..1275)
+    UNITS        "microseconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Actual level of impulse noise (burst) protection
+        for an interleaved (slow) channel.  This parameter is
+        not applicable to fast channels.  For fast channels,
+        a value of zero shall be returned."
+    REFERENCE    "ITU-T G.997.1, section 7.3.2.3"
+    ::= { vdslChanEntry 4 }
+
+vdslChanCurrTxFastFec OBJECT-TYPE
+    SYNTAX       Gauge32 (0..50)
+
+
+
+    UNITS        "%"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Actual Forward Error Correction (FEC) redundancy
+        related overhead for a fast channel.  This parameter
+        is not applicable to an interleaved (slow) channel.
+        For interleaved channels, a value of zero shall be
+        returned."
+    ::= { vdslChanEntry 5 }
+
+vdslPerfDataTable       OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslPerfDataEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table provides one row for each VDSL physical
+        interface.  VDSL physical interfaces are those ifEntries
+        where ifType is equal to vdsl(97)."
+    ::= { vdslMibObjects 4 }
+
+vdslPerfDataEntry       OBJECT-TYPE
+    SYNTAX        VdslPerfDataEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "An entry in the vdslPerfDataTable."
+    INDEX { ifIndex,
+            vdslPhysSide }
+    ::= { vdslPerfDataTable 1 }
+
+VdslPerfDataEntry ::=
+    SEQUENCE
+        {
+        vdslPerfDataValidIntervals         HCPerfValidIntervals,
+        vdslPerfDataInvalidIntervals       HCPerfInvalidIntervals,
+        vdslPerfDataLofs                   Unsigned32,
+        vdslPerfDataLoss                   Unsigned32,
+        vdslPerfDataLprs                   Unsigned32,
+        vdslPerfDataLols                   Unsigned32,
+        vdslPerfDataESs                    Unsigned32,
+        vdslPerfDataSESs                   Unsigned32,
+        vdslPerfDataUASs                   Unsigned32,
+        vdslPerfDataInits                  Unsigned32,
+        vdslPerfDataCurr15MinTimeElapsed   HCPerfTimeElapsed,
+        vdslPerfDataCurr15MinLofs          HCPerfCurrentCount,
+        vdslPerfDataCurr15MinLoss          HCPerfCurrentCount,
+        vdslPerfDataCurr15MinLprs          HCPerfCurrentCount,
+
+
+
+        vdslPerfDataCurr15MinLols          HCPerfCurrentCount,
+        vdslPerfDataCurr15MinESs           HCPerfCurrentCount,
+        vdslPerfDataCurr15MinSESs          HCPerfCurrentCount,
+        vdslPerfDataCurr15MinUASs          HCPerfCurrentCount,
+        vdslPerfDataCurr15MinInits         HCPerfCurrentCount,
+        vdslPerfData1DayValidIntervals     HCPerfValidIntervals,
+        vdslPerfData1DayInvalidIntervals   HCPerfInvalidIntervals,
+        vdslPerfDataCurr1DayTimeElapsed    HCPerfTimeElapsed,
+        vdslPerfDataCurr1DayLofs           Unsigned32,
+        vdslPerfDataCurr1DayLoss           Unsigned32,
+        vdslPerfDataCurr1DayLprs           Unsigned32,
+        vdslPerfDataCurr1DayLols           Unsigned32,
+        vdslPerfDataCurr1DayESs            Unsigned32,
+        vdslPerfDataCurr1DaySESs           Unsigned32,
+        vdslPerfDataCurr1DayUASs           Unsigned32,
+        vdslPerfDataCurr1DayInits          Unsigned32
+        }
+
+vdslPerfDataValidIntervals OBJECT-TYPE
+    SYNTAX       HCPerfValidIntervals
+    UNITS        "intervals"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Valid Intervals per definition found in
+        HC-PerfHist-TC-MIB."
+    ::= { vdslPerfDataEntry 1 }
+
+vdslPerfDataInvalidIntervals OBJECT-TYPE
+    SYNTAX       HCPerfInvalidIntervals
+    UNITS        "intervals"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Invalid Intervals per definition found in
+        HC-PerfHist-TC-MIB."
+    ::= { vdslPerfDataEntry 2 }
+
+vdslPerfDataLofs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of seconds since the unit was last reset that there
+        was Loss of Framing."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfDataEntry 3 }
+
+
+
+vdslPerfDataLoss OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of seconds since the unit was last reset that there
+        was Loss of Signal."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfDataEntry 4 }
+
+vdslPerfDataLprs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of seconds since the unit was last reset that there
+        was Loss of Power."
+
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfDataEntry 5 }
+
+vdslPerfDataLols OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of seconds since the unit was last reset that there
+        was Loss of Link."
+    ::= { vdslPerfDataEntry 6 }
+
+vdslPerfDataESs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Errored Seconds since the unit was last reset.
+        An Errored Second is a one-second interval containing one
+        or more CRC anomalies, or one or more LOS or LOF defects."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfDataEntry 7 }
+
+vdslPerfDataSESs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+
+
+
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Severely Errored Seconds since the unit was last
+        reset."
+    ::= { vdslPerfDataEntry 8 }
+
+vdslPerfDataUASs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Unavailable Seconds since the unit was last
+        reset."
+    ::= { vdslPerfDataEntry 9 }
+
+vdslPerfDataInits OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "occurrences"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of the line initialization attempts since the unit
+        was last reset.  This count includes both successful and
+        failed attempts."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfDataEntry 10 }
+
+vdslPerfDataCurr15MinTimeElapsed OBJECT-TYPE
+    SYNTAX       HCPerfTimeElapsed
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Total elapsed seconds in this interval."
+    ::= { vdslPerfDataEntry 11 }
+
+vdslPerfDataCurr15MinLofs OBJECT-TYPE
+    SYNTAX       HCPerfCurrentCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of seconds during this interval that there
+        was Loss of Framing."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfDataEntry 12 }
+
+
+
+vdslPerfDataCurr15MinLoss OBJECT-TYPE
+    SYNTAX       HCPerfCurrentCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of seconds during this interval that there
+        was Loss of Signal."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfDataEntry 13 }
+
+vdslPerfDataCurr15MinLprs OBJECT-TYPE
+    SYNTAX       HCPerfCurrentCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of seconds during this interval that there
+        was Loss of Power."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfDataEntry 14 }
+
+vdslPerfDataCurr15MinLols OBJECT-TYPE
+    SYNTAX       HCPerfCurrentCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of seconds during this interval that there
+        was Loss of Link."
+    ::= { vdslPerfDataEntry 15 }
+
+vdslPerfDataCurr15MinESs OBJECT-TYPE
+    SYNTAX       HCPerfCurrentCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Errored Seconds during this interval.  An Errored
+        Second is a one-second interval containing one or more CRC
+        anomalies, or one or more LOS or LOF defects."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfDataEntry 16 }
+
+vdslPerfDataCurr15MinSESs OBJECT-TYPE
+    SYNTAX       HCPerfCurrentCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+
+
+
+    STATUS       current
+    DESCRIPTION
+        "Count of Severely Errored Seconds during this interval."
+    ::= { vdslPerfDataEntry 17 }
+
+vdslPerfDataCurr15MinUASs OBJECT-TYPE
+    SYNTAX       HCPerfCurrentCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Unavailable Seconds during this interval."
+    ::= { vdslPerfDataEntry 18 }
+
+vdslPerfDataCurr15MinInits OBJECT-TYPE
+    SYNTAX       HCPerfCurrentCount
+    UNITS        "occurrences"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of the line initialization attempts during this
+        interval.  This count includes both successful and
+        failed attempts."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfDataEntry 19 }
+
+vdslPerfData1DayValidIntervals OBJECT-TYPE
+    SYNTAX       HCPerfValidIntervals
+    UNITS        "intervals"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Valid Intervals per definition found in
+        HC-PerfHist-TC-MIB."
+    ::= { vdslPerfDataEntry 20 }
+
+vdslPerfData1DayInvalidIntervals OBJECT-TYPE
+    SYNTAX       HCPerfInvalidIntervals
+    UNITS        "intervals"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Invalid Intervals per definition found in
+        HC-PerfHist-TC-MIB."
+    ::= { vdslPerfDataEntry 21 }
+
+vdslPerfDataCurr1DayTimeElapsed OBJECT-TYPE
+    SYNTAX       HCPerfTimeElapsed
+
+
+
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+         "Number of seconds that have elapsed since the beginning
+         of the current 1-day interval."
+    ::= { vdslPerfDataEntry 22 }
+
+vdslPerfDataCurr1DayLofs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Loss of Framing (LOF) Seconds since the
+        beginning of the current 1-day interval."
+    ::= { vdslPerfDataEntry 23 }
+
+vdslPerfDataCurr1DayLoss OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Loss of Signal (LOS) Seconds since the beginning
+        of the current 1-day interval."
+    ::= { vdslPerfDataEntry 24 }
+
+vdslPerfDataCurr1DayLprs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Loss of Power (LPR) Seconds since the beginning
+        of the current 1-day interval."
+    ::= { vdslPerfDataEntry 25 }
+
+vdslPerfDataCurr1DayLols OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Loss of Link (LOL) Seconds since the beginning
+        of the current 1-day interval."
+    ::= { vdslPerfDataEntry 26 }
+
+
+
+
+vdslPerfDataCurr1DayESs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Errored Seconds (ES) since the beginning
+        of the current 1-day interval."
+    ::= { vdslPerfDataEntry 27 }
+
+vdslPerfDataCurr1DaySESs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Severely Errored Seconds (SES) since the
+        beginning of the current 1-day interval."
+    ::= { vdslPerfDataEntry 28 }
+
+vdslPerfDataCurr1DayUASs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Unavailable Seconds (UAS) since the beginning
+        of the current 1-day interval."
+    ::= { vdslPerfDataEntry 29 }
+
+vdslPerfDataCurr1DayInits OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of the line initialization attempts since the
+        beginning of the current 1-day interval.  This count
+        includes both successful and failed attempts."
+    ::= { vdslPerfDataEntry 30 }
+
+vdslPerfIntervalTable       OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslPerfIntervalEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table provides one row for each Vtu performance
+        data collection interval.  VDSL physical interfaces are
+
+
+
+        those ifEntries where ifType is equal to vdsl(97)."
+    ::= { vdslMibObjects 5 }
+
+vdslPerfIntervalEntry       OBJECT-TYPE
+    SYNTAX        VdslPerfIntervalEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "An entry in the vdslPerfIntervalTable."
+    INDEX { ifIndex,
+            vdslPhysSide,
+            vdslPerfIntervalNumber }
+    ::= { vdslPerfIntervalTable 1 }
+
+VdslPerfIntervalEntry ::=
+    SEQUENCE
+        {
+        vdslPerfIntervalNumber             Unsigned32,
+        vdslPerfIntervalLofs               HCPerfIntervalCount,
+        vdslPerfIntervalLoss               HCPerfIntervalCount,
+        vdslPerfIntervalLprs               HCPerfIntervalCount,
+        vdslPerfIntervalLols               HCPerfIntervalCount,
+        vdslPerfIntervalESs                HCPerfIntervalCount,
+        vdslPerfIntervalSESs               HCPerfIntervalCount,
+        vdslPerfIntervalUASs               HCPerfIntervalCount,
+        vdslPerfIntervalInits              HCPerfIntervalCount
+        }
+
+vdslPerfIntervalNumber OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..96)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Performance Data Interval number 1 is the most recent
+        previous interval; interval 96 is 24 hours ago.
+        Intervals 2 to 96 are optional."
+    ::= { vdslPerfIntervalEntry 1 }
+
+vdslPerfIntervalLofs OBJECT-TYPE
+    SYNTAX       HCPerfIntervalCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of seconds in the interval when there was Loss
+        of Framing."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfIntervalEntry 2 }
+
+
+
+vdslPerfIntervalLoss OBJECT-TYPE
+    SYNTAX       HCPerfIntervalCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of seconds in the interval when there was Loss
+        of Signal."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfIntervalEntry 3 }
+
+vdslPerfIntervalLprs OBJECT-TYPE
+    SYNTAX       HCPerfIntervalCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of seconds in the interval when there was Loss
+        of Power."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfIntervalEntry 4 }
+
+vdslPerfIntervalLols OBJECT-TYPE
+    SYNTAX       HCPerfIntervalCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of seconds in the interval when there was Loss
+        of Link."
+    ::= { vdslPerfIntervalEntry 5 }
+
+vdslPerfIntervalESs OBJECT-TYPE
+    SYNTAX       HCPerfIntervalCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Errored Seconds (ES) in the interval.  An Errored
+        Second is a one-second interval containing one or more CRC
+        anomalies, one or more LOS or LOF defects."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfIntervalEntry 6 }
+
+vdslPerfIntervalSESs OBJECT-TYPE
+    SYNTAX       HCPerfIntervalCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+
+
+
+    STATUS       current
+    DESCRIPTION
+        "Count of Severely Errored Seconds in the interval."
+    ::= { vdslPerfIntervalEntry 7 }
+
+vdslPerfIntervalUASs OBJECT-TYPE
+    SYNTAX       HCPerfIntervalCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of Unavailable Seconds in the interval."
+    ::= { vdslPerfIntervalEntry 8 }
+
+vdslPerfIntervalInits OBJECT-TYPE
+    SYNTAX       HCPerfIntervalCount
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of the line initialization attempts during this
+        interval.  This count includes both successful and
+        failed attempts."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerfIntervalEntry 9 }
+
+vdslPerf1DayIntervalTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslPerf1DayIntervalEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table provides one row for each VDSL performance
+        data collection interval.  This table contains live data
+        from equipment.  As such, it is NOT persistent."
+    ::= { vdslMibObjects 6 }
+
+vdslPerf1DayIntervalEntry OBJECT-TYPE
+    SYNTAX       VdslPerf1DayIntervalEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "An entry in the vdslPerf1DayIntervalTable."
+    INDEX { ifIndex,
+            vdslPhysSide,
+            vdslPerf1DayIntervalNumber }
+    ::= { vdslPerf1DayIntervalTable 1 }
+
+VdslPerf1DayIntervalEntry ::=
+    SEQUENCE
+
+
+
+    {
+    vdslPerf1DayIntervalNumber             Unsigned32,
+    vdslPerf1DayIntervalMoniSecs           HCPerfTimeElapsed,
+    vdslPerf1DayIntervalLofs               Unsigned32,
+    vdslPerf1DayIntervalLoss               Unsigned32,
+    vdslPerf1DayIntervalLprs               Unsigned32,
+    vdslPerf1DayIntervalLols               Unsigned32,
+    vdslPerf1DayIntervalESs                Unsigned32,
+    vdslPerf1DayIntervalSESs               Unsigned32,
+    vdslPerf1DayIntervalUASs               Unsigned32,
+    vdslPerf1DayIntervalInits              Unsigned32
+    }
+
+vdslPerf1DayIntervalNumber OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..30)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "History Data Interval number.  Interval 1 is the most
+        recent previous day; interval 30 is 30 days ago.  Intervals
+        2 to 30 are optional."
+    ::= { vdslPerf1DayIntervalEntry 1 }
+
+vdslPerf1DayIntervalMoniSecs OBJECT-TYPE
+    SYNTAX       HCPerfTimeElapsed
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The amount of time in the 1-day interval over which the
+        performance monitoring information is actually counted.
+        This value will be the same as the interval duration except
+        in a situation where performance monitoring data could not
+        be collected for any reason."
+    ::= { vdslPerf1DayIntervalEntry 2 }
+
+vdslPerf1DayIntervalLofs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+         "Count of Loss of Frame (LOF) Seconds during the 1-day
+         interval as measured by vdslPerf1DayIntervalMoniSecs."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerf1DayIntervalEntry 3 }
+
+vdslPerf1DayIntervalLoss OBJECT-TYPE
+
+
+
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+         "Count of Loss of Signal (LOS) Seconds during the 1-day
+         interval as measured by vdslPerf1DayIntervalMoniSecs."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerf1DayIntervalEntry 4 }
+
+vdslPerf1DayIntervalLprs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+         "Count of Loss of Power (LPR) Seconds during the 1-day
+         interval as measured by vdslPerf1DayIntervalMoniSecs."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerf1DayIntervalEntry 5 }
+
+vdslPerf1DayIntervalLols OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+         "Count of Loss of Link (LOL) Seconds during the 1-day
+         interval as measured by vdslPerf1DayIntervalMoniSecs."
+    ::= { vdslPerf1DayIntervalEntry 6 }
+
+vdslPerf1DayIntervalESs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+         "Count of Errored Seconds (ES) during the 1-day
+         interval as measured by vdslPerf1DayIntervalMoniSecs."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerf1DayIntervalEntry 7 }
+
+vdslPerf1DayIntervalSESs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+
+
+
+         "Count of Severely Errored Seconds (SES) during the 1-day
+         interval as measured by vdslPerf1DayIntervalMoniSecs."
+    ::= { vdslPerf1DayIntervalEntry 8 }
+
+vdslPerf1DayIntervalUASs OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+         "Count of Unavailable Seconds (UAS) during the 1-day
+         interval as measured by vdslPerf1DayIntervalMoniSecs."
+    ::= { vdslPerf1DayIntervalEntry 9 }
+
+vdslPerf1DayIntervalInits OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Count of the line initialization attempts during the
+        1-day interval as measured by vdslPerf1DayIntervalMoniSecs.
+        This count includes both successful and failed attempts."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslPerf1DayIntervalEntry 10 }
+
+vdslChanPerfDataTable       OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslChanPerfDataEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table provides one row for each Vtu channel.
+        VDSL channel interfaces are those ifEntries where
+        ifType is equal to interleave(124) or fast(125)."
+    ::= { vdslMibObjects 7 }
+
+vdslChanPerfDataEntry OBJECT-TYPE
+    SYNTAX        VdslChanPerfDataEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "An entry in the vdslChanPerfDataTable."
+    INDEX { ifIndex,
+            vdslPhysSide }
+    ::= { vdslChanPerfDataTable 1 }
+
+VdslChanPerfDataEntry ::=
+    SEQUENCE
+
+
+
+        {
+        vdslChanValidIntervals         HCPerfValidIntervals,
+        vdslChanInvalidIntervals       HCPerfInvalidIntervals,
+        vdslChanFixedOctets            ZeroBasedCounter64,
+        vdslChanBadBlks                ZeroBasedCounter64,
+        vdslChanCurr15MinTimeElapsed   HCPerfTimeElapsed,
+        vdslChanCurr15MinFixedOctets   HCPerfCurrentCount,
+        vdslChanCurr15MinBadBlks       HCPerfCurrentCount,
+        vdslChan1DayValidIntervals     HCPerfValidIntervals,
+        vdslChan1DayInvalidIntervals   HCPerfInvalidIntervals,
+        vdslChanCurr1DayTimeElapsed    HCPerfTimeElapsed,
+        vdslChanCurr1DayFixedOctets    HCPerfCurrentCount,
+        vdslChanCurr1DayBadBlks        HCPerfCurrentCount
+        }
+
+vdslChanValidIntervals OBJECT-TYPE
+    SYNTAX        HCPerfValidIntervals
+    UNITS        "intervals"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Valid Intervals per definition found in
+        HC-PerfHist-TC-MIB."
+    ::= { vdslChanPerfDataEntry 1 }
+
+vdslChanInvalidIntervals OBJECT-TYPE
+    SYNTAX        HCPerfInvalidIntervals
+    UNITS        "intervals"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Invalid Intervals per definition found in
+        HC-PerfHist-TC-MIB."
+    ::= { vdslChanPerfDataEntry 2 }
+
+vdslChanFixedOctets OBJECT-TYPE
+    SYNTAX        ZeroBasedCounter64
+    UNITS         "octets"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Count of corrected octets since the unit was last reset."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslChanPerfDataEntry 3 }
+
+vdslChanBadBlks OBJECT-TYPE
+    SYNTAX        ZeroBasedCounter64
+    UNITS         "blocks"
+
+
+
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Count of uncorrectable blocks since the unit was last
+        reset."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslChanPerfDataEntry 4 }
+
+vdslChanCurr15MinTimeElapsed OBJECT-TYPE
+    SYNTAX        HCPerfTimeElapsed
+    UNITS         "seconds"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Total elapsed seconds in this interval."
+    ::= { vdslChanPerfDataEntry 5 }
+
+vdslChanCurr15MinFixedOctets OBJECT-TYPE
+    SYNTAX        HCPerfCurrentCount
+    UNITS         "octets"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Count of corrected octets in this interval."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslChanPerfDataEntry 6 }
+
+vdslChanCurr15MinBadBlks OBJECT-TYPE
+    SYNTAX        HCPerfCurrentCount
+    UNITS         "blocks"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Count of uncorrectable blocks in this interval."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslChanPerfDataEntry 7 }
+
+vdslChan1DayValidIntervals OBJECT-TYPE
+    SYNTAX        HCPerfValidIntervals
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Valid Intervals per definition found in
+        HC-PerfHist-TC-MIB."
+    ::= { vdslChanPerfDataEntry 8 }
+
+vdslChan1DayInvalidIntervals OBJECT-TYPE
+    SYNTAX        HCPerfInvalidIntervals
+
+
+
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Invalid Intervals per definition found in
+        HC-PerfHist-TC-MIB."
+    ::= { vdslChanPerfDataEntry 9 }
+
+vdslChanCurr1DayTimeElapsed OBJECT-TYPE
+    SYNTAX       HCPerfTimeElapsed
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+         "Number of seconds that have elapsed since the beginning
+         of the current 1-day interval."
+    ::= { vdslChanPerfDataEntry 10 }
+
+vdslChanCurr1DayFixedOctets OBJECT-TYPE
+    SYNTAX        HCPerfCurrentCount
+    UNITS         "octets"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Count of corrected octets since the beginning of the
+        current 1-day interval."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslChanPerfDataEntry 11 }
+
+vdslChanCurr1DayBadBlks OBJECT-TYPE
+    SYNTAX        HCPerfCurrentCount
+    UNITS         "blocks"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Count of uncorrectable blocks since the beginning of the
+        current 1-day interval."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslChanPerfDataEntry 12 }
+
+vdslChanIntervalTable       OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslChanIntervalEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table provides one row for each Vtu channel data
+        collection interval.  VDSL channel interfaces are those
+        ifEntries where ifType is equal to interleave(124) or
+        fast(125)."
+
+
+
+    ::= { vdslMibObjects 8 }
+
+vdslChanIntervalEntry OBJECT-TYPE
+    SYNTAX        VdslChanIntervalEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "An entry in the vdslChanIntervalTable."
+    INDEX { ifIndex,
+            vdslPhysSide,
+            vdslChanIntervalNumber }
+    ::= { vdslChanIntervalTable 1 }
+
+VdslChanIntervalEntry ::=
+    SEQUENCE
+        {
+        vdslChanIntervalNumber         Unsigned32,
+        vdslChanIntervalFixedOctets    HCPerfIntervalCount,
+        vdslChanIntervalBadBlks        HCPerfIntervalCount
+        }
+
+vdslChanIntervalNumber OBJECT-TYPE
+    SYNTAX        Unsigned32 (1..96)
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "Performance Data Interval number 1 is the most recent
+        previous interval; interval 96 is 24 hours ago.
+        Intervals 2 to 96 are optional."
+    ::= { vdslChanIntervalEntry 1 }
+
+vdslChanIntervalFixedOctets OBJECT-TYPE
+    SYNTAX        HCPerfIntervalCount
+    UNITS        "octets"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Count of corrected octets in this interval."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslChanIntervalEntry 2 }
+
+vdslChanIntervalBadBlks OBJECT-TYPE
+    SYNTAX        HCPerfIntervalCount
+    UNITS        "blocks"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Count of uncorrectable blocks in this interval."
+
+
+
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslChanIntervalEntry 3 }
+
+vdslChan1DayIntervalTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslChan1DayIntervalEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table provides one row for each VDSL performance
+        data collection interval.  This table contains live data
+        from equipment.  As such, it is NOT persistent."
+    ::= { vdslMibObjects 9 }
+
+vdslChan1DayIntervalEntry OBJECT-TYPE
+    SYNTAX       VdslChan1DayIntervalEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "An entry in the vdslChan1DayIntervalTable."
+    INDEX { ifIndex,
+            vdslPhysSide,
+            vdslChan1DayIntervalNumber }
+    ::= { vdslChan1DayIntervalTable 1 }
+
+VdslChan1DayIntervalEntry ::=
+    SEQUENCE
+    {
+    vdslChan1DayIntervalNumber         Unsigned32,
+    vdslChan1DayIntervalMoniSecs       HCPerfTimeElapsed,
+    vdslChan1DayIntervalFixedOctets    HCPerfCurrentCount,
+    vdslChan1DayIntervalBadBlks        HCPerfCurrentCount
+    }
+
+vdslChan1DayIntervalNumber OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..30)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "History Data Interval number.  Interval 1 is the most
+        recent previous day; interval 30 is 30 days ago.  Intervals
+        2 to 30 are optional."
+    ::= { vdslChan1DayIntervalEntry 1 }
+
+vdslChan1DayIntervalMoniSecs OBJECT-TYPE
+    SYNTAX       HCPerfTimeElapsed
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+
+
+
+    DESCRIPTION
+        "The amount of time in the 1-day interval over which the
+        performance monitoring information is actually counted.
+        This value will be the same as the interval duration except
+        in a situation where performance monitoring data could not
+        be collected for any reason."
+    ::= { vdslChan1DayIntervalEntry 2 }
+
+vdslChan1DayIntervalFixedOctets OBJECT-TYPE
+    SYNTAX        HCPerfCurrentCount
+    UNITS        "octets"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Count of corrected octets in this interval."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslChan1DayIntervalEntry 3 }
+
+vdslChan1DayIntervalBadBlks OBJECT-TYPE
+    SYNTAX        HCPerfCurrentCount
+    UNITS        "blocks"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Count of uncorrectable blocks in this interval."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    ::= { vdslChan1DayIntervalEntry 4 }
+
+--
+-- profile tables
+--
+
+vdslLineConfProfileTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF VdslLineConfProfileEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "This table contains information on the VDSL line
+        configuration.  One entry in this table reflects a
+        profile defined by a manager which can be used to
+        configure the VDSL line.
+
+        Entries in this table MUST be maintained in a
+        persistent manner."
+    ::= { vdslMibObjects 11 }
+
+vdslLineConfProfileEntry OBJECT-TYPE
+    SYNTAX         VdslLineConfProfileEntry
+
+
+
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "Each entry consists of a list of parameters that
+        represents the configuration of a VDSL line.
+
+        A default profile with an index of 'DEFVAL', will
+        always exist and its parameters will be set to vendor
+        specific values, unless otherwise specified in this
+        document."
+    INDEX { vdslLineConfProfileName }
+    ::= { vdslLineConfProfileTable 1 }
+
+VdslLineConfProfileEntry ::=
+    SEQUENCE
+        {
+        vdslLineConfProfileName            SnmpAdminString,
+        vdslLineConfDownRateMode           INTEGER,
+        vdslLineConfUpRateMode             INTEGER,
+        vdslLineConfDownMaxPwr             Unsigned32,
+        vdslLineConfUpMaxPwr               Unsigned32,
+        vdslLineConfDownMaxSnrMgn          Unsigned32,
+        vdslLineConfDownMinSnrMgn          Unsigned32,
+        vdslLineConfDownTargetSnrMgn       Unsigned32,
+        vdslLineConfUpMaxSnrMgn            Unsigned32,
+        vdslLineConfUpMinSnrMgn            Unsigned32,
+        vdslLineConfUpTargetSnrMgn         Unsigned32,
+        vdslLineConfDownFastMaxDataRate    Unsigned32,
+        vdslLineConfDownFastMinDataRate    Unsigned32,
+        vdslLineConfDownSlowMaxDataRate    Unsigned32,
+        vdslLineConfDownSlowMinDataRate    Unsigned32,
+        vdslLineConfUpFastMaxDataRate      Unsigned32,
+        vdslLineConfUpFastMinDataRate      Unsigned32,
+        vdslLineConfUpSlowMaxDataRate      Unsigned32,
+        vdslLineConfUpSlowMinDataRate      Unsigned32,
+        vdslLineConfDownRateRatio          Unsigned32,
+        vdslLineConfUpRateRatio            Unsigned32,
+        vdslLineConfDownMaxInterDelay      Unsigned32,
+        vdslLineConfUpMaxInterDelay        Unsigned32,
+        vdslLineConfDownPboControl         INTEGER,
+        vdslLineConfUpPboControl           INTEGER,
+        vdslLineConfDownPboLevel           Unsigned32,
+        vdslLineConfUpPboLevel             Unsigned32,
+        vdslLineConfDeploymentScenario     INTEGER,
+        vdslLineConfAdslPresence           INTEGER,
+        vdslLineConfApplicableStandard     INTEGER,
+        vdslLineConfBandPlan               INTEGER,
+        vdslLineConfBandPlanFx             Unsigned32,
+
+
+
+        vdslLineConfBandOptUsage           INTEGER,
+        vdslLineConfUpPsdTemplate          INTEGER,
+        vdslLineConfDownPsdTemplate        INTEGER,
+        vdslLineConfHamBandMask            BITS,
+        vdslLineConfCustomNotch1Start      Unsigned32,
+        vdslLineConfCustomNotch1Stop       Unsigned32,
+        vdslLineConfCustomNotch2Start      Unsigned32,
+        vdslLineConfCustomNotch2Stop       Unsigned32,
+        vdslLineConfDownTargetSlowBurst    Unsigned32,
+        vdslLineConfUpTargetSlowBurst      Unsigned32,
+        vdslLineConfDownMaxFastFec         Unsigned32,
+        vdslLineConfUpMaxFastFec           Unsigned32,
+        vdslLineConfLineType               INTEGER,
+        vdslLineConfProfRowStatus          RowStatus
+        }
+
+vdslLineConfProfileName OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE (1..32))
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This object identifies a row in this table.
+
+        A default profile with an index of 'DEFVAL', will
+        always exist and its parameters will be set to vendor
+        specific values, unless otherwise specified in this
+        document."
+    ::= { vdslLineConfProfileEntry 1 }
+
+vdslLineConfDownRateMode OBJECT-TYPE
+    SYNTAX       INTEGER
+                 {
+                 manual(1),
+                 adaptAtInit(2)
+                 }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the rate selection behavior for the line
+        in the downstream direction.
+
+        manual(1)       forces the rate to the configured rate
+        adaptAtInit(2)  adapts the line based upon line quality."
+    DEFVAL       { adaptAtInit }
+    ::= { vdslLineConfProfileEntry 2 }
+
+vdslLineConfUpRateMode OBJECT-TYPE
+    SYNTAX       INTEGER
+
+
+
+                 {
+                 manual(1),
+                 adaptAtInit(2)
+                 }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the rate selection behavior for the line
+        in the upstream direction.
+
+        manual(1)       forces the rate to the configured rate
+        adaptAtInit(2)  adapts the line based upon line quality."
+    DEFVAL       { adaptAtInit }
+    ::= { vdslLineConfProfileEntry 3 }
+
+vdslLineConfDownMaxPwr OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..58)
+    UNITS        "0.25dBm"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the maximum aggregate downstream power
+        level in the range 0 to 14.5 dBm."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 4 }
+
+vdslLineConfUpMaxPwr OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..58)
+    UNITS        "0.25dBm"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the maximum aggregate upstream power
+        level in the range 0 to 14.5 dBm."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 5 }
+
+vdslLineConfDownMaxSnrMgn OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..127)
+    UNITS        "0.25dBm"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the maximum downstream Signal/Noise Margin
+        in units of 0.25 dB, for a range of 0 to 31.75 dB."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+
+
+
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 6 }
+
+vdslLineConfDownMinSnrMgn OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..127)
+    UNITS        "0.25dBm"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the minimum downstream Signal/Noise Margin
+        in units of 0.25 dB, for a range of 0 to 31.75 dB."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 7 }
+
+vdslLineConfDownTargetSnrMgn OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..127)
+    UNITS        "0.25dBm"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the target downstream Signal/Noise Margin
+        in units of 0.25 dB, for a range of 0 to 31.75 dB.
+        This is the Noise Margin the transceivers must achieve
+        with a BER of 10^-7 or better to successfully complete
+        initialization."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 8 }
+
+vdslLineConfUpMaxSnrMgn OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..127)
+    UNITS        "0.25dBm"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the maximum upstream Signal/Noise Margin
+        in units of 0.25 dB, for a range of 0 to 31.75 dB."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 9 }
+
+vdslLineConfUpMinSnrMgn OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..127)
+    UNITS        "0.25dBm"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+
+
+
+        "Specifies the minimum upstream Signal/Noise Margin
+        in units of 0.25 dB, for a range of 0 to 31.75 dB."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 10 }
+
+vdslLineConfUpTargetSnrMgn OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..127)
+    UNITS        "0.25dBm"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the target upstream Signal/Noise Margin in
+        units of 0.25 dB, for a range of 0 to 31.75 dB.  This
+        is the Noise Margin the transceivers must achieve with
+        a BER of 10^-7 or better to successfully complete
+        initialization."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 11 }
+
+vdslLineConfDownFastMaxDataRate OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "kbps"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the maximum downstream fast channel
+        data rate in steps of 1000 bits/second."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 12 }
+
+vdslLineConfDownFastMinDataRate OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "kbps"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the minimum downstream fast channel
+        data rate in steps of 1000 bits/second."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 13 }
+
+vdslLineConfDownSlowMaxDataRate OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "kbps"
+    MAX-ACCESS   read-create
+    STATUS       current
+
+
+
+    DESCRIPTION
+        "Specifies the maximum downstream slow channel
+        data rate in steps of 1000 bits/second.
+
+        The maximum aggregate downstream transmit speed
+        of the line can be derived from the sum of maximum
+        downstream fast and slow channel data rates."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 14 }
+
+vdslLineConfDownSlowMinDataRate OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "kbps"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the minimum downstream slow channel
+        data rate in steps of 1000 bits/second.
+
+        The minimum aggregate downstream transmit speed
+        of the line can be derived from the sum of minimum
+        downstream fast and slow channel data rates."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 15 }
+
+vdslLineConfUpFastMaxDataRate OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "kbps"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the maximum upstream fast channel
+        data rate in steps of 1000 bits/second.
+
+        The maximum aggregate upstream transmit speed
+        of the line can be derived from the sum of maximum
+        upstream fast and slow channel data rates."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 16 }
+
+vdslLineConfUpFastMinDataRate OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "kbps"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the minimum upstream fast channel
+        data rate in steps of 1000 bits/second.
+
+
+
+        The minimum aggregate upstream transmit speed
+        of the line can be derived from the sum of minimum
+        upstream fast and slow channel data rates."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 17 }
+
+vdslLineConfUpSlowMaxDataRate OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "kbps"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the maximum upstream slow channel
+        data rate in steps of 1000 bits/second."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 18 }
+
+vdslLineConfUpSlowMinDataRate OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "kbps"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the minimum upstream slow channel
+        data rate in steps of 1000 bits/second."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 19 }
+
+vdslLineConfDownRateRatio OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..100)
+    UNITS        "percent"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "For dynamic rate adaptation at startup, the allocation
+        of data rate in excess of the minimum data rate for each
+        channel is controlled by the object.  This object specifies
+        the ratio of the allocation of the excess data rate between
+        the fast and the slow channels.  This allocation represents
+        downstream Fast Channel Allocation / Slow Channel
+        Allocation."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 20 }
+
+vdslLineConfUpRateRatio OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..100)
+    UNITS        "percent"
+    MAX-ACCESS   read-create
+
+
+
+    STATUS       current
+    DESCRIPTION
+        "For dynamic rate adaptation at startup, the allocation
+        of data rate in excess of the minimum data rate for each
+        channel is controlled by the object.  This object specifies
+        the ratio of the allocation of the excess data rate between
+        the fast and the slow channels.  This allocation represents
+        upstream Fast Channel Allocation/Slow Channel Allocation."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 21 }
+
+vdslLineConfDownMaxInterDelay OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..255)
+    UNITS        "milliseconds"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the maximum interleave delay for the
+        downstream slow channel."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 22 }
+
+vdslLineConfUpMaxInterDelay OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..255)
+    UNITS        "milliseconds"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the maximum interleave delay for the
+        upstream slow channel."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 23 }
+
+vdslLineConfDownPboControl OBJECT-TYPE
+    SYNTAX       INTEGER
+                    {
+                 disabled(1),
+                 auto(2),
+                 manual(3)
+                 }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Downstream power backoff (PBO) control for this
+        line.  For transceivers which do not support downstream
+        PBO control, this object MUST be fixed at disabled(1).
+        If auto(2) is selected, the transceiver will automatically
+        adjust the power backoff.  If manual(3) is selected,
+
+
+
+        then the transceiver will use the value from
+        vdslLineConfDownPboLevel."
+    DEFVAL       { disabled }
+    ::= { vdslLineConfProfileEntry 24 }
+
+vdslLineConfUpPboControl OBJECT-TYPE
+    SYNTAX       INTEGER
+                 {
+                 disabled(1),
+                 auto(2),
+                 manual(3)
+                 }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Upstream power backoff (PBO) control for this
+        line.  For transceivers which do not support upstream
+        PBO control, this object MUST be fixed at disabled(1).
+        If auto(2) is selected, the transceiver will automatically
+        adjust the power backoff.  If manual(3) is selected,
+        then the transceiver will use the value from
+        vdslLineConfUpPboLevel."
+    DEFVAL       { disabled }
+    ::= { vdslLineConfProfileEntry 25 }
+
+vdslLineConfDownPboLevel OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..160)
+    UNITS        "0.25dB"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the downstream backoff level to be used
+        when vdslLineConfDownPboControl = manual(3)."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 26 }
+
+vdslLineConfUpPboLevel OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..160)
+    UNITS        "0.25dB"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the upstream backoff level to be used
+        when vdslLineConfUpPboControl = manual(3)."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 27 }
+
+vdslLineConfDeploymentScenario OBJECT-TYPE
+
+
+
+    SYNTAX       INTEGER
+                 {
+                 fttCab(1),
+                 fttEx(2),
+                 other(3)
+                 }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The VDSL line deployment scenario.  When using
+        fttCab(1), the VTU-C is located in a street cabinet.
+        When using fttEx(2), the VTU-C is located at the
+        central office.  Changes to this value will have
+        no effect on the transceiver."
+    REFERENCE    "DSL Forum TR-057"
+    DEFVAL       { fttCab }
+    ::= { vdslLineConfProfileEntry 28 }
+
+vdslLineConfAdslPresence OBJECT-TYPE
+    SYNTAX       INTEGER
+                 {
+                 none(1),
+                 adslOverPots(2),
+                 adslOverISDN(3)
+                 }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Indicates presence of ADSL service in the associated
+        cable bundle/binder.
+
+        none(1)         indicates no ADSL service in the bundle
+        adslOverPots(2) indicates ADSL service over POTS is
+                        present in the bundle
+        adslOverISDN(3) indicates ADSL service over ISDN is
+                        present in the bundle"
+    DEFVAL       { none }
+    ::= { vdslLineConfProfileEntry 29 }
+
+vdslLineConfApplicableStandard OBJECT-TYPE
+    SYNTAX       INTEGER
+                 {
+                 ansi(1),
+                 etsi(2),
+                 itu(3),
+                 other(4)
+                 }
+    MAX-ACCESS   read-create
+
+
+
+    STATUS       current
+    DESCRIPTION
+        "The VDSL standard to be used for the line.
+
+         ansi(1)      indicates ANSI standard
+         etsi(2)      indicates ETSI standard
+         itu(3)       indicates ITU standard
+         other(4)     indicates a standard other than the above."
+    DEFVAL       { ansi }
+    ::= { vdslLineConfProfileEntry 30 }
+
+vdslLineConfBandPlan OBJECT-TYPE
+    SYNTAX       INTEGER
+                 {
+                 bandPlan997(1),
+                 bandPlan998(2),
+                 bandPlanFx(3),
+                 other(4)
+                 }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The VDSL band plan to be used for the line.
+
+         bandPlan997(1) is to be used for
+              ITU-T G.993.1 Bandplan-B
+              ETSI Bandplan
+              ANSI Plan 997
+
+         bandPlan998(2) is to be used for
+              ITU-T G.993.1 Bandplan-A
+              ANSI Plan 998
+
+         bandPlanFx(3) is to be used for
+              ITU-T G.993.1 Bandplan-C.
+
+         other(4) is to be used for
+              non-standard bandplans.
+
+         If this object is set to bandPlanFx(3), then the
+         object vdslLineConfBandPlanFx MUST also be set."
+    DEFVAL       { bandPlan997 }
+    ::= { vdslLineConfProfileEntry 31 }
+
+vdslLineConfBandPlanFx OBJECT-TYPE
+    SYNTAX       Unsigned32 (3750..12000)
+    UNITS        "kHz"
+    MAX-ACCESS   read-create
+
+
+
+    STATUS       current
+    DESCRIPTION
+        "The frequency limit between bands D2 and U2 when
+        vdslLineConfBandPlan is set to bandPlanFx(3)."
+    DEFVAL       { 3750 }
+    ::= { vdslLineConfProfileEntry 32 }
+
+   vdslLineConfBandOptUsage OBJECT-TYPE
+    SYNTAX       INTEGER
+                 {
+                 unused(1),
+                 upstream(2),
+                 downstream(3)
+                 }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Defines the VDSL link use of the optional frequency
+        range [25kHz - 138kHz] (Opt).
+
+        unused(1)     indicates Opt is unused
+        upstream(2)   indicates Opt usage is for upstream
+        downstream(3) indicates Opt usage is for downstream."
+    REFERENCE    "ITU-T G.993.1, section 6.1"
+    DEFVAL       { unused }
+    ::= { vdslLineConfProfileEntry 33 }
+
+vdslLineConfUpPsdTemplate OBJECT-TYPE
+    SYNTAX       INTEGER
+                 {
+                 templateMask1(1),
+                 templateMask2(2)
+                 }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The upstream PSD template to be used for the line.
+        Here, templateMask1(1) refers to a notched mask that
+        limits the transmitted PSD within the internationally
+        standardized HAM (Handheld Amateur Radio) radio bands,
+        while templateMask2(2) refers to an unnotched mask.
+
+        The masks themselves depend upon the applicable
+        standard being used (vdslLineConfApplicableStandard)."
+    REFERENCE    "DSL TR-057"
+    DEFVAL       { templateMask1 }
+    ::= { vdslLineConfProfileEntry 34 }
+
+
+
+
+vdslLineConfDownPsdTemplate OBJECT-TYPE
+    SYNTAX       INTEGER
+                 {
+                 templateMask1(1),
+                 templateMask2(2)
+                 }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The downstream PSD template to be used for the line.
+        Here, templateMask1(1) refers to a notched mask that
+        limits the transmitted PSD within the internationally
+        standardized HAM (Handheld Amateur Radio) radio bands,
+        while templateMask2(2) refers to an unnotched mask.
+
+        The masks themselves depend upon the applicable
+        standard being used (vdslLineConfApplicableStandard)."
+    REFERENCE    "DSL TR-057"
+    DEFVAL       { templateMask1 }
+    ::= { vdslLineConfProfileEntry 35 }
+
+vdslLineConfHamBandMask OBJECT-TYPE
+    SYNTAX       BITS
+        {
+        customNotch1(0),     -- custom (region-specific) notch
+        customNotch2(1),     -- custom (region-specific) notch
+        amateurBand30m(2),   -- amateur radio band notch
+        amateurBand40m(3),   -- amateur radio band notch
+        amateurBand80m(4),   -- amateur radio band notch
+        amateurBand160m(5)   -- amateur radio band notch
+        }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The transmit power spectral density mask code, used
+        to avoid interference with HAM (Handheld Amateur Radio)
+        radio bands by introducing power control (notching) in one
+        or more of these bands.
+
+        Amateur radio band notching is defined in the VDSL
+        spectrum as follows:
+
+        Band  Start Frequency     Stop Frequency
+        ----  ------------------  --------------------------------
+        30m   1810 kHz            2000 kHz
+        40m   3500 kHz            3800 kHz (ETSI); 4000 kHz (ANSI)
+        80m   7000 kHz            7100 kHz (ETSI); 7300 kHz (ANSI)
+        160m  10100 kHz           10150 kHz
+
+
+
+        Notching for each standard band can be enabled or disabled
+        via the bit mask.
+
+        Two custom notches may be specified.  If either of these
+        are enabled via the bit mask, then the following objects
+        MUST be specified:
+
+        If customNotch1 is enabled, then both
+            vdslLineConfCustomNotch1Start
+            vdslLineConfCustomNotch1Stop
+        MUST be specified.
+
+        If customNotch2 is enabled, then both
+            vdslLineConfCustomNotch2Start
+            vdslLineConfCustomNotch2Stop
+        MUST be specified."
+    REFERENCE    "DSLF TR-057, section 2.6"
+    DEFVAL       { { } }
+    ::= { vdslLineConfProfileEntry 36 }
+
+vdslLineConfCustomNotch1Start OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "kHz"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the start frequency of custom HAM (Handheld
+        Amateur Radio) notch 1.  vdslLineConfCustomNotch1Start MUST
+        be less than or equal to vdslLineConfCustomNotch1Stop."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 37 }
+
+vdslLineConfCustomNotch1Stop OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "kHz"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the stop frequency of custom HAM (Handheld
+        Amateur Radio) notch 1.  vdslLineConfCustomNotch1Stop MUST
+        be greater than or equal to vdslLineConfCustomNotch1Start."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 38 }
+
+vdslLineConfCustomNotch2Start OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "kHz"
+    MAX-ACCESS   read-create
+
+
+
+    STATUS       current
+    DESCRIPTION
+        "Specifies the start frequency of custom HAM (Handheld
+        Amateur Radio) notch 2.  vdslLineConfCustomNotch2Start MUST
+        be less than or equal to vdslLineConfCustomNotch2Stop."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 39 }
+
+vdslLineConfCustomNotch2Stop OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "kHz"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the stop frequency of custom HAM (Handheld
+        Amateur Radio) notch 2.  vdslLineConfCustomNotch2Stop MUST
+        be greater than or equal to vdslLineConfCustomNotch2Start."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 40 }
+
+vdslLineConfDownTargetSlowBurst OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..1275)
+    UNITS        "microseconds"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the target level of impulse noise (burst)
+        protection for an interleaved (slow) channel."
+    REFERENCE    "ITU-T G.997.1, section 7.3.2.3"
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 41 }
+
+vdslLineConfUpTargetSlowBurst OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..1275)
+    UNITS        "microseconds"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the target level of impulse noise (burst)
+        protection for an interleaved (slow) channel."
+    REFERENCE    "ITU-T G.997.1, section 7.3.2.3"
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 42 }
+
+vdslLineConfDownMaxFastFec OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..50)
+    UNITS        "%"
+    MAX-ACCESS   read-create
+
+
+
+    STATUS       current
+    DESCRIPTION
+        "This parameter provisions the maximum level of Forward
+        Error Correction (FEC) redundancy related overhead to
+        be maintained for a fast channel."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 43 }
+
+vdslLineConfUpMaxFastFec OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..50)
+    UNITS        "%"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This parameter provisions the maximum level of Forward
+        Error Correction (FEC) redundancy related overhead to
+        be maintained for a fast channel."
+    DEFVAL       { 0 }
+    ::= { vdslLineConfProfileEntry 44 }
+
+vdslLineConfLineType OBJECT-TYPE
+    SYNTAX       INTEGER
+        {
+        noChannel(1),         -- no channels exist
+        fastOnly(2),          -- only fast channel exists
+        interleavedOnly(3),   -- only interleaved channel exists
+        fastOrInterleaved(4), -- either fast or interleaved channel
+                              -- exist, but only one at a time
+        fastAndInterleaved(5) -- both fast and interleaved channels
+                              -- exist
+        }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This parameter provisions the VDSL physical entity at
+        start-up by defining whether and how the line will be
+        channelized, i.e., which channel type(s) are supported.
+        If the line is to be channelized, the value will be other
+        than noChannel(1).
+
+        This configuration can be activated only during start-up.
+        Afterwards, the value of vdslLineType coincides with the
+        value of vdslLineConfLineType.  Depending on this value,
+        the corresponding entries in the ifTable for the
+        interleaved and the fast channels are enabled or disabled
+        according to the value of their ifOperStatus.
+
+        Defined values are:
+
+
+
+        noChannel(1)          -- no channels exist
+        fastOnly(2)           -- only fast channel exists
+        interleavedOnly(3)    -- only interleaved channel exists
+        fastOrInterleaved(4)  -- either fast or interleaved channel
+                              -- exists, but only one at a time
+        fastAndInterleaved(5) -- both fast and interleaved channels
+                              -- exist
+
+        Note that 'slow' and 'interleaved' refer to the same
+        channel."
+    REFERENCE    "T1E1.4/2000-009R3, Part 1, common spec"
+    DEFVAL       { noChannel }
+    ::= { vdslLineConfProfileEntry 45 }
+
+vdslLineConfProfRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object is used to create a new row or modify or
+        delete an existing row in this table.
+
+        A profile activated by setting this object to 'active'.
+        When 'active' is set, the system will validate the profile.
+
+        Before a profile can be deleted or taken out of service
+        (by setting this object to 'destroy' or 'outOfService'),
+        it must be first unreferenced from all associated lines.
+
+        An 'active' profile may be modified at any time.  Note
+        that some changes may require that any referenced lines be
+        restarted (e.g., vdslLineConfLineType)."
+    ::= { vdslLineConfProfileEntry 46 }
+
+--
+-- Alarm configuration profile table
+--
+
+vdslLineAlarmConfProfileTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslLineAlarmConfProfileEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table contains information on the VDSL line alarm
+        configuration.  One entry in this table reflects a profile
+        defined by a manager which can be used to configure the
+        VDSL line alarm thresholds.
+
+
+
+
+        Entries in this table MUST be maintained in a
+        persistent manner."
+    ::= { vdslMibObjects 20 }
+
+vdslLineAlarmConfProfileEntry OBJECT-TYPE
+    SYNTAX       VdslLineAlarmConfProfileEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Each entry consists of a list of parameters that
+        represents the configuration of a VDSL line alarm
+        profile.
+
+        A default profile with an index of 'DEFVAL', will
+        always exist and its parameters will be set to vendor
+        specific values, unless otherwise specified in this
+        document."
+    INDEX { vdslLineAlarmConfProfileName }
+    ::= { vdslLineAlarmConfProfileTable 1 }
+
+VdslLineAlarmConfProfileEntry ::=
+    SEQUENCE
+        {
+        vdslLineAlarmConfProfileName       SnmpAdminString,
+        vdslLineAlarmConfThresh15MinLofs   HCPerfIntervalThreshold,
+        vdslLineAlarmConfThresh15MinLoss   HCPerfIntervalThreshold,
+        vdslLineAlarmConfThresh15MinLprs   HCPerfIntervalThreshold,
+        vdslLineAlarmConfThresh15MinLols   HCPerfIntervalThreshold,
+        vdslLineAlarmConfThresh15MinESs    HCPerfIntervalThreshold,
+        vdslLineAlarmConfThresh15MinSESs   HCPerfIntervalThreshold,
+        vdslLineAlarmConfThresh15MinUASs   HCPerfIntervalThreshold,
+        vdslLineAlarmConfInitFailure       TruthValue,
+        vdslLineAlarmConfProfRowStatus     RowStatus
+        }
+
+vdslLineAlarmConfProfileName OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE (1..32))
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The name for this profile as specified by an
+        administrator."
+    ::= { vdslLineAlarmConfProfileEntry 1 }
+
+vdslLineAlarmConfThresh15MinLofs OBJECT-TYPE
+    SYNTAX       HCPerfIntervalThreshold
+    UNITS        "seconds"
+    MAX-ACCESS   read-create
+
+
+
+    STATUS       current
+    DESCRIPTION
+        "This object configures the threshold for the number of
+         loss of frame seconds (lofs) within any given 15-minute
+         performance data collection interval.  If the value of
+         loss of frame seconds in a particular 15-minute collection
+         interval reaches/exceeds this value, a
+         vdslPerfLofsThreshNotification notification will be
+         generated.  No more than one notification will be sent
+         per interval."
+    DEFVAL       { 0 }
+    ::= { vdslLineAlarmConfProfileEntry 2 }
+
+vdslLineAlarmConfThresh15MinLoss OBJECT-TYPE
+    SYNTAX       HCPerfIntervalThreshold
+    UNITS        "seconds"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object configures the threshold for the number of
+         loss of signal seconds (loss) within any given 15-minute
+         performance data collection interval.  If the value of
+         loss of signal seconds in a particular 15-minute
+         collection interval reaches/exceeds this value, a
+         vdslPerfLossThreshNotification notification will be
+         generated.  One notification will be sent per interval
+         per endpoint."
+    DEFVAL       { 0 }
+    ::= { vdslLineAlarmConfProfileEntry 3 }
+
+vdslLineAlarmConfThresh15MinLprs OBJECT-TYPE
+    SYNTAX       HCPerfIntervalThreshold
+    UNITS        "seconds"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object configures the threshold for the number of
+         loss of power seconds (lprs) within any given 15-minute
+         performance data collection interval.  If the value of
+         loss of power seconds in a particular 15-minute collection
+         interval reaches/exceeds this value, a
+         vdslPerfLprsThreshNotification notification will be
+         generated.  No more than one notification will be sent
+         per interval."
+    DEFVAL       { 0 }
+    ::= { vdslLineAlarmConfProfileEntry 4 }
+
+vdslLineAlarmConfThresh15MinLols OBJECT-TYPE
+
+
+
+    SYNTAX       HCPerfIntervalThreshold
+    UNITS        "seconds"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object configures the threshold for the number of
+         loss of link seconds (lols) within any given 15-minute
+         performance data collection interval.  If the value of
+         loss of power seconds in a particular 15-minute collection
+         interval reaches/exceeds this value, a
+         vdslPerfLolsThreshNotification notification will be
+         generated.  No more than one notification will be sent
+         per interval."
+    DEFVAL       { 0 }
+    ::= { vdslLineAlarmConfProfileEntry 5 }
+
+vdslLineAlarmConfThresh15MinESs OBJECT-TYPE
+    SYNTAX       HCPerfIntervalThreshold
+    UNITS        "seconds"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object configures the threshold for the number of
+         errored seconds (ESs) within any given 15-minute
+         performance data collection interval.  If the value of
+         errored seconds in a particular 15-minute collection
+         interval reaches/exceeds this value, a
+         vdslPerfESsThreshNotification notification will be
+         generated.  No more than one notification will be sent
+         per interval."
+    DEFVAL       { 0 }
+    ::= { vdslLineAlarmConfProfileEntry 6 }
+
+vdslLineAlarmConfThresh15MinSESs OBJECT-TYPE
+    SYNTAX       HCPerfIntervalThreshold
+    UNITS        "seconds"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object configures the threshold for the number of
+         severely errored seconds (SESs) within any given 15-minute
+         performance data collection interval.  If the value of
+         severely errored seconds in a particular 15-minute
+         collection interval reaches/exceeds this value, a
+         vdslPerfSESsThreshNotification notification will be
+         generated.  No more than one notification will be sent
+         per interval."
+    DEFVAL       { 0 }
+
+
+
+    ::= { vdslLineAlarmConfProfileEntry 7 }
+
+vdslLineAlarmConfThresh15MinUASs OBJECT-TYPE
+    SYNTAX       HCPerfIntervalThreshold
+    UNITS        "seconds"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object configures the threshold for the number of
+         unavailable seconds (UASs) within any given 15-minute
+         performance data collection interval.  If the value of
+         unavailable seconds in a particular 15-minute collection
+         interval reaches/exceeds this value, a
+         vdslPerfUASsThreshNotification notification will be
+         generated.  No more than one notification will be sent
+         per interval."
+    DEFVAL       { 0 }
+    ::= { vdslLineAlarmConfProfileEntry 8 }
+
+vdslLineAlarmConfInitFailure OBJECT-TYPE
+    SYNTAX       TruthValue
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object specifies if a vdslInitFailureNotification
+        notification will be generated if an initialization
+        failure occurs."
+    DEFVAL       { false }
+    ::= { vdslLineAlarmConfProfileEntry 9 }
+
+vdslLineAlarmConfProfRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object is used to create a new row or modify or
+        delete an existing row in this table.
+
+        A profile activated by setting this object to 'active'.
+        When 'active' is set, the system will validate the profile.
+
+        Before a profile can be deleted or taken out of service,
+        (by setting this object to 'destroy' or 'outOfService') it
+        must be first unreferenced from all associated lines.
+
+        An 'active' profile may be modified at any time."
+    ::= { vdslLineAlarmConfProfileEntry 10 }
+
+
+
+
+-- Notification definitions
+
+vdslNotifications OBJECT IDENTIFIER ::= { vdslLineMib 0 }
+
+vdslPerfLofsThreshNotification NOTIFICATION-TYPE
+    OBJECTS      {
+                 vdslPerfDataCurr15MinLofs
+                 }
+    STATUS       current
+    DESCRIPTION
+        "Loss of Framing 15-minute interval threshold
+         (vdslLineAlarmConfThresh15MinLofs) reached."
+    ::= { vdslNotifications 1 }
+
+vdslPerfLossThreshNotification NOTIFICATION-TYPE
+    OBJECTS       {
+                  vdslPerfDataCurr15MinLoss
+                  }
+    STATUS        current
+    DESCRIPTION
+        "Loss of Signal 15-minute interval threshold
+        (vdslLineAlarmConfThresh15MinLoss) reached."
+    ::= { vdslNotifications 2 }
+
+vdslPerfLprsThreshNotification NOTIFICATION-TYPE
+    OBJECTS       {
+                  vdslPerfDataCurr15MinLprs
+                  }
+    STATUS        current
+    DESCRIPTION
+        "Loss of Power 15-minute interval threshold
+        (vdslLineAlarmConfThresh15MinLprs) reached."
+    ::= { vdslNotifications 3 }
+
+vdslPerfLolsThreshNotification NOTIFICATION-TYPE
+    OBJECTS       {
+                  vdslPerfDataCurr15MinLols
+                  }
+    STATUS        current
+    DESCRIPTION
+        "Loss of Link 15-minute interval threshold
+        (vdslLineAlarmConfThresh15MinLols) reached."
+    ::= { vdslNotifications 4 }
+
+vdslPerfESsThreshNotification NOTIFICATION-TYPE
+    OBJECTS       {
+                  vdslPerfDataCurr15MinESs
+                  }
+
+
+
+    STATUS        current
+    DESCRIPTION
+        "Errored Seconds 15-minute interval threshold
+        (vdslLineAlarmConfThresh15MinESs) reached."
+    ::= { vdslNotifications 5 }
+
+vdslPerfSESsThreshNotification NOTIFICATION-TYPE
+    OBJECTS       {
+                  vdslPerfDataCurr15MinSESs
+                  }
+    STATUS        current
+    DESCRIPTION
+        "Severely Errored Seconds 15-minute interval threshold
+        (vdslLineAlarmConfThresh15MinSESs) reached."
+    ::= { vdslNotifications 6 }
+
+vdslPerfUASsThreshNotification NOTIFICATION-TYPE
+    OBJECTS       {
+                  vdslPerfDataCurr15MinUASs
+                  }
+    STATUS        current
+    DESCRIPTION
+        "Unavailable Seconds 15-minute interval threshold
+        (vdslLineAlarmConfThresh15MinUASs) reached."
+    ::= { vdslNotifications 7 }
+
+vdslDownMaxSnrMgnNotification NOTIFICATION-TYPE
+    OBJECTS       {
+                  vdslPhysCurrSnrMgn
+                  }
+    STATUS        current
+    DESCRIPTION
+        "The downstream Signal to Noise Margin exceeded
+        vdslLineConfDownMaxSnrMgn.  The object
+        vdslPhysCurrSnrMgn will contain the Signal to Noise
+        margin as measured by the VTU-R."
+    ::= { vdslNotifications 8 }
+
+vdslDownMinSnrMgnNotification NOTIFICATION-TYPE
+    OBJECTS       {
+                  vdslPhysCurrSnrMgn
+                  }
+    STATUS        current
+    DESCRIPTION
+        "The downstream Signal to Noise Margin fell below
+        vdslLineConfDownMinSnrMgn.  The object vdslPhysCurrSnrMgn
+        will contain the Signal to Noise margin as measured by
+        the VTU-R."
+
+
+
+    ::= { vdslNotifications 9 }
+
+vdslUpMaxSnrMgnNotification NOTIFICATION-TYPE
+    OBJECTS       {
+                  vdslPhysCurrSnrMgn
+                  }
+    STATUS        current
+    DESCRIPTION
+        "The upstream Signal to Noise Margin exceeded
+        vdslLineConfUpMaxSnrMgn.  The object vdslPhysCurrSnrMgn
+        will contain the Signal to Noise margin as measured
+        by the VTU-C."
+    ::= { vdslNotifications 10 }
+
+vdslUpMinSnrMgnNotification NOTIFICATION-TYPE
+    OBJECTS       {
+                  vdslPhysCurrSnrMgn
+                  }
+    STATUS        current
+    DESCRIPTION
+        "The upstream Signal to Noise Margin fell below
+        vdslLineConfUpMinSnrMgn.  The object vdslPhysCurrSnrMgn
+        will contain the Signal to Noise margin as measured
+        by the VTU-C."
+    ::= { vdslNotifications 11 }
+
+vdslInitFailureNotification NOTIFICATION-TYPE
+    OBJECTS       {
+                  vdslPhysCurrStatus
+                  }
+    STATUS        current
+    DESCRIPTION
+        "Vtu initialization failed.  See vdslPhysCurrStatus for
+        potential reasons."
+    ::= { vdslNotifications 12 }
+
+-- conformance information
+
+vdslConformance OBJECT IDENTIFIER ::= { vdslLineMib 3 }
+vdslGroups OBJECT IDENTIFIER ::= { vdslConformance 1 }
+vdslCompliances OBJECT IDENTIFIER ::= { vdslConformance 2 }
+
+vdslLineMibCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for SNMP entities which
+        manage VDSL interfaces."
+
+
+
+
+    MODULE  -- this module
+    MANDATORY-GROUPS
+        {
+        vdslGroup,
+        vdslNotificationGroup
+        }
+    ::= { vdslCompliances 1 }
+
+-- units of conformance
+
+    vdslGroup OBJECT-GROUP
+        OBJECTS
+            {
+            vdslLineCoding,
+            vdslLineType,
+            vdslLineConfProfile,
+            vdslLineAlarmConfProfile,
+            vdslPhysInvSerialNumber,
+            vdslPhysInvVendorID,
+            vdslPhysInvVersionNumber,
+            vdslPhysCurrSnrMgn,
+            vdslPhysCurrAtn,
+            vdslPhysCurrStatus,
+            vdslPhysCurrOutputPwr,
+            vdslPhysCurrAttainableRate,
+            vdslPhysCurrLineRate,
+            vdslChanInterleaveDelay,
+            vdslChanCrcBlockLength,
+            vdslChanCurrTxRate,
+            vdslChanCurrTxSlowBurstProtect,
+            vdslChanCurrTxFastFec,
+            vdslPerfDataValidIntervals,
+            vdslPerfDataInvalidIntervals,
+            vdslPerfDataLofs,
+            vdslPerfDataLoss,
+            vdslPerfDataLprs,
+            vdslPerfDataLols,
+            vdslPerfDataESs,
+            vdslPerfDataSESs,
+            vdslPerfDataUASs,
+            vdslPerfDataInits,
+            vdslPerfDataCurr15MinTimeElapsed,
+            vdslPerfDataCurr15MinLofs,
+            vdslPerfDataCurr15MinLoss,
+            vdslPerfDataCurr15MinLprs,
+            vdslPerfDataCurr15MinLols,
+            vdslPerfDataCurr15MinESs,
+            vdslPerfDataCurr15MinSESs,
+
+
+
+            vdslPerfDataCurr15MinUASs,
+            vdslPerfDataCurr15MinInits,
+            vdslPerfData1DayValidIntervals,
+            vdslPerfData1DayInvalidIntervals,
+            vdslPerfDataCurr1DayTimeElapsed,
+            vdslPerfDataCurr1DayLofs,
+            vdslPerfDataCurr1DayLoss,
+            vdslPerfDataCurr1DayLprs,
+            vdslPerfDataCurr1DayLols,
+            vdslPerfDataCurr1DayESs,
+            vdslPerfDataCurr1DaySESs,
+            vdslPerfDataCurr1DayUASs,
+            vdslPerfDataCurr1DayInits,
+            vdslPerfIntervalLofs,
+            vdslPerfIntervalLoss,
+            vdslPerfIntervalLprs,
+            vdslPerfIntervalLols,
+            vdslPerfIntervalESs,
+            vdslPerfIntervalSESs,
+            vdslPerfIntervalUASs,
+            vdslPerfIntervalInits,
+            vdslPerf1DayIntervalMoniSecs,
+            vdslPerf1DayIntervalLofs,
+            vdslPerf1DayIntervalLoss,
+            vdslPerf1DayIntervalLprs,
+            vdslPerf1DayIntervalLols,
+            vdslPerf1DayIntervalESs,
+            vdslPerf1DayIntervalSESs,
+            vdslPerf1DayIntervalUASs,
+            vdslPerf1DayIntervalInits,
+            vdslChanValidIntervals,
+            vdslChanInvalidIntervals,
+            vdslChanFixedOctets,
+            vdslChanBadBlks,
+            vdslChanCurr15MinTimeElapsed,
+            vdslChanCurr15MinFixedOctets,
+            vdslChanCurr15MinBadBlks,
+            vdslChan1DayValidIntervals,
+            vdslChan1DayInvalidIntervals,
+            vdslChanCurr1DayTimeElapsed,
+            vdslChanCurr1DayFixedOctets,
+            vdslChanCurr1DayBadBlks,
+            vdslChanIntervalFixedOctets,
+            vdslChanIntervalBadBlks,
+            vdslChan1DayIntervalMoniSecs,
+            vdslChan1DayIntervalFixedOctets,
+            vdslChan1DayIntervalBadBlks,
+            vdslLineConfDownRateMode,
+
+
+
+            vdslLineConfUpRateMode,
+            vdslLineConfDownMaxPwr,
+            vdslLineConfUpMaxPwr,
+            vdslLineConfDownMaxSnrMgn,
+            vdslLineConfDownMinSnrMgn,
+            vdslLineConfDownTargetSnrMgn,
+            vdslLineConfUpMaxSnrMgn,
+            vdslLineConfUpMinSnrMgn,
+            vdslLineConfUpTargetSnrMgn,
+            vdslLineConfDownFastMaxDataRate,
+            vdslLineConfDownFastMinDataRate,
+            vdslLineConfDownSlowMaxDataRate,
+            vdslLineConfDownSlowMinDataRate,
+            vdslLineConfUpFastMaxDataRate,
+            vdslLineConfUpFastMinDataRate,
+            vdslLineConfUpSlowMaxDataRate,
+            vdslLineConfUpSlowMinDataRate,
+            vdslLineConfDownRateRatio,
+            vdslLineConfUpRateRatio,
+            vdslLineConfDownMaxInterDelay,
+            vdslLineConfUpMaxInterDelay,
+            vdslLineConfDownPboControl,
+            vdslLineConfUpPboControl,
+            vdslLineConfDownPboLevel,
+            vdslLineConfUpPboLevel,
+            vdslLineConfDeploymentScenario,
+            vdslLineConfAdslPresence,
+            vdslLineConfApplicableStandard,
+            vdslLineConfBandPlan,
+            vdslLineConfBandPlanFx,
+            vdslLineConfBandOptUsage,
+            vdslLineConfUpPsdTemplate,
+            vdslLineConfDownPsdTemplate,
+            vdslLineConfHamBandMask,
+            vdslLineConfCustomNotch1Start,
+            vdslLineConfCustomNotch1Stop,
+            vdslLineConfCustomNotch2Start,
+            vdslLineConfCustomNotch2Stop,
+            vdslLineConfDownTargetSlowBurst,
+            vdslLineConfUpTargetSlowBurst,
+            vdslLineConfDownMaxFastFec,
+            vdslLineConfUpMaxFastFec,
+            vdslLineConfLineType,
+            vdslLineConfProfRowStatus,
+            vdslLineAlarmConfThresh15MinLofs,
+            vdslLineAlarmConfThresh15MinLoss,
+            vdslLineAlarmConfThresh15MinLprs,
+            vdslLineAlarmConfThresh15MinLols,
+
+
+
+            vdslLineAlarmConfThresh15MinESs,
+            vdslLineAlarmConfThresh15MinSESs,
+            vdslLineAlarmConfThresh15MinUASs,
+            vdslLineAlarmConfInitFailure,
+            vdslLineAlarmConfProfRowStatus
+            }
+        STATUS     current
+        DESCRIPTION
+            "A collection of objects providing information about
+             a VDSL Line."
+        ::= { vdslGroups 1 }
+
+    vdslNotificationGroup    NOTIFICATION-GROUP
+        NOTIFICATIONS
+            {
+            vdslPerfLofsThreshNotification,
+            vdslPerfLossThreshNotification,
+            vdslPerfLprsThreshNotification,
+            vdslPerfLolsThreshNotification,
+            vdslPerfESsThreshNotification,
+            vdslPerfSESsThreshNotification,
+            vdslPerfUASsThreshNotification,
+            vdslDownMaxSnrMgnNotification,
+            vdslDownMinSnrMgnNotification,
+            vdslUpMaxSnrMgnNotification,
+            vdslUpMinSnrMgnNotification,
+            vdslInitFailureNotification
+            }
+        STATUS      current
+        DESCRIPTION
+             "This group supports notifications of significant
+             conditions associated with VDSL Lines."
+    ::= { vdslGroups 2 }
+
+END

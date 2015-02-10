@@ -1,0 +1,393 @@
+# -*- text -*-
+#
+#	3GPP2 stuff.
+#
+#	http://www.3gpp2.org/Public_html/specs/index.cfm
+#	http://www.3gpp2.org/public_html/Specs/X.S0011-005-D_v2.0_081103.pdf
+#   http://www.3gpp2.org/public_html/specs/X.S0011-005-C_v3.0_061030.pdf
+#		"cdma2000 Wireless IP Network Standard: Accounting Services and 3GPP2 Radius VSAs"
+#		"3GPP2 X.S0011-005-D"
+#		"Version: 2.0"
+#		"Version Date: November 2008"
+#
+#	$Id$
+#
+# [wireshark] 2009-07-08 - FreeRadius 2.6.1 dictionary.3gpp2 updated from the 3GPP2 X.S0011-005-D v2.0 spec
+#
+VENDOR		3GPP2				5535
+
+BEGIN-VENDOR	3GPP2
+
+ATTRIBUTE	3GPP2-Ike-Preshared-Secret-Request	1	integer
+ATTRIBUTE	3GPP2-Security-Level			2	integer
+ATTRIBUTE	3GPP2-Pre-Shared-Secret			3	string # 16 octets
+ATTRIBUTE	3GPP2-Reverse-Tunnel-Spec		4	integer
+ATTRIBUTE	3GPP2-Diffserv-Class-Option		5	integer
+
+#  Contains embedded 3GPP2 accounting attributes.
+ATTRIBUTE	3GPP2-Accounting-Container		6	octets
+ATTRIBUTE	3GPP2-Home-Agent-IP-Address		7	octets ## if 4 octets: ipaddr; if 16: ipv6 address 
+
+# A number formed from the concatenation of the home RADIUS IP address,
+# the FA IP address, and a 32-bit Unix timestamp, all encoded as 8 ASCII
+#  hex characters.
+ATTRIBUTE	3GPP2-KeyID						8	string # 20 octets
+
+ATTRIBUTE	3GPP2-PCF-IP-Address			9	ipaddr
+ATTRIBUTE	3GPP2-BSID						10	string
+ATTRIBUTE	3GPP2-User-Id					11	integer
+ATTRIBUTE	3GPP2-Forward-FCH-Mux-Option	12	integer
+ATTRIBUTE	3GPP2-Reverse-FCH-Mux-Option	13	integer
+#
+# 14-15 ?
+#
+ATTRIBUTE	3GPP2-Service-Option			16	integer
+ATTRIBUTE	3GPP2-Forward-Traffic-Type		17	integer
+ATTRIBUTE	3GPP2-Reverse-Traffic-Type		18	integer
+ATTRIBUTE	3GPP2-FCH-Frame-Size			19	integer
+ATTRIBUTE	3GPP2-Forward-FCH-RC			20	integer
+ATTRIBUTE	3GPP2-Reverse-FCH-RC			21	integer
+ATTRIBUTE	3GPP2-IP-Technology				22	integer
+ATTRIBUTE	3GPP2-Compulsory-Tunnel-Indicator	23	integer
+ATTRIBUTE	3GPP2-Release-Indicator			24	integer
+ATTRIBUTE	3GPP2-Bad-PPP-Frame-Count		25	integer
+#
+# 26-29 ?
+#
+ATTRIBUTE	3GPP2-Number-Active-Transitions		30	integer
+ATTRIBUTE	3GPP2-Terminating-SDB-Octet-Count	31	integer
+ATTRIBUTE	3GPP2-Originating-SDB-OCtet-Count	32	integer
+ATTRIBUTE	3GPP2-Terminating-Number-SDBs		33	integer
+ATTRIBUTE	3GPP2-Originating-Number-SDBs		34	integer
+# 35 ?
+ATTRIBUTE	3GPP2-IP-QoS						36	integer
+# 37-38 ?
+ATTRIBUTE	3GPP2-Airlink-Priority				39	integer
+ATTRIBUTE	3GPP2-Airlink-Record-Type			40	integer
+ATTRIBUTE	3GPP2-R-P-Session-ID				41	octets
+ATTRIBUTE	3GPP2-Airlink-Sequence-Number		42	integer
+ATTRIBUTE	3GPP2-Received-HDLC-Octets			43	integer
+ATTRIBUTE	3GPP2-Correlation-Id				44	string
+ATTRIBUTE	3GPP2-Module-Orig-Term-Indicator	45	integer
+ATTRIBUTE	3GPP2-Inbound-Mobile-IP-Sig-Octets	46	integer
+ATTRIBUTE	3GPP2-Outbound-Mobile-IP-Sig-Octets	47	integer
+ATTRIBUTE	3GPP2-Session-Continue				48	integer
+ATTRIBUTE	3GPP2-Active-Time					49	integer
+ATTRIBUTE	3GPP2-DCCH-Frame-Size				50	integer
+ATTRIBUTE	3GPP2-Begin-Session					51	integer
+ATTRIBUTE	3GPP2-ESN							52	string
+# 53 ?
+ATTRIBUTE	3GPP2-S-Key							54	octets
+ATTRIBUTE	3GPP2-S-Request						55	integer
+ATTRIBUTE	3GPP2-S-Lifetime					56	date
+ATTRIBUTE	3GPP2-MN-HA-SPI						57	integer
+ATTRIBUTE	3GPP2-MN-HA-Shared-Key				58	string encrypt=2
+
+# The next set of attributes contain sub-types
+ATTRIBUTE	3GPP2-Remote-IP-Address				59	octets
+
+ATTRIBUTE	3GPP2-HRPD-Access/Terminal-Authentication-and-1x-Access-Authorization 60 integer
+ATTRIBUTE	3GPP2-AT-Hardware-Identifier 		61 integer
+BEGIN-TLV
+	ATTRIBUTE	AT-hardware-identifier-type 	1 string
+	ATTRIBUTE	AT-hardware-identifier-value 	2 string
+END-TLV
+
+# 62 - 69 are marked "reserved"
+
+ATTRIBUTE	3GPP2-Remote-IPv6-Address				70	octets
+ATTRIBUTE	3GPP2-Remote-Address-Table-Index		71	octets
+ATTRIBUTE	3GPP2-Remote-IPv4-Addr-Octet-Count		72	octets
+ATTRIBUTE	3GPP2-Allowed-Diffserv-Marking			73	tlv
+BEGIN-TLV 3GPP2-Allowed-Diffserv-Marking
+	ATTRIBUTE flags-for-Allowed-Diffserv-class 		1 string
+	ATTRIBUTE Max-class-selection-marking 			2 string
+	ATTRIBUTE Reverse-tunnel-marking				3 string
+END-TLV 3GPP2-Allowed-Diffserv-Marking
+#contains subtypes
+ATTRIBUTE	3GPP2-Service-Option-Profile			74	tlv
+BEGIN-TLV 3GPP2-Service-Option-Profile
+	ATTRIBUTE service-option						1 integer
+END-TLV 3GPP2-Service-Option-Profile
+
+# the following don't contain subtypes
+ATTRIBUTE	3GPP2-DNS-Update-Required				75	integer
+# 76 ?
+# 77 ?
+ATTRIBUTE	3GPP2-Always-On							78	integer
+ATTRIBUTE	3GPP2-Foreign-Agent-Address				79	ipaddr
+ATTRIBUTE	3GPP2-Last-User-Activity-Time			80	integer
+ATTRIBUTE	3GPP2-MN-AAA-Removal-Indication			81	integer
+ATTRIBUTE	3GPP2-RN-Packet-Data-Inactivity-Timer	82	integer
+ATTRIBUTE	3GPP2-Forward-PDCH-RC					83	integer
+ATTRIBUTE	3GPP2-Forward-DCCH-Mux-Option			84	integer
+ATTRIBUTE	3GPP2-Reverse-DCCH-Mux-Option			85	integer
+ATTRIBUTE	3GPP2-Forward-DCCH-RC					86	integer
+ATTRIBUTE	3GPP2-Reverse-DHHC-RC					87	integer
+ATTRIBUTE	3GPP2-Session-Termination-Capability	88	integer
+ATTRIBUTE	3GPP2-Allowed-Persistent-TFTs			89	integer
+
+# The next set of attributes contain sub-types
+ATTRIBUTE	3GPP2-Prepaid-Acct-Quota				90	tlv
+BEGIN-TLV 3GPP2-Prepaid-Acct-Quota
+	ATTRIBUTE	QID									 1 string
+	ATTRIBUTE	VolumeQuota							 2 string
+	ATTRIBUTE	VolumeQuotaOverflow					 3 string
+	ATTRIBUTE	VolumeThreshold						 4 string
+	ATTRIBUTE	VolumeThreshouldOverflow			 5 string
+	ATTRIBUTE	DurationQuota						 6 string
+	ATTRIBUTE	DurationThreshold					 7 string
+	ATTRIBUTE	Update-Reason						 8 string
+END-TLV 3GPP2-Prepaid-Acct-Quota
+
+#contains sub-types
+ATTRIBUTE	3GPP2-Prepaid-acct-Capability			91	tlv
+BEGIN-TLV 3GPP2-Prepaid-acct-Capability 
+	 ATTRIBUTE	AvailableInClient 					 1 integer
+	 ATTRIBUTE	SelectedForSession					 2 integer
+END-TLV 3GPP2-Prepaid-acct-Capability
+ATTRIBUTE	3GPP2-MIP-Lifetime						92	octets
+
+ATTRIBUTE	3GPP2-Acct-Stop-Trigger					93	integer
+
+# contains subtypes
+ATTRIBUTE	3GPP2-Service-Reference-Id				94	octets
+
+ATTRIBUTE	3GPP2-DNS-Update-Capability				95	integer
+ATTRIBUTE	3GPP2-Disconnect-Reason					96	integer
+
+# The next set of attributes contain sub-types
+ATTRIBUTE	3GPP2-Remote-IPv6-Octet-Count			97	octets
+#contains sub-types
+ATTRIBUTE	3GPP2-PrePaid-Tariff-Switching			98	tlv
+BEGIN-TLV 3GPP2-PrePaid-Tariff-Switching
+	ATTRIBUTE	QuotaIDentifier 					 1 integer
+	ATTRIBUTE	VolumeUsedAfterTariffSwitch 		 2 integer
+	ATTRIBUTE	VolumeUsedATSOverflow 				 3 integer
+	ATTRIBUTE	TariffSwitchInterval 				 4 integer
+	ATTRIBUTE	TimeIntervalafterTariffSwitchUpdate  5 integer
+END-TLV 3GPP2-PrePaid-Tariff-Switching
+#contain sub-types
+ATTRIBUTE	3GPP2-Authorization-Parameters			99 tlv
+BEGIN-TLV 3GPP2-Authorization-Parameters
+	ATTRIBUTE BAK-Identifier 						 1 integer
+	ATTRIBUTE Timestamp-long 						 2 integer
+	ATTRIBUTE Authorization-Signature	 			 3 string
+END-TLV 3GPP2-Authorization-Parameters
+
+
+ATTRIBUTE	3GPP2-BCMCS_FLOW_ID						100 bytes
+
+#contain sub-types
+ATTRIBUTE	3GPP2-BCMCS-Capability					101 tlv
+BEGIN-TLV 3GPP2-BCMCS-Capability
+	ATTRIBUTE Protocol-Revision 					  1 integer
+END-TLV 3GPP2-BCMCS-Capability
+
+#contain sub-types
+ATTRIBUTE	3GPP2-Common-Session-Info				 102	tlv
+BEGIN-TLV 3GPP2-Common-Session-Info
+	ATTRIBUTE BCMCS_FLOW_ID							   1 bytes
+	ATTRIBUTE Program-Start-Time 					   2 date
+	ATTRIBUTE Program-End-Time							3 date
+	ATTRIBUTE Program-Allowed-Registration-Time(seconds) 4 integer
+	ATTRIBUTE Authorization-Required-Flag				5	string
+	ATTRIBUTE QoS-Parameter								6 integer #??
+	ATTRIBUTE BCMCS_Flow_Priority						7 integer
+END-TLV 3GPP2-Common-Session-Info
+
+#contain sub-types
+ATTRIBUTE BSN-Session-Info 							103 tlv
+BEGIN-TLV BSN-Session-Info
+	ATTRIBUTE BCMCS_FLOW_ID							  1 bytes
+	ATTRIBUTE Multicast-IP-Address					  2 ipaddr
+	ATTRIBUTE Destination-Port-Number				  3 integer
+	ATTRIBUTE Header-Compression-Algorithm			  4 string
+	ATTRIBUTE CID									  5 string 
+	ATTRIBUTE MAX-CID 								  6 integer
+	ATTRIBUTE Compression-Profile					  7 integer
+	ATTRIBUTE MAX-Header-Size						  8 integer
+	ATTRIBUTE MRRU									  9 integer
+	ATTRIBUTE Content-Server-Source-IP-Address		 10 ipaddr
+	ATTRIBUTE Content-Server-Source-IPv6-Address	 11 ipv6addr
+END-TLV BSN-Session-Info	
+
+#contain sub-types
+ATTRIBUTE RAN-Session-Info							104 tlv
+BEGIN-TLV RAN-Session-Info
+	ATTRIBUTE BCMCS_FLOW_ID							  1 integer
+	ATTRIBUTE Encryption-Mechanism					  2 integer
+	ATTRIBUTE BAK-Identifier						  3 integer
+	ATTRIBUTE BAK									  4 string
+	ATTRIBUTE BAK-Expire-Time						  5 string
+	ATTRIBUTE Session-Bandwidth						  6 integer
+END-TLV RAN-Session-Info
+	
+ATTRIBUTE	Reason-Code								105 integer
+ATTRIBUTE	3GPP2-BCMCS-Flow-Transmission-Time		107 date
+
+#contain sub-types
+ATTRIBUTE	3GPP2-Subnet							108	tlv
+BEGIN-TLV 3GPP2-Subnet
+	ATTRIBUTE	Subnet								  1 bytes
+	ATTRIBUTE	Sector-ID							  2 bytes
+END-TLV 3GPP2-Subnet
+ATTRIBUTE 3GPP2-Multicast-IP-Address 				109 ipaddr
+ATTRIBUTE 3GPP2-Port								110 integer
+
+#contain sub-typess
+ATTRIBUTE	3GPP2-TK-Info							112 tlv
+BEGIN-TLV 3GPP2-TK-Info
+	ATTRIBUTE TK									  1 integer
+	ATTRIBUTE TK_RAND								  2 integer
+END-TLV 3GPP2-TK-Info
+#contain sub-types
+ATTRIBUTE	3GPP2-BAK-ID							113 tlv
+BEGIN-TLV 3GPP2-BAK-ID 
+	ATTRIBUTE	BAK_ID 								  1 integer
+	ATTRIBUTE	BAK_Expire 							  2 integer
+END-TLV 3GPP2-BAK-ID
+
+ATTRIBUTE	3GPP2-Reverse-PDCH-RC					114	integer
+ATTRIBUTE	3GPP2-MEID								116	string
+#contain sub-types
+ATTRIBUTE	3GPP2-DNS-Server-IP-Address				117	tlv
+BEGIN-TLV 3GPP2-DNS-Server-IP-Address
+	ATTRIBUTE	Primary-DNS-Server						1 ipaddr							
+	ATTRIBUTE	Secondary-DNS-Server					2 ipaddr
+	ATTRIBUTE	Flag									3 string
+	ATTRIBUTE	Entity-Type								4 string
+END-TLV 3GPP2-DNS-Server-IP-Address
+
+ATTRIBUTE	3GPP2-MIP6-Home-Agent-Address-From-BU	118	ipv6addr
+ATTRIBUTE	3GPP2-MIP6-Care-of-Address				119	ipv6addr
+ATTRIBUTE	3GPP2-Home-Agent-Not-Authorized			120	integer
+ATTRIBUTE	3GPP2-MIP6-Session-Key					121	octets
+ATTRIBUTE	3GPP2-Hot-Line-Accounting-Information	122	string
+ATTRIBUTE	3GPP2-MIP6-Mesg-ID						123	octets
+ATTRIBUTE	3GPP2-Filter-Rule						124	string
+ATTRIBUTE	3GPP2-HTTP-Redirection-Rule				125	string
+ATTRIBUTE	3GPP2-IP-Redirection-Rule				126	string
+ATTRIBUTE	3GPP2-Hot-Line-Capability				127	integer
+ATTRIBUTE	3GPP2-MIP6-Home-Link-Prefix-Attr-A		128	octets
+
+ATTRIBUTE	3GPP2-Max-Authorized-Aggr-Bandwidth		130	integer
+
+# The next set of attributes contain sub-types
+ATTRIBUTE	3GPP2-Authorized-Flow-Profile-IDs		131	tlv
+BEGIN-TLV 3GPP2-Authorized-Flow-Profile-IDs
+	ATTRIBUTE	ProfileID_Forward 						1 string
+	ATTRIBUTE	ProfileID_Reverse 						2 string
+	ATTRIBUTE	ProfileID_Bi-direction 					3 string
+END-TLV 3GPP2-Authorized-Flow-Profile-IDs
+
+ATTRIBUTE	3GPP2-Granted-QoS-Parameters			132	tlv
+BEGIN-TLV 3GPP2-Granted-QoS-Parameters
+	ATTRIBUTE Direction 								1 integer
+	ATTRIBUTE	FLOW_ID									2 integer
+	ATTRIBUTE	QoS_ATTRIBUTE_SET_ID					3 integer
+	ATTRIBUTE	FlowProfileID							4 integer
+	ATTRIBUTE	Traffic_Class 							5 string
+	ATTRIBUTE	Peak_Rate 								6 string
+	ATTRIBUTE	Bucket_Size								7 string
+	ATTRIBUTE	Token_Rate 								8 string
+	ATTRIBUTE	Max_Latency 							9 string
+	ATTRIBUTE	Max_IP_Packet_Loss_Rate					10 string
+	ATTRIBUTE	Packet_Size 							11 string
+	ATTRIBUTE	Delay_Var_Sensitive 					12 string
+END-TLV 3GPP2-Granted-QoS-Parameters
+
+ATTRIBUTE	3GPP2-Maximum-Per-Flow-Priority			133	integer
+ATTRIBUTE	3GPP2-MIP6-Authenticator				134	octets
+
+ATTRIBUTE	3GPP2-MIP6-MAC-Mobility-Data			138	octets
+ATTRIBUTE	3GPP2-Inter-User-Priority				139	integer
+ATTRIBUTE	3GPP2-MIP6-Home-Agent-Address-Attr-B	140	ipv6addr
+ATTRIBUTE	3GPP2-MIP6-HOA-Received-From-BU			141	ipv6addr
+ATTRIBUTE	3GPP2-Carrier-ID						142	octets
+ATTRIBUTE	3GPP2-GMT-Time-Zone-Offset				143	integer
+
+# contains subtypes
+ATTRIBUTE	3GPP2-Flow-ID-Parameter					144	octets
+
+ATTRIBUTE	3GPP2-Flow-Status						145	integer
+ATTRIBUTE	3GPP2-Filtered-Octet-Count-Terminating	146	integer
+ATTRIBUTE	3GPP2-Filtered-Octet-Count-Originating	147	integer
+
+ATTRIBUTE	3GPP2-RSVP-Inbound-Octet-Count			162	integer
+ATTRIBUTE	3GPP2-RSVP-Outbound-Octet-Count			163	integer
+ATTRIBUTE	3GPP2-RSVP-Inbound-Packet-Count			164	integer
+ATTRIBUTE	3GPP2-RSVP-Outbound-Packet-Count		165	integer
+
+ATTRIBUTE	3GPP2-HA-Request						168	integer
+ATTRIBUTE	3GPP2-HA-Authorised						169	integer
+ATTRIBUTE	3GPP2-IP-Ver-Authorised					172	integer
+ATTRIBUTE	3GPP2-MIPv4-Mesg-Id						173	string
+
+ATTRIBUTE	3GPP2-MIP6-HA-Local-Assignment-Capblty	179	integer
+
+ATTRIBUTE	3GPP2-PMIP-Based-Mobility-Capability    193 integer
+
+ATTRIBUTE	3GPP2-Accounting-Mode					198	integer	 ## ??
+
+ATTRIBUTE	3GPP2-HAAA-MIP6-HA-Protocol-Capblty-Ind	203	integer
+
+ATTRIBUTE	3GPP2-VAAA-Assigned-MIP6-HA				205	ipv6addr
+ATTRIBUTE	3GPP2-VAAA-Assigned-MIP6-HL				206	octets
+ATTRIBUTE	3GPP2-VAAA-MIP6-HA-Protocol-Capblty-Ind	207	integer
+
+ATTRIBUTE	3GPP2-DNS-Server-IPV6-Address 			214 tlv
+BEGIN-TLV 3GPP2-DNS-Server-IPV6-Address
+	ATTRIBUTE	Primary-DNS-Server-IPV6-ADDRESS			1 ipv6addr							
+	ATTRIBUTE	Secondary-DNS-Server-IPV6-ADDRESS		2 ipv6addr
+	ATTRIBUTE	Flag									3 string
+	ATTRIBUTE	Entity-Type								4 string
+END-TLV 3GPP2-DNS-Server-IPV6-Address
+
+VALUE	3GPP2-Airlink-Record-Type	Connection-Setup  1
+VALUE	3GPP2-Airlink-Record-Type	Active-Start      2
+VALUE	3GPP2-Airlink-Record-Type	Active-Stop	      3
+VALUE	3GPP2-Airlink-Record-Type	Short-Data-Burst  4
+
+VALUE Authorization-Required-Flag Authorization-is-not-required-for-this-flow				0
+VALUE Authorization-Required-Flag Authorization-is-required-for-this-flow					1
+
+VALUE Reason-Code Reserved																	0
+VALUE Reason-Code Authorization-Only														1
+VALUE Reason-Code Session-Discovery-Only													2
+VALUE Reason-Code Authorization-and-Session-Discovery										3
+
+
+VALUE Header-Compression-Algorithm No-Header-Compression									0
+VALUE Header-Compression-Algorithm ROHC-U-mode 												1
+
+VALUE CID Small-CID																			0
+VALUE CID Large-CID																			1
+
+VALUE Encryption-Mechanism High-layer-encryption-in-the-Content-Server 						0
+VALUE Encryption-Mechanism Link-layer-encryption-in-the-RAN									1
+
+VALUE 3GPP2-PMIP-Based-Mobility-Capability AGW-supports-the-Network-PMIP4-only        		1
+VALUE 3GPP2-PMIP-Based-Mobility-Capability AGW-supports-the-Network-PMIP6-only				2
+VALUE 3GPP2-PMIP-Based-Mobility-Capability AGW-supports-the-both-Network-PMIP4-and-PMIP6	3
+
+VALUE Update-Reason Pre-initializatio 														1
+VALUE Update-Reason Initial-request															2
+VALUE Update-Reason Threshold-reached														3
+VALUE Update-Reason Quota-reached															4
+VALUE Update-Reason Remote-Forced-disconnect												5
+VALUE Update-Reason Client-Service-termination												6	
+VALUE Update-Reason Main-SI-released														7
+VALUE Update-Reason Service-Instance-not-established										8
+VALUE Update-Reason Tariff-Switch-Update													9
+
+VALUE AvailableInClient PrePaid-Accounting-for-Volume-supported								1
+VALUE AvailableInClient	PrePaid-Accounting-for-Duration-supported							2
+VALUE AvailableInClient	PrePaid-Accounting-for-Volume-and-Duration-supported				3
+
+VALUE SelectedForSession PrePaid Accounting not used										0
+VALUE SelectedForSession Usage-of-PrePaid-Accounting-for-Volume								1
+VALUE SelectedForSession Usage-of-PrePaid-Accounting-for-Duration							2
+VALUE SelectedForSession Usage-of-PrePaid-Accounting-for-Volume-and-Duration				3
+
+END-VENDOR 3GPP2

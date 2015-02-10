@@ -1,0 +1,514 @@
+HPR-IP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,OBJECT-TYPE, Counter32
+                    FROM SNMPv2-SMI
+        DisplayString, RowStatus, TEXTUAL-CONVENTION
+                    FROM SNMPv2-TC
+        MODULE-COMPLIANCE, OBJECT-GROUP
+                    FROM SNMPv2-CONF
+        SnaControlPointName
+                    FROM APPN-MIB
+        hprObjects, hprCompliances, hprGroups
+                    FROM HPR-MIB  ;
+
+hprIp   MODULE-IDENTITY
+   LAST-UPDATED "9809240000Z" -- September 24, 1998
+   ORGANIZATION "IETF SNA NAU MIB WG / AIW APPN MIBs SIG"
+   CONTACT-INFO
+       "
+               Bob Clouston
+               Cisco Systems
+               7025 Kit Creek Road
+               P.O. Box 14987
+               Research Triangle Park, NC 27709, USA
+               Tel:    1 919 472 2333
+               E-mail: clouston@cisco.com
+
+               Bob Moore
+               IBM Corporation
+               4205 S. Miami Boulevard
+               BRQA/501
+               P.O. Box 12195
+               Research Triangle Park, NC 27709, USA
+               Tel:    1 919 254 4436
+               E-mail: remoore@us.ibm.com
+       "
+   DESCRIPTION
+       "The MIB module for HPR over IP.  This module contains two
+       groups:
+
+        -  the HPR over IP Monitoring Group provides a count of the UDP
+           packets sent by a link station for each APPN traffic type.
+
+        -  the HPR over IP Configuration Group provides for reading and
+           setting the mappings between APPN traffic types and TOS
+           Precedence settings in the IP header.  These mappings are
+           configured at the APPN port level, and are inherited by the
+           APPN connection networks and link stations associated with an
+           APPN port.  A port-level mapping can, however, be overridden
+           for a particular connection network or link station."
+   REVISION  "9809240000Z" -- September 24, 1998
+   DESCRIPTION
+       "Initial version, Published as RFC 2584"
+
+   ::= { hprObjects 5 }
+
+-- *********************************************************************
+-- Textual Conventions
+-- *********************************************************************
+AppnTrafficType ::= TEXTUAL-CONVENTION
+      STATUS current
+      DESCRIPTION
+          "APPN traffic type.  The first four values correspond
+          to APPN transmission priorities (network, high, medium and
+          low), while the fifth is used for both LLC commands (XID,
+          TEST, DISC, and DM) and function-routed NLPs (XID_DONE_RQ
+          and XID_DONE_RSP)."
+
+      SYNTAX INTEGER { low (1),
+                       medium (2),
+                       high (3),
+                       network (4),
+                       llcAndFnRoutedNlp (5) }
+
+AppnTOSPrecedence ::= TEXTUAL-CONVENTION
+      STATUS current
+      DESCRIPTION
+          "A DisplayString representing the setting of the three TOS
+          Precedence bits in the IP Type of Service field for this APPN
+          traffic type.  The HPR over IP architecture specifies the
+          following default mapping:
+
+               APPN traffic type           IP TOS Precedence bits
+               ------------------          ----------------------
+                Network                     110
+                High                        100
+                Medium                      010
+                Low                         001
+                LLC commands, etc.          110
+          "
+
+      SYNTAX DisplayString (SIZE(3))
+
+-- *******************************************************************
+
+-- hprObjects              OBJECT IDENTIFIER ::= { hprMIB 1 }
+-- *******************************************************************
+
+-- *******************************************************************
+-- HPR over IP Monitoring Group
+--
+-- This group contains a single table, the hprIsActiveLsTable,
+-- providing a  count of UDP packets sent with each type of
+-- APPN traffic on each active link supporting HPR over IP.
+-- *******************************************************************
+hprIpActiveLsTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF HprIpActiveLsEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The HPR/IP active link station table.  This table provides
+          counts of the number of UDP packets sent for each APPN
+          traffic type."
+
+      ::= { hprIp 1 }
+
+hprIpActiveLsEntry OBJECT-TYPE
+      SYNTAX HprIpActiveLsEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Entry of the HPR/IP link station table."
+
+      INDEX { hprIpActiveLsLsName,
+              hprIpActiveLsAppnTrafficType }
+
+      ::= { hprIpActiveLsTable 1 }
+
+HprIpActiveLsEntry ::= SEQUENCE {
+        hprIpActiveLsLsName              DisplayString,
+        hprIpActiveLsAppnTrafficType     AppnTrafficType,
+        hprIpActiveLsUdpPackets          Counter32 }
+
+hprIpActiveLsLsName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (1..10))
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Administratively assigned name for the link station.  If this
+          object has the same value as the appnLsName in the APPN MIB,
+          then the two objects are referring to the same APPN link
+          station."
+      ::= { hprIpActiveLsEntry 1 }
+
+hprIpActiveLsAppnTrafficType OBJECT-TYPE
+      SYNTAX AppnTrafficType
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "APPN traffic type being sent through the link station."
+
+      ::= { hprIpActiveLsEntry 2 }
+
+hprIpActiveLsUdpPackets OBJECT-TYPE
+      SYNTAX Counter32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of outgoing UDP packets carrying this type of APPN
+          traffic.  A discontinuity in the counter is indicated by the
+          appnLsCounterDisconTime object in the APPN MIB."
+
+      ::= { hprIpActiveLsEntry 3 }
+
+
+-- *******************************************************************
+-- HPR over IP Configuration Group
+--
+-- This group contains three tables for reading and setting the
+-- mapping between APPN traffic types and values for the TOS
+-- Precedence bits in the IP header.  hprIpAppnPortTOSPrecedence
+-- represents the APPN port-level mapping.  This mapping can be
+-- overridden for an individual link station or an individual
+-- connection network via, respectively, the hprIpLsTOSPrecedence
+-- and the hprIpCnTOSPrecedence objects.
+-- *******************************************************************
+
+hprIpAppnPortTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF HprIpAppnPortEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The HPR/IP APPN port table.  This table supports reading and
+          setting the mapping between APPN traffic types and TOS
+          Precedence settings for all the link stations at this APPN
+          port.  This mapping can be overridden for an individual link
+          station or an individual connection network via, respectively,
+          the hprIpLsTOSPrecedence and the hprIpCnTOSPrecedence objects."
+
+      ::= { hprIp 2 }
+
+hprIpAppnPortEntry OBJECT-TYPE
+      SYNTAX HprIpAppnPortEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Entry of the HPR/IP APPN port table.  Entries exist for
+          every APPN port defined to support HPR over IP."
+
+      INDEX { hprIpAppnPortName,
+              hprIpAppnPortAppnTrafficType }
+
+      ::= { hprIpAppnPortTable 1 }
+
+HprIpAppnPortEntry ::= SEQUENCE {
+        hprIpAppnPortName            DisplayString,
+        hprIpAppnPortAppnTrafficType AppnTrafficType,
+        hprIpAppnPortTOSPrecedence   AppnTOSPrecedence }
+
+hprIpAppnPortName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (1..10))
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Administratively assigned name for this APPN port.  If this
+          object has the same value as the appnPortName in the APPN MIB,
+          then the two objects are referring to the same APPN port."
+
+      ::= { hprIpAppnPortEntry 1 }
+
+hprIpAppnPortAppnTrafficType OBJECT-TYPE
+      SYNTAX AppnTrafficType
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "APPN traffic type sent through the port."
+
+      ::= { hprIpAppnPortEntry 2 }
+
+hprIpAppnPortTOSPrecedence OBJECT-TYPE
+      SYNTAX AppnTOSPrecedence
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+          "A setting for the three TOS Precedence bits in the IP Type of
+          Service field for this APPN traffic type.
+
+          When this value is changed via a Set operation, the new setting
+          for the TOS Precedence bits takes effect immediately, rather
+          than waiting for some event such as reinitialization of the
+          port or of the APPN node itself."
+
+      ::= { hprIpAppnPortEntry 3 }
+
+
+-- *******************************************************************
+hprIpLsTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF HprIpLsEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The HPR/IP link station table.  Values for TOS Precedence at
+          the link station level override those at the level of the
+          containing port.  If there is no entry in this table for a
+          given link station, then that link station inherits its TOS
+          Precedence values from its port."
+
+      ::= { hprIp 3 }
+
+hprIpLsEntry OBJECT-TYPE
+      SYNTAX HprIpLsEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Entry of the HPR/IP link station table."
+
+      INDEX { hprIpLsLsName,
+              hprIpLsAppnTrafficType }
+
+      ::= { hprIpLsTable 1 }
+
+HprIpLsEntry ::= SEQUENCE {
+        hprIpLsLsName            DisplayString,
+        hprIpLsAppnTrafficType   AppnTrafficType,
+        hprIpLsTOSPrecedence     AppnTOSPrecedence,
+        hprIpLsRowStatus         RowStatus }
+
+hprIpLsLsName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (1..10))
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Administratively assigned name for the link station.  If this
+          object has the same value as the appnLsName in the APPN MIB,
+          then the two objects are referring to the same APPN link
+          station."
+      ::= { hprIpLsEntry 1 }
+
+hprIpLsAppnTrafficType OBJECT-TYPE
+      SYNTAX AppnTrafficType
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "APPN traffic type sent through the link station."
+
+      ::= { hprIpLsEntry 2 }
+
+hprIpLsTOSPrecedence OBJECT-TYPE
+      SYNTAX AppnTOSPrecedence
+      MAX-ACCESS read-create
+      STATUS current
+      DESCRIPTION
+          "A setting for the three TOS Precedence bits in the IP Type of
+          Service field for this APPN traffic type.
+
+          When this value is changed via a Set operation, the new setting
+          for the TOS Precedence bits takes effect immediately, rather
+          than waiting for some event such as reinitialization of the
+          port or of the APPN node itself."
+
+      ::= { hprIpLsEntry 3 }
+
+hprIpLsRowStatus OBJECT-TYPE
+      SYNTAX RowStatus
+      MAX-ACCESS read-create
+      STATUS current
+      DESCRIPTION
+          "This object allows entries to be created and deleted in the
+          hprIpLsTable.  As soon as an entry becomes active, the mapping
+          between APPN traffic types and TOS Precedence settings that it
+          specifies becomes effective.
+
+          The value of the other accessible object in this entry,
+          hprIpLsTOSPrecedence, can be changed via a Set operation when
+          this object's value is active(1).
+
+          An entry in this table is deleted by setting this object to
+          destroy(6).  Deleting an entry in this table causes the
+          link station to revert to the default TOS Precedence
+          mapping for its port."
+
+      ::= { hprIpLsEntry 4 }
+
+-- *******************************************************************
+hprIpCnTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF HprIpCnEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The HPR/IP connection network table.  Values for TOS
+          Precedence at the connection network level override those at
+          the level of the containing port.  If there is no entry in
+          this table for a given connection network, then that
+          connection network inherits its TOS Precedence values from
+          its port.
+
+          A node may have connections to a given connection network
+          through multiple ports.  There is no provision in the HPR-IP
+          architecture for variations in TOS Precedence values for
+          a single connection network based on the port through which
+          traffic is flowing to the connection network.  Thus an entry
+          in this table overrides the port-level settings for all the
+          ports through which the node can reach the connection
+          network."
+
+      ::= { hprIp 4 }
+
+hprIpCnEntry OBJECT-TYPE
+      SYNTAX HprIpCnEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Entry of the HPR/IP connection network table."
+
+      INDEX { hprIpCnVrnName,
+              hprIpCnAppnTrafficType }
+
+      ::= { hprIpCnTable 1 }
+
+HprIpCnEntry ::= SEQUENCE {
+        hprIpCnVrnName           SnaControlPointName,
+        hprIpCnAppnTrafficType   AppnTrafficType,
+        hprIpCnTOSPrecedence     AppnTOSPrecedence,
+        hprIpCnRowStatus         RowStatus }
+
+hprIpCnVrnName OBJECT-TYPE
+      SYNTAX SnaControlPointName
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "SNA control point name of the virtual routing node (VRN) that
+          identifies the connection network in the APPN topology
+          database.  If this object has the same value as the appnVrnName
+          in the APPN MIB, then the two objects are referring
+          to the same APPN VRN."
+
+      ::= { hprIpCnEntry 1 }
+
+hprIpCnAppnTrafficType OBJECT-TYPE
+      SYNTAX AppnTrafficType
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "APPN traffic type sent to this connection network."
+
+      ::= { hprIpCnEntry 2 }
+
+hprIpCnTOSPrecedence OBJECT-TYPE
+      SYNTAX AppnTOSPrecedence
+      MAX-ACCESS read-create
+      STATUS current
+      DESCRIPTION
+          "A setting for the three TOS Precedence bits in the IP Type of
+          Service field for this APPN traffic type.  This setting applies
+          to all traffic sent to this connection network by this node,
+          regardless of the port through which the traffic is sent.
+
+          When this value is changed via a Set operation, the new setting
+          for the TOS Precedence bits takes effect immediately, rather
+          than waiting for some event such as reinitialization of a
+          port or of the APPN node itself."
+      ::= { hprIpCnEntry 3 }
+
+hprIpCnRowStatus OBJECT-TYPE
+      SYNTAX RowStatus
+      MAX-ACCESS read-create
+      STATUS current
+      DESCRIPTION
+          "This object allows entries to be created and deleted in the
+          hprIpCnTable.  As soon as an entry becomes active, the mapping
+          between APPN traffic types and TOS Precedence settings that it
+          specifies becomes effective.
+
+          The value of the other accessible object in this entry,
+          hprIpCnTOSPrecedence, can be changed via a Set operation when
+          this object's value is active(1).
+
+          An entry in this table is deleted by setting this object to
+          destroy(6).  Deleting an entry in this table causes the
+          connection network to revert to the default TOS Precedence
+          mapping for each port through which it is accessed."
+
+      ::= { hprIpCnEntry 4 }
+
+
+-- *******************************************************************
+-- Conformance Statement
+-- *******************************************************************
+-- Definitions imported from the HPR MIB:
+--   hprConformance      OBJECT IDENTIFIER ::= { hprMIB 2 }
+--   hprCompliances      OBJECT IDENTIFIER ::= { hprConformance 1 }
+--   hprGroups           OBJECT IDENTIFIER ::= { hprConformance 2 }
+
+-- Compliance statements
+hprIpCompliance MODULE-COMPLIANCE
+       STATUS current
+       DESCRIPTION
+      "Compliance statement for the HPR over IP MIB module."
+   MODULE   -- this module
+
+   --  Conditionally mandatory groups
+   GROUP hprIpMonitoringGroup
+      DESCRIPTION
+          "The hprIpMonitoringGroup is mandatory for APPN implementations
+          supporting HPR over IP."
+
+   GROUP hprIpConfigurationGroup
+      DESCRIPTION
+          "The hprIpConfigurationGroup is mandatory for APPN
+          implementations supporting HPR over IP.  It may, however,
+          be implemented as a collection of read-only objects."
+
+   OBJECT hprIpAppnPortTOSPrecedence
+   MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+   OBJECT hprIpLsTOSPrecedence
+   MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+   OBJECT hprIpLsRowStatus
+   MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+   OBJECT hprIpCnTOSPrecedence
+   MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+   OBJECT hprIpCnRowStatus
+   MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+::= { hprCompliances 2 }
+
+-- Group definitions
+
+hprIpMonitoringGroup OBJECT-GROUP
+      OBJECTS { hprIpActiveLsUdpPackets }
+      STATUS current
+      DESCRIPTION
+          "An object for counting outgoing HPR/IP traffic for each APPN
+          traffic type."
+
+::= { hprGroups 5 }
+
+hprIpConfigurationGroup OBJECT-GROUP
+      OBJECTS { hprIpAppnPortTOSPrecedence,
+                hprIpLsTOSPrecedence,
+                hprIpLsRowStatus,
+                hprIpCnTOSPrecedence,
+                hprIpCnRowStatus }
+      STATUS current
+      DESCRIPTION
+          "A collection of HPR/IP objects representing the mappings
+          between APPN traffic types and TOS Precedence bits at the APPN
+          port, APPN link station, and APPN connection network levels."
+
+::= { hprGroups 6 }
+
+END

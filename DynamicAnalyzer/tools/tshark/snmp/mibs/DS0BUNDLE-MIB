@@ -1,0 +1,314 @@
+DS0BUNDLE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+     MODULE-IDENTITY, OBJECT-TYPE,
+     transmission                      FROM SNMPv2-SMI
+     MODULE-COMPLIANCE, OBJECT-GROUP   FROM SNMPv2-CONF
+     DisplayString, RowStatus,
+     TestAndIncr                       FROM SNMPv2-TC
+     ifIndex, InterfaceIndex           FROM IF-MIB;
+
+--  This is the MIB module for the DS0Bundle Interface
+--  objects.
+
+ds0Bundle MODULE-IDENTITY
+    LAST-UPDATED "9807161630Z"
+    ORGANIZATION "IETF Trunk MIB Working Group"
+    CONTACT-INFO
+      "        David Fowler
+
+       Postal: Newbridge Networks Corporation
+               600 March Road
+               Kanata, Ontario, Canada K2K 2E6
+
+               Tel: +1 613 591 3600
+               Fax: +1 613 599 3619
+
+       E-mail: davef@newbridge.com"
+    DESCRIPTION
+         "The MIB module to describe
+          DS0 Bundle interfaces objects."
+    REVISION "9805242010Z"
+    DESCRIPTION
+         "Initial version of the DS0BUNDLE-MIB."
+
+    ::= { transmission 82 }
+
+--
+-- The DS0 Bundle Config Group
+--
+-- Implementation of this group is mandatory for all
+-- systems that use a DS0Bundle Interface.
+--
+-- The DS0 Bundle Config Group consists of one table:
+--    DS0 Bundle Table
+
+--  The DS0 Bundle Table
+
+dsx0BundleNextIndex OBJECT-TYPE
+    SYNTAX  TestAndIncr
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "This object is used to assist the manager in
+            selecting a value for dsx0BundleIndex.  Because
+            this object is of syntax TestAndIncr (see the
+            SNMPv2-TC document, RFC 1903) it can also be used
+            to avoid race conditions with multiple managers
+            trying to create rows in the table.
+
+            If the result of the SET for dsx0BundleNextIndex
+            is not success, this means the value has been
+            changed from index (i.e. another manager used the
+            value), so a new value is required.
+
+            The algorithm is:
+            done = false
+            while done == false
+                index = GET (dsx0BundleNextIndex.0)
+                SET (dsx0BundleNextIndex.0=index)
+                if (set failed)
+                  done = false
+                else
+                  SET(dsx0BundleRowStatus.index=createAndGo)
+                  if (set failed)
+                    done = false
+                  else
+                    done = true
+                    other error handling"
+    ::= { ds0Bundle 2 }
+
+dsx0BundleTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx0BundleEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "There is an row in this table for each ds0Bundle
+            in the system.  This table can be used to
+            (indirectly) create rows in the ifTable with
+            ifType = 'ds0Bundle(82)'."
+    ::= { ds0Bundle 3 }
+
+dsx0BundleEntry OBJECT-TYPE
+    SYNTAX  Dsx0BundleEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "There is a row in entry in this table for each
+            ds0Bundle interface."
+    INDEX   { dsx0BundleIndex }
+    ::= { dsx0BundleTable 1 }
+
+Dsx0BundleEntry ::=
+    SEQUENCE {
+        dsx0BundleIndex              INTEGER,
+        dsx0BundleIfIndex            InterfaceIndex,
+        dsx0BundleCircuitIdentifier  DisplayString,
+        dsx0BundleRowStatus          RowStatus
+}
+
+dsx0BundleIndex OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A unique identifier for a ds0Bundle.  This is not
+            the same value as ifIndex.  This table is not
+            indexed by ifIndex because the manager has to
+            choose the index in a createable row and the agent
+            must be allowed to select ifIndex values."
+    ::= { dsx0BundleEntry 1 }
+
+dsx0BundleIfIndex OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The ifIndex value the agent selected for the
+            (new) ds0Bundle interface."
+    ::= { dsx0BundleEntry 2 }
+
+dsx0BundleCircuitIdentifier OBJECT-TYPE
+     SYNTAX  DisplayString (SIZE (0..255))
+     MAX-ACCESS  read-create
+     STATUS  current
+     DESCRIPTION
+            "This variable contains the transmission vendor's
+            circuit identifier, for the purpose of
+            facilitating troubleshooting."
+     ::= { dsx0BundleEntry 3 }
+
+dsx0BundleRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "This object is used to create and delete rows in
+            this table."
+    ::= { dsx0BundleEntry 4 }
+
+-- The DS0 Bonding Group
+
+-- Implementation of this group is optional for all
+-- systems that use a DS0Bundle Interface.
+
+-- The DS0 Bonding Group consists of one table:
+--    DS0 Bonding Table
+
+-- The DS0 Bonding Table
+
+dsx0BondingTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx0BondingEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The DS0 Bonding table."
+    ::= { ds0Bundle 1 }
+
+dsx0BondingEntry OBJECT-TYPE
+    SYNTAX  Dsx0BondingEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the DS0 Bonding table.  There is a
+            row in this table for each DS0Bundle interface."
+    INDEX   { ifIndex }
+    ::= { dsx0BondingTable 1 }
+
+Dsx0BondingEntry ::=
+    SEQUENCE {
+        dsx0BondMode            INTEGER,
+        dsx0BondStatus          INTEGER,
+        dsx0BondRowStatus       RowStatus
+}
+
+dsx0BondMode OBJECT-TYPE
+    SYNTAX  INTEGER {
+                none(1),
+                other(2),
+                mode0(3),
+                mode1(4),
+                mode2(5),
+                mode3(6)
+    }
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "This object indicates which BONDing mode is used,
+            if any, for a ds0Bundle.  Mode0 provides parameter
+            and number exchange with no synchronization.  Mode
+            1 provides parameter and number exchange.  Mode 1
+            also provides synchronization during
+            initialization but does not include inband
+            monitoring.  Mode 2 provides all of the above plus
+            inband monitoring.  Mode 2 also steals 1/64th of
+            the bandwidth of each channel (thus not supporting
+            n x 56/64 kbit/s data channels for most values of
+            n). Mode 3 provides all of the above, but also
+            provides n x 56/64 kbit/s data channels.  Most
+            common implementations of Mode 3 add an extra
+            channel to support the inband monitoring overhead.
+            ModeNone should be used when the interface is not
+            performing bandwidth-on-demand."
+    ::= { dsx0BondingEntry 1 }
+
+dsx0BondStatus OBJECT-TYPE
+    SYNTAX  INTEGER {
+                idle(1),
+                callSetup(2),
+                dataTransfer(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object indicates the current status of the
+            bonding call using this ds0Bundle. idle(1) should
+            be used when the bonding mode is set to none(1)."
+    ::= { dsx0BondingEntry 2 }
+
+dsx0BondRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "This object is used to create new rows in this
+            table, modify existing rows, and to delete
+            existing rows."
+    ::= { dsx0BondingEntry 3 }
+
+-- conformance information
+
+ds0BundleConformance OBJECT IDENTIFIER ::= { ds0Bundle 4 }
+
+ds0BundleGroups      OBJECT IDENTIFIER
+    ::= { ds0BundleConformance 1 }
+
+ds0BundleCompliances OBJECT IDENTIFIER
+    ::= { ds0BundleConformance 2 }
+
+
+
+-- compliance statements
+
+ds0BundleCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for DS0Bundle
+            interfaces."
+    MODULE  -- this module
+        MANDATORY-GROUPS {ds0BundleConfigGroup }
+
+        GROUP       ds0BondingGroup
+        DESCRIPTION
+            "Implementation of this group is optional for all
+            systems that attach to a DS0Bundle Interface."
+
+        OBJECT      dsx0BundleRowStatus
+        SYNTAX      INTEGER {
+                        active(1),
+                        createAndGo(4),
+                        destroy(6)
+                    }
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "The agent is not required to support a SET
+            operation to this object, and only three of the
+            six enumerated values for the RowStatus textual
+            convention need be supported.  Only supporting
+            createAndGo for a creation process prevents the
+            manager from creating an inactive row in the
+            ds0BundleTable.  Inactive rows in the
+            ds0BundleTable do not make sense."
+
+        OBJECT      dsx0BundleCircuitIdentifier
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "The agent is not required to support a SET
+            operation to this object."
+
+                ::= { ds0BundleCompliances 1 }
+
+            -- units of conformance
+
+            ds0BondingGroup  OBJECT-GROUP
+                OBJECTS { dsx0BondMode,
+                          dsx0BondStatus,
+                          dsx0BondRowStatus }
+                STATUS  current
+                DESCRIPTION
+                        "A collection of objects providing
+                        configuration information applicable
+                        to all DS0 interfaces."
+    ::= { ds0BundleGroups 1 }
+ds0BundleConfigGroup  OBJECT-GROUP
+    OBJECTS { dsx0BundleNextIndex,
+              dsx0BundleIfIndex,
+              dsx0BundleCircuitIdentifier,
+              dsx0BundleRowStatus }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing the ability to
+            create a new ds0Bundle in the ifTable as well as
+            configuration information about the ds0Bundle."
+    ::= { ds0BundleGroups 2 }
+END

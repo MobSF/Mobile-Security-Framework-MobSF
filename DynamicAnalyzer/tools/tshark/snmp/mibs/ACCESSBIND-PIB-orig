@@ -1,0 +1,1626 @@
+   ACCESSBIND-PIB PIB-DEFINITIONS ::= BEGIN  
+     
+   IMPORTS  
+       Unsigned32, Integer32, MODULE-IDENTITY,  
+       MODULE-COMPLIANCE, OBJECT-TYPE, OBJECT-GROUP, pib  
+               FROM COPS-PR-SPPI  
+       InstanceId, Prid  
+               FROM COPS-PR-SPPI-TC   
+       RoleCombination, PrcIdentifier   
+               FROM FRAMEWORK-ROLE-PIB  
+       InetAddress, InetAddressType  
+               FROM INET-ADDRESS-MIB  
+       TruthValue, PhysAddress  
+               FROM SNMPv2-TC;             
+     
+   accessBindPib  MODULE-IDENTITY  
+       SUBJECT-CATEGORIES { all }  
+       LAST-UPDATED "200107101600Z"             
+       ORGANIZATION "IETF RAP WG"  
+       CONTACT-INFO "  
+
+                     Walter Weiss 
+                     Ellacoya Networks 
+                     7 Henry Clay Drive 
+                     Merrimack, NH 03054 
+                     Phone: 603-879-7364 
+                     E-mail: wweiss@ellacoya.com  
+                   "  
+       DESCRIPTION  
+               "A PIB module containing the set of classes to bind  
+               authorization and authentication to COPS 
+               Provisioning "  
+     
+       ::= { pib xxx }    -- xxx to be assigned by IANA 
+     
+ 
+   --  
+   -- The branch OIDs in the AccessBind PIB  
+   --  
+     
+   capabilityClasses OBJECT IDENTIFIER ::= { accessBindPib 1 } 
+   sessionClasses OBJECT IDENTIFIER ::= { accessBindPib 2 }  
+   accessorClasses OBJECT IDENTIFIER ::= { accessBindPib 3 }  
+   contextClasses OBJECT IDENTIFIER ::= { accessBindPib 4 }  
+   authClasses OBJECT IDENTIFIER ::= { accessBindPib 5 }  
+ 
+ 
+   --  
+   -- Session Table  
+   --  
+ 
+   sessionTable OBJECT-TYPE  
+       SYNTAX         SEQUENCE OF SessionEntry  
+       PIB-ACCESS     install-notify   
+       STATUS         current  
+       DESCRIPTION  
+           "An instance of this class is created by the PEP and sent   
+            to the PDP. The PDP will fill in the sessionStatus field   
+            and send the instance back when sending a decision."  
+     
+       ::= { sessionClasses 1 }  
+     
+   sessionEntry OBJECT-TYPE  
+       SYNTAX         SessionEntry  
+       STATUS         current  
+       DESCRIPTION  
+           "An instance of the sessionTable PRC."  
+     
+       PIB-INDEX { sessionId }  
+       UNIQUENESS { }   
+     
+       ::= { sessionTable 1 }  
+     
+   SessionEntry ::= SEQUENCE {  
+
+           sessionId                  InstanceId,  
+           sessionStatus              INTEGER,  
+           sessionRealm               OCTET STRING,  
+           sessionUsername            OCTET STRING,  
+           sessionDataPath            Prid,  
+           sessionBinding             ReferenceId,  
+           sessionAccessor            ReferenceId  
+   }  
+  
+   sessionId  OBJECT-TYPE  
+       SYNTAX         InstanceId  
+       STATUS         current  
+       DESCRIPTION  
+           "An index to uniquely identify an instance of this  
+           provisioning class."  
+     
+       ::= { sessionEntry 1 }  
+     
+     
+   sessionStatus OBJECT-TYPE  
+       SYNTAX         INTEGER { 
+                                            Pending(0), 
+                                            Enabled(1), 
+                                            Disabled(2) 
+                                        } 
+       STATUS         current  
+       DESCRIPTION  
+           "This attribute is set by the PDP. Set to true(1) if the   
+           PDP has authorized the session, else set to false(2)." 
+     
+       ::= { sessionEntry 2 }  
+ 
+   sessionRealm OBJECT-TYPE  
+       SYNTAX         OCTET STRING  
+       STATUS         current  
+       DESCRIPTION  
+           "Realm name in which the client is requesting  
+           access (sometimes referred to as a domain name." 
+     
+       ::= { sessionEntry 3 }  
+     
+   sessionUsername OBJECT-TYPE  
+       SYNTAX         OCTET STRING  
+       STATUS         current  
+       DESCRIPTION  
+           "Unique user name to identify the client requesting  
+           access."  
+     
+       ::= { sessionEntry 4 }  
+     
+   sessionDataPath OBJECT-TYPE  
+       SYNTAX         Prid 
+       STATUS         current  
+
+       DESCRIPTION  
+           "This attribute references the first functional data path  
+           element to process data flow for this session. It is  
+           first assigned by the PEP with the  
+           accessorElementDefaultSessionDataPath in the  
+           accessorElement and may optionally be reassigned by the 
+           PDP." 
+     
+       ::= { sessionEntry 5 }  
+   
+     
+   sessionBinding  OBJECT-TYPE  
+       SYNTAX         ReferenceId  
+       PIB-REFERENCES { sessionEntry } 
+       STATUS         current  
+       DESCRIPTION  
+           "This attribute allows a PEP to indicate to the PDP that  
+           this session was generated downstream on the data path  
+           from a session for which an PEP has previously generated  
+           an authorization request. This allows the PDP to  
+           reference additional knowledge acquired from the previous  
+           session such as the credentials or interface data. "  
+     
+       ::= { sessionEntry 6 }  
+     
+     
+   sessionAccessor OBJECT-TYPE  
+       SYNTAX         ReferenceId 
+       PIB-REFERENCES { accessorEntry }    
+       STATUS         current  
+       DESCRIPTION  
+           "This attribute references the instance of the previously  
+            provisioned Accessor that resulted in this PEP Access  
+            Request."  
+     
+       ::= { sessionEntry 7 }  
+
+ 
+   -- 
+   -- Accessor Table 
+   -- 
+ 
+   accessorTable OBJECT-TYPE   
+     SYNTAX          SEQUENCE OF AccessorEntry 
+     PIB-ACCESS      install   
+     STATUS          current   
+     DESCRIPTION   
+           "The AccessorTable identifies when the PEP should send an  
+           access or authentication request to the PDP. As a  
+           result of this request, a new session may be started.  
+           Hence, the AccessorTable can be said to create or remove  
+           SessionTable entries. "  
+ 
+
+     ::= { accessorClasses 1 }   
+ 
+   accessorEntry OBJECT-TYPE   
+     SYNTAX  AccessorEntry 
+     STATUS  current   
+     DESCRIPTION   
+          " An instance of this class defines the circumstances for  
+          generating an access request, and provides the means for  
+          specifying the contents of the PEP Access Request."   
+     PIB-INDEX { accessorId } 
+     UNIQUENESS {    accessorRequestAuth, 
+                     accessorAccElmRef, 
+                     accessorAuthProtocol, 
+                     accessorAuthContext, 
+                     accessorDefaultDataPath 
+                } 
+ 
+     ::= { accessorTable 1}   
+ 
+   AccessorEntry::= SEQUENCE {   
+     accessorId                      InstanceId,   
+     accessorRequestAuth             TruthValue, 
+     accessorAccElmRef               ReferenceId, 
+     accessorAuthProtocol            TagReferenceId, 
+     accessorAuthContext             TagReferenceId, 
+     accessorDefaultDataPath         Prid 
+   }   
+ 
+   accessorId OBJECT-TYPE  
+     SYNTAX    InstanceId     
+     STATUS        current  
+     DESCRIPTION  
+          " An arbitrary integer index that uniquely identifies  
+          an instance of the accessorTable class."  
+         
+      ::= { accessorEntry 1} 
+ 
+   accessorRequestAuth OBJECT-TYPE  
+     SYNTAX        TruthValue 
+     STATUS        current  
+     DESCRIPTION  
+          "Indicates whether or not authentication is required for 
+          this session. TRUE indicates that authorization is 
+          required."  
+ 
+        ::= { accessorEntry 2} 
+ 
+   accessorAccElmRef OBJECT-TYPE  
+     SYNTAX        ReferenceId 
+     PIB-REFERENCES { accessorElementEntry } 
+     STATUS        current  
+     DESCRIPTION  
+          "A reference to an AccessorElementTable instance which  
+
+          determines the scope (criteria for generating a new  
+          request) and interim forwarding behavior."  
+ 
+        ::= { accessorEntry 3} 
+ 
+   accessorAuthProtocol OBJECT-TYPE  
+     SYNTAX        TagReferenceId 
+     PIB-TAG       { accessorAuthProtocolGroup } 
+     STATUS        current  
+     DESCRIPTION  
+          "Identifies a list of accessorAuthProtocolTable entries  
+          associated with this accessor instance."  
+ 
+        ::= { accessorEntry 4} 
+ 
+   accessorAuthContext OBJECT-TYPE  
+     SYNTAX       TagReferenceId  
+     PIB-TAG       { contextDataGroup } 
+     STATUS        current  
+     DESCRIPTION  
+          "Identifies a list of ContextDataTable entries  
+          associated with this accessor instance."  
+ 
+        ::= { accessorEntry 5} 
+ 
+   accessorDefaultDataPath OBJECT-TYPE  
+     SYNTAX        Prid 
+     STATUS        current  
+     DESCRIPTION  
+          "The data path for Êout of scope∆ traffic."  
+    
+       ::= { accessorEntry 6} 
+ 
+   -- 
+   -- AccessorElement Table 
+   -- 
+ 
+   accessorElementTable OBJECT-TYPE   
+     SYNTAX          SEQUENCE OF AccessorElementEntry 
+     PIB-ACCESS      install   
+     STATUS          current   
+     DESCRIPTION   
+           "This table defines the criteria to be used to generate  
+           an access request. It also defines the interim forwarding  
+           behavior pending a decision from the server."  
+     ::= { accessorClasses 2 }   
+ 
+  accessorElementEntry OBJECT-TYPE   
+     SYNTAX  AccessorElementEntry 
+     STATUS  current   
+     DESCRIPTION   
+          "An instance of this class defines request trigger  
+          criteria and interim forwarding behavior for packets."   
+
+     PIB-INDEX { accessorElementId } 
+     UNIQUENESS { accessorElementScope } 
+  
+     ::= { accessorElementTable 1}   
+ 
+   AccessorElementEntry::= SEQUENCE {   
+     accessorElementId                      InstanceId, 
+     accessorElementScope                   TagReferenceId, 
+     accessorElementInterimFwdBehavior      INTEGER, 
+     accessorElementDefaultSessionDataPath  Prid 
+   } 
+ 
+   accessorElementId OBJECT-TYPE  
+     SYNTAX        InstanceId 
+     STATUS        current  
+     DESCRIPTION  
+          "An arbitrary integer index that uniquely identifies an  
+          instance of the accessorElementTable class."   
+ 
+        ::= { accessorElementEntry 1} 
+      
+   accessorElementScope OBJECT-TYPE  
+     SYNTAX        TagReferenceId 
+     PIB-TAG       { accessorSessionScopeGroup } 
+     STATUS        current  
+     DESCRIPTION  
+          "Identifies a list of AccessorSessionScopeTable instances  
+          associated with an instance of this class. This list  
+          defines the criteria for partitioning various portions of  
+          traffic into distinct sessions."  
+         
+        ::= { accessorElementEntry 2} 
+ 
+   accessorElementInterimFwdBehavior OBJECT-TYPE  
+     SYNTAX INTEGER { 
+                       DROP (0), 
+                       FORWARD (1), 
+                       QUEUE (2) 
+                     } 
+     STATUS        current  
+     DESCRIPTION  
+          "The forwarding behavior to use while awaiting a PDP  
+          Access Response message."  
+ 
+        ::= { accessorElementEntry 3} 
+ 
+   accessorElementDefaultSessionDataPath OBJECT-TYPE  
+     SYNTAX        Prid 
+     STATUS        current  
+     DESCRIPTION  
+          "The default data path for each session while waiting for 
+a  
+          PDP Access Response message."  
+
+ 
+        ::= { accessorElementEntry 4} 
+ 
+-- 
+-- AccessorSessionScope Table 
+-- 
+ 
+   accessorSessionScopeTable OBJECT-TYPE   
+     SYNTAX          SEQUENCE OF AccessorSessionScopeEntry 
+     PIB-ACCESS      install   
+     STATUS          current   
+     DESCRIPTION   
+           "This class defines the criteria to be used for  
+           partitioning various portions of traffic into distinct  
+           sessions."  
+ 
+     ::= { accessorClasses 3 }   
+ 
+   accessorSessionScopeEntry OBJECT-TYPE   
+     SYNTAX  AccessorSessionScopeEntry 
+     STATUS  current   
+     DESCRIPTION   
+          "An instance of this class defines an individual criterion  
+          to be used towards generating an access request."   
+     PIB-INDEX { accessorSessionScopeId } 
+     UNIQUENESS { accessorSessionScopeGroup, 
+                  accessorSessionScopeScopeRef 
+                } 
+ 
+     ::= { accessorSessionScopeTable 1}   
+ 
+   AccessorSessionScopeEntry::= SEQUENCE { 
+     accessorSessionScopeId         InstanceId, 
+     accessorSessionScopeGroup      TagId, 
+     accessorSessionScopeFilter     Prid, 
+     accessorSessionScopePrecedence INTEGER 
+   } 
+ 
+   accessorSessionScopeId    OBJECT-TYPE  
+     SYNTAX        InstanceId 
+     STATUS        current  
+     DESCRIPTION  
+          "An arbitrary integer index that uniquely identifies an  
+          instance of the accessorSessionScopeTable class."  
+ 
+        ::= { accessorSessionScopeEntry 1} 
+ 
+   accessorSessionScopeGroup  OBJECT-TYPE  
+     SYNTAX        TagId 
+     STATUS        current  
+     DESCRIPTION  
+          "Represents the binding between the accessorElementTable  
+           and the accessorSessionScope entries. A group of  
+
+           accessorSessionScope entries constitutes the criteria for  
+           partitioning various portions of traffic into distinct  
+           sessions."  
+ 
+        ::= { accessorSessionScopeEntry 2} 
+     
+   accessorSessionScopeFilter   OBJECT-TYPE  
+     SYNTAX        Prid 
+     STATUS        current  
+     DESCRIPTION  
+          "Pointer to a filter to be used as the criteria."  
+        ::= { accessorSessionScopeEntry 3} 
+ 
+   accessorSessionScopePrecedence OBJECT-TYPE  
+     SYNTAX        INTEGER 
+     STATUS        current  
+     DESCRIPTION  
+          "Represents the precedence of this criterion with respect  
+          to other criteria within the same group. When the  
+          precedence is unique, the instance represents an  
+          alternative criteria (an ORing function). When the  
+          precedence for two or more instances of the  
+          accessorSessionScope class is the same, the attributes  
+          within all the instances are treated collectively as a  
+          single filter criteria."  
+ 
+        ::= { accessorSessionScopeEntry 4} 
+ 
+ 
+   --  
+   -- AccessorAuthProtocol Table 
+   -- 
+ 
+ 
+
+ 
+   accessorAuthProtocolTable OBJECT-TYPE   
+     SYNTAX          SEQUENCE OF AccessorAuthProtocolEntry 
+     PIB-ACCESS      install   
+     STATUS          current   
+     DESCRIPTION   
+           "This class lists the authentication protocols that can  
+           be used for an access request originating from a  
+           particular instance of the accessorTable."  
+ 
+     ::= { accessorClasses 4 }   
+ 
+   accessorAuthProtocolEntry OBJECT-TYPE   
+     SYNTAX  AccessorAuthProtocolEntry 
+     STATUS  current   
+     DESCRIPTION   
+          "An instance of this class describes an authentication  
+          protocol that may be used for an access request. Instances  
+
+          of this class that share the same TagId value collectively  
+          constitute a list of authentication protocols that may be  
+          used for a given access request"   
+     PIB-INDEX { accessorAuthProtocolId } 
+     UNIQUENESS { accessorAuthProtocolGroup, 
+                  accessorAuthProtocolAuthMechanism 
+                } 
+  
+     ::= { accessorAuthProtocolTable 1}   
+ 
+   AccessorAuthProtocolEntry::= SEQUENCE { 
+     accessorAuthProtocolId          InstanceId, 
+     accessorAuthProtocolGroup       TagId, 
+     accessorAuthProtocolAuthMechanism INTEGER 
+   } 
+ 
+   accessorAuthProtocolId    OBJECT-TYPE  
+     SYNTAX        InstanceId 
+     STATUS        current  
+     DESCRIPTION  
+          "An arbitrary integer index that uniquely identifies an  
+          instance of the ContextDataTable class."  
+    
+     ::= { accessorAuthProtocolEntry 1} 
+      
+   accessorAuthProtocolGroup OBJECT-TYPE  
+     SYNTAX        TagId 
+     STATUS        current  
+     DESCRIPTION  
+          "Represents a binding between an accessorTable instance  
+          and a list of accessorAuthProtocolTable instances."  
+         
+     ::= { accessorAuthProtocolEntry 2} 
+ 
+   accessorAuthProtocolAuthMechanism OBJECT-TYPE  
+     SYNTAX        INTEGER { 
+                               PAP (0), 
+                               CHAP (1), 
+                               EAP-MD5(2), 
+                               EAP-TLS(3) 
+                             } 
+     STATUS        current  
+     DESCRIPTION  
+          "The authentication protocol that may be used for an  
+          access request."  
+        ::= { accessorAuthProtocolEntry 3} 
+ 
+ 
+ 
+ 
+   --  
+   -- ContextData Table 
+   --  
+
+ 
+contextDataTable OBJECT-TYPE   
+     SYNTAX          SEQUENCE OF ContextDataEntry 
+     PIB-ACCESS      install   
+     STATUS          current   
+     DESCRIPTION   
+           "This class points to the context information to be  
+           included with an access request."  
+ 
+     ::= { contextClasses 1 }   
+ 
+  contextDataEntry OBJECT-TYPE   
+     SYNTAX  ContextDataEntry 
+     STATUS  current   
+     DESCRIPTION   
+          "An instance of this class contains the type description  
+          (COPS-PR OID) of the class which needs to be filled in by  
+          the PEP and included with a PEP access request."   
+     PIB-INDEX { contextDataId } 
+     UNIQUENESS { } 
+  
+     ::= { contextDataTable 1}   
+ 
+   ContextDataEntry::= SEQUENCE { 
+     contextDataId            InstanceId, 
+     contextDataGroup         TagId, 
+     contextDataSessionRef    ReferenceId, 
+     contextDataIfElement     PrcIdentifier, 
+     contextDataEncapsulation INTEGER 
+   } 
+ 
+   contextDataId     OBJECT-TYPE  
+     SYNTAX        InstanceId 
+     STATUS        current  
+     DESCRIPTION  
+          "An arbitrary integer index that uniquely identifies an   
+          instance of the contextDataTable class."  
+ 
+        ::= { contextDataEntry 1} 
+      
+   contextDataGroup  OBJECT-TYPE  
+     SYNTAX        TagId 
+     STATUS        current  
+     DESCRIPTION  
+          "Defines the grouping of contextData instances  
+          that are applicable to a given Accessor. This attribute  
+          MUST NOT be specified when the instance is used in  
+          Session-specific contextData Request message."  
+ 
+        ::= { contextDataEntry 2} 
+      
+   contextDataSessionRef     OBJECT-TYPE  
+     SYNTAX        ReferenceId 
+
+     PIB-REFERENCES { sessionEntry } 
+     STATUS        current  
+     DESCRIPTION  
+          "This attribute is used to specify the Session for which  
+           the ContextData is being requested with a Session- 
+           specific ContextData Request. This attribute MUST NOT be  
+           specified when the instance of the ContextData class is  
+           used in an Accessor Provisioning Decision message." 
+ 
+        ::= { contextDataEntry 3} 
+ 
+   contextDataIfElement      OBJECT-TYPE  
+     SYNTAX        PrcIdentifier 
+     STATUS        current  
+     DESCRIPTION  
+          "The OID of a class whose instance is to be included with  
+          the PEP access request or Session-specific ContextData  
+          Response."  
+ 
+        ::= { contextDataEntry 4} 
+ 
+   contextDataEncapsulation OBJECT-TYPE  
+     SYNTAX        INTEGER 
+     STATUS        current  
+     DESCRIPTION  
+          "This attribute allows one to distinguish between inner  
+           and outer headers when there are multiple encapsulated  
+           headers of the same type in a packet.  
+ 
+           A value of: 
+           0 means all headers, 
+           positive number Ên∆ means the Ên∆th header starting  
+           from the outermost, 
+           negative number Ên∆ means the Ên∆th header starting from  
+           the innermost."  
+ 
+        ::= { contextDataEntry 5} 
+ 
+ 
+ 
+   -- 
+   -- Layer 3 Header Data PRC 
+   -- 
+ 
+   ctxtL3HdrTable OBJECT-TYPE  
+       SYNTAX         SEQUENCE OF ctxtL3HdrEntry  
+       PIB-ACCESS     notify   
+       STATUS         current  
+       DESCRIPTION  
+           "An instance of this class is created by the PEP and sent   
+            to the PDP to provide the PDP with information it  
+            requested in the ContextData PRC. The PDP uses  
+            this PRC to make Authentication/Provisioning decisions."  
+
+     
+       ::= { contextClasses 2 }  
+     
+   ctxtL3HdrEntry OBJECT-TYPE  
+       SYNTAX         CtxtL3HdrEntry 
+       STATUS         current  
+       DESCRIPTION  
+           "An instance of the ctxtL3HdrTable PRC."  
+     
+       PIB-INDEX { ctxtL3HdrId }  
+       UNIQUENESS { }   
+     
+       ::= { ctxtL3HdrTable 1 }  
+     
+   CtxtL3HdrEntry::= SEQUENCE {  
+           ctxtL3HdrId               InstanceId,  
+           ctxtL3HdrSrcAddrType        InetAddressType,  
+           ctxtL3HdrSrcAddr            InetAddress,  
+           ctxtL3HdrDstAddrType        InetAddressType,  
+           ctxtL3HdrDstAddr            InetAddress,  
+           ctxtL3HdrProtocol           Unsigned32,  
+           ctxtL3HdrSrcPort            Unsigned32,  
+           ctxtL3HdrDstPort            Unsigned32,  
+           ctxtL3HdrDscp               Unsigned32,  
+           ctxtL3HdrEcn                TruthValue,  
+           ctxtL3HdrIpOpt              TruthValue,  
+           ctxtL3HdrEncap              Integer32 
+   }  
+  
+   ctxtL3HdrId  OBJECT-TYPE  
+       SYNTAX         InstanceId  
+       STATUS         current  
+       DESCRIPTION  
+           "An index to uniquely identify an instance of this  
+           provisioning class."  
+     
+       ::= { ctxtL3HdrEntry 1 }  
+     
+   ctxtL3HdrSrcAddrType OBJECT-TYPE  
+       SYNTAX         InetAddressType 
+       STATUS         current  
+       DESCRIPTION  
+           "The address type enumeration value [INETADDR] to specify   
+            the type of the packet's source L3 address)." 
+     
+       ::= { ctxtL3HdrEntry 2 }  
+     
+   ctxtL3HdrSrcAddr OBJECT-TYPE  
+       SYNTAX         InetAddress  
+       STATUS         current  
+       DESCRIPTION  
+           " The packet's source L3 address."  
+     
+
+       ::= { ctxtL3HdrEntry 3 }  
+     
+   ctxtL3HdrDstAddrType OBJECT-TYPE  
+       SYNTAX         InetAddressType 
+       STATUS         current  
+       DESCRIPTION  
+           "The address type enumeration value [INETADDR] to specify   
+            the type of the packet's destination L3 address."  
+     
+       ::= { ctxtL3HdrEntry 4 }  
+   
+     
+   ctxtL3HdrDstAddr OBJECT-TYPE  
+       SYNTAX         InetAddress  
+       STATUS         current  
+       DESCRIPTION  
+           "The packet's destination L3 address."  
+     
+       ::= { ctxtL3HdrEntry 5 }  
+     
+     
+   ctxtL3HdrProtocol OBJECT-TYPE  
+       SYNTAX         Unsigned32 
+       STATUS         current  
+       DESCRIPTION  
+           "The packet's protocol field."  
+     
+       ::= { ctxtL3HdrEntry 6 }  
+  
+   ctxtL3HdrSrcPort  OBJECT-TYPE  
+       SYNTAX         Unsigned32 
+       STATUS         current  
+       DESCRIPTION  
+           "This attribute binds an existing upstream session to  
+           this session instance."  
+     
+       ::= { ctxtL3HdrEntry 7 } 
+ 
+   ctxtL3HdrDstPort  OBJECT-TYPE  
+       SYNTAX         Unsigned32 
+       STATUS         current  
+       DESCRIPTION  
+           "This attribute binds an existing upstream session to  
+           this session instance."  
+     
+       ::= { ctxtL3HdrEntry 8 } 
+ 
+   ctxtL3HdrDscp  OBJECT-TYPE  
+       SYNTAX         Unsigned32 
+       STATUS         current  
+       DESCRIPTION  
+           "."  
+     
+
+       ::= { ctxtL3HdrEntry 9 } 
+ 
+   ctxtL3HdrEcn  OBJECT-TYPE  
+       SYNTAX         TruthValue  
+       STATUS         current  
+       DESCRIPTION  
+           "PEP sets this attribute to true(1) if ECN capable."  
+     
+       ::= { ctxtL3HdrEntry 10 } 
+ 
+   ctxtL3HdrIpOpt  OBJECT-TYPE  
+       SYNTAX         OCTET STRING  
+       STATUS         current  
+       DESCRIPTION  
+           "IP Options field in the packet."  
+     
+       ::= { ctxtL3HdrEntry 11 } 
+ 
+   ctxtL3HdrEncap  OBJECT-TYPE  
+       SYNTAX         Integer32  
+       STATUS         current  
+       DESCRIPTION  
+           "This attribute specifies which encapsulated header is  
+           being described. The sign on this value will be the same   
+           as the value specified in the ContextData  
+           instance that requested this header. If the original  
+           ContextData instance specified a  
+           ContextDataEncapsulation value of zero (meaning  
+           return all headers), then all instances of this attribute  
+           MUST be expressed as positive numbers.  
+ 
+           A value of: 
+         
+           positive number Ên∆ means the Ên∆th header starting  
+           from the outermost, 
+           negative number Ên∆ means the Ên∆th header starting from  
+           the innermost."  
+     
+       ::= { ctxtL3HdrEntry 12 } 
+ 
+ 
+-- 
+-- 802.1 Header Data PRC 
+-- 
+ 
+ctxt802HdrTable OBJECT-TYPE  
+       SYNTAX         SEQUENCE OF Ctxt802HdrEntry  
+       PIB-ACCESS     notify   
+       STATUS         current  
+       DESCRIPTION  
+           "An instance of this class is created by the PEP and sent   
+            to the PDP to provide the PDP with information it  
+            requested in the ContextData PRC. The PDP uses  
+
+            this PRC to make Authorization/Provisioning decisions."  
+     
+       ::= { contextClasses 3 }  
+     
+   ctxt802HdrEntry OBJECT-TYPE  
+       SYNTAX         Ctxt802HdrEntry 
+       STATUS         current  
+       DESCRIPTION  
+           "An instance of the ctxt802HdrTable PRC."  
+     
+       PIB-INDEX { ctxt802HdrId }  
+       UNIQUENESS { }   
+     
+       ::= { ctxt802HdrTable 1 }  
+     
+   Ctxt802HdrEntry::= SEQUENCE {  
+           ctxt802HdrId               InstanceId,  
+           ctxt802HdrSrcAddr          PhysAddress,  
+           ctxt802HdrDstAddr          PhysAddress,  
+           ctxt802HdrProtocol         Unsigned32,  
+           ctxt802HdrPriority         BITS,  
+           ctxt802HdrVlan             Unsigned32,  
+           ctxt802HdrEncap            Integer32 
+   }  
+  
+   ctxt802HdrId  OBJECT-TYPE  
+       SYNTAX         InstanceId  
+       STATUS         current  
+       DESCRIPTION  
+           "An index to uniquely identify an instance of this  
+           provisioning class."  
+     
+       ::= { ctxt802HdrEntry 1 }  
+     
+     
+   ctxt802HdrSrcAddr OBJECT-TYPE  
+       SYNTAX         PhysAddress  
+       STATUS         current  
+       DESCRIPTION  
+           " The packet's source MAC address."  
+     
+       ::= { ctxt802HdrEntry 2 }    
+     
+   ctxt802HdrDstAddr OBJECT-TYPE  
+       SYNTAX         PhysAddress 
+       STATUS         current  
+       DESCRIPTION  
+           "The packet's destination MAC address."  
+     
+       ::= { ctxt802HdrEntry 3 }  
+     
+     
+   ctxt802HdrProtocol OBJECT-TYPE  
+
+       SYNTAX         Unsigned32 (0..'ffff'h) 
+       STATUS         current  
+       DESCRIPTION  
+           "The L2 packet's protocol field."  
+     
+       ::= { ctxt802HdrEntry 4 }  
+ 
+ 
+   ctxt802HdrPriority OBJECT-TYPE  
+       SYNTAX         Unsigned32 (0..7) 
+       STATUS         current  
+       DESCRIPTION  
+           "The L2 packet's priority field. This attribute is only    
+           valid for packets using the 802.1q header extension."  
+     
+       ::= { ctxt802HdrEntry 5 }  
+ 
+   ctxt802HdrVlan OBJECT-TYPE  
+       SYNTAX         Unsigned32 (1..4094) 
+       STATUS         current  
+       DESCRIPTION  
+           "The L2 packet's VLAN field. This attribute is only valid  
+           for packets using the 802.1q header extension."  
+     
+       ::= { ctxt802HdrEntry 6 }  
+ 
+   ctxt802HdrEncap OBJECT-TYPE  
+       SYNTAX         Integer32 
+       STATUS         current  
+       DESCRIPTION  
+           "This attribute specifies which encapsulated header is  
+           being described. The sign on this value will be the same  
+           as the value specified in the ContextData  
+           instance that requested this header. If the original  
+           ContextData instance specified an  
+           ContextDataEncapsulation value of zero (meaning  
+           return all headers), then all instances of this attribute  
+           MUST be expressed as positive numbers.  
+ 
+           A value of: 
+           positive number Ên∆ means the Ên∆th header starting  
+           from the outermost, 
+           negative number Ên∆ means the Ên∆th header starting from  
+           the innermost."  
+     
+       ::= { ctxt802HdrEntry 7 } 
+ 
+ 
+   --  
+   -- CtxtDialupInterface Table  
+   --  
+ 
+   ctxtDialupInterfaceTable OBJECT-TYPE  
+
+       SYNTAX         SEQUENCE OF CtxtDialupInterfaceEntry 
+       PIB-ACCESS     notify   
+       STATUS         current  
+       DESCRIPTION  
+           "."  
+     
+       ::= { contextClasses 4 }  
+     
+   ctxtDialupInterfaceEntry OBJECT-TYPE  
+       SYNTAX         CtxtDialupInterfaceEntry 
+       STATUS         current  
+       DESCRIPTION  
+           "Entry oid of the ctxtDialupInterfaceTable PRC."  
+     
+       PIB-INDEX { ctxtDialupInterfaceId }  
+       UNIQUENESS { }   
+     
+       ::= { ctxtDialupInterfaceTable 1 }  
+     
+   CtxtDialupInterfaceEntry::= SEQUENCE {  
+           ctxtDialupInterfaceId                InstanceId,  
+           ctxtDialupInterfaceNASPort           Integer32,  
+           ctxtDialupInterfaceNASPortId         OCTET STRING,  
+           ctxtDialupInterfaceNASPortType       INTEGER,  
+           ctxtDialupInterfaceCalledStationId   OCTET STRING,  
+           ctxtDialupInterfaceCallingStationId  OCTET STRING,  
+           ctxtDialupInterfaceConnectInfo       OCTET STRING           
+   }  
+  
+   ctxtDialupInterfaceId  OBJECT-TYPE  
+       SYNTAX         InstanceId  
+       STATUS         current  
+       DESCRIPTION  
+           "An index to uniquely identify an instance of this  
+           provisioning class."  
+     
+       ::= { ctxtDialupInterfaceEntry 1 }  
+     
+     
+   ctxtDialupInterfaceNASPort  OBJECT-TYPE  
+       SYNTAX         Integer32 
+       STATUS         current  
+       DESCRIPTION  
+           "This Attribute indicates the physical port number of the 
+           NAS which is authenticating the user.  It is only used in 
+           Access-Request packets.  Note that this is using 'port' 
+           in its sense of a physical connection on the NAS, not in 
+           the sense of a TCP or UDP port number." 
+     
+       ::= { ctxtDialupInterfaceEntry 2 }  
+ 
+ 
+   ctxtDialupInterfaceNASPortId  OBJECT-TYPE  
+
+       SYNTAX         OCTET STRING 
+       STATUS         current  
+       DESCRIPTION  
+           "This Attribute contains a text string which identifies 
+           the port of the NAS which is authenticating the user. It 
+           is only used in Access-Request and Accounting-Request 
+           packets.  Note that this is using 'port' in its sense of 
+           a physical connection on the NAS, not in the sense of a 
+           TCP or UDP port number. " 
+     
+       ::= { ctxtDialupInterfaceEntry 2 }  
+ 
+   ctxtDialupInterfaceNASPortType  OBJECT-TYPE  
+ SYNTAX  INTEGER { 
+                        radAsync(0), 
+                        radSync(1), 
+                        radIsdnSync(2), 
+                        radIsdnAsyncV120(3), 
+                        radIsdnAsyncV110(4), 
+                        radVirtual(5), 
+                        radPIAFS(6), 
+                        radHdlcClearChannel(7), 
+                        radX25(8), 
+                        radX75(9), 
+                        radG3Fax(10), 
+                        radSDSL(11), 
+                        radAdslCAP(12), 
+                        radAdslDMT(13), 
+                        radIdsl(14), 
+                        radEthernet(15), 
+                        radXdsl(16), 
+                        radCable(17), 
+                        radWirelessOther(18), 
+                        radWirelessIEEE80211(19) 
+                } 
+       STATUS         current  
+       DESCRIPTION  
+           "This Attribute indicates the type of the physical port 
+           of the NAS which is authenticating the user.  It can be 
+           used instead of or in addition to the radNasPort (5) 
+           attribute.  It is only used in Access-Request packets. 
+           Either radNasPort (5) or radNasPortType or both SHOULD be 
+           present in an Access-Request packet, if the NAS 
+           differentiates among its ports. 
+ 
+                A value of 'radAsync(0)' indicates Async. 
+ 
+                A value of 'radSync(1)' indicates Sync. 
+ 
+                A value of 'radIsdnSync(2)' indicates ISDN Sync. 
+ 
+                A value of 'radIsdnAsyncV120(3)' indicates ISDN 
+                Async V.120. 
+
+ 
+                A value of 'radIsdnAsyncV110(4)' indicates ISDN 
+                Async V.110. 
+ 
+                A value of 'radVirtual(5)' indicates Virtual. 
+                Virtual refers to a connection to the NAS via some 
+                transport protocol, instead of through a physical 
+                port. For example, if a user telnetted into a NAS to 
+                authenticate himself as an Outbound-User, the 
+                Access-Request might include radNasPortType = 
+                Virtual as a hint to the RADIUS server that the user 
+                was not on a physical port. 
+ 
+                A value of 'radPIAFS(6)' indicates PIAFS. PIAFS is a 
+                form of wireless ISDN commonly used in Japan, and 
+                stands for PHS (Personal Handyphone System) Internet 
+                Access Forum Standard (PIAFS). 
+ 
+                A value of 'radHdlcClearChannel(7)' indicates HDLC 
+                Clear Channel. 
+ 
+                A value of 'radX25(8)' indicates X.25. 
+ 
+                A value of 'radX75(9)' indicates X.75. 
+ 
+                A value of 'radG3Fax(10)' indicates G.3 Fax. 
+ 
+                A value of 'radSDSL(11)' indicates SDSL ˚ Symmetric 
+                DSL. 
+ 
+                A value of 'radAdslCAP(12)' indicates ADSL-CAP - 
+                Asymmetric DSL, Carrierless Amplitude Phase 
+                Modulation. 
+ 
+                A value of 'radAdslDMT(13)' indicates ADSL-DMT - 
+                Asymmetric DSL, Discrete Multi-Tone. 
+ 
+                A value of 'radIdsl(14)' indicates IDSL ˚ ISDN 
+                Digital Subscriber Line. 
+ 
+                A value of 'radEthernet(15)' indicates Ethernet. 
+ 
+                A value of 'radXdsl(16)' indicates xDSL - Digital 
+                Subscriber Line of unknown type. 
+ 
+                A value of 'radCable(17)' indicates Cable. 
+ 
+                A value of 'radWirelessOther(18)' indicates Wireless 
+                - Other. 
+ 
+                A value of 'radWirelessIEEE80211(19)' indicates 
+                Wireless - IEEE 802.11." 
+       ::= { ctxtDialupInterfaceEntry 2 }  
+
+ 
+   ctxtDialupInterfaceCalledStationId  OBJECT-TYPE  
+       SYNTAX         OCTET STRING 
+       STATUS         current  
+       DESCRIPTION  
+           "This Attribute allows the NAS to send in the Access- 
+           Request packet the phone number that the user called, 
+           using Dialed Number Identification (DNIS) or similar 
+           technology.  Note that this may be different from the 
+           phone number the call comes in on.  It is only used in 
+           Access-Request packets. " 
+       ::= { ctxtDialupInterfaceEntry 2 }  
+ 
+   ctxtDialupInterfaceConnectInfo  OBJECT-TYPE  
+       SYNTAX         OCTET STRING 
+       STATUS         current  
+       DESCRIPTION  
+           "This Attribute allows the NAS to send in the Access- 
+           Request packet the phone number that the call came from, 
+           using Automatic Number Identification (ANI) or similar 
+           technology.  It is only used in Access-Request packets." 
+       ::= { ctxtDialupInterfaceEntry 2 }  
+ 
+ 
+ 
+ 
+   --- 
+   --- CtxtDialupInterfaceFramedProtocol Table 
+   --- 
+ 
+   ctxtDialupIfFramedProtocolTable OBJECT-TYPE  
+       SYNTAX         SEQUENCE OF CtxtDialupIfFramedProtocolEntry 
+       PIB-ACCESS     notify   
+       STATUS         current  
+       DESCRIPTION  
+           "."  
+     
+       ::= { contextClasses 5 }  
+     
+   ctxtDialupIfFramedProtocolEntry OBJECT-TYPE  
+       SYNTAX         CtxtDialupIfFramedProtocolEntry 
+       STATUS         current  
+       DESCRIPTION  
+           "Entry oid of the ctxtDialupIfFramedProtocolTable PRC."  
+     
+       PIB-INDEX { ctxtDialupIfFramedProtocolId }  
+       UNIQUENESS { }   
+     
+       ::= { ctxtDialupIfFramedProtocolTable 1 }  
+     
+   CtxtDialupInterfaceEntry::= SEQUENCE {  
+           ctxtDialupIfFramedProtocolId           InstanceId,  
+           ctxtDialupIfFramedProtocolProt         INTEGER,  
+
+           ctxtDialupIfFramedProtocolMTU          Integer32,  
+           ctxtDialupIfFramedProtocolCompression  INTEGER,  
+           ctxtDialupIfFramedProtocolPortLimit    Unsigned32,  
+           ctxtDialupIfFramedProtocolIpAddress    IpAddress,  
+           ctxtDialupIfFramedProtocolIpNetmask    IpAddress 
+   }  
+  
+   ctxtDialupIfFramedProtocolId OBJECT-TYPE  
+       SYNTAX         InstanceId  
+       STATUS         current  
+       DESCRIPTION  
+           "An index to uniquely identify an instance of this  
+           provisioning class."  
+     
+       ::= { ctxtDialupIfFramedProtocolEntry 1 }  
+     
+     
+   ctxtDialupIfFramedProtocolProt  OBJECT-TYPE  
+       SYNTAX  INTEGER { 
+                        radPPP(1), 
+                        radSLIP(2), 
+                        radARAP(3), 
+                        radGandalf(4), 
+                        radXylogics(5), 
+                        radX75Synchronous(6) 
+                } 
+       STATUS         current  
+       DESCRIPTION  
+           "This Attribute indicates the framing to be used for 
+           framed access. It MAY be used in both Access-Request and 
+           Access-Accept packets. 
+ 
+                A value of 'radPPP(1)' represents PPP. 
+ 
+                A value of 'radSLIP(2)' represents SLIP. 
+ 
+                A value of 'radARAP(3)' represents AppleTalk Remote 
+                Access Protocol (ARAP). 
+ 
+                A value of 'radGandalf(4)' represents Gandalf 
+                proprietary SingleLink/MultiLink protocol. 
+ 
+                A value of 'radXylogics(5)' represents Xylogics 
+                proprietary IPX/SLIP. 
+ 
+                A value of 'radX75Synchronous(6)' represents X.75 
+                Synchronous." 
+     
+       ::= { ctxtDialupIfFramedProtocolEntry 2 }  
+ 
+ 
+   ctxtDialupIfFramedProtocolMTU  OBJECT-TYPE  
+       SYNTAX         Integer32 
+
+       STATUS         current  
+       DESCRIPTION  
+           "This Attribute indicates the Maximum Transmission Unit 
+           to be configured for the user, when it is not negotiated 
+           by some other means (such as PPP).  It MAY be used in 
+           Access-Accept packets.  It MAY be used in an Access- 
+           Request packet as a hint by the NAS to the server that it 
+           would prefer that value, but the server is not required 
+           to honor the hint." 
+     
+       ::= { ctxtDialupIfFramedProtocolEntry 3 }  
+ 
+   ctxtDialupIfFramedProtocolCompression  OBJECT-TYPE  
+        SYNTAX  INTEGER { 
+                        radNone(0), 
+                        radVJ(1), 
+                        radIPXheader(2), 
+                        radStacLZS(3) 
+                } 
+       STATUS         current  
+       DESCRIPTION  
+           "This Attribute indicates a compression protocol to be 
+           used for the link.  It MAY be used in Access-Accept 
+           packets.  It MAY be used in an Access-Request packet as a 
+           hint to the server that the NAS would prefer to use that 
+           compression, but the server is not required to honor the 
+           hint. 
+ 
+           More than one compression protocol Attribute MAY be sent. 
+           It is the responsibility of the NAS to apply the proper 
+           compression protocol to appropriate link traffic. 
+ 
+                A value of 'radNone(0)' indicates None. 
+ 
+                A value of 'radVJ(1)' indicates VJ TCP/IP header 
+                compression. 
+ 
+                A value of 'radIPXheader(2)' indicates IPX header 
+                compression. 
+ 
+                A value of 'radStacLZS(3)' indicates Stac-LZS 
+                compression." 
+     
+       ::= { ctxtDialupIfFramedProtocolEntry 4 }  
+ 
+ 
+   ctxtDialupIfFramedProtocolPortLimit  OBJECT-TYPE  
+       SYNTAX         Integer32 
+       STATUS         current  
+       DESCRIPTION  
+           "This Attribute sets the maximum number of ports to be 
+           provided to the user by the NAS.  This Attribute MAY be 
+           sent by the server to the client in an Access-Accept 
+
+           packet.  It is intended for use in conjunction with 
+           Multilink PPP [10] or similar uses.  It MAY also be sent 
+           by the NAS to the server as a hint that that many ports 
+           are desired for use, but the server is not required to 
+           honor the hint." 
+     
+       ::= { ctxtDialupIfFramedProtocolEntry 5 }  
+ 
+   ctxtDialupIfFramedProtocolIpAddress  OBJECT-TYPE  
+       SYNTAX         IpAddress 
+       STATUS         current  
+       DESCRIPTION  
+           "This Attribute indicates the address to be configured 
+           for the user.  It MAY be used in Access-Accept packets. 
+           It MAY be used in an Access-Request packet as a hint by 
+           the NAS to the server that it would prefer that address, 
+           but the server is not required to honor the hint." 
+     
+       ::= { ctxtDialupIfFramedProtocolEntry 6 } 
+ 
+ 
+   ctxtDialupIfFramedProtocolIpNetmask  OBJECT-TYPE  
+       SYNTAX         IpAddress 
+       STATUS         current  
+       DESCRIPTION  
+           "This Attribute indicates the IP netmask to be configured 
+           for the user when the user is a router to a network.  It 
+           MAY be used in Access-Accept packets.  It MAY be used in 
+           an Access-Request packet as a hint by the NAS to the 
+           server that it would prefer that netmask, but the server 
+           is not required to honor the hint." 
+     
+       ::= { ctxtDialupIfFramedProtocolEntry 7 } 
+ 
+ 
+    
+    
+   --- 
+   --- CtxtDialupIfLoginService Table 
+   --- 
+ 
+   ctxtDialupIfLoginServiceTable OBJECT-TYPE  
+       SYNTAX         SEQUENCE OF CtxtDialupIfLoginServiceEntry 
+       PIB-ACCESS     notify   
+       STATUS         current  
+       DESCRIPTION  
+           "Base class."  
+     
+       ::= { contextClasses 6 }  
+     
+   ctxtDialupIfLoginServiceEntry OBJECT-TYPE  
+       SYNTAX         CtxtDialupIfLoginServiceEntry 
+       STATUS         current  
+
+       DESCRIPTION  
+           "Entry oid of the ctxtDialupIfLoginServiceTable PRC."  
+     
+       PIB-INDEX { ctxtDialupIfLoginServiceId }  
+       UNIQUENESS { }   
+     
+       ::= { ctxtDialupIfLoginServiceTable 1 }  
+     
+ 
+ 
+   CtxtDialupIfLoginServiceEntry::= SEQUENCE {  
+           ctxtDialupIfLoginServiceId       InstanceId,  
+           ctxtDialupIfLoginIpHost          IpAddress 
+   }  
+  
+   ctxtDialupIfLoginServiceId OBJECT-TYPE  
+       SYNTAX         InstanceId  
+       STATUS         current  
+       DESCRIPTION  
+           "An index to uniquely identify an instance of this  
+           provisioning class."  
+     
+       ::= { ctxtDialupIfLoginServiceEntry 1 }  
+     
+     
+   ctxtDialupIfLoginIpHost OBJECT-TYPE  
+       SYNTAX         IpAddress 
+       STATUS         current  
+       DESCRIPTION  
+           "." 
+     
+       ::= { ctxtDialupIfLoginServiceEntry 2 }  
+ 
+    
+    
+   --- 
+   --- CtxtDialupIfLoginLat Table (Extends CtxtDialupIfLoginService) 
+   --- 
+ 
+   ctxtDialupIfLoginLatTable OBJECT-TYPE  
+       SYNTAX         SEQUENCE OF CtxtDialupIfLoginLatEntry 
+       PIB-ACCESS     notify   
+       STATUS         current  
+       DESCRIPTION  
+           "Extended class."  
+     
+       ::= { contextClasses 7 }  
+     
+   ctxtDialupIfLoginLatEntry OBJECT-TYPE  
+       SYNTAX         CtxtDialupIfLoginLatEntry 
+       STATUS         current  
+       DESCRIPTION  
+           "Entry oid of the ctxtDialupIfLoginLatTable PRC."  
+
+     
+          EXTENDS { ctxtDialupIfLoginServiceEntry } 
+       UNIQUENESS { }   
+     
+       ::= { ctxtDialupIfLoginLatTable 1 }  
+     
+ 
+   CtxtDialupIfLoginLatEntry::= SEQUENCE {  
+           ctxtDialupIfLoginLatService   OCTET STRING, 
+           ctxtDialupIfLoginLatNode      OCTET STRING, 
+           ctxtDialupIfLoginLatGroup     OCTET STRING, 
+           ctxtDialupIfLoginLatPort      OCTET STRING 
+   }  
+      
+     
+   ctxtDialupIfLoginLatService  OBJECT-TYPE  
+       SYNTAX         OCTET STRING 
+       STATUS         current  
+       DESCRIPTION  
+           "." 
+     
+       ::= { ctxtDialupIfLoginLatEntry 1 }  
+ 
+   ctxtDialupIfLoginLatNode  OBJECT-TYPE  
+       SYNTAX         OCTET STRING 
+       STATUS         current  
+       DESCRIPTION  
+           "." 
+     
+       ::= { ctxtDialupIfLoginLatEntry 2 }  
+ 
+   ctxtDialupIfLoginLatGroup  OBJECT-TYPE  
+       SYNTAX         OCTET STRING 
+       STATUS         current  
+       DESCRIPTION  
+           "." 
+     
+       ::= { ctxtDialupIfLoginLatEntry 3 }  
+ 
+   ctxtDialupIfLoginLatPort  OBJECT-TYPE  
+       SYNTAX         OCTET STRING 
+       STATUS         current  
+       DESCRIPTION  
+           "." 
+     
+       ::= { ctxtDialupIfLoginLatEntry 4 }  
+ 
+ 
+   --  
+   -- Authentication Extension Tables  
+   --  
+ 
+   --  
+
+   -- AuthExtensions Base Table  
+   --  
+ 
+   authExtTable OBJECT-TYPE  
+       SYNTAX         SEQUENCE OF AuthExtEntry  
+       PIB-ACCESS     install-notify   
+       STATUS         current  
+       DESCRIPTION  
+           "This is an abstract PRC. This PRC can be extended by  
+           authentication PRCs that contain attributes specific to  
+           that authentication protocol. An instance of the extended    
+           class is created by the PEP and sent to the PDP. The PDP  
+           may send information back to the PEP or may uses the  
+           information to authenticate the PEP's access request. This  
+           PRC itself should not be instantiated. 
+ 
+           This is a Êtransient∆ class. Its instances are temporary  
+           and are deleted by the PEP after a certain time/event.  
+           Thus it must not be referred to by the server."  
+     
+       ::= { authClasses 1 }  
+     
+   authExtEntry OBJECT-TYPE  
+       SYNTAX         AuthExtEntry 
+       STATUS         current  
+       DESCRIPTION  
+           "Entry oid for the AuthExtTable PRC."  
+     
+       PIB-INDEX { authExtId }  
+       UNIQUENESS { }   
+     
+       ::= { authExtTable 1 }  
+     
+   AuthExtEntry ::= SEQUENCE {  
+           authExtId                InstanceId,  
+           authExtSession           ReferenceId  
+   }  
+  
+   authExtId  OBJECT-TYPE  
+       SYNTAX         InstanceId  
+       STATUS         current  
+       DESCRIPTION  
+           "An index to uniquely identify an instance of the  
+            entended provisioning class."  
+     
+       ::= { authExtEntry 1 }  
+     
+   authExtSession  OBJECT-TYPE  
+       SYNTAX         ReferenceId 
+       PIB-REFERENCES { sessionEntry } 
+       STATUS         current  
+       DESCRIPTION  
+           "This attribute is set by the PEP to reference the  
+
+            session for which authentication is being requested." 
+     
+       ::= { authExtEntry 2 }  
+ 
+ 
+ 
+ 
+ 
+ 
+   --  
+   -- AuthChapExt Table 
+   --  
+ 
+   authChapExtTable OBJECT-TYPE  
+       SYNTAX         SEQUENCE OF AuthChapExtEntry 
+       PIB-ACCESS     notify   
+       STATUS         current  
+       DESCRIPTION  
+           "This is a concrete PRC used to contain CHAP  
+           authentication fields. This PRC extends the base PRC  
+           authExtEntry." 
+     
+       ::= { authClasses 2 }  
+     
+   authChapExtEntry OBJECT-TYPE  
+       SYNTAX         AuthChapExtEntry 
+       STATUS         current  
+       DESCRIPTION  
+           "Entry oid for the AuthChapExtTable PRC. InstanceId's for  
+            this extended PRC are assigned by the base PRC [SPPI]."  
+     
+       EXTENDS { authExtEntry }  
+       UNIQUENESS { }   
+     
+       ::= { authChapExtTable 1 }  
+     
+   AuthChapExtEntry::= SEQUENCE {  
+           authChapExtId        Unsigned32, 
+           authChapExtChal      OCTET STRING, 
+           authChapExtResp      OCTET STRING  
+   }  
+  
+   authChapExtId OBJECT-TYPE  
+       SYNTAX         Unsigned32 
+       STATUS         current  
+       DESCRIPTION  
+           "CHAP Id field."  
+     
+       ::= { authChapExtEntry 1 }  
+ 
+   authChapExtChal OBJECT-TYPE  
+       SYNTAX         OCTET STRING 
+       STATUS         current  
+
+       DESCRIPTION  
+           "CHAP Challenge octet string. The challenge is generated  
+           by the PEP."  
+     
+       ::= { authChapExtEntry 2 }  
+     
+   authChapExtResp OBJECT-TYPE  
+       SYNTAX         OCTET STRING 
+       STATUS         current  
+       DESCRIPTION  
+           "CHAP Challenge Response octet string. The challenge  
+           response is sent to the PDP along with the challenge." 
+     
+       ::= { authChapExtEntry 3 }  
+ 
+ 
+   --  
+   -- AuthPapExt Table 
+   --  
+ 
+   authPapExtTable OBJECT-TYPE  
+       SYNTAX         SEQUENCE OF AuthPapExtEntry 
+       PIB-ACCESS     notify   
+       STATUS         current  
+       DESCRIPTION  
+           "This is a concrete PRC used to contain PAP  
+           authentication fields. This PRC extends the base PRC  
+           authExtEntry." 
+     
+       ::= { authClasses 3 }  
+     
+   authPapExtEntry OBJECT-TYPE  
+       SYNTAX         AuthPapExtEntry 
+       STATUS         current  
+       DESCRIPTION  
+           "Entry oid for the AuthPapExtTable PRC. InstanceId's for  
+            this extended PRC are assigned by the base PRC [SPPI]."  
+     
+       EXTENDS { authExtEntry }  
+       UNIQUENESS { }   
+     
+       ::= { authPapExtTable 1 }  
+     
+   AuthPapExtEntry::= SEQUENCE {  
+           authPapExtPwd      OCTET STRING 
+   }  
+  
+   authPapExtPwd OBJECT-TYPE  
+       SYNTAX         OCTET STRING 
+       STATUS         current  
+       DESCRIPTION  
+           "PAP password octet string."  
+     
+
+       ::= { authPapExtEntry 1 }  
+     
+ 
+   --  
+   -- AuthEapReqExt Table 
+   --  
+ 
+   authEapReqExtTable OBJECT-TYPE  
+       SYNTAX         SEQUENCE OF AuthEapReqExtEntry 
+       PIB-ACCESS     notify   
+       STATUS         current  
+       DESCRIPTION  
+           "This is a concrete PRC used to contain EAP  
+           authentication fields. This PRC extends the base PRC  
+           authExtEntry. The PEP uses this PRC to send EAP messages  
+           to the PDP." 
+     
+       ::= { authClasses 4 }  
+     
+   authEapReqExtEntry OBJECT-TYPE  
+       SYNTAX         AuthEapReqExtEntry 
+       STATUS         current  
+       DESCRIPTION  
+           "Entry oid for the authEapReqExtTable PRC. InstanceId's  
+           for this extended PRC are assigned by the base PRC  
+           [SPPI]."  
+     
+       EXTENDS { authExtEntry }  
+       UNIQUENESS { }   
+     
+       ::= { authEapReqExtTable 1 }  
+     
+   AuthEapReqExtEntry::= SEQUENCE {  
+           authEapReqExtSpecific    OCTET STRING 
+   }  
+  
+   authEapReqExtSpecific OBJECT-TYPE  
+       SYNTAX         OCTET STRING 
+       STATUS         current  
+       DESCRIPTION  
+           "Opaque EAP Request octet string."  
+     
+       ::= { authEapReqExtEntry 1 }  
+     
+ 
+   --  
+   -- AuthEapRespExt Table 
+   --  
+ 
+   authEapRespExtTable OBJECT-TYPE  
+       SYNTAX         SEQUENCE OF AuthEapRespExtEntry 
+       PIB-ACCESS     install   
+       STATUS         current  
+
+       DESCRIPTION  
+           "This is a concrete PRC used to contain EAP  
+           authentication fields. This PRC extends the base PRC  
+           authExtEntry. The PDP responds using this PRC for EAP  
+           exchanges." 
+     
+       ::= { authClasses 5 }  
+     
+   authEapRespExtEntry OBJECT-TYPE  
+       SYNTAX         AuthEapRespExtEntry 
+       STATUS         current  
+       DESCRIPTION  
+           "Entry oid for the authEapRespExtTable PRC. InstanceId's  
+           for this extended PRC are assigned by the base PRC  
+           [SPPI]."  
+     
+       EXTENDS { authExtEntry }  
+       UNIQUENESS { }   
+     
+       ::= { authEapRespExtTable 1 }  
+     
+   AuthEapRespExtEntry::= SEQUENCE {  
+           authEapRespExtSpecific    OCTET STRING 
+   }  
+  
+   authEapRespExtSpecific OBJECT-TYPE  
+       SYNTAX         OCTET STRING 
+       STATUS         current  
+       DESCRIPTION  
+           "Opaque EAP Response octet string."  
+     
+       ::= { authEapRespExtEntry 1 }  
+ 
+ 
+-- 
+-- conformance section tbd 
+-- 
+ 
+END 

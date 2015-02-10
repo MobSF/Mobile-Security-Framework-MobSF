@@ -1,0 +1,3241 @@
+DOCS-IETF-QOS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Integer32,
+    Counter32,
+    Unsigned32,
+    Counter64,
+    mib-2
+      FROM SNMPv2-SMI
+
+    TEXTUAL-CONVENTION,
+    MacAddress,
+    RowStatus,
+    TruthValue,
+    TimeStamp,
+    StorageType
+      FROM SNMPv2-TC
+
+    OBJECT-GROUP,
+    MODULE-COMPLIANCE
+
+
+
+      FROM SNMPv2-CONF
+
+    ifIndex,
+    InterfaceIndex
+      FROM IF-MIB
+
+    InetAddressType,
+    InetAddress,
+    InetPortNumber
+      FROM INET-ADDRESS-MIB
+
+    DscpOrAny
+      FROM DIFFSERV-DSCP-TC
+
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB;
+
+docsIetfQosMIB   MODULE-IDENTITY
+    LAST-UPDATED    "200601230000Z" -- January 23, 2006
+    ORGANIZATION    "IETF IP over Cable Data Network (IPCDN)
+                     Working Group"
+    CONTACT-INFO
+        "
+         Co-Author: Michael Patrick
+         Postal:    Motorola BCS
+                    111 Locke Drive
+                    Marlborough, MA 01752-7214
+                    U.S.A.
+         Phone:     +1 508 786 7563
+         E-mail:    michael.patrick@motorola.com
+
+         Co-Author: William Murwin
+         Postal:    Motorola BCS
+                    111 Locke Drive
+                    Marlborough, MA 01752-7214
+                    U.S.A.
+         Phone:     +1 508 786 7594
+         E-mail:    w.murwin@motorola.com
+
+         IETF IPCDN Working Group
+         General Discussion: ipcdn@ietf.org
+         Subscribe: http://www.ietf.org/mailman/listinfo/ipcdn
+         Archive: ftp://ftp.ietf.org/ietf-mail-archive/ipcdn
+         Co-chairs: Richard Woundy, Richard_Woundy@cable.comcast.com
+                    Jean-Francois Mule, jfm@cablelabs.com"
+    DESCRIPTION
+        "This is the management information for
+         Quality Of Service (QOS) for DOCSIS 1.1 and 2.0.
+
+
+
+         Copyright (C) The Internet Society (2006).  This version of
+         this MIB module is part of RFC 4323; see the RFC itself for
+         full legal notices."
+
+    REVISION        "200601230000Z" -- January 23, 2006
+    DESCRIPTION
+        "Initial version, published as RFC 4323."
+    ::= { mib-2 127 }
+
+--
+-- Placeholder for notifications/traps.
+--
+docsIetfQosNotifications OBJECT IDENTIFIER  ::= { docsIetfQosMIB 0 }
+
+docsIetfQosMIBObjects  OBJECT IDENTIFIER ::= { docsIetfQosMIB 1 }
+
+-- Textual Conventions
+DocsIetfQosRfMacIfDirection ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION    "Indicates a direction on an RF MAC interface.
+
+                    The value downstream(1) is from Cable Modem
+                    Termination System to Cable Modem.
+
+                    The value upstream(2) is from Cable Modem to
+                    Cable Modem Termination System."
+    SYNTAX          INTEGER {
+                       downstream(1),
+                       upstream(2)
+                    }
+
+DocsIetfQosBitRate ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT    "d"
+    STATUS          current
+    DESCRIPTION    "The rate of traffic in unit of bits per second.
+                    Used to specify traffic rate for QOS."
+    SYNTAX          Unsigned32
+
+DocsIetfQosSchedulingType ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION    "The scheduling service provided by a CMTS for an
+                    upstream Service Flow.  If the parameter is omitted
+                    from an upstream QOS Parameter Set, this object
+                    takes the value of bestEffort (2).  This parameter
+                    must be reported as undefined (1) for downstream
+                    QOS Parameter Sets."
+    SYNTAX          INTEGER {
+                      undefined (1),
+
+
+
+                      bestEffort (2),
+                      nonRealTimePollingService(3),
+                      realTimePollingService(4),
+                      unsolictedGrantServiceWithAD(5),
+                      unsolictedGrantService(6)
+                    }
+
+-----------------------------------------------------------------------
+--
+-- Packet Classifier Table
+--
+docsIetfQosPktClassTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF DocsIetfQosPktClassEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "This table describes the packet classification
+                    configured on the CM or CMTS.
+                    The model is that a packet either received
+                    as input from an interface or transmitted
+                    for output on an interface may be compared
+                    against an ordered list of rules pertaining to
+                    the packet contents.  Each rule is a row of this
+                    table.  A matching rule provides a Service Flow
+                    ID to which the packet is classified.
+                    All rules need to match for a packet to match
+                    a classifier.
+
+                    The objects in this row correspond to a set of
+                    Classifier Encoding parameters in a DOCSIS
+                    MAC management message.  The
+                    docsIetfQosPktClassBitMap indicates which
+                    particular parameters were present in the
+                    classifier as signaled in the DOCSIS message.
+                    If the referenced parameter was not present
+                    in the signaled DOCSIS 1.1 and 2.0 Classifier, the
+                    corresponding object in this row reports a
+                    value as specified in the DESCRIPTION section."
+    ::= { docsIetfQosMIBObjects 1 }
+
+
+docsIetfQosPktClassEntry OBJECT-TYPE
+    SYNTAX          DocsIetfQosPktClassEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "An entry in this table provides a single packet
+                    classifier rule.  The index ifIndex is an ifType
+                    of docsCableMaclayer(127)."
+    INDEX {
+
+
+
+            ifIndex,
+            docsIetfQosServiceFlowId,
+            docsIetfQosPktClassId
+          }
+    ::= { docsIetfQosPktClassTable 1 }
+
+
+
+DocsIetfQosPktClassEntry ::= SEQUENCE {
+    docsIetfQosPktClassId                  Unsigned32,
+    docsIetfQosPktClassDirection           DocsIetfQosRfMacIfDirection,
+    docsIetfQosPktClassPriority            Integer32,
+    docsIetfQosPktClassIpTosLow            OCTET STRING,
+    docsIetfQosPktClassIpTosHigh           OCTET STRING,
+    docsIetfQosPktClassIpTosMask           OCTET STRING,
+    docsIetfQosPktClassIpProtocol          Integer32,
+    docsIetfQosPktClassInetAddressType     InetAddressType,
+    docsIetfQosPktClassInetSourceAddr      InetAddress,
+    docsIetfQosPktClassInetSourceMask      InetAddress,
+    docsIetfQosPktClassInetDestAddr        InetAddress,
+    docsIetfQosPktClassInetDestMask        InetAddress,
+    docsIetfQosPktClassSourcePortStart     InetPortNumber,
+    docsIetfQosPktClassSourcePortEnd       InetPortNumber,
+    docsIetfQosPktClassDestPortStart       InetPortNumber,
+    docsIetfQosPktClassDestPortEnd         InetPortNumber,
+    docsIetfQosPktClassDestMacAddr         MacAddress,
+    docsIetfQosPktClassDestMacMask         MacAddress,
+    docsIetfQosPktClassSourceMacAddr       MacAddress,
+    docsIetfQosPktClassEnetProtocolType    INTEGER,
+    docsIetfQosPktClassEnetProtocol        Integer32,
+    docsIetfQosPktClassUserPriLow          Integer32,
+    docsIetfQosPktClassUserPriHigh         Integer32,
+    docsIetfQosPktClassVlanId              Integer32,
+    docsIetfQosPktClassStateActive         TruthValue,
+    docsIetfQosPktClassPkts                Counter64,
+    docsIetfQosPktClassBitMap              BITS
+  }
+
+docsIetfQosPktClassId       OBJECT-TYPE
+    SYNTAX          Unsigned32 (1..65535)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "Index assigned to packet classifier entry by
+                    the CMTS, which is unique per Service Flow."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.3.2"
+    ::= { docsIetfQosPktClassEntry 1 }
+
+docsIetfQosPktClassDirection OBJECT-TYPE
+
+
+
+    SYNTAX          DocsIetfQosRfMacIfDirection
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Indicates the direction to which the classifier
+                    is applied."
+    ::= { docsIetfQosPktClassEntry 2 }
+
+docsIetfQosPktClassPriority OBJECT-TYPE
+    SYNTAX          Integer32 (0..255)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The value specifies the order of evaluation
+                    of the classifiers.
+
+                    The higher the value, the higher the priority.
+                    The value of 0 is used as default in
+                    provisioned Service Flows Classifiers.
+                    The default value of 64 is used for dynamic
+                    Service Flow Classifiers.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the default
+                    value as defined above."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.3.5"
+    ::= { docsIetfQosPktClassEntry 3 }
+
+docsIetfQosPktClassIpTosLow OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(1))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The low value of a range of TOS byte values.
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value
+                    of 0.
+
+                    The IP TOS octet, as originally defined in RFC 791,
+                    has been superseded by the 6-bit Differentiated
+                    Services Field (DSField, RFC 3260) and the 2-bit
+                    Explicit Congestion Notification Field (ECN field,
+                    RFC 3168).  This object is defined as an 8-bit
+                    octet as per the DOCSIS Specification
+                    for packet classification."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.1"
+    ::= { docsIetfQosPktClassEntry 4 }
+
+docsIetfQosPktClassIpTosHigh OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(1))
+    MAX-ACCESS      read-only
+
+
+
+    STATUS          current
+    DESCRIPTION    "The 8-bit high value of a range of TOS byte
+                    values.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the
+                    value of 0.
+
+                    The IP TOS octet as originally defined in RFC 791
+                    has been superseded by the 6-bit Differentiated
+                    Services Field (DSField, RFC 3260) and the 2-bit
+                    Explicit Congestion Notification Field (ECN field,
+                    RFC 3168).  This object is defined as an 8-bit
+                    octet as defined by the DOCSIS Specification
+                    for packet classification."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.1"
+    ::= { docsIetfQosPktClassEntry 5 }
+
+docsIetfQosPktClassIpTosMask OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(1))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The mask value is bitwise ANDed with TOS byte
+                    in an IP packet, and this value is used for
+                    range checking of TosLow and TosHigh.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value
+                    of 0.
+
+                    The IP TOS octet as originally defined in RFC 791
+                    has been superseded by the 6-bit Differentiated
+                    Services Field (DSField, RFC 3260) and the 2-bit
+                    Explicit Congestion Notification Field (ECN field,
+                    RFC 3168).  This object is defined as an 8-bit
+                    octet per the DOCSIS Specification for packet
+                    classification."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.1"
+    ::= { docsIetfQosPktClassEntry 6 }
+
+docsIetfQosPktClassIpProtocol OBJECT-TYPE
+    SYNTAX          Integer32 (0..258)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object indicates the value of the IP
+                    Protocol field required for IP packets to match
+                    this rule.
+
+
+
+
+                    The value 256 matches traffic with any IP Protocol
+                    value.  The value 257 by convention matches both TCP
+                    and UDP.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value
+                    of 258."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.2"
+    ::= { docsIetfQosPktClassEntry 7 }
+
+docsIetfQosPktClassInetAddressType OBJECT-TYPE
+    SYNTAX          InetAddressType
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The type of the Internet address for
+                    docsIetfQosPktClassInetSourceAddr,
+                    docsIetfQosPktClassInetSourceMask,
+                    docsIetfQosPktClassInetDestAddr, and
+                    docsIetfQosPktClassInetDestMask.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value of
+                    ipv4(1)."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.3"
+    ::= { docsIetfQosPktClassEntry 8 }
+
+docsIetfQosPktClassInetSourceAddr OBJECT-TYPE
+    SYNTAX          InetAddress
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object specifies the value of the IP
+                    Source Address required for packets to match
+                    this rule.
+
+                    An IP packet matches the rule when the packet
+                    IP Source Address bitwise ANDed with the
+                    docsIetfQosPktClassInetSourceMask value equals the
+                    docsIetfQosPktClassInetSourceAddr value.
+
+                    The address type of this object is specified by
+                    docsIetfQosPktClassInetAddressType.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value of
+                    '00000000'H."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.3"
+    ::= { docsIetfQosPktClassEntry 9 }
+
+
+
+
+docsIetfQosPktClassInetSourceMask OBJECT-TYPE
+    SYNTAX          InetAddress
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object specifies which bits of a packet's
+                    IP Source Address are compared to match
+                    this rule.
+
+                    An IP packet matches the rule when the packet
+                    source address bitwise ANDed with the
+                    docsIetfQosPktClassInetSourceMask value equals the
+                    docsIetfQosIpPktClassInetSourceAddr value.
+
+                    The address type of this object is specified by
+                    docsIetfQosPktClassInetAddressType.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value of
+                    'FFFFFFFF'H."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.4"
+    ::= { docsIetfQosPktClassEntry 10 }
+
+docsIetfQosPktClassInetDestAddr OBJECT-TYPE
+    SYNTAX          InetAddress
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object specifies the value of the IP
+                    Destination Address required for packets to match
+                    this rule.
+
+                    An IP packet matches the rule when the packet
+                    IP Destination Address bitwise ANDed with the
+                    docsIetfQosPktClassInetDestMask value
+                    equals the docsIetfQosPktClassInetDestAddr value.
+
+                    The address type of this object is specified by
+                    docsIetfQosPktClassInetAddressType.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value of
+                    '00000000'H."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.5"
+    ::= { docsIetfQosPktClassEntry 11 }
+
+docsIetfQosPktClassInetDestMask OBJECT-TYPE
+    SYNTAX          InetAddress
+    MAX-ACCESS      read-only
+    STATUS          current
+
+
+
+    DESCRIPTION    "This object specifies which bits of a packet's
+                    IP Destination Address are compared to
+                    match this rule.
+
+                    An IP packet matches the rule when the packet
+                    destination address bitwise ANDed with the
+                    docsIetfQosPktClassInetDestMask value equals the
+                    docsIetfQosIpPktClassInetDestAddr value.
+
+                    The address type of this object is specified by
+                    docsIetfQosPktClassInetAddressType.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value of
+                    'FFFFFFFF'H."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.6"
+    ::= { docsIetfQosPktClassEntry 12 }
+
+docsIetfQosPktClassSourcePortStart OBJECT-TYPE
+    SYNTAX          InetPortNumber
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object specifies the low-end inclusive
+                    range of TCP/UDP source port numbers to which
+                    a packet is compared.  This object is irrelevant
+                    for non-TCP/UDP IP packets.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value
+                    of 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.7"
+    ::= { docsIetfQosPktClassEntry 13 }
+
+docsIetfQosPktClassSourcePortEnd OBJECT-TYPE
+    SYNTAX          InetPortNumber
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object specifies the high-end inclusive
+                    range of TCP/UDP source port numbers to which
+                    a packet is compared.  This object is irrelevant
+                    for non-TCP/UDP IP packets.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value of
+                    65535."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.8"
+    ::= { docsIetfQosPktClassEntry 14 }
+
+
+
+
+docsIetfQosPktClassDestPortStart OBJECT-TYPE
+    SYNTAX          InetPortNumber
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION     "This object specifies the low-end inclusive
+                     range of TCP/UDP destination port numbers to
+                     which a packet is compared.
+
+                     If the referenced parameter is not present
+                     in a classifier, this object reports the value
+                     of 0."
+    REFERENCE       "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.9"
+    ::= { docsIetfQosPktClassEntry 15 }
+
+docsIetfQosPktClassDestPortEnd OBJECT-TYPE
+    SYNTAX          InetPortNumber
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object specifies the high-end inclusive
+                    range of TCP/UDP destination port numbers to which
+                    a packet is compared.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value of
+                    65535."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.5.10"
+    ::= { docsIetfQosPktClassEntry 16 }
+
+docsIetfQosPktClassDestMacAddr OBJECT-TYPE
+    SYNTAX          MacAddress
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "An Ethernet packet matches an entry when its
+                    destination MAC address bitwise ANDed with
+                    docsIetfQosPktClassDestMacMask equals the value of
+                    docsIetfQosPktClassDestMacAddr.
+
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value of
+                    '000000000000'H."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.6.1"
+    ::= { docsIetfQosPktClassEntry 17 }
+
+docsIetfQosPktClassDestMacMask OBJECT-TYPE
+    SYNTAX          MacAddress
+    MAX-ACCESS      read-only
+    STATUS          current
+
+
+
+    DESCRIPTION    "An Ethernet packet matches an entry when its
+                    destination MAC address bitwise ANDed with
+                    docsIetfQosPktClassDestMacMask equals the value of
+                    docsIetfQosPktClassDestMacAddr.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value of
+                    '000000000000'H."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.6.1"
+    ::= { docsIetfQosPktClassEntry 18 }
+
+docsIetfQosPktClassSourceMacAddr OBJECT-TYPE
+    SYNTAX          MacAddress
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "An Ethernet packet matches this entry when its
+                    source MAC address equals the value of
+                    this object.
+
+                    If the referenced parameter is not present
+                    in a classifier, this object reports the value of
+                    'FFFFFFFFFFFF'H."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.6.2"
+    ::= { docsIetfQosPktClassEntry 19 }
+
+docsIetfQosPktClassEnetProtocolType OBJECT-TYPE
+    SYNTAX          INTEGER {
+                      none(0),
+                      ethertype(1),
+                      dsap(2),
+                      mac(3),
+                      all(4)
+                    }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object indicates the format of the layer 3
+                    protocol ID in the Ethernet packet.  A value of
+                    none(0) means that the rule does not use the
+                    layer 3 protocol type as a matching criteria.
+
+                    A value of ethertype(1) means that the rule
+                    applies only to frames that contain an
+                    EtherType value.  Ethertype values are contained
+                    in packets using the Dec-Intel-Xerox (DIX)
+                    encapsulation or the RFC1042 Sub-Network Access
+                    Protocol (SNAP) encapsulation formats.
+
+                    A value of dsap(2) means that the rule applies
+
+
+
+                    only to frames using the IEEE802.3
+                    encapsulation format with a Destination Service
+                    Access Point (DSAP) other
+                    than 0xAA (which is reserved for SNAP).
+
+                    A value of mac(3) means that the rule applies
+                    only to MAC management messages for MAC management
+                    messages.
+
+                    A value of all(4) means that the rule matches
+                    all Ethernet packets.
+
+                    If the Ethernet frame contains an 802.1P/Q Tag
+                    header (i.e., EtherType 0x8100), this object
+                    applies to the embedded EtherType field within
+                    the 802.1P/Q header.
+
+                    If the referenced parameter is not present in a
+                    classifier, this object reports the value of 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.6.3"
+    ::= { docsIetfQosPktClassEntry 20 }
+
+docsIetfQosPktClassEnetProtocol OBJECT-TYPE
+    SYNTAX          Integer32 (0..65535)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "If docsIetfQosEthPktClassProtocolType is none(0),
+                    this object is ignored when considering whether
+                    a packet matches the current rule.
+
+                    If dosQosPktClassEnetProtocolType is ethertype(1),
+                    this object gives the 16-bit value of the
+                    EtherType that the packet must match in order to
+                    match the rule.
+
+                    If docsIetfQosPktClassEnetProtocolType is dsap(2),
+                    the lower 8 bits of this object's value must match
+                    the DSAP byte of the packet in order to match the
+                    rule.
+
+                    If docsIetfQosPktClassEnetProtocolType is mac(3),
+                    the lower 8 bits of this object's value represent a
+                    lower bound (inclusive) of MAC management message
+                    type codes matched, and the upper 8 bits represent
+                    the upper bound (inclusive) of matched MAC message
+                    type codes.  Certain message type codes are
+                    excluded from matching, as specified in the
+                    reference.
+
+
+
+                    If the Ethernet frame contains an 802.1P/Q Tag
+                    header (i.e., EtherType 0x8100), this object applies
+                    to the embedded EtherType field within the 802.1P/Q
+                    header.
+
+                    If the referenced parameter is not present in the
+                    classifier, the value of this object is reported
+                    as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.6.3"
+    ::= { docsIetfQosPktClassEntry 21 }
+
+docsIetfQosPktClassUserPriLow OBJECT-TYPE
+    SYNTAX          Integer32 (0..7)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object applies only to Ethernet frames
+                    using the 802.1P/Q tag header (indicated with
+                    EtherType 0x8100).  Such frames include a 16-bit
+                    Tag that contains a 3-bit Priority field and
+                    a 12-bit VLAN number.
+
+                    Tagged Ethernet packets must have a 3-bit
+                    Priority field within the range of
+                    docsIetfQosPktClassPriLow to
+                    docsIetfQosPktClassPriHigh in order to match this
+                    rule.
+
+                    If the referenced parameter is not present in the
+                    classifier, the value of this object is reported
+                    as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.7.1"
+    ::= { docsIetfQosPktClassEntry 22 }
+
+docsIetfQosPktClassUserPriHigh OBJECT-TYPE
+    SYNTAX          Integer32 (0..7)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object applies only to Ethernet frames
+                    using the 802.1P/Qtag header (indicated with
+                    EtherType 0x8100).  Such frames include a 16-bit
+                    Tag that contains a 3-bit Priority field and
+                    a 12-bit VLAN number.
+
+                    Tagged Ethernet packets must have a 3-bit
+                    Priority field within the range of
+                    docsIetfQosPktClassPriLow to
+                    docsIetfQosPktClassPriHigh in order to match this
+                    rule.
+
+
+
+                    If the referenced parameter is not present in the
+                    classifier, the value of this object is reported
+                    as 7."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.7.1"
+    ::= { docsIetfQosPktClassEntry 23 }
+
+docsIetfQosPktClassVlanId OBJECT-TYPE
+    SYNTAX          Integer32 (0 | 1..4094)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object applies only to Ethernet frames
+                    using the 802.1P/Q tag header.
+
+                    Tagged packets must have a VLAN Identifier that
+                    matches the value in order to match the rule.
+
+                    If the referenced parameter is not present in the
+                    classifier, the value of this object is reported
+                    as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.7.2"
+    ::= { docsIetfQosPktClassEntry 24 }
+
+docsIetfQosPktClassStateActive OBJECT-TYPE
+    SYNTAX          TruthValue
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object indicates whether or not the classifier
+                    is enabled to classify packets to a Service Flow.
+
+                    If the referenced parameter is not present in the
+                    classifier, the value of this object is reported
+                    as true(1)."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.3.6"
+    ::= { docsIetfQosPktClassEntry 25 }
+
+docsIetfQosPktClassPkts OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object counts the number of packets that have
+                    been classified using this entry.  This
+                    includes all packets delivered to a Service Flow
+                    maximum rate policing function, whether or not that
+                    function drops the packets.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+
+
+
+    ::= { docsIetfQosPktClassEntry 26 }
+
+
+docsIetfQosPktClassBitMap OBJECT-TYPE
+    SYNTAX          BITS {          -- Reference SP-RFIv2.0-I06-040804
+                        rulePriority(0),     -- Appendix C.2.1.3.4
+                        activationState(1),  -- Appendix C.2.1.3.6
+                        ipTos(2),            -- Appendix C.2.1.5.1
+                        ipProtocol(3),       -- Appendix C.2.1.5.2
+                        ipSourceAddr(4),     -- Appendix C.2.1.5.3
+                        ipSourceMask(5),     -- Appendix C.2.1.5.4
+                        ipDestAddr(6),       -- Appendix C.2.1.5.5
+                        ipDestMask(7),       -- Appendix C.2.1.5.6
+                        sourcePortStart(8),  -- Appendix C.2.1.5.7
+                        sourcePortEnd(9),    -- Appendix C.2.1.5.8
+                        destPortStart(10),   -- Appendix C.2.1.5.9
+                        destPortEnd(11),     -- Appendix C.2.1.5.10
+                        destMac(12),         -- Appendix C.2.1.6.1
+                        sourceMac(13),       -- Appendix C.2.1.6.2
+                        ethertype(14),       -- Appendix C.2.1.6.3
+                        userPri(15),         -- Appendix C.2.1.7.1
+                        vlanId(16)           -- Appendix C.2.1.7.2
+                    }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+                    "This object indicates which parameter encodings
+                    were actually present in the DOCSIS packet
+                    classifier encoding signaled in the DOCSIS message
+                    that created or modified the classifier.  Note that
+                    Dynamic Service Change messages have replace
+                    semantics, so that all non-default parameters must
+                    be present whether the classifier is being created
+                    or changed.
+
+                    A bit of this object is set to 1 if the parameter
+                    indicated by the comment was present in the
+                    classifier encoding, and to 0 otherwise.
+
+                    Note that BITS are encoded most significant bit
+                    first, so that if, for example, bits 6 and 7 are
+                    set, this object is encoded as the octet string
+                    '030000'H."
+    ::= { docsIetfQosPktClassEntry 27 }
+
+--
+-- QOS Parameter Set Table
+--
+
+
+
+docsIetfQosParamSetTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF DocsIetfQosParamSetEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "This table describes the set of DOCSIS 1.1 and 2.0
+                    QOS parameters defined in a managed device.
+
+                    The ifIndex index specifies a DOCSIS MAC Domain.
+                    The docsIetfQosServiceFlowId index specifies a
+                    particular Service Flow.
+                    The docsIetfQosParamSetType index indicates whether
+                    the active, admitted, or provisioned QOS Parameter
+                    Set is being described by the row.
+
+                    Only the QOS Parameter Sets of DOCSIS 1.1 and 2.0
+                    Service Flows are represented in this table.
+
+                    DOCSIS 1.0 QOS service profiles are not
+                    represented in this table.
+
+                    Each row corresponds to a DOCSIS QOS Parameter Set
+                    as signaled via DOCSIS MAC management messages.
+                    Each object in the row corresponds to one or
+                    part of one DOCSIS 1.1 Service Flow Encoding.
+                    The docsIetfQosParamSetBitMap object in the row
+                    indicates which particular parameters were signaled
+                    in the original registration or dynamic service
+                    request message that created the QOS Parameter Set.
+
+                    In many cases, even if a QOS Parameter Set parameter
+                    was not signaled, the DOCSIS specification calls
+                    for a default value to be used.  That default value
+                    is reported as the value of the corresponding object
+                    in this row.
+
+                    Many objects are not applicable, depending on
+                    the Service Flow direction or upstream scheduling
+                    type.  The object value reported in this case
+                    is specified in the DESCRIPTION clause."
+    ::= { docsIetfQosMIBObjects 2 }
+
+docsIetfQosParamSetEntry OBJECT-TYPE
+    SYNTAX          DocsIetfQosParamSetEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "A unique set of QOS parameters."
+    INDEX {
+        ifIndex, docsIetfQosServiceFlowId, docsIetfQosParamSetType
+
+
+
+          }
+    ::= { docsIetfQosParamSetTable 1 }
+
+DocsIetfQosParamSetEntry ::= SEQUENCE {
+    docsIetfQosParamSetServiceClassName   SnmpAdminString,
+    docsIetfQosParamSetPriority           Integer32,
+    docsIetfQosParamSetMaxTrafficRate     DocsIetfQosBitRate,
+    docsIetfQosParamSetMaxTrafficBurst    Unsigned32,
+    docsIetfQosParamSetMinReservedRate    DocsIetfQosBitRate,
+    docsIetfQosParamSetMinReservedPkt     Integer32,
+    docsIetfQosParamSetActiveTimeout      Integer32,
+    docsIetfQosParamSetAdmittedTimeout    Integer32,
+    docsIetfQosParamSetMaxConcatBurst     Integer32,
+    docsIetfQosParamSetSchedulingType     DocsIetfQosSchedulingType,
+    docsIetfQosParamSetNomPollInterval    Unsigned32,
+    docsIetfQosParamSetTolPollJitter      Unsigned32,
+    docsIetfQosParamSetUnsolicitGrantSize Integer32,
+    docsIetfQosParamSetNomGrantInterval   Unsigned32,
+    docsIetfQosParamSetTolGrantJitter     Unsigned32,
+    docsIetfQosParamSetGrantsPerInterval  Integer32,
+    docsIetfQosParamSetTosAndMask         OCTET STRING,
+    docsIetfQosParamSetTosOrMask          OCTET STRING,
+    docsIetfQosParamSetMaxLatency         Unsigned32,
+    docsIetfQosParamSetType               INTEGER,
+    docsIetfQosParamSetRequestPolicyOct   OCTET STRING,
+    docsIetfQosParamSetBitMap             BITS
+    }
+
+docsIetfQosParamSetServiceClassName OBJECT-TYPE
+    SYNTAX          SnmpAdminString
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Refers to the Service Class Name from which the
+                    parameter set values were derived.
+
+                    If the referenced parameter is not present in the
+                    corresponding DOCSIS QOS Parameter Set, the default
+                    value of this object is a zero-length string."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.3.4"
+    ::= { docsIetfQosParamSetEntry 1 }
+
+docsIetfQosParamSetPriority OBJECT-TYPE
+    SYNTAX          Integer32 (0..7)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The relative priority of a Service Flow.
+                    Higher numbers indicate higher priority.
+                    This priority should only be used to differentiate
+
+
+
+                    Service Flow from identical parameter sets.
+
+                    If the referenced parameter is not present in the
+                    corresponding DOCSIS QOS Parameter Set, the default
+                    value of this object is 0.  If the parameter is
+                    not applicable, the reported value is 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.5.1"
+    ::= { docsIetfQosParamSetEntry 2 }
+
+docsIetfQosParamSetMaxTrafficRate OBJECT-TYPE
+    SYNTAX          DocsIetfQosBitRate
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Maximum sustained traffic rate allowed for this
+                    Service Flow in bits/sec.  Must count all MAC frame
+                    data PDU from the bytes following the MAC header
+                    HCS to the end of the CRC.  The number of bytes
+                    forwarded is limited during any time interval.
+                    The value 0 means no maximum traffic rate is
+                    enforced.  This object applies to both upstream and
+                    downstream Service Flows.
+
+                    If the referenced parameter is not present in the
+                    corresponding DOCSIS QOS Parameter Set, the default
+                    value of this object is 0.  If the parameter is
+                    not applicable, it is reported as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.5.2"
+    ::= { docsIetfQosParamSetEntry 3 }
+
+docsIetfQosParamSetMaxTrafficBurst OBJECT-TYPE
+    SYNTAX          Unsigned32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the token bucket size in bytes
+                    for this parameter set.  The value is calculated
+                    from the byte following the MAC header HCS to
+                    the end of the CRC.  This object is applied in
+                    conjunction with docsIetfQosParamSetMaxTrafficRate
+                    to calculate maximum sustained traffic rate.
+
+                    If the referenced parameter is not present in the
+                    corresponding DOCSIS QOS Parameter Set, the default
+                    value of this object for scheduling types
+                    bestEffort (2), nonRealTimePollingService(3),
+                    and realTimePollingService(4) is 3044.
+
+                    If this parameter is not applicable, it is reported
+                    as 0.
+
+
+
+                   "
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.5.3"
+    ::= { docsIetfQosParamSetEntry 4 }
+
+docsIetfQosParamSetMinReservedRate OBJECT-TYPE
+    SYNTAX          DocsIetfQosBitRate
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the guaranteed minimum rate in
+                    bits/sec for this parameter set.  The value is
+                    calculated from the byte following the MAC
+                    header HCS to the end of the CRC.  The default
+                    value of 0 means that no bandwidth is reserved.
+
+                    If the referenced parameter is not present in the
+                    corresponding DOCSIS QOS Parameter Set, the default
+                    value of this object is 0.  If the parameter
+                    is not applicable, it is reported as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.5.4"
+    ::= { docsIetfQosParamSetEntry 5 }
+
+docsIetfQosParamSetMinReservedPkt OBJECT-TYPE
+    SYNTAX          Integer32 (0..65535)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies an assumed minimum packet size in
+                    bytes for which the
+                    docsIetfQosParamSetMinReservedRate will be
+                    provided.  The value is calculated from the byte
+                    following the MAC header HCS to the end of the
+                    CRC.
+
+                    If the referenced parameter is omitted from a
+                    DOCSIS QOS parameter set, the default value is
+                    CMTS implementation dependent.  In this case, the
+                    CMTS reports the default value it is using, and the
+                    CM reports a value of 0.  If the referenced
+                    parameter is not applicable to the direction or
+                    scheduling type of the Service Flow, both CMTS and
+                    CM report this object's value as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.5.5"
+    ::= { docsIetfQosParamSetEntry 6 }
+
+docsIetfQosParamSetActiveTimeout OBJECT-TYPE
+    SYNTAX          Integer32 (0..65535)
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+
+
+
+    DESCRIPTION    "Specifies the maximum duration in seconds that
+                    resources remain unused on an active service
+                    flow before CMTS signals that both active and
+                    admitted parameters set are null.  The default
+                    value of 0 signifies an infinite amount of time.
+
+                    If the referenced parameter is not present in the
+                    corresponding DOCSIS QOS Parameter Set, the default
+                    value of this object is 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.5.6"
+    ::= { docsIetfQosParamSetEntry 7 }
+
+docsIetfQosParamSetAdmittedTimeout OBJECT-TYPE
+    SYNTAX          Integer32 (0..65535)
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the maximum duration in seconds that
+                    resources remain in admitted state before
+                    resources must be released.
+
+                    The value of 0 signifies an infinite amount
+                    of time.
+
+                    If the referenced parameter is not present in the
+                    corresponding DOCSIS QOS Parameter Set, the
+                    default value of this object is 200.
+                   "
+
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.5.7"
+    DEFVAL          { 200 }
+    ::= { docsIetfQosParamSetEntry 8 }
+
+docsIetfQosParamSetMaxConcatBurst OBJECT-TYPE
+    SYNTAX          Integer32 (0..65535)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the maximum concatenated burst in
+                    bytes that an upstream Service Flow is allowed.
+                    The value is calculated from the FC byte of the
+                    Concatenation MAC Header to the last CRC byte in
+                    of the last concatenated MAC frame, inclusive.
+                    The value of 0 specifies no maximum burst.
+
+                    If the referenced parameter is not present in the
+                    corresponding DOCSIS QOS Parameter Set, the default
+                    value of this object for scheduling types
+                    bestEffort(2), nonRealTimePollingService(3), and
+
+
+
+                    realTimePollingService(4) is 1522.  If the parameter
+                    is not applicable, this object's value is reported
+                    as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.1"
+    ::= { docsIetfQosParamSetEntry 9 }
+
+
+docsIetfQosParamSetSchedulingType OBJECT-TYPE
+    SYNTAX          DocsIetfQosSchedulingType
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the upstream scheduling service used for
+                    upstream Service Flow.
+
+                    If the referenced parameter is not present in the
+                    corresponding DOCSIS QOS Parameter Set of an
+                    upstream Service Flow, the default value of this
+                    object is bestEffort(2).  For QOS parameter sets of
+                    downstream Service Flows, this object's value is
+                    reported as undefined(1)."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.2"
+    ::= { docsIetfQosParamSetEntry 10 }
+
+docsIetfQosParamSetNomPollInterval OBJECT-TYPE
+    SYNTAX          Unsigned32
+    UNITS           "microseconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the nominal interval in microseconds
+                    between successive unicast request
+                    opportunities on an upstream Service Flow.
+
+                    This object applies only to upstream Service Flows
+                    with DocsIetfQosSchedulingType of value
+                    nonRealTimePollingService(3),
+                    realTimePollingService(4), and
+                    unsolictedGrantServiceWithAD(5).  The parameter is
+                    mandatory for realTimePollingService(4).  If the
+                    parameter is omitted with
+                    nonRealTimePollingService(3), the CMTS uses an
+                    implementation-dependent value.  If the parameter
+                    is omitted with unsolictedGrantServiceWithAD(5),
+                    the CMTS uses as a default value the value of the
+                    Nominal Grant Interval parameter.  In all cases,
+                    the CMTS reports the value it is using when the
+                    parameter is applicable.  The CM reports the
+                    signaled parameter value if it was signaled,
+                    and 0 otherwise.
+
+
+
+                    If the referenced parameter is not applicable to
+                    the direction or scheduling type of the
+                    corresponding DOCSIS QOS Parameter Set, both
+                    CMTS and CM report this object's value as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.4"
+    ::= { docsIetfQosParamSetEntry 11 }
+
+docsIetfQosParamSetTolPollJitter OBJECT-TYPE
+    SYNTAX          Unsigned32
+    UNITS           "microseconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the maximum amount of time in
+                    microseconds that the unicast request interval
+                    may be delayed from the nominal periodic
+                    schedule on an upstream Service Flow.
+
+                    This parameter is applicable only to upstream
+                    Service Flows with a DocsIetfQosSchedulingType of
+                    realTimePollingService(4) or
+                    unsolictedGrantServiceWithAD(5).
+
+                    If the referenced parameter is applicable but not
+                    present in the corresponding DOCSIS QOS Parameter
+                    Set, the CMTS uses an implementation-dependent
+                    value and reports the value it is using.
+                    The CM reports a value of 0 in this case.
+
+                    If the parameter is not applicable to the
+                    direction or upstream scheduling type of the
+                    Service Flow, both CMTS and CM report this
+                    object's value as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.5"
+    ::= { docsIetfQosParamSetEntry 12 }
+
+docsIetfQosParamSetUnsolicitGrantSize OBJECT-TYPE
+    SYNTAX          Integer32 (0..65535)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the unsolicited grant size in bytes.
+                    The grant size includes the entire MAC frame
+                    data PDU from the Frame Control byte to the end
+                    of the MAC frame.
+
+                    The referenced parameter is applicable only
+                    for upstream flows with a DocsIetfQosSchedulingType
+                    of unsolicitedGrantServicewithAD(5) or
+                    unsolicitedGrantService(6), and it is mandatory
+
+
+
+                    when applicable.  Both CMTS and CM report
+                    the signaled value of the parameter in this
+                    case.
+
+                    If the referenced parameter is not applicable to
+                    the direction or scheduling type of the
+                    corresponding DOCSIS QOS Parameter Set, both
+                    CMTS and CM report this object's value as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.6"
+    ::= { docsIetfQosParamSetEntry 13 }
+
+docsIetfQosParamSetNomGrantInterval OBJECT-TYPE
+    SYNTAX          Unsigned32
+    UNITS           "microseconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the nominal interval in microseconds
+                    between successive data grant opportunities
+                    on an upstream Service Flow.
+
+                    The referenced parameter is applicable only
+                    for upstream flows with a DocsIetfQosSchedulingType
+                    of unsolicitedGrantServicewithAD(5) or
+                    unsolicitedGrantService(6), and it is mandatory
+                    when applicable.  Both CMTS and CM report the
+                    signaled value of the parameter in this case.
+
+                    If the referenced parameter is not applicable to
+                    the direction or scheduling type of the
+                    corresponding DOCSIS QOS Parameter Set, both
+                    CMTS and CM report this object's value as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.7"
+    ::= { docsIetfQosParamSetEntry 14 }
+
+docsIetfQosParamSetTolGrantJitter OBJECT-TYPE
+    SYNTAX          Unsigned32
+    UNITS           "microseconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the maximum amount of time in
+                    microseconds that the transmission opportunities
+                    may be delayed from the nominal periodic schedule.
+
+                    The referenced parameter is applicable only
+                    for upstream flows with a DocsIetfQosSchedulingType
+                    of unsolicitedGrantServicewithAD(5) or
+                    unsolicitedGrantService(6), and it is mandatory
+                    when applicable.  Both CMTS and CM report the
+
+
+
+                    signaled value of the parameter in this case.
+
+                    If the referenced parameter is not applicable to
+                    the direction or scheduling type of the
+                    corresponding DOCSIS QOS Parameter Set, both
+                    CMTS and CM report this object's value as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.8"
+    ::= { docsIetfQosParamSetEntry 15 }
+
+docsIetfQosParamSetGrantsPerInterval OBJECT-TYPE
+    SYNTAX          Integer32 (0..127)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the number of data grants per Nominal
+                    Grant Interval
+                    (docsIetfQosParamSetNomGrantInterval).
+
+                    The referenced parameter is applicable only
+                    for upstream flows with a DocsIetfQosSchedulingType
+                    of unsolicitedGrantServicewithAD(5) or
+                    unsolicitedGrantService(6), and it is mandatory
+                    when applicable.  Both CMTS and CM report the
+                    signaled value of the parameter in this case.
+
+                    If the referenced parameter is not applicable to
+                    the direction or scheduling type of the
+                    corresponding DOCSIS QOS Parameter Set, both
+                    CMTS and CM report this object's value as 0."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.9"
+    ::= { docsIetfQosParamSetEntry 16 }
+
+docsIetfQosParamSetTosAndMask OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(1))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the AND mask for the IP TOS byte for
+                    overwriting IP packet's TOS value.  The IP packet
+                    TOS byte is bitwise ANDed with
+                    docsIetfQosParamSetTosAndMask, and the result is
+                    bitwise ORed with docsIetfQosParamSetTosORMask and
+                    the result is written to the IP packet TOS byte.
+                    A value of 'FF'H for docsIetfQosParamSetTosAndMask
+                    and a value of '00'H for
+                    docsIetfQosParamSetTosOrMask means that the IP
+                    Packet TOS byte is not overwritten.
+
+                    This combination is reported if the referenced
+                    parameter is not present in a QOS Parameter Set.
+
+
+
+                    The IP TOS octet as originally defined in RFC 791
+                    has been superseded by the 6-bit Differentiated
+                    Services Field (DSField, RFC 3260) and the 2-bit
+                    Explicit Congestion Notification Field (ECN field,
+                    RFC 3168).  Network operators SHOULD avoid
+                    specifying values of docsIetfQosParamSetTosAndMask
+                    and docsIetfQosParamSetTosORMask that would result
+                    in the modification of the ECN bits.
+
+                    In particular, operators should not use values of
+                    docsIetfQosParamSetTosAndMask that have either of
+                    the least-significant two bits set to 0.  Similarly,
+                    operators should not use values of
+                    docsIetfQosParamSetTosORMask that have either of
+                    the least-significant two bits set to 1.
+
+                    Even though this object is only enforced by the
+                    Cable Modem Termination System (CMTS),
+                    Cable Modems MUST report the value as signaled in
+                    the referenced parameter."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.10;
+                    RFC 3168, The Addition of Explicit Congestion
+                    Notification (ECN) to IP;
+                    RFC 3260, New Terminology and Clarifications for
+                    Diffserv."
+    ::= { docsIetfQosParamSetEntry 17 }
+
+docsIetfQosParamSetTosOrMask OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(1))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the OR mask for the IP TOS byte.
+
+                    See the description of docsIetfQosParamSetTosAndMask
+                    for further details.
+
+                    The IP TOS octet as originally defined in RFC 791
+                    has been superseded by the 6-bit Differentiated
+                    Services Field (DSField, RFC 3260) and the 2-bit
+                    Explicit Congestion Notification Field (ECN field,
+                    RFC 3168).  Network operators SHOULD avoid
+                    specifying values of docsIetfQosParamSetTosAndMask
+                    and docsIetfQosParamSetTosORMask that would result
+                    in the modification of the ECN bits."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.10;
+                    RFC 3168, The Addition of Explicit Congestion
+                    Notification (ECN) to IP;
+                    RFC 3260, New Terminology and Clarifications for
+
+
+
+                    Diffserv."
+    ::= { docsIetfQosParamSetEntry 18 }
+
+docsIetfQosParamSetMaxLatency OBJECT-TYPE
+    SYNTAX          Unsigned32
+    UNITS           "microseconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies the maximum latency between the
+                    reception of a packet by the CMTS on its NSI
+                    and the forwarding of the packet to the RF
+                    interface.  A value of 0 signifies no maximum
+                    latency is enforced.  This object only applies to
+                    downstream Service Flows.
+
+                    If the referenced parameter is not present in the
+                    corresponding downstream DOCSIS QOS Parameter Set,
+                    the default value is 0.  This parameter is
+                    not applicable to upstream DOCSIS QOS Parameter
+                    Sets, and its value is reported as 0 in this case."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.7.1"
+    ::= { docsIetfQosParamSetEntry 19 }
+
+
+docsIetfQosParamSetType     OBJECT-TYPE
+    SYNTAX          INTEGER {
+                       active (1),
+                       admitted (2),
+                       provisioned (3)
+                    }
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "Defines the type of the QOS parameter set defined
+                    by this row.  active(1) indicates the Active QOS
+                    parameter set, describing the service currently
+                    being provided by the DOCSIS MAC domain to the
+                    Service Flow.  admitted(2) indicates the Admitted
+                    QOS Parameter Set, describing services reserved by
+                    the DOCSIS MAC domain for use by the service
+                    flow.  provisioned (3) describes the QOS Parameter
+                    Set defined in the DOCSIS CM Configuration file for
+                    the Service Flow."
+    REFERENCE      "SP-RFIv2.0-I06-040804, 8.1.5"
+    ::= { docsIetfQosParamSetEntry 20 }
+
+docsIetfQosParamSetRequestPolicyOct OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(4))
+                    -- A 32-bit mask represented most significant byte
+
+
+
+                    -- first.  The 32-bit integer represented in this
+                    -- manner equals the binary value of the referenced
+                    -- integer parameter of the DOCSIS RFI
+                    -- specification.
+                    -- The BITS syntax is not used in order to avoid
+                    -- the confusion caused by different bit-numbering
+                    -- conventions.
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Specifies which transmit interval opportunities
+                    the CM omits for upstream transmission requests and
+                    packet transmissions.  This object takes its
+                    default value for downstream Service Flows.
+
+                    Unless otherwise indicated, a bit value of 1 means
+                    that a CM must not use that opportunity for
+                    upstream transmission.
+
+                    If bit 0 is the least significant bit of the
+                    least significant (4th) octet, and if bit number
+                    is increased with significance, the bit definitions
+                    are defined as follows:
+
+                    broadcastReqOpp(0):
+                         all CMs broadcast request opportunities
+
+                    priorityReqMulticastReq(1):
+                         priority request multicast request
+                         opportunities
+
+                    reqDataForReq(2):
+                         request/data opportunities for requests
+
+                    reqDataForData(3):
+                         request/data opportunities for data
+
+                    piggybackReqWithData(4):
+                         piggyback requests with data
+
+                    concatenateData(5):
+                         concatenate data
+
+                    fragmentData(6):
+                         fragment data
+
+                    suppresspayloadheaders(7):
+                         suppress payload headers
+
+
+
+
+                    dropPktsExceedUGSize(8):
+                         A value of 1 means that the Service Flow must
+                         drop packets that do not fit in the Unsolicited
+                         Grant size.
+
+                    If the referenced parameter is not present in
+                    a QOS Parameter Set, the value of this object is
+                    reported as '00000000'H."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.3"
+    ::= { docsIetfQosParamSetEntry 21 }
+
+docsIetfQosParamSetBitMap OBJECT-TYPE
+                                -- Each bit corresponds to a parameter
+                                -- from SP-RFI-v1.1-I10-037030,
+                                -- Appendix C in the indicated
+    SYNTAX          BITS {      -- section number.
+                        trafficPriority(0),     -- C.2.2.5.1
+                        maxTrafficRate(1),      -- C.2.2.5.2
+                        maxTrafficBurst(2),     -- C.2.2.5.3
+                        minReservedRate(3),     -- C.2.2.5.4
+                        minReservedPkt(4),      -- C.2.2.5.5
+                        activeTimeout(5),       -- C.2.2.5.6
+                        admittedTimeout(6),     -- C.2.2.5.7
+                        maxConcatBurst(7),      -- C.2.2.6.1
+                        schedulingType(8),      -- C.2.2.6.2
+                        requestPolicy(9),       -- C.2.2.6.3
+                        nomPollInterval(10),    -- C.2.2.6.4
+                        tolPollJitter(11),      -- C.2.2.6.5
+                        unsolicitGrantSize(12), -- C.2.2.6.6
+                        nomGrantInterval(13),   -- C.2.2.6.7
+                        tolGrantJitter(14),     -- C.2.2.6.8
+                        grantsPerInterval(15),  -- C.2.2.6.9
+                        tosOverwrite(16),       -- C.2.2.6.10
+                        maxLatency(17)          -- C.2.2.7.1
+                    }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object indicates the set of QOS Parameter
+                    Set parameters actually signaled in the
+                    DOCSIS registration or dynamic service request
+                    message that created or modified the QOS Parameter
+                    Set.  A bit is set to 1 when the parameter described
+                    by the indicated reference section is present
+                    in the original request.
+
+                    Note that when Service Class names are expanded,
+                    the registration or dynamic response message may
+                    contain parameters as expanded by the CMTS based
+
+
+
+                    on a stored service class.  These expanded
+                    parameters are not indicated by a 1 bit in this
+                    object.
+
+                    Note that even though some QOS Parameter Set
+                    parameters may not be signaled in a message
+                    (so that the paramater's bit in this object is 0),
+                    the DOCSIS specification requires that default
+                    values be used.  These default values are reported
+                    as the corresponding object's value in the row.
+
+                    Note that BITS objects are encoded most
+                    significant bit first.  For example, if bits
+                    1 and 16 are set, the value of this object
+                    is the octet string '400080'H."
+    ::= { docsIetfQosParamSetEntry 22 }
+
+--
+--  Service Flow Table
+--
+docsIetfQosServiceFlowTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF DocsIetfQosServiceFlowEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "This table describes the set of DOCSIS-QOS
+                    Service Flows in a managed device."
+    ::= { docsIetfQosMIBObjects 3 }
+
+docsIetfQosServiceFlowEntry OBJECT-TYPE
+    SYNTAX          DocsIetfQosServiceFlowEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "Describes a Service Flow.
+                    An entry in the table exists for each
+                    Service Flow ID.  The ifIndex is an
+                    ifType of docsCableMaclayer(127)."
+    INDEX {
+            ifIndex,
+            docsIetfQosServiceFlowId
+          }
+    ::= { docsIetfQosServiceFlowTable 1 }
+
+DocsIetfQosServiceFlowEntry ::= SEQUENCE {
+    docsIetfQosServiceFlowId               Unsigned32,
+    docsIetfQosServiceFlowSID              Unsigned32,
+    docsIetfQosServiceFlowDirection        DocsIetfQosRfMacIfDirection,
+    docsIetfQosServiceFlowPrimary          TruthValue
+    }
+
+
+
+docsIetfQosServiceFlowId    OBJECT-TYPE
+    SYNTAX          Unsigned32 (1..4294967295)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "An index assigned to a Service Flow by CMTS."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.3.2"
+    ::= { docsIetfQosServiceFlowEntry 1 }
+
+docsIetfQosServiceFlowSID  OBJECT-TYPE
+    SYNTAX          Unsigned32 (0..16383)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Service Identifier (SID) assigned to an
+                    admitted or active Service Flow.  This object
+                    reports a value of 0 if a Service ID is not
+                    associated with the Service Flow.  Only active
+                    or admitted upstream Service Flows will have a
+                    Service ID (SID)."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.3.3"
+    ::= { docsIetfQosServiceFlowEntry 2 }
+
+docsIetfQosServiceFlowDirection OBJECT-TYPE
+    SYNTAX          DocsIetfQosRfMacIfDirection
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The direction of the Service Flow."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.1/2"
+    ::= { docsIetfQosServiceFlowEntry 3 }
+
+docsIetfQosServiceFlowPrimary OBJECT-TYPE
+    SYNTAX          TruthValue
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Object reflects whether Service Flow is the primary
+                    or a secondary Service Flow.
+
+                    A primary Service Flow is the default Service Flow
+                    for otherwise unclassified traffic and all MAC
+                    messages."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Section 8.1 "
+    ::= { docsIetfQosServiceFlowEntry 4 }
+
+--
+--  Service Flow Stats Table
+--
+docsIetfQosServiceFlowStatsTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF DocsIetfQosServiceFlowStatsEntry
+    MAX-ACCESS      not-accessible
+
+
+
+    STATUS          current
+    DESCRIPTION     "This table describes statistics associated with the
+                     Service Flows in a managed device."
+    ::= { docsIetfQosMIBObjects 4 }
+
+docsIetfQosServiceFlowStatsEntry OBJECT-TYPE
+    SYNTAX          DocsIetfQosServiceFlowStatsEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "Describes a set of Service Flow statistics.
+                    An entry in the table exists for each
+                    Service Flow ID.  The ifIndex is an
+                    ifType of docsCableMaclayer(127)."
+    INDEX {
+            ifIndex,
+            docsIetfQosServiceFlowId
+          }
+    ::= { docsIetfQosServiceFlowStatsTable 1 }
+
+DocsIetfQosServiceFlowStatsEntry ::= SEQUENCE {
+    docsIetfQosServiceFlowPkts                     Counter64,
+    docsIetfQosServiceFlowOctets                   Counter64,
+    docsIetfQosServiceFlowTimeCreated              TimeStamp,
+    docsIetfQosServiceFlowTimeActive               Counter32,
+    docsIetfQosServiceFlowPHSUnknowns              Counter32,
+    docsIetfQosServiceFlowPolicedDropPkts          Counter32,
+    docsIetfQosServiceFlowPolicedDelayPkts         Counter32
+    }
+
+docsIetfQosServiceFlowPkts OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "For outgoing Service Flows, this object counts the
+                    number of Packet Data PDUs forwarded to this
+                    Service Flow.  For incoming upstream CMTS service
+                    flows, this object counts the number of Packet
+                    Data PDUs actually received on the Service Flow
+                    identified by the SID for which the packet was
+                    scheduled.  CMs not classifying downstream packets
+                    may report this object's value as 0 for downstream
+                    Service Flows.  This object does not count
+                    MAC-specific management messages.
+
+                    Particularly for UGS flows, packets sent on the
+                    primary Service Flow in violation of the UGS grant
+                    size should be counted only by the instance of this
+                    object that is associated with the primary service
+
+
+
+                    flow.
+
+                    Unclassified upstream user data packets (i.e., non-
+                    MAC-management) forwarded to the primary upstream
+                    Service Flow should be counted by the instance of
+                    this object that is associated with the primary
+                    service flow.
+
+                    This object does include packets counted by
+                    docsIetfQosServiceFlowPolicedDelayPkts, but does not
+                    include packets counted by
+                    docsIetfQosServiceFlowPolicedDropPkts
+                    and docsIetfQosServiceFlowPHSUnknowns.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosServiceFlowStatsEntry 1 }
+
+docsIetfQosServiceFlowOctets OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of octets from the byte after the MAC
+                    header HCS to the end of the CRC for all packets
+                    counted in the docsIetfQosServiceFlowPkts object for
+                    this row.  Note that this counts the octets after
+                    payload header suppression and before payload
+                    header expansion have been applied.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosServiceFlowStatsEntry 2 }
+
+docsIetfQosServiceFlowTimeCreated OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The value of sysUpTime when the service flow
+                    was created."
+    ::= { docsIetfQosServiceFlowStatsEntry 3 }
+
+docsIetfQosServiceFlowTimeActive OBJECT-TYPE
+    SYNTAX          Counter32
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+
+
+
+    DESCRIPTION    "The number of seconds that the service flow
+                    has been active.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosServiceFlowStatsEntry 4 }
+
+docsIetfQosServiceFlowPHSUnknowns OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "For incoming upstream CMTS service flows, this
+                    object counts the number of packets received
+                    with an unknown payload header suppression index.
+                    The service flow is identified by the SID for which
+                    the packet was scheduled.
+
+                    On a CM, only this object's instance for the primary
+                    downstream service flow counts packets received with
+                    an unknown payload header suppression index.  All
+                    other downstream service flows on CM report this
+                    objects value as 0.
+
+                    All outgoing service flows report this object's
+                    value as 0.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosServiceFlowStatsEntry 5 }
+
+docsIetfQosServiceFlowPolicedDropPkts OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "For outgoing service flows, this object counts the
+                    number of Packet Data PDUs classified to this
+                    service flow dropped due to:
+                       (1) implementation-dependent excessive delay
+                           while enforcing the Maximum Sustained
+                           Traffic Rate; or
+                       (2) UGS packets dropped due to exceeding the
+                           Unsolicited Grant Size with a
+                           Request/Transmission policy that requires
+                           such packets to be dropped.
+
+                    Classified packets dropped due to other reasons
+
+
+
+                    must be counted in ifOutDiscards for the interface
+                    of this service flow.  This object reports 0 for
+                    incoming service flows.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosServiceFlowStatsEntry 6 }
+
+docsIetfQosServiceFlowPolicedDelayPkts OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "This object counts only outgoing packets delayed in
+                    order to maintain the Maximum Sustained Traffic
+                    Rate.  This object will always report a value of 0
+                    for UGS flows because the Maximum Sustained Traffic
+                    Rate does not apply.  This object is 0 for incoming
+                    service flows.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosServiceFlowStatsEntry 7 }
+
+--
+--  Upstream Service Flow Stats Table (CMTS ONLY)
+--
+docsIetfQosUpstreamStatsTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF DocsIetfQosUpstreamStatsEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "This table describes statistics associated with
+                    upstream service flows.  All counted frames must
+                    be received without a Frame Check Sequence (FCS)
+                    error."
+    ::= { docsIetfQosMIBObjects 5 }
+
+docsIetfQosUpstreamStatsEntry OBJECT-TYPE
+    SYNTAX          DocsIetfQosUpstreamStatsEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "Describes a set of upstream service flow
+                    statistics.  An entry in the table exists for each
+                    upstream Service Flow in a managed device.
+                    The ifIndex is an ifType of
+                    docsCableMaclayer(127)."
+    INDEX {
+
+
+
+            ifIndex,
+            docsIetfQosSID
+          }
+    ::= { docsIetfQosUpstreamStatsTable 1 }
+
+DocsIetfQosUpstreamStatsEntry ::= SEQUENCE {
+    docsIetfQosSID                            Unsigned32,
+    docsIetfQosUpstreamFragments              Counter32,
+    docsIetfQosUpstreamFragDiscards           Counter32,
+    docsIetfQosUpstreamConcatBursts           Counter32
+    }
+
+docsIetfQosSID OBJECT-TYPE
+    SYNTAX          Unsigned32 (1..16383)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "Identifies a service ID for an admitted or active
+                    upstream service flow."
+    ::= { docsIetfQosUpstreamStatsEntry 1 }
+
+docsIetfQosUpstreamFragments OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of fragmentation headers received on an
+                    upstream service flow, regardless of whether
+                    the fragment was correctly reassembled into a
+                    valid packet.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosUpstreamStatsEntry 2 }
+
+docsIetfQosUpstreamFragDiscards OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of upstream fragments discarded and not
+                    assembled into a valid upstream packet.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosUpstreamStatsEntry 3 }
+
+docsIetfQosUpstreamConcatBursts OBJECT-TYPE
+    SYNTAX          Counter32
+
+
+
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of concatenation headers received on an
+                    upstream service flow.
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosUpstreamStatsEntry 4 }
+
+
+--
+--  Dynamic Service Stats Table
+--
+docsIetfQosDynamicServiceStatsTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF DocsIetfQosDynamicServiceStatsEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "This table describes statistics associated with the
+                    Dynamic Service Flows in a managed device."
+    ::= { docsIetfQosMIBObjects 6 }
+
+docsIetfQosDynamicServiceStatsEntry OBJECT-TYPE
+    SYNTAX          DocsIetfQosDynamicServiceStatsEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "Describes a set of dynamic service flow statistics.
+                    Two entries exist for each DOCSIS MAC layer
+                    interface for the upstream and downstream
+                    direction.  On the CMTS, the downstream direction
+                    row indicates messages transmitted or transactions
+                    originated by the CMTS.  The upstream direction row
+                    indicates messages received or transaction
+                    originated by the CM.  On the CM, the downstream
+                    direction row indicates messages received or
+                    transactions originated by the CMTS.  The upstream
+                    direction row indicates messages transmitted by
+                    the CM or transactions originated by the CM.
+                    The ifIndex is an ifType of
+                    docsCableMaclayer(127)."
+    INDEX {
+            ifIndex,
+            docsIetfQosIfDirection
+          }
+    ::= { docsIetfQosDynamicServiceStatsTable 1 }
+
+DocsIetfQosDynamicServiceStatsEntry ::= SEQUENCE {
+    docsIetfQosIfDirection                DocsIetfQosRfMacIfDirection,
+    docsIetfQosDSAReqs                    Counter32,
+
+
+
+    docsIetfQosDSARsps                    Counter32,
+    docsIetfQosDSAAcks                    Counter32,
+    docsIetfQosDSCReqs                    Counter32,
+    docsIetfQosDSCRsps                    Counter32,
+    docsIetfQosDSCAcks                    Counter32,
+    docsIetfQosDSDReqs                    Counter32,
+    docsIetfQosDSDRsps                    Counter32,
+    docsIetfQosDynamicAdds                Counter32,
+    docsIetfQosDynamicAddFails            Counter32,
+    docsIetfQosDynamicChanges             Counter32,
+    docsIetfQosDynamicChangeFails         Counter32,
+    docsIetfQosDynamicDeletes             Counter32,
+    docsIetfQosDynamicDeleteFails         Counter32,
+    docsIetfQosDCCReqs                    Counter32,
+    docsIetfQosDCCRsps                    Counter32,
+    docsIetfQosDCCAcks                    Counter32,
+    docsIetfQosDCCs                       Counter32,
+    docsIetfQosDCCFails                   Counter32
+   }
+
+docsIetfQosIfDirection OBJECT-TYPE
+    SYNTAX          DocsIetfQosRfMacIfDirection
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "The direction of interface."
+    ::= { docsIetfQosDynamicServiceStatsEntry 1 }
+
+docsIetfQosDSAReqs OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of Dynamic Service Addition Requests,
+                    including retries.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 2 }
+
+docsIetfQosDSARsps OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of Dynamic Service Addition Responses,
+                    including retries.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+
+
+
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 3 }
+
+docsIetfQosDSAAcks OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of Dynamic Service Addition
+                    Acknowledgements, including retries.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 4 }
+
+docsIetfQosDSCReqs OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of Dynamic Service Change Requests,
+                    including retries.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 5 }
+
+docsIetfQosDSCRsps OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of Dynamic Service Change Responses,
+                    including retries.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 6 }
+
+docsIetfQosDSCAcks OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of Dynamic Service Change
+                    Acknowledgements, including retries.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+
+
+
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 7 }
+
+docsIetfQosDSDReqs OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of Dynamic Service Delete Requests,
+                    including retries.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 8 }
+
+docsIetfQosDSDRsps OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of Dynamic Service Delete Responses,
+                    including retries.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 9 }
+
+docsIetfQosDynamicAdds OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of successful Dynamic Service Addition
+                    transactions.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 10 }
+
+docsIetfQosDynamicAddFails OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of failed Dynamic Service Addition
+                    transactions.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+
+
+
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 11 }
+
+docsIetfQosDynamicChanges OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of successful Dynamic Service Change
+                    transactions.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 12 }
+
+docsIetfQosDynamicChangeFails OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of failed Dynamic Service Change
+                    transactions.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 13 }
+
+docsIetfQosDynamicDeletes OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of successful Dynamic Service Delete
+                    transactions.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 14 }
+
+docsIetfQosDynamicDeleteFails OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of failed Dynamic Service Delete
+                    transactions.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+
+
+
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 15 }
+
+
+docsIetfQosDCCReqs OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of Dynamic Channel Change Request
+                    messages traversing an interface.  This count
+                    is nonzero only on downstream direction rows.
+                    This count should include the number of retries.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex
+                    that indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 16 }
+
+docsIetfQosDCCRsps OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of Dynamic Channel Change Response
+                    messages traversing an interface.  This count is
+                    nonzero only on upstream direction rows.  This count
+                    should include the number of retries.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 17 }
+
+docsIetfQosDCCAcks OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of Dynamic Channel Change Acknowledgement
+                    messages traversing an interface.  This count
+                    is nonzero only on downstream direction rows.
+                    This count should include the number of retries.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 18 }
+
+docsIetfQosDCCs OBJECT-TYPE
+    SYNTAX          Counter32
+
+
+
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of successful Dynamic Channel Change
+                    transactions.  This count is nonzero only on
+                    downstream direction rows.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 19 }
+
+docsIetfQosDCCFails OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of failed Dynamic Channel Change
+                    transactions.  This count is nonzero only on
+                    downstream direction rows.
+
+                    This counter's last discontinuity is the
+                    ifCounterDiscontinuityTime for the same ifIndex that
+                    indexes this object."
+    ::= { docsIetfQosDynamicServiceStatsEntry 20 }
+
+
+--
+--  Service Flow Log Table (CMTS ONLY)
+--
+docsIetfQosServiceFlowLogTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF DocsIetfQosServiceFlowLogEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "This table contains a log of the disconnected
+                    Service Flows in a managed device."
+    ::= { docsIetfQosMIBObjects 7 }
+
+docsIetfQosServiceFlowLogEntry OBJECT-TYPE
+    SYNTAX          DocsIetfQosServiceFlowLogEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "The information regarding a single disconnected
+                    service flow."
+    INDEX {
+            docsIetfQosServiceFlowLogIndex
+          }
+    ::= { docsIetfQosServiceFlowLogTable 1 }
+
+DocsIetfQosServiceFlowLogEntry ::= SEQUENCE {
+
+
+
+    docsIetfQosServiceFlowLogIndex                 Unsigned32,
+    docsIetfQosServiceFlowLogIfIndex               InterfaceIndex,
+    docsIetfQosServiceFlowLogSFID                  Unsigned32,
+    docsIetfQosServiceFlowLogCmMac                 MacAddress,
+    docsIetfQosServiceFlowLogPkts                  Counter64,
+    docsIetfQosServiceFlowLogOctets                Counter64,
+    docsIetfQosServiceFlowLogTimeDeleted           TimeStamp,
+    docsIetfQosServiceFlowLogTimeCreated           TimeStamp,
+    docsIetfQosServiceFlowLogTimeActive            Counter32,
+    docsIetfQosServiceFlowLogDirection    DocsIetfQosRfMacIfDirection,
+    docsIetfQosServiceFlowLogPrimary               TruthValue,
+    docsIetfQosServiceFlowLogServiceClassName      SnmpAdminString,
+    docsIetfQosServiceFlowLogPolicedDropPkts       Counter32,
+    docsIetfQosServiceFlowLogPolicedDelayPkts      Counter32,
+    docsIetfQosServiceFlowLogControl               INTEGER
+    }
+
+docsIetfQosServiceFlowLogIndex OBJECT-TYPE
+    SYNTAX          Unsigned32 (1..4294967295)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "Unique index for a logged service flow."
+    ::= { docsIetfQosServiceFlowLogEntry 1 }
+
+docsIetfQosServiceFlowLogIfIndex OBJECT-TYPE
+    SYNTAX          InterfaceIndex
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The ifIndex of ifType docsCableMaclayer(127)
+                    on the CMTS where the service flow was present."
+    ::= {  docsIetfQosServiceFlowLogEntry 2 }
+
+docsIetfQosServiceFlowLogSFID    OBJECT-TYPE
+    SYNTAX          Unsigned32 (1..4294967295)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The index assigned to the service flow by the CMTS."
+    ::= {  docsIetfQosServiceFlowLogEntry 3 }
+
+docsIetfQosServiceFlowLogCmMac OBJECT-TYPE
+    SYNTAX          MacAddress
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The MAC address for the cable modem associated with
+                    the service flow."
+    ::= { docsIetfQosServiceFlowLogEntry 4 }
+
+docsIetfQosServiceFlowLogPkts OBJECT-TYPE
+
+
+
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of packets counted on this service flow
+                    after payload header suppression."
+    ::= { docsIetfQosServiceFlowLogEntry 5 }
+
+docsIetfQosServiceFlowLogOctets OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The number of octets counted on this service flow
+                    after payload header suppression."
+    ::= { docsIetfQosServiceFlowLogEntry 6 }
+
+docsIetfQosServiceFlowLogTimeDeleted OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The value of sysUpTime when the service flow
+                    was deleted."
+    ::= { docsIetfQosServiceFlowLogEntry 7 }
+
+docsIetfQosServiceFlowLogTimeCreated OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The value of sysUpTime when the service flow
+                    was created."
+    ::= { docsIetfQosServiceFlowLogEntry 8 }
+
+docsIetfQosServiceFlowLogTimeActive OBJECT-TYPE
+    SYNTAX          Counter32
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The total time that the service flow was active."
+    ::= { docsIetfQosServiceFlowLogEntry 9 }
+
+docsIetfQosServiceFlowLogDirection OBJECT-TYPE
+    SYNTAX          DocsIetfQosRfMacIfDirection
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The value of docsIetfQosServiceFlowDirection
+                    for the service flow."
+    ::= { docsIetfQosServiceFlowLogEntry  10 }
+
+docsIetfQosServiceFlowLogPrimary OBJECT-TYPE
+
+
+
+    SYNTAX          TruthValue
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The value of docsIetfQosServiceFlowPrimary for the
+                    service flow."
+    ::= { docsIetfQosServiceFlowLogEntry 11 }
+
+docsIetfQosServiceFlowLogServiceClassName OBJECT-TYPE
+    SYNTAX          SnmpAdminString
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The value of docsIetfQosParamSetServiceClassName for
+                    the provisioned QOS Parameter Set of the
+                    service flow."
+    ::= { docsIetfQosServiceFlowLogEntry  12 }
+
+docsIetfQosServiceFlowLogPolicedDropPkts OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The final value of
+                    docsIetfQosServiceFlowPolicedDropPkts for the
+                    service flow."
+    ::= { docsIetfQosServiceFlowLogEntry  13 }
+
+docsIetfQosServiceFlowLogPolicedDelayPkts OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The final value of
+                    docsIetfQosServiceFlowPolicedDelayPkts for the
+                    service flow."
+    ::= { docsIetfQosServiceFlowLogEntry  14 }
+
+docsIetfQosServiceFlowLogControl OBJECT-TYPE
+    SYNTAX          INTEGER {
+                     active(1),
+                     destroy(6)
+                    }
+
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION    "Setting this object to the value destroy(6) removes
+                    this entry from the table.
+
+                    Reading this object returns the value active(1)."
+    ::= { docsIetfQosServiceFlowLogEntry 15 }
+
+
+
+
+--
+-- Service Class Table (CMTS ONLY)
+--
+docsIetfQosServiceClassTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF DocsIetfQosServiceClassEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "This table describes the set of DOCSIS-QOS
+                    Service Classes in a CMTS."
+    ::= { docsIetfQosMIBObjects 8 }
+
+docsIetfQosServiceClassEntry OBJECT-TYPE
+    SYNTAX          DocsIetfQosServiceClassEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "A provisioned service class on a CMTS.
+                    Each entry defines a template for certain
+                    DOCSIS QOS Parameter Set values.  When a CM
+                    creates or modifies an Admitted QOS Parameter Set
+                    for a Service Flow, it may reference a Service Class
+                    Name instead of providing explicit QOS Parameter
+                    Set values.  In this case, the CMTS populates
+                    the QOS Parameter Set with the applicable
+                    corresponding values from the named Service Class.
+                    Subsequent changes to a Service Class row do not
+                    affect the QOS Parameter Set values of any service
+                    flows already admitted.
+
+                    A service class template applies to only
+                    a single direction, as indicated in the
+                    docsIetfQosServiceClassDirection object."
+    INDEX {
+             docsIetfQosServiceClassName
+          }
+    ::= { docsIetfQosServiceClassTable 1 }
+
+DocsIetfQosServiceClassEntry ::= SEQUENCE {
+    docsIetfQosServiceClassName               SnmpAdminString,
+    docsIetfQosServiceClassStatus             RowStatus,
+    docsIetfQosServiceClassPriority           Integer32,
+    docsIetfQosServiceClassMaxTrafficRate     DocsIetfQosBitRate,
+    docsIetfQosServiceClassMaxTrafficBurst    Unsigned32,
+    docsIetfQosServiceClassMinReservedRate    DocsIetfQosBitRate,
+    docsIetfQosServiceClassMinReservedPkt     Integer32,
+    docsIetfQosServiceClassMaxConcatBurst     Integer32,
+    docsIetfQosServiceClassNomPollInterval    Unsigned32,
+    docsIetfQosServiceClassTolPollJitter      Unsigned32,
+    docsIetfQosServiceClassUnsolicitGrantSize Integer32,
+
+
+
+    docsIetfQosServiceClassNomGrantInterval   Unsigned32,
+    docsIetfQosServiceClassTolGrantJitter     Unsigned32,
+    docsIetfQosServiceClassGrantsPerInterval  Integer32,
+    docsIetfQosServiceClassMaxLatency         Unsigned32,
+    docsIetfQosServiceClassActiveTimeout      Integer32,
+    docsIetfQosServiceClassAdmittedTimeout    Integer32,
+    docsIetfQosServiceClassSchedulingType     DocsIetfQosSchedulingType,
+    docsIetfQosServiceClassRequestPolicy      OCTET STRING,
+    docsIetfQosServiceClassTosAndMask         OCTET STRING,
+    docsIetfQosServiceClassTosOrMask          OCTET STRING,
+    docsIetfQosServiceClassDirection        DocsIetfQosRfMacIfDirection,
+    docsIetfQosServiceClassStorageType        StorageType,
+    docsIetfQosServiceClassDSCPOverwrite      DscpOrAny
+    }
+
+docsIetfQosServiceClassName OBJECT-TYPE
+    SYNTAX          SnmpAdminString (SIZE (1..15))
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "Service Class Name.  DOCSIS specifies that the
+                    maximum size is 16 ASCII characters including
+                    a terminating zero.  The terminating zero is not
+                    represented in this SnmpAdminString syntax object."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.3.4"
+    ::= { docsIetfQosServiceClassEntry 1 }
+
+docsIetfQosServiceClassStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Used to create or delete rows in this table.
+                    There is no restriction on the ability to change
+                    values in this row while the row is active.
+                    Inactive rows need not be timed out."
+    ::= { docsIetfQosServiceClassEntry 2 }
+
+docsIetfQosServiceClassPriority OBJECT-TYPE
+    SYNTAX          Integer32 (0..7)
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetPriority."
+    DEFVAL          { 0 }
+    ::= { docsIetfQosServiceClassEntry 3 }
+
+docsIetfQosServiceClassMaxTrafficRate OBJECT-TYPE
+    SYNTAX          DocsIetfQosBitRate
+    MAX-ACCESS      read-create
+    STATUS          current
+
+
+
+    DESCRIPTION    "Template for docsIetfQosParamSetMaxTrafficRate."
+    DEFVAL          { 0 }
+    ::= { docsIetfQosServiceClassEntry 4 }
+
+docsIetfQosServiceClassMaxTrafficBurst OBJECT-TYPE
+    SYNTAX          Unsigned32
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetMaxTrafficBurst."
+    DEFVAL          { 3044 }
+    ::= { docsIetfQosServiceClassEntry 5 }
+
+docsIetfQosServiceClassMinReservedRate OBJECT-TYPE
+    SYNTAX          DocsIetfQosBitRate
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSEtMinReservedRate."
+    DEFVAL          { 0 }
+    ::= { docsIetfQosServiceClassEntry 6 }
+
+docsIetfQosServiceClassMinReservedPkt OBJECT-TYPE
+    SYNTAX          Integer32 (0..65535)
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetMinReservedPkt."
+    ::= { docsIetfQosServiceClassEntry 7 }
+
+docsIetfQosServiceClassMaxConcatBurst OBJECT-TYPE
+    SYNTAX          Integer32 (0..65535)
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetMaxConcatBurst."
+    DEFVAL          { 1522 }
+    ::= { docsIetfQosServiceClassEntry 8 }
+
+docsIetfQosServiceClassNomPollInterval OBJECT-TYPE
+    SYNTAX          Unsigned32
+    UNITS           "microseconds"
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetNomPollInterval."
+    DEFVAL          { 0 }
+    ::= { docsIetfQosServiceClassEntry 9 }
+
+docsIetfQosServiceClassTolPollJitter OBJECT-TYPE
+    SYNTAX          Unsigned32
+    UNITS           "microseconds"
+    MAX-ACCESS      read-create
+
+
+
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetTolPollJitter."
+    DEFVAL          { 0 }
+    ::= { docsIetfQosServiceClassEntry 10 }
+
+docsIetfQosServiceClassUnsolicitGrantSize OBJECT-TYPE
+    SYNTAX          Integer32 (0..65535)
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetUnsolicitGrantSize."
+    DEFVAL          { 0 }
+    ::= { docsIetfQosServiceClassEntry 11 }
+
+docsIetfQosServiceClassNomGrantInterval OBJECT-TYPE
+    SYNTAX          Unsigned32
+    UNITS           "microseconds"
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetNomGrantInterval."
+    DEFVAL          { 0 }
+    ::= { docsIetfQosServiceClassEntry 12 }
+
+docsIetfQosServiceClassTolGrantJitter OBJECT-TYPE
+    SYNTAX          Unsigned32
+    UNITS           "microseconds"
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetTolGrantJitter."
+    DEFVAL          { 0 }
+    ::= { docsIetfQosServiceClassEntry 13 }
+
+docsIetfQosServiceClassGrantsPerInterval OBJECT-TYPE
+    SYNTAX          Integer32 (0..127)
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetGrantsPerInterval."
+    DEFVAL          { 0 }
+    ::= { docsIetfQosServiceClassEntry 14 }
+
+docsIetfQosServiceClassMaxLatency OBJECT-TYPE
+    SYNTAX          Unsigned32
+    UNITS           "microseconds"
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetClassMaxLatency."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.7.1"
+    DEFVAL          { 0 }
+    ::= { docsIetfQosServiceClassEntry 15 }
+
+
+
+docsIetfQosServiceClassActiveTimeout OBJECT-TYPE
+    SYNTAX          Integer32 (0..65535)
+    UNITS           "seconds"
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetActiveTimeout."
+    DEFVAL          { 0 }
+    ::= { docsIetfQosServiceClassEntry 16 }
+
+docsIetfQosServiceClassAdmittedTimeout OBJECT-TYPE
+    SYNTAX          Integer32 (0..65535)
+    UNITS           "seconds"
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetAdmittedTimeout."
+    DEFVAL          { 200 }
+    ::= { docsIetfQosServiceClassEntry 17 }
+
+docsIetfQosServiceClassSchedulingType OBJECT-TYPE
+    SYNTAX          DocsIetfQosSchedulingType
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetSchedulingType."
+    DEFVAL          { bestEffort }
+    ::= { docsIetfQosServiceClassEntry 18 }
+
+docsIetfQosServiceClassRequestPolicy OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(4))
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetRequestPolicyOct."
+    DEFVAL          { '00000000'H } -- no bits are set
+    ::= { docsIetfQosServiceClassEntry 19 }
+
+docsIetfQosServiceClassTosAndMask OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(1))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetTosAndMask.
+                    The IP TOS octet as originally defined in RFC 791
+                    has been superseded by the 6-bit Differentiated
+                    Services Field (DSField, RFC 3260) and the 2-bit
+                    Explicit Congestion Notification Field (ECN field,
+                    RFC 3168).  Network operators SHOULD avoid
+                    specifying values of
+                    docsIetfQosServiceClassTosAndMask and
+                    docsIetfQosServiceClassTosOrMask that would result
+                    in the modification of the ECN bits.
+
+
+
+                    In particular, operators should not use values of
+                    docsIetfQosServiceClassTosAndMask that have either
+                    of the least-significant two bits set to 0.
+                    Similarly,operators should not use values of
+                    docsIetfQosServiceClassTosOrMask that have either
+                    of the least-significant two bits set to 1."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.10;
+                    RFC 3168, The Addition of Explicit Congestion
+                    Notification (ECN) to IP;
+                    RFC 3260, New Terminology and Clarifications for
+                    Diffserv."
+    ::= { docsIetfQosServiceClassEntry 20 }
+
+docsIetfQosServiceClassTosOrMask OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(1))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Template for docsIetfQosParamSetTosOrMask.
+                    The IP TOS octet as originally defined in RFC 791
+                    has been superseded by the 6-bit Differentiated
+                    Services Field (DSField, RFC 3260) and the 2-bit
+                    Explicit Congestion Notification Field (ECN field,
+                    RFC 3168).  Network operators SHOULD avoid
+                    specifying values of
+                    docsIetfQosServiceClassTosAndMask and
+                    docsIetfQosServiceClassTosOrMask that would result
+                    in the modification of the ECN bits.
+
+                    In particular, operators should not use values of
+                    docsIetfQosServiceClassTosAndMask that have either
+                    of the least-significant two bits set to 0.
+                    Similarly, operators should not use values of
+                    docsIetfQosServiceClassTosOrMask that have either
+                    of the least-significant two bits set to 1."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.2.6.10;
+                    RFC 3168, The Addition of Explicit Congestion
+                    Notification (ECN) to IP;
+                    RFC 3260, New Terminology and Clarifications for
+                    Diffserv."
+    ::= { docsIetfQosServiceClassEntry 21 }
+
+docsIetfQosServiceClassDirection OBJECT-TYPE
+    SYNTAX          DocsIetfQosRfMacIfDirection
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Specifies whether the service class template
+                    applies to upstream or downstream service flows."
+    DEFVAL          { upstream }
+
+
+
+    ::= { docsIetfQosServiceClassEntry 22 }
+
+docsIetfQosServiceClassStorageType OBJECT-TYPE
+    SYNTAX          StorageType
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "This object defines whether this row is kept in
+                    volatile storage and lost upon reboot or whether
+                    it is backed up by non-volatile or permanent
+                    storage.  'permanent' entries need not allow
+                    writable access to any object."
+    DEFVAL { nonVolatile }
+    ::= { docsIetfQosServiceClassEntry 23 }
+
+docsIetfQosServiceClassDSCPOverwrite OBJECT-TYPE
+    SYNTAX          DscpOrAny
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "This object allows the overwrite of the DSCP
+                    field per RFC 3260.
+
+                    If this object is -1, then the corresponding entry's
+                    docsIetfQosServiceClassTosAndMask value MUST be
+                    'FF'H and docsIetfQosServiceClassTosOrMask MUST be
+                    '00'H.  Otherwise, this object is in the range of
+                    0..63, and the corresponding entry's
+                    docsIetfQosServiceClassTosAndMask value MUST be
+                    '03'H and the docsIetfQosServiceClassTosOrMask MUST
+                    be this object's value shifted left by two bit
+                    positions."
+    REFERENCE      "RFC 3168, The Addition of Explicit Congestion
+                    Notification (ECN) to IP;
+                    RFC 3260, New Terminology and Clarifications for
+                    Diffserv."
+    DEFVAL          { -1 }
+    ::= { docsIetfQosServiceClassEntry 24 }
+
+--
+-- Service Class PolicyTable
+--
+docsIetfQosServiceClassPolicyTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF DocsIetfQosServiceClassPolicyEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "This table describes the set of DOCSIS-QOS
+                    Service Class Policies.
+
+                    This table is an adjunct to the
+
+
+
+                    docsDevFilterPolicy table.   Entries in the
+                    docsDevFilterPolicy table can point to
+                    specific rows in this table.
+
+                    This table permits mapping a packet to a service
+                    class name of an active service flow so long as
+                    a classifier does not exist at a higher
+                    priority."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix E.2.1"
+    ::= { docsIetfQosMIBObjects 9 }
+
+docsIetfQosServiceClassPolicyEntry OBJECT-TYPE
+    SYNTAX          DocsIetfQosServiceClassPolicyEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "A service class name policy entry."
+    INDEX {
+            docsIetfQosServiceClassPolicyIndex
+          }
+    ::= { docsIetfQosServiceClassPolicyTable 1 }
+
+DocsIetfQosServiceClassPolicyEntry ::= SEQUENCE {
+    docsIetfQosServiceClassPolicyIndex        Unsigned32,
+    docsIetfQosServiceClassPolicyName         SnmpAdminString,
+    docsIetfQosServiceClassPolicyRulePriority Integer32,
+    docsIetfQosServiceClassPolicyStatus       RowStatus,
+    docsIetfQosServiceClassPolicyStorageType  StorageType
+    }
+
+docsIetfQosServiceClassPolicyIndex OBJECT-TYPE
+    SYNTAX          Unsigned32 (1..2147483647)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "Index value to identify an entry in
+                    this table uniquely."
+    ::= { docsIetfQosServiceClassPolicyEntry 1 }
+
+docsIetfQosServiceClassPolicyName OBJECT-TYPE
+    SYNTAX          SnmpAdminString
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Service Class Name to identify the name of the
+                    service class flow to which the packet should be
+                    directed."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix E.2.1"
+    ::= { docsIetfQosServiceClassPolicyEntry 2 }
+
+docsIetfQosServiceClassPolicyRulePriority OBJECT-TYPE
+
+
+
+    SYNTAX          Integer32 (0..255)
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Service Class Policy rule priority for the
+                    entry."
+    REFERENCE      "SP-RFIv2.0-I06-040804, Appendix C.2.1.3.5"
+    ::= { docsIetfQosServiceClassPolicyEntry 3 }
+
+docsIetfQosServiceClassPolicyStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "Used to create or delete rows in this table.
+                    This object should not be deleted if it is
+                    referenced by an entry in docsDevFilterPolicy.
+                    The reference should be deleted first.
+                    There is no restriction on the ability
+                    to change values in this row while the row is
+                    active.  Inactive rows need not be timed out."
+    ::= { docsIetfQosServiceClassPolicyEntry 4 }
+
+docsIetfQosServiceClassPolicyStorageType OBJECT-TYPE
+    SYNTAX          StorageType
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION    "This object defines whether this row is kept in
+                    volatile storage and lost upon reboot or whether
+                    it is backed up by non-volatile or permanent
+                    storage.  'permanent' entries need not allow
+                    writable access to any object."
+    DEFVAL { nonVolatile }
+    ::= { docsIetfQosServiceClassPolicyEntry 5 }
+
+--
+-- Payload Header Suppression(PHS) Table
+--
+docsIetfQosPHSTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF DocsIetfQosPHSEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "This table describes the set of payload header
+                    suppression entries."
+    ::= { docsIetfQosMIBObjects 10 }
+
+docsIetfQosPHSEntry OBJECT-TYPE
+    SYNTAX          DocsIetfQosPHSEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+
+
+
+    DESCRIPTION    "A payload header suppression entry.
+
+                    The ifIndex is an ifType of docsCableMaclayer(127).
+                    The index docsIetfQosServiceFlowId selects one
+                    service flow from the cable MAC layer interface.
+                    The docsIetfQosPktClassId index matches an
+                    index of the docsIetfQosPktClassTable."
+    INDEX {
+            ifIndex,
+            docsIetfQosServiceFlowId,
+            docsIetfQosPktClassId
+          }
+    ::= { docsIetfQosPHSTable 1 }
+
+DocsIetfQosPHSEntry ::= SEQUENCE {
+    docsIetfQosPHSField            OCTET STRING,
+    docsIetfQosPHSMask             OCTET STRING,
+    docsIetfQosPHSSize             Integer32,
+    docsIetfQosPHSVerify           TruthValue,
+    docsIetfQosPHSIndex            Integer32
+    }
+
+docsIetfQosPHSField         OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(0..255))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Payload header suppression field defines the
+                    bytes of the header that must be
+                    suppressed/restored by the sending/receiving
+                    device.
+
+                    The number of octets in this object should be
+                    the same as the value of docsIetfQosPHSSize."
+    REFERENCE       "SP-RFIv2.0-I06-040804, Appendix C.2.2.10.1"
+    ::= { docsIetfQosPHSEntry 1 }
+
+docsIetfQosPHSMask          OBJECT-TYPE
+    SYNTAX          OCTET STRING(SIZE(0..32))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Payload header suppression mask defines the
+                    bit mask that is used in combination with the
+                    docsIetfQosPHSField.  It defines which bytes in
+                    the header must be suppressed/restored by the
+                    sending or receiving device.
+
+                    Each bit of this bit mask corresponds to a byte
+                    in the docsIetfQosPHSField, with the least
+
+
+
+                    significant bit corresponding to the first byte
+                    of the docsIetfQosPHSField.
+
+                    Each bit of the bit mask specifies whether
+                    the corresponding byte should be suppressed
+                    in the packet.  A bit value of '1' indicates that
+                    the byte should be suppressed by the sending
+                    device and restored by the receiving device.
+                    A bit value of '0' indicates that
+                    the byte should not be suppressed by the sending
+                    device or restored by the receiving device.
+
+                    If the bit mask does not contain a bit for each
+                    byte in the docsIetfQosPHSField, then the bit mask
+                    is extended with bit values of '1' to be the
+                    necessary length."
+    REFERENCE       "SP-RFIv2.0-I06-040804, Appendix C.2.2.10.3"
+    ::= { docsIetfQosPHSEntry 2 }
+
+docsIetfQosPHSSize          OBJECT-TYPE
+    SYNTAX          Integer32 (0..255)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Payload header suppression size specifies the
+                    number of bytes in the header to be suppressed
+                    and restored.
+
+                    The value of this object must match the number
+                    of bytes in the docsIetfQosPHSField."
+    REFERENCE       "SP-RFIv2.0-I06-040804, Appendix C.2.2.10.4"
+    ::= { docsIetfQosPHSEntry 3 }
+
+docsIetfQosPHSVerify       OBJECT-TYPE
+    SYNTAX          TruthValue
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Payload header suppression verification value.  If
+                    'true', the sender must verify docsIetfQosPHSField
+                    is the same as what is contained in the packet
+                    to be suppressed."
+    REFERENCE       "SP-RFIv2.0-I06-040804, Appendix C.2.2.10.5"
+    ::= { docsIetfQosPHSEntry 4 }
+
+docsIetfQosPHSIndex         OBJECT-TYPE
+    SYNTAX          Integer32 (1..255)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "Payload header suppression index uniquely
+
+
+
+                    references the PHS rule for a given service flow."
+    REFERENCE       "SP-RFIv2.0-I06-040804, Appendix C.2.2.10.2"
+    ::= { docsIetfQosPHSEntry 5 }
+
+
+--
+-- docsIetfQosCmtsMacToSrvFlowTable (CMTS Only)
+--
+docsIetfQosCmtsMacToSrvFlowTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF DocsIetfQosCmtsMacToSrvFlowEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "This table provides for referencing the service
+                    flows associated with a particular cable modem.
+                    This allows indexing into other docsIetfQos
+                    tables that are indexed by docsIetfQosServiceFlowId
+                    and ifIndex."
+    ::= { docsIetfQosMIBObjects 11 }
+
+docsIetfQosCmtsMacToSrvFlowEntry OBJECT-TYPE
+    SYNTAX          DocsIetfQosCmtsMacToSrvFlowEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "An entry is created by CMTS for each service flow
+                    connected to this CMTS."
+    INDEX {
+            docsIetfQosCmtsCmMac,
+            docsIetfQosCmtsServiceFlowId
+          }
+    ::= { docsIetfQosCmtsMacToSrvFlowTable 1 }
+
+DocsIetfQosCmtsMacToSrvFlowEntry ::= SEQUENCE {
+    docsIetfQosCmtsCmMac                MacAddress,
+    docsIetfQosCmtsServiceFlowId        Unsigned32,
+    docsIetfQosCmtsIfIndex              InterfaceIndex
+    }
+
+docsIetfQosCmtsCmMac OBJECT-TYPE
+    SYNTAX          MacAddress
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION    "The MAC address for the referenced CM."
+    ::= { docsIetfQosCmtsMacToSrvFlowEntry 1 }
+
+docsIetfQosCmtsServiceFlowId OBJECT-TYPE
+    SYNTAX          Unsigned32 (1..4294967295)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+
+
+
+    DESCRIPTION    "An index assigned to a service flow by CMTS."
+    ::= { docsIetfQosCmtsMacToSrvFlowEntry 2 }
+
+docsIetfQosCmtsIfIndex OBJECT-TYPE
+    SYNTAX          InterfaceIndex
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION    "The ifIndex of ifType docsCableMacLayer(127)
+                    on the CMTS that is connected to the Cable Modem."
+    ::= { docsIetfQosCmtsMacToSrvFlowEntry 3 }
+
+--
+-- Conformance definitions
+--
+docsIetfQosConformance  OBJECT IDENTIFIER
+        ::= { docsIetfQosMIB 2 }
+
+docsIetfQosGroups       OBJECT IDENTIFIER
+        ::= { docsIetfQosConformance 1 }
+
+docsIetfQosCompliances  OBJECT IDENTIFIER
+        ::= { docsIetfQosConformance 2 }
+
+docsIetfQosCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for MCNS Cable Modems and
+         Cable Modem Termination Systems that implement DOCSIS
+         Service Flows."
+
+    MODULE  -- docsIetfQosMIB
+        MANDATORY-GROUPS { docsIetfQosBaseGroup }
+
+        GROUP docsIetfQosCmtsGroup
+        DESCRIPTION
+            "This group is mandatory for Cable Modem Termination
+             Systems (CMTS) and is not implemented for Cable Modems
+             (CM)."
+
+        GROUP docsIetfQosParamSetGroup
+        DESCRIPTION
+            "This group is mandatory for Cable Modem Termination
+             Systems (CMTS) and Cable Modems.  Cable modems only
+             implement objects in this group as read-only."
+
+        GROUP docsIetfQosSrvClassPolicyGroup
+        DESCRIPTION
+            "This group is optional for Cable Modem Termination
+
+
+
+             Systems (CMTS) and Cable Modems.  This group is relevant
+             if policy-based service flow classification
+             is implemented.  See docsDevPolicyTable in
+             DOCS-CABLE-DEVICE-MIB for more details."
+
+        GROUP docsIetfQosServiceClassGroup
+        DESCRIPTION
+            "This group is mandatory for a Cable Modem Termination
+             System (CMTS) that implements expansion of Service Class
+             Names in a QOS Parameter Set.  This group is
+             not implemented on the Cable Modems."
+
+        OBJECT  docsIetfQosPktClassPkts
+        DESCRIPTION
+            "This object only needs to be implemented in entries
+             that are classifying packets and not policing packets."
+
+        OBJECT  docsIetfQosPktClassInetAddressType
+        SYNTAX InetAddressType { ipv4(1) }
+        DESCRIPTION
+            "An implementation is only required to support IPv4
+             address."
+
+        OBJECT  docsIetfQosPktClassInetSourceAddr
+        SYNTAX InetAddress (SIZE(4))
+        DESCRIPTION
+            "An implementation is only required to support IPv4
+             address."
+
+        OBJECT  docsIetfQosPktClassInetSourceMask
+        SYNTAX InetAddress (SIZE(4))
+        DESCRIPTION
+            "An implementation is only required to support IPv4
+             address."
+
+        OBJECT  docsIetfQosPktClassInetDestAddr
+        SYNTAX InetAddress (SIZE(4))
+        DESCRIPTION
+            "An implementation is only required to support IPv4
+             address."
+
+        OBJECT  docsIetfQosPktClassInetDestMask
+        SYNTAX InetAddress (SIZE(4))
+        DESCRIPTION
+            "An implementation is only required to support IPv4
+             address."
+
+        OBJECT  docsIetfQosServiceClassStorageType
+
+
+
+        SYNTAX StorageType { nonVolatile(3) }
+        DESCRIPTION
+            "An implementation is only required to support nonvolatile
+             storage."
+
+        OBJECT  docsIetfQosServiceClassPolicyStorageType
+        SYNTAX StorageType { nonVolatile(3) }
+        DESCRIPTION
+            "An implementation is only required to support nonvolatile
+             storage."
+
+    ::= { docsIetfQosCompliances 1 }
+
+docsIetfQosBaseGroup OBJECT-GROUP
+    OBJECTS {
+    docsIetfQosPktClassDirection,
+    docsIetfQosPktClassPriority,
+    docsIetfQosPktClassIpTosLow,
+    docsIetfQosPktClassIpTosHigh,
+    docsIetfQosPktClassIpTosMask,
+    docsIetfQosPktClassIpProtocol,
+    docsIetfQosPktClassSourcePortStart,
+    docsIetfQosPktClassSourcePortEnd,
+    docsIetfQosPktClassDestPortStart,
+    docsIetfQosPktClassDestPortEnd,
+    docsIetfQosPktClassDestMacAddr,
+    docsIetfQosPktClassDestMacMask,
+    docsIetfQosPktClassSourceMacAddr,
+    docsIetfQosPktClassEnetProtocolType,
+    docsIetfQosPktClassEnetProtocol,
+    docsIetfQosPktClassUserPriLow,
+    docsIetfQosPktClassUserPriHigh,
+    docsIetfQosPktClassVlanId,
+    docsIetfQosPktClassStateActive,
+    docsIetfQosPktClassPkts,
+    docsIetfQosPktClassBitMap,
+    docsIetfQosPktClassInetAddressType,
+    docsIetfQosPktClassInetSourceAddr,
+    docsIetfQosPktClassInetSourceMask,
+    docsIetfQosPktClassInetDestAddr,
+    docsIetfQosPktClassInetDestMask,
+
+    docsIetfQosServiceFlowSID,
+    docsIetfQosServiceFlowDirection,
+    docsIetfQosServiceFlowPrimary,
+
+    docsIetfQosServiceFlowPkts,
+    docsIetfQosServiceFlowOctets,
+
+
+
+    docsIetfQosServiceFlowTimeCreated,
+    docsIetfQosServiceFlowTimeActive,
+    docsIetfQosServiceFlowPHSUnknowns,
+    docsIetfQosServiceFlowPolicedDropPkts,
+    docsIetfQosServiceFlowPolicedDelayPkts,
+
+    docsIetfQosDSAReqs,
+    docsIetfQosDSARsps,
+    docsIetfQosDSAAcks,
+    docsIetfQosDSCReqs,
+    docsIetfQosDSCRsps,
+    docsIetfQosDSCAcks,
+    docsIetfQosDSDReqs,
+    docsIetfQosDSDRsps,
+    docsIetfQosDynamicAdds,
+    docsIetfQosDynamicAddFails,
+    docsIetfQosDynamicChanges,
+    docsIetfQosDynamicChangeFails,
+    docsIetfQosDynamicDeletes,
+    docsIetfQosDynamicDeleteFails,
+    docsIetfQosDCCReqs,
+    docsIetfQosDCCRsps,
+    docsIetfQosDCCAcks,
+    docsIetfQosDCCs,
+    docsIetfQosDCCFails,
+
+    docsIetfQosPHSField,
+    docsIetfQosPHSMask,
+    docsIetfQosPHSSize,
+    docsIetfQosPHSVerify,
+    docsIetfQosPHSIndex
+    }
+    STATUS  current
+    DESCRIPTION
+        "Group of objects implemented in both Cable Modems and
+         Cable Modem Termination Systems."
+    ::= { docsIetfQosGroups 1 }
+
+docsIetfQosParamSetGroup OBJECT-GROUP
+    OBJECTS {
+    docsIetfQosParamSetServiceClassName,
+    docsIetfQosParamSetPriority,
+    docsIetfQosParamSetMaxTrafficRate,
+    docsIetfQosParamSetMaxTrafficBurst,
+    docsIetfQosParamSetMinReservedRate,
+    docsIetfQosParamSetMinReservedPkt,
+    docsIetfQosParamSetActiveTimeout,
+    docsIetfQosParamSetAdmittedTimeout,
+
+
+
+    docsIetfQosParamSetMaxConcatBurst,
+    docsIetfQosParamSetSchedulingType,
+    docsIetfQosParamSetNomPollInterval,
+    docsIetfQosParamSetTolPollJitter,
+    docsIetfQosParamSetUnsolicitGrantSize,
+    docsIetfQosParamSetNomGrantInterval,
+    docsIetfQosParamSetTolGrantJitter,
+    docsIetfQosParamSetGrantsPerInterval,
+    docsIetfQosParamSetTosAndMask,
+    docsIetfQosParamSetTosOrMask,
+    docsIetfQosParamSetMaxLatency,
+    docsIetfQosParamSetRequestPolicyOct,
+    docsIetfQosParamSetBitMap
+    }
+    STATUS  current
+    DESCRIPTION
+        "Group of objects implemented in both Cable Modems and
+         Cable Modem Termination Systems for QOS Parameter Sets."
+    ::= { docsIetfQosGroups 2 }
+
+
+docsIetfQosCmtsGroup OBJECT-GROUP
+    OBJECTS {
+
+    docsIetfQosUpstreamFragments,
+    docsIetfQosUpstreamFragDiscards,
+    docsIetfQosUpstreamConcatBursts,
+
+    docsIetfQosServiceFlowLogIfIndex,
+    docsIetfQosServiceFlowLogSFID,
+    docsIetfQosServiceFlowLogCmMac,
+    docsIetfQosServiceFlowLogPkts,
+    docsIetfQosServiceFlowLogOctets,
+    docsIetfQosServiceFlowLogTimeDeleted,
+    docsIetfQosServiceFlowLogTimeCreated,
+    docsIetfQosServiceFlowLogTimeActive,
+    docsIetfQosServiceFlowLogDirection,
+    docsIetfQosServiceFlowLogPrimary,
+    docsIetfQosServiceFlowLogServiceClassName,
+    docsIetfQosServiceFlowLogPolicedDropPkts,
+    docsIetfQosServiceFlowLogPolicedDelayPkts,
+    docsIetfQosServiceFlowLogControl,
+
+    docsIetfQosCmtsIfIndex -- docsIetfQosCmtsMacToSrvFlowTable required
+
+    }
+    STATUS  current
+    DESCRIPTION
+
+
+
+        "Group of objects implemented only in the CMTS."
+    ::= { docsIetfQosGroups 3 }
+
+docsIetfQosSrvClassPolicyGroup OBJECT-GROUP
+    OBJECTS {
+    docsIetfQosServiceClassPolicyName,
+    docsIetfQosServiceClassPolicyRulePriority,
+    docsIetfQosServiceClassPolicyStatus,
+    docsIetfQosServiceClassPolicyStorageType
+    }
+    STATUS  current
+    DESCRIPTION
+        "Group of objects implemented in both Cable Modems and
+         Cable Modem Termination Systems when supporting policy-based
+         service flows."
+    ::= { docsIetfQosGroups 4 }
+
+docsIetfQosServiceClassGroup OBJECT-GROUP
+    OBJECTS {
+    docsIetfQosServiceClassStatus,
+    docsIetfQosServiceClassPriority,
+    docsIetfQosServiceClassMaxTrafficRate,
+    docsIetfQosServiceClassMaxTrafficBurst,
+    docsIetfQosServiceClassMinReservedRate,
+    docsIetfQosServiceClassMinReservedPkt,
+    docsIetfQosServiceClassMaxConcatBurst,
+    docsIetfQosServiceClassNomPollInterval,
+    docsIetfQosServiceClassTolPollJitter,
+    docsIetfQosServiceClassUnsolicitGrantSize,
+    docsIetfQosServiceClassNomGrantInterval,
+    docsIetfQosServiceClassTolGrantJitter,
+    docsIetfQosServiceClassGrantsPerInterval,
+    docsIetfQosServiceClassMaxLatency,
+    docsIetfQosServiceClassActiveTimeout,
+    docsIetfQosServiceClassAdmittedTimeout,
+    docsIetfQosServiceClassSchedulingType,
+    docsIetfQosServiceClassRequestPolicy,
+    docsIetfQosServiceClassTosAndMask,
+    docsIetfQosServiceClassTosOrMask,
+    docsIetfQosServiceClassDirection,
+    docsIetfQosServiceClassStorageType,
+    docsIetfQosServiceClassDSCPOverwrite
+    }
+    STATUS  current
+    DESCRIPTION
+        "Group of objects implemented only in Cable Modem
+         Termination Systems when supporting expansion of Service
+         Class Names in a QOS Parameter Set"
+
+
+
+    ::= { docsIetfQosGroups 5 }
+
+END

@@ -1,0 +1,255 @@
+<? wireshark:protocol
+	proto_name="smil"
+	media="application/smil"
+	description="Synchronized Multimedia Integration Language"
+	?>
+<!--
+$Id:$
+-->
+
+<!--
+
+    This is the XML document type definition (DTD) for SMIL 1.0.
+
+    Date: 1998/06/15 08:56:30
+
+    Authors: 
+        Jacco van Ossenbruggen <jrvosse@cwi.nl> 
+        Sjoerd Mullender       <sjoerd@cwi.nl>
+        
+    Further information about SMIL is available at:
+
+          http://www.w3.org/AudioVideo/
+
+-->
+
+
+<!-- Generally useful entities -->
+<!ENTITY % id-attr "id ID #IMPLIED">
+<!ENTITY % title-attr "title CDATA #IMPLIED">
+<!ENTITY % skip-attr "skip-content (true|false) 'true'">
+<!ENTITY % desc-attr "
+        %title-attr;
+        abstract        CDATA   #IMPLIED
+        author          CDATA   #IMPLIED
+        copyright       CDATA   #IMPLIED
+">
+
+<!--=================== SMIL Document =====================================-->
+<!--
+     The root element SMIL contains all other elements.
+-->
+<!ELEMENT smil (head?,body?)>
+<!ATTLIST smil
+        %id-attr;
+>
+
+<!--=================== The Document Head =================================-->
+<!ENTITY % layout-section "layout|switch">
+
+<!ENTITY % head-element "(meta*,((%layout-section;), meta*))?">
+
+<!ELEMENT head %head-element;>
+<!ATTLIST head %id-attr;>
+
+
+<!--=================== Layout Element ====================================-->
+<!--
+     Layout contains the region and root-layout elements defined by
+     smil-basic-layout or other elements defined an external layout 
+     mechanism.
+-->
+<!ELEMENT layout (region|root-layout)>
+<!ATTLIST layout
+        %id-attr;
+        type CDATA      "text/smil-basic-layout"
+>
+
+
+<!--=================== Region Element ===================================-->
+<!ENTITY % viewport-attrs "
+        height              CDATA    #IMPLIED
+        width               CDATA    #IMPLIED
+        background-color    CDATA    #IMPLIED
+">
+
+<!ELEMENT region EMPTY>
+<!ATTLIST region
+        %id-attr;
+        %title-attr;
+        %viewport-attrs;
+        left                CDATA    "0"
+        top                 CDATA    "0"
+        z-index             CDATA    "0"
+        fit                 (hidden|fill|meet|scroll|slice)    "hidden"
+        %skip-attr;
+>
+
+<!--=================== Root-layout Element ================================-->
+<!ELEMENT root-layout EMPTY>
+<!ATTLIST root-layout
+        %id-attr;
+        %title-attr;
+        %viewport-attrs;
+        %skip-attr;
+>
+
+
+<!--=================== Meta Element=======================================-->
+<!ELEMENT meta EMPTY>
+<!ATTLIST meta
+        name    NMTOKEN #REQUIRED
+        content CDATA   #REQUIRED
+        %skip-attr;
+>
+
+<!--=================== The Document Body =================================-->
+<!ENTITY % media-object "audio|video|text|img|animation|textstream|ref">
+<!ENTITY % schedule "par|seq|(%media-object;)">
+<!ENTITY % inline-link "a">
+<!ENTITY % assoc-link "anchor">
+<!ENTITY % link "%inline-link;">
+<!ENTITY % container-content "(%schedule;)|switch|(%link;)">
+<!ENTITY % body-content "(%container-content;)">
+
+<!ELEMENT body (%body-content;)*>
+<!ATTLIST body %id-attr;>
+
+<!--=================== Synchronization Attributes ========================-->
+<!ENTITY % sync-attributes "
+        begin   CDATA   #IMPLIED
+        end     CDATA   #IMPLIED
+">
+
+<!--=================== Switch Parameter Attributes =======================-->
+<!ENTITY % system-attribute "
+        system-bitrate             CDATA                #IMPLIED
+        system-language            CDATA                #IMPLIED
+        system-required            NMTOKEN              #IMPLIED
+        system-screen-size         CDATA                #IMPLIED
+        system-screen-depth        CDATA                #IMPLIED
+        system-captions            (on|off)             #IMPLIED
+        system-overdub-or-caption  (caption|overdub)    #IMPLIED
+">
+
+<!--=================== Fill Attribute ====================================-->
+<!ENTITY % fill-attribute "
+        fill    (remove|freeze)    'remove'
+">
+
+
+<!--=================== The Parallel Element ==============================-->
+<!ENTITY % par-content "%container-content;">
+<!ELEMENT par    (%par-content;)*>
+<!ATTLIST par
+        %id-attr;
+        %desc-attr;
+        endsync CDATA           "last"
+        dur     CDATA           #IMPLIED
+        repeat  CDATA           "1"
+        region  IDREF           #IMPLIED
+        %sync-attributes;
+        %system-attribute;
+>
+
+<!--=================== The Sequential Element ============================-->
+<!ENTITY % seq-content "%container-content;">
+<!ELEMENT seq    (%seq-content;)*>
+<!ATTLIST seq
+        %id-attr;
+        %desc-attr;
+        dur     CDATA           #IMPLIED
+        repeat  CDATA           "1"
+        region  IDREF           #IMPLIED
+        %sync-attributes;
+        %system-attribute;
+>
+
+<!--=================== The Switch Element ================================-->
+<!-- In the head, a switch may contain only layout elements,
+     in the body, only container elements. However, this
+     constraint cannot be expressed in the DTD (?), so
+     we allow both:
+-->
+<!ENTITY % switch-content "layout|(%container-content;)">
+<!ELEMENT switch (%switch-content;)*>
+<!ATTLIST switch
+        %id-attr;
+        %title-attr;
+>
+
+<!--=================== Media Object Elements =============================-->
+<!-- SMIL only defines the structure. The real media data is
+     referenced by the src attribute of the media objects.
+-->
+
+<!-- Furthermore, they have the following attributes as defined
+     in the SMIL specification:
+-->
+<!ENTITY % mo-attributes "
+        %id-attr;
+        %desc-attr;
+        region     IDREF           #IMPLIED
+        alt        CDATA           #IMPLIED
+        longdesc   CDATA           #IMPLIED
+        src        CDATA           #IMPLIED
+        type       CDATA           #IMPLIED
+        dur        CDATA           #IMPLIED
+        repeat     CDATA           '1'
+        %fill-attribute;
+        %sync-attributes;
+        %system-attribute;
+">
+
+<!--
+     Most info is in the attributes, media objects are empty or
+     contain associated link elements:
+-->
+<!ENTITY % mo-content "(%assoc-link;)*">
+<!ENTITY % clip-attrs "
+        clip-begin      CDATA   #IMPLIED
+        clip-end        CDATA   #IMPLIED
+">
+
+<!ELEMENT ref           %mo-content;>
+<!ELEMENT audio         %mo-content;>
+<!ELEMENT img           %mo-content;>
+<!ELEMENT video         %mo-content;>
+<!ELEMENT text          %mo-content;>
+<!ELEMENT textstream    %mo-content;>
+<!ELEMENT animation     %mo-content;>
+
+<!ATTLIST ref           %mo-attributes; %clip-attrs;>
+<!ATTLIST audio         %mo-attributes; %clip-attrs;>
+<!ATTLIST video         %mo-attributes; %clip-attrs;>
+<!ATTLIST animation     %mo-attributes; %clip-attrs;>
+<!ATTLIST textstream    %mo-attributes; %clip-attrs;>
+<!ATTLIST text          %mo-attributes;>
+<!ATTLIST img           %mo-attributes;>
+
+<!--=================== Link Elements =====================================-->
+
+<!ENTITY % smil-link-attributes "
+        %id-attr;
+        %title-attr;
+        href            CDATA                   #REQUIRED
+        show            (replace|new|pause)     'replace'
+">
+
+
+<!--=================== Inline Link Element ===============================-->
+<!ELEMENT a (%schedule;|switch)*>
+<!ATTLIST a
+        %smil-link-attributes;
+>
+
+
+<!--=================== Associated Link Element ===========================-->
+<!ELEMENT anchor EMPTY>
+<!ATTLIST anchor
+        %skip-attr;
+        %smil-link-attributes;
+        %sync-attributes;
+        coords          CDATA                   #IMPLIED
+>
+

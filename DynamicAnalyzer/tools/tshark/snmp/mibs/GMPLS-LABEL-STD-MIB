@@ -1,0 +1,724 @@
+GMPLS-LABEL-STD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  MODULE-IDENTITY, OBJECT-TYPE, Unsigned32, Integer32
+    FROM SNMPv2-SMI                                   -- RFC 2578
+  MODULE-COMPLIANCE, OBJECT-GROUP
+    FROM SNMPv2-CONF                                  -- RFC 2580
+  RowStatus, StorageType
+    FROM SNMPv2-TC                                    -- RFC 2579
+  InterfaceIndexOrZero
+    FROM IF-MIB                                       -- RFC 2863
+  IndexIntegerNextFree
+    FROM DIFFSERV-MIB                                 -- RFC 3289
+  MplsLabel, mplsStdMIB
+    FROM MPLS-TC-STD-MIB                              -- RFC 3811
+  GmplsLabelTypeTC, GmplsFreeformLabelTC
+    FROM GMPLS-TC-STD-MIB                             -- RFC 4801
+;
+
+gmplsLabelStdMIB MODULE-IDENTITY
+  LAST-UPDATED
+    "200702270000Z" -- 27 February 2007 00:00:00 GMT
+  ORGANIZATION
+    "IETF Common Control and Measurement Plane (CCAMP) Working Group"
+  CONTACT-INFO
+    "       Thomas D. Nadeau
+            Cisco Systems, Inc.
+     Email: tnadeau@cisco.com
+
+            Adrian Farrel
+            Old Dog Consulting
+     Email: adrian@olddog.co.uk
+
+     Comments about this document should be emailed directly to the
+     CCAMP working group mailing list at ccamp@ops.ietf.org."
+
+  DESCRIPTION
+    "Copyright (C) The IETF Trust (2007).  This version of
+     this MIB module is part of RFC 4803; see the RFC itself for
+     full legal notices.
+
+
+
+
+     This MIB module contains managed object definitions for labels
+     within GMPLS systems as defined in
+     Generalized Multi-Protocol Label Switching (GMPLS) Signaling
+     Functional Description, Berger, L. (Editor), RFC 3471,
+     January 2003."
+  REVISION
+    "200702270000Z" -- 27 February 2007 00:00:00 GMT
+  DESCRIPTION
+    "Initial version issued as part of RFC 4803."
+  ::= { mplsStdMIB 16 }
+
+-- no notifications are currently defined.
+
+gmplsLabelObjects        OBJECT IDENTIFIER ::= { gmplsLabelStdMIB 1 }
+gmplsLabelConformance    OBJECT IDENTIFIER ::= { gmplsLabelStdMIB 2 }
+
+gmplsLabelIndexNext OBJECT-TYPE
+  SYNTAX        IndexIntegerNextFree
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "This object contains an unused value for gmplsLabelIndex,
+       or a zero to indicate that no unused value exists or is
+       available.
+
+       A management application wishing to create a row in the
+       gmplsLabelTable may read this object and then attempt to
+       create a row in the table.  If row creation fails (because
+       another application has already created a row with the
+       supplied index), the management application should read this
+       object again to get a new index value.
+
+       When a row is created in the gmplsLabelTable with the
+       gmplsLabelIndex value held by this object, an implementation
+       MUST change the value in this object."
+  ::= { gmplsLabelObjects 1 }
+
+gmplsLabelTable OBJECT-TYPE
+  SYNTAX        SEQUENCE OF GmplsLabelEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+    "Table of GMPLS Labels.  This table allows the representation
+     of the more complex label forms required for GMPLS that cannot
+     be held within the TEXTUAL-CONVENTION MplsLabel; that is, labels
+     that cannot be encoded within 32 bits.  It is, nevertheless, also
+     capable of holding 32-bit labels or regular MPLS Labels if
+     desired.
+
+
+     Each entry in this table represents an individual GMPLS Label
+     value.  The representation of Labels in tables in other MIB
+     modules may be achieved by a referrence to an entry in this
+     table by means of a row pointer into this table.  The indexing
+     of this table provides for arbitrary indexing and also for
+     concatenation of labels.
+
+     For an example of label concatenation, see RFC 3945, section 7.1.
+     In essence, a GMPLS Label may be composite in order to identify
+     a set of resources in the data plane.  Practical examples are
+     timeslots and wavelength sets (which are not contiguous like
+     wavebands).
+
+     The indexing mechanism allows multiple entries in this table to
+     be seen as a sequence of labels that should be concatenated.
+     Ordering is potentially very sensitive for concatenation."
+   REFERENCE
+     "1. Generalized Multiprotocol Label Switching (GMPLS)
+         Architecture, RFC 3945, section 7.1."
+::= { gmplsLabelObjects 2 }
+
+gmplsLabelEntry OBJECT-TYPE
+  SYNTAX        GmplsLabelEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+    "An entry in this table represents a single label value.  There
+     are three indexes into the table.
+
+     -  The interface index may be helpful to distinguish which
+        labels are in use on which interfaces or to handle cases
+        where there are a very large number of labels in use in the
+        system.  When label representation is desired to apply to the
+        whole system or when it is not important to distinguish
+        labels by their interfaces, this index MAY be set to zero.
+
+     -  The label index provides a way of identifying the label.
+
+     -  The label sub-index is only used for concatenated labels.  It
+        identifies each component label.  When non-concatenated labels
+        are used, this index SHOULD be set to zero.
+
+     A storage type object is supplied to control the storage type
+     for each entry, but implementations should note that the storage
+     type of conceptual rows in other tables that include row
+     pointers to an entry in this table SHOULD dictate the storage
+     type of the rows in this table where the row in the other table
+     is more persistent."
+
+
+  INDEX {
+    gmplsLabelInterface,
+    gmplsLabelIndex,
+    gmplsLabelSubindex }
+::= { gmplsLabelTable 1 }
+
+GmplsLabelEntry ::= SEQUENCE {
+  gmplsLabelInterface           InterfaceIndexOrZero,
+  gmplsLabelIndex               Unsigned32,
+  gmplsLabelSubindex            Unsigned32,
+  gmplsLabelType                GmplsLabelTypeTC,
+  gmplsLabelMplsLabel           MplsLabel,
+  gmplsLabelPortWavelength      Unsigned32,
+  gmplsLabelFreeform            GmplsFreeformLabelTC,
+  gmplsLabelSonetSdhSignalIndex Integer32,
+  gmplsLabelSdhVc               Integer32,
+  gmplsLabelSdhVcBranch         Integer32,
+  gmplsLabelSonetSdhBranch      Integer32,
+  gmplsLabelSonetSdhGroupBranch Integer32,
+  gmplsLabelWavebandId          Unsigned32,
+  gmplsLabelWavebandStart       Unsigned32,
+  gmplsLabelWavebandEnd         Unsigned32,
+  gmplsLabelStorageType         StorageType,
+  gmplsLabelRowStatus           RowStatus
+}
+
+gmplsLabelInterface OBJECT-TYPE
+  SYNTAX        InterfaceIndexOrZero
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+    "The interface on which this label is used.  If this object is set
+     to zero, the label MUST have applicability across the
+     whole system and not be limited to a single interface."
+::= { gmplsLabelEntry 1 }
+
+gmplsLabelIndex OBJECT-TYPE
+  SYNTAX        Unsigned32 (0..4294967295)
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+    "An arbitrary index into the table to identify a label.
+
+     Note that implementations that are representing 32-bit labels
+     within this table MAY choose to align this index with the value
+     of the label, and this may result in the use of the value zero
+     since it represents a valid label value.  Such implementation
+     should be aware of the implications of sparsely populated
+
+
+     tables.
+
+     A management application may read the gmplsLabelIndexNext
+     object to find a suitable value for this object."
+::= { gmplsLabelEntry 2 }
+
+gmplsLabelSubindex OBJECT-TYPE
+  SYNTAX        Unsigned32 (0..4294967295)
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+    "In conjunction with gmplsLabelInterface and gmplsLabelIndex,
+     this object uniquely identifies this row.  This sub-index allows
+     a single GMPLS Label to be defined as a concatenation of labels.
+     This is particularly useful in TDM.
+
+     The ordering of sub-labels is strict with the sub-label with
+     the lowest gmplsLabelSubindex appearing first.  Note that all
+     sub-labels of a single GMPLS Label must share the same
+     gmplsLabelInterface and gmplsLabelIndex values.  For labels that
+     are not composed of concatenated sub-labels, this value SHOULD
+     be set to zero."
+::= { gmplsLabelEntry 3 }
+
+gmplsLabelType OBJECT-TYPE
+  SYNTAX        GmplsLabelTypeTC
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "Identifies the type of this label.  Note that this object does
+     not determine whether MPLS or GMPLS signaling is in use: a value
+     of gmplsMplsLabel(1) denotes that an MPLS Packet Label is
+     present in the gmplsLabelMplsLabel object and encoded using the
+     MplsLabel TEXTUAL-CONVENTION (may be a 20-bit MPLS Label, a 10-
+     or 23-bit Frame Relay Label, or an Asynchronous Transfer Mode
+     (ATM) Label), but does not describe whether this is signaled
+     using MPLS or GMPLS.
+
+     The value of this object helps determine which of the following
+     objects are valid.  This object cannot be modified if
+     gmplsLabelRowStatus is active(1)."
+   REFERENCE
+     "1. Generalized Multi-Protocol Label Switching (GMPLS) Signaling
+         Functional Description, RFC 3471, section 3."
+::= { gmplsLabelEntry 4 }
+
+gmplsLabelMplsLabel OBJECT-TYPE
+  SYNTAX         MplsLabel
+
+
+  MAX-ACCESS     read-create
+  STATUS         current
+  DESCRIPTION
+    "The value of an MPLS Label (that is a Packet Label) if this
+     table is used to store it.  This may be used in MPLS systems even
+     though the label values can be adequately stored in the MPLS MIB
+     modules (MPLS-LSR-STD-MIB and MPLS-TE-STD-MIB).  Furthermore, in
+     mixed MPLS and GMPLS systems, it may be advantageous to store all
+     labels in a single label table.  Lastly, in GMPLS systems where
+     Packet Labels are used (that is in systems that use GMPLS
+     signaling and GMPLS Labels for packet switching), it may be
+     desirable to use this table.
+
+     This object is only valid if gmplsLabelType is set
+     to gmplsMplsLabel(1).  This object cannot be modified if
+     gmplsLabelRowStatus is active(1)."
+  REFERENCE
+    "1. MPLS Label Stack Encoding, RFC 3032."
+  DEFVAL { 0 }
+::= { gmplsLabelEntry 5 }
+
+gmplsLabelPortWavelength OBJECT-TYPE
+  SYNTAX        Unsigned32
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "The value of a Port or Wavelength Label when carried as a
+     Generalized Label.  Only valid if gmplsLabelType is set to
+     gmplsPortWavelengthLabel(2).  This object cannot be modified if
+     gmplsLabelRowStatus is active(1)."
+  REFERENCE
+    "1. Generalized Multi-Protocol Label Switching (GMPLS) Signaling
+        Functional Description, RFC 3471, section 3.2.1.1."
+  DEFVAL { 0 }
+::= { gmplsLabelEntry 6 }
+
+gmplsLabelFreeform OBJECT-TYPE
+  SYNTAX        GmplsFreeformLabelTC
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "The value of a Freeform Generalized Label that does not conform
+     to one of the standardized label encodings or that an
+     implementation chooses to represent as an octet string without
+     further decoding.  Only valid if gmplsLabelType is set to
+     gmplsFreeformLabel(3).  This object cannot be modified
+     if gmplsLabelRowStatus is active(1)."
+  REFERENCE
+
+
+    "1. Generalized Multi-Protocol Label Switching (GMPLS) Signaling
+        Functional Description, RFC 3471, section 3.2."
+  DEFVAL { '00'h }
+::= { gmplsLabelEntry 7 }
+
+gmplsLabelSonetSdhSignalIndex OBJECT-TYPE
+  SYNTAX        Integer32 (0..4095)
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "The Signal Index value (S) of a SONET or SDH Generalized Label.
+     Zero indicates that this field is non-significant.  Only valid if
+     gmplsLabelType is set to gmplsSonetLabel(4) or gmplsSdhLabel(5).
+     This object cannot be modified if gmplsLabelRowStatus is
+     active(1)."
+  REFERENCE
+    "1. Generalized Multi-Protocol Label Switching (GMPLS) Extensions
+        for Synchronous Optical Network (SONET) and Synchronous
+        Digital Hierarchy (SDH) Control, RFC 4606, section 3."
+  DEFVAL { 0 }
+::= { gmplsLabelEntry 8 }
+
+gmplsLabelSdhVc OBJECT-TYPE
+  SYNTAX        Integer32 (0..15)
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "The VC Indicator (U) of an SDH Generalized Label.  Zero indicates
+     that this field is non-significant.  Only valid if gmplsLabelType
+     is set to gmplsSdhLabel(5).  This object cannot be modified if
+     gmplsLabelRowStatus is active(1)."
+  REFERENCE
+    "1. Generalized Multi-Protocol Label Switching (GMPLS) Extensions
+        for Synchronous Optical Network (SONET) and Synchronous
+        Digital Hierarchy (SDH) Control, RFC 4606, section 3."
+  DEFVAL { 0 }
+::= { gmplsLabelEntry 9 }
+
+gmplsLabelSdhVcBranch OBJECT-TYPE
+  SYNTAX        Integer32 (0..15)
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "The VC Branch Indicator (K) of an SDH Generalized Label.  Zero
+     indicates that this field is non-significant.  Only valid if
+     gmplsLabelType is set to gmplsSdhLabel(5).  This
+     object cannot be modified if gmplsLabelRowStatus is active(1)."
+  REFERENCE
+
+
+
+    "1. Generalized Multi-Protocol Label Switching (GMPLS) Extensions
+        for Synchronous Optical Network (SONET) and Synchronous
+        Digital Hierarchy (SDH) Control, RFC 4606, section 3."
+  DEFVAL { 0 }
+::= { gmplsLabelEntry 10 }
+
+gmplsLabelSonetSdhBranch OBJECT-TYPE
+  SYNTAX        Integer32 (0..15)
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "The Branch Indicator (L) of a SONET or SDH Generalized Label.
+     Zero indicates that this field is non-significant.  Only valid
+     gmplsLabelType is set to gmplsSonetLabel(4) or
+     gmplsSdhLabel(5).  This object cannot be modified if
+     gmplsLabelRowStatus is active(1)."
+  REFERENCE
+    "1. Generalized Multi-Protocol Label Switching (GMPLS) Extensions
+        for Synchronous Optical Network (SONET) and Synchronous
+        Digital Hierarchy (SDH) Control, RFC 4606, section 3."
+  DEFVAL { 0 }
+::= { gmplsLabelEntry 11 }
+
+gmplsLabelSonetSdhGroupBranch OBJECT-TYPE
+  SYNTAX        Integer32 (0..15)
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "The Group Branch Indicator (M) of a SONET or SDH Generalized
+     Label.  Zero indicates that this field is non-significant.
+     Only valid if gmplsLabelType is set to gmplsSonetLabel(4) or
+     gmplsSdhLabel(5).  This object cannot be modified if
+     gmplsLabelRowStatus is active(1)."
+  REFERENCE
+    "1. Generalized Multi-Protocol Label Switching (GMPLS) Extensions
+        for Synchronous Optical Network (SONET) and Synchronous
+        Digital Hierarchy (SDH) Control, RFC 4606, section 3."
+  DEFVAL { 0 }
+::= { gmplsLabelEntry 12 }
+
+gmplsLabelWavebandId OBJECT-TYPE
+  SYNTAX        Unsigned32
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "The waveband identifier component of a Waveband Label.  Only
+     valid if gmplsLabelType is set to gmplsWavebandLabel(6).  This
+     object cannot be modified if gmplsLabelRowStatus is active(1)."
+
+
+  REFERENCE
+    "1. Generalized Multi-Protocol Label Switching (GMPLS) Signaling
+        Functional Description, RFC 3471, section 3.3."
+  DEFVAL { 0 }
+::= { gmplsLabelEntry 13 }
+
+gmplsLabelWavebandStart OBJECT-TYPE
+  SYNTAX        Unsigned32
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "The starting label component of a Waveband Label.  Only valid if
+     gmplsLabelType is set to gmplsWavebandLabel(6).  This object
+     cannot be modified if gmplsLabelRowStatus is active(1)."
+  REFERENCE
+    "1. Generalized Multi-Protocol Label Switching (GMPLS) Signaling
+        Functional Description, RFC 3471, section 3.3."
+  DEFVAL { 0 }
+::= { gmplsLabelEntry 14 }
+
+gmplsLabelWavebandEnd OBJECT-TYPE
+  SYNTAX        Unsigned32
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "The end label component of a Waveband Label.  Only valid if
+     gmplsLabelType is set to gmplsWavebandLabel(6).  This object
+     cannot be modified if gmplsLabelRowStatus is active(1)."
+  REFERENCE
+    "1. Generalized Multi-Protocol Label Switching (GMPLS) Signaling
+        Functional Description, RFC 3471, section 3.3."
+  DEFVAL { 0 }
+::= { gmplsLabelEntry 15 }
+
+gmplsLabelStorageType OBJECT-TYPE
+  SYNTAX        StorageType
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "This variable indicates the storage type for this row.  The
+     agent MUST ensure that this object's value remains consistent
+     with the storage type of any rows in other tables that contain
+     pointers to this row.  In particular, the storage type of this
+     row must be at least as permanent as that of any row that points
+     to it.
+     Conceptual rows having the value 'permanent' need not
+     allow write-access to any columnar objects in the row."
+  REFERENCE
+
+
+    "1. Textual Conventions for SMIv2, STD 58, RFC 2579, section 2."
+  DEFVAL { volatile }
+::= { gmplsLabelEntry 16 }
+
+gmplsLabelRowStatus OBJECT-TYPE
+  SYNTAX        RowStatus
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "This variable is used to create, modify, and/or delete a row in
+     this table.  When a row in this table has a row in the active(1)
+     state, no objects in this row can be modified except the
+     gmplsLabelRowStatus and gmplsLabelStorageType.
+
+     The gmplsLabelType object does not have a default and must be
+     set before a row can become active.  The corresponding label
+     objects (dependent on the value of gmplsLabelType) should also
+     be set unless they happen to need to use the specified default
+     values as follows:
+
+     gmplsLabelType setting             objects to be set
+     --------------------------------------------------------------
+     gmplsMplsLabel(1)                  gmplsLabelMplsLabel
+
+     gmplsPortWavelengthLabel(2)        gmplsLabelPortWavelength
+
+     gmplsFreeformLabel(3)              gmplsLabelFreeform
+
+     gmplsSonetLabel(4)                 gmplsLabelSonetSdhSignalIndex
+                                        gmplsLabelSdhVc
+                                        gmplsLabelSdhVcBranch
+                                        gmplsLabelSonetSdhBranch
+                                        gmplsLabelSonetSdhGroupBranch
+
+     gmplsSdhLabel(5)                   gmplsLabelSonetSdhSignalIndex
+                                        gmplsLabelSdhVc
+                                        gmplsLabelSdhVcBranch
+                                        gmplsLabelSonetSdhBranch
+                                        gmplsLabelSonetSdhGroupBranch
+
+     gmplsWavebandLabel(6)              gmplsLabelWavebandId
+                                        gmplsLabelWavebandStart
+                                        gmplsLabelWavebandEnd"
+::= { gmplsLabelEntry 17 }
+
+gmplsLabelGroups
+  OBJECT IDENTIFIER ::= { gmplsLabelConformance 1 }
+
+
+
+gmplsLabelCompliances
+  OBJECT IDENTIFIER ::= { gmplsLabelConformance 2 }
+
+gmplsLabelModuleReadOnlyCompliance MODULE-COMPLIANCE
+  STATUS current
+  DESCRIPTION
+    "Compliance requirement for implementations that only provide
+     read-only support for GMPLS-LABEL-STD-MIB.  Such devices can then
+     be monitored but cannot be configured using this MIB module."
+
+  MODULE -- this module
+
+  -- The mandatory groups have to be implemented by LSRs claiming
+  -- support for this MIB module.  This MIB module is, however, not
+  -- mandatory for a working implementation of a GMPLS LSR with full
+  -- MIB support if the GMPLS Labels in use can be represented within
+  -- a 32-bit quantity.
+
+  MANDATORY-GROUPS {
+    gmplsLabelTableGroup
+  }
+
+  GROUP gmplsLabelPacketGroup
+  DESCRIPTION
+    "This group extends gmplsLabelTableGroup for implementations that
+     support Packet Labels.  It is optional for implementations that
+     do not support Packet Labels."
+
+  GROUP gmplsLabelPortWavelengthGroup
+  DESCRIPTION
+    "This group extends gmplsLabelTableGroup for implementations that
+     support Port and Wavelength Labels.  It is optional for
+     implementations that do not support Wavelength Labels."
+
+  GROUP gmplsLabelFreeformGroup
+  DESCRIPTION
+    "This group extends gmplsLabelTableGroup for implementations that
+     support Freeform Labels.  It is optional for implementations that
+     do not support Freeform Labels."
+
+  GROUP gmplsLabelSonetSdhGroup
+  DESCRIPTION
+    "This group extends gmplsLabelTableGroup for implementations that
+     support SONET or SDH Labels.  It is optional for implementations
+     that do not support SONET or SDH Labels."
+
+  GROUP gmplsLabelWavebandGroup
+  DESCRIPTION
+
+
+
+    "This group extends gmplsLabelTableGroup for implementations that
+     support Waveband Labels.  It is optional for implementations that
+     do not support Waveband Labels."
+  OBJECT      gmplsLabelType
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsLabelMplsLabel
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsLabelPortWavelength
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsLabelFreeform
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsLabelSonetSdhSignalIndex
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsLabelSdhVc
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsLabelSdhVcBranch
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsLabelSonetSdhBranch
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsLabelSonetSdhGroupBranch
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+
+
+
+  OBJECT      gmplsLabelWavebandId
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+  OBJECT      gmplsLabelWavebandStart
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsLabelWavebandEnd
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsLabelStorageType
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT       gmplsLabelRowStatus
+  SYNTAX       RowStatus { active(1) }
+  MIN-ACCESS   read-only
+  DESCRIPTION
+    "Write access is not required, and active(1) is
+     the only status that needs to be supported."
+
+::= { gmplsLabelCompliances 1 }
+
+gmplsLabelModuleFullCompliance MODULE-COMPLIANCE
+  STATUS current
+  DESCRIPTION
+    "Compliance statement for agents that support the complete
+     GMPLS-LABEL-STD-MIB module.
+
+     The mandatory groups have to be implemented by GMPLS LSRs
+     claiming support for this MIB module.  This MIB module is,
+     however, not mandatory for a working implementation of a GMPLS
+     LSR with full MIB support if the GMPLS Labels in use can be
+     represented within a 32-bit quantity."
+
+  MODULE -- this module
+
+  MANDATORY-GROUPS {
+    gmplsLabelTableGroup
+  }
+
+::= { gmplsLabelCompliances 2 }
+
+
+
+
+gmplsLabelTableGroup OBJECT-GROUP
+  OBJECTS {
+    gmplsLabelIndexNext,
+    gmplsLabelType,
+    gmplsLabelStorageType,
+    gmplsLabelRowStatus
+  }
+
+  STATUS  current
+  DESCRIPTION
+    "Necessary, but not sufficient, set of objects to implement label
+     table support.  In addition, depending on the type of labels
+     supported, the following other groups defined below are
+     mandatory:
+
+       gmplsLabelWavebandGroup and/or
+       gmplsLabelPacketGroup and/or
+       gmplsLabelPortWavelengthGroup and/or
+       gmplsLabelFreeformGroup and/or
+       gmplsLabelSonetSdhGroup."
+::= { gmplsLabelGroups 1 }
+
+gmplsLabelPacketGroup OBJECT-GROUP
+  OBJECTS {
+    gmplsLabelMplsLabel
+  }
+  STATUS  current
+  DESCRIPTION
+    "Object needed to implement Packet (MPLS) Labels."
+::= { gmplsLabelGroups 2 }
+
+gmplsLabelPortWavelengthGroup OBJECT-GROUP
+  OBJECTS {
+    gmplsLabelPortWavelength
+  }
+  STATUS  current
+  DESCRIPTION
+    "Object needed to implement Port and Wavelength Labels."
+::= { gmplsLabelGroups 3 }
+
+gmplsLabelFreeformGroup OBJECT-GROUP
+  OBJECTS {
+    gmplsLabelFreeform
+  }
+  STATUS  current
+  DESCRIPTION
+    "Object needed to implement Freeform Labels."
+::= { gmplsLabelGroups 4 }
+
+
+
+gmplsLabelSonetSdhGroup OBJECT-GROUP
+  OBJECTS {
+    gmplsLabelSonetSdhSignalIndex,
+    gmplsLabelSdhVc,
+    gmplsLabelSdhVcBranch,
+    gmplsLabelSonetSdhBranch,
+    gmplsLabelSonetSdhGroupBranch
+  }
+  STATUS  current
+  DESCRIPTION
+    "Objects needed to implement SONET and SDH Labels."
+::= { gmplsLabelGroups 5 }
+
+gmplsLabelWavebandGroup OBJECT-GROUP
+  OBJECTS {
+    gmplsLabelWavebandId,
+    gmplsLabelWavebandStart,
+    gmplsLabelWavebandEnd
+  }
+  STATUS  current
+  DESCRIPTION
+    "Objects needed to implement Waveband Labels."
+::= { gmplsLabelGroups 6 }
+
+END

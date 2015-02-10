@@ -1,0 +1,2609 @@
+NHRP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+
+    OBJECT-TYPE, MODULE-IDENTITY, mib-2, Integer32,
+    Counter32, Unsigned32
+        FROM SNMPv2-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF
+    TEXTUAL-CONVENTION, TruthValue, RowStatus, StorageType,
+    TimeStamp
+        FROM SNMPv2-TC
+    ifIndex
+        FROM IF-MIB
+    AddressFamilyNumbers
+        FROM IANA-ADDRESS-FAMILY-NUMBERS-MIB
+    ;
+
+nhrpMIB MODULE-IDENTITY
+    LAST-UPDATED "9908260000Z"  -- August 26, 1999
+    ORGANIZATION "Internetworking Over NBMA (ion) Working Group"
+    CONTACT-INFO
+        "Maria Greene (maria@xedia.com)
+         Contractor
+
+         Joan Cucchiara (joan@ironbridgenetworks.com)
+         IronBridge Networks
+
+         James V. Luciani (luciani@baynetworks.com)
+         Bay Networks"
+    DESCRIPTION
+        "This MIB contains managed object definitions for the Next
+        Hop Resolution Procol, NHRP, as defined in RFC 2332 [17]."
+
+    -- revision history
+
+    REVISION     "9908260000Z"  -- August 26, 1999
+    DESCRIPTION  "Initial version, published as RFC 2677."
+
+    ::= { mib-2 71 }
+
+--****************************************************************
+ -- NHRP Textual Conventions
+ --****************************************************************
+
+ NhrpGenAddr ::= TEXTUAL-CONVENTION
+     STATUS      current
+     DESCRIPTION
+         "The value of an internetwork layer or NBMA address."
+     SYNTAX      OCTET STRING (SIZE (0..64))
+
+ nhrpObjects OBJECT IDENTIFIER ::= { nhrpMIB 1 }
+
+ --****************************************************************
+ -- NHRP General (Client and Server) Objects
+ --****************************************************************
+
+ nhrpGeneralObjects OBJECT IDENTIFIER ::= { nhrpObjects 1 }
+
+
+ --
+ --  The following scalar is to be used to
+ --  provided indices for the
+ --  nhrpClientTable, and/or the nhrpServerTable.
+ --
+
+ nhrpNextIndex   OBJECT-TYPE
+     SYNTAX      Unsigned32
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+         "This scalar is used for creating rows in the
+         nhrpClientTable and the nhrpServerTable.
+         The value of this variable is a currently unused value
+         for nhrpClientIndex and nhrpServerIndex.
+         The value returned when reading this variable must be
+         unique for the NHC's and NHS's indices associated with
+         this row. Subsequent attempts to read this variable
+         must return different values.
+
+         NOTE:  this object exists in the General Group because
+         it is to be used in establishing rows in the
+         nhrpClientTable and the nhrpServerTable.  In other words,
+         the value retrieved from this object could become the
+         value of nhrpClientIndex and nhprServerIndex.
+
+         In the situation of an agent re-initialization the value
+         of this object must be saved in non-volatile storage.
+
+         This variable will return the special value 0 if no new
+         rows can be created."
+     ::= { nhrpGeneralObjects 1 }
+
+
+     --
+     -- The NHRP Cache Table
+     --
+
+     nhrpCacheTable OBJECT-TYPE
+         SYNTAX      SEQUENCE OF NhrpCacheEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+
+    DESCRIPTION
+        "This table contains mappings between internetwork layer
+        addresses and NBMA subnetwork layer addresses."
+    ::= { nhrpGeneralObjects 2 }
+
+nhrpCacheEntry OBJECT-TYPE
+    SYNTAX      NhrpCacheEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A cached mapping between an internetwork layer address
+        and an NBMA address. Entries can be created by the
+        network administrator using the nhrpCacheRowStatus
+        column, or they may be added dynamically based on
+        protocol operation (including NHRP, SCSP, and others,
+        such as ATMARP).
+
+        When created based by NHRP protocol operations
+        this entry is largely based on contents contained in
+        the Client Information Entry (CIE).
+        Zero or more Client Information Entries (CIEs) may be
+        included in the NHRP Packet. For a complete description
+        of the CIE, refer to Section 5.2.0.1 of
+        RFC 2332 [17]."
+    INDEX       {
+                    nhrpCacheInternetworkAddrType,
+                    nhrpCacheInternetworkAddr,
+                    ifIndex,
+                    nhrpCacheIndex
+                }
+    ::= { nhrpCacheTable 1 }
+
+NhrpCacheEntry ::= SEQUENCE {
+    nhrpCacheInternetworkAddrType    AddressFamilyNumbers,
+    nhrpCacheInternetworkAddr        NhrpGenAddr,
+    nhrpCacheIndex                   Unsigned32,
+    nhrpCachePrefixLength            Integer32,
+    nhrpCacheNextHopInternetworkAddr NhrpGenAddr,
+    nhrpCacheNbmaAddrType            AddressFamilyNumbers,
+    nhrpCacheNbmaAddr                NhrpGenAddr,
+    nhrpCacheNbmaSubaddr             NhrpGenAddr,
+    nhrpCacheType                    INTEGER,
+    nhrpCacheState                   INTEGER,
+    nhrpCacheHoldingTimeValid        TruthValue,
+    nhrpCacheHoldingTime             Unsigned32,
+    nhrpCacheNegotiatedMtu           Integer32,
+    nhrpCachePreference              Integer32,
+    nhrpCacheStorageType             StorageType,
+    nhrpCacheRowStatus               RowStatus
+
+
+}
+
+nhrpCacheInternetworkAddrType OBJECT-TYPE
+    SYNTAX      AddressFamilyNumbers
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The internetwork layer address type of this Next Hop
+        Resolution Cache entry. The value of this object indicates
+        how to interpret the values of nhrpCacheInternetworkAddr
+        and nhrpCacheNextHopInternetworkAddr."
+    ::= { nhrpCacheEntry 1 }
+
+nhrpCacheInternetworkAddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of the internetwork address of the
+        destination."
+    ::= { nhrpCacheEntry 2 }
+
+nhrpCacheIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An identifier for this entry that has local
+        significance within the scope of the General
+        Group.  This identifier is used here to
+        uniquely identify this row, and also used
+        in the 'nhrpPurgeTable' for the value of
+        the 'nhrpPurgeCacheIdentifier'."
+    ::= { nhrpCacheEntry 3 }
+
+nhrpCachePrefixLength OBJECT-TYPE
+    SYNTAX      Integer32 (0..255)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of bits that define the internetwork layer
+        prefix associated with the nhrpCacheInternetworkAddr."
+    ::= { nhrpCacheEntry 4 }
+
+nhrpCacheNextHopInternetworkAddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of the internetwork address of the next hop."
+
+    ::= { nhrpCacheEntry 5 }
+
+nhrpCacheNbmaAddrType OBJECT-TYPE
+    SYNTAX      AddressFamilyNumbers
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The NBMA address type. The value of this
+        object indicates how to interpret
+        the values of nhrpCacheNbmaAddr and
+        nhrpCacheNbmaSubaddr."
+    ::= { nhrpCacheEntry 6 }
+
+nhrpCacheNbmaAddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of the NBMA subnetwork address of the next
+        hop."
+    ::= { nhrpCacheEntry 7 }
+
+nhrpCacheNbmaSubaddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of the NBMA subaddress of the next hop. If
+        there is no subaddress concept for the NBMA address
+        family, this value will be a zero-length OCTET STRING."
+    ::= { nhrpCacheEntry 8 }
+
+nhrpCacheType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    other(1),
+                    register(2),
+                    resolveAuthoritative(3),
+                    resoveNonauthoritative(4),
+                    transit(5),
+                    administrativelyAdded(6),
+                    atmarp(7),
+                    scsp(8)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An indication of how this cache entry
+        was created. The values are:
+
+        'other(1)'                   The entry was added by some
+                                     other means.
+
+        'register(2)'                In a server, added based on a
+                                     client registration.
+
+        'resolveAuthoritative(3)'    In a client, added based on
+                                     receiving an Authoritative
+                                     NHRP Resolution Reply.
+        'resolveNonauthoritative(4)' In a client, added based on
+                                     receiving a Nonauthoritative
+                                     NHRP Resolution Reply.
+
+        'transit(5)'                 In a transit server, added by
+                                     examining a forwarded NHRP
+                                     packet.
+
+        'administrativelyAdded(6)'   In a client or server,
+                                     manually added by the
+                                     administrator. The
+                                     StorageType of this entry is
+                                     reflected in
+                                     'nhrpCacheStorageType'.
+
+        'atmarp(7)'                  The entry was added due to an
+                                     ATMARP.
+
+        'scsp(8)'                    The entry was added due to
+                                     SCSP.
+
+
+        When the entry is under creation using the
+        nhrpCacheRowStatus column, the only value that can be
+        specified by the administrator is 'administrativelyAdded'.
+        Attempting to set any other value will cause an
+        'inconsistentValue' error.
+
+        The value cannot be modified once the entry is active."
+    ::= { nhrpCacheEntry 9 }
+
+
+nhrpCacheState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    incomplete(1),
+                    ackReply(2),
+                    nakReply(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+
+        "An indication of the state of this entry. The values are:
+
+            'incomplete(1)' The client has sent a NHRP Resolution
+                            Request but has not yet received the
+                            NHRP Resolution Reply.
+            'ackReply(2)'   For a client or server, this is a
+                            cached valid mapping.
+
+            'nakReply(3)'   For a client or server, this is a
+                            cached NAK mapping."
+    ::= { nhrpCacheEntry 10 }
+
+nhrpCacheHoldingTimeValid OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "True(1) is returned if the value of
+        'nhrpCacheType' is not
+        'administrativelyAdded'.  Since the
+        value of 'nhrpCacheType' was not
+        configured by a user, the value of
+        'nhrpCacheHoldingTime' is
+        considered valid.  In other words, the value of
+        'nhrpCacheHoldingTime' represents
+        the Holding Time for the cache Entry.
+
+        If 'nhrpCacheType has been configured by a
+        user, (i.e. the value of 'nhrpCacheType' is
+        'administrativelyAdded') then false(2) will be returned.
+        This indicates that the value of
+        'nhrpCacheHoldingTime' is undefined because this row
+        could possibly be backed up in nonvolatile storage."
+    ::= { nhrpCacheEntry 11 }
+
+nhrpCacheHoldingTime OBJECT-TYPE
+    SYNTAX      Unsigned32(0..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "If the value of 'nhrpCacheHoldingTimeValid is
+        true(1) then this object represents the number
+        of seconds that the cache entry will remain in this
+        table.  When this value reaches 0 (zero) the row should
+        be deleted.
+
+        If the value of 'nhrpCacheHoldingTimeValid is
+        false(2) then this object is undefined."
+    ::= { nhrpCacheEntry 12 }
+
+nhrpCacheNegotiatedMtu OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum transmission unit (MTU) that was negotiated
+        or registered for this entity. In other words, this is the
+        actual MTU being used."
+    ::= { nhrpCacheEntry 13 }
+
+nhrpCachePreference OBJECT-TYPE
+    SYNTAX      Integer32 (0..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An object which reflects the Preference value of the
+        Client Information Entry (CIE).
+
+        Zero or more Client Information Entries (CIEs) may be
+        included in the NHRP Packet.  One of the fields in the
+        CIE is the Preference.  For a complete description of
+        the CIE, refer to Section 5.2.0.1 of  RFC 2332 [17]."
+    REFERENCE
+        "Section 5.2.0.1 Mandatory Part Format, RFC 2332 [17]."
+    ::= { nhrpCacheEntry 14 }
+
+nhrpCacheStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This value only has meaning when the 'nhrpCacheType'
+        has the value of 'administrativelyAdded'.
+
+        When the row is created due to being
+        'administrativelyAdded', this object reflects whether
+        this row is kept in volatile storage
+        and lost upon reboot or if this row is backed up by
+        non-volatile or permanent storage.
+
+        If the value of 'nhrpCacheType' has a value which
+        is not 'administrativelyAdded, then the value of this
+        object is 'other(1)'."
+    DEFVAL      { nonVolatile }
+    ::= { nhrpCacheEntry 15 }
+
+nhrpCacheRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An object that allows entries in this table to be
+        created and deleted using the RowStatus convention."
+    ::= { nhrpCacheEntry 16 }
+
+--
+-- The NHRP Purge Request Table
+--
+
+nhrpPurgeReqTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NhrpPurgeReqEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table will track Purge Request Information."
+    ::= { nhrpGeneralObjects 3 }
+
+nhrpPurgeReqEntry OBJECT-TYPE
+    SYNTAX      NhrpPurgeReqEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information regarding a Purge Request."
+    INDEX       {   nhrpPurgeIndex  }
+    ::= { nhrpPurgeReqTable 1 }
+
+NhrpPurgeReqEntry ::= SEQUENCE {
+    nhrpPurgeIndex                        Unsigned32,
+    nhrpPurgeCacheIdentifier              Unsigned32,
+    nhrpPurgePrefixLength                 Integer32,
+    nhrpPurgeRequestID                    Unsigned32,
+    nhrpPurgeReplyExpected                TruthValue,
+    nhrpPurgeRowStatus                    RowStatus
+}
+
+nhrpPurgeIndex  OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An index for this entry that has local significance
+        within the scope of this table."
+    ::= { nhrpPurgeReqEntry 1 }
+
+nhrpPurgeCacheIdentifier OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  read-create
+    STATUS      current
+
+    DESCRIPTION
+        "This object identifies which row in
+        'nhrpCacheTable' is being purged.  This object
+        should have the same value as the 'nhrpCacheIndex'
+        in the 'nhrpCacheTable'."
+    ::= { nhrpPurgeReqEntry 2 }
+
+nhrpPurgePrefixLength OBJECT-TYPE
+    SYNTAX      Integer32 (0..255)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "In the case of NHRP Purge Requests, this specifies the
+        equivalence class of addresses which match the first
+        'Prefix Length' bit positions of the Client Protocol
+        Address specified in the Client Information Entry (CIE)."
+    ::= { nhrpPurgeReqEntry 3 }
+
+nhrpPurgeRequestID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The Request ID used in the purge request."
+    ::= { nhrpPurgeReqEntry 4 }
+
+nhrpPurgeReplyExpected OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An indication of whether this Purge Request has the
+        'N' Bit cleared (off)."
+    ::= { nhrpPurgeReqEntry 5 }
+
+nhrpPurgeRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An object that allows entries in this table to be
+        created and deleted using the RowStatus convention."
+    ::= { nhrpPurgeReqEntry 6 }
+
+--****************************************************************
+-- NHRP Client Objects
+--****************************************************************
+
+nhrpClientObjects OBJECT IDENTIFIER ::= { nhrpObjects 2 }
+
+--
+-- The NHRP Client Table
+--
+
+nhrpClientTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NhrpClientEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about NHRP clients (NHCs) managed by this
+        agent."
+    ::= { nhrpClientObjects 1 }
+
+nhrpClientEntry OBJECT-TYPE
+    SYNTAX      NhrpClientEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about a single NHC."
+    INDEX       { nhrpClientIndex }
+    ::= { nhrpClientTable 1 }
+
+NhrpClientEntry ::= SEQUENCE {
+    nhrpClientIndex                      Unsigned32,
+    nhrpClientInternetworkAddrType       AddressFamilyNumbers,
+    nhrpClientInternetworkAddr           NhrpGenAddr,
+    nhrpClientNbmaAddrType               AddressFamilyNumbers,
+    nhrpClientNbmaAddr                   NhrpGenAddr,
+    nhrpClientNbmaSubaddr                NhrpGenAddr,
+    nhrpClientInitialRequestTimeout      Integer32,
+    nhrpClientRegistrationRequestRetries Integer32,
+    nhrpClientResolutionRequestRetries   Integer32,
+    nhrpClientPurgeRequestRetries        Integer32,
+    nhrpClientDefaultMtu                 Unsigned32,
+    nhrpClientHoldTime                   Unsigned32,
+    nhrpClientRequestID                  Unsigned32,
+    nhrpClientStorageType                StorageType,
+    nhrpClientRowStatus                  RowStatus
+}
+
+nhrpClientIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An identifier for the NHRP client that is unique within
+        the scope of this agent.  The 'nhrpNextIndex' value
+        should be consulted (read), prior to creating a row in
+        this table, and the value returned from reading
+        'nhrpNextIndex' should be used as this object's value."
+
+    ::= { nhrpClientEntry 1 }
+
+nhrpClientInternetworkAddrType OBJECT-TYPE
+    SYNTAX      AddressFamilyNumbers
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of the internetwork layer address of this
+        client. This object indicates how the value of
+        nhrpClientInternetworkAddr is to be interpreted."
+    ::= { nhrpClientEntry 2 }
+
+nhrpClientInternetworkAddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of the internetwork layer address of this
+        client."
+    ::= { nhrpClientEntry 3 }
+
+nhrpClientNbmaAddrType OBJECT-TYPE
+    SYNTAX      AddressFamilyNumbers
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of the NBMA subnetwork address of this client.
+        This object indicates how the values of
+        nhrpClientNbmaAddr and nhrpClientNbmaSubaddr are to be
+        interpreted."
+    ::= { nhrpClientEntry 4 }
+
+nhrpClientNbmaAddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The NBMA subnetwork address of this client."
+    ::= { nhrpClientEntry 5 }
+
+nhrpClientNbmaSubaddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The NBMA subaddress of this client. For NBMA address
+        families without a subaddress concept, this will be a
+        zero-length OCTET STRING."
+    ::= { nhrpClientEntry 6 }
+
+nhrpClientInitialRequestTimeout OBJECT-TYPE
+    SYNTAX      Integer32 (1..900)
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The number of seconds that the client will wait before
+        timing out an NHRP initial request.  This object only has
+        meaning for the initial timeout period."
+    DEFVAL      { 10 }
+    ::= { nhrpClientEntry 7 }
+
+nhrpClientRegistrationRequestRetries OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The number of times the client will retry the
+        registration request before failure. A value of
+        0 means don't retry. A value of 65535 means
+        retry forever."
+    DEFVAL      { 3 }
+    ::= { nhrpClientEntry 8 }
+
+nhrpClientResolutionRequestRetries OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The number of times the client will retry the resolution
+        request before failure. A value of 0 means don't retry.
+        A value of 65535 means retry forever."
+    DEFVAL      { 3 }
+    ::= { nhrpClientEntry 9 }
+
+nhrpClientPurgeRequestRetries OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The number of times the client will retry a purge request
+        before failure. A value of 0 means don't retry. A value of
+        65535 means retry forever."
+    DEFVAL      { 3 }
+    ::= { nhrpClientEntry 10 }
+
+nhrpClientDefaultMtu OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+
+    DESCRIPTION
+        "The default maximum transmission unit (MTU) of the
+        LIS/LAG which this client should use. This object
+        will be initialized by the agent to the default MTU
+        of the LIS/LAG (which is 9180) unless a different MTU
+        value is specified during creation of this Client."
+    REFERENCE
+        "RFC 2225 [25], Classical IP and ARP over ATM, Section 7,
+        DEFAULT VALUE FOR IP MTU OVER ATM AAL5."
+    DEFVAL      { 9180 }
+    ::= { nhrpClientEntry 11 }
+
+nhrpClientHoldTime OBJECT-TYPE
+    SYNTAX      Unsigned32(0..65535)
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The hold time the client will register."
+    DEFVAL      { 900 }
+    ::= { nhrpClientEntry 12 }
+
+nhrpClientRequestID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The Request ID used to register this client with its
+        server. According to Section 5.2.3 of the NHRP
+        Specification, RFC 2332 [17], the Request ID must
+        be kept in non-volatile storage, so that if an NHC
+        crashes and  re-initializes, it will use a different
+        Request ID during the registration process
+        when reregistering with the same NHS."
+    REFERENCE
+        "Section 5.2.3 NHRP Registration Request, RFC 2332 [17]."
+    ::= { nhrpClientEntry 13 }
+
+nhrpClientStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines whether this row is kept in
+        volatile storage and lost upon a Client crash or
+        reboot situation, or if this row is backed up by
+        nonvolatile or permanent storage."
+    DEFVAL      { nonVolatile }
+    ::= { nhrpClientEntry 14 }
+
+nhrpClientRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An object that allows entries in this table to be
+        created and deleted using the RowStatus convention."
+    ::= { nhrpClientEntry 15 }
+
+
+--
+-- The NHRP Client Registration Table
+--
+
+nhrpClientRegistrationTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NhrpClientRegistrationEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of Registration Request Information that
+        needs to be maintained by the NHCs (clients)."
+    REFERENCE
+        "Section 5.2.3 NHRP Registration Request, RFC 2332 [17]."
+    ::= { nhrpClientObjects 2 }
+
+nhrpClientRegistrationEntry OBJECT-TYPE
+    SYNTAX      NhrpClientRegistrationEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An NHC needs to maintain registration request information
+        between the NHC and the NHS.  An entry in this table
+        represents information for a single registration request."
+    INDEX       { nhrpClientIndex,
+                  nhrpClientRegIndex
+                }
+    ::= { nhrpClientRegistrationTable 1 }
+
+NhrpClientRegistrationEntry ::= SEQUENCE {
+    nhrpClientRegIndex          Unsigned32,
+    nhrpClientRegUniqueness     INTEGER,
+    nhrpClientRegState          INTEGER,
+    nhrpClientRegRowStatus      RowStatus
+}
+
+nhrpClientRegIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+
+        "An identifier for this entry such that it
+        identifies a specific Registration Request from
+        the NHC represented by the nhrpClientIndex."
+    ::= { nhrpClientRegistrationEntry 1 }
+
+nhrpClientRegUniqueness OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    requestUnique(1),
+                    requestNotUnique(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The Uniqueness indicator for this Registration Request.
+        If this object has the value of requestUnique(1), then
+        the Uniqueness bit is set in the the NHRP Registration
+        Request represented by this row.  The value cannot
+        be changed once the row is created."
+    ::= { nhrpClientRegistrationEntry 2 }
+
+nhrpClientRegState  OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    other(1),
+                    registering(2),
+                    ackRegisterReply(3),
+                    nakRegisterReply(4)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The registration state of this client. The values are:
+            'other(1)'             The state of the registration
+                                   request is not one of
+                                   'registering',
+                                   'ackRegisterReply' or
+                                   'nakRegisterReply'.
+
+            'registering(2)'        A registration request has
+                                    been issued and a registration
+                                    reply is expected.
+
+            'ackRegisterReply(3)'   A positive registration reply
+                                    has been received.
+
+            'nakRegisterReply(4)'   The client has received a
+                                    negative registration
+                                    reply (NAK)."
+    ::= { nhrpClientRegistrationEntry 3 }
+
+nhrpClientRegRowStatus OBJECT-TYPE
+
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An object that allows entries in this table to be
+        created and deleted using the RowStatus convention."
+    ::= { nhrpClientRegistrationEntry 4 }
+
+--
+-- The NHRP Client->Server Table
+--
+
+nhrpClientNhsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NhrpClientNhsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of NHSes that are available for use by this NHC
+        (client). By default, the agent will add an entry to this
+        table that corresponds to the client's default router."
+    ::= { nhrpClientObjects 3 }
+
+nhrpClientNhsEntry OBJECT-TYPE
+    SYNTAX      NhrpClientNhsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An NHS that may be used by an NHC."
+    INDEX       { nhrpClientIndex, nhrpClientNhsIndex }
+    ::= { nhrpClientNhsTable 1 }
+
+NhrpClientNhsEntry ::= SEQUENCE {
+    nhrpClientNhsIndex                  Unsigned32,
+    nhrpClientNhsInternetworkAddrType   AddressFamilyNumbers,
+    nhrpClientNhsInternetworkAddr       NhrpGenAddr,
+    nhrpClientNhsNbmaAddrType           AddressFamilyNumbers,
+    nhrpClientNhsNbmaAddr               NhrpGenAddr,
+    nhrpClientNhsNbmaSubaddr            NhrpGenAddr,
+    nhrpClientNhsInUse                  TruthValue,
+    nhrpClientNhsRowStatus              RowStatus
+}
+
+nhrpClientNhsIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An identifier for an NHS available to an NHC."
+    ::= { nhrpClientNhsEntry 1 }
+
+nhrpClientNhsInternetworkAddrType OBJECT-TYPE
+    SYNTAX      AddressFamilyNumbers
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of the internetwork layer address of the
+        NHRP server represented in this entry. This object
+        indicates how the value of
+        nhrpClientNhsInternetworkAddr is to be interpreted."
+    ::= { nhrpClientNhsEntry 2 }
+
+nhrpClientNhsInternetworkAddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of the destination internetwork layer
+        address of the NHRP server represented by this
+        entry.  If this value is not known, this will be
+        a zero-length OCTET STRING."
+    ::= { nhrpClientNhsEntry 3 }
+
+nhrpClientNhsNbmaAddrType OBJECT-TYPE
+    SYNTAX      AddressFamilyNumbers
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of the NBMA subnetwork address of the NHRP
+        Server represented by this entry. This object indicates
+        how the values of nhrpClientNhsNbmaAddr and
+        nhrpClientNhsNbmaSubaddr are to be interpreted."
+    ::= { nhrpClientNhsEntry 4 }
+
+nhrpClientNhsNbmaAddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The NBMA subnetwork address of the NHS. The type of
+        the address is indicated by the corresponding value of
+        nhrpClientNhsNbmaAddrType."
+    ::= { nhrpClientNhsEntry 5 }
+
+nhrpClientNhsNbmaSubaddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The NBMA subaddress of the NHS. For NMBA address
+        families that do not have the concept of subaddress,
+             this will be a zero-length OCTET STRING."
+    ::= { nhrpClientNhsEntry 6 }
+
+nhrpClientNhsInUse OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "An indication of whether this NHS is in use by the NHC."
+    ::= { nhrpClientNhsEntry 7 }
+
+nhrpClientNhsRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An object that allows entries in this table to be
+        created and deleted using the RowStatus convention."
+    ::= { nhrpClientNhsEntry 8 }
+
+--
+-- The NHRP Client StatisticsTable
+--
+
+nhrpClientStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NhrpClientStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains statistics collected by NHRP
+        clients."
+    ::= { nhrpClientObjects 4 }
+
+nhrpClientStatEntry OBJECT-TYPE
+    SYNTAX      NhrpClientStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Statistics collected by a NHRP client."
+    INDEX       { nhrpClientIndex }
+    ::= { nhrpClientStatTable 1 }
+
+NhrpClientStatEntry ::= SEQUENCE {
+    nhrpClientStatTxResolveReq                    Counter32,
+    nhrpClientStatRxResolveReplyAck               Counter32,
+    nhrpClientStatRxResolveReplyNakProhibited     Counter32,
+    nhrpClientStatRxResolveReplyNakInsufResources Counter32,
+    nhrpClientStatRxResolveReplyNakNoBinding      Counter32,
+    nhrpClientStatRxResolveReplyNakNotUnique      Counter32,
+    nhrpClientStatTxRegisterReq                   Counter32,
+    nhrpClientStatRxRegisterAck                   Counter32,
+    nhrpClientStatRxRegisterNakProhibited         Counter32,
+    nhrpClientStatRxRegisterNakInsufResources     Counter32,
+    nhrpClientStatRxRegisterNakAlreadyReg         Counter32,
+
+    nhrpClientStatRxPurgeReq                      Counter32,
+    nhrpClientStatTxPurgeReq                      Counter32,
+    nhrpClientStatRxPurgeReply                    Counter32,
+    nhrpClientStatTxPurgeReply                    Counter32,
+
+    nhrpClientStatTxErrorIndication               Counter32,
+    nhrpClientStatRxErrUnrecognizedExtension      Counter32,
+    nhrpClientStatRxErrLoopDetected               Counter32,
+    nhrpClientStatRxErrProtoAddrUnreachable       Counter32,
+    nhrpClientStatRxErrProtoError                 Counter32,
+    nhrpClientStatRxErrSduSizeExceeded            Counter32,
+    nhrpClientStatRxErrInvalidExtension           Counter32,
+    nhrpClientStatRxErrAuthenticationFailure      Counter32,
+    nhrpClientStatRxErrHopCountExceeded           Counter32,
+    nhrpClientStatDiscontinuityTime               TimeStamp
+}
+
+nhrpClientStatTxResolveReq OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Resolution Requests transmitted
+        by this client.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 1 }
+
+nhrpClientStatRxResolveReplyAck OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of positively acknowledged NHRP Resolution
+        Replies received by this client.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 2 }
+
+nhrpClientStatRxResolveReplyNakProhibited OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Resolution Replies received
+        by this client that contained the code indicating
+        'Administratively Prohibited'.
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 3 }
+
+nhrpClientStatRxResolveReplyNakInsufResources OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Resolution Replies received
+        by this client that contained the code indicating
+        'Insufficient Resources'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 4 }
+
+nhrpClientStatRxResolveReplyNakNoBinding OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Resolution Replies received
+        by this client that contained the code indicating
+        'No Internetworking Layer Address to NBMA Address
+        Binding Exists'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+
+    ::= { nhrpClientStatEntry 5 }
+
+nhrpClientStatRxResolveReplyNakNotUnique OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Resolution Replies received
+        by this client that contained the code indicating
+        'Binding Exists But Is Not Unique'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 6 }
+
+nhrpClientStatTxRegisterReq OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Registration Requests transmitted
+        by this client.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 7 }
+
+nhrpClientStatRxRegisterAck OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of positively acknowledged NHRP Registration
+        Replies received by this client.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 8 }
+
+nhrpClientStatRxRegisterNakProhibited OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Registration Replies received
+        by this client that contained the code indicating
+        'Administratively Prohibited'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 9 }
+
+nhrpClientStatRxRegisterNakInsufResources OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Registration Replies received
+        by this client that contained the code indicating
+        'Insufficient Resources'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 10 }
+
+nhrpClientStatRxRegisterNakAlreadyReg OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Registration Replies received
+        by this client that contained the code indicating 'Unique
+        Internetworking Layer Address Already Registered'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 11 }
+
+nhrpClientStatRxPurgeReq OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Purge Requests received by this
+        client.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 12 }
+
+nhrpClientStatTxPurgeReq OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Purge Requests transmitted by this
+        client.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 13 }
+
+nhrpClientStatRxPurgeReply OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Purge Replies received by this
+        client.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 14 }
+
+nhrpClientStatTxPurgeReply OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Purge Replies transmitted by this
+        client.
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    ::= { nhrpClientStatEntry 15 }
+
+nhrpClientStatTxErrorIndication OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets transmitted
+        by this client.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpClientStatEntry 16 }
+
+nhrpClientStatRxErrUnrecognizedExtension OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this client with the error code
+        'Unrecognized Extension'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpClientStatEntry 17 }
+
+nhrpClientStatRxErrLoopDetected OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this client with the error code 'NHRP Loop Detected'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpClientStatEntry 18 }
+
+nhrpClientStatRxErrProtoAddrUnreachable OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this client with the error code 'Protocol Address
+        Unreachable'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpClientStatEntry 19 }
+
+nhrpClientStatRxErrProtoError OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this client with the error code 'Protocol Error'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpClientStatEntry 20 }
+
+nhrpClientStatRxErrSduSizeExceeded OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this client with the error code 'NHRP SDU Size
+
+        Exceeded'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpClientStatEntry 21 }
+
+nhrpClientStatRxErrInvalidExtension OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this client with the error code 'Invalid Extension'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpClientStatEntry 22 }
+
+nhrpClientStatRxErrAuthenticationFailure OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this client with the error code 'Authentication
+        Failure'.
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpClientStatEntry 23 }
+
+nhrpClientStatRxErrHopCountExceeded OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this client with the error code 'Hop Count Exceeded'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Client re-initialization and at
+        other times as indicated by the value of
+        nhrpClientStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpClientStatEntry 24 }
+
+nhrpClientStatDiscontinuityTime OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of sysUpTime on the most recent occasion at
+        which any one or more of this Client's counters
+        suffered a discontinuity.  If no such discontinuities
+        have occurred since the last re-initialization of the
+        local management subsystem or the NHRP Client
+        re-initialization associated with this entry, then
+        this object contains a zero value."
+    REFERENCE
+        "RFC 2233 [18]."
+    ::= { nhrpClientStatEntry 25 }
+
+--****************************************************************
+-- NHRP Server Objects
+--****************************************************************
+
+nhrpServerObjects OBJECT IDENTIFIER ::= { nhrpObjects 3 }
+
+--
+-- The NHRP Next Hop Server Table
+--
+
+nhrpServerTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NhrpServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains information for a set of NHSes
+        associated with this agent."
+    ::= { nhrpServerObjects 1 }
+
+nhrpServerEntry OBJECT-TYPE
+    SYNTAX      NhrpServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about a single NHS."
+    INDEX       { nhrpServerIndex }
+    ::= { nhrpServerTable 1 }
+
+NhrpServerEntry ::= SEQUENCE {
+    nhrpServerIndex                 Unsigned32,
+    nhrpServerInternetworkAddrType  AddressFamilyNumbers,
+    nhrpServerInternetworkAddr      NhrpGenAddr,
+    nhrpServerNbmaAddrType          AddressFamilyNumbers,
+    nhrpServerNbmaAddr              NhrpGenAddr,
+    nhrpServerNbmaSubaddr           NhrpGenAddr,
+    nhrpServerStorageType           StorageType,
+    nhrpServerRowStatus             RowStatus
+}
+
+nhrpServerIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An identifier for the server that is unique within the
+        scope of this agent."
+    ::= { nhrpServerEntry 1 }
+
+nhrpServerInternetworkAddrType OBJECT-TYPE
+    SYNTAX      AddressFamilyNumbers
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of the internetwork layer address of this
+        server. This object is used to interpret the value of
+        nhrpServerInternetworkAddr."
+    ::= { nhrpServerEntry 2 }
+
+nhrpServerInternetworkAddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of the internetwork layer address of this
+        server."
+    ::= { nhrpServerEntry 3 }
+
+nhrpServerNbmaAddrType OBJECT-TYPE
+    SYNTAX      AddressFamilyNumbers
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of the NBMA subnetwork address of this server.
+        This object is used to interpret the value of
+        nhrpServerNbmaAddr."
+    ::= { nhrpServerEntry 4 }
+
+nhrpServerNbmaAddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of the NBMA subnetwork address of this
+        server."
+    ::= { nhrpServerEntry 5 }
+
+nhrpServerNbmaSubaddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of the NBMA subaddress of this server.
+        For NBMA address families without a subaddress
+        concept, this will be a zero-length OCTET STRING."
+    ::= { nhrpServerEntry 6 }
+
+nhrpServerStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines whether this row is kept in
+        volatile storage and lost upon a Server crash or
+        reboot situation, or if this row is backed up by
+        nonvolatile or permanent storage."
+    DEFVAL      { nonVolatile }
+    ::= { nhrpServerEntry 7 }
+
+nhrpServerRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An object that allows entries in this table to be
+        created and deleted using the RowStatus convention."
+    ::= { nhrpServerEntry 8 }
+
+--
+-- The Server Cache Table
+--
+nhrpServerCacheTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NhrpServerCacheEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table extends the nhrpCacheTable for
+        NHSes.  If the nhrpCacheTable has a row added due to
+        an NHS or based on information regarding an NHS then
+        a row is also added in this table.
+
+        The rows in this table will be created when rows in
+        the nhrpCacheTable are created.  However, there may
+        be rows created in the nhrpCacheTable which do not
+        have corresponding rows in this table.  For example,
+        if the nhrpCacheTable has a row added due to a Next
+        Hop Client which is co-resident on the same device
+        as the NHS, a row will not be added to this table."
+    ::= { nhrpServerObjects 2 }
+
+nhrpServerCacheEntry OBJECT-TYPE
+    SYNTAX      NhrpServerCacheEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Additional information kept by a NHS for a relevant
+        Next Hop Resolution Cache entry."
+    INDEX       {
+                    nhrpCacheInternetworkAddrType,
+                    nhrpCacheInternetworkAddr,
+                    ifIndex,
+                    nhrpCacheIndex
+                }
+    ::= { nhrpServerCacheTable 1 }
+
+NhrpServerCacheEntry ::= SEQUENCE {
+    nhrpServerCacheAuthoritative   TruthValue,
+    nhrpServerCacheUniqueness      TruthValue
+}
+
+nhrpServerCacheAuthoritative OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "An indication of whether this cache entry is
+        authoritative, which means the entry was added because
+        of a direct registration request with this server or
+        by Server Cache Synchronization Protocol (SCSP) from
+        an authoritative source."
+    ::= { nhrpServerCacheEntry 1 }
+
+nhrpServerCacheUniqueness OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The Uniqueness indicator for this cache
+        entry used in duplicate address detection. This value
+        cannot be changed after the entry is active."
+    ::= { nhrpServerCacheEntry 2 }
+
+--
+-- The NHRP Server->Client Table
+--
+
+nhrpServerNhcTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NhrpServerNhcEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of NHCs that are available for use by this NHS
+        (Server)."
+    REFERENCE
+        "Section 4 Configuration (Next Hop Servers),
+        RFC 2332 [17]."
+    ::= { nhrpServerObjects 3 }
+
+nhrpServerNhcEntry OBJECT-TYPE
+    SYNTAX      NhrpServerNhcEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An NHC that may be used by an NHS."
+    INDEX       { nhrpServerIndex, nhrpServerNhcIndex }
+    ::= { nhrpServerNhcTable 1 }
+
+NhrpServerNhcEntry ::= SEQUENCE {
+    nhrpServerNhcIndex                  Unsigned32,
+    nhrpServerNhcPrefixLength           Integer32,
+    nhrpServerNhcInternetworkAddrType   AddressFamilyNumbers,
+    nhrpServerNhcInternetworkAddr       NhrpGenAddr,
+    nhrpServerNhcNbmaAddrType           AddressFamilyNumbers,
+    nhrpServerNhcNbmaAddr               NhrpGenAddr,
+    nhrpServerNhcNbmaSubaddr            NhrpGenAddr,
+    nhrpServerNhcInUse                  TruthValue,
+    nhrpServerNhcRowStatus              RowStatus
+}
+
+nhrpServerNhcIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An identifier for an NHC available to an NHS."
+    ::= { nhrpServerNhcEntry 1 }
+
+nhrpServerNhcPrefixLength OBJECT-TYPE
+    SYNTAX      Integer32 (0..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The number of bits that define the internetwork
+        layer prefix associated with the
+        nhrpServerNhcInternetworkAddr."
+    ::= { nhrpServerNhcEntry 2 }
+
+nhrpServerNhcInternetworkAddrType OBJECT-TYPE
+    SYNTAX      AddressFamilyNumbers
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of the internetwork layer address of the
+        NHRP Client represented in this entry. This object
+        indicates how the value of nhrpServerNhcInternetworkAddr
+        is to be interpreted."
+    ::= { nhrpServerNhcEntry 3 }
+
+nhrpServerNhcInternetworkAddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of the internetwork layer address of
+        the NHRP Client represented by this entry.  If this
+        value is not known, this will be a zero-length
+        OCTET STRING."
+    ::= { nhrpServerNhcEntry 4 }
+
+nhrpServerNhcNbmaAddrType OBJECT-TYPE
+    SYNTAX      AddressFamilyNumbers
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of the NBMA subnetwork address of the NHRP
+        Client represented by this entry. This object indicates
+        how the values of nhrpServerNhcNbmaAddr and
+        nhrpServerNhcNbmaSubaddr are to be interpreted."
+    ::= { nhrpServerNhcEntry 5 }
+
+nhrpServerNhcNbmaAddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The NBMA subnetwork address of the NHC. The type of the
+        address is indicated by the corresponding value of
+        nhrpServerNbmaAddrType."
+    ::= { nhrpServerNhcEntry 6 }
+
+nhrpServerNhcNbmaSubaddr OBJECT-TYPE
+    SYNTAX      NhrpGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The NBMA subaddress of the NHC. For NMBA address familes
+        that do not have the concept of subaddress, this will
+        be a zero-length OCTET STRING."
+    ::= { nhrpServerNhcEntry 7 }
+
+nhrpServerNhcInUse OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "An indication of whether this NHC is in use by the NHS."
+    ::= { nhrpServerNhcEntry 8 }
+
+nhrpServerNhcRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An object that allows entries in this table to be
+        created and deleted using the RowStatus convention."
+    ::= { nhrpServerNhcEntry 9 }
+
+--
+-- The Next Hop Server Statistics Table
+--
+
+nhrpServerStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NhrpServerStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Statistics collected by Next Hop Servers."
+    ::= { nhrpServerObjects 4 }
+
+nhrpServerStatEntry OBJECT-TYPE
+    SYNTAX      NhrpServerStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Statistics for a particular NHS. The statistics are
+        broken into received (Rx), transmitted (Tx)
+        and forwarded (Fw).  Forwarded (Fw) would be done
+        by a transit NHS."
+    INDEX       { nhrpServerIndex }
+    ::= { nhrpServerStatTable 1 }
+
+NhrpServerStatEntry ::= SEQUENCE {
+    nhrpServerStatRxResolveReq                    Counter32,
+    nhrpServerStatTxResolveReplyAck               Counter32,
+    nhrpServerStatTxResolveReplyNakProhibited     Counter32,
+    nhrpServerStatTxResolveReplyNakInsufResources Counter32,
+    nhrpServerStatTxResolveReplyNakNoBinding      Counter32,
+    nhrpServerStatTxResolveReplyNakNotUnique      Counter32,
+
+    nhrpServerStatRxRegisterReq                   Counter32,
+    nhrpServerStatTxRegisterAck                   Counter32,
+    nhrpServerStatTxRegisterNakProhibited         Counter32,
+    nhrpServerStatTxRegisterNakInsufResources     Counter32,
+    nhrpServerStatTxRegisterNakAlreadyReg         Counter32,
+
+    nhrpServerStatRxPurgeReq                      Counter32,
+    nhrpServerStatTxPurgeReq                      Counter32,
+    nhrpServerStatRxPurgeReply                    Counter32,
+    nhrpServerStatTxPurgeReply                    Counter32,
+
+-- Error Indications
+    nhrpServerStatRxErrUnrecognizedExtension      Counter32,
+    nhrpServerStatRxErrLoopDetected               Counter32,
+    nhrpServerStatRxErrProtoAddrUnreachable       Counter32,
+    nhrpServerStatRxErrProtoError                 Counter32,
+    nhrpServerStatRxErrSduSizeExceeded            Counter32,
+    nhrpServerStatRxErrInvalidExtension           Counter32,
+    nhrpServerStatRxErrInvalidResReplyReceived    Counter32,
+    nhrpServerStatRxErrAuthenticationFailure      Counter32,
+    nhrpServerStatRxErrHopCountExceeded           Counter32,
+
+    nhrpServerStatTxErrUnrecognizedExtension      Counter32,
+    nhrpServerStatTxErrLoopDetected               Counter32,
+    nhrpServerStatTxErrProtoAddrUnreachable       Counter32,
+    nhrpServerStatTxErrProtoError                 Counter32,
+    nhrpServerStatTxErrSduSizeExceeded            Counter32,
+    nhrpServerStatTxErrInvalidExtension           Counter32,
+    nhrpServerStatTxErrAuthenticationFailure      Counter32,
+    nhrpServerStatTxErrHopCountExceeded           Counter32,
+
+-- Transit NHS statistics
+    nhrpServerStatFwResolveReq                    Counter32,
+    nhrpServerStatFwResolveReply                  Counter32,
+    nhrpServerStatFwRegisterReq                   Counter32,
+    nhrpServerStatFwRegisterReply                 Counter32,
+    nhrpServerStatFwPurgeReq                      Counter32,
+    nhrpServerStatFwPurgeReply                    Counter32,
+    nhrpServerStatFwErrorIndication               Counter32,
+    nhrpServerStatDiscontinuityTime               TimeStamp
+}
+
+nhrpServerStatRxResolveReq OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Resolution Requests received by this
+        server.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 1 }
+
+nhrpServerStatTxResolveReplyAck OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of positively acknowledged NHRP
+        Resolution Replies transmitted by this server.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 2 }
+
+nhrpServerStatTxResolveReplyNakProhibited OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Resolution Replies
+        transmitted by this server with the code
+        'Administratively Prohibited'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 3 }
+
+nhrpServerStatTxResolveReplyNakInsufResources OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Resolution Replies
+        transmitted by this server with the code
+        'Insufficient Resources'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 4 }
+
+nhrpServerStatTxResolveReplyNakNoBinding OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Resolution Replies
+        transmitted by this server with the code
+        'No Internetworking Layer Address to NBMA
+        Address Binding Exists'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 5 }
+
+nhrpServerStatTxResolveReplyNakNotUnique OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Resolution Replies
+        transmitted by this server with the code
+        'Binding Exists But Is Not Unique'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 6 }
+
+nhrpServerStatRxRegisterReq OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Registration Requests received
+        by this server.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 7 }
+
+nhrpServerStatTxRegisterAck OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of positively acknowledged NHRP Registration
+        Replies transmitted by this server.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 8 }
+
+nhrpServerStatTxRegisterNakProhibited OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Registration Replies
+        transmitted by this server with the code
+        'Administratively Prohibited'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 9 }
+
+nhrpServerStatTxRegisterNakInsufResources OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Registration Replies
+        transmitted by this server with the code
+        'Insufficient Resources'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 10 }
+
+nhrpServerStatTxRegisterNakAlreadyReg OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NAKed NHRP Registration Replies
+        transmitted by this server with the code
+        'Unique Internetworking Layer Address Already
+        Registered'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 11 }
+
+nhrpServerStatRxPurgeReq OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Purge Requests received by
+        this server.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 12 }
+
+nhrpServerStatTxPurgeReq OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Purge Requests transmitted by this
+        server.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 13 }
+
+nhrpServerStatRxPurgeReply OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Purge Replies received by this
+        server.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 14 }
+
+nhrpServerStatTxPurgeReply OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Purge Replies transmitted by
+        this server.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 15 }
+
+nhrpServerStatRxErrUnrecognizedExtension OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this server with the error code
+
+        'Unrecognized Extension'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 16 }
+
+
+nhrpServerStatRxErrLoopDetected OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this server with the error code 'NHRP Loop Detected'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 17 }
+
+nhrpServerStatRxErrProtoAddrUnreachable OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this server with the error code 'Protocol Address
+        Unreachable'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 18 }
+
+nhrpServerStatRxErrProtoError OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this server with the error code 'Protocol Error'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 19 }
+
+nhrpServerStatRxErrSduSizeExceeded OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this server with the error code 'NHRP SDU Size
+        Exceeded'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 20 }
+
+nhrpServerStatRxErrInvalidExtension OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this server with the error code 'Invalid Extension'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 21 }
+
+nhrpServerStatRxErrInvalidResReplyReceived OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets received
+        by this server with the error code 'Invalid Resolution
+        Reply Received'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 22 }
+
+nhrpServerStatRxErrAuthenticationFailure OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets
+        received by this server with the error code
+        'Authentication Failure'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 23 }
+
+nhrpServerStatRxErrHopCountExceeded OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets
+        received by this server with the error code
+        'Hop Count Exceeded'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 24 }
+
+nhrpServerStatTxErrUnrecognizedExtension OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets
+        transmitted by this server with the error code
+        'Unrecognized Extension'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 25 }
+
+
+nhrpServerStatTxErrLoopDetected OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets
+        transmitted by this server with the error code
+        'NHRP Loop Detected'.
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 26 }
+
+nhrpServerStatTxErrProtoAddrUnreachable OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets
+        transmitted by this server with the error code
+        'Protocol Address Unreachable'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 27 }
+
+nhrpServerStatTxErrProtoError OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets
+        transmitted by this server with the error
+        code 'Protocol Error'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 28 }
+
+nhrpServerStatTxErrSduSizeExceeded OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets
+        transmitted by this server with the error code
+        'NHRP SDU Size Exceeded'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 29 }
+
+nhrpServerStatTxErrInvalidExtension OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets
+        transmitted by this server with the error code
+
+        'Invalid Extension'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 30 }
+
+nhrpServerStatTxErrAuthenticationFailure OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets
+        transmitted by this server with the error code
+        'Authentication Failure'.
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 31 }
+
+nhrpServerStatTxErrHopCountExceeded OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets
+        transmitted by this server with the error
+        code 'Hop Count Exceeded'.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    REFERENCE
+        "Section 5.2.7 NHRP Error Indication, RFC 2332 [17]."
+    ::= { nhrpServerStatEntry 32 }
+
+nhrpServerStatFwResolveReq OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Resolution Requests
+        forwarded by this server acting as a transit NHS.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 33 }
+
+nhrpServerStatFwResolveReply OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Resolution Replies forwarded
+        by this server acting as a transit NHS.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 34 }
+
+nhrpServerStatFwRegisterReq OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Registration Requests forwarded
+        by this server acting as a transit NHS.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 35 }
+
+nhrpServerStatFwRegisterReply OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Registration Replies forwarded
+        by this server acting as a transit NHS.
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 36 }
+
+nhrpServerStatFwPurgeReq OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Purge Requests forwarded
+        by this server acting as a transit NHS.
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 37 }
+
+nhrpServerStatFwPurgeReply OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Purge Replies forwarded by this
+        server acting as a transit NHS.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 38 }
+
+nhrpServerStatFwErrorIndication OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of NHRP Error Indication packets forwarded
+        by this server acting as a transit NHS.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, at
+        NHRP Server re-initialization and at
+        other times as indicated by the value of
+        nhrpServerStatDiscontinuityTime."
+    ::= { nhrpServerStatEntry 39 }
+
+nhrpServerStatDiscontinuityTime OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of sysUpTime on the most recent occasion at
+        which any one or more of this Server's counters
+        suffered a discontinuity.  If no such discontinuities
+        have occurred since the last re-initialization of the
+        local management subsystem or the NHRP Server
+        re-initialization associated with this entry, then
+        this object contains a zero value."
+    REFERENCE
+        "RFC 2233 [18]."
+    ::= { nhrpServerStatEntry 40 }
+
+--****************************************************************
+-- Module Compliance Statement
+--****************************************************************
+
+nhrpConformance OBJECT IDENTIFIER ::= { nhrpMIB 2 }
+
+nhrpCompliances
+    OBJECT IDENTIFIER ::= { nhrpConformance 1 }
+
+nhrpGroups
+    OBJECT IDENTIFIER ::= { nhrpConformance 2 }
+
+nhrpModuleCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+        "The compliance statement for the NHRP MIB."
+    MODULE -- this module
+        MANDATORY-GROUPS    { nhrpGeneralGroup }
+
+        GROUP nhrpClientGroup
+        DESCRIPTION
+            "This group must be supported only by stations that
+            are NHRP clients."
+
+        GROUP nhrpServerGroup
+        DESCRIPTION
+            "This group must be supported only by stations that
+            are NHRP servers."
+    ::= { nhrpCompliances 1 }
+
+nhrpGeneralGroup OBJECT-GROUP
+    OBJECTS {
+
+        nhrpNextIndex,
+        nhrpCachePrefixLength,
+        nhrpCacheNextHopInternetworkAddr,
+        nhrpCacheNbmaAddrType,
+        nhrpCacheNbmaAddr,
+        nhrpCacheNbmaSubaddr,
+        nhrpCacheType,
+        nhrpCacheState,
+        nhrpCacheHoldingTimeValid,
+        nhrpCacheHoldingTime,
+        nhrpCacheNegotiatedMtu,
+        nhrpCachePreference,
+        nhrpCacheStorageType,
+        nhrpCacheRowStatus,
+        nhrpPurgeCacheIdentifier,
+        nhrpPurgePrefixLength,
+        nhrpPurgeRequestID,
+        nhrpPurgeReplyExpected,
+        nhrpPurgeRowStatus
+    }
+    STATUS    current
+    DESCRIPTION
+        "Objects that apply to both NHRP clients and NHRP
+        servers."
+    ::= { nhrpGroups 1 }
+
+nhrpClientGroup OBJECT-GROUP
+    OBJECTS {
+        nhrpClientInternetworkAddrType,
+        nhrpClientInternetworkAddr,
+        nhrpClientNbmaAddrType,
+        nhrpClientNbmaAddr,
+        nhrpClientNbmaSubaddr,
+        nhrpClientInitialRequestTimeout,
+        nhrpClientRegistrationRequestRetries,
+        nhrpClientResolutionRequestRetries,
+        nhrpClientPurgeRequestRetries,
+        nhrpClientDefaultMtu,
+        nhrpClientHoldTime,
+        nhrpClientRequestID,
+        nhrpClientStorageType,
+        nhrpClientRowStatus,
+        nhrpClientRegUniqueness,
+        nhrpClientRegState,
+        nhrpClientRegRowStatus,
+        nhrpClientNhsInternetworkAddrType,
+        nhrpClientNhsInternetworkAddr,
+        nhrpClientNhsNbmaAddrType,
+        nhrpClientNhsNbmaAddr,
+        nhrpClientNhsNbmaSubaddr,
+
+        nhrpClientNhsInUse,
+        nhrpClientNhsRowStatus,
+        nhrpClientStatTxResolveReq,
+        nhrpClientStatRxResolveReplyAck,
+        nhrpClientStatRxResolveReplyNakProhibited,
+        nhrpClientStatRxResolveReplyNakInsufResources,
+        nhrpClientStatRxResolveReplyNakNoBinding,
+        nhrpClientStatRxResolveReplyNakNotUnique,
+        nhrpClientStatTxRegisterReq,
+        nhrpClientStatRxRegisterAck,
+        nhrpClientStatRxRegisterNakProhibited,
+        nhrpClientStatRxRegisterNakInsufResources,
+        nhrpClientStatRxRegisterNakAlreadyReg,
+        nhrpClientStatRxPurgeReq,
+        nhrpClientStatTxPurgeReq,
+        nhrpClientStatRxPurgeReply,
+        nhrpClientStatTxPurgeReply,
+        nhrpClientStatTxErrorIndication,
+        nhrpClientStatRxErrUnrecognizedExtension,
+        nhrpClientStatRxErrLoopDetected,
+        nhrpClientStatRxErrProtoAddrUnreachable,
+        nhrpClientStatRxErrProtoError,
+        nhrpClientStatRxErrSduSizeExceeded,
+        nhrpClientStatRxErrInvalidExtension,
+        nhrpClientStatRxErrAuthenticationFailure,
+        nhrpClientStatRxErrHopCountExceeded,
+        nhrpClientStatDiscontinuityTime
+    }
+    STATUS    current
+    DESCRIPTION
+        "Objects that apply only to NHRP clients."
+    ::= { nhrpGroups 2 }
+
+nhrpServerGroup OBJECT-GROUP
+    OBJECTS {
+        nhrpServerInternetworkAddrType,
+        nhrpServerInternetworkAddr,
+        nhrpServerNbmaAddrType,
+        nhrpServerNbmaAddr,
+        nhrpServerNbmaSubaddr,
+        nhrpServerStorageType,
+        nhrpServerRowStatus,
+        nhrpServerCacheAuthoritative,
+        nhrpServerCacheUniqueness,
+        nhrpServerNhcPrefixLength,
+        nhrpServerNhcInternetworkAddrType,
+        nhrpServerNhcInternetworkAddr,
+        nhrpServerNhcNbmaAddrType,
+        nhrpServerNhcNbmaAddr,
+        nhrpServerNhcNbmaSubaddr,
+        nhrpServerNhcInUse,
+        nhrpServerNhcRowStatus,
+        nhrpServerStatRxResolveReq,
+        nhrpServerStatTxResolveReplyAck,
+        nhrpServerStatTxResolveReplyNakProhibited,
+        nhrpServerStatTxResolveReplyNakInsufResources,
+        nhrpServerStatTxResolveReplyNakNoBinding,
+        nhrpServerStatTxResolveReplyNakNotUnique,
+        nhrpServerStatRxRegisterReq,
+        nhrpServerStatTxRegisterAck,
+        nhrpServerStatTxRegisterNakProhibited,
+        nhrpServerStatTxRegisterNakInsufResources,
+        nhrpServerStatTxRegisterNakAlreadyReg,
+        nhrpServerStatRxPurgeReq,
+        nhrpServerStatTxPurgeReq,
+        nhrpServerStatRxPurgeReply,
+        nhrpServerStatTxPurgeReply,
+        nhrpServerStatRxErrUnrecognizedExtension,
+        nhrpServerStatRxErrLoopDetected,
+        nhrpServerStatRxErrProtoAddrUnreachable,
+        nhrpServerStatRxErrProtoError,
+        nhrpServerStatRxErrSduSizeExceeded,
+        nhrpServerStatRxErrInvalidExtension,
+        nhrpServerStatRxErrInvalidResReplyReceived,
+        nhrpServerStatRxErrAuthenticationFailure,
+        nhrpServerStatRxErrHopCountExceeded,
+        nhrpServerStatTxErrUnrecognizedExtension,
+        nhrpServerStatTxErrLoopDetected,
+        nhrpServerStatTxErrProtoAddrUnreachable,
+        nhrpServerStatTxErrProtoError,
+        nhrpServerStatTxErrSduSizeExceeded,
+        nhrpServerStatTxErrInvalidExtension,
+        nhrpServerStatTxErrAuthenticationFailure,
+        nhrpServerStatTxErrHopCountExceeded,
+        nhrpServerStatFwResolveReq,
+        nhrpServerStatFwResolveReply,
+        nhrpServerStatFwRegisterReq,
+        nhrpServerStatFwRegisterReply,
+        nhrpServerStatFwPurgeReq,
+        nhrpServerStatFwPurgeReply,
+        nhrpServerStatFwErrorIndication,
+        nhrpServerStatDiscontinuityTime
+    }
+    STATUS    current
+    DESCRIPTION
+        "Objects that apply only to NHRP servers."
+    ::= { nhrpGroups 3 }
+
+END

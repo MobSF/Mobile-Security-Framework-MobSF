@@ -1,0 +1,1192 @@
+T11-FC-NAME-SERVER-MIB DEFINITIONS ::= BEGIN
+
+-- The MIB for management of the Fibre Channel functionality which
+-- implements the Name Server function.
+
+IMPORTS
+    MODULE-IDENTITY,OBJECT-TYPE,
+    NOTIFICATION-TYPE, Unsigned32,
+    Counter32, Integer32, mib-2   FROM SNMPv2-SMI         -- [RFC2578]
+    MODULE-COMPLIANCE, OBJECT-GROUP,
+    NOTIFICATION-GROUP            FROM SNMPv2-CONF        -- [RFC2580]
+    SnmpAdminString               FROM SNMP-FRAMEWORK-MIB -- [RFC3411]
+    TruthValue, TEXTUAL-CONVENTION,
+    TimeStamp                     FROM SNMPv2-TC          -- [RFC2579]
+    fcmInstanceIndex, FcPortType,
+    FcAddressIdOrZero, FcClasses,
+    FcNameIdOrZero                FROM FC-MGMT-MIB        -- [FC-MGMT]
+    T11FabricIndex                FROM T11-TC-MIB      -- [FC-FAM-MIB]
+    t11FamLocalSwitchWwn
+                      FROM T11-FC-FABRIC-ADDR-MGR-MIB; -- [FC-FAM-MIB]
+
+t11FcNameServerMIB  MODULE-IDENTITY
+    LAST-UPDATED "200603020000Z"
+    ORGANIZATION "T11"
+    CONTACT-INFO
+            "     Claudio DeSanti
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA 95134 USA
+                  Phone: +1 408 853-9172
+                  EMail: cds@cisco.com
+
+                  Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA USA 95134
+                  Phone: +1 408-526-5260
+                  EMail: kzm@cisco.com"
+    DESCRIPTION
+           "The MIB module for the management of the functionality,
+           which realizes the FC-GS-4 requirements for Name
+           Server (NS).
+
+           Copyright (C) The Internet Society (2006).  This version of
+           this MIB module is part of RFC 4438; see the RFC itself for
+           full legal notices."
+
+
+
+    REVISION    "200603020000Z"
+    DESCRIPTION
+           "Initial version of this MIB module, published as RFC 4438."
+    ::= { mib-2 135 }
+
+t11NsNotifications    OBJECT IDENTIFIER ::= { t11FcNameServerMIB 0 }
+t11NsMIBObjects       OBJECT IDENTIFIER ::= { t11FcNameServerMIB 1 }
+t11NsMIBConformance   OBJECT IDENTIFIER ::= { t11FcNameServerMIB 2 }
+t11NsStatus           OBJECT IDENTIFIER ::= { t11NsMIBObjects 1 }
+t11NsStatistics       OBJECT IDENTIFIER ::= { t11NsMIBObjects 2 }
+
+-- Textual Conventions
+
+T11NsGs4RejectReasonCode ::= TEXTUAL-CONVENTION
+    STATUS    current
+    DESCRIPTION
+        "The FC-GS-4 reject reason code for a request.
+
+         none(1)
+             - no error.
+         invalidCmdCode(2)
+             - request contained an invalid command code.
+         invalidVerLevel(3)
+             - request contained an invalid version number.
+         logicalError(4)
+             - there was a logical error.
+         invalidIUSize(5)
+             - the CT_IU (Information Unit) size was invalid.
+         logicalBusy(6)
+             - the module is busy.
+         protocolError(7)
+             - there was a protocol error.
+         unableToPerformCmdReq(8)
+             - the command specified in the req could not be
+               executed.  The details of exactly what failed
+               will be in the corresponding reason code
+               explanation.
+         cmdNotSupported(9)
+             - the command is not supported.
+         serverNotAvailable(10)
+             - the identified server was not available.
+         couldNotEstabSession(11)
+             - a server session could not be established.
+         vendorError(12)
+             - a vendor-specific error."
+    REFERENCE
+          "ANSI INCITS 387-2004, Fibre Channel - Generic
+           Services-4 (FC-GS-4), section 4.4.3."
+
+
+
+    SYNTAX  INTEGER {
+              none(1),
+              invalidCmdCode(2),
+              invalidVerLevel(3),
+              logicalError(4),
+              invalidIUSize(5),
+              logicalBusy(6),
+              protocolError(7),
+              unableToPerformCmdReq(8),
+              cmdNotSupported(9),
+              serverNotAvailable(10),
+              couldNotEstabSession(11),
+              vendorError(12)
+            }
+
+T11NsRejReasonCodeExpl ::= TEXTUAL-CONVENTION
+    STATUS    current
+    DESCRIPTION
+        "The reject reason code explanation:
+
+         noAdditionalExplanation(1)
+             - no additional explanation.
+         portIdentifierNotRegistered(2)
+             - Port Identifier not registered.
+         portNameNotRegistered(3)
+             - Port Name not registered.
+         nodeNameNotRegistered(4)
+             - Node Name not registered.
+         classOfServiceNotRegistered(5)
+             - Class of Service not registered.
+         nodeIpAddressNotRegistered(6)
+             - 'IP Address (Node)' value not registered.
+         ipaNotRegistered(7)
+             - Initial Process Associator (IPA) not registered.
+         fc4TypeNotRegistered(8)
+             - FC-4 TYPEs not registered.
+         symbolicPortNameNotRegistered(9)
+             - Symbolic Port Name not registered.
+         symbolicNodeNameNotRegistered(10)
+             - Symbolic Node Name not registered.
+         portTypeNotRegistered(11)
+             - 'Port Type' not registered.
+         portIpAddressNotRegistered(12)
+             - 'IP Address (Port)' value not registered.
+         fabricPortNameNotRegistered(13)
+             - Fabric Port Name not registered.
+         hardAddressNotRegistered(14)
+             - 'Hard Address' not registered.
+
+
+
+         fc4DescriptorNotRegistered(15)
+             - FC-4 Descriptor not registered.
+         fc4FeaturesNotRegistered(16)
+             - FC-4 Features not registered.
+         accessDenied(17)
+             - Access denied.
+         unacceptablePortIdentifier(18)
+             - Unacceptable Port Identifier.
+         databaseEmpty(19)
+             - Database is empty.
+         noObjectRegInSpecifiedScope(20)
+             - no object has been registered in the specified
+               scope.
+         domainIdNotPresent(21)
+             - Domain ID not present.
+         portIdNotPresent(22)
+             - Port number not present.
+         noDeviceAttached(23)
+             - No device attached.
+         authorizationException(24)
+             - Authorization Exception.
+         authenticationException(25)
+             - Authentication Exception.
+         databaseFull(26)
+             - Database full."
+    REFERENCE
+          "ANSI INCITS 387-2004, Fibre Channel - Generic
+           Services-4 (FC-GS-4), sections 4.4.4 and 5.2.4"
+    SYNTAX  INTEGER {
+              noAdditionalExplanation(1),
+              portIdentifierNotRegistered(2),
+              portNameNotRegistered(3),
+              nodeNameNotRegistered(4),
+              classOfServiceNotRegistered(5),
+              nodeIpAddressNotRegistered(6),
+              ipaNotRegistered(7),
+              fc4TypeNotRegistered(8),
+              symbolicPortNameNotRegistered(9),
+              symbolicNodeNameNotRegistered(10),
+              portTypeNotRegistered(11),
+              portIpAddressNotRegistered(12),
+              fabricPortNameNotRegistered(13),
+              hardAddressNotRegistered(14),
+              fc4DescriptorNotRegistered(15),
+              fc4FeaturesNotRegistered(16),
+              accessDenied(17),
+              unacceptablePortIdentifier(18),
+              databaseEmpty(19),
+
+
+
+              noObjectRegInSpecifiedScope(20),
+              domainIdNotPresent(21),
+              portIdNotPresent(22),
+              noDeviceAttached(23),
+              authorizationException(24),
+              authenticationException(25),
+              databaseFull(26)
+           }
+
+--
+-- Information about a Name Server Information Subset
+--
+
+t11NsInfoSubsetTable OBJECT-TYPE
+    SYNTAX        SEQUENCE OF T11NsInfoSubsetEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "This table contains one entry for each Name Server
+           Information Subset within each Fibre Channel
+           management instance."
+    ::= { t11NsStatus 1 }
+
+t11NsInfoSubsetEntry OBJECT-TYPE
+    SYNTAX        T11NsInfoSubsetEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "This entry contains information about operations
+           on a particular Name Server Information Subset
+           within the Fibre Channel management instance
+           identified by fcmInstanceIndex."
+    INDEX { fcmInstanceIndex, t11NsInfoSubsetIndex }
+    ::= { t11NsInfoSubsetTable 1 }
+
+T11NsInfoSubsetEntry ::= SEQUENCE {
+    t11NsInfoSubsetIndex                 Unsigned32,
+    t11NsInfoSubsetSwitchIndex           Unsigned32,
+    t11NsInfoSubsetTableLastChange       TimeStamp,
+    t11NsInfoSubsetNumRows               Integer32,
+    t11NsInfoSubsetTotalRejects          Counter32,
+    t11NsInfoSubsetRejReqNotfyEnable     TruthValue
+}
+
+t11NsInfoSubsetIndex OBJECT-TYPE
+    SYNTAX        Unsigned32 (1..4294967295)
+    MAX-ACCESS    not-accessible
+    STATUS        current
+
+
+
+    DESCRIPTION
+           "An arbitrary integer value that uniquely identifies
+           this Name Server Information Subset amongst all others
+           within the same Fibre Channel management instance.
+
+           It is mandatory to keep this value constant between
+           restarts of the agent and to make every possible
+           effort to keep it constant across such restarts."
+    ::= { t11NsInfoSubsetEntry 1 }
+
+t11NsInfoSubsetSwitchIndex OBJECT-TYPE
+    SYNTAX        Unsigned32 (0..4294967295)
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The value of this object is zero when operations
+           upon this Name Server Information Subset do not occur
+           at a local Fibre Channel switch; otherwise, it is
+           non-zero and identifies the local switch.
+
+           The switch identified by a non-zero value of this
+           object is the same switch as is identified by the
+           same value of fcmSwitchIndex."
+    REFERENCE
+           "fcmSwitchIndex is defined in the FC-MGMT-MIB module"
+    ::= { t11NsInfoSubsetEntry 2 }
+
+t11NsInfoSubsetTableLastChange OBJECT-TYPE
+    SYNTAX        TimeStamp
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The value of sysUpTime at the time of the last update
+           to any entry in the t11NsRegTable with the same values
+           of fcmInstanceIndex and t11NsInfoSubsetIndex.  This
+           includes creation of an entry, deletion of an entry, or
+           modification of an existing entry.  If no such update
+           has taken place since the last re-initialization of the
+           local network management subsystem, then this object
+           contains a zero value."
+    ::= { t11NsInfoSubsetEntry 3 }
+
+t11NsInfoSubsetNumRows OBJECT-TYPE
+    SYNTAX        Integer32 (0..2147483647)
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The number of Nx_Ports currently registered in this
+
+
+
+           Name Server Information Subset, i.e., the number of
+           rows in the t11NsRegTable with the same values of
+           fcmInstanceIndex and t11NsInfoSubsetIndex."
+    ::= { t11NsInfoSubsetEntry 4 }
+
+t11NsInfoSubsetTotalRejects OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The total number of (CT_IU) Requests for Name Server
+           functions that were rejected for inclusion in this
+           Name Server Information Subset, across all Fabrics
+           for which it contains information.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11NsInfoSubsetEntry 5 }
+
+t11NsInfoSubsetRejReqNotfyEnable OBJECT-TYPE
+    SYNTAX        TruthValue
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+           "This object indicates whether 't11NsRejectRegNotify'
+           notifications are generated by rejections of requests
+           to register information in this Name Server Information
+           Subset.
+
+           If value of this object is 'true', then the
+           notification is generated when a request is rejected.
+           If it is 'false', the notification is not generated.
+
+           The persistence of values of this object across an
+           agent reboot is implementation-dependent."
+    DEFVAL { false }
+    ::= { t11NsInfoSubsetEntry 6 }
+
+--
+-- Registered Port Information
+--
+
+t11NsRegTable OBJECT-TYPE
+    SYNTAX        SEQUENCE OF T11NsRegEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "This table contains entries for all Nx_Ports registered
+
+
+
+           in the identified Name Server Information Subsets across
+           all Fabrics for which such subsets contain information."
+    ::= { t11NsStatus 2 }
+
+t11NsRegEntry OBJECT-TYPE
+    SYNTAX T11NsRegEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "An entry containing information about an Nx_Port
+           represented by t11NsRegPortIdentifier that is registered
+           with a Name Server Information Subset (identified by
+           t11NsInfoSubsetIndex) within the Fibre Channel management
+           instance (identified by fcmInstanceIndex) on the Fabric
+           (identified by t11NsRegFabricIndex)."
+    INDEX { fcmInstanceIndex, t11NsInfoSubsetIndex,
+            t11NsRegFabricIndex, t11NsRegPortIdentifier }
+    ::= { t11NsRegTable 1 }
+
+T11NsRegEntry ::= SEQUENCE {
+    t11NsRegFabricIndex            T11FabricIndex,
+    t11NsRegPortIdentifier         FcAddressIdOrZero,
+    t11NsRegPortName               FcNameIdOrZero,
+    t11NsRegNodeName               FcNameIdOrZero,
+    t11NsRegClassOfSvc             FcClasses,
+    t11NsRegNodeIpAddress          OCTET STRING,
+    t11NsRegProcAssoc              OCTET STRING,
+    t11NsRegFc4Type                OCTET STRING,
+    t11NsRegPortType               FcPortType,
+    t11NsRegPortIpAddress          OCTET STRING,
+    t11NsRegFabricPortName         FcNameIdOrZero,
+    t11NsRegHardAddress            FcAddressIdOrZero,
+    t11NsRegSymbolicPortName       SnmpAdminString,
+    t11NsRegSymbolicNodeName       SnmpAdminString,
+    t11NsRegFc4Features            OCTET STRING
+    }
+
+t11NsRegFabricIndex OBJECT-TYPE
+    SYNTAX               T11FabricIndex
+    MAX-ACCESS           not-accessible
+    STATUS               current
+    DESCRIPTION
+           "A unique index value that uniquely identifies a
+           particular Fabric.
+
+           In a Fabric conformant to SW-3, only a single Fabric can
+           operate within a single physical infrastructure, and thus,
+           the value of this Fabric Index will always be 1.
+
+
+
+           However, it is possible that future standards will define
+           how multiple Fabrics, each with its own management
+           instrumentation, could operate within one (or more) physical
+           infrastructures.  To allow for this future possibility, this
+           index value is used to uniquely identify a particular
+           Fabric within a physical infrastructure."
+    ::= { t11NsRegEntry 1 }
+
+t11NsRegPortIdentifier OBJECT-TYPE
+    SYNTAX               FcAddressIdOrZero
+    MAX-ACCESS           not-accessible
+    STATUS               current
+    DESCRIPTION
+           "The Fibre Channel Address Identifier of this Nx_Port.
+           If no Port Identifier has been registered, then the
+           value of this object is the zero-length string."
+    ::= { t11NsRegEntry 2 }
+
+t11NsRegPortName OBJECT-TYPE
+    SYNTAX        FcNameIdOrZero
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The Port_Name (WWN) of this Nx_Port.
+           If this object has not been registered, then its value
+           is the zero-length string."
+    DEFVAL {''H}
+    ::= { t11NsRegEntry 3 }
+
+t11NsRegNodeName OBJECT-TYPE
+    SYNTAX        FcNameIdOrZero
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The Node_Name (WWN) of this Nx_Port.
+           If this object has not been registered, then its value
+           is the zero-length string."
+    DEFVAL {''H}
+    ::= { t11NsRegEntry 4 }
+
+t11NsRegClassOfSvc OBJECT-TYPE
+    SYNTAX        FcClasses
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The class of service indicator.  This object is an
+           array of bits that contain a bit map of the classes of
+           service supported by the associated port.  If a bit in
+
+
+
+           this object is 1, it indicates that the class of
+           service is supported by the associated port.  When a
+           bit is set to 0, it indicates that no class of service
+           is supported by this Nx_Port.
+
+           If this object has not been not registered for a port,
+           then the instance for that port is not instantiated."
+    ::= { t11NsRegEntry 5 }
+
+t11NsRegNodeIpAddress OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE (0 | 16))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The IP address of the node of this Nx_Port, in
+           network-byte order, either as a 32-bit IPv4 address or
+           a 128-bit IPv6 address.  For the former, the leftmost 96 bits
+           (12 bytes) should contain x'00 00 00 00 00 00 00 00 00 00 FF
+           FF', and the IPv4 address should be present in the rightmost
+           32 bits.
+
+           Note that the value of this object is the IP address value
+           that is received in the FC-GS-4 message Register IP address
+           (Node) RIP_NN.  It is not validated against any IP address
+           format.
+
+           If no 'IP address (Node)' has been registered, then the
+           value of this object is the zero-length string."
+    REFERENCE
+          "ANSI INCITS 387-2004, Fibre Channel - Generic
+           Services-4 (FC-GS-4)"
+    DEFVAL  { ''H }
+    ::= { t11NsRegEntry 6 }
+
+t11NsRegProcAssoc OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE (0 | 8))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The Fibre Channel Initial Process Associator (IPA).
+
+           If no 'Initial Process Associator' has been registered,
+           then the value of this object is the zero-length string."
+    REFERENCE
+          "ANSI INCITS 387-2004, Fibre Channel - Generic
+           Services-4 (FC-GS-4)"
+    DEFVAL  { ''H }
+    ::= { t11NsRegEntry 7 }
+
+
+
+t11NsRegFc4Type OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE (0 | 32))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The FC-4 protocol types supported by this Nx_Port.
+           This is an array of 256 bits.  Each bit in the array
+           corresponds to a Type value as defined by Fibre Channel
+           standards and contained in the Type field of the frame
+           header.  The order of the bits in the 256-bit (32-byte)
+           value is the same as defined in FC-GS-4, section 5.2.3.8,
+           and represented in network-byte order.
+
+           If no 'FC-4 TYPEs' has been registered, then the
+           value of this object is the zero-length string."
+    REFERENCE
+           "ANSI INCITS 387-2004, Fibre Channel - Generic
+           Services-4 (FC-GS-4), section 5.2.3.8."
+    DEFVAL  { ''H }
+    ::= { t11NsRegEntry 8 }
+
+t11NsRegPortType OBJECT-TYPE
+    SYNTAX        FcPortType
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The port type of this port.
+
+           If no 'Port Type' has been registered, then the value
+           of this object is unidentified and is represented by
+           the value 'unknown'."
+    DEFVAL  { 1 }                -- 'unknown', see [FC-MGMT]
+    ::= { t11NsRegEntry 9 }
+
+t11NsRegPortIpAddress OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE (0 | 16))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The value that Fibre Channel calls an 'IP Address (Port)'
+           that represents the IP address of the associated port.
+           The value is either in 32-bit IPv4 format or 128-bit IPv6
+           format, in network-byte order.  When this object contains an
+           IPv4 address, the leftmost 96 bits (12 bytes) should contain
+           x'00 00 00 00 00 00 00 00 00 00 FF FF'.  The IPv4 address
+           should be present in the rightmost 32 bits.
+
+           Note that the value of this object is the IP address value
+
+
+
+           that is received in the FC-GS-4 message Register IP address
+           (Port) RIPP_ID.  It is not validated against any IP address
+           format.
+
+           If no 'IP address (Port)' has been registered, then the
+           value of this object is the zero-length string."
+    REFERENCE
+           "ANSI INCITS 387-2004, Fibre Channel - Generic
+           Services-4, (FC-GS-4)"
+    DEFVAL {''H}
+    ::= { t11NsRegEntry 10 }
+
+t11NsRegFabricPortName OBJECT-TYPE
+    SYNTAX        FcNameIdOrZero
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The Fabric Port Name (WWN) of the Fx_Port to which
+           this Nx_Port is attached.
+
+           If no 'Fabric Port Name' has been registered, then the
+           value of this object is the zero-length string."
+    DEFVAL {''H}
+    ::= { t11NsRegEntry 11 }
+
+t11NsRegHardAddress OBJECT-TYPE
+    SYNTAX        FcAddressIdOrZero
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The format of this object is identical to the format
+           of Hard Address defined in the Discover Address (ADISC)
+           Extended Link Service (FC-FS).
+
+           Hard Address is the 24-bit NL_Port identifier that
+           consists of:
+             - the 8-bit Domain_ID in the most significant byte
+             - the 8-bit Area_ID in the next most significant
+               byte
+             - the 8-bit AL-PA (Arbitrated Loop Physical Address)
+               which an NL_Port attempts acquire during FC-AL
+               initialization in the least significant byte.
+
+           If the port is not an NL_Port, or if it is an NL_Port
+           but does not have a hard address, then all bits are
+           reported as zeros.
+
+           If no 'Hard Address' has been registered, then the
+
+
+
+           value of this object is the zero-length string."
+    DEFVAL {''H}
+    ::= { t11NsRegEntry 12 }
+
+t11NsRegSymbolicPortName OBJECT-TYPE
+    SYNTAX        SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The user-defined name of this port.
+
+           If no 'Symbolic Port Name' has been registered, then
+           the value of this object is the zero-length string."
+    DEFVAL {''H}
+    ::= { t11NsRegEntry 13 }
+
+t11NsRegSymbolicNodeName OBJECT-TYPE
+    SYNTAX        SnmpAdminString (SIZE (0..255))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The user-defined name of the node of this port.
+
+           If no 'Symbolic Node Name' has been registered, then
+           the value of this object is the zero-length string."
+    DEFVAL {''H}
+    ::= { t11NsRegEntry 14 }
+
+
+t11NsRegFc4Features OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE (0 | 128))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The FC-4 Features associated with FC-4 Types on this
+           port encoded as a 128-byte value in network-byte order,
+           or the zero-length string if no 'FC-4 Features' have been
+           registered.
+
+           Section 5.2.3.15 of FC-GS-4 is the authoritative
+           definition of the format of the 128-byte value,
+           i.e., if different, FC-GS-4 takes precedence over the
+           following description:
+
+           The 128-byte value is an array of 4-bit values, one for
+           each FC-4 Type value, positioned as follows: the 5 most
+           significant bits of a Type value identify where it appears
+           within the 128-byte value, specifically, within which word:
+
+
+
+                 - Word 0 (of the 128-byte value) contains information
+                   related to Types '00' through '07';
+                 - Word 1 contains information related to Types
+                   '08' through 0F';
+                 - and so forth, up to Word 31, which contains
+                   information related to Types 'F8' through 'FF'.
+
+           The least significant of the eight 4-bit values in each
+           Word represents an FC-4 Type with 000 as its 3 least
+           significant bits, and most significant 4-bit value in
+           each Word represents an FC-4 Type with 111 as its 3 least
+           significant bits."
+    REFERENCE
+           "ANSI INCITS 387-2004, Fibre Channel - Generic
+           Services-4 (FC-GS-4), section 5.2.3.15."
+    DEFVAL {''H}
+    ::= { t11NsRegEntry 15 }
+
+
+--
+-- Registered FC-4 Descriptors
+--
+
+t11NsRegFc4DescriptorTable OBJECT-TYPE
+    SYNTAX        SEQUENCE OF T11NsRegFc4DescriptorEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "This table contains entries for all FC-4 Descriptors
+           registered in the identified Name Server Information
+           Subsets across all Fabrics for which such subsets
+           contain information."
+    ::= { t11NsStatus 3 }
+
+t11NsRegFc4DescriptorEntry OBJECT-TYPE
+    SYNTAX        T11NsRegFc4DescriptorEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "An entry in the t11NsRegFc4DescriptorTable,
+           containing information about an FC-4 Descriptor
+           that is associated with a particular FC-4 Type
+           value.  The particular FC-4 Descriptor was
+           registered by an Nx_Port (identified by
+           t11NsRegPortIdentifier) in a Name Server Information
+           Subset (identified by t11NsInfoSubsetIndex) within
+           the Fibre Channel management instance (identified by
+           fcmInstanceIndex) on the Fabric (identified by
+
+
+
+           t11NsRegFabricIndex).
+
+           If no FC-4 Descriptors have been registered
+           for a particular port, then there will be no
+           entries in this table for that port."
+    INDEX { fcmInstanceIndex, t11NsInfoSubsetIndex,
+            t11NsRegFabricIndex, t11NsRegPortIdentifier,
+            t11NsRegFc4TypeValue }
+    ::= { t11NsRegFc4DescriptorTable 1 }
+
+T11NsRegFc4DescriptorEntry ::= SEQUENCE {
+    t11NsRegFc4TypeValue           Unsigned32,
+    t11NsRegFc4Descriptor          OCTET STRING
+}
+
+t11NsRegFc4TypeValue OBJECT-TYPE
+    SYNTAX          Unsigned32 (0..255)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+           "An integer value that identifies an FC-4 Type value
+           (representing a particular protocol type, as specified
+           in FC-FS) for which an FC-4 Descriptor has been
+           registered.
+
+           An instance of this object contains a 'Type value'
+           that corresponds to a '1' bit in the value of the
+           t11NsRegFc4Type registered for the same port;
+           this correspondence is as specified in FC-GS-4."
+    REFERENCE
+           "ANSI INCITS 387-2004, Fibre Channel - Generic
+              Services-4 (FC-GS-4), section 5.2.3.8, and
+           ANSI INCITS 373-2003, Fibre Channel - Framing and
+              Signaling (FC-FS), section 9.6, Table 29."
+    ::= { t11NsRegFc4DescriptorEntry 1 }
+
+t11NsRegFc4Descriptor OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE (0..255))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The FC-4 Descriptor value that has been registered
+           for the particular port on the particular Fabric, and
+           for the FC-4 Type represented by the corresponding
+           value of t11NsRegFc4TypeIndex.
+
+           The format of an FC-4 Descriptor is dependent on the
+           corresponding FC-4 Type value, but is represented in
+
+
+
+           network-byte order."
+    REFERENCE
+           "ANSI INCITS 387-2004, Fibre Channel - Generic
+           Services-4 (FC-GS-4), section 5.2.5.42"
+    ::= { t11NsRegFc4DescriptorEntry 2 }
+
+
+--
+-- Name Server per-Fabric Statistics
+--
+
+t11NsStatsTable OBJECT-TYPE
+    SYNTAX        SEQUENCE OF T11NsStatsEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "This table contains per-Fabric state and statistics
+           for operations upon the identified Name Server
+           Information Subsets."
+    ::= { t11NsStatistics 1 }
+
+t11NsStatsEntry OBJECT-TYPE
+    SYNTAX        T11NsStatsEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "An entry in this table contains state and statistics
+           for operations upon a Name Server Information Subset
+           (identified by t11NsInfoSubsetIndex) within the Fibre
+           Channel management instance (identified by
+           fcmInstanceIndex) on the Fabric (identified by
+           t11NsRegFabricIndex)."
+    INDEX { fcmInstanceIndex, t11NsInfoSubsetIndex,
+            t11NsRegFabricIndex }
+    ::= { t11NsStatsTable 1 }
+
+T11NsStatsEntry ::=  SEQUENCE {
+    t11NsInGetReqs                Counter32,
+    t11NsOutGetReqs               Counter32,
+    t11NsInRegReqs                Counter32,
+    t11NsInDeRegReqs              Counter32,
+    t11NsInRscns                  Counter32,
+    t11NsOutRscns                 Counter32,
+    t11NsRejects                  Counter32,
+    t11NsDatabaseFull             TruthValue
+ }
+
+t11NsInGetReqs OBJECT-TYPE
+
+
+
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The total number of (CT_IU) Get Requests
+           received requesting information from this Name
+           Server Information Subset on this Fabric.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11NsStatsEntry 1 }
+
+t11NsOutGetReqs OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The total number of (CT_IU) Get Requests sent in
+           order to obtain information needed in this Name Server
+           Information Subset on this Fabric.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11NsStatsEntry 2 }
+
+t11NsInRegReqs OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The total number of (CT_IU) Registration Requests
+           received to register information in the Name Server
+           Information Subset on this Fabric.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11NsStatsEntry 3 }
+
+t11NsInDeRegReqs OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The total number of (CT_IU) De-registration Requests
+           received to de-register information from this Name Server
+           Information Subset on this Fabric.
+
+           This counter has no discontinuities other than those
+
+
+
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11NsStatsEntry 4 }
+
+t11NsInRscns OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The total number of received RSCNs, indicating
+           Name Server-related changes relating to this Name
+           Server Information Subset on this Fabric.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11NsStatsEntry 5 }
+
+t11NsOutRscns OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The total number of transmitted RSCNs, indicating
+           Name Server-related changes relating to this Name
+           Server Information Subset on this Fabric.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11NsStatsEntry 6 }
+
+t11NsRejects OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The total number of CT_IU Requests for Name
+           Server functions on this Name Server Information
+           Subset on this Fabric that were rejected.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11NsStatsEntry 7 }
+
+t11NsDatabaseFull OBJECT-TYPE
+    SYNTAX        TruthValue
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "An indication of whether the database containing this
+
+
+
+           Name Server Information Subset is full.  This object is
+           set to 'true' only if the Name Server is unable to allocate
+           space for a new entry for the corresponding Fabric, and it is
+           set to 'false' whenever an existing entry is deleted for the
+           corresponding Fabric."
+    ::= { t11NsStatsEntry 8 }
+
+--
+-- Reject information objects
+--
+
+t11NsRejectTable OBJECT-TYPE
+    SYNTAX        SEQUENCE OF T11NsRejectEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "This table contains information about the most recent
+           Name Server Registration Request failures for various
+           ports on various Fabrics.
+
+           If no information is available about the most recent
+           rejection of a Registration Request on a particular port
+           on a particular Fabric, then there will no entry in this
+           table for that port and Fabric.
+
+           When a t11NsRejectRegNotify notification is sent for
+           such a Registration Request failure, the values of the
+           objects in the relevant entry of this table are updated
+           immediately prior to generating the notification."
+    ::= { t11NsStatus 4 }
+
+t11NsRejectEntry OBJECT-TYPE
+    SYNTAX T11NsRejectEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "An entry containing information about the most recent
+           rejection of a request to register information in the Name
+           Server Information Subset (identified by
+           t11NsInfoSubsetIndex) within the Fibre Channel management
+           instance (identified by fcmInstanceIndex) for a particular
+           port (identified by t11NsRegPortIdentifier) on a particular
+           Fabric (identified by t11NsRegFabricIndex)."
+    INDEX { fcmInstanceIndex, t11NsInfoSubsetIndex,
+            t11NsRegFabricIndex, t11NsRegPortIdentifier }
+    ::= { t11NsRejectTable 1 }
+
+T11NsRejectEntry ::= SEQUENCE {
+
+
+
+    t11NsRejectCtCommandString   OCTET STRING,
+    t11NsRejectReasonCode        T11NsGs4RejectReasonCode,
+    t11NsRejReasonCodeExp        T11NsRejReasonCodeExpl,
+    t11NsRejReasonVendorCode     OCTET STRING
+}
+
+t11NsRejectCtCommandString OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE (0..255))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The binary content of the Registration Request,
+           formatted as an octet string (in network byte
+           order) containing the CT_IU, as described in
+           Table 2 of [FC-GS-4] (including the preamble),
+           which was most recently rejected for the particular
+           Name Server Information Subset on the particular port
+           on the particular Fabric.
+
+           This object contains the zero-length string
+           if and when the CT-IU's content is unavailable.
+
+           When the length of this object is 255 octets, it
+           contains the first 255 octets of the CT-IU (in
+           network-byte order)."
+    ::= { t11NsRejectEntry 1 }
+
+t11NsRejectReasonCode OBJECT-TYPE
+    SYNTAX        T11NsGs4RejectReasonCode
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "A registration reject reason code.  This object
+           contains the reason code of the most recent Name
+           Server Registration Request failure for the
+           particular port on the particular Fabric."
+    ::= { t11NsRejectEntry 2 }
+
+t11NsRejReasonCodeExp OBJECT-TYPE
+    SYNTAX        T11NsRejReasonCodeExpl
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "A registration reject reason code explanation.  This
+           object contains the reason code explanation of the most
+           recent Name Server Registration Request failure for the
+           particular port on the particular Fabric."
+    ::= { t11NsRejectEntry 3 }
+
+
+
+t11NsRejReasonVendorCode OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE(1))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "A registration reject vendor-specific code.  This
+           object contains the vendor-specific code of the most
+           recent Name Server Registration Request failure for the
+           particular port on the particular Fabric."
+    ::= { t11NsRejectEntry 4 }
+
+
+--
+-- Notifications
+--
+
+t11NsRejectRegNotify NOTIFICATION-TYPE
+    OBJECTS   { t11FamLocalSwitchWwn,
+                t11NsRegPortName, t11NsRejectCtCommandString,
+                t11NsRejectReasonCode, t11NsRejReasonCodeExp,
+                t11NsRejReasonVendorCode }
+    STATUS    current
+    DESCRIPTION
+           "This notification is generated whenever a request to
+           register information in a Name Server Information
+           Subset (for which the corresponding instance of
+           t11NsInfoSubsetRejReqNotfyEnable is 'true') is
+           rejected on a particular Fabric for a particular Nx_Port.
+
+           The value of t11FamLocalSwitchWwn indicates the
+           WWN of the switch that received the request.
+           (If the WWN is unavailable, the value is set to
+           the zero-length string.)
+
+           The value of t11NsRejectCtCommandString indicates
+           the rejected request, and the values of
+           t11NsRejectReasonCode, t11NsRejReasonCodeExp, and
+           t11NsRejReasonVendorCode indicate the reason for
+           the rejection.
+
+           The value of t11NsRegPortName represents the Port Name
+           if it is able to be extracted out of the Registration
+           Request, or otherwise the value as currently registered
+           on the port."
+    ::= { t11NsNotifications 1 }
+
+--
+-- Conformance
+
+
+
+--
+
+t11NsMIBCompliances OBJECT IDENTIFIER ::= {t11NsMIBConformance 1}
+t11NsMIBGroups      OBJECT IDENTIFIER ::= {t11NsMIBConformance 2}
+
+t11NsMIBCompliance MODULE-COMPLIANCE
+    STATUS    current
+    DESCRIPTION
+           "The compliance statement for entities that
+           implement the Fibre Channel Name Server."
+    MODULE MANDATORY-GROUPS {t11NsDBGroup,
+                             t11NsNotifyControlGroup,
+                             t11NsNotifyGroup}
+
+      OBJECT t11NsInfoSubsetRejReqNotfyEnable
+      MIN-ACCESS read-only
+      DESCRIPTION
+             "Write access is not required."
+
+      GROUP t11NsRequestStatsGroup
+      DESCRIPTION
+             "This group is mandatory only for an implementation
+             that captures statistics related to Name Server
+             requests."
+
+      GROUP t11NsRscnStatsGroup
+      DESCRIPTION
+             "This group is mandatory only for an implementation
+             that captures statistics related to Name
+             Server-related RSCNs."
+
+      GROUP t11NsRejectStatsGroup
+      DESCRIPTION
+             "This group is mandatory only for an implementation
+             that captures statistics related to Name Server
+             rejects."
+
+    ::= { t11NsMIBCompliances 1 }
+
+-- Units of conformance
+
+t11NsDBGroup        OBJECT-GROUP
+    OBJECTS { t11NsInfoSubsetSwitchIndex,
+              t11NsInfoSubsetTableLastChange,
+              t11NsInfoSubsetNumRows,
+              t11NsRegPortName,
+              t11NsRegNodeName,
+              t11NsRegClassOfSvc,
+
+
+
+              t11NsRegNodeIpAddress,
+              t11NsRegProcAssoc,
+              t11NsRegFc4Type,
+              t11NsRegPortType,
+              t11NsRegPortIpAddress,
+              t11NsRegFabricPortName,
+              t11NsRegHardAddress,
+              t11NsRegSymbolicPortName,
+              t11NsRegSymbolicNodeName,
+              t11NsRegFc4Features,
+              t11NsRegFc4Descriptor }
+    STATUS current
+    DESCRIPTION
+           "A collection of objects for monitoring the information
+           registered in a Name Server Information Subset."
+    ::= { t11NsMIBGroups 1 }
+
+t11NsRequestStatsGroup OBJECT-GROUP
+    OBJECTS { t11NsInGetReqs,
+              t11NsOutGetReqs,
+              t11NsInRegReqs,
+              t11NsInDeRegReqs,
+              t11NsDatabaseFull}
+    STATUS current
+    DESCRIPTION
+           "A collection of objects for displaying Name
+           Server statistics and state for Name Server requests."
+    ::= { t11NsMIBGroups 2 }
+
+t11NsRscnStatsGroup OBJECT-GROUP
+    OBJECTS { t11NsInRscns,
+              t11NsOutRscns }
+    STATUS current
+    DESCRIPTION
+           "A collection of objects for displaying Name
+           Server statistics for Name Server-related RSCNs."
+    ::= { t11NsMIBGroups 3 }
+
+t11NsRejectStatsGroup OBJECT-GROUP
+    OBJECTS { t11NsInfoSubsetTotalRejects,
+              t11NsRejects }
+    STATUS current
+    DESCRIPTION
+           "A collection of objects for displaying Name
+           Server statistics for rejects."
+    ::= { t11NsMIBGroups 4 }
+
+t11NsNotifyControlGroup  OBJECT-GROUP
+
+
+
+    OBJECTS { t11NsRejectCtCommandString,
+              t11NsRejectReasonCode,
+              t11NsRejReasonCodeExp,
+              t11NsRejReasonVendorCode,
+              t11NsInfoSubsetRejReqNotfyEnable }
+    STATUS current
+    DESCRIPTION
+           "A collection of notification control and
+           notification information objects for monitoring
+           rejections of Name Server registrations."
+    ::= { t11NsMIBGroups 5 }
+
+t11NsNotifyGroup        NOTIFICATION-GROUP
+    NOTIFICATIONS {t11NsRejectRegNotify }
+    STATUS current
+    DESCRIPTION
+           "A collection of notifications for monitoring
+           rejections of Name Server registrations."
+    ::= { t11NsMIBGroups 6 }
+
+END

@@ -1,0 +1,1820 @@
+DISMAN-SCRIPT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Integer32, Unsigned32, mib-2
+        FROM SNMPv2-SMI
+
+    RowStatus, TimeInterval, DateAndTime, StorageType, DisplayString
+        FROM SNMPv2-TC
+
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB;
+
+scriptMIB MODULE-IDENTITY
+    LAST-UPDATED "200108210000Z"
+    ORGANIZATION "IETF Distributed Management Working Group"
+    CONTACT-INFO
+        "WG EMail:  disman@dorothy.bmc.com
+         Subscribe: disman-request@dorothy.bmc.com
+
+         Chair:     Randy Presuhn
+                    BMC Software, Inc.
+
+
+         Postal:    Office 1-3141
+                    2141 North First Street
+                    San Jose,  California 95131
+                    USA
+         EMail:     rpresuhn@bmc.com
+         Phone:     +1 408 546-1006
+
+         Editor:    David B. Levi
+                    Nortel Networks
+         Postal:    4401 Great America Parkway
+                    Santa Clara, CA 95052-8185
+                    USA
+         EMail:     dlevi@nortelnetworks.com
+         Phone:     +1 423 686 0432
+
+         Editor:    Juergen Schoenwaelder
+                    TU Braunschweig
+         Postal:    Bueltenweg 74/75
+                    38106 Braunschweig
+                    Germany
+         EMail:     schoenw@ibr.cs.tu-bs.de
+         Phone:     +49 531 391-3283"
+    DESCRIPTION
+        "This MIB module defines a set of objects that allow to
+         delegate management scripts to distributed managers."
+    REVISION    "200108210000Z"
+    DESCRIPTION
+        "Revised version, published as RFC 3165.
+
+         This revision introduces several new objects: smScriptError,
+         smScriptLastChange, smLaunchError, smLaunchLastChange,
+         smLaunchRowExpireTime, smRunResultTime, and smRunErrorTime.
+
+         The following existing objects were updated: the maximum
+         value of smRunLifeTime now disables the timer, an
+         autostart value was added to the smLaunchAdminStatus
+         object, and a new expired state was added to the
+         smLaunchOperStatus object.
+
+         A new smScriptException notification has been added to
+         support runtime error notifications.
+
+         Created new conformance and compliance statements that
+         take care of the new objects and notifications.
+
+         Clarifications have been added in several places to remove
+         ambiguities or contradictions that were discovered and
+         reported by implementors."
+
+
+    REVISION    "199902221800Z"
+    DESCRIPTION
+        "Initial version, published as RFC 2592."
+    ::= { mib-2 64 }
+
+--
+-- The groups defined within this MIB module:
+--
+
+smObjects       OBJECT IDENTIFIER ::= { scriptMIB 1 }
+smNotifications OBJECT IDENTIFIER ::= { scriptMIB 2 }
+smConformance   OBJECT IDENTIFIER ::= { scriptMIB 3 }
+
+--
+-- Script language and language extensions.
+--
+-- This group defines tables which list the languages and the
+-- language extensions supported by a Script MIB implementation.
+-- Languages are uniquely identified by object identifier values.
+--
+
+smLangTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SmLangEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists supported script languages."
+    ::= { smObjects 1 }
+
+smLangEntry OBJECT-TYPE
+    SYNTAX      SmLangEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular language."
+    INDEX { smLangIndex }
+    ::= { smLangTable 1 }
+
+SmLangEntry ::= SEQUENCE {
+    smLangIndex         Integer32,
+    smLangLanguage      OBJECT IDENTIFIER,
+    smLangVersion       SnmpAdminString,
+    smLangVendor        OBJECT IDENTIFIER,
+    smLangRevision      SnmpAdminString,
+    smLangDescr         SnmpAdminString
+}
+
+smLangIndex OBJECT-TYPE
+
+
+    SYNTAX      Integer32 (1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The locally arbitrary, but unique identifier associated
+         with this language entry.
+
+         The value is expected to remain constant at least from one
+         re-initialization of the entity's network management system
+         to the next re-initialization.
+
+         Note that the data type and the range of this object must
+         be consistent with the definition of smScriptLanguage."
+    ::= { smLangEntry 1 }
+
+smLangLanguage OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The globally unique identification of the language."
+    ::= { smLangEntry 2 }
+
+smLangVersion OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The version number of the language. The zero-length string
+         shall be used if the language does not have a version
+         number.
+
+         It is suggested that the version number consist of one or
+         more decimal numbers separated by dots, where the first
+         number is called the major version number."
+    ::= { smLangEntry 3 }
+
+smLangVendor OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "An object identifier which identifies the vendor who
+         provides the implementation of the language. This object
+         identifier SHALL point to the object identifier directly
+         below the enterprise object identifier {1 3 6 1 4 1}
+         allocated for the vendor. The value must be the object
+         identifier {0 0} if the vendor is not known."
+
+
+    ::= { smLangEntry 4 }
+
+smLangRevision OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The version number of the language implementation.
+         The value of this object must be an empty string if
+         version number of the implementation is unknown.
+
+         It is suggested that the value consist of one or more
+         decimal numbers separated by dots, where the first
+         number is called the major version number."
+    ::= { smLangEntry 5 }
+
+smLangDescr OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A textual description of the language."
+    ::= { smLangEntry 6 }
+
+
+smExtsnTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SmExtsnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists supported language extensions."
+    ::= { smObjects 2 }
+
+smExtsnEntry OBJECT-TYPE
+    SYNTAX      SmExtsnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular language extension."
+    INDEX { smLangIndex, smExtsnIndex }
+    ::= { smExtsnTable 1 }
+
+SmExtsnEntry ::= SEQUENCE {
+    smExtsnIndex        Integer32,
+    smExtsnExtension    OBJECT IDENTIFIER,
+    smExtsnVersion      SnmpAdminString,
+    smExtsnVendor       OBJECT IDENTIFIER,
+    smExtsnRevision     SnmpAdminString,
+
+
+    smExtsnDescr        SnmpAdminString
+}
+
+smExtsnIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The locally arbitrary, but unique identifier associated
+         with this language extension entry.
+
+         The value is expected to remain constant at least from one
+         re-initialization of the entity's network management system
+         to the next re-initialization."
+    ::= { smExtsnEntry 1}
+
+smExtsnExtension OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The globally unique identification of the language
+         extension."
+    ::= { smExtsnEntry 2 }
+
+smExtsnVersion OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The version number of the language extension.
+         It is suggested that the version number consist of one or
+         more decimal numbers separated by dots, where the first
+         number is called the major version number."
+    ::= { smExtsnEntry 3 }
+
+smExtsnVendor OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "An object identifier which identifies the vendor who
+         provides the implementation of the extension. The
+         object identifier value should point to the OID node
+         directly below the enterprise OID {1 3 6 1 4 1}
+         allocated for the vendor. The value must by the object
+         identifier {0 0} if the vendor is not known."
+    ::= { smExtsnEntry 4 }
+
+
+smExtsnRevision OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The version number of the extension implementation.
+         The value of this object must be an empty string if
+         version number of the implementation is unknown.
+
+         It is suggested that the value consist of one or more
+         decimal numbers separated by dots, where the first
+         number is called the major version number."
+    ::= { smExtsnEntry 5 }
+
+smExtsnDescr OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A textual description of the language extension."
+    ::= { smExtsnEntry 6 }
+
+--
+-- Scripts known by the Script MIB implementation.
+--
+-- This group defines a table which lists all known scripts.
+-- Scripts can be added and removed through manipulation of the
+-- smScriptTable.
+--
+
+smScriptObjects OBJECT IDENTIFIER ::= { smObjects 3 }
+
+smScriptTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SmScriptEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists and describes locally known scripts."
+    ::= { smScriptObjects 1 }
+
+smScriptEntry OBJECT-TYPE
+    SYNTAX      SmScriptEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular script. Every script that
+         is stored in non-volatile memory is required to appear in
+         this script table."
+
+
+    INDEX { smScriptOwner, smScriptName }
+    ::= { smScriptTable 1 }
+
+SmScriptEntry ::= SEQUENCE {
+    smScriptOwner       SnmpAdminString,
+    smScriptName        SnmpAdminString,
+    smScriptDescr       SnmpAdminString,
+    smScriptLanguage    Integer32,
+    smScriptSource      DisplayString,
+    smScriptAdminStatus INTEGER,
+    smScriptOperStatus  INTEGER,
+    smScriptStorageType StorageType,
+    smScriptRowStatus   RowStatus,
+    smScriptError       SnmpAdminString,
+    smScriptLastChange  DateAndTime
+}
+
+smScriptOwner OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The manager who owns this row in the smScriptTable."
+    ::= { smScriptEntry 1 }
+
+smScriptName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (1..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The locally-unique, administratively assigned name for this
+         script. This object allows an smScriptOwner to have multiple
+         entries in the smScriptTable.
+
+         This value of this object may be used to derive the name
+         (e.g. a file name) which is used by the Script MIB
+         implementation to access the script in non-volatile
+         storage. The details of this mapping are implementation
+         specific. However, the mapping needs to ensure that scripts
+         created by different owners with the same script name do not
+         map to the same name in non-volatile storage."
+    ::= { smScriptEntry 2 }
+
+smScriptDescr OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+
+
+        "A description of the purpose of the script."
+    ::= { smScriptEntry 3 }
+
+smScriptLanguage OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object type identifies an entry in the
+         smLangTable which is used to execute this script.
+         The special value 0 may be used by hard-wired scripts
+         that can not be modified and that are executed by
+         internal functions.
+
+         Set requests to change this object are invalid if the
+         value of smScriptOperStatus is `enabled' or `compiling'
+         and will result in an inconsistentValue error.
+
+         Note that the data type and the range of this object must
+         be consistent with the definition of smLangIndex."
+    ::= { smScriptEntry 4 }
+
+smScriptSource OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object either contains a reference to the script
+         source or an empty string. A reference must be given
+         in the form of a Uniform Resource Locator (URL) as
+         defined in RFC 2396. The allowed character sets and the
+         encoding rules defined in RFC 2396 section 2 apply.
+
+         When the smScriptAdminStatus object is set to `enabled',
+         the Script MIB implementation will `pull' the script
+         source from the URL contained in this object if the URL
+         is not empty.
+
+         An empty URL indicates that the script source is loaded
+         from local storage. The script is read from the smCodeTable
+         if the value of smScriptStorageType is volatile. Otherwise,
+         the script is read from non-volatile storage.
+
+         Note: This document does not mandate implementation of any
+         specific URL scheme. An attempt to load a script from a
+         nonsupported URL scheme will cause the smScriptOperStatus
+         to report an `unknownProtocol' error.
+
+
+
+         Set requests to change this object are invalid if the
+         value of smScriptOperStatus is `enabled', `editing',
+         `retrieving' or `compiling' and will result in an
+         inconsistentValue error."
+    DEFVAL { ''H }
+    ::= { smScriptEntry 5 }
+
+smScriptAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    enabled(1),
+                    disabled(2),
+                    editing(3)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the desired status of
+         the script. See the definition of smScriptOperStatus for
+         a description of the values.
+
+         When the smScriptAdminStatus object is set to `enabled' and
+         the smScriptOperStatus is `disabled' or one of the error
+         states, the Script MIB implementation will `pull' the script
+         source from the URL contained in the smScriptSource object
+         if the URL is not empty."
+    DEFVAL { disabled }
+    ::= { smScriptEntry 6 }
+
+smScriptOperStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    enabled(1),
+                    disabled(2),
+                    editing(3),
+                    retrieving(4),
+                    compiling(5),
+                    noSuchScript(6),
+                    accessDenied(7),
+                    wrongLanguage(8),
+                    wrongVersion(9),
+                    compilationFailed(10),
+                    noResourcesLeft(11),
+                    unknownProtocol(12),
+                    protocolFailure(13),
+                    genericError(14)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+
+
+        "The actual status of the script in the runtime system. The
+         value of this object is only meaningful when the value of
+         the smScriptRowStatus object is `active'.
+
+         The smScriptOperStatus object may have the following values:
+
+         - `enabled' indicates that the script is available and can
+            be started by a launch table entry.
+
+         - `disabled' indicates that the script can not be used.
+
+         - `editing' indicates that the script can be modified in the
+           smCodeTable.
+
+         - `retrieving' indicates that the script is currently being
+           loaded from non-volatile storage or a remote system.
+
+         - `compiling' indicates that the script is currently being
+           compiled by the runtime system.
+
+         - `noSuchScript' indicates that the script does not exist
+           at the smScriptSource.
+
+         - `accessDenied' indicates that the script can not be loaded
+           from the smScriptSource due to a lack of permissions.
+
+         - `wrongLanguage' indicates that the script can not be
+            loaded from the smScriptSource because of a language
+            mismatch.
+
+         - `wrongVersion' indicates that the script can not be loaded
+           from the smScriptSource because of a language version
+           mismatch.
+
+         - `compilationFailed' indicates that the compilation failed.
+
+         - `noResourcesLeft' indicates that the runtime system does
+           not have enough resources to load the script.
+
+         - `unknownProtocol' indicates that the script could not be
+           loaded from the smScriptSource because the requested
+           protocol is not supported.
+
+         - `protocolFailure' indicates that the script could not be
+           loaded from the smScriptSource because of a protocol
+           failure.
+
+         - `genericError' indicates that the script could not be
+
+
+           loaded due to an error condition not listed above.
+
+         The `retrieving' and `compiling' states are transient states
+         which will either lead to one of the error states or the
+         `enabled' state. The `disabled' and `editing' states are
+         administrative states which are only reached by explicit
+         management operations.
+
+         All launch table entries that refer to this script table
+         entry shall have an smLaunchOperStatus value of `disabled'
+         when the value of this object is not `enabled'."
+    DEFVAL { disabled }
+    ::= { smScriptEntry 7 }
+
+smScriptStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines whether this row and the script
+         controlled by this row are kept in volatile storage and
+         lost upon reboot or if this row is backed up by
+         non-volatile or permanent storage.
+
+         The storage type of this row always complies with the value
+         of this entry if the value of the corresponding RowStatus
+         object is `active'.
+
+         However, the storage type of the script controlled by this
+         row may be different, if the value of this entry is
+         `non-volatile'. The script controlled by this row is written
+         into local non-volatile storage if the following condition
+         becomes true:
+
+         (a) the URL contained in the smScriptSource object is empty
+             and
+         (b) the smScriptStorageType is `nonVolatile'
+             and
+         (c) the smScriptOperStatus is `enabled'
+
+         Setting this object to `volatile' removes a script from
+         non-volatile storage if the script controlled by this row
+         has been in non-volatile storage before. Attempts to set
+         this object to permanent will always fail with an
+         inconsistentValue error.
+
+         The value of smScriptStorageType is only meaningful if the
+         value of the corresponding RowStatus object is `active'.
+
+
+         If smScriptStorageType has the value permanent(4), then all
+         objects whose MAX-ACCESS value is read-create must be
+         writable, with the exception of the smScriptStorageType and
+         smScriptRowStatus objects, which shall be read-only."
+    DEFVAL { volatile }
+    ::= { smScriptEntry 8 }
+
+smScriptRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "A control that allows entries to be added and removed from
+         this table.
+
+         Changing the smScriptRowStatus from `active' to
+         `notInService' will remove the associated script from the
+         runtime system.
+
+         Deleting conceptual rows from this table may affect the
+         deletion of other resources associated with this row. For
+         example, a script stored in non-volatile storage may be
+         removed from non-volatile storage.
+
+         An entry may not exist in the `active' state unless all
+         required objects in the entry have appropriate values. Rows
+         that are not complete or not in service are not known by the
+         script runtime system.
+
+         Attempts to `destroy' a row or to set a row `notInService'
+         while the smScriptOperStatus is `enabled' will result in an
+         inconsistentValue error.
+
+         Attempts to `destroy' a row or to set a row `notInService'
+         where the value of the smScriptStorageType object is
+         `permanent' or `readOnly' will result in an
+         inconsistentValue error.
+
+         The value of this object has no effect on whether other
+         objects in this conceptual row can be modified."
+    ::= { smScriptEntry 9 }
+
+smScriptError OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object contains a descriptive error message if the
+
+
+         transition into the operational status `enabled' failed.
+         Implementations must reset the error message to a
+         zero-length string when a new attempt to change the
+         script status to `enabled' is started."
+    DEFVAL { ''H }
+    ::= { smScriptEntry 10 }
+
+smScriptLastChange OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when this script table entry was last
+         modified. The value '0000000000000000'H is returned if
+         the script table entry has not yet been modified.
+
+         Note that the resetting of smScriptError is not considered
+         a change of the script table entry."
+    DEFVAL { '0000000000000000'H }
+    ::= { smScriptEntry 11 }
+
+--
+-- Access to script code via SNMP
+--
+-- The smCodeTable allows script code to be read and modified
+-- via SNMP.
+--
+
+smCodeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SmCodeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains the script code for scripts that are
+         written via SNMP write operations."
+    ::= { smScriptObjects 2 }
+
+smCodeEntry OBJECT-TYPE
+    SYNTAX      SmCodeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular fragment of a script."
+    INDEX { smScriptOwner, smScriptName, smCodeIndex }
+    ::= { smCodeTable 1 }
+
+SmCodeEntry ::= SEQUENCE {
+    smCodeIndex         Unsigned32,
+
+
+    smCodeText          OCTET STRING,
+    smCodeRowStatus     RowStatus
+}
+
+smCodeIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index value identifying this code fragment."
+    ::= { smCodeEntry 1 }
+
+smCodeText OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (1..1024))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The code that makes up a fragment of a script. The format
+         of this code fragment depends on the script language which
+         is identified by the associated smScriptLanguage object."
+    ::= { smCodeEntry 2 }
+
+smCodeRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "A control that allows entries to be added and removed from
+         this table.
+
+         The value of this object has no effect on whether other
+         objects in this conceptual row can be modified."
+    ::= { smCodeEntry 3 }
+
+--
+-- Script execution.
+--
+-- This group defines tables which allow script execution to be
+-- initiated, suspended, resumed, and terminated.  It also provides
+-- a mechanism for keeping a history of recent script executions
+-- and their results.
+--
+
+smRunObjects OBJECT IDENTIFIER ::= { smObjects 4 }
+
+smLaunchTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SmLaunchEntry
+    MAX-ACCESS  not-accessible
+
+
+    STATUS      current
+    DESCRIPTION
+        "This table lists and describes scripts that are ready
+         to be executed together with their parameters."
+    ::= { smRunObjects 1 }
+
+smLaunchEntry OBJECT-TYPE
+    SYNTAX      SmLaunchEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular executable script."
+    INDEX { smLaunchOwner, smLaunchName }
+    ::= { smLaunchTable 1 }
+
+SmLaunchEntry ::= SEQUENCE {
+    smLaunchOwner               SnmpAdminString,
+    smLaunchName                SnmpAdminString,
+    smLaunchScriptOwner         SnmpAdminString,
+    smLaunchScriptName          SnmpAdminString,
+    smLaunchArgument            OCTET STRING,
+    smLaunchMaxRunning          Unsigned32,
+    smLaunchMaxCompleted        Unsigned32,
+    smLaunchLifeTime            TimeInterval,
+    smLaunchExpireTime          TimeInterval,
+    smLaunchStart               Integer32,
+    smLaunchControl             INTEGER,
+    smLaunchAdminStatus         INTEGER,
+    smLaunchOperStatus          INTEGER,
+    smLaunchRunIndexNext        Integer32,
+    smLaunchStorageType         StorageType,
+    smLaunchRowStatus           RowStatus,
+    smLaunchError               SnmpAdminString,
+    smLaunchLastChange          DateAndTime,
+    smLaunchRowExpireTime       TimeInterval
+}
+
+smLaunchOwner OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The manager who owns this row in the smLaunchTable. Every
+         instance of a running script started from a particular entry
+         in the smLaunchTable (i.e. entries in the smRunTable) will
+         be owned by the same smLaunchOwner used to index the entry
+         in the smLaunchTable. This owner is not necessarily the same
+         as the owner of the script itself (smLaunchScriptOwner)."
+
+
+    ::= { smLaunchEntry 1 }
+
+smLaunchName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (1..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The locally-unique, administratively assigned name for this
+         launch table entry. This object allows an smLaunchOwner to
+         have multiple entries in the smLaunchTable. The smLaunchName
+         is an arbitrary name that must be different from any other
+         smLaunchTable entries with the same smLaunchOwner but can be
+         the same as other entries in the smLaunchTable with
+         different smLaunchOwner values. Note that the value of
+         smLaunchName is not related in any way to the name of the
+         script being launched."
+    ::= { smLaunchEntry 2 }
+
+smLaunchScriptOwner OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object in combination with the value of
+         smLaunchScriptName identifies the script that can be
+         launched from this smLaunchTable entry. Attempts to write
+         this object will fail with an inconsistentValue error if
+         the value of smLaunchOperStatus is `enabled'."
+    ::= { smLaunchEntry 3 }
+
+smLaunchScriptName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object in combination with the value of
+         the smLaunchScriptOwner identifies the script that can be
+         launched from this smLaunchTable entry. The zero-length
+         string may be used to point to a non-existing script.
+
+         Attempts to write this object will fail with an
+         inconsistentValue error if the value of smLaunchOperStatus
+         is `enabled'."
+    DEFVAL { ''H }
+    ::= { smLaunchEntry 4 }
+
+smLaunchArgument OBJECT-TYPE
+    SYNTAX      OCTET STRING
+
+
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The argument supplied to the script. When a script is
+         invoked, the value of this object is used to initialize
+         the smRunArgument object."
+    DEFVAL { ''H }
+    ::= { smLaunchEntry 5 }
+
+smLaunchMaxRunning OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of concurrently running scripts that may
+         be invoked from this entry in the smLaunchTable. Lowering
+         the current value of this object does not affect any scripts
+         that are already executing."
+    DEFVAL { 1 }
+    ::= { smLaunchEntry 6 }
+
+smLaunchMaxCompleted OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of finished scripts invoked from this
+         entry in the smLaunchTable allowed to be retained in the
+         smRunTable. Whenever the value of this object is changed
+         and whenever a script terminates, entries in the smRunTable
+         are deleted if necessary until the number of completed
+         scripts is smaller than the value of this object. Scripts
+         whose smRunEndTime value indicates the oldest completion
+         time are deleted first."
+    DEFVAL { 1 }
+    ::= { smLaunchEntry 7 }
+
+smLaunchLifeTime OBJECT-TYPE
+    SYNTAX      TimeInterval
+    UNITS       "centi-seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The default maximum amount of time a script launched
+         from this entry may run. The value of this object is used
+         to initialize the smRunLifeTime object when a script is
+         launched. Changing the value of an smLaunchLifeTime
+         instance does not affect scripts previously launched from
+
+
+         this entry."
+    DEFVAL { 360000 }
+    ::= { smLaunchEntry 8 }
+
+smLaunchExpireTime OBJECT-TYPE
+    SYNTAX      TimeInterval
+    UNITS       "centi-seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The default maximum amount of time information about a
+         script launched from this entry is kept in the smRunTable
+         after the script has completed execution.  The value of
+         this object is used to initialize the smRunExpireTime
+         object when a script is launched. Changing the value of an
+         smLaunchExpireTime instance does not affect scripts
+         previously launched from this entry."
+    DEFVAL { 360000 }
+    ::= { smLaunchEntry 9 }
+
+smLaunchStart OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is used to start the execution of scripts.
+         When retrieved, the value will be the value of smRunIndex
+         for the last script that started execution by manipulating
+         this object. The value will be zero if no script started
+         execution yet.
+
+         A script is started by setting this object to an unused
+         smRunIndex value. A new row in the smRunTable will be
+         created which is indexed by the value supplied by the
+         set-request in addition to the value of smLaunchOwner and
+         smLaunchName. An unused value can be obtained by reading
+         the smLaunchRunIndexNext object.
+
+         Setting this object to the special value 0 will start
+         the script with a self-generated smRunIndex value. The
+         consequence is that the script invoker has no reliable
+         way to determine the smRunIndex value for this script
+         invocation and that the invoker has therefore no way
+         to obtain the results from this script invocation. The
+         special value 0 is however useful for scheduled script
+         invocations.
+
+         If this object is set, the following checks must be
+
+
+         performed:
+
+         1) The value of the smLaunchOperStatus object in this
+            entry of the smLaunchTable must be `enabled'.
+         2) The values of smLaunchScriptOwner and
+            smLaunchScriptName of this row must identify an
+            existing entry in the smScriptTable.
+         3) The value of smScriptOperStatus of this entry must
+            be `enabled'.
+         4) The principal performing the set operation must have
+            read access to the script. This must be checked by
+            calling the isAccessAllowed abstract service interface
+            defined in RFC 2271 on the row in the smScriptTable
+            identified by smLaunchScriptOwner and smLaunchScriptName.
+            The isAccessAllowed abstract service interface must be
+            called on all columnar objects in the smScriptTable with
+            a MAX-ACCESS value different than `not-accessible'. The
+            test fails as soon as a call indicates that access is
+            not allowed.
+         5) If the value provided by the set operation is not 0,
+            a check must be made that the value is currently not
+            in use. Otherwise, if the value provided by the set
+            operation is 0, a suitable unused value must be
+            generated.
+         6) The number of currently executing scripts invoked
+            from this smLaunchTable entry must be less than
+            smLaunchMaxRunning.
+
+         Attempts to start a script will fail with an
+         inconsistentValue error if one of the checks described
+         above fails.
+
+         Otherwise, if all checks have been passed, a new entry
+         in the smRunTable will be created indexed by smLaunchOwner,
+         smLaunchName and the new value for smRunIndex. The value
+         of smLaunchArgument will be copied into smRunArgument,
+         the value of smLaunchLifeTime will be copied to
+         smRunLifeTime, and the value of smLaunchExpireTime
+         will be copied to smRunExpireTime.
+
+         The smRunStartTime will be set to the current time and
+         the smRunState will be set to `initializing' before the
+         script execution is initiated in the appropriate runtime
+         system.
+
+         Note that the data type and the range of this object must
+         be consistent with the smRunIndex object. Since this
+         object might be written from the scheduling MIB, the
+
+
+         data type Integer32 rather than Unsigned32 is used."
+    DEFVAL { 0 }
+    ::= { smLaunchEntry 10 }
+
+smLaunchControl OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    abort(1),
+                    suspend(2),
+                    resume(3),
+                    nop(4)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is used to request a state change for all
+         running scripts in the smRunTable that were started from
+         this row in the smLaunchTable.
+
+         Setting this object to abort(1), suspend(2) or resume(3)
+         will set the smRunControl object of all applicable rows
+         in the smRunTable to abort(1), suspend(2) or resume(3)
+         respectively. The phrase `applicable rows' means the set of
+         rows which were created from this entry in the smLaunchTable
+         and whose value of smRunState allows the corresponding
+         state change as described in the definition of the
+         smRunControl object. Setting this object to nop(4) has no
+         effect.
+
+         Attempts to set this object lead to an inconsistentValue
+         error only if all implicated sets on all the applicable
+         rows lead to inconsistentValue errors. It is not allowed
+         to return an inconsistentValue error if at least one state
+         change on one of the applicable rows was successful."
+    DEFVAL { nop }
+    ::= { smLaunchEntry 11 }
+
+smLaunchAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    enabled(1),
+                    disabled(2),
+                    autostart(3)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the desired status of
+         this launch table entry. The values enabled(1) and
+         autostart(3) both indicate that the launch table entry
+
+
+         should transition into the operational enabled(1) state as
+         soon as the associated script table entry is enabled(1).
+
+         The value autostart(3) further indicates that the script
+         is started automatically by conceptually writing the
+         value 0 into the associated smLaunchStart object during
+         the transition from the `disabled' into the `enabled'
+         operational state. This is useful for scripts that are
+         to be launched on system start-up."
+    DEFVAL { disabled }
+    ::= { smLaunchEntry 12 }
+
+smLaunchOperStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    enabled(1),
+                    disabled(2),
+                    expired(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the actual status of
+         this launch table entry.  The smLaunchOperStatus object
+         may have the following values:
+
+         - `enabled' indicates that the launch table entry is
+           available and can be used to start scripts.
+
+         - `disabled' indicates that the launch table entry can
+           not be used to start scripts.
+
+         - `expired' indicates that the launch table entry can
+           not be used to start scripts and will disappear as
+           soon as all smRunTable entries associated with this
+           launch table entry have disappeared.
+
+         The value `enabled' requires that the smLaunchRowStatus
+         object is active. The value `disabled' requires that there
+         are no entries in the smRunTable associated with this
+         smLaunchTable entry."
+    DEFVAL { disabled }
+    ::= { smLaunchEntry 13 }
+
+smLaunchRunIndexNext OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+
+
+        "This variable is used for creating rows in the smRunTable.
+         The value of this variable is a currently unused value
+         for smRunIndex, which can be written into the smLaunchStart
+         object associated with this row to launch a script.
+
+         The value returned when reading this variable must be unique
+         for the smLaunchOwner and smLaunchName associated with this
+         row. Subsequent attempts to read this variable must return
+         different values.
+
+         This variable will return the special value 0 if no new rows
+         can be created.
+
+         Note that the data type and the range of this object must be
+         consistent with the definition of smRunIndex."
+    ::= { smLaunchEntry 14 }
+
+smLaunchStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines if this row is kept in volatile storage
+         and lost upon reboot or if this row is backed up by stable
+         storage.
+
+         The value of smLaunchStorageType is only meaningful if the
+         value of the corresponding RowStatus object is active.
+
+         If smLaunchStorageType has the value permanent(4), then all
+         objects whose MAX-ACCESS value is read-create must be
+         writable, with the exception of the smLaunchStorageType and
+         smLaunchRowStatus objects, which shall be read-only."
+    DEFVAL { volatile }
+    ::= { smLaunchEntry 15 }
+
+smLaunchRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "A control that allows entries to be added and removed from
+         this table.
+
+         Attempts to `destroy' a row or to set a row `notInService'
+         while the smLaunchOperStatus is `enabled' will result in
+         an inconsistentValue error.
+
+
+
+         Attempts to `destroy' a row or to set a row `notInService'
+         where the value of the smLaunchStorageType object is
+         `permanent' or `readOnly' will result in an
+         inconsistentValue error.
+
+         The value of this object has no effect on whether other
+         objects in this conceptual row can be modified."
+    ::= { smLaunchEntry 16 }
+
+smLaunchError OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object contains a descriptive error message if an
+         attempt to launch a script fails. Implementations must reset
+         the error message to a zero-length string when a new attempt
+         to launch a script is started."
+    DEFVAL { ''H }
+    ::= { smLaunchEntry 17 }
+
+smLaunchLastChange OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when this launch table entry was last
+         modified. The value '0000000000000000'H is returned if
+         the launch table entry has not yet been modified.
+
+         Note that a change of smLaunchStart, smLaunchControl,
+         smLaunchRunIndexNext, smLaunchRowExpireTime, or the
+         resetting of smLaunchError is not considered a change
+         of this launch table entry."
+    DEFVAL { '0000000000000000'H }
+    ::= { smLaunchEntry 18 }
+
+smLaunchRowExpireTime OBJECT-TYPE
+    SYNTAX      TimeInterval
+    UNITS       "centi-seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object specifies how long this row remains
+         in the `enabled' or `disabled' operational state. The value
+         reported by this object ticks backwards. When the value
+         reaches 0, it stops ticking backward and the row is
+         deleted if there are no smRunTable entries associated with
+
+
+         this smLaunchTable entry. Otherwise, the smLaunchOperStatus
+         changes to `expired' and the row deletion is deferred
+         until there are no smRunTable entries associated with this
+         smLaunchTable entry.
+
+         The smLaunchRowExpireTime will not tick backwards if it is
+         set to its maximum value (2147483647). In other words,
+         setting this object to its maximum value turns the timer
+         off.
+
+         The value of this object may be set in order to increase
+         or reduce the remaining time that the launch table entry
+         may be used. Setting the value to 0 will cause an immediate
+         row deletion or transition into the `expired' operational
+         state.
+
+         It is not possible to set this object while the operational
+         status is `expired'. Attempts to modify this object while
+         the operational status is `expired' leads to an
+         inconsistentValue error.
+
+         Note that the timer ticks backwards independent of the
+         operational state of the launch table entry."
+    DEFVAL { 2147483647 }
+    ::= { smLaunchEntry 19 }
+
+
+smRunTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SmRunEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists and describes scripts that are currently
+         running or have been running in the past."
+    ::= { smRunObjects 2 }
+
+smRunEntry OBJECT-TYPE
+    SYNTAX      SmRunEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular running or finished
+         script."
+    INDEX { smLaunchOwner, smLaunchName, smRunIndex }
+    ::= { smRunTable 1 }
+
+SmRunEntry ::= SEQUENCE {
+    smRunIndex          Integer32,
+
+
+    smRunArgument       OCTET STRING,
+    smRunStartTime      DateAndTime,
+    smRunEndTime        DateAndTime,
+    smRunLifeTime       TimeInterval,
+    smRunExpireTime     TimeInterval,
+    smRunExitCode       INTEGER,
+    smRunResult         OCTET STRING,
+    smRunControl        INTEGER,
+    smRunState          INTEGER,
+    smRunError          SnmpAdminString,
+    smRunResultTime     DateAndTime,
+    smRunErrorTime      DateAndTime
+}
+
+smRunIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The locally arbitrary, but unique identifier associated
+         with this running or finished script. This value must be
+         unique for all rows in the smRunTable with the same
+         smLaunchOwner and smLaunchName.
+
+         Note that the data type and the range of this object must
+         be consistent with the definition of smLaunchRunIndexNext
+         and smLaunchStart."
+    ::= { smRunEntry 1 }
+
+smRunArgument OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The argument supplied to the script when it started."
+    DEFVAL { ''H }
+    ::= { smRunEntry 2 }
+
+smRunStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when the execution started. The value
+         '0000000000000000'H is returned if the script has not
+         started yet."
+    DEFVAL { '0000000000000000'H }
+    ::= { smRunEntry 3 }
+
+
+smRunEndTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when the execution terminated. The value
+         '0000000000000000'H is returned if the script has not
+         terminated yet."
+    DEFVAL { '0000000000000000'H }
+    ::= { smRunEntry 4 }
+
+smRunLifeTime OBJECT-TYPE
+    SYNTAX      TimeInterval
+    UNITS       "centi-seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object specifies how long the script can execute.
+         This object returns the remaining time that the script
+         may run. The object is initialized with the value of the
+         associated smLaunchLifeTime object and ticks backwards.
+         The script is aborted immediately when the value reaches 0.
+
+         The value of this object may be set in order to increase or
+         reduce the remaining time that the script may run. Setting
+         this value to 0 will abort script execution immediately,
+         and, if the value of smRunExpireTime is also 0, will remove
+         this entry from the smRunTable once it has terminated.
+
+         If smRunLifeTime is set to its maximum value (2147483647),
+         either by a set operation or by its initialization from the
+         smLaunchLifeTime object, then it will not tick backwards.
+         A running script with a maximum smRunLifeTime value will
+         thus never be terminated with a `lifeTimeExceeded' exit
+         code.
+
+         The value of smRunLifeTime reflects the real-time execution
+         time as seen by the outside world. The value of this object
+         will always be 0 for a script that finished execution, that
+         is smRunState has the value `terminated'.
+
+         The value of smRunLifeTime does not change while a script
+         is suspended, that is smRunState has the value `suspended'.
+         Note that this does not affect set operations. It is legal
+         to modify smRunLifeTime via set operations while a script
+         is suspended."
+    ::= { smRunEntry 5 }
+
+
+
+smRunExpireTime OBJECT-TYPE
+    SYNTAX      TimeInterval
+    UNITS       "centi-seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of this object specifies how long this row can
+         exist in the smRunTable after the script has terminated.
+         This object returns the remaining time that the row may
+         exist before it is aged out. The object is initialized with
+         the value of the associated smLaunchExpireTime object and
+         ticks backwards. The entry in the smRunTable is destroyed
+         when the value reaches 0 and the smRunState has the value
+         `terminated'.
+
+         The value of this object may be set in order to increase or
+         reduce the remaining time that the row may exist.  Setting
+         the value to 0 will destroy this entry as soon as the
+         smRunState has the value `terminated'."
+    ::= { smRunEntry 6 }
+
+smRunExitCode OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    noError(1),
+                    halted(2),
+                    lifeTimeExceeded(3),
+                    noResourcesLeft(4),
+                    languageError(5),
+                    runtimeError(6),
+                    invalidArgument(7),
+                    securityViolation(8),
+                    genericError(9)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the reason why a
+         script finished execution. The smRunExitCode code may have
+         one of the following values:
+
+         - `noError', which indicates that the script completed
+            successfully without errors;
+
+         - `halted', which indicates that the script was halted
+            by a request from an authorized manager;
+
+         - `lifeTimeExceeded', which indicates that the script
+            exited because a time limit was exceeded;
+
+
+         - `noResourcesLeft', which indicates that the script
+            exited because it ran out of resources (e.g. memory);
+
+         - `languageError', which indicates that the script exited
+            because of a language error (e.g. a syntax error in an
+            interpreted language);
+
+         - `runtimeError', which indicates that the script exited
+            due to a runtime error (e.g. a division by zero);
+
+         - `invalidArgument', which indicates that the script could
+            not be run because of invalid script arguments;
+
+         - `securityViolation', which indicates that the script
+            exited due to a security violation;
+
+         - `genericError', which indicates that the script exited
+            for an unspecified reason.
+
+         If the script has not yet begun running, or is currently
+         running, the value will be `noError'."
+    DEFVAL { noError }
+    ::= { smRunEntry 7 }
+
+smRunResult OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The result value produced by the running script. Note that
+         the result may change while the script is executing."
+    DEFVAL { ''H }
+    ::= { smRunEntry 8 }
+
+smRunControl OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    abort(1),
+                    suspend(2),
+                    resume(3),
+                    nop(4)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the desired status of the
+         script execution defined by this row.
+
+         Setting this object to `abort' will abort execution if the
+
+
+         value of smRunState is `initializing', `executing',
+         `suspending', `suspended' or `resuming'. Setting this object
+         to `abort' when the value of smRunState is `aborting' or
+         `terminated', or if the implementation can determine that
+         the attempt to abort the execution would fail, will result
+         in an inconsistentValue error.
+
+         Setting this object to `suspend' will suspend execution
+         if the value of smRunState is `executing'. Setting this
+         object to `suspend' will cause an inconsistentValue error
+         if the value of smRunState is not `executing' or if the
+         implementation can determine that the attempt to suspend
+         the execution would fail.
+
+         Setting this object to `resume' will resume execution
+         if the value of smRunState is `suspending' or
+         `suspended'. Setting this object to `resume' will cause an
+         inconsistentValue error if the value of smRunState is
+         not `suspended' or if the implementation can determine
+         that the attempt to resume the execution would fail.
+
+         Setting this object to nop(4) has no effect."
+    DEFVAL { nop }
+    ::= { smRunEntry 9 }
+
+smRunState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    initializing(1),
+                    executing(2),
+                    suspending(3),
+                    suspended(4),
+                    resuming(5),
+                    aborting(6),
+                    terminated(7)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the script's execution
+         state. If the script has been invoked but has not yet
+         begun execution, the value will be `initializing'. If the
+         script is running, the value will be `executing'.
+
+         A running script which received a request to suspend
+         execution first transitions into a temporary `suspending'
+         state.  The temporary `suspending' state changes to
+         `suspended' when the script has actually been suspended. The
+         temporary `suspending' state changes back to `executing' if
+
+
+         the attempt to suspend the running script fails.
+
+         A suspended script which received a request to resume
+         execution first transitions into a temporary `resuming'
+         state. The temporary `resuming' state changes to `running'
+         when the script has actually been resumed. The temporary
+         `resuming' state changes back to `suspended' if the attempt
+         to resume the suspended script fails.
+
+         A script which received a request to abort execution but
+         which is still running first transitions into a temporary
+         `aborting' state.
+
+         A script which has finished its execution is `terminated'."
+    ::= { smRunEntry 10 }
+
+smRunError OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object contains a descriptive error message if the
+         script startup or execution raised an abnormal condition.
+         An implementation must store a descriptive error message
+         in this object if the script exits with the smRunExitCode
+         `genericError'."
+    DEFVAL { ''H }
+    ::= { smRunEntry 11 }
+
+smRunResultTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when the smRunResult was last updated.
+         The value '0000000000000000'H is returned if smRunResult
+         has not yet been updated after the creation of this
+         smRunTable entry."
+    DEFVAL { '0000000000000000'H }
+    ::= { smRunEntry 12 }
+
+smRunErrorTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when the smRunError was last updated.
+         The value '0000000000000000'H is returned if smRunError
+
+
+         has not yet been updated after the creation of this
+         smRunTable entry."
+    DEFVAL { '0000000000000000'H }
+    ::= { smRunEntry 13 }
+
+--
+-- Notifications. The definition of smTraps makes notification
+-- registrations reversible (see STD 58, RFC 2578).
+--
+
+smTraps OBJECT IDENTIFIER ::= { smNotifications 0 }
+
+smScriptAbort NOTIFICATION-TYPE
+    OBJECTS     { smRunExitCode, smRunEndTime, smRunError }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated whenever a running script
+         terminates with an smRunExitCode unequal to `noError'."
+    ::= { smTraps 1 }
+
+smScriptResult NOTIFICATION-TYPE
+    OBJECTS     { smRunResult }
+    STATUS      current
+    DESCRIPTION
+        "This notification can be used by scripts to notify other
+         management applications about results produced by the
+         script.
+
+         This notification is not automatically generated by the
+         Script MIB implementation. It is the responsibility of
+         the executing script to emit this notification where it
+         is appropriate to do so."
+    ::= { smTraps 2 }
+
+smScriptException NOTIFICATION-TYPE
+    OBJECTS     { smRunError }
+    STATUS      current
+    DESCRIPTION
+        "This notification can be used by scripts to notify other
+         management applications about script errors.
+
+         This notification is not automatically generated by the
+         Script MIB implementation. It is the responsibility of
+         the executing script or the runtime system to emit this
+         notification where it is appropriate to do so."
+    ::= { smTraps 3 }
+
+-- conformance information
+
+
+smCompliances OBJECT IDENTIFIER ::= { smConformance 1 }
+smGroups      OBJECT IDENTIFIER ::= { smConformance 2 }
+
+-- compliance statements
+
+smCompliance2 MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for SNMP entities which implement
+         the Script MIB."
+    MODULE      -- this module
+    MANDATORY-GROUPS {
+            smLanguageGroup, smScriptGroup2, smLaunchGroup2,
+            smRunGroup2, smNotificationsGroup2
+    }
+    GROUP   smCodeGroup
+    DESCRIPTION
+        "The smCodeGroup is mandatory only for those implementations
+         that support the downloading of scripts via SNMP."
+    OBJECT  smScriptSource
+    MIN-ACCESS  read-only
+    DESCRIPTION
+        "The smScriptSource object is read-only for implementations
+         that are not able to download script code from a URL."
+    OBJECT smCodeText
+    DESCRIPTION
+        "A compliant implementation need only support write access to
+         the smCodeText object only during row creation."
+    OBJECT smLaunchArgument
+    DESCRIPTION
+        "A compliant implementation has to support a minimum size
+         for smLaunchArgument of 255 octets."
+    OBJECT smRunArgument
+    DESCRIPTION
+        "A compliant implementation has to support a minimum size
+         for smRunArgument of 255 octets."
+    OBJECT smRunResult
+    DESCRIPTION
+        "A compliant implementation has to support a minimum size
+         for smRunResult of 255 octets."
+    OBJECT smRunState
+    DESCRIPTION
+        "A compliant implementation does not have to support script
+         suspension and the smRunState `suspended'. Such an
+         implementation will change into the `suspending' state
+         when the smRunControl is set to `suspend' and remain in this
+         state until smRunControl is set to `resume' or the script
+         terminates."
+
+
+    ::= { smCompliances 2 }
+
+smLanguageGroup OBJECT-GROUP
+    OBJECTS {
+        smLangLanguage, smLangVersion,
+        smLangVendor, smLangRevision,
+        smLangDescr, smExtsnExtension,
+        smExtsnVersion, smExtsnVendor,
+        smExtsnRevision, smExtsnDescr
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about the
+         capabilities of the scripting engine."
+    ::= { smGroups 1 }
+
+smScriptGroup2 OBJECT-GROUP
+    OBJECTS {
+        smScriptDescr, smScriptLanguage,
+        smScriptSource, smScriptAdminStatus,
+        smScriptOperStatus, smScriptStorageType,
+        smScriptRowStatus, smScriptError,
+        smScriptLastChange
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+         installed scripts."
+    ::= { smGroups 7 }
+
+smCodeGroup OBJECT-GROUP
+    OBJECTS {
+        smCodeText, smCodeRowStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects used to download or modify scripts
+         by using SNMP set requests."
+    ::= { smGroups 3 }
+
+smLaunchGroup2 OBJECT-GROUP
+    OBJECTS {
+        smLaunchScriptOwner, smLaunchScriptName,
+        smLaunchArgument, smLaunchMaxRunning,
+        smLaunchMaxCompleted, smLaunchLifeTime,
+        smLaunchExpireTime, smLaunchStart,
+        smLaunchControl, smLaunchAdminStatus,
+        smLaunchOperStatus, smLaunchRunIndexNext,
+
+
+        smLaunchStorageType, smLaunchRowStatus,
+        smLaunchError, smLaunchLastChange,
+        smLaunchRowExpireTime
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about scripts
+         that can be launched."
+    ::= { smGroups 8 }
+
+smRunGroup2 OBJECT-GROUP
+    OBJECTS {
+        smRunArgument, smRunStartTime,
+        smRunEndTime, smRunLifeTime,
+        smRunExpireTime, smRunExitCode,
+        smRunResult, smRunState,
+        smRunControl, smRunError,
+        smRunResultTime, smRunErrorTime
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about running
+         scripts."
+    ::= { smGroups 9 }
+
+smNotificationsGroup2 NOTIFICATION-GROUP
+    NOTIFICATIONS {
+        smScriptAbort,
+        smScriptResult,
+        smScriptException
+    }
+    STATUS      current
+    DESCRIPTION
+        "The notifications emitted by the Script MIB."
+    ::= { smGroups 10 }
+
+--
+-- Deprecated compliance and conformance group definitions
+-- from RFC 2592.
+--
+
+smCompliance MODULE-COMPLIANCE
+    STATUS      deprecated
+    DESCRIPTION
+        "The compliance statement for SNMP entities which implement
+         the Script MIB."
+    MODULE      -- this module
+    MANDATORY-GROUPS {
+
+
+            smLanguageGroup, smScriptGroup, smLaunchGroup, smRunGroup
+    }
+    GROUP   smCodeGroup
+    DESCRIPTION
+        "The smCodeGroup is mandatory only for those implementations
+         that support the downloading of scripts via SNMP."
+    OBJECT  smScriptSource
+    MIN-ACCESS  read-only
+    DESCRIPTION
+        "The smScriptSource object is read-only for implementations
+         that are not able to download script code from a URL."
+    OBJECT smCodeText
+    DESCRIPTION
+        "A compliant implementation need only support write access
+         to the smCodeText object during row creation."
+    OBJECT smLaunchArgument
+    DESCRIPTION
+        "A compliant implementation has to support a minimum size
+         for smLaunchArgument of 255 octets."
+    OBJECT smRunArgument
+    DESCRIPTION
+        "A compliant implementation has to support a minimum size
+         for smRunArgument of 255 octets."
+    OBJECT smRunResult
+    DESCRIPTION
+        "A compliant implementation has to support a minimum size
+         for smRunResult of 255 octets."
+    OBJECT smRunState
+    DESCRIPTION
+        "A compliant implementation does not have to support script
+         suspension and the smRunState `suspended'. Such an
+         implementation will change into the `suspending' state
+         when the smRunControl is set to `suspend' and remain in this
+         state until smRunControl is set to `resume' or the script
+         terminates."
+    ::= { smCompliances 1 }
+
+smScriptGroup OBJECT-GROUP
+    OBJECTS {
+        smScriptDescr, smScriptLanguage,
+        smScriptSource, smScriptAdminStatus,
+        smScriptOperStatus, smScriptStorageType,
+        smScriptRowStatus
+    }
+    STATUS      deprecated
+    DESCRIPTION
+        "A collection of objects providing information about
+         installed scripts."
+
+
+    ::= { smGroups 2 }
+
+smLaunchGroup OBJECT-GROUP
+    OBJECTS {
+        smLaunchScriptOwner, smLaunchScriptName,
+        smLaunchArgument, smLaunchMaxRunning,
+        smLaunchMaxCompleted, smLaunchLifeTime,
+        smLaunchExpireTime, smLaunchStart,
+        smLaunchControl, smLaunchAdminStatus,
+        smLaunchOperStatus, smLaunchRunIndexNext,
+        smLaunchStorageType, smLaunchRowStatus
+    }
+    STATUS      deprecated
+    DESCRIPTION
+        "A collection of objects providing information about scripts
+         that can be launched."
+    ::= { smGroups 4 }
+
+smRunGroup OBJECT-GROUP
+    OBJECTS {
+        smRunArgument, smRunStartTime,
+        smRunEndTime, smRunLifeTime,
+        smRunExpireTime, smRunExitCode,
+        smRunResult, smRunState,
+        smRunControl, smRunError
+    }
+    STATUS      deprecated
+    DESCRIPTION
+        "A collection of objects providing information about running
+         scripts."
+    ::= { smGroups 5 }
+
+smNotificationsGroup NOTIFICATION-GROUP
+    NOTIFICATIONS {
+        smScriptAbort,
+        smScriptResult
+    }
+    STATUS      deprecated
+    DESCRIPTION
+        "The notifications emitted by the Script MIB."
+    ::= { smGroups 6 }
+
+END

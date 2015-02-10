@@ -1,0 +1,51 @@
+#
+# dictionary.infonet
+#
+#		Accounting VSAs by
+#		"Bernard Lhoas from Infonet" <Bernard_Lhoas@infonet.com>
+#
+# Version:	@(#)dictionary.infonet  1.00
+#
+#	$Id$
+#
+VENDOR		infonet				4453
+
+#
+#	Standard attribute
+#
+# I would like to change the attribute number of Infonet-Account-Number
+# but we are already using it in production and changing could get
+# messy. Same with Infonet-Type.  -Clark
+BEGIN-VENDOR	infonet
+
+ATTRIBUTE	Infonet-Proxy				238	string
+ATTRIBUTE	Infonet-Config				239	string
+ATTRIBUTE	Infonet-MCS-Country			240	string
+ATTRIBUTE	Infonet-MCS-Region			241	string
+ATTRIBUTE	Infonet-MCS-Off-Peak			242	string
+ATTRIBUTE	Infonet-MCS-Overflow			243	string
+ATTRIBUTE	Infonet-MCS-Port			244	string
+ATTRIBUTE	Infonet-MCS-Port-Count			245	string
+ATTRIBUTE	Infonet-Account-Number			247	string
+ATTRIBUTE	Infonet-Type				248	string
+
+#
+#       Infonet-Specific Attributes
+#
+# Note: Only Attributes < 256 will go on the wire. They are known as
+#       "wire attributes".
+#       Attributes > 256 don't get sent to a NAS and don't get forwarded
+#       to a proxy site. This includes accounting packets as well as
+#       auth packets.
+#
+ATTRIBUTE	Infonet-Pool-Request			252	string
+ATTRIBUTE	Infonet-Surcharge-Type			254	integer
+ATTRIBUTE	Infonet-NAS-Location			255	string
+ATTRIBUTE	Infonet-Random-IP-Pool			246	string
+#
+ATTRIBUTE	Infonet-Realm-Type			249	string
+ATTRIBUTE	Infonet-LoginHost-Dest			250	string
+ATTRIBUTE	Infonet-Tunnel-Decision-IP		251	string
+
+
+END-VENDOR	infonet

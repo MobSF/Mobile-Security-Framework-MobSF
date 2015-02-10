@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+
+	<application id="2" name="Mobile IPv4 Application" uri="http://www.ietf.org/rfc/rfc4004.txt">
+
+		<!-- Mobile-IPv4 Application -->
+		<command name="AA-Mobile-Node" code="260" vendor-id="None"/>
+		<command name="Home-Agent-MIP" code="262" vendor-id="None"/>
+
+		<!-- ************************** Mobile-IPv4 AVPS ********************* -->
+<!--
+http://www.iana.org/assignments/aaa-parameters
+-->
+		<avp name="MIP-FA-to-HA-SPI" code="318" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="MIP-FA-to-MN-SPI" code="319" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="MIP-Reg-Request" code="320" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="MIP-Reg-Reply" code="321" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="MIP-MN-AAA-Auth" code="322" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<grouped>
+				<gavp name="MIP-MN-AAA-SPI"/>
+				<gavp name="MIP-Auth-Input-Data-Length"/>
+				<gavp name="MIP-Authenticator-Length"/>
+				<gavp name="MIP-Authenticator-Offset"/>
+			</grouped>
+		</avp>
+		<avp name="MIP-HA-to-FA-SPI" code="323" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+<!-- 324            Unassigned -->
+    <avp name="Unassigned" code="324" mandatory="may">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="MIP-MN-to-FA-MSA" code="325" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<grouped>
+				<gavp name="MIP-MN-AAA-SPI"/>
+				<gavp name="MIP-Algorithm-Type"/>
+				<gavp name="MIP-Nonce"/>
+				<gavp name="AVP"/>
+			</grouped>
+		</avp>
+		<avp name="MIP-FA-to-MN-MSA" code="326" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<grouped>
+				<gavp name="MIP-MN-AAA-SPI"/>
+				<gavp name="MIP-Algorithm-Type"/>
+				<gavp name="MIP-Session-Key"/>
+				<gavp name="AVP"/>
+			</grouped>
+		</avp>
+<!-- 327            Unassigned -->
+    <avp name="Unassigned" code="327" mandatory="may">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="MIP-FA-to-HA-MSA" code="328" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<grouped>
+				<gavp name="MIP-FA-to-HA-SPI"/>
+				<gavp name="MIP-Algorithm-Type"/>
+				<gavp name="MIP-Session-Key"/>
+				<gavp name="AVP"/>
+			</grouped>
+		</avp>
+		<avp name="MIP-HA-to-FA-MSA" code="329" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<grouped>
+				<gavp name="MIP-HA-to-FA-SPI"/>
+				<gavp name="MIP-Algorithm-Type"/>
+				<gavp name="MIP-Session-Key"/>
+				<gavp name="AVP"/>
+			</grouped>
+		</avp>
+<!-- 330            Unassigned -->
+    <avp name="Unassigned" code="330" mandatory="may">
+      <type type-name="OctetString"/>
+    </avp>
+
+    <avp name="MIP-MN-to-HA-MSA" code="331" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<grouped>
+				<gavp name="MIP-MN-HA-SPI"/>
+				<gavp name="MIP-Algorithm-Type"/>
+				<gavp name="MIP-Session-Key"/>
+				<gavp name="MIP-Nonce"/>
+				<gavp name="AVP"/>
+			</grouped>
+		</avp>
+		<avp name="MIP-HA-to-MN-MSA" code="332" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<grouped>
+				<gavp name="MIP-HA-to-MN-SPI"/>
+				<gavp name="MIP-Algorithm-Type"/>
+				<gavp name="MIP-Replay-Mode"/>
+				<gavp name="MIP-Session-Key"/>
+				<gavp name="AVP"/>
+			</grouped>
+		</avp>
+		<avp name="MIP-Mobile-Node-Address" code="333" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="IPAddress"/>
+		</avp>
+		<avp name="MIP-Home-Agent-Address" code="334" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="IPAddress"/>
+		</avp>
+		<avp name="MIP-Nonce" code="335" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="MIP-Candidate-Home-Agent-Host" code="336" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="no">
+			<type type-name="DiameterIdentity"/>
+		</avp>
+		<avp name="MIP-Feature-Vector" code="337" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+      <enum name="Mobile-Node-Home-Address-Requested" code="1"/>
+      <enum name="Home-Address-Allocatable-Only-in-Home-Realm" code="2"/>
+      <enum name="Home-Agent-Requested" code="4"/>
+      <enum name="Foreign-Home-Agent-Available" code="8"/>
+      <enum name="MN-HA-Key-Request" code="16"/>
+      <enum name="MN-FA-Key-Request" code="32"/>
+      <enum name="FA-HA-Key-Request" code="64"/>
+      <enum name="Home-Agent-In-Foreign-Network" code="128"/>
+      <enum name="Co-Located-Mobile-Node" code="256"/>
+    </avp>
+		<avp name="MIP-Auth-Input-Data-Length" code="338" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="MIP-Authenticator-Length" code="339" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="MIP-Authenticator-Offset" code="340" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="MIP-MN-AAA-SPI" code="341" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="MIP-Filter-Rule" code="342" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="IPFilterRule"/>
+		</avp>
+		<avp name="MIP-Session-Key" code="343" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="MIP-FA-Challenge" code="344" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="MIP-Algorithm-Type" code="345" mandatory="must" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+			<enum name="HMAC-SHA-1" code="2"/>
+		</avp>
+		<avp name="MIP-Replay-Mode" code="346" mandatory="must" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+			<enum name="None" code="1"/>
+			<enum name="Timestamps" code="2"/>
+			<enum name="Nonces" code="3"/>
+		</avp>
+		<avp name="MIP-Originating-Foreign-AAA" code="347" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<grouped>
+				<gavp name="Origin-Realm"/>
+				<gavp name="Origin-Host"/>
+				<gavp name="AVP"/>
+			</grouped>
+		</avp>
+		<avp name="MIP-Home-Agent-Host" code="348" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="no">
+			<grouped>
+				<gavp name="Destination-Realm"/>
+				<gavp name="Destination-Host"/>
+				<gavp name="AVP"/>
+			</grouped>
+		</avp>
+<!--
+349-362        Unassigned
+in dictionary.xml
+363            Accounting-Input-Octets            [RFC4005][RFC4004]
+364            Accounting-Output-Octets           [RFC4005][RFC4004]
+365            Accounting-Input-Packets           [RFC4005][RFC4004]
+366            Accounting-Output-Packets          [RFC4005][RFC4004]
+in SIP.xml
+-->
+		<avp name="MIP-MSA-Lifetime" code="367" mandatory="must" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+
+		<!-- ************************ END Mobile-IPv4 AVPS ******************* -->
+
+	</application>

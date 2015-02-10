@@ -1,0 +1,2278 @@
+  FRAMEWORK-PIB PIB-DEFINITIONS ::= BEGIN
+
+  IMPORTS
+      Unsigned32, Integer32, MODULE-IDENTITY,
+      MODULE-COMPLIANCE, OBJECT-TYPE, OBJECT-GROUP, pib
+              FROM COPS-PR-SPPI
+      InstanceId, Prid
+              FROM COPS-PR-SPPI-TC
+      RoleCombination, PrcIdentifierOid, AttrIdentifierOrZero,
+      ClientType, ClientHandle
+              FROM FRAMEWORK-TC-PIB
+      InetAddress, InetAddressType,
+      InetAddressPrefixLength, InetPortNumber
+              FROM INET-ADDRESS-MIB
+      InterfaceIndex
+              FROM IF-MIB
+      DscpOrAny
+              FROM DIFFSERV-DSCP-TC
+      TruthValue, PhysAddress
+              FROM SNMPv2-TC
+      SnmpAdminString
+              FROM SNMP-FRAMEWORK-MIB;
+
+  frameworkPib  MODULE-IDENTITY
+      SUBJECT-CATEGORIES { all }
+      LAST-UPDATED "200302130000Z"  -- 13 Feb 2003
+      ORGANIZATION "IETF RAP WG"
+      CONTACT-INFO "
+                    Keith McCloghrie
+                    Cisco Systems, Inc.
+                    170 West Tasman Drive,
+                    San Jose, CA 95134-1706 USA
+                    Phone: +1 408 526 5260
+                    Email: kzm@cisco.com
+
+                    John Seligson
+                    Nortel Networks, Inc.
+                    4401 Great America Parkway
+                    Santa Clara, CA 95054 USA
+                    Phone: +1 408 495 2992
+                    Email: jseligso@nortelnetworks.com
+
+
+
+
+                    Ravi Sahita
+                    Intel Labs.
+                    2111 NE 25th Ave.
+
+                    Hillsboro, OR 97124 USA
+                    Phone: +1 503 712 1554
+                    Email: ravi.sahita@intel.com
+
+                    RAP WG Mailing list: rap@ops.ietf.org"
+
+      DESCRIPTION
+           "A PIB module containing the base set of PRCs that
+           provide support for management of multiple PIB contexts,
+           association of roles to device capabilities and other
+           reusable PRCs. PEPs are required for to implement this
+           PIB if the above features are desired. This PIB defines
+           PRCs applicable to 'all' subject-categories.
+
+           Copyright (C) The Internet Society (2003). This version
+           of this PIB module is part of RFC 3318; see the RFC
+           itself for full legal notices."
+      REVISION     "200302130000Z"  -- 13 Feb 2003
+      DESCRIPTION
+           "Initial version, published in RFC 3318."
+
+      ::= { pib 2 }
+
+  --
+  -- The root OID for PRCs in the Framework PIB
+  --
+
+  frwkBasePibClasses
+               OBJECT IDENTIFIER ::= { frameworkPib 1 }
+
+  --
+  -- PRC Support Table
+  --
+
+
+
+
+
+
+
+
+
+
+
+
+
+  frwkPrcSupportTable OBJECT-TYPE
+      SYNTAX         SEQUENCE OF FrwkPrcSupportEntry
+      PIB-ACCESS     notify
+      STATUS         current
+      DESCRIPTION
+          "Each instance of this PRC specifies a PRC that the device
+          supports and a bit string to indicate the attributes of the
+          class that are supported.  These PRIs are sent to the PDP to
+          indicate to the PDP which PRCs, and which attributes of
+          these PRCs, the device supports.
+
+          All install and install-notify PRCs supported by the device
+          must be represented in this PRC. Notify PRCs may be
+          represented for informational purposes."
+
+      ::= { frwkBasePibClasses 1 }
+
+  frwkPrcSupportEntry OBJECT-TYPE
+      SYNTAX         FrwkPrcSupportEntry
+      STATUS         current
+      DESCRIPTION
+          "An instance of the frwkPrcSupport class that identifies a
+          specific PRC and associated attributes as supported
+          by the device."
+
+      PIB-INDEX { frwkPrcSupportPrid }
+      UNIQUENESS { frwkPrcSupportSupportedPrc }
+
+      ::= { frwkPrcSupportTable 1 }
+
+  FrwkPrcSupportEntry ::= SEQUENCE {
+          frwkPrcSupportPrid           InstanceId,
+          frwkPrcSupportSupportedPrc   PrcIdentifierOid,
+          frwkPrcSupportSupportedAttrs OCTET STRING
+  }
+
+  frwkPrcSupportPrid OBJECT-TYPE
+      SYNTAX         InstanceId
+      STATUS         current
+      DESCRIPTION
+          "An arbitrary integer index that uniquely identifies an
+          instance of the frwkPrcSupport class."
+
+      ::= { frwkPrcSupportEntry 1 }
+
+
+
+
+
+
+  frwkPrcSupportSupportedPrc OBJECT-TYPE
+      SYNTAX         PrcIdentifierOid
+      STATUS         current
+      DESCRIPTION
+          "The object identifier of a supported PRC. The value is the
+           OID of the Entry object of the PRC definition. The Entry
+           Object definition of a PRC has an OID with value XxxTable.1
+           Where, XxxTable is the OID assigned to the PRC Table
+           Object definition. There may not be more than one instance
+           of the frwkPrcSupport class with the same value of
+           frwkPrcSupportSupportedPrc."
+
+      ::= { frwkPrcSupportEntry 2 }
+
+  frwkPrcSupportSupportedAttrs OBJECT-TYPE
+      SYNTAX         OCTET STRING
+      STATUS         current
+      DESCRIPTION
+          "A bit string representing the supported attributes of the
+          class that is identified by the frwkPrcSupportSupportedPrc
+          object.
+
+          Each bit of this bit string corresponds to a class
+          attribute, with the most significant bit of the i-th octet
+          of this octet string corresponding to the (8*i - 7)-th
+          attribute, and the least significant bit of the i-th octet
+          corresponding to the (8*i)-th class attribute. Each bit
+          specifies whether or not the corresponding class attribute
+          is currently supported, with a '1' indicating support and a
+          '0' indicating no support.
+
+          If the value of this bit string is N bits long and there are
+          more than N class attributes then the bit string is
+          logically extended with 0's to the required length.
+          On the other hand, If the PDP receives a bit string of
+          length N and there are less that N class attributes then the
+          PDP should ignore the extra bits in the bit string, i.e.,
+          assume those attributes are unsupported."
+        REFERENCE
+          "COPS Usage for Policy Provisioning.  RFC 3084, section
+          2.2.1."
+
+      ::= { frwkPrcSupportEntry 3 }
+
+  --
+  -- PIB Incarnation Table
+  --
+
+
+
+
+  frwkPibIncarnationTable OBJECT-TYPE
+      SYNTAX         SEQUENCE OF FrwkPibIncarnationEntry
+      PIB-ACCESS     install-notify
+      STATUS         current
+      DESCRIPTION
+          "This PRC contains a single PRovisioning Instance per
+          installed context that identifies the current incarnation
+          of the PIB and the PDP or network manager that installed
+          this incarnation.  The instance of this PRC is reported to
+          the PDP in the REQ message so that the PDP can (attempt to)
+          ascertain the current state of the PIB. A network manager
+          may use the instance to determine the state of the device."
+
+      ::= { frwkBasePibClasses 2 }
+
+  frwkPibIncarnationEntry OBJECT-TYPE
+      SYNTAX         FrwkPibIncarnationEntry
+      STATUS         current
+      DESCRIPTION
+          "An instance of the frwkPibIncarnation class. Only
+          one instance of this PRC is ever instantiated per context"
+
+      PIB-INDEX { frwkPibIncarnationPrid }
+
+      ::= { frwkPibIncarnationTable 1 }
+
+  FrwkPibIncarnationEntry ::= SEQUENCE {
+          frwkPibIncarnationPrid                InstanceId,
+          frwkPibIncarnationName                SnmpAdminString,
+          frwkPibIncarnationId                  OCTET STRING,
+          frwkPibIncarnationLongevity           INTEGER,
+          frwkPibIncarnationTtl                 Unsigned32,
+          frwkPibIncarnationInCtxtSet           TruthValue,
+          frwkPibIncarnationActive              TruthValue,
+          frwkPibIncarnationFullState           TruthValue
+  }
+
+  frwkPibIncarnationPrid OBJECT-TYPE
+      SYNTAX         InstanceId
+      STATUS         current
+      DESCRIPTION
+          "An index to uniquely identify an instance of this PRC."
+
+      ::= { frwkPibIncarnationEntry 1 }
+
+
+
+
+
+
+
+  frwkPibIncarnationName OBJECT-TYPE
+      SYNTAX         SnmpAdminString (SIZE (0..255))
+      STATUS         current
+      DESCRIPTION
+          "The name of the PDP that installed the current incarnation
+          of the PIB into the device.  A zero-length string value for
+          this type implies the PDP has not assigned this type any
+          value. By default, it is the zero length string."
+
+      ::= { frwkPibIncarnationEntry 2 }
+
+  frwkPibIncarnationId OBJECT-TYPE
+      SYNTAX         OCTET STRING (SIZE (0..255))
+      STATUS         current
+      DESCRIPTION
+          "An ID to identify the current incarnation.  It has meaning
+          to the PDP/manager that installed the PIB and perhaps its
+          standby PDPs/managers. A zero-length string value for
+          this type implies the PDP has not assigned this type any
+          value. By default, it is the zero-length string."
+
+      ::= { frwkPibIncarnationEntry 3 }
+
+  frwkPibIncarnationLongevity OBJECT-TYPE
+      SYNTAX         INTEGER {
+                          expireNever(1),
+                          expireImmediate(2),
+                          expireOnTimeout(3)
+                     }
+      STATUS         current
+      DESCRIPTION
+          "This attribute controls what the PEP does with the
+          downloaded policy on a Client Close message or a loss of
+          connection to the PDP.
+
+          If set to expireNever, the PEP continues to operate with the
+          installed policy indefinitely.  If set to expireImmediate,
+          the PEP immediately expires the policy obtained from the PDP
+          and installs policy from local configuration.  If set to
+          expireOnTimeout, the PEP continues to operate with the
+          policy installed by the PDP for a period of time specified
+          by frwkPibIncarnationTtl.  After this time (and it has not
+          reconnected to the original or new PDP) the PEP expires this
+          policy and reverts to local configuration.
+
+          For all cases, it is the responsibility of the PDP to check
+          the incarnation and download new policy, if necessary, on a
+          reconnect. On receiving a Remove-State for the active
+
+
+
+          context, this attribute value MUST be ignored and the PEP
+          should expire the policy in that active context immediately.
+          Policy enforcement timing only applies to policies that have
+          been installed dynamically (e.g., by a PDP via COPS)."
+      REFERENCE
+          "COPS Usage for Policy Provisioning. RFC 3084."
+
+      ::= { frwkPibIncarnationEntry 4 }
+
+  frwkPibIncarnationTtl OBJECT-TYPE
+      SYNTAX         Unsigned32
+      UNITS          "seconds"
+      STATUS         current
+      DESCRIPTION
+          "The number of seconds after a Client Close or TCP timeout
+          for which the PEP continues to enforce the policy in the
+          PIB. After this interval, the PIB is considered expired and
+          the device no longer enforces the policy installed in the
+          PIB.
+
+          This attribute is only meaningful if
+          frwkPibIncarnationLongevity is set to expireOnTimeout."
+
+      ::= { frwkPibIncarnationEntry 5 }
+
+  frwkPibIncarnationInCtxtSet OBJECT-TYPE
+      SYNTAX        TruthValue
+      STATUS         current
+      DESCRIPTION
+          "When the PDP installs a PRI with this flag set to 'true' it
+          implies this context belongs to the set of contexts out of
+          which at the most one context can be active at a given time.
+          If this attribute is set to 'false' this context is one of
+          the outsourcing (simultaneous active) contexts on the PEP.
+
+          This attribute is 'true' for all contexts belong to the set
+          of configuration contexts. Within the configuration context
+          set, one context can be active identified by the
+          frwkPibIncarnationActive attribute."
+      REFERENCE
+          "TruthValue Textual Convention, defined in RFC 2579."
+      ::= { frwkPibIncarnationEntry 6 }
+
+
+
+
+
+
+
+
+
+  frwkPibIncarnationActive OBJECT-TYPE
+      SYNTAX         TruthValue
+      STATUS         current
+      DESCRIPTION
+          "When the PDP installs a PRI on the PEP with this attribute
+          set to 'true' and if this context belongs to the
+          'configuration contexts' set, i.e., the
+          frwkPibIncarnationInCtxtSet is set to 'true', then the PIB
+          instance to which this PRI belongs must become the active
+          PIB instance. In this case, the previous active instance
+          from this set MUST become inactive and the
+          frwkPibIncarnationActive attribute in that PIB instance MUST
+          be set to 'false'.
+
+          When the PDP installs an attribute frwkPibIncarnationActive
+          on the PEP  that is 'true' in one PIB instance and if the
+          context belongs to the 'configuration contexts' set, the PEP
+          must ensure, re-setting the attribute if necessary, that the
+          frwkPibIncarnationActive attribute is  'false' in all other
+          contexts which belong to the 'configuration contexts' set."
+
+      ::= { frwkPibIncarnationEntry 7 }
+
+  frwkPibIncarnationFullState OBJECT-TYPE
+      SYNTAX         TruthValue
+      STATUS         current
+      DESCRIPTION
+          "This attribute is interpreted only when sent in a COPS
+          request message from the PEP to the PDP. It does not have
+          any meaning when sent from the PDP to the PEP.
+
+          If this attribute is set to 'true' by the PEP, then the
+          request that the PEP sends to the PDP must be interpreted as
+          the complete configuration request for the PEP. The PDP must
+          in this case refresh the request information for the
+          handle that the request containing this PRI was received on.
+          If this attribute is set to 'false', then the
+             request PRIs sent in the request must be interpreted as
+          updates to the previous request PRIs sent using that handle.
+          See section 3.3 for details on updating request state
+          information."
+      REFERENCE
+          "RFC 3318 Section 2.3"
+
+      ::= { frwkPibIncarnationEntry 8 }
+
+  --
+  -- Device Identification Table
+
+
+
+  --
+
+  frwkDeviceIdTable OBJECT-TYPE
+
+      SYNTAX         SEQUENCE OF FrwkDeviceIdEntry
+      PIB-ACCESS     notify
+      STATUS         current
+      DESCRIPTION
+          "This PRC contains a single PRovisioning Instance that
+          contains general purpose device-specific information that is
+          used to facilitate efficient policy communication by a PDP.
+          The  instance of this PRC is reported to the PDP in a COPS
+          request message so that the PDP can take into account
+          certain device characteristics during policy installation."
+
+      ::= { frwkBasePibClasses 3 }
+
+  frwkDeviceIdEntry OBJECT-TYPE
+      SYNTAX         FrwkDeviceIdEntry
+      STATUS         current
+      DESCRIPTION
+          "An instance of the frwkDeviceId class. Only one instance of
+          this PRC is ever instantiated."
+
+      PIB-INDEX { frwkDeviceIdPrid }
+
+      ::= { frwkDeviceIdTable 1 }
+
+  FrwkDeviceIdEntry ::= SEQUENCE {
+          frwkDeviceIdPrid        InstanceId,
+          frwkDeviceIdDescr       SnmpAdminString,
+          frwkDeviceIdMaxMsg      Unsigned32,
+          frwkDeviceIdMaxContexts Unsigned32
+  }
+
+  frwkDeviceIdPrid OBJECT-TYPE
+      SYNTAX         InstanceId
+      STATUS         current
+      DESCRIPTION
+          "An index to uniquely identify an instance of this PRC."
+
+      ::= { frwkDeviceIdEntry 1 }
+
+
+
+
+
+
+
+
+
+  frwkDeviceIdDescr OBJECT-TYPE
+      SYNTAX         SnmpAdminString (SIZE (1..255))
+      STATUS         current
+      DESCRIPTION
+          "A textual description of the PEP. This value should include
+          the name and version identification of the PEP's hardware
+          and software."
+
+      ::= { frwkDeviceIdEntry 2 }
+
+  frwkDeviceIdMaxMsg OBJECT-TYPE
+      SYNTAX         Unsigned32 (64..4294967295)
+      UNITS          "octets"
+      STATUS         current
+      DESCRIPTION
+          "The maximum COPS-PR message size, in octets, that the
+          device is capable of processing. Received messages with a
+          size in excess of this value must cause the PEP to return an
+          error to the PDP containing the global error code
+          'maxMsgSizeExceeded'. This is an additional error-avoidance
+          mechanism to allow the administrator to know the maximum
+          message size supported so that they have the ability to
+          control the message size of messages sent to the device.
+          This attribute must have a non-zero value. The device should
+          send the MAX value for Unsigned32 for this attribute if it
+          not defined."
+      DEFVAL { 4294967295 }
+
+      ::= { frwkDeviceIdEntry 3 }
+
+  frwkDeviceIdMaxContexts OBJECT-TYPE
+     SYNTAX         Unsigned32 (1..4294967295)
+     UNITS          "contexts"
+     STATUS         current
+     DESCRIPTION
+         "The maximum number of unique contexts supported by
+          the device. This is an additional error-avoidance mechanism
+          to allow the administrators to have the ability to know the
+          maximum number of contexts supported so that they can
+          control the number of configuration contexts they install on
+          the device. This attribute must have a non-zero value. The
+          device should send the MAX value for Unsigned32 for this
+          attribute if it not defined."
+      DEFVAL { 4294967295 }
+
+     ::= { frwkDeviceIdEntry 4 }
+
+  --
+
+
+
+  -- Component Limitations Table
+  --
+
+  frwkCompLimitsTable OBJECT-TYPE
+      SYNTAX         SEQUENCE OF FrwkCompLimitsEntry
+      PIB-ACCESS     notify
+      STATUS         current
+      DESCRIPTION
+          "This PRC supports the ability to export information
+          detailing PRC/attribute implementation limitations to the
+          policy management system. Instances of this PRC apply only
+          for PRCs with access type 'install' or 'install-notify'.
+
+          Each instance of this PRC identifies a PRovisioning Class
+          or attribute and a limitation related to the implementation
+          of the class/attribute in the device. Additional information
+          providing guidance related to the limitation may also be
+          present. These PRIs are sent to the PDP to indicate which
+          PRCs or PRC attributes the device supports in a restricted
+          manner."
+
+      ::= { frwkBasePibClasses 4 }
+
+  frwkCompLimitsEntry OBJECT-TYPE
+      SYNTAX         FrwkCompLimitsEntry
+      STATUS         current
+      DESCRIPTION
+          "An instance of the frwkCompLimits class that identifies
+          a PRC or PRC attribute and a limitation related to the PRC
+          or PRC attribute implementation supported by the device.
+          COPS-PR lists the error codes that MUST be returned (if
+          applicable)for policy installation that don't abide by the
+          restrictions indicated by the limitations exported. [SPPI]
+          defines an INSTALL-ERRORS clause that allows PIB designers
+          to define PRC specific error codes that can be returned for
+          policy installation. This allows efficient debugging of PIB
+          implementations."
+      REFERENCE
+          "COPS Usage for Policy Provisioning. RFC 3084."
+
+      PIB-INDEX { frwkCompLimitsPrid }
+      UNIQUENESS { frwkCompLimitsComponent,
+                   frwkCompLimitsAttrPos,
+                   frwkCompLimitsNegation,
+                   frwkCompLimitsType,
+                   frwkCompLimitsSubType,
+                   frwkCompLimitsGuidance }
+
+
+
+
+      ::= { frwkCompLimitsTable 1 }
+
+  FrwkCompLimitsEntry ::= SEQUENCE {
+          frwkCompLimitsPrid           InstanceId,
+          frwkCompLimitsComponent      PrcIdentifierOid,
+          frwkCompLimitsAttrPos        AttrIdentifierOrZero,
+          frwkCompLimitsNegation       TruthValue,
+          frwkCompLimitsType           INTEGER,
+          frwkCompLimitsSubType        INTEGER,
+          frwkCompLimitsGuidance       OCTET STRING
+  }
+
+  frwkCompLimitsPrid OBJECT-TYPE
+      SYNTAX         InstanceId
+      STATUS         current
+      DESCRIPTION
+          "An arbitrary integer index that uniquely identifies an
+          instance of the frwkCompLimits class."
+
+      ::= { frwkCompLimitsEntry 1 }
+
+  frwkCompLimitsComponent OBJECT-TYPE
+      SYNTAX         PrcIdentifierOid
+      STATUS         current
+      DESCRIPTION
+          "The value is the OID of a PRC (the table entry) which is
+          supported in some limited fashion or contains an attribute
+          that is supported in some limited fashion with regard to
+          it's definition in the associated PIB module. The same OID
+          may appear in the table several times, once for each
+          implementation limitation acknowledged by the device."
+
+      ::= { frwkCompLimitsEntry 2 }
+
+  frwkCompLimitsAttrPos OBJECT-TYPE
+      SYNTAX         AttrIdentifierOrZero
+      STATUS         current
+      DESCRIPTION
+          "The relative position of the attribute within the PRC
+          specified by the frwkCompLimitsComponent. A value of 1 would
+          represent the first columnar object in the PRC and a value
+          of N would represent the Nth columnar object in the PRC. A
+          value of zero (0) indicates that the limit applies to the
+          PRC itself and not to a specific attribute."
+
+      ::= { frwkCompLimitsEntry 3 }
+
+
+
+
+
+  frwkCompLimitsNegation OBJECT-TYPE
+      SYNTAX        TruthValue
+      STATUS        current
+      DESCRIPTION
+           "A boolean value ,if 'true', negates the component limit
+           exported."
+
+      ::= { frwkCompLimitsEntry 4 }
+
+  frwkCompLimitsType OBJECT-TYPE
+      SYNTAX    INTEGER {
+                           priSpaceLimited(1),
+                           attrValueSupLimited(2),
+                           attrEnumSupLimited(3),
+                           attrLengthLimited(4),
+                           prcLimitedNotify(5)
+                        }
+      STATUS   current
+      DESCRIPTION
+          "A value describing an implementation limitation for the
+          device related to the PRC or PRC attribute identified by
+          the frwkCompLimitsComponent and the frwkCompLimitsAttrPos
+          attributes.
+
+          Values for this object are one of the following:
+
+          priSpaceLimited(1) - No more instances than that specified
+          by the guidance value may be installed in the given class.
+          The component identified MUST be a valid PRC. The SubType
+          used MUST be valueOnly(9).
+
+          attrValueSupLimited(2) - Limited values are acceptable for
+          the identified component. The component identified MUST be a
+          valid PRC attribute. The guidance OCTET STRING will be
+          decoded according to the attribute type.
+
+          attrEnumSupLimited(3) - Limited enumeration values are legal
+          for the identified component. The attribute identified MUST
+          be a valid enum type.
+
+          attrLengthLimited(4) - The length of the specified
+          value for the identified component is limited. The component
+          identified MUST be a valid PRC attribute of base-type OCTET
+          STRING.
+
+          prcLimitedNotify (5) - The component is currently limited
+          for use by request or report messages prohibiting decision
+          installation. The component identified must be a valid PRC."
+
+
+
+      ::= { frwkCompLimitsEntry 5 }
+
+     frwkCompLimitsSubType OBJECT-TYPE
+      SYNTAX         INTEGER {
+                                  none(1),
+                                  lengthMin(2),
+                                  lengthMax(3),
+                                  rangeMin(4),
+                                  rangeMax(5),
+                                  enumMin(6),
+                                  enumMax(7),
+                                  enumOnly(8),
+                                  valueOnly(9),
+                                  bitMask(10)
+                              }
+      STATUS         current
+      DESCRIPTION
+          "This object indicates the type of guidance related
+          to the noted limitation (as indicated by the
+          frwkCompLimitsType attribute) that is provided
+          in the frwkCompLimitsGuidance attribute.
+
+          A value of 'none(1)' means that no additional
+          guidance is provided for the noted limitation type.
+
+          A value of 'lengthMin(2)' means that the guidance
+          attribute provides data related to the minimum
+          acceptable length for the value of the identified
+          component. A corresponding class instance
+          specifying the 'lengthMax(3)' value is required
+          in conjunction with this sub-type.
+
+          A value of 'lengthMax(3)' means that the guidance
+          attribute provides data related to the maximum
+          acceptable length for the value of the identified
+          component. A corresponding class instance
+          specifying the 'lengthMin(2)' value is required
+          in conjunction with this sub-type.
+
+          A value of 'rangeMin(4)' means that the guidance
+          attribute provides data related to the lower bound
+          of the range for the value of the identified
+          component. A corresponding class instance
+          specifying the 'rangeMax(5)' value is required
+          in conjunction with this sub-type.
+
+          A value of 'rangeMax(5)' means that the guidance
+          attribute provides data related to the upper bound
+
+
+
+          of the range for the value of the identified
+          component. A corresponding class instance
+          specifying the 'rangeMin(4)' value is required
+          in conjunction with this sub-type.
+
+          A value of 'enumMin(6)' means that the guidance
+          attribute provides data related to the lowest
+          enumeration acceptable for the value of the
+          identified component. A corresponding
+          class instance specifying the 'enumMax(7)'
+          value is required in conjunction with this sub-type.
+
+          A value of 'enumMax(7)' means that the guidance
+          attribute provides data related to the largest
+          enumeration acceptable for the value of the
+          identified component. A corresponding
+          class instance specifying the 'enumMin(6)'
+          value is required in conjunction with this sub-type.
+
+          A value of 'enumOnly(8)' means that the guidance
+          attribute provides data related to a single
+          enumeration acceptable for the value of the
+          identified component.
+
+          A value of 'valueOnly(9)' means that the guidance
+          attribute provides data related to a single
+          value that is acceptable for the identified
+          component.
+
+          A value of 'bitMask(10)' means that the guidance
+          attribute is a bit mask such that all the combinations of
+          bits set in the bitmask are acceptable values for the
+          identified component which should be an attribute of type
+
+          'BITS'.
+
+          For example, an implementation of the frwkIpFilter class may
+          be limited in several ways, such as address mask, protocol
+          and Layer 4 port options. These limitations could be
+          exported using this PRC with the following instances:
+
+          Component        Type                 Sub-Type   Guidance
+          ------------------------------------------------------------
+          DstPrefixLength  attrValueSupLimited  valueOnly   24
+          SrcPrefixLength  attrValueSupLimited  valueOnly   24
+          Protocol         attrValueSupLimited  rangeMin    10
+          Protocol         attrValueSupLimited  rangeMax    20
+
+
+
+
+          The above entries describe a number of limitations that
+          may be in effect for the frwkIpFilter class on a given
+          device. The limitations include restrictions on acceptable
+          values for certain attributes.
+
+          Also, an implementation of a PRC may be limited in the ways
+          it can be accessed. For instance, for a fictitious PRC
+          dscpMapEntry, which has a PIB-ACCESS of 'install-notify':
+
+          Component    Type              SubType  Guidance
+          ------------------------------------------------------------
+          dscpMapEntry prcLimitedNotify  none     zero-length string."
+
+         ::= { frwkCompLimitsEntry 6 }
+
+   frwkCompLimitsGuidance OBJECT-TYPE
+         SYNTAX         OCTET STRING
+         STATUS         current
+         DESCRIPTION
+             "A value used to convey additional information related
+             to the implementation limitation. Note that a guidance
+             value will not necessarily be provided for all exported
+             limitations. If a guidance value is not provided, the
+             value must be a zero-length string.
+
+             The format of the guidance value, if one is present as
+             indicated by the frwkCompLimitsSubType attribute,
+             is described by the following table. Note that the
+             format of guidance value is dictated by the base-type of
+             the component whose limitation is being exported,
+             interpreted in the context of the frwkCompLimitsType and
+             frwkCompLimitsSubType values. Any other restrictions
+             (such as size/range/enumerated value) on the guidance
+             value MUST be complied with according to the definition
+             of the component for which guidance is being specified.
+
+             Note that numbers are encoded in network byte order.
+
+             Base Type                      Value
+             ---------                      -----
+             Unsigned32/Integer32/INTEGER   32-bit value.
+             Unsigned64/Integer64        64-bit Value.
+             OCTET STRING                octets of data.
+             OID                         32-bit OID components.
+             BITS                        Binary octets of length
+                                         same as Component specified."
+
+         ::= { frwkCompLimitsEntry 7 }
+
+
+
+  --
+  -- Complete Reference specification table
+  --
+
+  frwkReferenceTable OBJECT-TYPE
+      SYNTAX         SEQUENCE OF FrwkReferenceEntry
+      PIB-ACCESS     install-notify
+      STATUS         current
+      DESCRIPTION
+          "Each instance of this PRC specifies a reference to a PRI
+          in a specific PIB context (handle) for a specific client-
+          type. This table gives the PDP the ability to set up
+          policies that span installed contexts and the PEP the
+          ability to reference instances in another, perhaps
+          configured context. The PEP must send a
+          'attrReferenceUnknown' COPS-PR error to the PDP if it
+          encounters an invalid reference. "
+      REFERENCE
+          "COPS Usage for Policy Provisioning. RFC 3084, error
+          codes section 4.5."
+
+      ::= { frwkBasePibClasses 5 }
+
+  frwkReferenceEntry OBJECT-TYPE
+      SYNTAX         FrwkReferenceEntry
+      STATUS         current
+      DESCRIPTION
+          "Entry specification for the frwkReferenceTable."
+
+      PIB-INDEX { frwkReferencePrid }
+      UNIQUENESS { }
+
+      ::= { frwkReferenceTable 1 }
+
+  FrwkReferenceEntry ::= SEQUENCE {
+          frwkReferencePrid           InstanceId,
+          frwkReferenceClientType     ClientType,
+          frwkReferenceClientHandle   ClientHandle,
+          frwkReferenceInstance       Prid
+  }
+
+  frwkReferencePrid  OBJECT-TYPE
+      SYNTAX         InstanceId
+      STATUS         current
+      DESCRIPTION
+          "An arbitrary integer index that uniquely identifies an
+          instance of the frwkReference class."
+
+
+
+
+      ::= { frwkReferenceEntry 1 }
+
+  frwkReferenceClientType OBJECT-TYPE
+      SYNTAX         ClientType
+      STATUS         current
+      DESCRIPTION
+          "Is unused if set to zero else specifies a client-type for
+           which the reference is to be interpreted. This non-zero
+           client-type must be activated explicitly via a separate
+           COPS client-open else this attribute is not valid."
+
+      ::= { frwkReferenceEntry 2 }
+
+  frwkReferenceClientHandle OBJECT-TYPE
+      SYNTAX         ClientHandle
+      STATUS         current
+      DESCRIPTION
+          "Must be set to specify a valid client-handle in the scope
+          of the client-type specified."
+
+      ::= { frwkReferenceEntry 3 }
+
+  frwkReferenceInstance OBJECT-TYPE
+      SYNTAX         Prid
+      STATUS         current
+      DESCRIPTION
+          "References a PRI in the context identified by
+           frwkReferenceClientHandle for client-type identified by
+           frwkReferenceClientType."
+
+      ::= { frwkReferenceEntry 4 }
+
+  --
+  -- Error specification table
+  --
+
+  frwkErrorTable OBJECT-TYPE
+      SYNTAX         SEQUENCE OF FrwkErrorEntry
+      PIB-ACCESS     install
+      STATUS         current
+      DESCRIPTION
+          "Each instance of this PRC specifies a class specific
+          error object. Instances of this PRC are transient, i.e.,
+          instances received in a COPS decision message must not be
+          maintained by the PEP in its copy of the PIB instances. This
+          PRC allows a PDP to send error information to the PEP if the
+          PDP cannot process updates to a Request successfully."
+
+
+
+
+      ::= { frwkBasePibClasses 6 }
+
+  frwkErrorEntry OBJECT-TYPE
+      SYNTAX         FrwkErrorEntry
+      STATUS         current
+      DESCRIPTION
+          "Entry specification for the frwkErrorTable."
+
+      PIB-INDEX { frwkErrorPrid }
+      UNIQUENESS {
+                   frwkErrorCode,
+                   frwkErrorSubCode,
+                   frwkErrorPrc,
+                   frwkErrorInstance
+                 }
+
+      ::= { frwkErrorTable 1 }
+
+  FrwkErrorEntry ::= SEQUENCE {
+          frwkErrorPrid        InstanceId,
+          frwkErrorCode        Unsigned32,
+          frwkErrorSubCode     Unsigned32,
+          frwkErrorPrc         PrcIdentifierOid,
+          frwkErrorInstance    InstanceId
+  }
+
+  frwkErrorPrid  OBJECT-TYPE
+      SYNTAX         InstanceId
+      STATUS         current
+      DESCRIPTION
+          "An arbitrary integer index that uniquely identifies an
+          instance of the frwkError class."
+
+      ::= { frwkErrorEntry 1 }
+
+  frwkErrorCode OBJECT-TYPE
+      SYNTAX         Unsigned32 (0..65535)
+      STATUS         current
+      DESCRIPTION
+          "Error code defined in COPS-PR CPERR object."
+      REFERENCE
+          "COPS Usage for Policy Provisioning. RFC 3084."
+
+      ::= { frwkErrorEntry 2 }
+
+  frwkErrorSubCode OBJECT-TYPE
+      SYNTAX         Unsigned32 (0..65535)
+      STATUS         current
+
+
+
+      DESCRIPTION
+          "The class-specific error object is used to communicate
+          errors relating to specific PRCs."
+
+      ::= { frwkErrorEntry 3 }
+
+  frwkErrorPrc OBJECT-TYPE
+      SYNTAX         PrcIdentifierOid
+      STATUS         current
+      DESCRIPTION
+          "The PRC due to which the error specified by codes
+          (frwkErrorCode , frwkErrorSubCode) occurred."
+
+      ::= { frwkErrorEntry 4 }
+
+  frwkErrorInstance OBJECT-TYPE
+      SYNTAX         InstanceId
+      STATUS         current
+      DESCRIPTION
+          "The PRI of the identified PRC (frwkErrorPrc) due to which
+          the error specified by codes (frwkErrorCode ,
+          frwkErrorSubCode) occurred. Must be set to zero if unused."
+
+      ::= { frwkErrorEntry 5 }
+
+  --
+  -- The device capabilities and role combo classes group
+  --
+
+  frwkDeviceCapClasses
+              OBJECT IDENTIFIER ::= { frameworkPib 2 }
+  --
+  -- Capability Set Table
+  --
+
+  frwkCapabilitySetTable OBJECT-TYPE
+      SYNTAX         SEQUENCE OF FrwkCapabilitySetEntry
+      PIB-ACCESS     notify
+      STATUS         current
+      DESCRIPTION
+
+          "This PRC describes the capability sets that exist on the
+          interfaces on the device. The capability set is given a
+          unique name that identifies a set. These capability set
+          names are used by the PDP to determine policy information to
+          be associated with interfaces that possess similar sets of
+          capabilities."
+
+
+
+
+      ::= { frwkDeviceCapClasses 1 }
+
+  frwkCapabilitySetEntry OBJECT-TYPE
+      SYNTAX         FrwkCapabilitySetEntry
+      STATUS         current
+      DESCRIPTION
+          "An instance of this PRC describes a particular set of
+          capabilities and associates a unique name with the set."
+
+      PIB-INDEX { frwkCapabilitySetPrid }
+      UNIQUENESS { frwkCapabilitySetName,
+                   frwkCapabilitySetCapability }
+
+      ::= { frwkCapabilitySetTable 1 }
+
+  FrwkCapabilitySetEntry ::= SEQUENCE {
+          frwkCapabilitySetPrid           InstanceId,
+          frwkCapabilitySetName           SnmpAdminString,
+          frwkCapabilitySetCapability     Prid
+  }
+
+  frwkCapabilitySetPrid OBJECT-TYPE
+      SYNTAX         InstanceId
+      STATUS         current
+      DESCRIPTION
+          "An arbitrary integer index that uniquely identifies a
+          instance of the class."
+
+      ::= { frwkCapabilitySetEntry 1 }
+
+  frwkCapabilitySetName OBJECT-TYPE
+      SYNTAX         SnmpAdminString (SIZE (1..255))
+      STATUS         current
+      DESCRIPTION
+          "The name for the capability set.  This name  is the unique
+          identifier of a set of capabilities. This attribute must not
+          be assigned a zero-length string."
+
+      ::= { frwkCapabilitySetEntry 2 }
+
+  frwkCapabilitySetCapability OBJECT-TYPE
+      SYNTAX      Prid
+      STATUS      current
+      DESCRIPTION
+
+          "The complete PRC OID and instance identifier specifying the
+          capability PRC instance for the interface. This attribute
+          references a specific instance of a capability table. The
+
+
+
+          capability table whose instance is referenced must be
+          defined in the client type specific PIB that this PIB is
+          used with. The referenced capability instance becomes a part
+          of the set of capabilities associated with the specified
+          frwkCapabilitySetName."
+
+      ::= { frwkCapabilitySetEntry 3 }
+
+  --
+  -- Interface and Role Combination Tables
+  --
+
+  frwkRoleComboTable OBJECT-TYPE
+      SYNTAX         SEQUENCE OF FrwkRoleComboEntry
+      PIB-ACCESS     install-notify
+      STATUS         current
+      DESCRIPTION
+          "This is an abstract PRC that may be extended or referenced
+          to enumerate the role combinations, capability set names
+          assigned to any interface on a PEP. The identification of
+          the interface is to be defined by its extensions or
+          referencing PRCs."
+
+      ::= { frwkDeviceCapClasses 2 }
+
+  frwkRoleComboEntry OBJECT-TYPE
+      SYNTAX         FrwkRoleComboEntry
+      STATUS         current
+      DESCRIPTION
+          "An instance of this PRC describes one association of an
+          interface to a role-combination and capability set name .
+          Note that an interface can have multiple associations. This
+          constraint is controlled by the extending or referencing
+          PRC's uniqueness clause."
+
+      PIB-INDEX { frwkRoleComboPrid }
+      UNIQUENESS { }
+
+      ::= { frwkRoleComboTable 1 }
+
+  FrwkRoleComboEntry ::= SEQUENCE {
+          frwkRoleComboPrid         InstanceId,
+          frwkRoleComboRoles        RoleCombination,
+          frwkRoleComboCapSetName   SnmpAdminString
+  }
+
+  frwkRoleComboPrid OBJECT-TYPE
+      SYNTAX         InstanceId
+
+
+
+      STATUS         current
+      DESCRIPTION
+          "An arbitrary integer index that uniquely identifies an
+          instance of the class."
+
+      ::= { frwkRoleComboEntry 1 }
+
+  frwkRoleComboRoles OBJECT-TYPE
+      SYNTAX         RoleCombination
+      STATUS         current
+      DESCRIPTION
+          "The role combination assigned to a specific interface."
+
+      ::= { frwkRoleComboEntry 2 }
+
+  frwkRoleComboCapSetName OBJECT-TYPE
+      SYNTAX         SnmpAdminString (SIZE (0..255))
+      STATUS         current
+      DESCRIPTION
+          "The name of the capability set associated with
+          the Role Combination specified in frwkRoleComboRoles. If
+          this is a zero length string it implies the PEP is not
+          exporting any capability set information for this
+          RoleCombination. The PDP must then use the RoleCombinations
+          provided as the only means of assigning policies
+          If a non-zero length string is specified, the name must
+          exist in frwkCapabilitySetTable."
+
+      ::= { frwkRoleComboEntry 3 }
+
+  --
+  -- Interface, Role Combination association via IfIndex
+  --
+
+  frwkIfRoleComboTable OBJECT-TYPE
+      SYNTAX         SEQUENCE OF FrwkIfRoleComboEntry
+      PIB-ACCESS     install-notify
+      STATUS         current
+      DESCRIPTION
+          "This PRC enumerates the interface to role combination and
+          frwkRoleComboCapSetName mapping for all policy managed
+          interfaces of a device. Policy for an interface depends not
+          only on the capability set of an interface but also on its
+          roles. This  table specifies all the <interface index,
+          interface capability set name, role combination> tuples
+          currently on the device"
+
+      ::= { frwkDeviceCapClasses 3 }
+
+
+
+  frwkIfRoleComboEntry OBJECT-TYPE
+      SYNTAX         FrwkIfRoleComboEntry
+      STATUS         current
+      DESCRIPTION
+          "An instance of this PRC describes the association of
+          a interface to an capability set name and a role
+          combination.
+          Note that a capability set name can have multiple role
+          combinations assigned to it, but an IfIndex can have only
+          one role combination associated."
+
+      EXTENDS { frwkRoleComboEntry }
+      UNIQUENESS { frwkIfRoleComboIfIndex,
+                   frwkRoleComboCapSetName   }
+
+      ::= { frwkIfRoleComboTable 1 }
+
+  FrwkIfRoleComboEntry ::= SEQUENCE {
+          frwkIfRoleComboIfIndex      InterfaceIndex
+  }
+
+  frwkIfRoleComboIfIndex OBJECT-TYPE
+      SYNTAX         InterfaceIndex
+      STATUS         current
+      DESCRIPTION
+          "The value of this attribute is the ifIndex which is
+          associated with the specified RoleCombination and interface
+          capability set name."
+
+      ::= { frwkIfRoleComboEntry 1 }
+
+  --
+  -- The Classification classes group
+  --
+
+  frwkClassifierClasses
+             OBJECT IDENTIFIER ::= { frameworkPib 3 }
+  --
+  -- The Base Filter Table
+  --
+
+  frwkBaseFilterTable OBJECT-TYPE
+      SYNTAX         SEQUENCE OF FrwkBaseFilterEntry
+      PIB-ACCESS     install
+      STATUS         current
+
+
+
+
+
+
+      DESCRIPTION
+          "The Base Filter class.  A packet has to match all
+          fields in an Filter.  Wildcards may be specified for those
+          fields that are not relevant."
+
+      ::= { frwkClassifierClasses 1 }
+
+  frwkBaseFilterEntry OBJECT-TYPE
+      SYNTAX         FrwkBaseFilterEntry
+      STATUS         current
+      DESCRIPTION
+          "An instance of the frwkBaseFilter class."
+
+      PIB-INDEX { frwkBaseFilterPrid }
+
+      ::= { frwkBaseFilterTable 1 }
+
+  FrwkBaseFilterEntry ::= SEQUENCE {
+          frwkBaseFilterPrid         InstanceId,
+          frwkBaseFilterNegation     TruthValue
+  }
+
+  frwkBaseFilterPrid OBJECT-TYPE
+      SYNTAX         InstanceId
+      STATUS         current
+      DESCRIPTION
+          "An integer index to uniquely identify this Filter among all
+          the Filters."
+
+      ::= { frwkBaseFilterEntry 1 }
+
+  frwkBaseFilterNegation OBJECT-TYPE
+      SYNTAX         TruthValue
+      STATUS         current
+      DESCRIPTION
+          "This attribute behaves like a logical NOT for the filter.
+          If the packet matches this filter and the value of this
+          attribute is 'true', the action associated with this filter
+          is not applied to the packet.  If the value of this
+          attribute is 'false', then the action is applied to the
+          packet."
+
+      ::= { frwkBaseFilterEntry 2 }
+
+  --
+  -- The IP Filter Table
+  --
+
+
+
+
+  frwkIpFilterTable OBJECT-TYPE
+      SYNTAX         SEQUENCE OF FrwkIpFilterEntry
+      PIB-ACCESS     install
+      STATUS         current
+      DESCRIPTION
+          "Filter definitions.  A packet has to match all fields in a
+          filter.  Wildcards may be specified for those fields that
+          are not relevant."
+
+      INSTALL-ERRORS {
+          invalidDstL4PortData(1),
+          invalidSrcL4PortData(2)
+          }
+      ::= { frwkClassifierClasses 2 }
+
+  frwkIpFilterEntry OBJECT-TYPE
+      SYNTAX         FrwkIpFilterEntry
+      STATUS         current
+      DESCRIPTION
+          "An instance of the frwkIpFilter class."
+
+      EXTENDS { frwkBaseFilterEntry }
+      UNIQUENESS { frwkBaseFilterNegation,
+                   frwkIpFilterAddrType,
+                   frwkIpFilterDstAddr,
+                   frwkIpFilterDstPrefixLength,
+                   frwkIpFilterSrcAddr,
+                   frwkIpFilterSrcPrefixLength,
+                   frwkIpFilterDscp,
+                   frwkIpFilterFlowId,
+                   frwkIpFilterProtocol,
+                   frwkIpFilterDstL4PortMin,
+                   frwkIpFilterDstL4PortMax,
+                   frwkIpFilterSrcL4PortMin,
+                   frwkIpFilterSrcL4PortMax }
+
+      ::= { frwkIpFilterTable 1 }
+
+  FrwkIpFilterEntry ::= SEQUENCE {
+          frwkIpFilterAddrType         InetAddressType,
+          frwkIpFilterDstAddr          InetAddress,
+          frwkIpFilterDstPrefixLength  InetAddressPrefixLength,
+          frwkIpFilterSrcAddr          InetAddress,
+          frwkIpFilterSrcPrefixLength  InetAddressPrefixLength,
+          frwkIpFilterDscp             DscpOrAny,
+          frwkIpFilterFlowId           Integer32,
+          frwkIpFilterProtocol         Unsigned32,
+          frwkIpFilterDstL4PortMin     InetPortNumber,
+
+
+
+          frwkIpFilterDstL4PortMax     InetPortNumber,
+          frwkIpFilterSrcL4PortMin     InetPortNumber,
+          frwkIpFilterSrcL4PortMax     InetPortNumber
+  }
+
+  frwkIpFilterAddrType OBJECT-TYPE
+
+      SYNTAX         InetAddressType
+      STATUS         current
+      DESCRIPTION
+          "The address type enumeration value to specify the type of
+          the packet's IP address.
+
+          While other types of addresses are defined in the
+          InetAddressType textual convention, an IP filter can only
+          use IPv4 and IPv6 addresses directly to classify traffic.
+          All other InetAddressTypes require mapping to the
+          corresponding Ipv4 or IPv6 address before being used to
+          classify traffic. Therefore, this object as such is not
+          limited to IPv4 and IPv6 addresses, i.e., it can be assigned
+          any of the valid values defined in the InetAddressType TC,
+          but the mapping of the address values to IPv4 or IPv6
+          addresses for the address attributes (frwkIpFilterDstAddr
+          and frwkIpFilterSrcAddr) must be done by the PEP. For
+          example when dns (16) is used, the PEP must resolve
+          the address to IPv4 or IPv6 at install time."
+      REFERENCE
+          "Textual Conventions for Internet Network Addresses.
+          RFC 3291."
+
+      ::= { frwkIpFilterEntry 1 }
+
+  frwkIpFilterDstAddr OBJECT-TYPE
+
+      SYNTAX         InetAddress
+      STATUS         current
+      DESCRIPTION
+          "The IP address to match against the packet's
+           destination IP address. If the address type is 'ipv4',
+           'ipv6', 'ipv4z' or 'ipv6z' then, the attribute
+           frwkIpFilterDstPrefixLength indicates the number of bits
+           that are relevant. "
+      REFERENCE
+          "Textual Conventions for Internet Network Addresses.
+          RFC 3291."
+
+      ::= { frwkIpFilterEntry 2 }
+
+
+
+
+  frwkIpFilterDstPrefixLength OBJECT-TYPE
+      SYNTAX         InetAddressPrefixLength
+      STATUS         current
+      DESCRIPTION
+          "The length of a mask for the matching of the destination
+           IP address. This attribute is interpreted only if the
+           InetAddressType is 'ipv4', 'ipv4z', 'ipv6' or 'ipv6z'.
+           Masks are constructed by setting bits in sequence from the
+           most-significant bit downwards for
+           frwkIpFilterDstPrefixLength bits length. All other bits in
+           the mask, up to the  number needed to fill the length of
+           the address frwkIpFilterDstAddr are cleared to zero. A zero
+           bit in the mask then means that the corresponding bit in
+           the address always matches.
+
+           In IPv4 addresses, a length of 0 indicates a match of any
+           address; a length of 32 indicates a match of a single host
+           address, and a length between 0 and 32 indicates the use of
+           a CIDR Prefix. IPv6 is similar, except that prefix lengths
+           range from 0..128."
+      REFERENCE
+          "Textual Conventions for Internet Network Addresses.
+          RFC 3291."
+      DEFVAL { 0 }
+
+      ::= { frwkIpFilterEntry 3 }
+
+  frwkIpFilterSrcAddr OBJECT-TYPE
+      SYNTAX         InetAddress
+      STATUS         current
+      DESCRIPTION
+          "The IP address to match against the packet's source IP
+          address. If the address type is 'ipv4', 'ipv6', 'ipv4z' or
+          'ipv6z' then, the attribute frwkIpFilterSrcPrefixLength
+          indicates the number of bits that are relevant."
+      REFERENCE
+          "Textual Conventions for Internet Network Addresses.
+          RFC 3291."
+
+      ::= { frwkIpFilterEntry 4 }
+
+  frwkIpFilterSrcPrefixLength OBJECT-TYPE
+      SYNTAX         InetAddressPrefixLength
+      UNITS          "bits"
+      STATUS         current
+      DESCRIPTION
+          "The length of a mask for the matching of the source IP
+           address. This attribute is interpreted only if the
+
+
+
+           InetAddressType is 'ipv4', 'ipv4z', 'ipv6' or 'ipv6z'.
+           Masks are constructed by setting bits in sequence from the
+           most-significant bit downwards for
+           frwkIpFilterSrcPrefixLength bits length. All other bits in
+           the mask, up to the  number needed to fill the length of
+           the address frwkIpFilterSrcAddr are cleared to zero.  A
+           zero bit in the mask then means that the corresponding bit
+           in the address always matches.
+
+           In IPv4 addresses, a length of 0 indicates a match of any
+           address; a length of 32 indicates a match of a single host
+           address, and a length between 0 and 32 indicates the use of
+           a CIDR Prefix. IPv6 is similar, except that prefix lengths
+           range from 0..128."
+      REFERENCE
+          "Textual Conventions for Internet Network Addresses.
+          RFC 3291."
+      DEFVAL { 0 }
+
+      ::= { frwkIpFilterEntry 5 }
+
+  frwkIpFilterDscp OBJECT-TYPE
+      SYNTAX         DscpOrAny
+      STATUS         current
+      DESCRIPTION
+          "The value that the DSCP in the packet can have and
+           match this filter. A value of -1 indicates that a specific
+           DSCP value has not been defined and thus all DSCP values
+           are considered a match."
+      REFERENCE
+          "Management Information Base for the Differentiated Services
+           Architecture. RFC 3289."
+      DEFVAL { -1 }
+
+      ::= { frwkIpFilterEntry 6 }
+
+  frwkIpFilterFlowId OBJECT-TYPE
+      SYNTAX        Integer32 (-1 | 0..1048575)
+      STATUS         current
+      DESCRIPTION
+          "The flow label or flow identifier in an IPv6 header
+           that may be used to discriminate traffic flows.
+           The value of -1 for this attribute MUST imply that
+           any flow label value in the IPv6 header will match,
+           resulting in the flow label field of the IPv6 header
+           being ignored for matching this filter entry."
+
+      ::= { frwkIpFilterEntry 7 }
+
+
+
+
+  frwkIpFilterProtocol OBJECT-TYPE
+      SYNTAX         Unsigned32 (0..255)
+      STATUS         current
+      DESCRIPTION
+          "The layer-4 protocol Id to match against the IPv4 protocol
+          number or the IPv6 Next-Header number in the packet. A value
+          of 255 means match all. Note the protocol number of 255 is
+          reserved by IANA, and Next-Header number of 0 is used in
+          IPv6."
+      DEFVAL { 255 }
+
+      ::= { frwkIpFilterEntry 8 }
+
+  frwkIpFilterDstL4PortMin OBJECT-TYPE
+      SYNTAX         InetPortNumber
+      STATUS         current
+      DESCRIPTION
+          "The minimum value that the packet's layer 4 destination
+          port number can have and match this filter. This value must
+          be equal to or lesser that the value specified for this
+          filter in frwkIpFilterDstL4PortMax.
+
+          COPS-PR error code 'attrValueInvalid' must be returned if
+          the frwkIpFilterSrcL4PortMin is greater than
+          frwkIpFilterSrcL4PortMax"
+      REFERENCE
+          "COPS Usage for Policy Provisioning.  RFC 3084, error
+          codes section 4.5."
+      DEFVAL { 0 }
+
+     ::= { frwkIpFilterEntry 9 }
+
+  frwkIpFilterDstL4PortMax OBJECT-TYPE
+      SYNTAX         InetPortNumber
+      STATUS         current
+      DESCRIPTION
+          "The maximum value that the packet's layer 4 destination
+          port number can have and match this filter. This value must
+          be equal to or greater that the value specified for this
+          filter in frwkIpFilterDstL4PortMin.
+
+          COPS-PR error code 'attrValueInvalid' must be returned if
+          the frwkIpFilterDstL4PortMax is less than
+          frwkIpFilterDstL4PortMin"
+      REFERENCE
+          "COPS Usage for Policy Provisioning.  RFC 3084, error
+          codes section 4.5."
+
+
+
+      DEFVAL { 65535 }
+
+      ::= { frwkIpFilterEntry 10 }
+
+  frwkIpFilterSrcL4PortMin OBJECT-TYPE
+      SYNTAX         InetPortNumber
+      STATUS         current
+      DESCRIPTION
+          "The minimum value that the packet's layer 4 source port
+          number can have and match this filter. This value must
+          be equal to or lesser that the value specified for this
+          filter in frwkIpFilterSrcL4PortMax.
+
+          COPS-PR error code 'attrValueInvalid' must be returned if
+          the frwkIpFilterSrcL4PortMin is greated than
+          frwkIpFilterSrcL4PortMax"
+      REFERENCE
+          "COPS Usage for Policy Provisioning.  RFC 3084, error
+          codes section 4.5."
+      DEFVAL { 0 }
+
+      ::= { frwkIpFilterEntry 11 }
+
+  frwkIpFilterSrcL4PortMax OBJECT-TYPE
+      SYNTAX         InetPortNumber
+      STATUS         current
+      DESCRIPTION
+          "The maximum value that the packet's layer 4 source port
+          number can have and match this filter.  This value must be
+          equal to or greater that the value specified for this filter
+          in frwkIpFilterSrcL4PortMin.
+
+          COPS-PR error code 'attrValueInvalid' must be returned if
+          the frwkIpFilterSrcL4PortMax is less than
+          frwkIpFilterSrcL4PortMin"
+      REFERENCE
+          "COPS Usage for Policy Provisioning.  RFC error codes
+          section 4.5."
+      DEFVAL { 65535 }
+
+      ::= { frwkIpFilterEntry 12 }
+
+  --
+  -- The IEEE 802 Filter Table
+  --
+
+  frwk802FilterTable OBJECT-TYPE
+      SYNTAX         SEQUENCE OF Frwk802FilterEntry
+
+
+
+      PIB-ACCESS     install
+      STATUS         current
+      DESCRIPTION
+          "IEEE 802-based filter definitions. A class that contains
+          attributes of IEEE 802 (e.g., 802.3) traffic that form
+          filters that are used to perform traffic classification."
+      REFERENCE
+          "IEEE Standards for Local and Metropolitan Area Networks.
+          Overview and Architecture, ANSI/IEEE Std 802, 1990."
+      ::= { frwkClassifierClasses 3 }
+
+  frwk802FilterEntry OBJECT-TYPE
+      SYNTAX         Frwk802FilterEntry
+      STATUS         current
+      DESCRIPTION
+          "IEEE 802-based filter definitions.  An entry specifies
+          (potentially) several distinct matching components. Each
+          component is tested against the data in a frame
+          individually. An overall match occurs when all of the
+          individual components match the data they are compared
+          against in the frame being processed. A failure of any
+          one test causes the overall match to fail.
+
+          Wildcards may be specified for those fields that are not
+          relevant."
+
+      EXTENDS { frwkBaseFilterEntry }
+      UNIQUENESS { frwkBaseFilterNegation,
+                   frwk802FilterDstAddr,
+                   frwk802FilterDstAddrMask,
+                   frwk802FilterSrcAddr,
+                   frwk802FilterSrcAddrMask,
+                   frwk802FilterVlanId,
+                   frwk802FilterVlanTagRequired,
+                   frwk802FilterEtherType,
+                   frwk802FilterUserPriority }
+
+      ::= { frwk802FilterTable 1 }
+
+  Frwk802FilterEntry ::= SEQUENCE {
+          frwk802FilterDstAddr         PhysAddress,
+          frwk802FilterDstAddrMask     PhysAddress,
+          frwk802FilterSrcAddr         PhysAddress,
+          frwk802FilterSrcAddrMask     PhysAddress,
+          frwk802FilterVlanId          Integer32,
+          frwk802FilterVlanTagRequired INTEGER,
+          frwk802FilterEtherType       Integer32,
+          frwk802FilterUserPriority    BITS
+
+
+
+  }
+
+  frwk802FilterDstAddr OBJECT-TYPE
+      SYNTAX         PhysAddress
+      STATUS         current
+      DESCRIPTION
+          "The 802 address against which the 802 DA of incoming
+          traffic streams will be compared. Frames whose 802 DA
+          matches the physical address specified by this object,
+          taking into account address wildcarding as specified by the
+          frwk802FilterDstAddrMask object, are potentially subject to
+          the processing guidelines that are associated with this
+          entry through the related action class."
+      REFERENCE
+          "Textual Conventions for SMIv2, RFC 2579."
+
+      ::= { frwk802FilterEntry 1 }
+
+  frwk802FilterDstAddrMask OBJECT-TYPE
+      SYNTAX         PhysAddress
+      STATUS         current
+      DESCRIPTION
+          "This object specifies the bits in a 802 destination address
+          that should be considered when performing a 802 DA
+          comparison against the address specified in the
+          frwk802FilterDstAddr object.
+
+          The value of this object represents a mask that is logically
+          and'ed with the 802 DA in received frames to derive the
+          value to be compared against the frwk802FilterDstAddr
+          address. A zero bit in the mask thus means that the
+          corresponding bit in the address always matches. The
+          frwk802FilterDstAddr value must also be masked using this
+          value prior to any comparisons.
+
+          The length of this object in octets must equal the length in
+          octets of the frwk802FilterDstAddr. Note that a mask with no
+          bits set (i.e., all zeroes) effectively wildcards the
+          frwk802FilterDstAddr object."
+
+      ::= { frwk802FilterEntry 2 }
+
+  frwk802FilterSrcAddr OBJECT-TYPE
+      SYNTAX         PhysAddress
+      STATUS         current
+      DESCRIPTION
+          "The 802 MAC address against which the 802 MAC SA of
+          incoming traffic streams will be compared. Frames whose 802
+
+
+
+          MAC SA matches the physical address specified by this
+          object, taking into account address wildcarding as specified
+          by the frwk802FilterSrcAddrMask object, are potentially
+          subject to the processing guidelines that are associated
+          with this entry through the related action class."
+
+      ::= { frwk802FilterEntry 3 }
+
+  frwk802FilterSrcAddrMask OBJECT-TYPE
+      SYNTAX         PhysAddress
+      STATUS         current
+      DESCRIPTION
+          "This object specifies the bits in a 802 MAC source address
+          that should be considered when performing a 802 MAC SA
+          comparison against the address specified in the
+          frwk802FilterSrcAddr object.
+
+          The value of this object represents a mask that is logically
+          and'ed with the 802 MAC SA in received frames to derive the
+          value to be compared against the frwk802FilterSrcAddr
+          address. A zero bit in the mask thus means that the
+          corresponding bit in the address always matches. The
+          frwk802FilterSrcAddr value must also be masked using this
+          value prior to any comparisons.
+
+          The length of this object in octets must equal the length in
+          octets of the frwk802FilterSrcAddr. Note that a mask with no
+          bits set (i.e., all zeroes) effectively wildcards the
+          frwk802FilterSrcAddr object."
+
+      ::= { frwk802FilterEntry 4 }
+
+  frwk802FilterVlanId OBJECT-TYPE
+      SYNTAX         Integer32 (-1 | 1..4094)
+      STATUS         current
+      DESCRIPTION
+          "The VLAN ID (VID) that uniquely identifies a VLAN
+          within the device. This VLAN may be known or unknown
+          (i.e., traffic associated with this VID has not yet
+          been seen by the device) at the time this entry
+          is instantiated.
+
+          Setting the frwk802FilterVlanId object to -1 indicates that
+          VLAN data should not be considered during traffic
+          classification."
+
+      ::= { frwk802FilterEntry 5 }
+
+
+
+
+  frwk802FilterVlanTagRequired OBJECT-TYPE
+      SYNTAX         INTEGER {
+                         taggedOnly(1),
+                         priorityTaggedPlus(2),
+                         untaggedOnly(3),
+                         ignoreTag(4)
+                     }
+      STATUS         current
+      DESCRIPTION
+          "This object indicates whether the presence of an
+          IEEE 802.1Q VLAN tag in data link layer frames must
+          be considered when determining if a given frame
+          matches this 802 filter entry.
+
+          A value of 'taggedOnly(1)' means that only frames
+          containing a VLAN tag with a non-Null VID (i.e., a
+          VID in the range 1..4094) will be considered a match.
+
+          A value of 'priorityTaggedPlus(2)' means that only
+          frames containing a VLAN tag, regardless of the value
+          of the VID, will be considered a match.
+
+          A value of 'untaggedOnly(3)' indicates that only
+          untagged frames will match this filter component.
+
+          The presence of a VLAN tag is not taken into
+          consideration in terms of a match if the value is
+          'ignoreTag(4)'."
+
+      ::= { frwk802FilterEntry 6 }
+
+  frwk802FilterEtherType OBJECT-TYPE
+      SYNTAX         Integer32 (-1 | 0..'ffff'h)
+      STATUS         current
+      DESCRIPTION
+          "This object specifies the value that will be compared
+          against the value contained in the EtherType field of an
+          IEEE 802 frame. Example settings would include 'IP'
+          (0x0800), 'ARP' (0x0806) and 'IPX' (0x8137).
+
+          Setting the frwk802FilterEtherTypeMin object to -1 indicates
+          that EtherType data should not be considered during traffic
+          classification.
+
+          Note that the position of the EtherType field depends on
+          the underlying frame format. For Ethernet-II encapsulation,
+          the EtherType field follows the 802 MAC source address. For
+          802.2 LLC/SNAP encapsulation, the EtherType value follows
+
+
+
+          the Organization Code field in the 802.2 SNAP header. The
+        value that is tested with regard to this filter component
+        therefore depends on the data link layer frame format being
+        used. If this 802 filter component is active when there is
+        no EtherType field in a frame (e.g., 802.2 LLC), a match is
+        implied."
+
+    ::= { frwk802FilterEntry 7 }
+
+frwk802FilterUserPriority OBJECT-TYPE
+    SYNTAX         BITS {
+                        matchPriority0(0),
+                        matchPriority1(1),
+                        matchPriority2(2),
+                        matchPriority3(3),
+                        matchPriority4(4),
+                        matchPriority5(5),
+                        matchPriority6(6),
+                        matchPriority7(7)
+                   }
+    STATUS         current
+    DESCRIPTION
+        "The set of values, representing the potential range
+        of user priority values, against which the value contained
+        in the user priority field of a tagged 802.1 frame is
+        compared. A test for equality is performed when determining
+        if a match exists between the data in a data link layer
+        frame and the value of this 802 filter component. Multiple
+        values may be set at one time such that potentially several
+        different user priority values may match this 802 filter
+        component.
+
+        Setting all of the bits that are associated with this
+        object causes all user priority values to match this
+        attribute. This essentially makes any comparisons
+        with regard to user priority values unnecessary. Untagged
+        frames are treated as an implicit match."
+
+    ::= { frwk802FilterEntry 8 }
+
+--
+-- The Internal label filter extension
+--
+
+frwkILabelFilterTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF FrwkILabelFilterEntry
+    PIB-ACCESS     install
+    STATUS         current
+
+
+
+    DESCRIPTION
+        "Internal label filter Table. This PRC is used to achieve
+         classification based on the internal flow label set by the
+         PEP possibly after ingress classification to avoid
+         re-classification at the egress interface on the same PEP."
+
+    ::= { frwkClassifierClasses 4 }
+
+frwkILabelFilterEntry OBJECT-TYPE
+    SYNTAX         FrwkILabelFilterEntry
+    STATUS         current
+    DESCRIPTION
+        "Internal label filter entry definition."
+
+    EXTENDS { frwkBaseFilterEntry }
+    UNIQUENESS { frwkBaseFilterNegation,
+                 frwkILabelFilterILabel }
+
+    ::= { frwkILabelFilterTable 1 }
+
+FrwkILabelFilterEntry ::= SEQUENCE {
+   frwkILabelFilterILabel      OCTET STRING
+}
+
+frwkILabelFilterILabel      OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    STATUS       current
+    DESCRIPTION
+       "The Label that this flow uses for differentiating traffic
+        flows.  The flow labeling is meant for network device
+       internal usage. A value of zero length string matches all
+       internal labels."
+    ::= { frwkILabelFilterEntry 1 }
+
+--
+-- The Marker classes group
+--
+
+frwkMarkerClasses
+           OBJECT IDENTIFIER ::= { frameworkPib 4 }
+--
+-- The 802 Marker Table
+--
+
+frwk802MarkerTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF Frwk802MarkerEntry
+    PIB-ACCESS     install
+    STATUS         current
+
+
+
+    DESCRIPTION
+        "The 802 Marker class. An 802 packet can be marked with the
+         specified VLAN id, priority level."
+
+    ::= { frwkMarkerClasses 1 }
+
+frwk802MarkerEntry OBJECT-TYPE
+    SYNTAX         Frwk802MarkerEntry
+    STATUS         current
+    DESCRIPTION
+        "frwk802Marker entry definition."
+
+    PIB-INDEX { frwk802MarkerPrid }
+    UNIQUENESS { frwk802MarkerVlanId,
+                 frwk802MarkerPriority }
+
+    ::= { frwk802MarkerTable 1 }
+
+Frwk802MarkerEntry::= SEQUENCE {
+        frwk802MarkerPrid          InstanceId,
+        frwk802MarkerVlanId        Unsigned32,
+        frwk802MarkerPriority      Unsigned32
+}
+
+frwk802MarkerPrid  OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "An integer index to uniquely identify this 802 Marker."
+
+    ::= { frwk802MarkerEntry 1 }
+
+frwk802MarkerVlanId  OBJECT-TYPE
+    SYNTAX         Unsigned32 (1..4094)
+    STATUS         current
+    DESCRIPTION
+        "The VLAN ID (VID) that uniquely identifies a VLAN within
+         the device."
+
+    ::= { frwk802MarkerEntry 2 }
+
+frwk802MarkerPriority  OBJECT-TYPE
+    SYNTAX         Unsigned32 (0..7)
+    STATUS         current
+    DESCRIPTION
+        "The user priority field of a tagged 802.1 frame."
+
+    ::= { frwk802MarkerEntry 3 }
+
+
+
+
+--
+-- The Internal Label Marker Table
+--
+
+frwkILabelMarkerTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF FrwkILabelMarkerEntry
+    PIB-ACCESS     install
+    STATUS         current
+    DESCRIPTION
+        "The Internal Label Marker class. A flow in a PEP can be
+        marked with an internal label using this PRC."
+
+    ::= { frwkMarkerClasses 2 }
+
+frwkILabelMarkerEntry OBJECT-TYPE
+    SYNTAX         FrwkILabelMarkerEntry
+    STATUS         current
+    DESCRIPTION
+        "frwkILabelkMarker entry definition."
+
+    PIB-INDEX { frwkILabelMarkerPrid }
+    UNIQUENESS { frwkILabelMarkerILabel }
+
+    ::= { frwkILabelMarkerTable 1 }
+
+FrwkILabelMarkerEntry::= SEQUENCE {
+        frwkILabelMarkerPrid          InstanceId,
+        frwkILabelMarkerILabel        OCTET STRING
+}
+
+frwkILabelMarkerPrid  OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "An integer index to uniquely identify this Label Marker."
+
+    ::= { frwkILabelMarkerEntry 1 }
+
+frwkILabelMarkerILabel  OBJECT-TYPE
+    SYNTAX         OCTET STRING
+    STATUS         current
+    DESCRIPTION
+        "This internal label is implementation specific and may be
+         used for other policy related functions like flow
+         accounting purposes and/or other data path treatments."
+
+    ::= { frwkILabelMarkerEntry 2 }
+
+
+
+
+--
+-- Conformance Section
+--
+
+frwkBasePibConformance
+                OBJECT IDENTIFIER ::= { frameworkPib 5 }
+
+frwkBasePibCompliances
+                OBJECT IDENTIFIER ::= { frwkBasePibConformance 1 }
+
+frwkBasePibGroups
+                OBJECT IDENTIFIER ::= { frwkBasePibConformance 2 }
+
+frwkBasePibCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "Describes the requirements for conformance to the
+            Framework PIB."
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { frwkPrcSupportGroup,
+                           frwkPibIncarnationGroup,
+                           frwkDeviceIdGroup,
+                           frwkCompLimitsGroup,
+                           frwkCapabilitySetGroup,
+                           frwkRoleComboGroup,
+                           frwkIfRoleComboGroup }
+
+        OBJECT          frwkPibIncarnationLongevity
+        PIB-MIN-ACCESS  notify
+        DESCRIPTION
+           "Install support is required if policy expiration is to
+           be supported."
+
+        OBJECT          frwkPibIncarnationTtl
+        PIB-MIN-ACCESS  notify
+        DESCRIPTION
+           "Install support is required if policy expiration is to
+           be supported."
+
+        OBJECT          frwkPibIncarnationInCtxtSet
+        PIB-MIN-ACCESS  notify
+        DESCRIPTION
+           "Install support is required if configuration contexts
+           and outsourcing contexts are both to be supported."
+
+        OBJECT          frwkPibIncarnationFullState
+
+
+
+        PIB-MIN-ACCESS  notify
+        DESCRIPTION
+            "Install support is required if incremental updates to
+            request states is to be supported."
+
+    GROUP   frwkReferenceGroup
+        DESCRIPTION
+            "The frwkReferenceGroup is mandatory if referencing
+            across PIB contexts for specific client-types is to be
+            supported."
+
+    GROUP   frwkErrorGroup
+        DESCRIPTION
+            "The frwkErrorGroup is mandatory sending errors in
+             decisions is to be supported."
+
+    GROUP   frwkBaseFilterGroup
+        DESCRIPTION
+            "The frwkBaseFilterGroup is mandatory if filtering
+             based on traffic components is to be supported."
+
+    GROUP   frwkIpFilterGroup
+        DESCRIPTION
+            "The frwkIpFilterGroup is mandatory if filtering
+             based on IP traffic components is to be supported."
+
+    GROUP   frwk802FilterGroup
+        DESCRIPTION
+            "The frwk802FilterGroup is mandatory if filtering
+            based on 802 traffic criteria is to be supported."
+
+    GROUP   frwkILabelFilterGroup
+        DESCRIPTION
+            "The frwkILabelFilterGroup is mandatory if filtering
+            based on PEP internal label is to be supported."
+
+    GROUP   frwk802MarkerGroup
+        DESCRIPTION
+            "The frwk802MarkerGroup is mandatory if marking a packet
+            with 802 traffic criteria is to be supported."
+
+    GROUP   frwkILabelMarkerGroup
+        DESCRIPTION
+            "The frwkILabelMarkerGroup is mandatory if marking a
+            flow with internal labels is to be supported."
+
+    ::= { frwkBasePibCompliances 1 }
+
+
+
+
+frwkPrcSupportGroup OBJECT-GROUP
+    OBJECTS {
+             frwkPrcSupportPrid,
+             frwkPrcSupportSupportedPrc,
+             frwkPrcSupportSupportedAttrs }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkPrcSupportTable."
+
+    ::= { frwkBasePibGroups 1 }
+
+frwkPibIncarnationGroup OBJECT-GROUP
+    OBJECTS {
+             frwkPibIncarnationPrid,
+             frwkPibIncarnationName,
+             frwkPibIncarnationId,
+             frwkPibIncarnationLongevity,
+             frwkPibIncarnationTtl,
+             frwkPibIncarnationInCtxtSet,
+             frwkPibIncarnationActive,
+             frwkPibIncarnationFullState
+            }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkDevicePibIncarnationTable."
+
+    ::= { frwkBasePibGroups 2 }
+
+frwkDeviceIdGroup OBJECT-GROUP
+    OBJECTS {
+             frwkDeviceIdPrid,
+             frwkDeviceIdDescr,
+             frwkDeviceIdMaxMsg,
+             frwkDeviceIdMaxContexts }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkDeviceIdTable."
+
+    ::= { frwkBasePibGroups 3 }
+
+frwkCompLimitsGroup OBJECT-GROUP
+    OBJECTS {
+             frwkCompLimitsPrid,
+             frwkCompLimitsComponent,
+             frwkCompLimitsAttrPos,
+             frwkCompLimitsNegation,
+             frwkCompLimitsType,
+             frwkCompLimitsSubType,
+
+
+
+             frwkCompLimitsGuidance }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkCompLimitsTable."
+
+    ::= { frwkBasePibGroups 4 }
+
+frwkReferenceGroup OBJECT-GROUP
+    OBJECTS {
+             frwkReferencePrid,
+             frwkReferenceClientType,
+             frwkReferenceClientHandle,
+             frwkReferenceInstance }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkReferenceTable."
+
+    ::= { frwkBasePibGroups 5 }
+
+frwkErrorGroup OBJECT-GROUP
+    OBJECTS {
+             frwkErrorPrid,
+             frwkErrorCode,
+             frwkErrorSubCode,
+             frwkErrorPrc,
+             frwkErrorInstance }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkErrorTable."
+
+    ::= { frwkBasePibGroups 6 }
+
+frwkCapabilitySetGroup OBJECT-GROUP
+    OBJECTS {
+             frwkCapabilitySetPrid,
+             frwkCapabilitySetName,
+             frwkCapabilitySetCapability }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkCapabilitySetTable."
+
+    ::= { frwkBasePibGroups 7 }
+
+frwkRoleComboGroup OBJECT-GROUP
+    OBJECTS {
+             frwkRoleComboPrid,
+             frwkRoleComboRoles,
+             frwkRoleComboCapSetName }
+
+
+
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkRoleComboTable."
+
+    ::= { frwkBasePibGroups 8 }
+
+frwkIfRoleComboGroup OBJECT-GROUP
+    OBJECTS { frwkIfRoleComboIfIndex }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkIfRoleComboTable."
+
+    ::= { frwkBasePibGroups 9 }
+
+frwkBaseFilterGroup OBJECT-GROUP
+    OBJECTS {
+             frwkBaseFilterPrid,
+             frwkBaseFilterNegation }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkBaseFilterTable."
+
+    ::= { frwkBasePibGroups 10 }
+
+frwkIpFilterGroup OBJECT-GROUP
+    OBJECTS {
+             frwkIpFilterAddrType,
+             frwkIpFilterDstAddr,
+             frwkIpFilterDstPrefixLength,
+             frwkIpFilterSrcAddr,
+             frwkIpFilterSrcPrefixLength,
+             frwkIpFilterDscp,
+             frwkIpFilterFlowId,
+             frwkIpFilterProtocol,
+             frwkIpFilterDstL4PortMin,
+             frwkIpFilterDstL4PortMax,
+             frwkIpFilterSrcL4PortMin,
+             frwkIpFilterSrcL4PortMax }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkIpFilterTable."
+
+    ::= { frwkBasePibGroups 11 }
+
+frwk802FilterGroup OBJECT-GROUP
+    OBJECTS {
+             frwk802FilterDstAddr,
+             frwk802FilterDstAddrMask,
+
+
+
+             frwk802FilterSrcAddr,
+             frwk802FilterSrcAddrMask,
+             frwk802FilterVlanId,
+             frwk802FilterVlanTagRequired,
+             frwk802FilterEtherType,
+             frwk802FilterUserPriority }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwk802FilterTable."
+
+    ::= { frwkBasePibGroups 12 }
+
+frwkILabelFilterGroup OBJECT-GROUP
+    OBJECTS { frwkILabelFilterILabel }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkILabelFilterTable."
+
+    ::= { frwkBasePibGroups 13 }
+
+frwk802MarkerGroup OBJECT-GROUP
+    OBJECTS {
+             frwk802MarkerPrid,
+             frwk802MarkerVlanId,
+             frwk802MarkerPriority }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwk802MarkerTable."
+
+    ::= { frwkBasePibGroups 14 }
+
+frwkILabelMarkerGroup OBJECT-GROUP
+    OBJECTS {
+             frwkILabelMarkerPrid,
+             frwkILabelMarkerILabel }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the frwkILabelMarkerTable."
+
+    ::= { frwkBasePibGroups 15 }
+
+END

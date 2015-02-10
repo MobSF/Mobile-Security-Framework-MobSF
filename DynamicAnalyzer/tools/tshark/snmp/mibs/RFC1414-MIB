@@ -1,0 +1,134 @@
+RFC1414-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+    tcpConnLocalAddress, tcpConnLocalPort,
+    tcpConnRemAddress, tcpConnRemPort, mib-2
+            FROM RFC1213-MIB;
+
+
+ident   OBJECT IDENTIFIER ::= { mib-2 24 }
+
+
+-- conformance groups
+
+identInfo       OBJECT IDENTIFIER ::= { ident 1 }
+
+
+-- textual conventions
+
+-- none
+
+-- the ident information system group
+--
+-- implementation of this group is mandatory
+
+identTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF IdentEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "A table containing user information for TCP
+            connections.
+
+            Note that this table contains entries for all TCP
+            connections on a managed system.  The
+            corresponding instance of tcpConnState (defined in
+            MIB-II) indicates the state of a particular
+            connection."
+        ::= { identInfo 1 }
+
+identEntry OBJECT-TYPE
+        SYNTAX  IdentEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "User information about a particular TCP
+            connection."
+        INDEX   { tcpConnLocalAddress, tcpConnLocalPort,
+                  tcpConnRemAddress, tcpConnRemPort }
+        ::= { identTable 1 }
+
+IdentEntry ::=
+    SEQUENCE {
+        identStatus     INTEGER,
+        identOpSys      OCTET STRING,
+        identCharset    OCTET STRING,
+        identUserid     OCTET STRING,
+        identMisc       OCTET STRING
+    }
+
+identStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    noError(1),
+                    unknownError(2)
+                }
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Indicates whether user information for the
+            associated TCP connection can be determined.  A
+            value of `noError(1)' indicates that user
+            information is available.  A value of
+            `unknownError(2)' indicates that user information
+            is not available."
+        ::= { identEntry 1 }
+
+identOpSys OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..40))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Indicates the type of operating system in use.
+            In addition to identifying an operating system,
+            each assignment made for this purpose also
+            (implicitly) identifies the textual format and
+            maximum size of the corresponding identUserid and
+            identMisc objects.
+
+            The legal values for the `indentOpSys' strings
+            are those listed in the SYSTEM NAMES section of
+            the most recent edition of the ASSIGNED NUMBERS
+            RFC [8]."
+        ::= { identEntry 2 }
+
+
+identCharset OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..40))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Indicates the repertoire of the corresponding
+            identUserid and identMisc objects.
+
+            The legal values for the `identCharset' strings
+            are those listed in the CHARACTER SET section of
+            the most recent edition of the ASSIGNED NUMBERS
+            RFC [8]."
+        ::= { identEntry 3 }
+
+identUserid OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..255))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Indicates the user's identity.  Interpretation of
+            this object requires examination of the
+            corresponding value of the identOpSys and
+            identCharset objects."
+        ::= { identEntry 4 }
+
+identMisc OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..255))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Indicates miscellaneous information about the
+            user.  Interpretation of this object requires
+            examination of the corresponding value of the
+            identOpSys and identCharset objects."
+        ::= { identEntry 5 }
+
+
+END

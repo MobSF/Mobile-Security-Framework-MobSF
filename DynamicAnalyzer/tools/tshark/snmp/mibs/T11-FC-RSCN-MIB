@@ -1,0 +1,799 @@
+T11-FC-RSCN-MIB DEFINITIONS ::= BEGIN
+
+-- The Fibre Channel RSCN MIB
+--
+-- for the monitoring of registrations by Nx_Ports to receive
+-- Registered State Change Notifications (RSCNs), and the
+-- monitoring of RSCN usage.
+--
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    NOTIFICATION-TYPE,
+    Counter32, mib-2                     FROM SNMPv2-SMI   -- [RFC2578]
+    MODULE-COMPLIANCE, OBJECT-GROUP,
+    NOTIFICATION-GROUP                   FROM SNMPv2-CONF  -- [RFC2580]
+    TruthValue                           FROM SNMPv2-TC    -- [RFC2579]
+    fcmInstanceIndex, fcmSwitchIndex,
+    FcNameIdOrZero, FcAddressIdOrZero    FROM FC-MGMT-MIB  -- [RFC4044]
+    T11NsGs4RejectReasonCode   FROM T11-FC-NAME-SERVER-MIB -- [RFC4438]
+    T11FabricIndex                       FROM T11-TC-MIB;  -- [RFC4439]
+
+t11FcRscnMIB  MODULE-IDENTITY
+    LAST-UPDATED "200701080000Z"
+    ORGANIZATION "For the initial versions, T11.
+                  For later versions, the IETF's IMSS Working Group."
+    CONTACT-INFO
+            "     Claudio DeSanti
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA 95134 USA
+                  EMail: cds@cisco.com
+
+                  Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA 95134 USA
+                  EMail: kzm@cisco.com"
+
+    DESCRIPTION
+           "The MIB module for the management of registrations
+
+
+
+           by Nx_Ports to receive RSCNs (Registered State Change
+           Notifications) on a Fibre Channel Fabric, as defined
+           in FC-LS, and for the monitoring of RSCNs sent/received
+           or rejected in a Fibre Channel Fabric.
+
+           Copyright (C) The Internet Society (2007).  This version of
+           this MIB module is part of RFC 4983;  see the RFC itself for
+           full legal notices."
+    REVISION    "200701080000Z"
+    DESCRIPTION
+           "Initial version of this MIB module, published as RFC 4983."
+    ::= { mib-2 161 }
+
+t11FcRscnNotifications  OBJECT IDENTIFIER ::= { t11FcRscnMIB 0 }
+t11FcRscnObjects        OBJECT IDENTIFIER ::= { t11FcRscnMIB 1 }
+t11FcRscnConformance    OBJECT IDENTIFIER ::= { t11FcRscnMIB 2 }
+t11FcRscnRegistrations  OBJECT IDENTIFIER ::= { t11FcRscnObjects 1 }
+t11FcRscnStats          OBJECT IDENTIFIER ::= { t11FcRscnObjects 2 }
+t11FcRscnInformation    OBJECT IDENTIFIER ::= { t11FcRscnObjects 3 }
+
+
+-- State Change Registration Table
+
+t11FcRscnRegTable  OBJECT-TYPE
+    SYNTAX         SEQUENCE OF T11FcRscnRegEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+           "A table of Nx_Ports that have registered to receive
+           RSCNs on all Fabrics configured on one or more Fibre
+           Channel switches."
+    ::= { t11FcRscnRegistrations 1 }
+
+t11FcRscnRegEntry  OBJECT-TYPE
+    SYNTAX        T11FcRscnRegEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "An entry containing information about one Nx_Port that
+           has registered with a particular switch (identified by
+           values of fcmInstanceIndex and fcmSwitchIndex) for a
+           particular Fabric (identified by a t11FcRscnFabricIndex
+           value)."
+    INDEX   { fcmInstanceIndex, fcmSwitchIndex, t11FcRscnFabricIndex,
+              t11FcRscnRegFcId }
+    ::= { t11FcRscnRegTable 1 }
+
+T11FcRscnRegEntry ::= SEQUENCE {
+
+
+
+    t11FcRscnFabricIndex         T11FabricIndex,
+    t11FcRscnRegFcId             FcAddressIdOrZero,
+    t11FcRscnRegType             BITS
+}
+
+t11FcRscnFabricIndex OBJECT-TYPE
+    SYNTAX      T11FabricIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "An index value that uniquely identifies a particular
+           Fabric.
+
+           In a Fabric conformant to FC-SW-4, multiple Virtual Fabrics
+           can operate within one (or more) physical infrastructures.
+           In such a case, this index value is used to uniquely
+           identify a particular Fabric within a physical
+           infrastructure.
+
+           In a Fabric that has (or can have) only a single Fabric
+           operating within the physical infrastructure, the
+           value of this Fabric Index will always be 1."
+    REFERENCE
+          "ANSI INCITS 418-2006, Fibre Channel - Switch Fabric - 4
+          (FC-SW-4), December 2006."
+    ::= { t11FcRscnRegEntry 1 }
+
+t11FcRscnRegFcId  OBJECT-TYPE
+    SYNTAX        FcAddressIdOrZero (SIZE (3))
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "The Fibre Channel Address Identifier of the
+           registering Nx_Port."
+    ::= { t11FcRscnRegEntry 2 }
+
+t11FcRscnRegType  OBJECT-TYPE
+    SYNTAX        BITS {
+                      fromFabricController(0),
+                      fromNxPort(1)
+                  }
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "This object indicates the type of registration
+           desired by the registering Nx_Port, one bit per type:
+
+           'fromFabricController' -- RSCNs generated for events
+
+
+
+                                  detected by the Fabric Controller.
+
+           'fromNxPorts'          -- RSCNs generated for events
+                                  detected by the affected Nx_Port."
+    REFERENCE
+          "ANSI INCITS 433-2007, Fibre Channel - Link Services
+          (FC-LS), July 2007, Table 40."
+    ::= { t11FcRscnRegEntry 3 }
+
+
+-- Statistics
+
+t11FcRscnStatsTable  OBJECT-TYPE
+    SYNTAX         SEQUENCE OF T11FcRscnStatsEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+           "The RSCN-related statistics on all Fabrics configured
+           on one or more Fibre Channel switches.
+
+           Two levels of statistics are included:
+
+              1) counters at the message-type level, for:
+                 - the number of SCRs received/rejected,
+                 - the number of RSCNs sent/received/rejected,
+                 - the number of SW_RSCNs sent/received/rejected.
+
+              2) counters of sent/received RSCNs per 'Event
+                 Qualifier' value.  Note that if and when several
+                 RSCN events are coalesced into a single RSCN
+                 message, then that message may be counted in
+                 more than one of these counters."
+    ::= { t11FcRscnStats 1 }
+
+t11FcRscnStatsEntry  OBJECT-TYPE
+    SYNTAX        T11FcRscnStatsEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+           "An entry containing statistics for a particular Fabric
+           (identified by a t11FcRscnFabricIndex value) on a particular
+           switch (identified by values of fcmInstanceIndex and
+           fcmSwitchIndex)."
+    INDEX  { fcmInstanceIndex, fcmSwitchIndex, t11FcRscnFabricIndex }
+    ::= { t11FcRscnStatsTable 1 }
+
+T11FcRscnStatsEntry ::= SEQUENCE {
+    t11FcRscnInScrs                    Counter32,
+
+
+
+    t11FcRscnInRscns                   Counter32,
+    t11FcRscnOutRscns                  Counter32,
+    t11FcRscnInSwRscns                 Counter32,
+    t11FcRscnOutSwRscns                Counter32,
+    t11FcRscnScrRejects                Counter32,
+    t11FcRscnRscnRejects               Counter32,
+    t11FcRscnSwRscnRejects             Counter32,
+    t11FcRscnInUnspecifiedRscns        Counter32,
+    t11FcRscnOutUnspecifiedRscns       Counter32,
+    t11FcRscnInChangedAttribRscns      Counter32,
+    t11FcRscnOutChangedAttribRscns     Counter32,
+    t11FcRscnInChangedServiceRscns     Counter32,
+    t11FcRscnOutChangedServiceRscns    Counter32,
+    t11FcRscnInChangedSwitchRscns      Counter32,
+    t11FcRscnOutChangedSwitchRscns     Counter32,
+    t11FcRscnInRemovedRscns            Counter32,
+    t11FcRscnOutRemovedRscns           Counter32
+}
+
+t11FcRscnInScrs  OBJECT-TYPE
+    SYNTAX         Counter32
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+           "The number of SCRs received from Nx_Ports
+           by this switch on this Fabric.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcRscnStatsEntry 1 }
+
+
+t11FcRscnInRscns  OBJECT-TYPE
+    SYNTAX         Counter32
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+           "The number of RSCNs received from Nx_Ports
+           by this switch on this Fabric.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcRscnStatsEntry 2 }
+
+t11FcRscnOutRscns  OBJECT-TYPE
+    SYNTAX         Counter32
+    MAX-ACCESS     read-only
+    STATUS         current
+
+
+
+    DESCRIPTION
+           "The number of RSCNs transmitted to Nx_Ports
+           by this switch on this Fabric.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcRscnStatsEntry 3 }
+
+
+t11FcRscnInSwRscns  OBJECT-TYPE
+    SYNTAX         Counter32
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+           "The number of SW_RSCNs received by this switch from
+           other switches on this Fabric.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcRscnStatsEntry 4 }
+
+t11FcRscnOutSwRscns  OBJECT-TYPE
+    SYNTAX         Counter32
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+           "The number of SW_RSCNs transmitted by this switch
+           from other switches on this Fabric.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcRscnStatsEntry 5 }
+
+t11FcRscnScrRejects  OBJECT-TYPE
+    SYNTAX         Counter32
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+           "The number of SCRs rejected by this switch on
+           this Fabric.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcRscnStatsEntry 6 }
+
+t11FcRscnRscnRejects OBJECT-TYPE
+    SYNTAX         Counter32
+    MAX-ACCESS     read-only
+
+
+
+    STATUS         current
+    DESCRIPTION
+           "The number of RSCNs rejected by this switch on this
+           Fabric.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcRscnStatsEntry 7 }
+
+t11FcRscnSwRscnRejects  OBJECT-TYPE
+    SYNTAX         Counter32
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+           "The number of SW_RSCN rejected by this switch on this
+           Fabric.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcRscnStatsEntry 8 }
+
+t11FcRscnInUnspecifiedRscns  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Registered State Change Notifications
+           (RSCNs) received by this switch on this Fabric which
+           contained an RSCN Event Qualifier value of '0000'b
+           meaning 'Event is not specified'.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+          (FC-LS), July 2007, Table 36."
+    ::= { t11FcRscnStatsEntry 9 }
+
+t11FcRscnOutUnspecifiedRscns  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Registered State Change Notifications
+           (RSCNs) sent by this switch on this Fabric which
+           contained an RSCN Event Qualifier value of '0000'b
+           meaning 'Event is not specified'.
+
+
+
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+          (FC-LS), July 2007, Table 36."
+    ::= { t11FcRscnStatsEntry 10 }
+
+t11FcRscnInChangedAttribRscns  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Registered State Change Notifications
+           (RSCNs) received by this switch on this Fabric which
+           contained an RSCN Event Qualifier value of '0002'b
+           meaning 'Changed Port Attribute'.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+          (FC-LS), July 2007, Table 36."
+    ::= { t11FcRscnStatsEntry 11 }
+
+t11FcRscnOutChangedAttribRscns  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Registered State Change Notifications
+           (RSCNs) sent by this switch on this Fabric which
+           contained an RSCN Event Qualifier value of '0002'b
+           meaning 'Changed Port Attribute'.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+          (FC-LS), July 2007, Table 36."
+    ::= { t11FcRscnStatsEntry 12 }
+
+t11FcRscnInChangedServiceRscns  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Registered State Change Notifications
+           (RSCNs) received by this switch on this Fabric which
+
+
+
+           contained an RSCN Event Qualifier value of '0003'b
+           meaning 'Changed Service Object'.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+          (FC-LS), July 2007, Table 36."
+    ::= { t11FcRscnStatsEntry 13 }
+
+t11FcRscnOutChangedServiceRscns  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Registered State Change Notifications
+           (RSCNs) sent by this switch on this Fabric which
+           contained an RSCN Event Qualifier value of '0003'b
+           meaning 'Changed Service Object'.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+          (FC-LS), July 2007, Table 36."
+    ::= { t11FcRscnStatsEntry 14 }
+
+t11FcRscnInChangedSwitchRscns  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Registered State Change Notifications
+           (RSCNs) received by this switch on this Fabric which
+           contained an RSCN Event Qualifier value of '0004'b
+           meaning 'Changed Switch Configuration'.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+          (FC-LS), July 2007, Table 36."
+    ::= { t11FcRscnStatsEntry 15 }
+
+t11FcRscnOutChangedSwitchRscns  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+
+
+
+    DESCRIPTION
+            "The number of Registered State Change Notifications
+           (RSCNs) sent by this switch on this Fabric which
+           contained an RSCN Event Qualifier value of '0004'b
+           meaning 'Changed Switch Configuration'.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+          (FC-LS), July 2007, Table 36."
+    ::= { t11FcRscnStatsEntry 16 }
+
+t11FcRscnInRemovedRscns  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Registered State Change Notifications
+           (RSCNs) received by this switch on this Fabric which
+           contained an RSCN Event Qualifier value of '0005'b
+           meaning 'Removed Object'.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+          (FC-LS), July 2007, Table 36."
+    ::= { t11FcRscnStatsEntry 17 }
+
+t11FcRscnOutRemovedRscns  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Registered State Change Notifications
+           (RSCNs) sent by this switch on this Fabric which
+           contained an RSCN Event Qualifier value of '0005'b
+           meaning 'Removed Object'.
+
+           This counter has no discontinuities other than
+           those that all Counter32s have when sysUpTime=0."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+          (FC-LS), July 2007, Table 36."
+    ::= { t11FcRscnStatsEntry 18 }
+
+
+
+
+
+--
+-- Notification Control Table
+--
+t11FcRscnNotifyControlTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FcRscnNotifyControlEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+           "A table of control information for notifications
+           generated due to the rejection of an SCR or RSCN."
+    ::= { t11FcRscnInformation 1 }
+
+t11FcRscnNotifyControlEntry OBJECT-TYPE
+    SYNTAX       T11FcRscnNotifyControlEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+           "Each entry contains notification control information
+           concerning the rejection of RSCN/SCRs for a particular
+           Fabric (identified by the value of t11FcRscnFabricIndex)
+           by a particular switch (identified by values of
+           fcmInstanceIndex and fcmSwitchIndex)."
+    INDEX  { fcmInstanceIndex, fcmSwitchIndex, t11FcRscnFabricIndex }
+    ::= { t11FcRscnNotifyControlTable 1 }
+
+T11FcRscnNotifyControlEntry ::= SEQUENCE {
+     t11FcRscnIlsRejectNotifyEnable     TruthValue,
+     t11FcRscnElsRejectNotifyEnable     TruthValue,
+     t11FcRscnRejectedRequestString     OCTET STRING,
+     t11FcRscnRejectedRequestSource     FcNameIdOrZero,
+     t11FcRscnRejectReasonCode          T11NsGs4RejectReasonCode,
+     t11FcRscnRejectReasonCodeExp       OCTET STRING,
+     t11FcRscnRejectReasonVendorCode    OCTET STRING
+}
+
+t11FcRscnIlsRejectNotifyEnable OBJECT-TYPE
+    SYNTAX       TruthValue
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+           "This object specifies if a t11FcRscnIlsRejectReqNotify
+           notification should be generated when this switch
+           rejects an SW_RSCN on this Fabric.
+
+           Values written to this object should be retained
+           over agent reboots."
+    DEFVAL { false }
+    ::= { t11FcRscnNotifyControlEntry 1 }
+
+
+
+t11FcRscnElsRejectNotifyEnable OBJECT-TYPE
+    SYNTAX        TruthValue
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+           "This object specifies if a t11FcRscnElsRejectReqNotify
+           notification should be generated when this switch
+           rejects an RSCN or SCR on this Fabric.
+
+           Values written to this object should be retained
+           over agent reboots."
+    DEFVAL { false }
+    ::= { t11FcRscnNotifyControlEntry 2 }
+
+t11FcRscnRejectedRequestString OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE (0..255))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "The binary content of the RSCN, SCR, or SW_RSCN that
+           was most recently rejected by this switch on this Fabric.
+           The value is formatted as an octet string (in network
+           byte order) as described in the relevant Fibre Channel
+           standard, containing the payload (which is typically a
+           list of affected ports and error codes) of the rejected
+           RSCN or SCR as described in FC-LS, or the rejected
+           SW_RSCN as described in FC-SW-4.
+
+           This object contains the zero-length string if and when
+           the RSCN/SCR/SW_RSCN payload is unavailable.  When the
+           length of this object is 255 octets, it contains the
+           first 255 octets of the payload (in network byte order)."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+           (FC-LS), July 2007, Tables 34 & 39.
+
+           ANSI INCITS 418-2006, Fibre Channel - Switch Fabric - 4
+           (FC-SW-4), December 2006, Table 45."
+    ::= { t11FcRscnNotifyControlEntry 3 }
+
+t11FcRscnRejectedRequestSource OBJECT-TYPE
+    SYNTAX       FcNameIdOrZero
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+           "The WWN that was the source of the RSCN, SCR, or
+           SW_RSCN that was most recently rejected by this switch
+           on this Fabric."
+
+
+
+    ::= { t11FcRscnNotifyControlEntry 4 }
+
+t11FcRscnRejectReasonCode OBJECT-TYPE
+    SYNTAX        T11NsGs4RejectReasonCode
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "This object contains the Reason Code of the most recent
+           rejection by this switch of an RSCN, SCR or SW_RSCN on
+           this Fabric."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+           (FC-LS), July 2007, Table 146.
+
+           ANSI INCITS 418-2006, Fibre Channel - Switch Fabric - 4
+           (FC-SW-4), December 2006, Table 5."
+    ::= { t11FcRscnNotifyControlEntry 5 }
+
+t11FcRscnRejectReasonCodeExp OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE(1))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "This object contains the Reason Code Explanation
+           of the most recent rejection by this switch of an
+           RSCN, SCR or SW_RSCN on this Fabric."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+           (FC-LS), July 2007, Table 147.
+
+           ANSI INCITS 418-2006, Fibre Channel - Switch Fabric - 4
+           (FC-SW-4), December 2006, Table 6."
+    ::= { t11FcRscnNotifyControlEntry 6 }
+
+t11FcRscnRejectReasonVendorCode OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE(1))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "This object contains the Reason Vendor Specific
+           Code of the most recent rejection by this switch
+           of an RSCN, SCR or SW_RSCN on this Fabric."
+    REFERENCE
+           "ANSI INCITS 433-2007, Fibre Channel - Link Services
+           (FC-LS), July 2007, Table 148.
+
+           ANSI INCITS 418-2006, Fibre Channel - Switch Fabric - 4
+           (FC-SW-4), December 2006, Section 6.1.3."
+
+
+
+    ::= { t11FcRscnNotifyControlEntry 7 }
+
+
+-- Notifications
+
+t11FcRscnElsRejectReqNotify NOTIFICATION-TYPE
+    OBJECTS { t11FcRscnRejectedRequestString,
+              t11FcRscnRejectedRequestSource,
+              t11FcRscnRejectReasonCode,
+              t11FcRscnRejectReasonCodeExp,
+              t11FcRscnRejectReasonVendorCode }
+    STATUS  current
+    DESCRIPTION
+           "This notification is generated when a switch rejects
+           an SCR or RSCN.
+
+           The value of t11FcRscnRejectedRequestString indicates the
+           binary content of the rejected request if available, or
+           the zero-length string otherwise.  The source of the
+           rejected request is given by t11FcRscnRejectedRequestSource,
+           and the reason for rejection is given by the values of
+           t11FcRscnRejectReasonCode, t11FcRscnRejectReasonCodeExp
+           and t11FcRscnRejectReasonVendorCode."
+    ::= { t11FcRscnNotifications 1 }
+
+t11FcRscnIlsRejectReqNotify NOTIFICATION-TYPE
+    OBJECTS { t11FcRscnRejectedRequestString,
+              t11FcRscnRejectedRequestSource,
+              t11FcRscnRejectReasonCode,
+              t11FcRscnRejectReasonCodeExp,
+              t11FcRscnRejectReasonVendorCode }
+    STATUS  current
+    DESCRIPTION
+           "This notification is generated when a switch rejects
+           an SW_RSCN.
+
+           The value of t11FcRscnRejectedRequestString indicates the
+           binary content of the rejected request if available, or
+           the zero-length string otherwise.  The source of the
+           rejected request is given by t11FcRscnRejectedRequestSource,
+           and the reason for rejection is given by the values of
+           t11FcRscnRejectReasonCode, t11FcRscnRejectReasonCodeExp
+           and t11FcRscnRejectReasonVendorCode."
+    ::= { t11FcRscnNotifications 2 }
+
+-- Conformance
+t11FcRscnCompliances OBJECT IDENTIFIER ::= { t11FcRscnConformance 1 }
+t11FcRscnGroups      OBJECT IDENTIFIER ::= { t11FcRscnConformance 2 }
+
+
+
+t11FcRscnCompliance MODULE-COMPLIANCE
+    STATUS    current
+    DESCRIPTION
+           "The compliance statement for entities that implement
+           this MIB."
+    MODULE
+        MANDATORY-GROUPS { t11FcRscnRegistrationGroup,
+                           t11FcRscnNotifyControlGroup,
+                           t11FcRscnNotifyGroup }
+
+    GROUP   t11FcRscnStatsGroup
+    DESCRIPTION
+            "These counters, containing RSCN-related statistics, are
+            mandatory only for those systems that count such events."
+
+    OBJECT       t11FcRscnIlsRejectNotifyEnable
+    MIN-ACCESS   read-only
+    DESCRIPTION
+            "Write access is not required."
+
+    OBJECT       t11FcRscnElsRejectNotifyEnable
+    MIN-ACCESS   read-only
+    DESCRIPTION
+            "Write access is not required."
+
+    ::= { t11FcRscnCompliances 1 }
+
+
+-- Units of conformance
+
+t11FcRscnRegistrationGroup  OBJECT-GROUP
+    OBJECTS { t11FcRscnRegType }
+    STATUS  current
+    DESCRIPTION
+           "A collection of objects for monitoring RSCN
+           registrations."
+    ::= { t11FcRscnGroups 1 }
+
+t11FcRscnStatsGroup   OBJECT-GROUP
+    OBJECTS { t11FcRscnInScrs,
+              t11FcRscnInRscns,
+              t11FcRscnOutRscns,
+              t11FcRscnInSwRscns,
+              t11FcRscnOutSwRscns,
+              t11FcRscnScrRejects,
+              t11FcRscnRscnRejects,
+              t11FcRscnSwRscnRejects,
+              t11FcRscnInUnspecifiedRscns,
+
+
+
+              t11FcRscnOutUnspecifiedRscns,
+              t11FcRscnInChangedAttribRscns,
+              t11FcRscnOutChangedAttribRscns,
+              t11FcRscnInChangedServiceRscns,
+              t11FcRscnOutChangedServiceRscns,
+              t11FcRscnInChangedSwitchRscns,
+              t11FcRscnOutChangedSwitchRscns,
+              t11FcRscnInRemovedRscns,
+              t11FcRscnOutRemovedRscns
+            }
+    STATUS  current
+    DESCRIPTION
+           "A collection of objects for collecting RSCN-related
+           statistics."
+    ::= { t11FcRscnGroups 2 }
+
+t11FcRscnNotifyControlGroup  OBJECT-GROUP
+    OBJECTS { t11FcRscnIlsRejectNotifyEnable,
+              t11FcRscnElsRejectNotifyEnable,
+              t11FcRscnRejectedRequestString,
+              t11FcRscnRejectedRequestSource,
+              t11FcRscnRejectReasonCode,
+              t11FcRscnRejectReasonCodeExp,
+              t11FcRscnRejectReasonVendorCode
+            }
+    STATUS  current
+    DESCRIPTION
+           "A collection of notification control and
+           notification information objects."
+    ::= { t11FcRscnGroups 3 }
+
+t11FcRscnNotifyGroup   NOTIFICATION-GROUP
+    NOTIFICATIONS { t11FcRscnIlsRejectReqNotify,
+                    t11FcRscnElsRejectReqNotify
+                  }
+    STATUS        current
+    DESCRIPTION
+           "A collection of notifications for monitoring
+           ILS and ELS rejections by the RSCN module."
+    ::= { t11FcRscnGroups 4 }
+
+END

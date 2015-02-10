@@ -1,0 +1,91 @@
+Getting started
+---------------
+This text will try to take you though the first steps of using Wireshark.
+
+
+Display
+-------
+When you start Wireshark, you will see the program window vertically divided into the following parts:
+
+-window title
+-menu
+-main toolbar
+-packet list    (empty)
+-packet details (empty)
+-packet bytes   (empty)
+-statusbar      (with filter toolbar)
+
+As Wireshark has no packet data when started, most of the program's window is just empty.
+
+Many of the features available in the menu will also be on the main toolbar.
+
+First capture file
+------------------
+The first thing you probably want to do is look at some captured network data/packets.
+This can be achieved by two methods:
+
+-open an already existing capture file
+-capture something from your own network
+
+It might be easier to start with an example capture file from "http://www.wireshark.org/sample" before capturing your own data.
+
+You can open a capture file through the menu "File->Open..." (or the toolbar).
+
+Please note: the common file extension for capture files is ".cap" (or ".cap.gz" for gzipped ones).
+
+After opening a capture file, you will hopefully see some more packet data on the screen. :-)
+
+Display fields
+--------------
+In the "packet list", you will see several columns with a packet number, timestamp(s), addresses and a protocol specific summary of that packet. Here you can select a packet to be shown in the "packet details" below.
+
+In the "packet details", the details of the currently selected packet are shown. You can expand the tree nodes to get even more details about that packet.
+
+The "packet bytes" will simply show all the packet data in a hexdump style. It will show the same packet as in the "packet details", only with a different representation.
+When you select something in the "packet details", it will be highlighted in the "packet bytes" and vice-versa.
+
+All three display fields have their own context menu, available by clicking the right mouse button inside that part of the window.
+
+How to analyze protocol specific network data itself is not in the scope of this text.
+
+Display filters
+---------------
+You can reduce the number of packets shown (to filter out the uninteresting ones) by setting a display filter. Please see "Display Filters" in this help dialog for further information how the display filters should be used.
+
+Coloring Rules
+--------------
+The packet list can be colored; this means applying different colors for different packets. For example you could choose to have all HTTP packets shown in red and all other TCP traffic shown in yellow.  There are two types of color rules, temporary (only used in this session) and permanent (save between sessions).
+
+Temporary coloring rules can be created by either pressing <ctrl> and one of the number keys (0-9). This will create a conversation color rule based on the currently selected packet. Temporary color rules can also be added by choosing "color X" from different menus.
+
+Under "View->Coloring Rules..." you will see a list of permanentcolor rules. This list is processed for each packet from top to bottom, until one of the rules matches (in which case the color settings of that rule are used for that packet). If no rule matches, the packet will not be colored at all.
+
+Please note: setting lots of color rules can slow down processing time a bit when showing huge capture files.
+
+Other display things
+--------------------
+You can mark packets, so that you can easily find packets of interest again later.
+You can set a time reference, if you are interested in seeing timings relative to a specific packet (e.g. get time differences relative to the start of some data transfer).
+But remember: These settings will not be saved - they are forgotten when the capture file is closed.
+
+
+Capture from the network
+------------------------
+Most likely you will now want to get some "real life" packet data captured from your own network interface.
+
+When opening the capture dialog with "Capture->Start...", you will see lots of settings to choose from. For your first test, just keep the default settings.
+
+After clicking "OK", the capture starts and a dialog shows up, giving the actual count of captured packets and some very basic packet statistics.
+
+When you stop the capture, you will get the same screen as if you had opened a capture file from disk, using the "File->Open" command.
+
+See the "Capturing" section of this help for further information about capturing.
+
+
+Conclusion
+----------
+There are a lot more features than described here. Just have a look at the menus to see them all. :-)
+
+For more information about Wireshark, see: "http://www.wireshark.org". You can get a user's guide and other useful information there.
+
+We hope this helped you with the first steps of using Wireshark and that you will enjoy using this program.

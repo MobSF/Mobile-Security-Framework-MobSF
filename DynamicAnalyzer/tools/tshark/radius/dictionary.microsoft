@@ -1,0 +1,177 @@
+# -*- text -*-
+#
+#	Microsoft's VSA's, from RFC 2548
+#
+#	$Id$
+#
+
+VENDOR		Microsoft			311
+
+BEGIN-VENDOR	Microsoft
+ATTRIBUTE	MS-CHAP-Response			1	octets
+ATTRIBUTE	MS-CHAP-Error				2	string
+ATTRIBUTE	MS-CHAP-CPW-1				3	octets
+ATTRIBUTE	MS-CHAP-CPW-2				4	octets
+ATTRIBUTE	MS-CHAP-LM-Enc-PW			5	octets
+ATTRIBUTE	MS-CHAP-NT-Enc-PW			6	octets
+##ATTRIBUTE	MS-MPPE-Encryption-Policy		7	octets  ##[wireshark]
+ATTRIBUTE	MS-MPPE-Encryption-Policy		7	integer ##[wireshark]
+# This is referred to as both singular and plural in the RFC.
+# Plural seems to make more sense.
+##ATTRIBUTE	MS-MPPE-Encryption-Type			8	octets  ##[wireshark]
+##ATTRIBUTE	MS-MPPE-Encryption-Types		8	octets  ##[wireshark]
+ATTRIBUTE	MS-MPPE-Encryption-Type			8	integer ##[wireshark]
+ATTRIBUTE	MS-MPPE-Encryption-Types		8	integer ##[wireshark]
+ATTRIBUTE	MS-RAS-Vendor				9	integer	# content is Vendor-ID
+ATTRIBUTE	MS-CHAP-Domain				10	string
+ATTRIBUTE	MS-CHAP-Challenge			11	octets
+ATTRIBUTE	MS-CHAP-MPPE-Keys			12	octets  encrypt=1
+ATTRIBUTE	MS-BAP-Usage				13	integer
+ATTRIBUTE	MS-Link-Utilization-Threshold		14	integer # values are 1-100
+ATTRIBUTE	MS-Link-Drop-Time-Limit			15	integer
+ATTRIBUTE	MS-MPPE-Send-Key			16	octets	encrypt=2
+ATTRIBUTE	MS-MPPE-Recv-Key			17	octets	encrypt=2
+ATTRIBUTE	MS-RAS-Version				18	string
+ATTRIBUTE	MS-Old-ARAP-Password			19	octets
+ATTRIBUTE	MS-New-ARAP-Password			20	octets
+ATTRIBUTE	MS-ARAP-PW-Change-Reason		21	integer
+
+ATTRIBUTE	MS-Filter				22	octets
+ATTRIBUTE	MS-Acct-Auth-Type			23	integer
+ATTRIBUTE	MS-Acct-EAP-Type			24	integer
+
+ATTRIBUTE	MS-CHAP2-Response			25	octets
+ATTRIBUTE	MS-CHAP2-Success			26	octets
+ATTRIBUTE	MS-CHAP2-CPW				27	octets
+
+ATTRIBUTE	MS-Primary-DNS-Server			28	ipaddr
+ATTRIBUTE	MS-Secondary-DNS-Server			29	ipaddr
+ATTRIBUTE	MS-Primary-NBNS-Server			30	ipaddr
+ATTRIBUTE	MS-Secondary-NBNS-Server		31	ipaddr
+
+#ATTRIBUTE	MS-ARAP-Challenge	33	octets
+
+## MS-RNAP
+#
+# http://download.microsoft.com/download/9/5/E/95EF66AF-9026-4BB0-A41D-A4F81802D92C/%5BMS-RNAP%5D.pdf
+
+ATTRIBUTE	MS-RAS-Client-Name			34	string
+ATTRIBUTE	MS-RAS-Client-Version			35	string
+ATTRIBUTE	MS-Quarantine-IPFilter			36	octets
+ATTRIBUTE	MS-Quarantine-Session-Timeout		37	integer
+ATTRIBUTE	MS-User-Security-Identity		40	string
+ATTRIBUTE	MS-Identity-Type			41	integer
+ATTRIBUTE	MS-Service-Class			42	string
+ATTRIBUTE	MS-Quarantine-User-Class		44	string
+ATTRIBUTE	MS-Quarantine-State			45	integer
+ATTRIBUTE	MS-Quarantine-Grace-Time		46	integer
+ATTRIBUTE	MS-Network-Access-Server-Type		47	integer
+ATTRIBUTE	MS-AFW-Zone				48	integer
+
+VALUE	MS-AFW-Zone			MS-AFW-Zone-Boundary-Policy 1
+VALUE	MS-AFW-Zone			MS-AFW-Zone-Unprotected-Policy 2
+VALUE	MS-AFW-Zone			MS-AFW-Zone-Protected-Policy 3
+
+ATTRIBUTE	MS-AFW-Protection-Level			49	integer
+
+VALUE	MS-AFW-Protection-Level		HECP-Response-Sign-Only	1
+VALUE	MS-AFW-Protection-Level		HECP-Response-Sign-And-Encrypt 2
+
+ATTRIBUTE	MS-Machine-Name				50	string
+ATTRIBUTE	MS-IPv6-Filter				51	octets
+ATTRIBUTE	MS-IPv4-Remediation-Servers		52	octets
+ATTRIBUTE	MS-IPv6-Remediation-Servers		53	octets
+ATTRIBUTE	MS-RNAP-Not-Quarantine-Capable		54	integer
+
+VALUE	MS-RNAP-Not-Quarantine-Capable	SoH-Sent		0
+VALUE	MS-RNAP-Not-Quarantine-Capable	SoH-Not-Sent		1
+
+ATTRIBUTE	MS-Quarantine-SOH			55	octets
+ATTRIBUTE	MS-RAS-Correlation			56	octets
+
+#  Or this might be 56?
+ATTRIBUTE	MS-Extended-Quarantine-State		57	integer
+
+ATTRIBUTE	MS-HCAP-User-Groups			58	string
+ATTRIBUTE	MS-HCAP-Location-Group-Name		59	string
+ATTRIBUTE	MS-HCAP-User-Name			60	string
+ATTRIBUTE	MS-User-IPv4-Address			61	ipaddr
+ATTRIBUTE	MS-User-IPv6-Address			62	ipv6addr
+ATTRIBUTE	MS-TSG-Device-Redirection		63	integer
+
+#
+#	Integer Translations
+#
+#       MS-MPPE-Encryption-Policy Values   ##[wireshark]
+
+VALUE           MS-MPPE-Encryption-Policy       Encryption-Allowed      1  ##[wireshark]
+VALUE           MS-MPPE-Encryption-Policy       Encryption-Required     2  ##[wireshark]
+
+#       MS-MPPE-Encryption-Types Values  ##[wireshark]
+
+VALUE MS-MPPE-Encryption-Types  None                            0  ##[wireshark]
+VALUE MS-MPPE-Encryption-Types  RC4-40                          2  ##[wireshark]
+VALUE MS-MPPE-Encryption-Types  RC4-128                         4  ##[wireshark]
+VALUE MS-MPPE-Encryption-Types  RC4-40-128                      6  ##[wireshark]
+VALUE MS-MPPE-Encryption-Types  Stateless                       8  ##[wireshark]
+VALUE MS-MPPE-Encryption-Types  RC4-40-Stateless               10  ##[wireshark]
+VALUE MS-MPPE-Encryption-Types  RC4-128-Stateless              12  ##[wireshark]
+VALUE MS-MPPE-Encryption-Types  RC4-40-128-Stateless           14  ##[wireshark]
+
+#	MS-BAP-Usage Values
+
+VALUE	MS-BAP-Usage			Not-Allowed		0
+VALUE	MS-BAP-Usage			Allowed			1
+VALUE	MS-BAP-Usage			Required		2
+
+#	MS-ARAP-Password-Change-Reason Values
+
+VALUE	MS-ARAP-PW-Change-Reason	Just-Change-Password	1
+VALUE	MS-ARAP-PW-Change-Reason	Expired-Password	2
+VALUE	MS-ARAP-PW-Change-Reason	Admin-Requires-Password-Change 3
+VALUE	MS-ARAP-PW-Change-Reason	Password-Too-Short	4
+
+#	MS-Acct-Auth-Type Values
+
+VALUE	MS-Acct-Auth-Type		PAP			1
+VALUE	MS-Acct-Auth-Type		CHAP			2
+VALUE	MS-Acct-Auth-Type		MS-CHAP-1		3
+VALUE	MS-Acct-Auth-Type		MS-CHAP-2		4
+VALUE	MS-Acct-Auth-Type		EAP			5
+
+#	MS-Acct-EAP-Type Values
+
+VALUE	MS-Acct-EAP-Type		MD5			4
+VALUE	MS-Acct-EAP-Type		OTP			5
+VALUE	MS-Acct-EAP-Type		Generic-Token-Card	6
+VALUE	MS-Acct-EAP-Type		TLS			13
+
+#  MS-Identity-Type Values
+
+VALUE	MS-Identity-Type		Machine-Health-Check	1
+VALUE	MS-Identity-Type		Ignore-User-Lookup-Failure 2
+
+#  MS-Quarantine-State Values
+
+VALUE	MS-Quarantine-State		Full-Access		0
+VALUE	MS-Quarantine-State		Quarantine		1
+VALUE	MS-Quarantine-State		Probation		2
+
+#  MS-Network-Access-Server-Type Values
+
+VALUE	MS-Network-Access-Server-Type	Unspecified		0
+VALUE	MS-Network-Access-Server-Type	Terminal-Server-Gateway	1
+VALUE	MS-Network-Access-Server-Type	Remote-Access-Server	2
+VALUE	MS-Network-Access-Server-Type	DHCP-Server		3
+VALUE	MS-Network-Access-Server-Type	Wireless-Access-Point	4
+VALUE	MS-Network-Access-Server-Type	HRA			5
+VALUE	MS-Network-Access-Server-Type	HCAP-Server		6
+
+#  MS-Extended-Quarantine-State Values
+
+VALUE	MS-Extended-Quarantine-State	Transition		1
+VALUE	MS-Extended-Quarantine-State	Infected		2
+VALUE	MS-Extended-Quarantine-State	Unknown			3
+VALUE	MS-Extended-Quarantine-State	No-Data			4
+
+END-VENDOR Microsoft

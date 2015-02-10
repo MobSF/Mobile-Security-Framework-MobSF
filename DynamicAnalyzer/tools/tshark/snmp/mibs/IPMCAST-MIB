@@ -1,0 +1,2519 @@
+IPMCAST-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    mib-2, Unsigned32, Counter64,
+    Gauge32, TimeTicks              FROM SNMPv2-SMI         -- [RFC2578]
+    RowStatus, TruthValue,
+    StorageType, TimeStamp          FROM SNMPv2-TC          -- [RFC2579]
+    MODULE-COMPLIANCE, OBJECT-GROUP FROM SNMPv2-CONF        -- [RFC2580]
+    CounterBasedGauge64             FROM HCNUM-TC           -- [RFC2856]
+    InterfaceIndexOrZero,
+    InterfaceIndex                  FROM IF-MIB             -- [RFC2863]
+    IANAipRouteProtocol,
+    IANAipMRouteProtocol            FROM IANA-RTPROTO-MIB
+    SnmpAdminString                 FROM SNMP-FRAMEWORK-MIB -- [RFC3411]
+    InetAddress, InetAddressType,
+    InetAddressPrefixLength,
+    InetZoneIndex, InetVersion      FROM INET-ADDRESS-MIB   -- [RFC4001]
+    LangTag                         FROM LANGTAG-TC-MIB;    -- [RFC5131]
+
+ipMcastMIB MODULE-IDENTITY
+    LAST-UPDATED "200711090000Z" -- 9 November 2007
+    ORGANIZATION "IETF MBONE Deployment (MBONED) Working Group"
+    CONTACT-INFO "David McWalter
+                  Data Connection Limited
+
+
+
+                  100 Church Street
+                  Enfield, EN2 6BQ
+                  UK
+
+                  Phone: +44 208 366 1177
+                  EMail: dmcw@dataconnection.com
+
+                  Dave Thaler
+                  Microsoft Corporation
+                  One Microsoft Way
+                  Redmond, WA 98052-6399
+                  US
+
+                  Phone: +1 425 703 8835
+                  EMail: dthaler@dthaler.microsoft.com
+
+                  Andrew Kessler
+                  Cisco Systems
+                  425 E. Tasman Drive
+                  San Jose, CA 95134
+                  US
+
+                  Phone: +1 408 526 5139
+                  EMail: kessler@cisco.com"
+    DESCRIPTION
+            "The MIB module for management of IP Multicast, including
+            multicast routing, data forwarding, and data reception.
+
+            Copyright (C) The IETF Trust (2007).  This version of this
+            MIB module is part of RFC 5132; see the RFC itself for full
+            legal notices."
+    REVISION     "200711090000Z" -- 9 November 2007
+    DESCRIPTION  "Initial version, published as RFC 5132.
+
+                 This MIB module obsoletes IPMROUTE-STD-MIB defined by
+                 [RFC2932].  Changes include the following:
+
+                 o  This MIB module includes support for IPv6 addressing
+                    and the IPv6 scoped address architecture.  [RFC2932]
+                    supported only IPv4.
+
+                 o  This MIB module allows several multicast protocols
+                    to perform routing on a single interface, where
+                    [RFC2932] assumed each interface supported at most
+                    one multicast routing protocol.  Multicast routing
+                    protocols are now per-route, see
+                    ipMcastRouteProtocol.
+
+
+
+
+                 o  This MIB module includes objects that are not
+                    specific to multicast routing.  It allows management
+                    of multicast function on systems that do not perform
+                    routing, whereas [RFC2932] was restricted to
+                    multicast routing.
+
+                 o  This MIB module includes a table of Source-Specific
+                    Multicast (SSM) address ranges to which SSM
+                    semantics [RFC3569] should be applied.
+
+                 o  This MIB module includes a table of local
+                    applications that are receiving multicast data.
+
+                 o  This MIB module includes a table of multicast scope
+                    zones."
+    ::= { mib-2 168 }
+
+--
+-- Top-level structure of the MIB
+--
+
+ipMcast      OBJECT IDENTIFIER ::= { ipMcastMIB 1 }
+
+ipMcastEnabled OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "The enabled status of IP Multicast function on this
+            system.
+
+            The storage type of this object is determined by
+            ipMcastDeviceConfigStorageType."
+    ::= { ipMcast 1 }
+
+ipMcastRouteEntryCount OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of rows in the ipMcastRouteTable.  This can be
+            used to check for multicast routing activity, and to monitor
+            the multicast routing table size."
+    ::= { ipMcast 2 }
+
+ipMcastDeviceConfigStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-write
+
+
+
+    STATUS      current
+    DESCRIPTION
+            "The storage type used for the global IP multicast
+            configuration of this device, comprised of the objects
+            listed below.  If this storage type takes the value
+            'permanent', write-access to the listed objects need not be
+            allowed.
+
+            The objects described by this storage type are:
+            ipMcastEnabled."
+       DEFVAL { nonVolatile }
+    ::= { ipMcast 11 }
+
+--
+--  The Multicast Interface Table
+--
+
+ipMcastInterfaceTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMcastInterfaceEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table used to manage the multicast
+            protocol active on an interface."
+    ::= { ipMcast 3 }
+
+ipMcastInterfaceEntry OBJECT-TYPE
+    SYNTAX     IpMcastInterfaceEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) containing the multicast protocol
+            information for a particular interface.
+
+            Per-interface multicast forwarding statistics are also
+            available in ipIfStatsTable."
+    REFERENCE "RFC 4293 ipIfStatsTable"
+    INDEX      { ipMcastInterfaceIPVersion,
+                 ipMcastInterfaceIfIndex }
+    ::= { ipMcastInterfaceTable 1 }
+
+IpMcastInterfaceEntry ::= SEQUENCE {
+    ipMcastInterfaceIPVersion         InetVersion,
+    ipMcastInterfaceIfIndex           InterfaceIndex,
+    ipMcastInterfaceTtl               Unsigned32,
+    ipMcastInterfaceRateLimit         Unsigned32,
+    ipMcastInterfaceStorageType       StorageType
+}
+
+
+
+ipMcastInterfaceIPVersion OBJECT-TYPE
+    SYNTAX     InetVersion
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The IP version of this row."
+    ::= { ipMcastInterfaceEntry 1 }
+
+ipMcastInterfaceIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The index value that uniquely identifies the interface to
+            which this entry is applicable.  The interface identified by
+            a particular value of this index is the same interface as
+            identified by the same value of the IF-MIB's ifIndex."
+    ::= { ipMcastInterfaceEntry 2 }
+
+ipMcastInterfaceTtl OBJECT-TYPE
+    SYNTAX     Unsigned32 (0..256)
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "The datagram Time to Live (TTL) threshold for the
+            interface.  Any IP multicast datagrams with a TTL (IPv4) or
+            Hop Limit (IPv6) less than this threshold will not be
+            forwarded out the interface.  The default value of 0 means
+            all multicast packets are forwarded out the interface.  A
+            value of 256 means that no multicast packets are forwarded
+            out the interface."
+    DEFVAL     { 0 }
+    ::= { ipMcastInterfaceEntry 3 }
+
+ipMcastInterfaceRateLimit OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "The rate-limit, in kilobits per second, of forwarded
+            multicast traffic on the interface.  A rate-limit of 0
+            indicates that no rate limiting is done."
+    DEFVAL     { 0 }
+    ::= { ipMcastInterfaceEntry 4 }
+
+ipMcastInterfaceStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-write
+
+
+
+    STATUS      current
+    DESCRIPTION
+            "The storage type for this row.  Rows having the value
+            'permanent' need not allow write-access to any columnar
+            objects in the row."
+       DEFVAL { nonVolatile }
+    ::= { ipMcastInterfaceEntry 5 }
+
+--
+-- The SSM Range Table
+--
+
+ipMcastSsmRangeTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMcastSsmRangeEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "This table is used to create and manage the range(s) of
+            group addresses to which SSM semantics should be applied."
+    REFERENCE "RFC 3569"
+    ::= { ipMcast 4 }
+
+ipMcastSsmRangeEntry OBJECT-TYPE
+    SYNTAX     IpMcastSsmRangeEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) containing a range of group
+            addresses to which SSM semantics should be applied.
+
+            Object Identifiers (OIDs) are limited to 128
+            sub-identifiers, but this limit is not enforced by the
+            syntax of this entry.  In practice, this does not present
+            a problem, because IP address types allowed by conformance
+            statements do not exceed this limit."
+    REFERENCE "RFC 3569"
+    INDEX      { ipMcastSsmRangeAddressType,
+                 ipMcastSsmRangeAddress,
+                 ipMcastSsmRangePrefixLength }
+    ::= { ipMcastSsmRangeTable 1 }
+
+IpMcastSsmRangeEntry ::= SEQUENCE {
+    ipMcastSsmRangeAddressType   InetAddressType,
+    ipMcastSsmRangeAddress       InetAddress,
+    ipMcastSsmRangePrefixLength  InetAddressPrefixLength,
+    ipMcastSsmRangeRowStatus     RowStatus,
+    ipMcastSsmRangeStorageType   StorageType
+}
+
+
+
+ipMcastSsmRangeAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The address type of the multicast group prefix."
+    ::= { ipMcastSsmRangeEntry 1 }
+
+ipMcastSsmRangeAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The multicast group address which, when combined with
+            ipMcastSsmRangePrefixLength, gives the group prefix for this
+            SSM range.  The InetAddressType is given by
+            ipMcastSsmRangeAddressType.
+
+            This address object is only significant up to
+            ipMcastSsmRangePrefixLength bits.  The remaining address
+            bits are set to zero.  This is especially important for this
+            index field, which is part of the index of this entry.  Any
+            non-zero bits would signify an entirely different entry.
+
+            For IPv6 SSM address ranges, only ranges prefixed by
+            FF3x::/16 are permitted, where 'x' is a valid IPv6 RFC 4291
+            multicast address scope.  The syntax of the address range is
+            given by RFC 3306, Sections 4 and 7.
+
+            For addresses of type ipv4z or ipv6z, the appended zone
+            index is significant even though it lies beyond the prefix
+            length.  The use of these address types indicate that this
+            SSM range entry applies only within the given zone.  Zone
+            index zero is not valid in this table.
+
+            If non-global scope SSM range entries are present, then
+            consistent ipMcastBoundaryTable entries are required on
+            routers at the zone boundary."
+    REFERENCE "RFC 2365, RFC 4291 Section 2.7, RFC 3306 Sections 4, 6,
+            and 7"
+    ::= { ipMcastSsmRangeEntry 2 }
+
+ipMcastSsmRangePrefixLength OBJECT-TYPE
+    SYNTAX     InetAddressPrefixLength
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The length in bits of the mask which, when combined with
+
+
+
+            ipMcastSsmRangeAddress, gives the group prefix for this SSM
+            range.
+
+            The InetAddressType is given by ipMcastSsmRangeAddressType.
+            For values 'ipv4' and 'ipv4z', this object must be in the
+            range 4..32.  For values 'ipv6' and 'ipv6z', this object
+            must be in the range 8..128."
+    REFERENCE "RFC 2365, RFC 4291 Section 2.7, RFC 3306 Sections 4, 6,
+            and 7"
+    ::= { ipMcastSsmRangeEntry 3 }
+
+ipMcastSsmRangeRowStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The status of this row, by which rows in this table can
+            be created and destroyed.
+
+            This status object can be set to active(1) without setting
+            any other columnar objects in this entry.
+
+            All writeable objects in this entry can be modified when the
+            status of this entry is active(1)."
+    ::= { ipMcastSsmRangeEntry 4 }
+
+ipMcastSsmRangeStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The storage type for this row.  Rows having the value
+           'permanent' need not allow write-access to any columnar
+           objects in the row."
+       DEFVAL { nonVolatile }
+    ::= { ipMcastSsmRangeEntry 5 }
+
+--
+--  The IP Multicast Routing Table
+--
+
+ipMcastRouteTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMcastRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table containing multicast routing
+            information for IP datagrams sent by particular sources
+
+
+
+            to the IP multicast groups known to this router."
+    ::= { ipMcast 5 }
+
+ipMcastRouteEntry OBJECT-TYPE
+    SYNTAX     IpMcastRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) containing the multicast routing
+            information for IP datagrams from a particular source and
+            addressed to a particular IP multicast group address.
+
+            OIDs are limited to 128 sub-identifiers, but this limit
+            is not enforced by the syntax of this entry.  In practice,
+            this does not present a problem, because IP address types
+            allowed by conformance statements do not exceed this limit."
+    INDEX      { ipMcastRouteGroupAddressType,
+                 ipMcastRouteGroup,
+                 ipMcastRouteGroupPrefixLength,
+                 ipMcastRouteSourceAddressType,
+                 ipMcastRouteSource,
+                 ipMcastRouteSourcePrefixLength }
+    ::= { ipMcastRouteTable 1 }
+
+IpMcastRouteEntry ::= SEQUENCE {
+    ipMcastRouteGroupAddressType      InetAddressType,
+    ipMcastRouteGroup                 InetAddress,
+    ipMcastRouteGroupPrefixLength     InetAddressPrefixLength,
+    ipMcastRouteSourceAddressType     InetAddressType,
+    ipMcastRouteSource                InetAddress,
+    ipMcastRouteSourcePrefixLength    InetAddressPrefixLength,
+    ipMcastRouteUpstreamNeighborType  InetAddressType,
+    ipMcastRouteUpstreamNeighbor      InetAddress,
+    ipMcastRouteInIfIndex             InterfaceIndexOrZero,
+    ipMcastRouteTimeStamp             TimeStamp,
+    ipMcastRouteExpiryTime            TimeTicks,
+    ipMcastRouteProtocol              IANAipMRouteProtocol,
+    ipMcastRouteRtProtocol            IANAipRouteProtocol,
+    ipMcastRouteRtAddressType         InetAddressType,
+    ipMcastRouteRtAddress             InetAddress,
+    ipMcastRouteRtPrefixLength        InetAddressPrefixLength,
+    ipMcastRouteRtType                INTEGER,
+    ipMcastRouteOctets                Counter64,
+    ipMcastRoutePkts                  Counter64,
+    ipMcastRouteTtlDropOctets         Counter64,
+    ipMcastRouteTtlDropPackets        Counter64,
+    ipMcastRouteDifferentInIfOctets   Counter64,
+    ipMcastRouteDifferentInIfPackets  Counter64,
+
+
+
+    ipMcastRouteBps                   CounterBasedGauge64
+}
+
+ipMcastRouteGroupAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A value indicating the address family of the address
+            contained in ipMcastRouteGroup.  Legal values correspond to
+            the subset of address families for which multicast
+            forwarding is supported."
+    ::= { ipMcastRouteEntry 1 }
+
+ipMcastRouteGroup OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The IP multicast group address which, when combined with
+            the corresponding value specified in
+            ipMcastRouteGroupPrefixLength, identifies the groups for
+            which this entry contains multicast routing information.
+
+            This address object is only significant up to
+            ipMcastRouteGroupPrefixLength bits.  The remaining address
+            bits are set to zero.  This is especially important for this
+            index field, which is part of the index of this entry.  Any
+            non-zero bits would signify an entirely different entry.
+
+            For addresses of type ipv4z or ipv6z, the appended zone
+            index is significant even though it lies beyond the prefix
+            length.  The use of these address types indicate that this
+            forwarding state applies only within the given zone.  Zone
+            index zero is not valid in this table."
+    ::= { ipMcastRouteEntry 2 }
+
+ipMcastRouteGroupPrefixLength OBJECT-TYPE
+    SYNTAX     InetAddressPrefixLength
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The length in bits of the mask which, when combined with
+            the corresponding value of ipMcastRouteGroup, identifies the
+            groups for which this entry contains multicast routing
+            information.
+
+            The InetAddressType is given by
+
+
+
+            ipMcastRouteGroupAddressType.  For values 'ipv4' and
+            'ipv4z', this object must be in the range 4..32.  For values
+            'ipv6' and 'ipv6z', this object must be in the range
+            8..128."
+    ::= { ipMcastRouteEntry 3 }
+
+ipMcastRouteSourceAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A value indicating the address family of the address
+            contained in ipMcastRouteSource.
+
+            A value of unknown(0) indicates a non-source-specific entry,
+            corresponding to all sources in the group.  Otherwise, the
+            value MUST be the same as the value of
+            ipMcastRouteGroupType."
+    ::= { ipMcastRouteEntry 4 }
+
+ipMcastRouteSource OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The network address which, when combined with the
+            corresponding value of ipMcastRouteSourcePrefixLength,
+            identifies the sources for which this entry contains
+            multicast routing information.
+
+            This address object is only significant up to
+            ipMcastRouteSourcePrefixLength bits.  The remaining address
+            bits are set to zero.  This is especially important for this
+            index field, which is part of the index of this entry.  Any
+            non-zero bits would signify an entirely different entry.
+
+            For addresses of type ipv4z or ipv6z, the appended zone
+            index is significant even though it lies beyond the prefix
+            length.  The use of these address types indicate that this
+            source address applies only within the given zone.  Zone
+            index zero is not valid in this table."
+    ::= { ipMcastRouteEntry 5 }
+
+ipMcastRouteSourcePrefixLength OBJECT-TYPE
+    SYNTAX     InetAddressPrefixLength
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+
+
+
+            "The length in bits of the mask which, when combined with
+            the corresponding value of ipMcastRouteSource, identifies
+            the sources for which this entry contains multicast routing
+            information.
+
+            The InetAddressType is given by
+            ipMcastRouteSourceAddressType.  For the value 'unknown',
+            this object must be zero.  For values 'ipv4' and 'ipv4z',
+            this object must be in the range 4..32.  For values 'ipv6'
+            and 'ipv6z', this object must be in the range 8..128."
+    ::= { ipMcastRouteEntry 6 }
+
+ipMcastRouteUpstreamNeighborType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "A value indicating the address family of the address
+            contained in ipMcastRouteUpstreamNeighbor.
+
+            An address type of unknown(0) indicates that the upstream
+            neighbor is unknown, for example in BIDIR-PIM."
+    REFERENCE "RFC 5015"
+    ::= { ipMcastRouteEntry 7 }
+
+ipMcastRouteUpstreamNeighbor OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The address of the upstream neighbor (for example, RPF
+            neighbor) from which IP datagrams from these sources to
+            this multicast address are received."
+    ::= { ipMcastRouteEntry 8 }
+
+ipMcastRouteInIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndexOrZero
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of ifIndex for the interface on which IP
+            datagrams sent by these sources to this multicast address
+            are received.  A value of 0 indicates that datagrams are not
+            subject to an incoming interface check, but may be accepted
+            on multiple interfaces (for example, in BIDIR-PIM)."
+    REFERENCE "RFC 5015"
+    ::= { ipMcastRouteEntry 9 }
+
+
+
+
+ipMcastRouteTimeStamp OBJECT-TYPE
+    SYNTAX     TimeStamp
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime at which the multicast routing
+            information represented by this entry was learned by the
+            router.
+
+            If this information was present at the most recent re-
+            initialization of the local management subsystem, then this
+            object contains a zero value."
+    ::= { ipMcastRouteEntry 10 }
+
+ipMcastRouteExpiryTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The minimum amount of time remaining before this entry will
+            be aged out.  The value 0 indicates that the entry is not
+            subject to aging.  If ipMcastRouteNextHopState is pruned(1),
+            this object represents the remaining time until the prune
+            expires.  If this timer expires, state reverts to
+            forwarding(2).  Otherwise, this object represents the time
+            until this entry is removed from the table."
+    ::= { ipMcastRouteEntry 11 }
+
+ipMcastRouteProtocol OBJECT-TYPE
+    SYNTAX     IANAipMRouteProtocol
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The multicast routing protocol via which this multicast
+            forwarding entry was learned."
+    ::= { ipMcastRouteEntry 12 }
+
+ipMcastRouteRtProtocol OBJECT-TYPE
+    SYNTAX     IANAipRouteProtocol
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The routing mechanism via which the route used to find the
+            upstream or parent interface for this multicast forwarding
+            entry was learned."
+    ::= { ipMcastRouteEntry 13 }
+
+ipMcastRouteRtAddressType OBJECT-TYPE
+
+
+
+    SYNTAX     InetAddressType
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "A value indicating the address family of the address
+            contained in ipMcastRouteRtAddress."
+    ::= { ipMcastRouteEntry 14 }
+
+ipMcastRouteRtAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The address portion of the route used to find the upstream
+            or parent interface for this multicast forwarding entry.
+
+            This address object is only significant up to
+            ipMcastRouteRtPrefixLength bits.  The remaining address bits
+            are set to zero.
+
+            For addresses of type ipv4z or ipv6z, the appended zone
+            index is significant even though it lies beyond the prefix
+            length.  The use of these address types indicate that this
+            forwarding state applies only within the given zone.  Zone
+            index zero is not valid in this table."
+    ::= { ipMcastRouteEntry 15 }
+
+ipMcastRouteRtPrefixLength OBJECT-TYPE
+    SYNTAX     InetAddressPrefixLength
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The length in bits of the mask associated with the route
+            used to find the upstream or parent interface for this
+            multicast forwarding entry.
+
+            The InetAddressType is given by ipMcastRouteRtAddressType.
+            For values 'ipv4' and 'ipv4z', this object must be in the
+            range 4..32.  For values 'ipv6' and 'ipv6z', this object
+            must be in the range 8..128."
+    ::= { ipMcastRouteEntry 16 }
+
+ipMcastRouteRtType OBJECT-TYPE
+    SYNTAX     INTEGER {
+                unicast (1),  -- Unicast route used in multicast RIB
+                multicast (2) -- Multicast route
+               }
+    MAX-ACCESS read-only
+
+
+
+    STATUS     current
+    DESCRIPTION
+            "The reason the given route was placed in the (logical)
+            multicast Routing Information Base (RIB).  A value of
+            unicast means that the route would normally be placed only
+            in the unicast RIB, but was placed in the multicast RIB
+            due (instead or in addition) to local configuration, such as
+            when running PIM over RIP.  A value of multicast means that
+            the route was explicitly added to the multicast RIB by the
+            routing protocol, such as the Distance Vector Multicast
+            Routing Protocol (DVMRP) or Multiprotocol BGP."
+    ::= { ipMcastRouteEntry 17 }
+
+ipMcastRouteOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets contained in IP datagrams that were
+            received from these sources and addressed to this multicast
+            group address, and which were forwarded by this router.
+
+            Discontinuities in this monotonically increasing value
+            occur at re-initialization of the management system.
+            Discontinuities can also occur as a result of routes being
+            removed and replaced, which can be detected by observing
+            the value of ipMcastRouteTimeStamp."
+    ::= { ipMcastRouteEntry 18 }
+
+ipMcastRoutePkts OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of packets routed using this multicast route
+            entry.
+
+            Discontinuities in this monotonically increasing value
+            occur at re-initialization of the management system.
+            Discontinuities can also occur as a result of routes being
+            removed and replaced, which can be detected by observing
+            the value of ipMcastRouteTimeStamp."
+    ::= { ipMcastRouteEntry 19 }
+
+ipMcastRouteTtlDropOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+
+
+
+    DESCRIPTION
+            "The number of octets contained in IP datagrams that this
+            router has received from these sources and addressed to this
+            multicast group address, which were dropped because the TTL
+            (IPv4) or Hop Limit (IPv6) was decremented to zero, or to a
+            value less than ipMcastInterfaceTtl for all next hops.
+
+            Discontinuities in this monotonically increasing value
+            occur at re-initialization of the management system.
+            Discontinuities can also occur as a result of routes being
+            removed and replaced, which can be detected by observing
+            the value of ipMcastRouteTimeStamp."
+    ::= { ipMcastRouteEntry 20 }
+
+ipMcastRouteTtlDropPackets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of packets that this router has received from
+            these sources and addressed to this multicast group address,
+            which were dropped because the TTL (IPv4) or Hop Limit
+            (IPv6) was decremented to zero, or to a value less than
+            ipMcastInterfaceTtl for all next hops.
+
+            Discontinuities in this monotonically increasing value
+            occur at re-initialization of the management system.
+            Discontinuities can also occur as a result of routes being
+            removed and replaced, which can be detected by observing
+            the value of ipMcastRouteTimeStamp."
+    ::= { ipMcastRouteEntry 21 }
+
+ipMcastRouteDifferentInIfOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets contained in IP datagrams that this
+            router has received from these sources and addressed to this
+            multicast group address, which were dropped because they
+            were received on an unexpected interface.
+
+            For RPF checking protocols (such as PIM-SM), these packets
+            arrived on interfaces other than ipMcastRouteInIfIndex, and
+            were dropped because of this failed RPF check.  (RPF paths
+            are 'Reverse Path Forwarding' paths; the unicast routes to
+            the expected origin of multicast data flows).
+
+
+
+
+            Other protocols may drop packets on an incoming interface
+            check for different reasons (for example, BIDIR-PIM performs
+            a DF check on receipt of packets).  All packets dropped as a
+            result of an incoming interface check are counted here.
+
+            If this counter increases rapidly, this indicates a problem.
+            A significant quantity of multicast data is arriving at this
+            router on unexpected interfaces, and is not being forwarded.
+
+            For guidance, if the rate of increase of this counter
+            exceeds 1% of the rate of increase of ipMcastRouteOctets,
+            then there are multicast routing problems that require
+            investigation.
+
+            Discontinuities in this monotonically increasing value
+            occur at re-initialization of the management system.
+            Discontinuities can also occur as a result of routes being
+            removed and replaced, which can be detected by observing
+            the value of ipMcastRouteTimeStamp."
+    REFERENCE "RFC 4601 and RFC 5015"
+    ::= { ipMcastRouteEntry 22 }
+
+ipMcastRouteDifferentInIfPackets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of packets which this router has received from
+            these sources and addressed to this multicast group address,
+            which were dropped because they were received on an
+            unexpected interface.
+
+            For RPF checking protocols (such as PIM-SM), these packets
+            arrived on interfaces other than ipMcastRouteInIfIndex, and
+            were dropped because of this failed RPF check.  (RPF paths
+            are 'Reverse Path Forwarding' path; the unicast routes to
+            the expected origin of multicast data flows).
+
+            Other protocols may drop packets on an incoming interface
+            check for different reasons (for example, BIDIR-PIM performs
+            a DF check on receipt of packets).  All packets dropped as a
+            result of an incoming interface check are counted here.
+
+            If this counter increases rapidly, this indicates a problem.
+            A significant quantity of multicast data is arriving at this
+            router on unexpected interfaces, and is not being forwarded.
+
+            For guidance, if the rate of increase of this counter
+
+
+
+            exceeds 1% of the rate of increase of ipMcastRoutePkts, then
+            there are multicast routing problems that require
+            investigation.
+
+            Discontinuities in this monotonically increasing value
+            occur at re-initialization of the management system.
+            Discontinuities can also occur as a result of routes being
+            removed and replaced, which can be detected by observing
+            the value of ipMcastRouteTimeStamp."
+    REFERENCE "RFC 4601 and RFC 5015"
+    ::= { ipMcastRouteEntry 23 }
+
+ipMcastRouteBps OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    UNITS      "bits per second"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "Bits per second forwarded by this router using this
+            multicast routing entry.
+
+            This value is a sample; it is the number of bits forwarded
+            during the last whole 1 second sampling period.  The value
+            during the current 1 second sampling period is not made
+            available until the period is completed.
+
+            The quantity being sampled is the same as that measured by
+            ipMcastRouteOctets.  The units and the sampling method are
+            different."
+    ::= { ipMcastRouteEntry 24 }
+--
+--  The IP Multicast Routing Next Hop Table
+--
+
+ipMcastRouteNextHopTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMcastRouteNextHopEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table containing information on the
+            next-hops on outgoing interfaces for routing IP multicast
+            datagrams.  Each entry is one of a list of next-hops on
+            outgoing interfaces for particular sources sending to a
+            particular multicast group address."
+    ::= { ipMcast 6 }
+
+ipMcastRouteNextHopEntry OBJECT-TYPE
+    SYNTAX     IpMcastRouteNextHopEntry
+
+
+
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) in the list of next-hops on
+            outgoing interfaces to which IP multicast datagrams from
+            particular sources to an IP multicast group address are
+            routed.
+
+            OIDs are limited to 128 sub-identifiers, but this limit
+            is not enforced by the syntax of this entry.  In practice,
+            this does not present a problem, because IP address types
+            allowed by conformance statements do not exceed this limit."
+    INDEX      { ipMcastRouteNextHopGroupAddressType,
+                 ipMcastRouteNextHopGroup,
+                 ipMcastRouteNextHopGroupPrefixLength,
+                 ipMcastRouteNextHopSourceAddressType,
+                 ipMcastRouteNextHopSource,
+                 ipMcastRouteNextHopSourcePrefixLength,
+                 ipMcastRouteNextHopIfIndex,
+                 ipMcastRouteNextHopAddressType,
+                 ipMcastRouteNextHopAddress }
+    ::= { ipMcastRouteNextHopTable 1 }
+
+IpMcastRouteNextHopEntry ::= SEQUENCE {
+    ipMcastRouteNextHopGroupAddressType    InetAddressType,
+    ipMcastRouteNextHopGroup               InetAddress,
+    ipMcastRouteNextHopGroupPrefixLength   InetAddressPrefixLength,
+    ipMcastRouteNextHopSourceAddressType   InetAddressType,
+    ipMcastRouteNextHopSource              InetAddress,
+    ipMcastRouteNextHopSourcePrefixLength  InetAddressPrefixLength,
+    ipMcastRouteNextHopIfIndex             InterfaceIndex,
+    ipMcastRouteNextHopAddressType         InetAddressType,
+    ipMcastRouteNextHopAddress             InetAddress,
+    ipMcastRouteNextHopState               INTEGER,
+    ipMcastRouteNextHopTimeStamp           TimeStamp,
+    ipMcastRouteNextHopExpiryTime          TimeTicks,
+    ipMcastRouteNextHopClosestMemberHops   Unsigned32,
+    ipMcastRouteNextHopProtocol            IANAipMRouteProtocol,
+    ipMcastRouteNextHopOctets              Counter64,
+    ipMcastRouteNextHopPkts                Counter64
+}
+
+ipMcastRouteNextHopGroupAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A value indicating the address family of the address
+
+
+
+            contained in ipMcastRouteNextHopGroup.  Legal values
+            correspond to the subset of address families for which
+            multicast forwarding is supported."
+    ::= { ipMcastRouteNextHopEntry 1 }
+
+ipMcastRouteNextHopGroup OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The IP multicast group address which, when combined with
+            the corresponding value specified in
+            ipMcastRouteNextHopGroupPrefixLength, identifies the groups
+            for which this entry contains multicast forwarding
+            information.
+
+            This address object is only significant up to
+            ipMcastRouteNextHopGroupPrefixLength bits.  The remaining
+            address bits are set to zero.  This is especially important
+            for this index field, which is part of the index of this
+            entry.  Any non-zero bits would signify an entirely
+            different entry.
+
+            For addresses of type ipv4z or ipv6z, the appended zone
+            index is significant even though it lies beyond the prefix
+            length.  The use of these address types indicate that this
+            forwarding state applies only within the given zone.  Zone
+            index zero is not valid in this table."
+    ::= { ipMcastRouteNextHopEntry 2 }
+
+ipMcastRouteNextHopGroupPrefixLength OBJECT-TYPE
+    SYNTAX     InetAddressPrefixLength
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The length in bits of the mask which, when combined with
+            the corresponding value of ipMcastRouteGroup, identifies the
+            groups for which this entry contains multicast routing
+            information.
+
+            The InetAddressType is given by
+            ipMcastRouteNextHopGroupAddressType.  For values 'ipv4' and
+            'ipv4z', this object must be in the range 4..32.  For values
+            'ipv6' and 'ipv6z', this object must be in the range
+            8..128."
+    ::= { ipMcastRouteNextHopEntry 3 }
+
+ipMcastRouteNextHopSourceAddressType OBJECT-TYPE
+
+
+
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A value indicating the address family of the address
+            contained in ipMcastRouteNextHopSource.
+
+            A value of unknown(0) indicates a non-source-specific entry,
+            corresponding to all sources in the group.  Otherwise, the
+            value MUST be the same as the value of
+            ipMcastRouteNextHopGroupType."
+    ::= { ipMcastRouteNextHopEntry 4 }
+
+ipMcastRouteNextHopSource OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The network address which, when combined with the
+            corresponding value of the mask specified in
+            ipMcastRouteNextHopSourcePrefixLength, identifies the
+            sources for which this entry specifies a next-hop on an
+            outgoing interface.
+
+            This address object is only significant up to
+            ipMcastRouteNextHopSourcePrefixLength bits.  The remaining
+            address bits are set to zero.  This is especially important
+            for this index field, which is part of the index of this
+            entry.  Any non-zero bits would signify an entirely
+            different entry.
+
+            For addresses of type ipv4z or ipv6z, the appended zone
+            index is significant even though it lies beyond the prefix
+            length.  The use of these address types indicate that this
+            source address applies only within the given zone.  Zone
+            index zero is not valid in this table."
+    ::= { ipMcastRouteNextHopEntry 5 }
+
+ipMcastRouteNextHopSourcePrefixLength OBJECT-TYPE
+    SYNTAX     InetAddressPrefixLength
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The length in bits of the mask which, when combined with
+            the corresponding value specified in
+            ipMcastRouteNextHopSource, identifies the sources for which
+            this entry specifies a next-hop on an outgoing interface.
+
+
+
+
+            The InetAddressType is given by
+            ipMcastRouteNextHopSourceAddressType.  For the value
+            'unknown', this object must be zero.  For values 'ipv4' and
+            'ipv4z', this object must be in the range 4..32.  For values
+            'ipv6' and 'ipv6z', this object must be in the range
+            8..128."
+    ::= { ipMcastRouteNextHopEntry 6 }
+
+ipMcastRouteNextHopIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The ifIndex value of the interface for the outgoing
+            interface for this next-hop."
+    ::= { ipMcastRouteNextHopEntry 7 }
+
+ipMcastRouteNextHopAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A value indicating the address family of the address
+            contained in ipMcastRouteNextHopAddress."
+    ::= { ipMcastRouteNextHopEntry 8 }
+
+ipMcastRouteNextHopAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The address of the next-hop specific to this entry.  For
+            most interfaces, this is identical to
+            ipMcastRouteNextHopGroup.  Non-Broadcast Multi-Access
+            (NBMA) interfaces, however, may
+            have multiple next-hop addresses out a single outgoing
+            interface."
+    ::= { ipMcastRouteNextHopEntry 9 }
+
+ipMcastRouteNextHopState OBJECT-TYPE
+    SYNTAX     INTEGER { pruned(1), forwarding(2) }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "An indication of whether the outgoing interface and next-
+            hop represented by this entry is currently being used to
+            forward IP datagrams.  The value 'forwarding' indicates it
+            is currently being used; the value 'pruned' indicates it is
+
+
+
+            not."
+    ::= { ipMcastRouteNextHopEntry 10 }
+
+ipMcastRouteNextHopTimeStamp OBJECT-TYPE
+    SYNTAX     TimeStamp
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime at which the multicast routing
+            information represented by this entry was learned by the
+            router.
+
+            If this information was present at the most recent re-
+            initialization of the local management subsystem, then this
+            object contains a zero value."
+    ::= { ipMcastRouteNextHopEntry 11 }
+
+ipMcastRouteNextHopExpiryTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The minimum amount of time remaining before this entry will
+            be aged out.  If ipMcastRouteNextHopState is pruned(1), the
+            remaining time until the prune expires and the state reverts
+            to forwarding(2).  Otherwise, the remaining time until this
+            entry is removed from the table.  The time remaining may be
+            copied from ipMcastRouteExpiryTime if the protocol in use
+            for this entry does not specify next-hop timers.  The value
+            0 indicates that the entry is not subject to aging."
+    ::= { ipMcastRouteNextHopEntry 12 }
+
+ipMcastRouteNextHopClosestMemberHops OBJECT-TYPE
+    SYNTAX     Unsigned32 (0..256)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The minimum number of hops between this router and any
+            member of this IP multicast group reached via this next-hop
+            on this outgoing interface.  Any IP multicast datagrams for
+            the group that have a TTL (IPv4) or Hop Count (IPv6) less
+            than this number of hops will not be forwarded to this
+            next-hop.
+
+            A value of 0 means all multicast datagrams are forwarded out
+            the interface.  A value of 256 means that no multicast
+            datagrams are forwarded out the interface.
+
+
+
+
+            This is an optimization applied by multicast routing
+            protocols that explicitly track hop counts to downstream
+            listeners.  Multicast protocols that are not aware of hop
+            counts to downstream listeners set this object to 0."
+    ::= { ipMcastRouteNextHopEntry 13 }
+
+ipMcastRouteNextHopProtocol OBJECT-TYPE
+    SYNTAX     IANAipMRouteProtocol
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The routing mechanism via which this next-hop was learned."
+    ::= { ipMcastRouteNextHopEntry 14 }
+
+ipMcastRouteNextHopOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets of multicast packets that have been
+            forwarded using this route.
+
+            Discontinuities in this monotonically increasing value
+            occur at re-initialization of the management system.
+            Discontinuities can also occur as a result of routes being
+            removed and replaced, which can be detected by observing
+            the value of ipMcastRouteNextHopTimeStamp."
+    ::= { ipMcastRouteNextHopEntry 15 }
+
+ipMcastRouteNextHopPkts OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of packets which have been forwarded using this
+            route.
+
+            Discontinuities in this monotonically increasing value
+            occur at re-initialization of the management system.
+            Discontinuities can also occur as a result of routes being
+            removed and replaced, which can be detected by observing
+            the value of ipMcastRouteNextHopTimeStamp."
+    ::= { ipMcastRouteNextHopEntry 16 }
+
+--
+--  The IP Multicast Scope Boundary Table
+--
+
+
+
+
+ipMcastBoundaryTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMcastBoundaryEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table listing the system's multicast scope
+            zone boundaries."
+    REFERENCE "RFC 4007 Section 5"
+    ::= { ipMcast 7 }
+
+ipMcastBoundaryEntry OBJECT-TYPE
+    SYNTAX     IpMcastBoundaryEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) describing one of this device's
+            multicast scope zone boundaries.
+
+            OIDs are limited to 128 sub-identifiers, but this limit
+            is not enforced by the syntax of this entry.  In practice,
+            this does not present a problem, because IP address types
+            allowed by conformance statements do not exceed this limit."
+    REFERENCE "RFC 2365 Section 5, RFC 4007 Section 5"
+    INDEX      { ipMcastBoundaryIfIndex,
+                 ipMcastBoundaryAddressType,
+                 ipMcastBoundaryAddress,
+                 ipMcastBoundaryAddressPrefixLength }
+    ::= { ipMcastBoundaryTable 1 }
+
+IpMcastBoundaryEntry ::= SEQUENCE {
+    ipMcastBoundaryIfIndex              InterfaceIndex,
+    ipMcastBoundaryAddressType          InetAddressType,
+    ipMcastBoundaryAddress              InetAddress,
+    ipMcastBoundaryAddressPrefixLength  InetAddressPrefixLength,
+    ipMcastBoundaryTimeStamp            TimeStamp,
+    ipMcastBoundaryDroppedMcastOctets   Counter64,
+    ipMcastBoundaryDroppedMcastPkts     Counter64,
+    ipMcastBoundaryStatus               RowStatus,
+    ipMcastBoundaryStorageType          StorageType
+}
+
+ipMcastBoundaryIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The IfIndex value for the interface to which this boundary
+            applies.  Packets with a destination address in the
+
+
+
+            associated address/mask range will not be forwarded over
+            this interface.
+
+            For IPv4, zone boundaries cut through links.  Therefore,
+            this is an external interface.  This may be either a
+            physical or virtual interface (tunnel, encapsulation, and
+            so forth.)
+
+            For IPv6, zone boundaries cut through nodes.  Therefore,
+            this is a virtual interface within the node.  This is not
+            an external interface, either real or virtual.  Packets
+            crossing this interface neither arrive at nor leave the
+            node, but only move between zones within the node."
+    REFERENCE "RFC 2365 Section 5, RFC 4007 Section 5"
+    ::= { ipMcastBoundaryEntry 1 }
+
+ipMcastBoundaryAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A value indicating the address family of the address
+            contained in ipMcastBoundaryAddress.  Legal values
+            correspond to the subset of address families for which
+            multicast forwarding is supported."
+    ::= { ipMcastBoundaryEntry 2 }
+
+ipMcastBoundaryAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The group address which, when combined with the
+            corresponding value of ipMcastBoundaryAddressPrefixLength,
+            identifies the group range for which the scoped boundary
+            exists.  Scoped IPv4 multicast address ranges must be
+            prefixed by 239.0.0.0/8.  Scoped IPv6 multicast address
+            ranges are FF0x::/16, where x is a valid RFC 4291 multicast
+            scope.
+
+            An IPv6 address prefixed by FF1x::/16 is a non-permanently-
+            assigned address.  An IPv6 address prefixed by FF3x::/16 is
+            a unicast-prefix-based multicast addresses.  A zone boundary
+            for FF0x::/16 implies an identical boundary for these other
+            prefixes.  No separate FF1x::/16 or FF3x::/16 entries exist
+            in this table.
+
+            This address object is only significant up to
+
+
+
+            ipMcastBoundaryAddressPrefixLength bits.  The remaining
+            address bits are set to zero.  This is especially important
+            for this index field, which is part of the index of this
+            entry.  Any non-zero bits would signify an entirely
+            different entry."
+    ::= { ipMcastBoundaryEntry 3 }
+
+ipMcastBoundaryAddressPrefixLength OBJECT-TYPE
+    SYNTAX     InetAddressPrefixLength
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The length in bits of the mask which when, combined with
+            the corresponding value of ipMcastBoundaryAddress,
+            identifies the group range for which the scoped boundary
+            exists.
+
+            The InetAddressType is given by ipMcastBoundaryAddressType.
+            For values 'ipv4' and 'ipv4z', this object must be in the
+            range 4..32.  For values 'ipv6' and 'ipv6z', this object
+            must be set to 16."
+    ::= { ipMcastBoundaryEntry 4 }
+
+ipMcastBoundaryTimeStamp OBJECT-TYPE
+    SYNTAX     TimeStamp
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime at which the multicast boundary
+            information represented by this entry was learned by the
+            router.
+
+            If this information was present at the most recent re-
+            initialization of the local management subsystem, then this
+            object contains a zero value."
+    ::= { ipMcastBoundaryEntry 5 }
+
+ipMcastBoundaryDroppedMcastOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets of multicast packets that have been
+            dropped as a result of this zone boundary configuration.
+
+            Discontinuities in this monotonically increasing value
+            occur at re-initialization of the management system.
+            Discontinuities can also occur as a result of boundary
+
+
+
+            configuration being removed and replaced, which can be
+            detected by observing the value of
+            ipMcastBoundaryTimeStamp."
+    ::= { ipMcastBoundaryEntry 6 }
+
+ipMcastBoundaryDroppedMcastPkts OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of multicast packets that have been dropped as a
+            result of this zone boundary configuration.
+
+            Discontinuities in this monotonically increasing value
+            occur at re-initialization of the management system.
+            Discontinuities can also occur as a result of boundary
+            configuration being removed and replaced, which can be
+            detected by observing the value of
+            ipMcastBoundaryTimeStamp."
+    ::= { ipMcastBoundaryEntry 7 }
+
+ipMcastBoundaryStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The status of this row, by which rows in this table can
+            be created and destroyed.
+
+            This status object can be set to active(1) without setting
+            any other columnar objects in this entry.
+
+            All writeable objects in this entry can be modified when the
+            status of this entry is active(1)."
+    ::= { ipMcastBoundaryEntry 8 }
+
+ipMcastBoundaryStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The storage type for this row.  Rows having the value
+           'permanent' need not allow write-access to any columnar
+           objects in the row."
+       DEFVAL { nonVolatile }
+    ::= { ipMcastBoundaryEntry 9 }
+
+--
+
+
+
+--  The IP Multicast Scope Name Table
+--
+
+ipMcastScopeNameTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMcastScopeNameEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table listing multicast scope names."
+    REFERENCE "RFC 4007 Section 4"
+    ::= { ipMcast 8 }
+
+ipMcastScopeNameEntry OBJECT-TYPE
+    SYNTAX     IpMcastScopeNameEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) that names a multicast address
+            scope.
+
+            OIDs are limited to 128 sub-identifiers, but this limit
+            is not enforced by the syntax of this entry.  In practice,
+            this does not present a problem, because IP address types
+            allowed by conformance statements do not exceed this limit."
+    REFERENCE "RFC 4007 Section 4"
+    INDEX      { ipMcastScopeNameAddressType,
+                 ipMcastScopeNameAddress,
+                 ipMcastScopeNameAddressPrefixLength,
+                 ipMcastScopeNameLanguage }
+    ::= { ipMcastScopeNameTable 1 }
+
+IpMcastScopeNameEntry ::= SEQUENCE {
+    ipMcastScopeNameAddressType          InetAddressType,
+    ipMcastScopeNameAddress              InetAddress,
+    ipMcastScopeNameAddressPrefixLength  InetAddressPrefixLength,
+    ipMcastScopeNameLanguage             LangTag,
+    ipMcastScopeNameString               SnmpAdminString,
+    ipMcastScopeNameDefault              TruthValue,
+    ipMcastScopeNameStatus               RowStatus,
+    ipMcastScopeNameStorageType          StorageType
+}
+
+ipMcastScopeNameAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A value indicating the address family of the address
+
+
+
+            contained in ipMcastScopeNameAddress.  Legal values
+            correspond to the subset of address families for which
+            multicast forwarding is supported."
+    ::= { ipMcastScopeNameEntry 1 }
+
+ipMcastScopeNameAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The group address which, when combined with the
+            corresponding value of ipMcastScopeNameAddressPrefixLength,
+            identifies the group range associated with the multicast
+            scope.  Scoped IPv4 multicast address ranges must be
+            prefixed by 239.0.0.0/8.  Scoped IPv6 multicast address
+            ranges are FF0x::/16, where x is a valid RFC 4291 multicast
+            scope.
+
+            An IPv6 address prefixed by FF1x::/16 is a non-permanently-
+            assigned address.  An IPv6 address prefixed by FF3x::/16 is
+            a unicast-prefix-based multicast addresses.  A scope
+            FF0x::/16 implies an identical scope name for these other
+            prefixes.  No separate FF1x::/16 or FF3x::/16 entries exist
+            in this table.
+
+            This address object is only significant up to
+            ipMcastScopeNameAddressPrefixLength bits.  The remaining
+            address bits are set to zero.  This is especially important
+            for this index field, which is part of the index of this
+            entry.  Any non-zero bits would signify an entirely
+            different entry."
+    ::= { ipMcastScopeNameEntry 2 }
+
+ipMcastScopeNameAddressPrefixLength OBJECT-TYPE
+    SYNTAX     InetAddressPrefixLength
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The length in bits of the mask which, when combined with
+            the corresponding value of ipMcastScopeNameAddress,
+            identifies the group range associated with the multicast
+            scope.
+
+            The InetAddressType is given by ipMcastScopeNameAddressType.
+            For values 'ipv4' and 'ipv4z', this object must be in the
+            range 4..32.  For values 'ipv6' and 'ipv6z', this object
+            must be set to 16."
+    ::= { ipMcastScopeNameEntry 3 }
+
+
+
+ipMcastScopeNameLanguage OBJECT-TYPE
+    SYNTAX     LangTag
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "Language tag associated with the scope name."
+    REFERENCE "RFC 4646"
+    ::= { ipMcastScopeNameEntry 4 }
+
+ipMcastScopeNameString OBJECT-TYPE
+    SYNTAX     SnmpAdminString
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The textual name associated with the multicast scope.  The
+            value of this object should be suitable for displaying to
+            end-users, such as when allocating a multicast address in
+            this scope.
+
+            When no name is specified, the default value of this object
+            for IPv4 should be the string 239.x.x.x/y with x and y
+            replaced with decimal values to describe the address and
+            mask length associated with the scope.
+
+            When no name is specified, the default value of this object
+            for IPv6 should be the string FF0x::/16, with x replaced by
+            the hexadecimal value for the RFC 4291 multicast scope.
+
+            An IPv6 address prefixed by FF1x::/16 is a non-permanently-
+            assigned address.  An IPv6 address prefixed by FF3x::/16 is
+            a unicast-prefix-based multicast addresses.  A scope
+            FF0x::/16 implies an identical scope name for these other
+            prefixes.  No separate FF1x::/16 or FF3x::/16 entries exist
+            in this table."
+    REFERENCE "RFC 2365, RFC 3306 Section 4, RFC 4291 Section 2.7"
+    ::= { ipMcastScopeNameEntry 5 }
+
+ipMcastScopeNameDefault OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "If true, indicates a preference that the name in the
+            following language should be used by applications if no name
+            is available in a desired language."
+    DEFVAL { false }
+    ::= { ipMcastScopeNameEntry 6 }
+
+
+
+
+ipMcastScopeNameStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The status of this row, by which rows in this table can
+            be created and destroyed.  Before the row can be activated,
+            the object ipMcastScopeNameString must be set to a valid
+            value.  All writeable objects in this entry can be modified
+            when the status is active(1)."
+    ::= { ipMcastScopeNameEntry 7 }
+
+ipMcastScopeNameStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The storage type for this row.  Rows having the value
+           'permanent' need not allow write-access to any columnar
+           objects in the row."
+       DEFVAL { nonVolatile }
+    ::= { ipMcastScopeNameEntry 8 }
+
+--
+--  The Multicast Listeners Table
+--
+
+ipMcastLocalListenerTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMcastLocalListenerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table listing local applications or
+            services that have joined multicast groups as listeners.
+
+            Entries exist for all addresses in the multicast range for
+            all applications and services as they are classified on this
+            device."
+    ::= { ipMcast 9 }
+
+ipMcastLocalListenerEntry OBJECT-TYPE
+    SYNTAX     IpMcastLocalListenerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) identifying a local application
+            or service that has joined a multicast group as a listener.
+
+
+
+
+            OIDs are limited to 128 sub-identifiers, but this limit
+            is not enforced by the syntax of this entry.  In practice,
+            this does not present a problem, because IP address types
+            allowed by conformance statements do not exceed this limit."
+    INDEX      { ipMcastLocalListenerGroupAddressType,
+                 ipMcastLocalListenerGroupAddress,
+                 ipMcastLocalListenerSourceAddressType,
+                 ipMcastLocalListenerSourceAddress,
+                 ipMcastLocalListenerSourcePrefixLength,
+                 ipMcastLocalListenerIfIndex,
+                 ipMcastLocalListenerRunIndex }
+    ::= { ipMcastLocalListenerTable 1 }
+
+IpMcastLocalListenerEntry ::= SEQUENCE {
+    ipMcastLocalListenerGroupAddressType    InetAddressType,
+    ipMcastLocalListenerGroupAddress        InetAddress,
+    ipMcastLocalListenerSourceAddressType   InetAddressType,
+    ipMcastLocalListenerSourceAddress       InetAddress,
+    ipMcastLocalListenerSourcePrefixLength  InetAddressPrefixLength,
+    ipMcastLocalListenerIfIndex             InterfaceIndex,
+    ipMcastLocalListenerRunIndex            Unsigned32
+}
+
+ipMcastLocalListenerGroupAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A value indicating the address family of the address
+            contained in ipMcastLocalListenerGroupAddress.  Legal values
+            correspond to the subset of address families for which
+            multicast is supported."
+    ::= { ipMcastLocalListenerEntry 1 }
+
+ipMcastLocalListenerGroupAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The IP multicast group for which this entry specifies
+            locally joined applications or services."
+    ::= { ipMcastLocalListenerEntry 2 }
+
+ipMcastLocalListenerSourceAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+
+
+
+            "A value indicating the address family of the address
+            contained in ipMcastLocalListenerSource.
+
+            A value of unknown(0) indicates a non-source-specific entry,
+            corresponding to all sources in the group.  Otherwise, the
+            value MUST be the same as the value of
+            ipMcastLocalListenerGroupAddressType."
+    ::= { ipMcastLocalListenerEntry 3 }
+
+ipMcastLocalListenerSourceAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The network address which, when combined with the
+            corresponding value of the mask specified in
+            ipMcastLocalListenerSourcePrefixLength, identifies the
+            sources for which this entry specifies a local listener.
+
+            This address object is only significant up to
+            ipMcastLocalListenerSourcePrefixLength bits.  The remaining
+            address bits are set to zero.  This is especially important
+            for this index field, which is part of the index of this
+            entry.  Any non-zero bits would signify an entirely
+            different entry.
+
+            For addresses of type ipv4z or ipv6z, the appended zone
+            index is significant even though it lies beyond the prefix
+            length.  The use of these address types indicate that this
+            listener address applies only within the given zone.  Zone
+            index zero is not valid in this table."
+    ::= { ipMcastLocalListenerEntry 4 }
+
+ipMcastLocalListenerSourcePrefixLength OBJECT-TYPE
+    SYNTAX     InetAddressPrefixLength
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The length in bits of the mask which, when combined with
+            the corresponding value specified in
+            ipMcastLocalListenerSource, identifies the sources for which
+            this entry specifies a local listener.
+
+            The InetAddressType is given by
+            ipMcastLocalListenerSourceAddressType.  For the value
+            'unknown', this object must be zero.  For values 'ipv4' and
+            'ipv4z', this object must be in the range 4..32.  For values
+            'ipv6' and 'ipv6z', this object must be in the range
+
+
+
+            8..128."
+    ::= { ipMcastLocalListenerEntry 5 }
+
+ipMcastLocalListenerIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The IfIndex value of the interface for which this entry
+            specifies a local listener."
+    ::= { ipMcastLocalListenerEntry 6 }
+
+ipMcastLocalListenerRunIndex OBJECT-TYPE
+    SYNTAX     Unsigned32 (0..2147483647)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "A unique value corresponding to a piece of software running
+            on this router or host system.  Where possible, this should
+            be the system's native, unique identification number.
+
+            This identifier is platform-specific.  It may correspond to
+            a process ID or application instance number.
+
+            A value of zero indicates that the application instance(s)
+            cannot be identified.  A value of zero indicates that one or
+            more unidentified applications have joined the specified
+            multicast groups (for the specified sources) as listeners."
+    REFERENCE "RFC 2287 sysApplRunIndex"
+    ::= { ipMcastLocalListenerEntry 7 }
+
+--
+--  The Multicast Zone Table
+--
+
+ipMcastZoneTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMcastZoneEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table listing scope zones on this device."
+    REFERENCE "RFC 4007 Section 5"
+    ::= { ipMcast 10 }
+
+ipMcastZoneEntry OBJECT-TYPE
+    SYNTAX     IpMcastZoneEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+
+
+
+    DESCRIPTION
+            "An entry (conceptual row) describing a scope zone on this
+            device."
+    REFERENCE "RFC 4007 Section 5"
+    INDEX      { ipMcastZoneIndex }
+    ::= { ipMcastZoneTable 1 }
+
+IpMcastZoneEntry ::= SEQUENCE {
+    ipMcastZoneIndex                        InetZoneIndex,
+    ipMcastZoneScopeDefaultZoneIndex        InetZoneIndex,
+    ipMcastZoneScopeAddressType             InetAddressType,
+    ipMcastZoneScopeAddress                 InetAddress,
+    ipMcastZoneScopeAddressPrefixLength     InetAddressPrefixLength
+}
+
+ipMcastZoneIndex OBJECT-TYPE
+    SYNTAX     InetZoneIndex (1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "This zone index uniquely identifies a zone on a device.
+
+            Each zone is for a given scope.  Scope-level information in
+            this table is for the unique scope that corresponds to this
+            zone.
+
+            Zero is a special value used to request the default zone for
+            a given scope.  Zero is not a valid value for this object.
+
+            To test whether ipMcastZoneIndex is the default zone for
+            this scope, test whether ipMcastZoneIndex is equal to
+            ipMcastZoneScopeDefaultZoneIndex."
+    ::= { ipMcastZoneEntry 1 }
+
+ipMcastZoneScopeDefaultZoneIndex OBJECT-TYPE
+    SYNTAX     InetZoneIndex (1..4294967295)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The default zone index for this scope.  This is the zone
+            that this device will use if the default (zero) zone is
+            requested for this scope.
+
+            Zero is not a valid value for this object."
+    ::= { ipMcastZoneEntry 2 }
+
+ipMcastZoneScopeAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+
+
+
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The IP address type for which this scope zone exists."
+    ::= { ipMcastZoneEntry 3 }
+
+ipMcastZoneScopeAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The multicast group address which, when combined with
+            ipMcastZoneScopeAddressPrefixLength, gives the multicast
+            address range for this scope.  The InetAddressType is given
+            by ipMcastZoneScopeAddressType.
+
+            Scoped IPv4 multicast address ranges are prefixed by
+            239.0.0.0/8.  Scoped IPv6 multicast address ranges are
+            FF0x::/16, where x is a valid RFC 4291 multicast scope.
+
+            An IPv6 address prefixed by FF1x::/16 is a non-permanently-
+            assigned address.  An IPv6 address prefixed by FF3x::/16 is
+            a unicast-prefix-based multicast addresses.  A scope
+            FF0x::/16 implies an identical scope for these other
+            prefixes.  No separate FF1x::/16 or FF3x::/16 entries exist
+            in this table.
+
+            This address object is only significant up to
+            ipMcastZoneScopeAddressPrefixLength bits.  The remaining
+            address bits are set to zero."
+    REFERENCE "RFC 2365, RFC 3306 Section 4, RFC 4291 Section 2.7"
+    ::= { ipMcastZoneEntry 4 }
+
+ipMcastZoneScopeAddressPrefixLength OBJECT-TYPE
+    SYNTAX     InetAddressPrefixLength
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The length in bits of the mask which, when combined
+            with ipMcastZoneScopeAddress, gives the multicast address
+            prefix for this scope.
+
+            The InetAddressType is given by ipMcastZoneScopeAddressType.
+            For values 'ipv4' and 'ipv4z', this object must be in the
+            range 4..32.  For values 'ipv6' and 'ipv6z', this object
+            must be set to 16."
+    ::= { ipMcastZoneEntry 5 }
+
+
+
+
+--
+-- Conformance information
+--
+
+ipMcastMIBConformance
+                  OBJECT IDENTIFIER ::= { ipMcastMIB 2 }
+ipMcastMIBCompliances
+                  OBJECT IDENTIFIER ::= { ipMcastMIBConformance 1 }
+ipMcastMIBGroups  OBJECT IDENTIFIER ::= { ipMcastMIBConformance 2 }
+
+--
+-- Compliance statements
+--
+
+ipMcastMIBComplianceHost MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for hosts supporting IPMCAST-MIB.
+
+            Support for either InetAddressType ipv4 or ipv6 is
+            mandatory; support for both InetAddressTypes ipv4 and ipv6
+            is optional.  Support for types ipv4z and ipv6z is
+            optional.
+
+            -- OBJECT     ipMcastLocalListenerGroupAddressType
+            -- SYNTAX     InetAddressType {unknown(0), ipv4(1), ipv6(2),
+            --                             ipv4z(3), ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastLocalListenerGroupAddress
+            -- SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastLocalListenerSourceAddressType
+            -- SYNTAX     InetAddressType {unknown(0), ipv4(1), ipv6(2),
+            --                             ipv4z(3), ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastLocalListenerSourceAddress
+            -- SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for ipv4 or ipv6."
+
+    MODULE  -- this module
+    MANDATORY-GROUPS { ipMcastMIBLocalListenerGroup,
+
+
+
+                       ipMcastMIBBasicGroup }
+
+      OBJECT     ipMcastEnabled
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastDeviceConfigStorageType
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      GROUP        ipMcastMIBSsmGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBRouteGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBRouteDiagnosticsGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBBoundaryIfGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBScopeNameGroup
+      DESCRIPTION
+          "This group is optional."
+
+    ::= { ipMcastMIBCompliances 1 }
+
+ipMcastMIBComplianceRouter MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for routers supporting
+            IPMCAST-MIB.
+
+            Support for either InetAddressType ipv4 or ipv6 is
+            mandatory; support for both InetAddressTypes ipv4 and ipv6
+            is optional.  Support for types ipv4z and ipv6z is
+            optional.
+
+            -- OBJECT     ipMcastSsmRangeAddressType
+            -- SYNTAX     InetAddressType {ipv4(1), ipv6(2), ipv4z(3),
+            --                             ipv6z(4)}
+
+
+
+            -- DESCRIPTION
+            --     This compliance requires support for ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastSsmRangeAddress
+            -- SYNTAX     InetAddress (SIZE (4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastRouteGroupAddressType
+            -- SYNTAX     InetAddressType {unknown(0), ipv4(1), ipv6(2),
+            --                             ipv4z(3), ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastRouteGroup
+            -- SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastRouteSourceAddressType
+            -- SYNTAX     InetAddressType {unknown(0), ipv4(1), ipv6(2),
+            --                             ipv4z(3), ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastRouteSource
+            -- SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastRouteNextHopGroupAddressType
+            -- SYNTAX     InetAddressType {unknown(0), ipv4(1), ipv6(2),
+            --                             ipv4z(3), ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastRouteNextHopGroup
+            -- SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastRouteNextHopSourceAddressType
+
+
+
+            -- SYNTAX     InetAddressType {unknown(0), ipv4(1), ipv6(2),
+            --                              ipv4z(3), ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastRouteNextHopSource
+            -- SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastRouteNextHopAddressType
+            -- SYNTAX     InetAddressType {unknown(0), ipv4(1), ipv6(2),
+            --                             ipv4z(3), ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastRouteNextHopAddress
+            -- SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 or ipv6."
+
+    MODULE  -- this module
+    MANDATORY-GROUPS { ipMcastMIBRouteProtoGroup,
+                       ipMcastMIBBasicGroup,
+                       ipMcastMIBSsmGroup,
+                       ipMcastMIBRouteGroup }
+
+      OBJECT     ipMcastEnabled
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastDeviceConfigStorageType
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastInterfaceTtl
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastInterfaceRateLimit
+      MIN-ACCESS read-only
+
+
+
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastInterfaceStorageType
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastRouteUpstreamNeighborType
+      SYNTAX     InetAddressType { unknown(0), ipv4(1), ipv6(2),
+                                   ipv4z(3), ipv6z(4) }
+      DESCRIPTION
+          "This compliance requires support for unknown and either ipv4
+          or ipv6."
+
+      OBJECT     ipMcastRouteUpstreamNeighbor
+      SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+      DESCRIPTION
+          "This compliance requires support for unknown and either ipv4
+          or ipv6."
+
+      OBJECT     ipMcastRouteRtAddressType
+      SYNTAX     InetAddressType { unknown(0), ipv4(1), ipv6(2),
+                                   ipv4z(3), ipv6z(4) }
+      DESCRIPTION
+          "This compliance requires support for unknown and either ipv4
+          or ipv6."
+
+      OBJECT     ipMcastRouteRtAddress
+      SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+      DESCRIPTION
+          "This compliance requires support for unknown and either ipv4
+          or ipv6."
+
+      OBJECT     ipMcastSsmRangeRowStatus
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastSsmRangeStorageType
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      GROUP        ipMcastMIBRouteDiagnosticsGroup
+      DESCRIPTION
+          "This group is not mandatory, but SHOULD be supported where
+          hardware permits."
+
+
+
+      GROUP        ipMcastMIBPktsOutGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBHopCountGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBRouteOctetsGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBRouteBpsGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBLocalListenerGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBBoundaryIfGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBScopeNameGroup
+      DESCRIPTION
+          "This group is optional."
+
+    ::= { ipMcastMIBCompliances 2 }
+
+ipMcastMIBComplianceBorderRouter MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for routers on scope
+            boundaries supporting IPMCAST-MIB.
+
+            Support for either InetAddressType ipv4z or ipv6z is
+            mandatory; support for both InetAddressTypes ipv4z and
+            ipv6z is optional.
+
+            -- OBJECT     ipMcastSsmRangeAddressType
+            -- SYNTAX     InetAddressType {ipv4(1), ipv6(2), ipv4z(3),
+            --                             ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastSsmRangeAddress
+            -- SYNTAX     InetAddress (SIZE (4|8|16|20))
+
+
+
+            -- DESCRIPTION
+            --     This compliance requires support for ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastRouteGroupAddressType
+            -- SYNTAX     InetAddressType {unknown(0), ipv4(1), ipv6(2),
+            --                             ipv4z(3), ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastRouteGroup
+            -- SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 and ipv4z or ipv6 and ipv6z.
+            --
+            -- OBJECT     ipMcastRouteSourceAddressType
+            -- SYNTAX     InetAddressType {unknown(0), ipv4(1), ipv6(2),
+            --                             ipv4z(3), ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 and ipv4z or ipv6 and ipv6z.
+            --
+            -- OBJECT     ipMcastRouteSource
+            -- SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 and ipv4z or ipv6 and ipv6z.
+            --
+            -- OBJECT     ipMcastRouteNextHopGroupAddressType
+            -- SYNTAX     InetAddressType {unknown(0), ipv4(1), ipv6(2),
+            --                             ipv4z(3), ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 and ipv4z or ipv6 and ipv6z.
+            --
+            -- OBJECT     ipMcastRouteNextHopGroup
+            -- SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 and ipv4z or ipv6 and ipv6z.
+            --
+            -- OBJECT     ipMcastRouteNextHopSourceAddressType
+            -- SYNTAX     InetAddressType {unknown(0), ipv4(1), ipv6(2),
+            --                             ipv4z(3), ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 and ipv4z or ipv6 and ipv6z.
+
+
+
+            --
+            -- OBJECT     ipMcastRouteNextHopSource
+            -- SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 and ipv4z or ipv6 and ipv6z.
+            --
+            -- OBJECT     ipMcastRouteNextHopAddressType
+            -- SYNTAX     InetAddressType {unknown(0), ipv4(1), ipv6(2),
+            --                             ipv4z(3), ipv6z(4)}
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 and ipv4z or ipv6 and ipv6z.
+            --
+            -- OBJECT     ipMcastRouteNextHopAddress
+            -- SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+            -- DESCRIPTION
+            --     This compliance requires support for unknown and
+            --     either ipv4 and ipv4z or ipv6 and ipv6z.
+            --
+            -- OBJECT     ipMcastBoundaryAddressType
+            -- SYNTAX     InetAddressType {ipv4(1), ipv6(2)}
+            -- DESCRIPTION
+            --     This compliance requires support for ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastBoundaryAddress
+            -- SYNTAX     InetAddress (SIZE (4|16)
+            -- DESCRIPTION
+            --     This compliance requires support for ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastScopeNameAddressType
+            -- SYNTAX     InetAddressType {ipv4(1), ipv6(2)}
+            -- DESCRIPTION
+            --     This compliance requires support for ipv4 or ipv6.
+            --
+            -- OBJECT     ipMcastScopeNameAddress
+            -- SYNTAX     InetAddress (SIZE (4|16)
+            -- DESCRIPTION
+            --     This compliance requires support for ipv4 or ipv6."
+
+    MODULE  -- this module
+    MANDATORY-GROUPS { ipMcastMIBRouteProtoGroup,
+                       ipMcastMIBBasicGroup,
+                       ipMcastMIBSsmGroup,
+                       ipMcastMIBRouteGroup,
+                       ipMcastMIBBoundaryIfGroup,
+                       ipMcastMIBScopeNameGroup }
+
+
+
+
+      OBJECT     ipMcastEnabled
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastDeviceConfigStorageType
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastInterfaceTtl
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastInterfaceRateLimit
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastInterfaceStorageType
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastRouteUpstreamNeighborType
+      SYNTAX     InetAddressType { unknown(0), ipv4(1), ipv6(2),
+                                   ipv4z(3), ipv6z(4) }
+      DESCRIPTION
+          "This compliance requires support for unknown and either ipv4
+          and ipv4z, or ipv6 and ipv6z."
+
+      OBJECT     ipMcastRouteUpstreamNeighbor
+      SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+      DESCRIPTION
+          "This compliance requires support for unknown and either ipv4
+          and ipv4z, or ipv6 and ipv6z."
+
+      OBJECT     ipMcastRouteRtAddressType
+      SYNTAX     InetAddressType { unknown(0), ipv4(1), ipv6(2),
+                                   ipv4z(3), ipv6z(4) }
+      DESCRIPTION
+          "This compliance requires support for unknown and either ipv4
+          and ipv4z, or ipv6 and ipv6z."
+
+      OBJECT     ipMcastRouteRtAddress
+      SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+      DESCRIPTION
+
+
+
+          "This compliance requires support for unknown and either ipv4
+          and ipv4z, or ipv6 and ipv6z."
+
+      OBJECT     ipMcastSsmRangeRowStatus
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     ipMcastSsmRangeStorageType
+      MIN-ACCESS read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      GROUP        ipMcastMIBRouteDiagnosticsGroup
+      DESCRIPTION
+          "This group is not mandatory, but SHOULD be supported where
+          hardware permits."
+
+      GROUP        ipMcastMIBPktsOutGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBHopCountGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBRouteOctetsGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBRouteBpsGroup
+      DESCRIPTION
+          "This group is optional."
+
+      GROUP        ipMcastMIBLocalListenerGroup
+      DESCRIPTION
+          "This group is optional."
+
+      OBJECT     ipMcastZoneScopeAddressType
+      SYNTAX     InetAddressType { ipv4(1), ipv6(2) }
+      DESCRIPTION
+          "This compliance requires support for ipv4 or ipv6."
+
+      OBJECT     ipMcastZoneScopeAddress
+      SYNTAX     InetAddress (SIZE (4|16))
+      DESCRIPTION
+          "This compliance requires support for ipv4 or ipv6."
+
+
+
+
+    ::= { ipMcastMIBCompliances 3 }
+
+--
+-- Units of conformance
+--
+ipMcastMIBBasicGroup OBJECT-GROUP
+    OBJECTS { ipMcastEnabled,
+              ipMcastRouteEntryCount,
+              ipMcastDeviceConfigStorageType
+            }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support basic management of IP
+            Multicast protocols."
+    ::= { ipMcastMIBGroups 1 }
+
+ipMcastMIBSsmGroup OBJECT-GROUP
+    OBJECTS { ipMcastSsmRangeRowStatus,
+              ipMcastSsmRangeStorageType }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support management of Source-
+            Specific Multicast routing."
+    ::= { ipMcastMIBGroups 2 }
+
+ipMcastMIBRouteGroup OBJECT-GROUP
+    OBJECTS { ipMcastInterfaceTtl,
+              ipMcastInterfaceRateLimit,
+              ipMcastInterfaceStorageType,
+              ipMcastRouteUpstreamNeighborType,
+              ipMcastRouteUpstreamNeighbor,
+              ipMcastRouteInIfIndex,
+              ipMcastRouteTimeStamp,
+              ipMcastRouteExpiryTime,
+              ipMcastRouteNextHopState,
+              ipMcastRouteNextHopTimeStamp,
+              ipMcastRouteNextHopExpiryTime
+            }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support basic management of IP
+            Multicast routing."
+    ::= { ipMcastMIBGroups 3 }
+
+ipMcastMIBRouteDiagnosticsGroup OBJECT-GROUP
+    OBJECTS { ipMcastRoutePkts,
+              ipMcastRouteTtlDropPackets,
+              ipMcastRouteDifferentInIfPackets
+
+
+
+            }
+    STATUS  current
+    DESCRIPTION
+            "A collection of routing diagnostic packet counters."
+    ::= { ipMcastMIBGroups 4 }
+
+ipMcastMIBPktsOutGroup OBJECT-GROUP
+    OBJECTS { ipMcastRouteNextHopTimeStamp,
+              ipMcastRouteNextHopPkts }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support management of packet
+            counters for each outgoing interface entry of a route."
+    ::= { ipMcastMIBGroups 5 }
+
+ipMcastMIBHopCountGroup OBJECT-GROUP
+    OBJECTS { ipMcastRouteNextHopClosestMemberHops }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support management of the use of
+            hop counts in IP Multicast routing."
+    ::= { ipMcastMIBGroups 6 }
+
+ipMcastMIBRouteOctetsGroup OBJECT-GROUP
+    OBJECTS { ipMcastRouteTimeStamp,
+              ipMcastRouteOctets,
+              ipMcastRouteTtlDropOctets,
+              ipMcastRouteDifferentInIfOctets,
+              ipMcastRouteNextHopTimeStamp,
+              ipMcastRouteNextHopOctets }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support management of octet
+            counters for each forwarding entry."
+    ::= { ipMcastMIBGroups 7 }
+
+ipMcastMIBRouteBpsGroup OBJECT-GROUP
+    OBJECTS { ipMcastRouteBps }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support sampling of data rate
+            in bits per second for each forwarding entry."
+    ::= { ipMcastMIBGroups 8 }
+
+ipMcastMIBRouteProtoGroup OBJECT-GROUP
+    OBJECTS { ipMcastRouteProtocol, ipMcastRouteRtProtocol,
+              ipMcastRouteRtAddressType, ipMcastRouteRtAddress,
+              ipMcastRouteRtPrefixLength, ipMcastRouteRtType,
+
+
+
+              ipMcastRouteNextHopProtocol }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing information on the
+            relationship between multicast routing information and the
+            IP Forwarding Table."
+    ::= { ipMcastMIBGroups 9 }
+
+ipMcastMIBLocalListenerGroup OBJECT-GROUP
+    OBJECTS { ipMcastLocalListenerRunIndex }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support management of local
+            listeners on hosts or routers."
+    ::= { ipMcastMIBGroups 10 }
+
+ipMcastMIBBoundaryIfGroup OBJECT-GROUP
+    OBJECTS { ipMcastBoundaryTimeStamp,
+              ipMcastBoundaryDroppedMcastOctets,
+              ipMcastBoundaryDroppedMcastPkts,
+              ipMcastBoundaryStatus,
+              ipMcastBoundaryStorageType,
+              ipMcastZoneScopeDefaultZoneIndex,
+              ipMcastZoneScopeAddressType,
+              ipMcastZoneScopeAddress,
+              ipMcastZoneScopeAddressPrefixLength
+            }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support management of multicast
+            scope zone boundaries."
+    ::= { ipMcastMIBGroups 11 }
+
+ipMcastMIBScopeNameGroup OBJECT-GROUP
+    OBJECTS { ipMcastScopeNameString, ipMcastScopeNameDefault,
+              ipMcastScopeNameStatus, ipMcastScopeNameStorageType }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support management of multicast
+            address scope names."
+    ::= { ipMcastMIBGroups 12 }
+
+END

@@ -1,0 +1,839 @@
+PTOPO-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Integer32, Counter32, mib-2
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, AutonomousType, RowStatus, TimeStamp, TruthValue
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+
+
+        FROM SNMPv2-CONF
+    TimeFilter
+        FROM RMON2-MIB
+    PhysicalIndex
+        FROM ENTITY-MIB
+    AddressFamilyNumbers
+        FROM IANA-ADDRESS-FAMILY-NUMBERS-MIB;
+
+ptopoMIB MODULE-IDENTITY
+    LAST-UPDATED "200009210000Z"
+    ORGANIZATION "IETF; PTOPOMIB Working Group"
+    CONTACT-INFO
+       "PTOPOMIB WG Discussion:
+        ptopo@3com.com
+        Subscription:
+        majordomo@3com.com
+          msg body: [un]subscribe ptopomib
+
+        Andy Bierman
+        Cisco Systems Inc.
+        170 West Tasman Drive
+        San Jose, CA 95134
+        408-527-3711
+        abierman@cisco.com
+
+        Kendall S. Jones
+        Nortel Networks
+        4401 Great America Parkway
+        Santa Clara, CA 95054
+        408-495-7356
+        kejones@nortelnetworks.com"
+    DESCRIPTION
+            "The MIB module for physical topology information."
+    REVISION        "200009210000Z"
+    DESCRIPTION
+            "Initial Version of the Physical Topology MIB.  This version
+            published as RFC 2922."
+    ::= { mib-2 79 }
+
+ptopoMIBObjects   OBJECT IDENTIFIER ::= { ptopoMIB 1 }
+
+
+-- MIB groups
+ptopoData         OBJECT IDENTIFIER ::= { ptopoMIBObjects 1 }
+ptopoGeneral      OBJECT IDENTIFIER ::= { ptopoMIBObjects 2 }
+ptopoConfig       OBJECT IDENTIFIER ::= { ptopoMIBObjects 3 }
+
+-- textual conventions
+
+
+PtopoGenAddr ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+            "The value of an address."
+    SYNTAX      OCTET STRING (SIZE (0..20))
+
+PtopoChassisIdType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+            "This TC describes the source of a chassis identifier.
+
+            The enumeration 'chasIdEntPhysicalAlias(1)' represents a
+            chassis identifier based on the value of entPhysicalAlias
+            for a chassis component (i.e., an entPhysicalClass value of
+            'chassis(3)').
+
+            The enumeration 'chasIdIfAlias(2)' represents a chassis
+            identifier based on the value of ifAlias for an interface
+            on the containing chassis.
+
+            The enumeration 'chasIdPortEntPhysicalAlias(3)' represents
+            a chassis identifier based on the value of entPhysicalAlias
+            for a port or backplane component (i.e., entPhysicalClass
+            value of 'port(10)' or 'backplane(4)'), within the
+            containing chassis.
+
+            The enumeration 'chasIdMacAddress(4)' represents a chassis
+            identifier based on the value of a unicast source MAC
+            address (encoded in network byte order and IEEE 802.3
+            canonical bit order), of a port on the containing chassis.
+
+            The enumeration 'chasIdPtopoGenAddr(5)' represents a
+            chassis identifier based on a network address, associated
+            with a particular chassis.  The encoded address is actually
+            composed of two fields.  The first field is a single octet,
+            representing the IANA AddressFamilyNumbers value for the
+            specific address type, and the second field is the
+            PtopoGenAddr address value."
+    SYNTAX      INTEGER {
+            chasIdEntPhysicalAlias(1),
+            chasIdIfAlias(2),
+            chasIdPortEntPhysicalAlias(3),
+            chasIdMacAddress(4),
+            chasIdPtopoGenAddr(5)
+    }
+
+PtopoChassisId ::= TEXTUAL-CONVENTION
+    STATUS      current
+
+
+    DESCRIPTION
+            "This TC describes the format of a chassis identifier
+            string.  Objects of this type are always used with an
+            associated PtopoChassisIdType object, which identifies the
+            format of the particular PtopoChassisId object instance.
+
+            If the associated PtopoChassisIdType object has a value of
+            'chasIdEntPhysicalAlias(1)', then the octet string
+            identifies a particular instance of the entPhysicalAlias
+            object for a chassis component (i.e., an entPhysicalClass
+            value of 'chassis(3)').
+
+            If the associated PtopoChassisIdType object has a value of
+            'chasIdIfAlias(2)', then the octet string identifies a
+            particular instance of the ifAlias object for an interface
+            on the containing chassis.
+
+            If the associated PtopoChassisIdType object has a value of
+            'chasIdPortEntPhysicalAlias(3)', then the octet string
+            identifies a particular instance of the entPhysicalAlias
+            object for a port or backplane component within the
+            containing chassis.
+
+            If the associated PtopoChassisIdType object has a value of
+            'chasIdMacAddress(4)', then this string identifies a
+            particular unicast source MAC address (encoded in network
+            byte order and IEEE 802.3 canonical bit order), of a port on
+            the containing chassis.
+
+            If the associated PtopoChassisIdType object has a value of
+            'chasIdPtopoGenAddr(5)', then this string identifies a
+            particular network address, encoded in network byte order,
+            associated with one or more ports on the containing chassis.
+            The first octet contains the IANA Address Family Numbers
+            enumeration value for the specific address type, and octets
+            2 through N contain the PtopoGenAddr address value in
+            network byte order."
+    SYNTAX      OCTET STRING (SIZE (1..32))
+
+PtopoPortIdType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+            "This TC describes the source of a particular type of port
+            identifier used in the PTOPO MIB.
+
+            The enumeration 'portIdIfAlias(1)' represents a port
+            identifier based on the ifAlias MIB object.
+
+
+
+            The enumeration 'portIdPortEntPhysicalAlias(2)' represents a
+            port identifier based on the value of entPhysicalAlias for a
+            port or backplane component (i.e., entPhysicalClass value of
+            'port(10)' or 'backplane(4)'), within the containing
+            chassis.
+
+            The enumeration 'portIdMacAddr(3)' represents a port
+            identifier based on a unicast source MAC address, which has
+            been detected by the agent and associated with a particular
+            port.
+
+            The enumeration 'portIdPtopoGenAddr(4)' represents a port
+            identifier based on a network address, detected by the agent
+            and associated with a particular port."
+    SYNTAX      INTEGER {
+            portIdIfAlias(1),
+            portIdEntPhysicalAlias(2),
+            portIdMacAddr(3),
+            portIdPtopoGenAddr(4)
+    }
+
+PtopoPortId ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+            "This TC describes the format of a port identifier string.
+            Objects of this type are always used with an associated
+            PtopoPortIdType object, which identifies the format of the
+            particular PtopoPortId object instance.
+
+            If the associated PtopoPortIdType object has a value of
+            'portIdIfAlias(1)', then the octet string identifies a
+            particular instance of the ifAlias object.
+
+            If the associated PtopoPortIdType object has a value of
+            'portIdEntPhysicalAlias(2)', then the octet string
+            identifies a particular instance of the entPhysicalAlias
+            object for a port component (i.e., entPhysicalClass value of
+            'port(10)').
+
+            If the associated PtopoPortIdType object has a value of
+            'portIdMacAddr(3)', then this string identifies a particular
+            unicast source MAC address associated with the port.
+
+            If the associated PtopoPortIdType object has a value of
+            'portIdPtopoGenAddr(4)', then this string identifies a
+            network address associated with the port.  The first octet
+            contains the IANA AddressFamilyNumbers enumeration value for
+            the specific address type, and octets 2 through N contain
+
+
+            the PtopoGenAddr address value in network byte order."
+    SYNTAX      OCTET STRING (SIZE (1..32))
+
+
+PtopoAddrSeenState ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+            "This TC describes the state of address detection for a
+            particular type of port identifier used in the PTOPO MIB.
+
+            The enumeration 'notUsed(1)' represents an entry for which
+            the particular MIB object is not applicable to the remote
+            connection endpoint,
+
+            The enumeration 'unknown(2)' represents an entry for which
+            the particular address collection state is not known.
+
+            The enumeration 'oneAddr(3)'  represents an entry for which
+            exactly one source address (of the type indicated by the
+            particular MIB object), has been detected.
+
+            The enumeration 'multiAddr(4)'  represents an entry for
+            which more than one source address (of the type indicated by
+            the particular MIB object), has been detected.
+
+            An agent is expected to set the initial state of the
+            PtopoAddrSeenState to 'notUsed(1)' or 'unknown(2)'.
+
+            Note that the PTOPO MIB does not restrict or specify the
+            means in which the PtopoAddrSeenState is known to an agent.
+            In particular, an agent may detect this information through
+            configuration data, or some means other than directly
+            monitoring all port traffic."
+    SYNTAX      INTEGER {
+            notUsed(1),
+            unknown(2),
+            oneAddr(3),
+            multiAddr(4)
+    }
+
+--  ***********************************************************
+--
+--           P T O P O    D A T A     G R O U P
+--
+--  ***********************************************************
+
+-- Connection Table
+
+
+
+ptopoConnTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PtopoConnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "This table contains one or more rows per physical network
+            connection known to this agent.  The agent may wish to
+            ensure that only one ptopoConnEntry is present for each
+            local port, or it may choose to maintain multiple
+            ptopoConnEntries for the same local port.
+
+            Entries based on lower numbered identifier types are
+            preferred over higher numbered identifier types, i.e., lower
+            values of the ptopoConnRemoteChassisType and
+            ptopoConnRemotePortType objects."
+    ::= { ptopoData 1 }
+
+ptopoConnEntry       OBJECT-TYPE
+    SYNTAX      PtopoConnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Information about a particular physical network connection.
+            Entries may be created and deleted in this table, either
+            manually or by the agent, if a physical topology discovery
+            process is active."
+    INDEX   {
+           ptopoConnTimeMark,
+           ptopoConnLocalChassis,
+           ptopoConnLocalPort,
+           ptopoConnIndex
+    }
+    ::= { ptopoConnTable 1 }
+
+PtopoConnEntry ::= SEQUENCE {
+      ptopoConnTimeMark            TimeFilter,
+      ptopoConnLocalChassis        PhysicalIndex,
+      ptopoConnLocalPort           PhysicalIndex,
+      ptopoConnIndex               Integer32,
+      ptopoConnRemoteChassisType   PtopoChassisIdType,
+      ptopoConnRemoteChassis       PtopoChassisId,
+      ptopoConnRemotePortType      PtopoPortIdType,
+      ptopoConnRemotePort          PtopoPortId,
+      ptopoConnDiscAlgorithm       AutonomousType,
+      ptopoConnAgentNetAddrType    AddressFamilyNumbers,
+      ptopoConnAgentNetAddr        PtopoGenAddr,
+      ptopoConnMultiMacSASeen      PtopoAddrSeenState,
+      ptopoConnMultiNetSASeen      PtopoAddrSeenState,
+
+
+      ptopoConnIsStatic            TruthValue,
+      ptopoConnLastVerifyTime      TimeStamp,
+      ptopoConnRowStatus           RowStatus
+}
+
+ptopoConnTimeMark  OBJECT-TYPE
+    SYNTAX      TimeFilter
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A TimeFilter for this entry.  See the TimeFilter textual
+            convention in RFC 2021 to see how this works."
+    ::= { ptopoConnEntry 1 }
+
+ptopoConnLocalChassis  OBJECT-TYPE
+    SYNTAX      PhysicalIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The entPhysicalIndex value used to identify the chassis
+            component associated with the local connection endpoint."
+    ::= { ptopoConnEntry 2 }
+
+ptopoConnLocalPort     OBJECT-TYPE
+    SYNTAX      PhysicalIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The entPhysicalIndex value used to identify the port
+            component associated with the local connection endpoint."
+    ::= { ptopoConnEntry 3 }
+
+ptopoConnIndex    OBJECT-TYPE
+    SYNTAX      Integer32  (1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "This object represents an arbitrary local integer value
+            used by this agent to identify a particular connection
+            instance, unique only for the indicated local connection
+            endpoint.
+
+            A particular ptopoConnIndex value may be reused in the event
+            an entry is aged out and later re-learned with the same (or
+            different) remote chassis and port identifiers.
+
+            An agent is encouraged to assign monotonically increasing
+            index values to new entries, starting with one, after each
+
+
+            reboot.  It is considered unlikely that the ptopoConnIndex
+            will wrap between reboots."
+    ::= { ptopoConnEntry 4 }
+
+ptopoConnRemoteChassisType  OBJECT-TYPE
+    SYNTAX      PtopoChassisIdType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The type of encoding used to identify the chassis
+            associated with the remote connection endpoint.
+
+            This object may not be modified if the associated
+            ptopoConnRowStatus object has a value of active(1)."
+    ::= { ptopoConnEntry 5 }
+
+ptopoConnRemoteChassis  OBJECT-TYPE
+    SYNTAX      PtopoChassisId
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The string value used to identify the chassis component
+            associated with the remote connection endpoint.
+
+            This object may not be modified if the associated
+            ptopoConnRowStatus object has a value of active(1)."
+    ::= { ptopoConnEntry 6 }
+
+ptopoConnRemotePortType  OBJECT-TYPE
+    SYNTAX      PtopoPortIdType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The type of port identifier encoding used in the associated
+            'ptopoConnRemotePort' object.
+
+            This object may not be modified if the associated
+            ptopoConnRowStatus object has a value of active(1)."
+    ::= { ptopoConnEntry 7 }
+
+ptopoConnRemotePort  OBJECT-TYPE
+    SYNTAX      PtopoPortId
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The string value used to identify the port component
+            associated with the remote connection endpoint.
+
+
+
+            This object may not be modified if the associated
+            ptopoConnRowStatus object has a value of active(1)."
+    ::= { ptopoConnEntry 8 }
+
+ptopoConnDiscAlgorithm OBJECT-TYPE
+    SYNTAX      AutonomousType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "An indication of the algorithm used to discover the
+            information contained in this conceptual row.
+
+            A value of ptopoDiscoveryLocal indicates this entry was
+            configured by the local agent, without use of a discovery
+            protocol.
+
+            A value of { 0 0 } indicates this entry was created manually
+            by an NMS via the associated RowStatus object. "
+    ::= { ptopoConnEntry 9 }
+
+ptopoConnAgentNetAddrType  OBJECT-TYPE
+    SYNTAX      AddressFamilyNumbers
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "This network address type of the associated
+            ptopoConnNetAddr object, unless that object contains a zero
+            length string.  In such a case, an NMS application should
+            ignore any returned value for this object.
+
+            This object may not be modified if the associated
+            ptopoConnRowStatus object has a value of active(1)."
+    ::= { ptopoConnEntry 10 }
+
+ptopoConnAgentNetAddr  OBJECT-TYPE
+    SYNTAX      PtopoGenAddr
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "This object identifies a network address which may be used
+            to reach an SNMP agent entity containing information for the
+            chassis and port components represented by the associated
+            'ptopoConnRemoteChassis' and 'ptopoConnRemotePort' objects.
+            If no such address is known, then this object shall contain
+            an empty string.
+
+            This object may not be modified if the associated
+            ptopoConnRowStatus object has a value of active(1)."
+
+
+    ::= { ptopoConnEntry 11 }
+
+ptopoConnMultiMacSASeen  OBJECT-TYPE
+    SYNTAX      PtopoAddrSeenState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This object indicates if multiple unicast source MAC
+            addresses have been detected by the agent from the remote
+            connection endpoint, since the creation of this entry.
+
+            If this entry has an associated ptopoConnRemoteChassisType
+            and/or ptopoConnRemotePortType value other than
+            'portIdMacAddr(3)', then the value 'notUsed(1)' is returned.
+
+            Otherwise, one of the following conditions must be true:
+
+            If the agent has not yet detected any unicast source MAC
+            addresses from the remote port, then the value 'unknown(2)'
+            is returned.
+
+            If the agent has detected exactly one unicast source MAC
+            address from the remote port, then the value 'oneAddr(3)' is
+            returned.
+
+            If the agent has detected more than one unicast source MAC
+            address from the remote port, then the value 'multiAddr(4)'
+            is returned."
+    ::= { ptopoConnEntry 12 }
+
+ptopoConnMultiNetSASeen  OBJECT-TYPE
+    SYNTAX      PtopoAddrSeenState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This object indicates if multiple network layer source
+            addresses have been detected by the agent from the remote
+            connection endpoint, since the creation of this entry.
+
+            If this entry has an associated ptopoConnRemoteChassisType
+            or ptopoConnRemotePortType value other than
+            'portIdGenAddr(4)' then the value 'notUsed(1)' is returned.
+
+            Otherwise, one of the following conditions must be true:
+
+            If the agent has not yet detected any network source
+            addresses of the appropriate type from the remote port, then
+            the value 'unknown(2)' is returned.
+
+
+            If the agent has detected exactly one network source address
+            of the appropriate type from the remote port, then the value
+            'oneAddr(3)' is returned.
+
+            If the agent has detected more than one network source
+            address (of the same appropriate type) from the remote port,
+            this the value 'multiAddr(4)' is returned."
+    ::= { ptopoConnEntry 13 }
+
+ptopoConnIsStatic  OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "This object identifies static ptopoConnEntries.  If this
+            object has the value 'true(1)', then this entry is not
+            subject to any age-out mechanisms implemented by the agent.
+
+            If this object has the value 'false(2)', then this entry is
+            subject to all age-out mechanisms implemented by the agent.
+
+            This object may not be modified if the associated
+            ptopoConnRowStatus object has a value of active(1)."
+    DEFVAL { false }
+    ::= { ptopoConnEntry 14 }
+
+ptopoConnLastVerifyTime  OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "If the associated value of ptopoConnIsStatic is equal to
+            'false(2)', then this object contains the value of sysUpTime
+            at the time the conceptual row was last verified by the
+            agent, e.g., via reception of a topology protocol message,
+            pertaining to the associated remote chassis and port.
+
+            If the associated value of ptopoConnIsStatic is equal to
+            'true(1)', then this object shall contain the value of
+            sysUpTime at the time this entry was last activated (i.e.,
+            ptopoConnRowStatus set to 'active(1)')."
+    ::= { ptopoConnEntry 15 }
+
+ptopoConnRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+
+
+            "The status of this conceptual row."
+    ::= { ptopoConnEntry 16 }
+
+--  ***********************************************************
+--
+--           P T O P O    G E N E R A L     G R O U P
+--
+--  ***********************************************************
+
+-- last change time stamp for the whole MIB
+
+ptopoLastChangeTime OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The value of sysUpTime at the time a conceptual row is
+            created, modified, or deleted in the ptopoConnTable.
+
+            An NMS can use this object to reduce polling of the
+            ptopoData group objects."
+    ::= { ptopoGeneral 1 }
+
+ptopoConnTabInserts OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "table entries"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of times an entry has been inserted into the
+            ptopoConnTable."
+    ::= { ptopoGeneral 2 }
+
+ptopoConnTabDeletes OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "table entries"
+    MAX-ACCESS  read-only
+    STATUS      current
+
+    DESCRIPTION
+            "The number of times an entry has been deleted from the
+            ptopoConnTable."
+    ::= { ptopoGeneral 3 }
+
+ptopoConnTabDrops OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "table entries"
+    MAX-ACCESS  read-only
+
+
+    STATUS      current
+    DESCRIPTION
+            "The number of times an entry would have been added to the
+            ptopoConnTable, (e.g., via information learned from a
+            topology protocol), but was not because of insufficient
+            resources."
+    ::= { ptopoGeneral 4 }
+
+ptopoConnTabAgeouts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of times an entry has been deleted from the
+            ptopoConnTable because the information timeliness interval
+            for that entry has expired."
+    ::= { ptopoGeneral 5 }
+
+--  ***********************************************************
+--
+--           P T O P O    C O N F I G     G R O U P
+--
+--  ***********************************************************
+
+ptopoConfigTrapInterval OBJECT-TYPE
+    SYNTAX      Integer32 (0 | 5..3600)
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "This object controls the transmission of PTOPO
+            notifications.
+
+            If this object has a value of zero, then no
+            ptopoConfigChange notifications will be transmitted by the
+            agent.
+
+            If this object has a non-zero value, then the agent must not
+            generate more than one ptopoConfigChange trap-event in the
+            indicated period, where a 'trap-event' is the transmission
+            of a single notification PDU type to a list of notification
+            destinations.  If additional configuration changes occur
+            within the indicated throttling period, then these trap-
+            events must be suppressed by the agent. An NMS should
+            periodically check the value of ptopoLastChangeTime to
+            detect any missed ptopoConfigChange trap-events, e.g. due to
+            throttling or transmission loss.
+
+
+
+            If notification transmission is enabled, the suggested
+            default throttling period is 60 seconds, but transmission
+            should be disabled by default.
+
+            If the agent is capable of storing non-volatile
+            configuration, then the value of this object must be
+            restored after a re-initialization of the management
+            system."
+    DEFVAL { 0 }
+    ::= { ptopoConfig 1 }
+
+ptopoConfigMaxHoldTime OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "This object specifies the desired time interval for which
+            an agent will maintain dynamic ptopoConnEntries.
+
+            After the specified number of seconds since the last time an
+            entry was verified, in the absence of new verification
+            (e.g., receipt of a topology protocol message), the agent
+            shall remove the entry.  Note that entries may not always be
+            removed immediately, but may possibly be removed at periodic
+            garbage collection intervals.
+            This object only affects dynamic ptopoConnEntries, i.e.  for
+            which ptopoConnIsStatic equals 'false(2)'. Static entries
+            are not aged out.
+
+            Note that dynamic ptopoConnEntries may also be removed by
+            the agent due to the expired timeliness of learned topology
+            information (e.g., timeliness interval for a remote port
+            expires).  The actual age-out interval for a given entry is
+            defined by the following formula:
+
+              age-out-time =
+                min(ptopoConfigMaxHoldTime, <entry-specific hold-time>)
+
+            where <entry-specific hold-time> is determined by the
+            discovery algorithm, and may be different for each entry."
+    DEFVAL { 300 }
+    ::= { ptopoConfig 2 }
+
+
+-- PTOPO MIB Notification Definitions
+ptopoMIBNotifications  OBJECT IDENTIFIER ::= { ptopoMIB 2 }
+ptopoMIBTrapPrefix     OBJECT IDENTIFIER ::=
+
+
+      { ptopoMIBNotifications 0 }
+
+ptopoConfigChange NOTIFICATION-TYPE
+    OBJECTS       {
+             ptopoConnTabInserts,
+             ptopoConnTabDeletes,
+             ptopoConnTabDrops,
+             ptopoConnTabAgeouts
+    }
+    STATUS        current
+    DESCRIPTION
+            "A ptopoConfigChange notification is sent when the value of
+            ptopoLastChangeTime changes. It can be utilized by an NMS to
+            trigger physical topology table maintenance polls.
+
+            Note that transmission of ptopoConfigChange notifications
+            are throttled by the agent, as specified by the
+            'ptopoConfigTrapInterval' object."
+   ::= { ptopoMIBTrapPrefix 1 }
+
+
+-- PTOPO Registration Points
+ptopoRegistrationPoints  OBJECT IDENTIFIER ::= { ptopoMIB 3 }
+
+-- values used with ptopoConnDiscAlgorithm object
+ptopoDiscoveryMechanisms OBJECT IDENTIFIER ::=
+      { ptopoRegistrationPoints 1 }
+
+ptopoDiscoveryLocal      OBJECT IDENTIFIER ::=
+      { ptopoDiscoveryMechanisms 1 }
+
+
+-- conformance information
+ptopoConformance OBJECT IDENTIFIER ::= { ptopoMIB 4 }
+
+ptopoCompliances OBJECT IDENTIFIER ::= { ptopoConformance 1 }
+ptopoGroups      OBJECT IDENTIFIER ::= { ptopoConformance 2 }
+
+
+-- compliance statements
+ptopoCompliance MODULE-COMPLIANCE
+   STATUS  current
+    DESCRIPTION
+            "The compliance statement for SNMP entities which implement
+            the PTOPO MIB."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+              ptopoDataGroup,
+
+
+              ptopoGeneralGroup,
+              ptopoConfigGroup,
+              ptopoNotificationsGroup
+        }
+    ::= { ptopoCompliances 1 }
+
+-- MIB groupings
+ptopoDataGroup   OBJECT-GROUP
+    OBJECTS {
+         ptopoConnRemoteChassisType,
+         ptopoConnRemoteChassis,
+         ptopoConnRemotePortType,
+         ptopoConnRemotePort,
+         ptopoConnDiscAlgorithm,
+         ptopoConnAgentNetAddrType,
+         ptopoConnAgentNetAddr,
+         ptopoConnMultiMacSASeen,
+         ptopoConnMultiNetSASeen,
+         ptopoConnIsStatic,
+         ptopoConnLastVerifyTime,
+         ptopoConnRowStatus
+    }
+    STATUS  current
+    DESCRIPTION
+            "The collection of objects which are used to represent
+            physical topology information for which a single agent
+            provides management information.
+
+            This group is mandatory for all implementations of the PTOPO
+            MIB."
+    ::= { ptopoGroups 1 }
+
+ptopoGeneralGroup    OBJECT-GROUP
+    OBJECTS {
+         ptopoLastChangeTime,
+         ptopoConnTabInserts,
+         ptopoConnTabDeletes,
+         ptopoConnTabDrops,
+         ptopoConnTabAgeouts
+    }
+    STATUS  current
+    DESCRIPTION
+            "The collection of objects which are used to report the
+            general status of the PTOPO MIB implementation.
+
+            This group is mandatory for all agents which implement the
+            PTOPO MIB."
+    ::= { ptopoGroups 2 }
+
+
+ptopoConfigGroup    OBJECT-GROUP
+    OBJECTS {
+         ptopoConfigTrapInterval,
+         ptopoConfigMaxHoldTime
+    }
+    STATUS  current
+    DESCRIPTION
+            "The collection of objects which are used to configure the
+            PTOPO MIB implementation behavior.
+
+            This group is mandatory for agents which implement the PTOPO
+            MIB."
+    ::= { ptopoGroups 3 }
+
+ptopoNotificationsGroup NOTIFICATION-GROUP
+    NOTIFICATIONS {
+         ptopoConfigChange
+    }
+    STATUS        current
+    DESCRIPTION
+            "The collection of notifications used to indicate PTOPO MIB
+            data consistency and general status information.
+
+            This group is mandatory for agents which implement the PTOPO
+            MIB."
+    ::= { ptopoGroups 4 }
+
+END

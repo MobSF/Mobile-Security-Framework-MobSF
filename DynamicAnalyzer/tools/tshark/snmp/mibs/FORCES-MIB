@@ -1,0 +1,464 @@
+      FORCES-MIB DEFINITIONS ::= BEGIN
+
+      IMPORTS
+          MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+            mib-2, Integer32
+            FROM SNMPv2-SMI
+
+          TEXTUAL-CONVENTION, TimeStamp
+            FROM SNMPv2-TC
+
+          MODULE-COMPLIANCE, OBJECT-GROUP,
+          NOTIFICATION-GROUP
+            FROM SNMPv2-CONF
+
+          ZeroBasedCounter32
+            FROM RMON2-MIB;
+
+      forcesMib MODULE-IDENTITY
+          LAST-UPDATED "201003100000Z"  -- March 10, 2010
+          ORGANIZATION "IETF Forwarding and Control Element
+                        Separation (ForCES) Working Group"
+          CONTACT-INFO
+              "WG Charter:
+                http://www.ietf.org/html.charters/forces-charter.html
+
+                Mailing lists:
+                    General Discussion: forces@ietf.org
+                    To Subscribe:
+                    https://www.ietf.org/mailman/listinfo/forces
+
+                Chairs: Patrick Droz
+                        Email: dro@zurich.ibm.com
+                        Jamal Hadi Salim
+                        Email: hadi@mojatatu.com
+
+
+
+                Editor: Robert Haas
+                        IBM
+                        Email:  rha@zurich.ibm.com"
+          DESCRIPTION
+              "This MIB module contains managed object definitions
+               for the ForCES Protocol.
+
+               Copyright (c) 2010 IETF Trust and the persons identified
+               as authors of the code.  All rights reserved.
+
+               Redistribution and use in source and binary forms, with
+               or without modification, is permitted pursuant to, and
+               subject to the license terms contained in, the
+               Simplified BSD License set forth in Section 4.c of the
+               IETF Trust's Legal Provisions Relating to IETF Documents
+               (http://trustee.ietf.org/license-info).
+
+               This version of this MIB module is part of RFC 5813;
+               see the RFC itself for full legal notices."
+          REVISION "201003100000Z"  -- March 10, 2010
+          DESCRIPTION
+             "Initial version, published as RFC 5813."
+         ::= { mib-2 187 }
+
+ --****************************************************************
+
+      forcesMibNotifications OBJECT IDENTIFIER ::= { forcesMib 0 }
+      forcesMibObjects       OBJECT IDENTIFIER ::= { forcesMib 1 }
+      forcesMibConformance   OBJECT IDENTIFIER ::= { forcesMib 2 }
+
+      ForcesID ::= TEXTUAL-CONVENTION
+          STATUS      current
+          DESCRIPTION
+              "The ForCES identifier is a 4-octet quantity."
+          SYNTAX      OCTET STRING (SIZE (4))
+
+      ForcesProtocolVersion ::= TEXTUAL-CONVENTION
+          DISPLAY-HINT "d"
+          STATUS      current
+          DESCRIPTION
+              "ForCES protocol version number.
+               The version numbers used are defined in the
+               specifications of the respective protocol:
+               1 - ForCESv1, RFC 5810."
+          SYNTAX      Integer32 (1..255)
+
+
+
+
+
+
+-- Notifications
+
+      forcesAssociationEntryUp NOTIFICATION-TYPE
+         OBJECTS     {
+            forcesAssociationRunningProtocolVersion
+         }
+         STATUS      current
+         DESCRIPTION
+              "This notification is generated as soon
+               as an association enters the UP state.
+               Note that these notifications are not
+               throttled as the CE itself should
+               throttle the setup of associations."
+         ::= { forcesMibNotifications 1 }
+
+       forcesAssociationEntryDown NOTIFICATION-TYPE
+         OBJECTS     {
+            forcesAssociationRunningProtocolVersion
+         }
+         STATUS      current
+         DESCRIPTION
+              "This notification is generated as soon
+               as an association leaves the UP state.
+               Note that these notifications are not
+               throttled as the CE itself should
+               throttle the setup of associations."
+         ::= { forcesMibNotifications 2 }
+
+      forcesAssociationEntryUpStats NOTIFICATION-TYPE
+         OBJECTS     {
+            forcesAssociationRunningProtocolVersion,
+            forcesAssociationTimeUp
+         }
+         STATUS      current
+         DESCRIPTION
+              "This notification is generated as soon
+               as an association enters the UP state.
+               Note that these notifications are not
+               throttled as the CE itself should
+               throttle the setup of associations."
+         ::= { forcesMibNotifications 3 }
+
+
+
+
+
+
+
+
+
+
+       forcesAssociationEntryDownStats NOTIFICATION-TYPE
+         OBJECTS     {
+            forcesAssociationRunningProtocolVersion,
+            forcesAssociationTimeUp,
+            forcesAssociationTimeDown,
+            forcesAssociationHBMsgSent,
+            forcesAssociationHBMsgReceived,
+            forcesAssociationOperMsgSent,
+            forcesAssociationOperMsgReceived,
+            forcesAssociationCounterDiscontinuityTime
+            }
+         STATUS      current
+         DESCRIPTION
+              "This notification is generated as soon
+               as an association leaves the UP state.
+               Note that these notifications are not
+               throttled as the CE itself should
+               throttle the setup of associations."
+         ::= { forcesMibNotifications 4 }
+
+-- Objects
+
+      forcesLatestProtocolVersionSupported OBJECT-TYPE
+          SYNTAX      ForcesProtocolVersion
+          MAX-ACCESS  read-only
+          STATUS      current
+          DESCRIPTION
+                 "The ForCES protocol version supported by the CE.
+                  The current protocol version is 1.
+                  Note that the CE must also allow interaction
+                  with FEs supporting earlier versions."
+          ::= { forcesMibObjects 1 }
+
+      forcesAssociations OBJECT IDENTIFIER ::= { forcesMibObjects 2 }
+
+      forcesAssociationTable OBJECT-TYPE
+          SYNTAX SEQUENCE OF ForcesAssociationEntry
+          MAX-ACCESS not-accessible
+          STATUS current
+          DESCRIPTION
+                 "The (conceptual) table of associations."
+          ::= { forcesAssociations 1 }
+
+
+
+
+
+
+
+
+
+      forcesAssociationEntry OBJECT-TYPE
+          SYNTAX ForcesAssociationEntry
+          MAX-ACCESS not-accessible
+          STATUS current
+          DESCRIPTION
+                 "A (conceptual) entry for one association."
+          INDEX { forcesAssociationCEID, forcesAssociationFEID }
+          ::= { forcesAssociationTable 1 }
+
+      ForcesAssociationEntry ::= SEQUENCE {
+              forcesAssociationCEID             ForcesID,
+              forcesAssociationFEID             ForcesID,
+
+              forcesAssociationRunningProtocolVersion
+                                          ForcesProtocolVersion,
+
+              forcesAssociationTimeUp           TimeStamp,
+              forcesAssociationTimeDown         TimeStamp,
+
+              forcesAssociationHBMsgSent        ZeroBasedCounter32,
+              forcesAssociationHBMsgReceived    ZeroBasedCounter32,
+              forcesAssociationOperMsgSent      ZeroBasedCounter32,
+              forcesAssociationOperMsgReceived  ZeroBasedCounter32,
+              forcesAssociationCounterDiscontinuityTime  TimeStamp
+     }
+
+      forcesAssociationCEID OBJECT-TYPE
+          SYNTAX ForcesID
+          MAX-ACCESS not-accessible
+          STATUS current
+          DESCRIPTION
+                 "The ForCES ID of the CE."
+          ::= { forcesAssociationEntry 1 }
+
+      forcesAssociationFEID OBJECT-TYPE
+          SYNTAX ForcesID
+          MAX-ACCESS not-accessible
+          STATUS current
+          DESCRIPTION
+                 "The ForCES ID of the FE."
+          ::= { forcesAssociationEntry 2 }
+
+
+
+
+
+
+
+
+
+
+      forcesAssociationRunningProtocolVersion OBJECT-TYPE
+          SYNTAX      ForcesProtocolVersion
+          MAX-ACCESS  read-only
+          STATUS      current
+          DESCRIPTION
+                 "The current ForCES protocol version used in
+                  this association.
+                  The current protocol version is 1."
+          ::= { forcesAssociationEntry 3 }
+
+      forcesAssociationTimeUp OBJECT-TYPE
+          SYNTAX TimeStamp
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+                 "The value of sysUpTime at the time this
+                  association entered the UP state.
+                  If this association started prior to the last
+                  initialization of the network subsystem, then
+                  this object contains a zero value.
+                  This object allows to uniquely identify
+                  associations with the same CE and FE IDs."
+          ::= { forcesAssociationEntry 4 }
+
+      forcesAssociationTimeDown OBJECT-TYPE
+          SYNTAX TimeStamp
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+                 "The value of sysUpTime at the time this
+                  association left the UP state."
+          ::= { forcesAssociationEntry 5 }
+
+      forcesAssociationHBMsgSent OBJECT-TYPE
+          SYNTAX ZeroBasedCounter32
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+                 "A counter of how many Heartbeat messages have
+                  been sent by the CE on this association
+                  since the association entered the UP state.
+                  Discontinuities in the value of this counter
+                  can occur at reinitialization of the management
+                  system, and at other times as indicated by the
+                  value of forcesAssociationCounterDiscontinuityTime."
+          ::= { forcesAssociationEntry 6 }
+
+
+
+
+
+      forcesAssociationHBMsgReceived OBJECT-TYPE
+          SYNTAX ZeroBasedCounter32
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+                 "A counter of how many Heartbeat messages
+                  have been received by the CE on this association
+                  since the association entered the UP state.
+                  Discontinuities in the value of this counter
+                  can occur at reinitialization of the management
+                  system, and at other times as indicated by the
+                  value of forcesAssociationCounterDiscontinuityTime."
+          ::= { forcesAssociationEntry 7 }
+
+      forcesAssociationOperMsgSent OBJECT-TYPE
+          SYNTAX ZeroBasedCounter32
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+                 "A counter of how many messages other than
+                  Heartbeat (i.e., Config and Query)
+                  have been sent by the CE on this association
+                  since the association entered the UP state.
+                  Discontinuities in the value of this counter
+                  can occur at reinitialization of the management
+                  system, and at other times as indicated by the
+                  value of forcesAssociationCounterDiscontinuityTime."
+          ::= { forcesAssociationEntry 8 }
+
+      forcesAssociationOperMsgReceived OBJECT-TYPE
+          SYNTAX ZeroBasedCounter32
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+                 "A counter of how many messages other than
+                  Heartbeat (i.e., Config response, Query response,
+                  event notification, and packet redirect)
+                  have been received by the CE on this association
+                  since the association entered the UP state.
+                  Discontinuities in the value of this counter
+                  can occur at reinitialization of the management
+                  system, and at other times as indicated by the
+                  value of forcesAssociationCounterDiscontinuityTime."
+          ::= { forcesAssociationEntry 9 }
+
+
+
+
+
+
+
+      forcesAssociationCounterDiscontinuityTime OBJECT-TYPE
+          SYNTAX TimeStamp
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+                 "The value of sysUpTime on the most recent occasion
+                  at which any one or more of this association's
+                  counters suffered a discontinuity.  The relevant
+                  counters are the specific instances associated with
+                  this association of any ZeroBasedCounter32 object
+                  contained in the forcesAssociationTable.  If no
+                  such discontinuities have occurred since the last
+                  reinitialization of the local management subsystem,
+                  then this object contains a zero value."
+          ::= { forcesAssociationEntry 10 }
+
+-- Conformance
+
+      forcesMibCompliances   OBJECT IDENTIFIER
+                               ::= { forcesMibConformance 1 }
+      forcesMibGroups        OBJECT IDENTIFIER
+                               ::= { forcesMibConformance 2 }
+
+-- Compliance statements
+
+      forcesMibCompliance  MODULE-COMPLIANCE
+          STATUS current
+          DESCRIPTION
+                 "The compliance statement for routers running
+                  ForCES and implementing the ForCES MIB."
+          MODULE  -- this module
+            MANDATORY-GROUPS { forcesMibGroup, forcesNotificationGroup }
+
+            GROUP forcesNotificationStatsGroup
+            DESCRIPTION
+                   "Implementation of this group is recommended."
+
+            GROUP forcesStatsGroup
+            DESCRIPTION
+              "Implementation of this group is recommended."
+
+          ::= { forcesMibCompliances 1 }
+
+
+
+
+
+
+
+
+
+-- Units of conformance
+
+      forcesNotificationGroup NOTIFICATION-GROUP
+          NOTIFICATIONS { forcesAssociationEntryUp,
+                          forcesAssociationEntryDown
+                        }
+          STATUS  current
+          DESCRIPTION
+                 "A collection of notifications for signaling
+                  important ForCES events."
+          ::= { forcesMibGroups 1 }
+
+      forcesMibGroup OBJECT-GROUP
+          OBJECTS { forcesLatestProtocolVersionSupported,
+                    forcesAssociationRunningProtocolVersion
+                  }
+          STATUS  current
+          DESCRIPTION
+                 "A collection of objects to support management
+                  of ForCES routers."
+        ::= { forcesMibGroups 2 }
+
+      forcesNotificationStatsGroup NOTIFICATION-GROUP
+          NOTIFICATIONS { forcesAssociationEntryUpStats,
+                          forcesAssociationEntryDownStats
+                        }
+          STATUS  current
+          DESCRIPTION
+                 "A collection of optional notifications for
+                  signaling important ForCES events including
+                  statistics."
+          ::= { forcesMibGroups 3 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      forcesStatsGroup OBJECT-GROUP
+          OBJECTS { forcesAssociationTimeUp,
+                    forcesAssociationTimeDown,
+                    forcesAssociationHBMsgSent,
+                    forcesAssociationHBMsgReceived,
+                    forcesAssociationOperMsgSent,
+                    forcesAssociationOperMsgReceived,
+                    forcesAssociationCounterDiscontinuityTime
+                  }
+          STATUS  current
+          DESCRIPTION
+                 "A collection of optional objects to provide
+                  extra information about the associations.
+                  There is no protocol reason to keep such
+                  information, but these objects can be very
+                  useful in debugging connectivity problems."
+        ::= { forcesMibGroups 4}
+
+      END

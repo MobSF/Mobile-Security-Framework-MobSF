@@ -1,0 +1,62 @@
+# -*- text -*-
+##############################################################################
+#
+#	Alcatel-Lucent Service Router dictionary.
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR		Alcatel-Lucent-Service-Router	6527
+
+BEGIN-VENDOR	Alcatel-Lucent-Service-Router
+
+# Alcatel Timetra attributes
+ATTRIBUTE	Timetra-Access				1	integer
+ATTRIBUTE	Timetra-Home-Directory			2	string
+ATTRIBUTE	Timetra-Restrict-To-Home		3	integer
+ATTRIBUTE	Timetra-Profile				4	string
+ATTRIBUTE	Timetra-Default-Action			5	integer
+ATTRIBUTE	Timetra-Cmd				6	string
+ATTRIBUTE	Timetra-Action				7	integer
+ATTRIBUTE	Timetra-Exec-File			8	string
+
+VALUE	Timetra-Access			ftp			1
+VALUE	Timetra-Access			console			2
+VALUE	Timetra-Access			both			3
+
+VALUE	Timetra-Restrict-To-Home	true			1
+VALUE	Timetra-Restrict-To-Home	false			2
+
+VALUE	Timetra-Default-Action		permit-all		1
+VALUE	Timetra-Default-Action		deny-all		2
+VALUE	Timetra-Default-Action		none			3
+
+VALUE	Timetra-Action			permit			1
+VALUE	Timetra-Action			deny			2
+
+# Alcatel Timetra authorization and CoA VSA
+ATTRIBUTE	Alc-Primary-Dns				9	ipaddr
+ATTRIBUTE	Alc-Secondary-Dns			10	ipaddr
+ATTRIBUTE	Alc-Subsc-ID-Str			11	string
+ATTRIBUTE	Alc-Subsc-Prof-Str			12	string
+ATTRIBUTE	Alc-SLA-Prof-Str			13	string
+ATTRIBUTE	Alc-Force-Renew				14	string
+ATTRIBUTE	Alc-Create-Host				15	string
+ATTRIBUTE	Alc-ANCP-Str				16	string
+ATTRIBUTE	Alc-Retail-Serv-Id			17	integer
+ATTRIBUTE	Alc-Retail-Serv-Id			17	integer
+ATTRIBUTE	Alc-Default-Router			18	ipaddr
+ATTRIBUTE	Alc-Client-Hardware-Addr		27	string
+
+# RADIUS subscriber accounting VSAs
+ATTRIBUTE	Alc-Acct-I-Inprof-Octets-64		19	integer
+ATTRIBUTE	Alc-Acct-I-Outprof-Octets-64		20	integer
+ATTRIBUTE	Alc-Acct-O-Inprof-Octets-64		21	integer
+ATTRIBUTE	Alc-Acct-O-Outprof-Octets-64		22	integer
+ATTRIBUTE	Alc-Acct-I-Inprof-Pkts-64		23	integer
+ATTRIBUTE	Alc-Acct-I-Outprof-Pkts-64		24	integer
+ATTRIBUTE	Alc-Acct-O-Inprof-Pkts-64		25	integer
+ATTRIBUTE	Alc-Acct-O-Outprof-Pkts-64		26	integer
+
+END-VENDOR	Alcatel-Lucent-Service-Router

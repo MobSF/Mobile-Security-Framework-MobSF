@@ -1,0 +1,2194 @@
+POLICY-BASED-MANAGEMENT-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Counter32, Gauge32, Unsigned32,
+    mib-2                                       FROM SNMPv2-SMI
+    RowStatus, RowPointer, TEXTUAL-CONVENTION,
+    DateAndTime, StorageType                    FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP,
+    NOTIFICATION-GROUP                          FROM SNMPv2-CONF
+    SnmpAdminString                             FROM SNMP-FRAMEWORK-MIB;
+
+--  Policy-Based Management MIB
+
+pmMib MODULE-IDENTITY
+    LAST-UPDATED "200502070000Z"  -- February 7, 2005
+    ORGANIZATION "IETF SNMP Configuration Working Group"
+    CONTACT-INFO
+        "
+
+
+
+
+        Steve Waldbusser
+        Phone: +1-650-948-6500
+        Fax:   +1-650-745-0671
+        Email: waldbusser@nextbeacon.com
+
+        Jon Saperia (WG Co-chair)
+        JDS Consulting, Inc.
+        84 Kettell Plain Road.
+        Stow MA 01775
+        USA
+        Phone: +1-978-461-0249
+        Fax:   +1-617-249-0874
+        Email: saperia@jdscons.com
+
+        Thippanna Hongal
+        Riverstone Networks, Inc.
+        5200 Great America Parkway
+        Santa Clara, CA, 95054
+        USA
+
+        Phone: +1-408-878-6562
+        Fax:   +1-408-878-6501
+        Email: hongal@riverstonenet.com
+
+        David Partain (WG Co-chair)
+        Postal: Ericsson AB
+                P.O. Box 1248
+                SE-581 12 Linkoping
+                Sweden
+        Tel: +46 13 28 41 44
+        E-mail: David.Partain@ericsson.com
+
+        Any questions or comments about this document can also be
+        directed to the working group at snmpconf@snmp.com."
+    DESCRIPTION
+        "The MIB module for policy-based configuration of SNMP
+        infrastructures.
+
+        Copyright (C) The Internet Society (2005).  This version of
+        this MIB module is part of RFC 4011; see the RFC itself for
+        full legal notices."
+
+    REVISION "200502070000Z"    -- February 7, 2005
+    DESCRIPTION
+        "The original version of this MIB, published as RFC4011."
+    ::= { mib-2 124 }
+
+
+
+
+
+PmUTF8String ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "An octet string containing information typically in
+        human-readable form.
+
+        To facilitate internationalization, this
+        information is represented by using the ISO/IEC
+        IS 10646-1 character set, encoded as an octet
+        string using the UTF-8 transformation format
+        described in RFC 3629.
+
+        As additional code points are added by
+        amendments to the 10646 standard from time
+        to time, implementations must be prepared to
+        encounter any code point from 0x00000000 to
+        0x10FFFF.  Byte sequences that do not
+        correspond to the valid UTF-8 encoding of a
+        code point or that are outside this range are
+        prohibited.
+
+        The use of control codes should be avoided.
+
+        When it is necessary to represent a newline,
+        the control code sequence CR LF should be used.
+
+        For code points not directly supported by user
+        interface hardware or software, an alternative
+        means of entry and display, such as hexadecimal,
+        may be provided.
+
+        For information encoded in 7-bit US-ASCII,
+        the UTF-8 encoding is identical to the
+        US-ASCII encoding.
+
+        UTF-8 may require multiple bytes to represent a
+        single character/code point; thus, the length
+        of this object in octets may be different from
+        the number of characters encoded.  Similarly,
+        size constraints refer to the number of encoded
+        octets, not the number of characters represented
+        by an encoding.
+
+        Note that when this TC is used for an object
+        used or envisioned to be used as an index, then
+        a SIZE restriction MUST be specified so that the
+        number of sub-identifiers for any object instance
+        does not exceed the limit of 128, as defined by
+
+
+
+        RFC 3416.
+
+        Note that the size of PmUTF8String object is
+        measured in octets, not characters."
+       SYNTAX       OCTET STRING (SIZE (0..65535))
+
+-- The policy table
+
+pmPolicyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The policy table.  A policy is a pairing of a
+        policyCondition and a policyAction that is used to apply the
+        action to a selected set of elements."
+    ::= { pmMib 1 }
+
+pmPolicyEntry OBJECT-TYPE
+    SYNTAX      PmPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in the policy table representing one policy."
+    INDEX { pmPolicyAdminGroup, pmPolicyIndex }
+    ::= { pmPolicyTable 1 }
+
+PmPolicyEntry ::= SEQUENCE {
+    pmPolicyAdminGroup            PmUTF8String,
+    pmPolicyIndex                 Unsigned32,
+    pmPolicyPrecedenceGroup       PmUTF8String,
+    pmPolicyPrecedence            Unsigned32,
+    pmPolicySchedule              Unsigned32,
+    pmPolicyElementTypeFilter     PmUTF8String,
+    pmPolicyConditionScriptIndex  Unsigned32,
+    pmPolicyActionScriptIndex     Unsigned32,
+    pmPolicyParameters            OCTET STRING,
+    pmPolicyConditionMaxLatency   Unsigned32,
+    pmPolicyActionMaxLatency      Unsigned32,
+    pmPolicyMaxIterations         Unsigned32,
+    pmPolicyDescription           PmUTF8String,
+    pmPolicyMatches               Gauge32,
+    pmPolicyAbnormalTerminations  Gauge32,
+    pmPolicyExecutionErrors       Counter32,
+    pmPolicyDebugging             INTEGER,
+    pmPolicyAdminStatus           INTEGER,
+    pmPolicyStorageType           StorageType,
+    pmPolicyRowStatus             RowStatus
+
+
+
+}
+
+pmPolicyAdminGroup OBJECT-TYPE
+    SYNTAX      PmUTF8String (SIZE(0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An administratively assigned string that can be used to group
+        policies for convenience, for readability, or to simplify
+        configuration of access control.
+
+        The value of this string does not affect policy processing in
+        any way.  If grouping is not desired or necessary, this object
+        may be set to a zero-length string."
+    ::= { pmPolicyEntry 1 }
+
+pmPolicyIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A unique index for this policy entry, unique among all
+         policies regardless of administrative group."
+    ::= { pmPolicyEntry 2 }
+
+pmPolicyPrecedenceGroup OBJECT-TYPE
+    SYNTAX      PmUTF8String (SIZE (0..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An administratively assigned string that is used to group
+        policies.  For each element, only one policy in the same
+        precedence group may be active on that element.  If multiple
+        policies would be active on an element (because their
+        conditions return non-zero), the execution environment will
+        only allow the policy with the highest value of
+        pmPolicyPrecedence to be active.
+
+        All values of this object must have been successfully
+        transformed by Stringprep RFC 3454.  Management stations
+        must perform this translation and must only set this object to
+        string values that have been transformed."
+    ::= { pmPolicyEntry 3 }
+
+pmPolicyPrecedence OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+
+
+
+    DESCRIPTION
+        "If, while checking to see which policy conditions match an
+        element, 2 or more ready policies in the same precedence group
+        match the same element, the pmPolicyPrecedence object provides
+        the rule to arbitrate which single policy will be active on
+        'this element'.  Of policies in the same precedence group, only
+        the ready and matching policy with the highest precedence
+        value (e.g., 2 is higher than 1) will have its policy action
+        periodically executed on 'this element'.
+
+        When a policy is active on an element but the condition ceases
+        to match the element, its action (if currently running) will
+        be allowed to finish and then the condition-matching ready
+        policy with the next-highest precedence will immediately
+        become active (and have its action run immediately).  If the
+        condition of a higher-precedence ready policy suddenly begins
+        matching an element, the previously-active policy's action (if
+        currently running) will be allowed to finish and then the
+        higher precedence policy will immediately become active.  Its
+        action will run immediately, and any lower-precedence matching
+        policy will not be active anymore.
+
+        In the case where multiple ready policies share the highest
+        value, it is an implementation-dependent matter as to which
+        single policy action will be chosen.
+
+        Note that if it is necessary to take certain actions after a
+        policy is no longer active on an element, these actions should
+        be included in a lower-precedence policy that is in the same
+        precedence group."
+    ::= { pmPolicyEntry 4 }
+
+pmPolicySchedule OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "This policy will be ready if any of the associated schedule
+         entries are active.
+
+         If the value of this object is 0, this policy is always
+         ready.
+
+         If the value of this object is non-zero but doesn't
+         refer to a schedule group that includes an active schedule,
+         then the policy will not be ready, even if this is due to a
+         misconfiguration of this object or the pmSchedTable."
+    ::= { pmPolicyEntry 5 }
+
+
+
+pmPolicyElementTypeFilter OBJECT-TYPE
+    SYNTAX      PmUTF8String (SIZE (0..128))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object specifies the element types for which this policy
+        can be executed.
+
+        The format of this object will be a sequence of
+        pmElementTypeRegOIDPrefix values, encoded in the following
+        BNF form:
+
+        elementTypeFilter:   oid [ ';' oid ]*
+                      oid:   subid [ '.' subid ]*
+                    subid:   '0' | decimal_constant
+
+        For example, to register for the policy to be run on all
+        interface elements, the 'ifEntry' element type will be
+        registered as '1.3.6.1.2.1.2.2.1'.
+
+        If a value is included that does not represent a registered
+        pmElementTypeRegOIDPrefix, then that value will be ignored."
+    ::= { pmPolicyEntry 6 }
+
+pmPolicyConditionScriptIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+         "A pointer to the row or rows in the pmPolicyCodeTable that
+         contain the condition code for this policy.  When a policy
+         entry is created, a pmPolicyCodeIndex value unused by this
+         policy's adminGroup will be assigned to this object.
+
+         A policy condition is one or more PolicyScript statements
+         that result(s) in a boolean value that represents whether
+         an element is a member of a set of elements upon which an
+         action is to be performed.  If a policy is ready and the
+         condition returns true for an element of a proper element
+         type, and if no higher-precedence policy should be active,
+         then the policy is active on that element.
+
+         Condition evaluation stops immediately when any run-time
+         exception is detected, and the policyAction is not executed.
+
+         The policyCondition is evaluated for various elements.  Any
+         element for which the policyCondition returns any nonzero value
+         will match the condition and will have the associated
+
+
+
+         policyAction executed on that element unless a
+         higher-precedence policy in the same precedence group also
+         matches 'this element'.
+
+         If the condition object is empty (contains no code) or
+         otherwise does not return a value, the element will not be
+         matched.
+
+         When this condition is executed, if SNMP requests are made to
+         the local system and secModel/secName/secLevel aren't
+         specified, access to objects is under the security
+         credentials of the requester who most recently modified the
+         associated pmPolicyAdminStatus object.  If SNMP requests are
+         made in which secModel/secName/secLevel are specified, then
+         the specified credentials are retrieved from the local
+         configuration datastore only if VACM is configured to
+         allow access to the requester who most recently modified the
+         associated pmPolicyAdminStatus object.  See the Security
+         Considerations section for more information."
+    ::= { pmPolicyEntry 7 }
+
+pmPolicyActionScriptIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+         "A pointer to the row or rows in the pmPolicyCodeTable that
+         contain the action code for this policy.  When a policy entry
+         is created, a pmPolicyCodeIndex value unused by this policy's
+         adminGroup will be assigned to this object.
+
+         A PolicyAction is an operation performed on a
+         set of elements for which the policy is active.
+
+         Action evaluation stops immediately when any run-time
+         exception is detected.
+
+         When this condition is executed, if SNMP requests are made to
+         the local system and secModel/secName/secLevel aren't
+         specified, access to objects is under the security
+         credentials of the requester who most recently modified the
+         associated pmPolicyAdminStatus object.  If SNMP requests are
+         made in which secModel/secName/secLevel are specified, then
+         the specified credentials are retrieved from the local
+         configuration datastore only if VACM is configured to
+         allow access to the requester who most recently modified the
+         associated pmPolicyAdminStatus object.  See the Security
+         Considerations section for more information."
+
+
+
+    ::= { pmPolicyEntry 8 }
+
+pmPolicyParameters OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..65535))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "From time to time, policy scripts may seek one or more
+        parameters (e.g., site-specific constants).  These parameters
+        may be installed with the script in this object and are
+        accessible to the script via the getParameters() function.  If
+        it is necessary for multiple parameters to be passed to the
+        script, the script can choose whatever encoding/delimiting
+        mechanism is most appropriate."
+    ::= { pmPolicyEntry 9 }
+
+pmPolicyConditionMaxLatency OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..2147483647)
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Every element under the control of this agent is
+        re-checked periodically to see whether it is under control
+        of this policy by re-running the condition for this policy.
+        This object lets the manager control the maximum amount of
+        time that may pass before an element is re-checked.
+
+        In other words, in any given interval of this duration, all
+        elements must be re-checked.  Note that how the policy agent
+        schedules the checking of various elements within this
+        interval is an implementation-dependent matter.
+        Implementations may wish to re-run a condition more
+        quickly if they note a change to the role strings for an
+        element."
+    ::= { pmPolicyEntry 10 }
+
+pmPolicyActionMaxLatency OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..2147483647)
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Every element that matches this policy's condition and is
+        therefore under control of this policy will have this policy's
+        action executed periodically to ensure that the element
+        remains in the state dictated by the policy.
+        This object lets the manager control the maximum amount of
+
+
+
+        time that may pass before an element has the action run on
+        it.
+
+        In other words, in any given interval of this duration, all
+        elements under control of this policy must have the action run
+        on them.  Note that how the policy agent schedules the policy
+        action on various elements within this interval is an
+        implementation-dependent matter."
+    ::= { pmPolicyEntry 11 }
+
+pmPolicyMaxIterations OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If a condition or action script iterates in loops too many
+        times in one invocation, the execution environment may
+        consider it in an infinite loop or otherwise not acting
+        as intended and may be terminated by the execution
+        environment.  The execution environment will count the
+        cumulative number of times all 'for' or 'while' loops iterated
+        and will apply a threshold to determine when to terminate the
+        script.  What threshold the execution environment uses is an
+        implementation-dependent manner, but the value of
+        this object SHOULD be the basis for choosing the threshold for
+        each script.  The value of this object represents a
+        policy-specific threshold and can be tuned for policies of
+        varying workloads.  If this value is zero, no
+        threshold will be enforced except for any
+        implementation-dependent maximum.  Regardless of this value,
+        the agent is allowed to terminate any script invocation that
+        exceeds a local CPU or memory limitation.
+
+        Note that the condition and action invocations are tracked
+        separately."
+    ::= { pmPolicyEntry 12 }
+
+pmPolicyDescription OBJECT-TYPE
+    SYNTAX      PmUTF8String
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "A description of this rule and its significance, typically
+         provided by a human."
+    ::= { pmPolicyEntry 13 }
+
+pmPolicyMatches OBJECT-TYPE
+    SYNTAX      Gauge32
+
+
+
+    UNITS       "elements"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+         "The number of elements that, in their most recent execution
+         of the associated condition, were matched by the condition."
+    ::= { pmPolicyEntry 14 }
+
+pmPolicyAbnormalTerminations OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "elements"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+         "The number of elements that, in their most recent execution
+         of the associated condition or action, have experienced a
+         run-time exception and terminated abnormally.  Note that if a
+         policy was experiencing a run-time exception while processing
+         a particular element but runs normally on a subsequent
+         invocation, this number can decline."
+    ::= { pmPolicyEntry 15 }
+
+pmPolicyExecutionErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "errors"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+         "The total number of times that execution of this policy's
+         condition or action has been terminated due to run-time
+         exceptions."
+    ::= { pmPolicyEntry 16 }
+
+pmPolicyDebugging OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    off(1),
+                    on(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "The status of debugging for this policy.  If this is turned
+         on(2), log entries will be created in the pmDebuggingTable
+         for each run-time exception that is experienced by this
+         policy."
+    DEFVAL { off }
+    ::= { pmPolicyEntry 17 }
+
+
+
+
+pmPolicyAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    disabled(1),
+                    enabled(2),
+                    enabledAutoRemove(3)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "The administrative status of this policy.
+
+         The policy will be valid only if the associated
+         pmPolicyRowStatus is set to active(1) and this object is set
+         to enabled(2) or enabledAutoRemove(3).
+
+         If this object is set to enabledAutoRemove(3), the next time
+         the associated schedule moves from the active state to the
+         inactive state, this policy will immediately be deleted,
+         including any associated entries in the pmPolicyCodeTable.
+
+         The following related objects may not be changed unless this
+         object is set to disabled(1):
+             pmPolicyPrecedenceGroup, pmPolicyPrecedence,
+             pmPolicySchedule, pmPolicyElementTypeFilter,
+             pmPolicyConditionScriptIndex, pmPolicyActionScriptIndex,
+             pmPolicyParameters, and any pmPolicyCodeTable row
+             referenced by this policy.
+         In order to change any of these parameters, the policy must
+         be moved to the disabled(1) state, changed, and then
+         re-enabled.
+
+         When this policy moves to either enabled state from the
+         disabled state, any cached values of policy condition must be
+         erased, and any Policy or PolicyElement scratchpad values for
+         this policy should be removed.  Policy execution will begin by
+         testing the policy condition on all appropriate elements."
+    ::= { pmPolicyEntry 18 }
+
+pmPolicyStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines whether this policy and any associated
+         entries in the pmPolicyCodeTable are kept in volatile storage
+         and lost upon reboot or if this row is backed up by
+         non-volatile or permanent storage.
+
+
+
+
+         If the value of this object is 'permanent', the values for
+         the associated pmPolicyAdminStatus object must remain
+         writable."
+    ::= { pmPolicyEntry 19 }
+
+pmPolicyRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "The row status of this pmPolicyEntry.
+
+         The status may not be set to active if any of the related
+         entries in the pmPolicyCode table do not have a status of
+         active or if any of the objects in this row are not set to
+         valid values.  Only the following objects may be modified
+         while in the active state:
+             pmPolicyParameters
+             pmPolicyConditionMaxLatency
+             pmPolicyActionMaxLatency
+             pmPolicyDebugging
+             pmPolicyAdminStatus
+
+         If this row is deleted, any associated entries in the
+         pmPolicyCodeTable will be deleted as well."
+    ::= { pmPolicyEntry 20 }
+
+-- Policy Code Table
+
+pmPolicyCodeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmPolicyCodeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The pmPolicyCodeTable stores the code for policy conditions and
+        actions.
+
+        An example of the relationships between the code table and the
+        policy table follows:
+
+        pmPolicyTable
+            AdminGroup  Index   ConditionScriptIndex  ActionScriptIndex
+        A   ''          1       1                     2
+        B   'oper'      1       1                     2
+        C   'oper'      2       3                     4
+
+        pmPolicyCodeTable
+        AdminGroup  ScriptIndex  Segment    Note
+
+
+
+        ''          1            1          Filter for policy A
+        ''          2            1          Action for policy A
+        'oper'      1            1          Filter for policy B
+        'oper'      2            1          Action 1/2 for policy B
+        'oper'      2            2          Action 2/2 for policy B
+        'oper'      3            1          Filter for policy C
+        'oper'      4            1          Action for policy C
+
+        In this example, there are 3 policies: 1 in the '' adminGroup,
+        and 2 in the 'oper' adminGroup.  Policy A has been assigned
+        script indexes 1 and 2 (these script indexes are assigned out of
+        a separate pool per adminGroup), with 1 code segment each for
+        the filter and the action.  Policy B has been assigned script
+        indexes 1 and 2 (out of the pool for the 'oper' adminGroup).
+        While the filter has 1 segment, the action is longer and is
+        loaded into 2 segments.  Finally, Policy C has been assigned
+        script indexes 3 and 4, with 1 code segment each for the filter
+        and the action."
+    ::= { pmMib 2 }
+
+pmPolicyCodeEntry OBJECT-TYPE
+    SYNTAX      PmPolicyCodeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in the policy code table representing one code
+        segment.  Entries that share a common AdminGroup/ScriptIndex
+        pair make up a single script.  Valid values of ScriptIndex are
+        retrieved from pmPolicyConditionScriptIndex and
+        pmPolicyActionScriptIndex after a pmPolicyEntry is
+        created.  Segments of code can then be written to this table
+        with the learned ScriptIndex values.
+
+        The StorageType of this entry is determined by the value of
+        the associated pmPolicyStorageType.
+
+        The pmPolicyAdminGroup element of the index represents the
+        administrative group of the policy of which this code entry is
+        a part."
+    INDEX { pmPolicyAdminGroup, pmPolicyCodeScriptIndex,
+            pmPolicyCodeSegment }
+    ::= { pmPolicyCodeTable 1 }
+
+PmPolicyCodeEntry ::= SEQUENCE {
+    pmPolicyCodeScriptIndex    Unsigned32,
+    pmPolicyCodeSegment        Unsigned32,
+    pmPolicyCodeText           PmUTF8String,
+    pmPolicyCodeStatus         RowStatus
+
+
+
+}
+
+pmPolicyCodeScriptIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A unique index for each policy condition or action.  The code
+         for each such condition or action may be composed of multiple
+         entries in this table if the code cannot fit in one entry.
+         Values of pmPolicyCodeScriptIndex may not be used unless
+         they have previously been assigned in the
+         pmPolicyConditionScriptIndex or pmPolicyActionScriptIndex
+         objects."
+    ::= { pmPolicyCodeEntry 1 }
+
+pmPolicyCodeSegment OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A unique index for each segment of a policy condition or
+         action.
+
+         When a policy condition or action spans multiple entries in
+         this table, the code of that policy starts from the
+         lowest-numbered segment and continues with increasing segment
+         values until it ends with the highest-numbered segment."
+    ::= { pmPolicyCodeEntry 2 }
+
+pmPolicyCodeText OBJECT-TYPE
+    SYNTAX      PmUTF8String (SIZE (1..1024))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "A segment of policy code (condition or action).  Lengthy
+         Policy conditions or actions may be stored in multiple
+         segments in this table that share the same value of
+         pmPolicyCodeScriptIndex.  When multiple segments are used, it
+         is recommended that each segment be as large as is practical.
+
+         Entries in this table are associated with policies by values
+         of the pmPolicyConditionScriptIndex and
+         pmPolicyActionScriptIndex objects.  If the status of the
+         related policy is active, then this object may not be
+         modified."
+    ::= { pmPolicyCodeEntry 3 }
+
+
+
+
+pmPolicyCodeStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "The status of this code entry.
+
+         Entries in this table are associated with policies by values
+         of the pmPolicyConditionScriptIndex and
+         pmPolicyActionScriptIndex objects.  If the status of the
+         related policy is active, then this object can not be
+         modified (i.e., deleted or set to notInService), nor may new
+         entries be created.
+
+         If the status of this object is active, no objects in this
+         row may be modified."
+    ::= { pmPolicyCodeEntry 4 }
+
+-- Element Type Registration Table
+
+pmElementTypeRegTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmElementTypeRegEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A registration table for element types managed by this
+        system.
+
+        The Element Type Registration table allows the manager to
+        learn what element types are being managed by the system and
+        to register new types, if necessary.  An element type is
+        registered by providing the OID of an SNMP object (i.e.,
+        without the instance).  Each SNMP instance that exists under
+        that object is a distinct element.  The index of the element is
+        the index part of the discovered OID.  This index will be
+        supplied to policy conditions and actions so that this code
+        can inspect and configure the element.
+
+        For example, this table might contain the following entries.
+        The first three are agent-installed, and the 4th was
+        downloaded by a management station:
+
+  OIDPrefix        MaxLatency  Description               StorageType
+  ifEntry          100 mS      interfaces - builtin      readOnly
+  0.0              100 mS      system element - builtin  readOnly
+  frCircuitEntry   100 mS      FR Circuits - builtin     readOnly
+  hrSWRunEntry     60 sec      Running Processes         volatile
+
+
+
+
+        Note that agents may automatically configure elements in this
+        table for frequently used element types (interfaces, circuits,
+        etc.).  In particular, it may configure elements for whom
+        discovery is optimized in one or both of the following ways:
+
+        1. The agent may discover elements by scanning internal data
+           structures as opposed to issuing local SNMP requests.  It is
+           possible to recreate the exact semantics described in this
+           table even if local SNMP requests are not issued.
+
+        2. The agent may receive asynchronous notification of new
+           elements (for example, 'card inserted') and use that
+           information to instantly create elements rather than
+           through polling.  A similar feature might be available for
+           the deletion of elements.
+
+        Note that the disposition of agent-installed entries is
+        described by the pmPolicyStorageType object."
+    ::= { pmMib 3 }
+
+pmElementTypeRegEntry OBJECT-TYPE
+    SYNTAX      PmElementTypeRegEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A registration of an element type.
+
+        Note that some values of this table's index may result in an
+        instance name that exceeds a length of 128 sub-identifiers,
+        which exceeds the maximum for the SNMP protocol.
+        Implementations should take care to avoid such values."
+    INDEX       { pmElementTypeRegOIDPrefix }
+    ::= { pmElementTypeRegTable 1 }
+
+PmElementTypeRegEntry ::= SEQUENCE {
+    pmElementTypeRegOIDPrefix     OBJECT IDENTIFIER,
+    pmElementTypeRegMaxLatency    Unsigned32,
+    pmElementTypeRegDescription   PmUTF8String,
+    pmElementTypeRegStorageType   StorageType,
+    pmElementTypeRegRowStatus     RowStatus
+}
+
+pmElementTypeRegOIDPrefix OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This OBJECT IDENTIFIER value identifies a table in which all
+
+
+
+        elements of this type will be found.  Every row in the
+        referenced table will be treated as an element for the
+        period of time that it remains in the table.  The agent will
+        then execute policy conditions and actions as appropriate on
+        each of these elements.
+
+        This object identifier value is specified down to the 'entry'
+        component (e.g., ifEntry) of the identifier.
+
+        The index of each discovered row will be passed to each
+        invocation of the policy condition and policy action.
+
+        The actual mechanism by which instances are discovered is
+        implementation dependent.  Periodic walks of the table to
+        discover the rows in the table is one such mechanism.  This
+        mechanism has the advantage that it can be performed by an
+        agent with no knowledge of the names, syntax, or semantics
+        of the MIB objects in the table.  This mechanism also serves as
+        the reference design.  Other implementation-dependent
+        mechanisms may be implemented that are more efficient (perhaps
+        because they are hard coded) or that don't require polling.
+        These mechanisms must discover the same elements as would the
+        table-walking reference design.
+
+        This object can contain a OBJECT IDENTIFIER, '0.0'.
+        '0.0' represents the single instance of the system
+        itself and provides an execution context for policies to
+        operate on the 'system element' and on MIB objects
+        modeled as scalars.  For example, '0.0' gives an execution
+        context for policy-based selection of the operating system
+        code version (likely modeled as a scalar MIB object).  The
+        element type '0.0' always exists; as a consequence, no actual
+        discovery will take place, and the pmElementTypeRegMaxLatency
+        object will have no effect for the '0.0' element
+        type.  However, if the '0.0' element type is not registered in
+        the table, policies will not be executed on the '0.0' element.
+
+        When a policy is invoked on behalf of a '0.0' entry in this
+        table, the element name will be '0.0', and there is no index
+        of 'this element' (in other words, it has zero length).
+
+        As this object is used in the index for the
+        pmElementTypeRegTable, users of this table should be careful
+        not to create entries that would result in instance names with
+        more than 128 sub-identifiers."
+    ::= { pmElementTypeRegEntry 2 }
+
+
+
+
+
+pmElementTypeRegMaxLatency OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The PM agent is responsible for discovering new elements of
+        types that are registered.  This object lets the manager
+        control the maximum amount of time that may pass between the
+        time an element is created and when it is discovered.
+
+        In other words, in any given interval of this duration, all
+        new elements must be discovered.  Note that how the policy
+        agent schedules the checking of various elements within this
+        interval is an implementation-dependent matter."
+    ::= { pmElementTypeRegEntry 3 }
+
+pmElementTypeRegDescription OBJECT-TYPE
+    SYNTAX      PmUTF8String (SIZE (0..64))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "A descriptive label for this registered type."
+    ::= { pmElementTypeRegEntry 4 }
+
+pmElementTypeRegStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines whether this row is kept
+         in volatile storage and lost upon reboot or
+         backed up by non-volatile or permanent storage.
+
+         If the value of this object is 'permanent', no values in the
+         associated row have to be writable."
+    ::= { pmElementTypeRegEntry 5 }
+
+pmElementTypeRegRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this registration entry.
+
+        If the value of this object is active, no objects in this row
+        may be modified."
+    ::= { pmElementTypeRegEntry 6 }
+
+
+
+-- Role Table
+
+pmRoleTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmRoleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The pmRoleTable is a read-create table that organizes role
+        strings sorted by element.  This table is used to create and
+        modify role strings and their associations, as well as to allow
+        a management station to learn about the existence of roles and
+        their associations.
+
+        It is the responsibility of the agent to keep track of any
+        re-indexing of the underlying SNMP elements and to continue to
+        associate role strings with the element with which they were
+        initially configured.
+
+        Policy MIB agents that have elements in multiple local SNMP
+        contexts have to allow some roles to be assigned to elements
+        in particular contexts.  This is particularly true when some
+        elements have the same names in different contexts and the
+        context is required to disambiguate them.  In those situations,
+        a value for the pmRoleContextName may be provided.  When a
+        pmRoleContextName value is not provided, the assignment is to
+        the element in the default context.
+
+        Policy MIB agents that discover elements on other systems and
+        execute policies on their behalf need to have access to role
+        information for these remote elements.  In such situations,
+        role assignments for other systems can be stored in this table
+        by providing values for the pmRoleContextEngineID parameters.
+
+    For example:
+    Example:
+    element       role    context ctxEngineID   #comment
+    ifindex.1     gold                          local, default context
+    ifindex.2     gold                          local, default context
+    repeaterid.1  foo     rptr1                 local, rptr1 context
+    repeaterid.1  bar     rptr2                 local, rptr2 context
+    ifindex.1     gold    ''      A             different system
+    ifindex.1     gold    ''      B             different system
+
+         The agent must store role string associations in non-volatile
+         storage."
+    ::= { pmMib 4 }
+
+
+
+
+
+pmRoleEntry OBJECT-TYPE
+    SYNTAX      PmRoleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A role string entry associates a role string with an
+         individual element.
+
+         Note that some combinations of index values may result in an
+         instance name that exceeds a length of 128 sub-identifiers,
+         which exceeds the maximum for the SNMP
+         protocol.  Implementations should take care to avoid such
+         combinations."
+    INDEX       { pmRoleElement, pmRoleContextName,
+                  pmRoleContextEngineID, pmRoleString }
+    ::= { pmRoleTable 1 }
+
+PmRoleEntry ::= SEQUENCE {
+    pmRoleElement          RowPointer,
+    pmRoleContextName      SnmpAdminString,
+    pmRoleContextEngineID  OCTET STRING,
+    pmRoleString           PmUTF8String,
+    pmRoleStatus           RowStatus
+}
+
+pmRoleElement OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "The element with which this role string is associated.
+
+         For example, if the element is interface 3, then this object
+         will contain the OID for 'ifIndex.3'.
+
+         If the agent assigns new indexes in the MIB table to
+         represent the same underlying element (re-indexing), the
+         agent will modify this value to contain the new index for the
+         underlying element.
+
+         As this object is used in the index for the pmRoleTable,
+         users of this table should be careful not to create entries
+         that would result in instance names with more than 128
+         sub-identifiers."
+    ::= { pmRoleEntry 1 }
+
+
+
+
+
+
+pmRoleContextName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "If the associated element is not in the default SNMP context
+        for the target system, this object is used to identify the
+        context.  If the element is in the default context, this object
+        is equal to the empty string."
+    ::= { pmRoleEntry 2 }
+
+pmRoleContextEngineID OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0 | 5..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "If the associated element is on a remote system, this object
+        is used to identify the remote system.  This object contains
+        the contextEngineID of the system for which this role string
+        assignment is valid.  If the element is on the local system
+        this object will be the empty string."
+    ::= { pmRoleEntry 3 }
+
+pmRoleString OBJECT-TYPE
+    SYNTAX      PmUTF8String (SIZE (0..64))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "The role string that is associated with an element through
+         this table.  All role strings must have been successfully
+         transformed by Stringprep RFC 3454.  Management stations
+         must perform this translation and must only set this object
+         to string values that have been transformed.
+
+         A role string is an administratively specified characteristic
+         of a managed element (for example, an interface).  It is a
+         selector for policy rules, that determines the applicability of
+         the rule to a particular managed element."
+    ::= { pmRoleEntry 4 }
+
+pmRoleStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "The status of this role string.
+
+
+
+
+
+         If the value of this object is active, no object in this row
+         may be modified."
+    ::= { pmRoleEntry 5 }
+
+-- Capabilities table
+
+pmCapabilitiesTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmCapabilitiesEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "The pmCapabilitiesTable contains a description of
+         the inherent capabilities of the system so that
+         management stations can learn of an agent's capabilities and
+         differentially install policies based on the capabilities.
+
+         Capabilities are expressed at the system level.  There can be
+         variation in how capabilities are realized from one vendor or
+         model to the next.  Management systems should consider these
+         differences before selecting which policy to install in a
+         system."
+    ::= { pmMib 5 }
+
+pmCapabilitiesEntry OBJECT-TYPE
+    SYNTAX      PmCapabilitiesEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A capabilities entry holds an OID indicating support for a
+         particular capability.  Capabilities may include hardware and
+         software functions and the implementation of MIB
+         Modules.  The semantics of the OID are defined in the
+         description of pmCapabilitiesType.
+
+         Entries appear in this table if any element in the system has
+         a specific capability.  A capability should appear in this
+         table only once, regardless of the number of elements in the
+         system with that capability.  An entry is removed from this
+         table when the last element in the system that has the
+         capability is removed.  In some cases, capabilities are
+         dynamic and exist only in software.  This table should have an
+         entry for the capability even if there are no current
+         instances.  Examples include systems with database or WEB
+         services.  While the system has the ability to create new
+         databases or WEB services, the entry should exist.  In these
+         cases, the ability to create these services could come from
+         other processes that are running in the system, even though
+         there are no currently open databases or WEB servers running.
+
+
+
+         Capabilities may include the implementation of MIB Modules
+         but need not be limited to those that represent MIB Modules
+         with one or more configurable objects.  It may also be
+         valuable to include entries for capabilities that do not
+         include configuration objects, as that information, in
+         combination with other entries in this table, might be used
+         by the management software to determine whether to
+         install a policy.
+
+         Vendor software may also add entries in this table to express
+         capabilities from their private branch.
+
+         Note that some values of this table's index may result in an
+         instance name that exceeds a length of 128 sub-identifiers,
+         which exceeds the maximum for the SNMP
+         protocol.  Implementations should take care to avoid such
+         values."
+    INDEX       { pmCapabilitiesType }
+    ::= { pmCapabilitiesTable 1 }
+
+PmCapabilitiesEntry ::= SEQUENCE {
+    pmCapabilitiesType               OBJECT IDENTIFIER
+}
+
+pmCapabilitiesType OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+         "There are three types of OIDs that may be present in the
+         pmCapabilitiesType object:
+
+         1) The OID of a MODULE-COMPLIANCE macro that represents the
+         highest level of compliance realized by the agent for that
+         MIB Module.  For example, an agent that implements the OSPF
+         MIB Module at the highest level of compliance would have the
+         value of '1.3.6.1.2.1.14.15.2' in the pmCapabilitiesType
+         object.  For software that realizes standard MIB
+         Modules that do not have compliance statements, the base OID
+         of the MIB Module should be used instead.  If the OSPF MIB
+         Module had not been created with a compliance statement, then
+         the correct value of the pmCapabilitiesType would be
+         '1.3.6.1.2.1.14'.  In the cases where multiple compliance
+         statements in a MIB Module are supported by the agent, and
+         where one compliance statement does not by definition include
+         the other, each of the compliance OIDs would have entries in
+         this table.
+
+
+
+
+         MIB Documents can contain more than one MIB Module.  In the
+         case of OSPF, there is a second MIB Module
+         that describes notifications for the OSPF Version 2 Protocol.
+         If the agent also realizes these functions, an entry will
+         also exist for those capabilities in this table.
+
+         2) Vendors should install OIDs in this table that represent
+         vendor-specific capabilities.  These capabilities can be
+         expressed just as those described above for MIB Modules on
+         the standards track.  In addition, vendors may install any
+         OID they desire from their registered branch.  The OIDs may be
+         at any level of granularity, from the root of their entire
+         branch to an instance of a single OID.  There is no
+         restriction on the number of registrations they may make,
+         though care should be taken to avoid unnecessary entries.
+
+         3) OIDs that represent one capability or a collection of
+         capabilities that could be any collection of MIB Objects or
+         hardware or software functions may be created in working
+         groups and registered in a MIB Module.  Other entities (e.g.,
+         vendors) may also make registrations.  Software will register
+         these standard capability OIDs, as well as vendor specific
+         OIDs.
+
+         If the OID for a known capability is not present in the
+         table, then it should be assumed that the capability is not
+         implemented.
+
+         As this object is used in the index for the
+         pmCapabilitiesTable, users of this table should be careful
+         not to create entries that would result in instance names
+         with more than 128 sub-identifiers."
+    ::= { pmCapabilitiesEntry 1 }
+
+-- Capabilities override table
+
+pmCapabilitiesOverrideTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmCapabilitiesOverrideEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "The pmCapabilitiesOverrideTable allows management stations
+         to override pmCapabilitiesTable entries that have been
+         registered by the agent.  This facility can be used to avoid
+         situations in which managers in the network send policies to
+         a system that has advertised a capability in the
+         pmCapabilitiesTable but that should not be installed on this
+         particular system.  One example could be newly deployed
+
+
+
+         equipment that is still in a trial state in a trial state or
+         resources reserved for some other administrative reason.
+         This table can also be used to override entries in the
+         pmCapabilitiesTable through the use of the
+         pmCapabilitiesOverrideState object.  Capabilities can also be
+         declared available in this table that were not registered in
+         the pmCapabilitiesTable.  A management application can make
+         an entry in this table for any valid OID and declare the
+         capability available by setting the
+         pmCapabilitiesOverrideState for that row to valid(1)."
+    ::= { pmMib 6 }
+
+pmCapabilitiesOverrideEntry OBJECT-TYPE
+    SYNTAX      PmCapabilitiesOverrideEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "An entry in this table indicates whether a particular
+         capability is valid or invalid.
+
+         Note that some values of this table's index may result in an
+         instance name that exceeds a length of 128 sub-identifiers,
+         which exceeds the maximum for the SNMP
+         protocol.  Implementations should take care to avoid such
+         values."
+    INDEX       { pmCapabilitiesOverrideType }
+    ::= { pmCapabilitiesOverrideTable 1 }
+
+PmCapabilitiesOverrideEntry ::= SEQUENCE {
+    pmCapabilitiesOverrideType               OBJECT IDENTIFIER,
+    pmCapabilitiesOverrideState              INTEGER,
+    pmCapabilitiesOverrideRowStatus          RowStatus
+}
+
+pmCapabilitiesOverrideType OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "This is the OID of the capability that is declared valid or
+         invalid by the pmCapabilitiesOverrideState value for this
+         row.  Any valid OID, as described in the pmCapabilitiesTable,
+         is permitted in the pmCapabilitiesOverrideType object.  This
+         means that capabilities can be expressed at any level, from a
+         specific instance of an object to a table or entire module.
+         There are no restrictions on whether these objects are from
+         standards track MIB documents or in the private branch of the
+         MIB.
+
+
+
+         If an entry exists in this table for which there is a
+         corresponding entry in the pmCapabilitiesTable, then this entry
+         shall have precedence over the entry in the
+         pmCapabilitiesTable.  All entries in this table must be
+         preserved across reboots.
+
+         As this object is used in the index for the
+         pmCapabilitiesOverrideTable, users of this table should be
+         careful not to create entries that would result in instance
+         names with more than 128 sub-identifiers."
+    ::= { pmCapabilitiesOverrideEntry 1 }
+
+pmCapabilitiesOverrideState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    invalid(1),
+                    valid(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "A pmCapabilitiesOverrideState of invalid indicates that
+         management software should not send policies to this system
+         for the capability identified in the
+         pmCapabilitiesOverrideType for this row of the table.  This
+         behavior is the same whether the capability represented by
+         the pmCapabilitiesOverrideType exists only in this table
+         (that is, it was installed by an external management
+         application) or exists in this table as well as the
+         pmCapabilitiesTable.  This would be the case when a manager
+         wanted to disable a capability that the native management
+         system found and registered in the pmCapabilitiesTable.
+
+         An entry in this table that has a pmCapabilitiesOverrideState
+         of valid should be treated as though it appeared in the
+         pmCapabilitiesTable.  If the entry also exists in the
+         pmCapabilitiesTable in the pmCapabilitiesType object, and if
+         the value of this object is valid, then the system shall
+         operate as though this entry did not exist and policy
+         installations and executions will continue in a normal
+         fashion."
+    ::= { pmCapabilitiesOverrideEntry 2 }
+
+pmCapabilitiesOverrideRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "The row status of this pmCapabilitiesOverrideEntry.
+
+
+
+         If the value of this object is active, no object in this row
+         may be modified."
+    ::= { pmCapabilitiesOverrideEntry 3 }
+
+-- The Schedule Group
+
+pmSchedLocalTime OBJECT-TYPE
+    SYNTAX      DateAndTime (SIZE (11))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The local time used by the scheduler.  Schedules that
+         refer to calendar time will use the local time indicated
+         by this object.  An implementation MUST return all 11 bytes
+         of the DateAndTime textual-convention so that a manager
+         may retrieve the offset from GMT time."
+    ::= { pmMib 7 }
+
+--
+-- The schedule table that controls the scheduler.
+--
+
+pmSchedTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmSchedEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table defines schedules for policies."
+    ::= { pmMib 8 }
+
+pmSchedEntry OBJECT-TYPE
+    SYNTAX      PmSchedEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular schedule.
+
+        Unless noted otherwise, writable objects of this row can be
+        modified independently of the current value of pmSchedRowStatus,
+        pmSchedAdminStatus and pmSchedOperStatus.  In particular, it
+        is legal to modify pmSchedWeekDay, pmSchedMonth, and
+        pmSchedDay when pmSchedRowStatus is active."
+    INDEX { pmSchedIndex }
+    ::= { pmSchedTable 1 }
+
+
+
+
+
+
+
+PmSchedEntry ::= SEQUENCE {
+    pmSchedIndex          Unsigned32,
+    pmSchedGroupIndex     Unsigned32,
+    pmSchedDescr          PmUTF8String,
+    pmSchedTimePeriod     PmUTF8String,
+    pmSchedMonth          BITS,
+    pmSchedDay            BITS,
+    pmSchedWeekDay        BITS,
+    pmSchedTimeOfDay      PmUTF8String,
+    pmSchedLocalOrUtc     INTEGER,
+    pmSchedStorageType    StorageType,
+    pmSchedRowStatus      RowStatus
+}
+
+pmSchedIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The locally unique, administratively assigned index for this
+        scheduling entry."
+    ::= { pmSchedEntry 1 }
+
+pmSchedGroupIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The locally unique, administratively assigned index for the
+        schedule group this scheduling entry belongs to.
+
+        To assign multiple schedule entries to the same group, the
+        pmSchedGroupIndex of each entry in the group will be set to
+        the same value.  This pmSchedGroupIndex value must be equal to
+        the pmSchedIndex of one of the entries in the group.  If the
+        entry whose pmSchedIndex equals the pmSchedGroupIndex
+        for the group is deleted, the agent will assign a new
+        pmSchedGroupIndex to all remaining members of the group.
+
+        If an entry is not a member of a group, its pmSchedGroupIndex
+        must be assigned to the value of its pmSchedIndex.
+
+        Policies that are controlled by a group of schedule entries
+        are active when any schedule in the group is active."
+    ::= { pmSchedEntry 2 }
+
+
+
+
+
+
+pmSchedDescr OBJECT-TYPE
+    SYNTAX      PmUTF8String
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The human-readable description of the purpose of this
+        scheduling entry."
+    DEFVAL { ''H }
+    ::= { pmSchedEntry 3 }
+
+pmSchedTimePeriod OBJECT-TYPE
+    SYNTAX      PmUTF8String (SIZE (0..31))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The overall range of calendar dates and times over which this
+        schedule is active.  It is stored in a slightly extended version
+        of the format for a 'period-explicit' defined in RFC 2445.
+        This format is expressed as a string representing the
+        starting date and time, in which the character 'T' indicates
+        the beginning of the time portion, followed by the solidus
+        character, '/', followed by a similar string representing an
+        end date and time.  The start of the period MUST be before the
+        end of the period.  Date-Time values are expressed as
+        substrings of the form 'yyyymmddThhmmss'.  For example:
+
+            20000101T080000/20000131T130000
+
+              January 1, 2000, 0800 through January 31, 2000, 1PM
+
+        The 'Date with UTC time' format defined in RFC 2445 in which
+        the Date-Time string ends with the character 'Z' is not
+        allowed.
+
+        This 'period-explicit' format is also extended to allow two
+        special cases in which one of the Date-Time strings is
+        replaced with a special string defined in RFC 2445:
+
+        1. If the first Date-Time value is replaced with the string
+           'THISANDPRIOR', then the value indicates that the schedule
+           is active at any time prior to the Date-Time that appears
+           after the '/'.
+
+        2. If the second Date-Time is replaced with the string
+           'THISANDFUTURE', then the value indicates that the schedule
+           is active at any time after the Date-Time that appears
+           before the '/'.
+
+
+
+
+        Note that although RFC 2445 defines these two strings, they are
+        not specified for use in the 'period-explicit' format.  The use
+        of these strings represents an extension to the
+        'period-explicit' format."
+    ::= { pmSchedEntry 4 }
+
+pmSchedMonth OBJECT-TYPE
+    SYNTAX      BITS {
+                    january(0),
+                    february(1),
+                    march(2),
+                    april(3),
+                    may(4),
+                    june(5),
+                    july(6),
+                    august(7),
+                    september(8),
+                    october(9),
+                    november(10),
+                    december(11)
+                }
+
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Within the overall time period specified in the
+        pmSchedTimePeriod object, the value of this object specifies
+        the specific months within that time period when the schedule
+        is active.  Setting all bits will cause the schedule to act
+        independently of the month."
+    DEFVAL { { january, february, march, april, may, june, july,
+               august, september, october, november, december } }
+    ::= { pmSchedEntry 5 }
+
+pmSchedDay OBJECT-TYPE
+    SYNTAX      BITS {
+                    d1(0),   d2(1),   d3(2),   d4(3),   d5(4),
+                    d6(5),   d7(6),   d8(7),   d9(8),   d10(9),
+                    d11(10), d12(11), d13(12), d14(13), d15(14),
+                    d16(15), d17(16), d18(17), d19(18), d20(19),
+                    d21(20), d22(21), d23(22), d24(23), d25(24),
+                    d26(25), d27(26), d28(27), d29(28), d30(29),
+                    d31(30),
+                    r1(31),  r2(32),  r3(33),  r4(34),  r5(35),
+                    r6(36),  r7(37),  r8(38),  r9(39),  r10(40),
+                    r11(41), r12(42), r13(43), r14(44), r15(45),
+                    r16(46), r17(47), r18(48), r19(49), r20(50),
+                    r21(51), r22(52), r23(53), r24(54), r25(55),
+
+
+
+                    r26(56), r27(57), r28(58), r29(59), r30(60),
+                    r31(61)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Within the overall time period specified in the
+        pmSchedTimePeriod object, the value of this object specifies
+        the specific days of the month within that time period when
+        the schedule is active.
+
+        There are two sets of bits one can use to define the day
+        within a month:
+
+        Enumerations starting with the letter 'd' indicate a
+        day in a month relative to the first day of a month.
+        The first day of the month can therefore be specified
+        by setting the bit d1(0), and d31(30) means the last
+        day of a month with 31 days.
+
+        Enumerations starting with the letter 'r' indicate a
+        day in a month in reverse order, relative to the last
+        day of a month.  The last day in the month can therefore
+        be specified by setting the bit r1(31), and r31(61) means
+        the first day of a month with 31 days.
+
+        Setting multiple bits will include several days in the set
+        of possible days for this schedule.  Setting all bits starting
+        with the letter 'd' or all bits starting with the letter 'r'
+        will cause the schedule to act independently of the day of the
+        month."
+    DEFVAL { {  d1, d2, d3, d4, d5, d6, d7, d8, d9, d10,
+                d11, d12, d13, d14, d15, d16, d17, d18, d19, d20,
+                d21, d22, d23, d24, d25, d26, d27, d28, d29, d30,
+                d31, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10,
+                r11, r12, r13, r14, r15, r16, r17, r18, r19, r20,
+                r21, r22, r23, r24, r25, r26, r27, r28, r29, r30,
+                r31 } }
+    ::= { pmSchedEntry 6 }
+
+pmSchedWeekDay OBJECT-TYPE
+    SYNTAX      BITS {
+                    sunday(0),
+                    monday(1),
+                    tuesday(2),
+                    wednesday(3),
+                    thursday(4),
+                    friday(5),
+
+
+
+                    saturday(6)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Within the overall time period specified in the
+        pmSchedTimePeriod object, the value of this object specifies
+        the specific days of the week within that time period when
+        the schedule is active.  Setting all bits will cause the
+        schedule to act independently of the day of the week."
+    DEFVAL { { sunday, monday, tuesday, wednesday, thursday,
+               friday, saturday } }
+    ::= { pmSchedEntry 7 }
+
+pmSchedTimeOfDay OBJECT-TYPE
+    SYNTAX      PmUTF8String (SIZE (0..15))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+
+        "Within the overall time period specified in the
+        pmSchedTimePeriod object, the value of this object specifies
+        the range of times in a day when the schedule is active.
+
+        This value is stored in a format based on the RFC 2445 format
+        for 'time': The character 'T' followed by a 'time' string,
+        followed by the solidus character, '/', followed by the
+        character 'T', followed by a second time string.  The first time
+        indicates the beginning of the range, and the second time
+        indicates the end.  Thus, this value takes the following
+        form:
+
+            'Thhmmss/Thhmmss'.
+
+        The second substring always identifies a later time than the
+        first substring.  To allow for ranges that span midnight,
+        however, the value of the second string may be smaller than
+        the value of the first substring.  Thus, 'T080000/T210000'
+        identifies the range from 0800 until 2100, whereas
+        'T210000/T080000' identifies the range from 2100 until 0800 of
+        the following day.
+
+        When a range spans midnight, by definition it includes parts
+        of two successive days.  When one of these days is also
+        selected by either the MonthOfYearMask, DayOfMonthMask, and/or
+        DayOfWeekMask, but the other day is not, then the policy is
+        active only during the portion of the range that falls on the
+        selected day.  For example, if the range extends from 2100
+
+
+
+        until 0800, and the day of week mask selects Monday and
+        Tuesday, then the policy is active during the following three
+        intervals:
+
+            From midnight Sunday until 0800 Monday
+            From 2100 Monday until 0800 Tuesday
+            From 2100 Tuesday until 23:59:59 Tuesday
+
+         Setting this value to 'T000000/T235959' will cause the
+         schedule to act independently of the time of day."
+    DEFVAL { '543030303030302F54323335393539'H } -- T000000/T235959
+    ::= { pmSchedEntry 8 }
+
+pmSchedLocalOrUtc OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    localTime(1),
+                    utcTime(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object indicates whether the times represented in the
+        TimePeriod object and in the various Mask objects represent
+        local times or UTC times."
+    DEFVAL { utcTime }
+    ::= { pmSchedEntry 9 }
+
+pmSchedStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines whether this schedule entry is kept
+         in volatile storage and lost upon reboot or
+         backed up by non-volatile or permanent storage.
+
+         Conceptual rows having the value 'permanent' must allow write
+         access to the columnar objects pmSchedDescr, pmSchedWeekDay,
+         pmSchedMonth, and pmSchedDay.
+
+         If the value of this object is 'permanent', no values in the
+         associated row have to be writable."
+    DEFVAL { volatile }
+    ::= { pmSchedEntry 10 }
+
+
+
+
+
+
+
+pmSchedRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this schedule entry.
+
+         If the value of this object is active, no object in this row
+         may be modified."
+    ::= { pmSchedEntry 11 }
+
+-- Policy Tracking
+
+-- The "policy to element" (PE) table and the "element to policy" (EP)
+-- table track the status of execution contexts grouped by policy and
+-- element respectively.
+
+pmTrackingPETable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmTrackingPEEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "The pmTrackingPETable describes what elements
+         are active (under control of) a policy.  This table is indexed
+         in order to optimize retrieval of the entire status for a
+         given policy."
+    ::= { pmMib 9 }
+
+pmTrackingPEEntry OBJECT-TYPE
+    SYNTAX      PmTrackingPEEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "An entry in the pmTrackingPETable.  The pmPolicyIndex in
+         the index specifies the policy tracked by this entry.
+
+         Note that some combinations of index values may result in an
+         instance name that exceeds a length of 128 sub-identifiers,
+         which exceeds the maximum for the SNMP
+         protocol.  Implementations should take care to avoid such
+         combinations."
+    INDEX       { pmPolicyIndex, pmTrackingPEElement,
+                  pmTrackingPEContextName, pmTrackingPEContextEngineID }
+    ::= { pmTrackingPETable 1 }
+
+
+
+
+
+
+
+PmTrackingPEEntry ::= SEQUENCE {
+    pmTrackingPEElement          RowPointer,
+    pmTrackingPEContextName      SnmpAdminString,
+    pmTrackingPEContextEngineID  OCTET STRING,
+    pmTrackingPEInfo             BITS
+}
+
+pmTrackingPEElement OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "The element that is acted upon by the associated policy.
+
+         As this object is used in the index for the
+         pmTrackingPETable, users of this table should be careful not
+         to create entries that would result in instance names with
+         more than 128 sub-identifiers."
+    ::= { pmTrackingPEEntry 1 }
+
+pmTrackingPEContextName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "If the associated element is not in the default SNMP context
+        for the target system, this object is used to identify the
+        context.  If the element is in the default context, this object
+        is equal to the empty string."
+    ::= { pmTrackingPEEntry 2 }
+
+pmTrackingPEContextEngineID OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0 | 5..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "If the associated element is on a remote system, this object
+        is used to identify the remote system.  This object contains
+        the contextEngineID of the system on which the associated
+        element resides.  If the element is on the local system,
+        this object will be the empty string."
+    ::= { pmTrackingPEEntry 3 }
+
+pmTrackingPEInfo OBJECT-TYPE
+    SYNTAX      BITS {
+                    actionSkippedDueToPrecedence(0),
+                    conditionRunTimeException(1),
+                    conditionUserSignal(2),
+
+
+
+                    actionRunTimeException(3),
+                    actionUserSignal(4)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+         "This object returns information about the previous policy
+         script executions.
+
+         If the actionSkippedDueToPrecedence(1) bit is set, the last
+         execution of the associated policy condition returned non-zero,
+         but the action is not active, because it was trumped by a
+         matching policy condition in the same precedence group with a
+         higher precedence value.
+
+         If the conditionRunTimeException(2) bit is set, the last
+         execution of the associated policy condition encountered a
+         run-time exception and aborted.
+
+         If the conditionUserSignal(3) bit is set, the last
+         execution of the associated policy condition called the
+         signalError() function.
+
+         If the actionRunTimeException(4) bit is set, the last
+         execution of the associated policy action encountered a
+         run-time exception and aborted.
+
+         If the actionUserSignal(5) bit is set, the last
+         execution of the associated policy action called the
+         signalError() function.
+
+         Entries will only exist in this table of one or more bits are
+         set.  In particular, if an entry does not exist for a
+         particular policy/element combination, it can be assumed that
+         the policy's condition did not match 'this element'."
+    ::= { pmTrackingPEEntry 4 }
+
+-- Element to Policy Table
+
+pmTrackingEPTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmTrackingEPEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "The pmTrackingEPTable describes what policies
+         are controlling an element.  This table is indexed in
+         order to optimize retrieval of the status of all policies
+         active for a given element."
+
+
+
+    ::= { pmMib 10 }
+
+pmTrackingEPEntry OBJECT-TYPE
+    SYNTAX      PmTrackingEPEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "An entry in the pmTrackingEPTable.  Entries exist for all
+         element/policy combinations for which the policy's condition
+         matches and only if the schedule for the policy is active.
+
+         The pmPolicyIndex in the index specifies the policy
+         tracked by this entry.
+
+         Note that some combinations of index values may result in an
+         instance name that exceeds a length of 128 sub-identifiers,
+         which exceeds the maximum for the SNMP protocol.
+         Implementations should take care to avoid such combinations."
+    INDEX       { pmTrackingEPElement, pmTrackingEPContextName,
+                  pmTrackingEPContextEngineID, pmPolicyIndex }
+    ::= { pmTrackingEPTable 1 }
+
+PmTrackingEPEntry ::= SEQUENCE {
+    pmTrackingEPElement          RowPointer,
+    pmTrackingEPContextName      SnmpAdminString,
+    pmTrackingEPContextEngineID  OCTET STRING,
+    pmTrackingEPStatus           INTEGER
+}
+
+pmTrackingEPElement OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "The element acted upon by the associated policy.
+
+         As this object is used in the index for the
+         pmTrackingEPTable, users of this table should be careful
+         not to create entries that would result in instance names
+         with more than 128 sub-identifiers."
+    ::= { pmTrackingEPEntry 1 }
+
+pmTrackingEPContextName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "If the associated element is not in the default SNMP context
+
+
+
+        for the target system, this object is used to identify the
+        context.  If the element is in the default context, this object
+        is equal to the empty string."
+    ::= { pmTrackingEPEntry 2 }
+
+pmTrackingEPContextEngineID OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0 | 5..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "If the associated element is on a remote system, this object
+        is used to identify the remote system.  This object contains
+        the contextEngineID of the system on which the associated
+        element resides.  If the element is on the local system,
+        this object will be the empty string."
+    ::= { pmTrackingEPEntry 3 }
+
+pmTrackingEPStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    on(1),
+                    forceOff(2)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+         "This entry will only exist if the calendar for the policy is
+         active and if the associated policyCondition returned 1 for
+         'this element'.
+
+         A policy can be forcibly disabled on a particular element
+         by setting this value to forceOff(2).  The agent should then
+         act as though the policyCondition failed for 'this element'.
+         The forceOff(2) state will persist (even across reboots) until
+         this value is set to on(1) by a management request.  The
+         forceOff(2) state may be set even if the entry does not
+         previously exist so that future policy invocations can be
+         avoided.
+
+         Unless forcibly disabled, if this entry exists, its value
+         will be on(1)."
+    ::= { pmTrackingEPEntry 4 }
+
+-- Policy Debugging Table
+
+pmDebuggingTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmDebuggingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+
+
+
+    DESCRIPTION
+         "Policies that have debugging turned on will generate a log
+         entry in the policy debugging table for every runtime
+         exception that occurs in either the condition or action
+         code.
+
+         The pmDebuggingTable logs debugging messages when
+         policies experience run-time exceptions in either the condition
+         or action code and the associated pmPolicyDebugging object
+         has been turned on.
+
+         The maximum number of debugging entries that will be stored
+         and the maximum length of time an entry will be kept are an
+         implementation-dependent manner.  If entries must
+         be discarded to make room for new entries, the oldest entries
+         must be discarded first.
+
+         If the system restarts, all debugging entries may be deleted."
+    ::= { pmMib 11 }
+
+pmDebuggingEntry OBJECT-TYPE
+    SYNTAX      PmDebuggingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "An entry in the pmDebuggingTable.  The pmPolicyIndex in the
+         index specifies the policy that encountered the exception
+         that led to this log entry.
+
+         Note that some combinations of index values may result in an
+         instance name that exceeds a length of 128 sub-identifiers,
+         which exceeds the maximum for the SNMP protocol.
+         Implementations should take care to avoid such combinations."
+    INDEX       { pmPolicyIndex, pmDebuggingElement,
+                  pmDebuggingContextName, pmDebuggingContextEngineID,
+                  pmDebuggingLogIndex }
+    ::= { pmDebuggingTable 1 }
+
+PmDebuggingEntry ::= SEQUENCE {
+    pmDebuggingElement          RowPointer,
+    pmDebuggingContextName      SnmpAdminString,
+    pmDebuggingContextEngineID  OCTET STRING,
+    pmDebuggingLogIndex         Unsigned32,
+    pmDebuggingMessage          PmUTF8String
+}
+
+
+
+
+
+
+pmDebuggingElement OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "The element the policy was executing on when it encountered
+         the error that led to this log entry.
+
+         For example, if the element is interface 3, then this object
+         will contain the OID for 'ifIndex.3'.
+
+         As this object is used in the index for the
+         pmDebuggingTable, users of this table should be careful
+         not to create entries that would result in instance names
+         with more than 128 sub-identifiers."
+    ::= { pmDebuggingEntry 1 }
+
+pmDebuggingContextName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "If the associated element is not in the default SNMP context
+        for the target system, this object is used to identify the
+        context.  If the element is in the default context, this object
+        is equal to the empty string."
+    ::= { pmDebuggingEntry 2 }
+
+pmDebuggingContextEngineID OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0 | 5..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "If the associated element is on a remote system, this object
+        is used to identify the remote system.  This object contains
+        the contextEngineID of the system on which the associated
+        element resides.  If the element is on the local system,
+        this object will be the empty string."
+    ::= { pmDebuggingEntry 3 }
+
+pmDebuggingLogIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A unique index for this log entry among other log entries
+         for this policy/element combination."
+    ::= { pmDebuggingEntry 4 }
+
+
+
+pmDebuggingMessage OBJECT-TYPE
+    SYNTAX      PmUTF8String (SIZE (0..128))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+         "An error message generated by the policy execution
+         environment.  It is recommended that this message include the
+         time of day when the message was generated, if known."
+    ::= { pmDebuggingEntry 5 }
+
+-- Notifications
+
+pmNotifications OBJECT IDENTIFIER ::= { pmMib 0 }
+
+pmNewRoleNotification NOTIFICATION-TYPE
+    OBJECTS     { pmRoleStatus }
+    STATUS      current
+    DESCRIPTION
+        "The pmNewRoleNotification is sent when an agent is configured
+        with its first instance of a previously unused role string
+        (not every time a new element is given a particular role).
+
+        An instance of the pmRoleStatus object is sent containing
+        the new roleString in its index.  In the event that two or
+        more elements are given the same role simultaneously, it is an
+        implementation-dependent matter as to which pmRoleTable
+        instance will be included in the notification."
+    ::= { pmNotifications 1 }
+
+pmNewCapabilityNotification NOTIFICATION-TYPE
+    OBJECTS     { pmCapabilitiesType }
+    STATUS      current
+    DESCRIPTION
+        "The pmNewCapabilityNotification is sent when an agent
+        gains a new capability that did not previously exist in any
+        element on the system (not every time an element gains a
+        particular capability).
+
+        An instance of the pmCapabilitiesType object is sent containing
+        the identity of the new capability.  In the event that two or
+        more elements gain the same capability simultaneously, it is an
+        implementation-dependent matter as to which pmCapabilitiesType
+        instance will be included in the notification."
+    ::= { pmNotifications 2 }
+
+pmAbnormalTermNotification NOTIFICATION-TYPE
+    OBJECTS     { pmTrackingPEInfo }
+    STATUS      current
+
+
+
+    DESCRIPTION
+        "The pmAbnormalTermNotification is sent when a policy's
+        pmPolicyAbnormalTerminations gauge value changes from zero to
+        any value greater than zero and no such notification has been
+        sent for that policy in the last 5 minutes.
+
+        The notification contains an instance of the pmTrackingPEInfo
+        object where the pmPolicyIndex component of the index
+        identifies the associated policy and the rest of the index
+        identifies an element on which the policy failed."
+    ::= { pmNotifications 3 }
+
+-- Compliance Statements
+
+    pmConformance   OBJECT IDENTIFIER ::= { pmMib 12 }
+    pmCompliances   OBJECT IDENTIFIER ::= { pmConformance 1 }
+    pmGroups        OBJECT IDENTIFIER ::= { pmConformance 2 }
+
+pmCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "Describes the requirements for conformance to
+        the Policy-Based Management MIB"
+    MODULE  -- this module
+        MANDATORY-GROUPS { pmPolicyManagementGroup, pmSchedGroup,
+                           pmNotificationGroup }
+    ::= { pmCompliances 1 }
+
+pmPolicyManagementGroup OBJECT-GROUP
+    OBJECTS { pmPolicyPrecedenceGroup, pmPolicyPrecedence,
+              pmPolicySchedule, pmPolicyElementTypeFilter,
+              pmPolicyConditionScriptIndex, pmPolicyActionScriptIndex,
+              pmPolicyParameters,
+              pmPolicyConditionMaxLatency, pmPolicyActionMaxLatency,
+              pmPolicyMaxIterations,
+              pmPolicyDescription, pmPolicyMatches,
+              pmPolicyAbnormalTerminations,
+              pmPolicyExecutionErrors, pmPolicyDebugging,
+              pmPolicyStorageType, pmPolicyAdminStatus,
+              pmPolicyRowStatus, pmPolicyCodeText, pmPolicyCodeStatus,
+              pmElementTypeRegMaxLatency, pmElementTypeRegDescription,
+              pmElementTypeRegStorageType, pmElementTypeRegRowStatus,
+              pmRoleStatus,
+              pmCapabilitiesType, pmCapabilitiesOverrideState,
+              pmCapabilitiesOverrideRowStatus,
+              pmTrackingPEInfo,
+              pmTrackingEPStatus,
+              pmDebuggingMessage }
+
+
+
+    STATUS  current
+    DESCRIPTION
+        "Objects that allow for the creation and management of
+        configuration policies."
+    ::=  { pmGroups 1 }
+
+pmSchedGroup OBJECT-GROUP
+    OBJECTS { pmSchedLocalTime, pmSchedGroupIndex,
+              pmSchedDescr, pmSchedTimePeriod,
+              pmSchedMonth, pmSchedDay, pmSchedWeekDay,
+              pmSchedTimeOfDay, pmSchedLocalOrUtc, pmSchedStorageType,
+              pmSchedRowStatus
+            }
+    STATUS current
+    DESCRIPTION
+        "Objects that allow for the scheduling of policies."
+    ::= { pmGroups 2 }
+
+pmNotificationGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { pmNewRoleNotification,
+                    pmNewCapabilityNotification,
+                    pmAbnormalTermNotification }
+    STATUS        current
+    DESCRIPTION
+        "Notifications sent by an Policy MIB agent."
+    ::= { pmGroups 3 }
+
+pmBaseFunctionLibrary OBJECT IDENTIFIER ::= { pmGroups 4 }
+
+END

@@ -1,0 +1,74 @@
+TUBS-IBR-TEST-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, Integer32
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION
+	FROM SNMPv2-TC
+    ibr
+	FROM TUBS-SMI;
+
+testMIB MODULE-IDENTITY
+    LAST-UPDATED "200002090000Z"
+    ORGANIZATION "TU Braunschweig"
+    CONTACT-INFO
+	"Juergen Schoenwaelder
+	 TU Braunschweig
+	 Bueltenweg 74/75
+	 38106 Braunschweig
+	 Germany
+
+	 Tel: +49 531 391 3283
+	 Fax: +49 531 391 5936
+	 E-mail: schoenw@ibr.cs.tu-bs.de"
+    DESCRIPTION
+        "A MIB module which is only used for testing purposes."
+    REVISION	"200002090000Z"
+    DESCRIPTION
+	"Updated IMPORTS and minor stylistic fixes."
+    REVISION	"9810091711Z"
+    DESCRIPTION
+	"The initial revision of this module."
+    ::= { ibr 7 }
+
+OctalValue ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "o"
+    STATUS       current
+    DESCRIPTION
+        "This TC is used to test DISPLAY-HINT interpretation. It is
+	 not intended to be used in any OBJECT-TYPE definition."
+    SYNTAX Integer32 (0..2147483647)
+
+HexValue ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "x"
+    STATUS       current
+    DESCRIPTION
+        "This TC is used to test DISPLAY-HINT interpretation. It is
+	 not intended to be used in any OBJECT-TYPE definition."
+    SYNTAX Integer32 (0..2147483647)
+
+BinaryValue ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "b"
+    STATUS       current
+    DESCRIPTION
+        "This TC is used to test DISPLAY-HINT interpretation. It is
+	 not intended to be used in any OBJECT-TYPE definition."
+    SYNTAX Integer32 (0..2147483647)
+
+Dot3Value ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d-3"
+    STATUS       current
+    DESCRIPTION
+        "This TC is used to test DISPLAY-HINT interpretation. It is
+	 not intended to be used in any OBJECT-TYPE definition."
+    SYNTAX Integer32 (0..2147483647)
+
+NumValue ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "1d-1x-1o-1b"
+    STATUS	current
+    DESCRIPTION
+        "This TC is used to test DISPLAY-HINT interpretation. It is
+	 not intended to be used in any OBJECT-TYPE definition."
+    SYNTAX OCTET STRING
+
+END

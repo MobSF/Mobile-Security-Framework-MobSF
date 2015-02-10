@@ -1,0 +1,42 @@
+# -*- text -*-
+##############################################################################
+#
+#  Riverstone Networks' RADIUS VSAs
+#  *** For RapidOS Versions 9.1 and above ONLY ***
+#
+#  $Id$
+#
+##############################################################################
+
+VENDOR		Riverstone			5567
+
+#
+#  Riverstone-Command
+#
+#  This attribute is sent in Accounting-Requests, and contains text
+#  from the admin's CLI session.
+#
+BEGIN-VENDOR	Riverstone
+
+ATTRIBUTE	Riverstone-Command			1	string
+
+#
+#  This attribute is sent in Accounting-Requests, as a duplicate
+#  of syslog for system event messages.
+#
+ATTRIBUTE	Riverstone-System-Event			2	string
+
+#
+#  This attribute is sent in Accounting-Requests, to log changes
+#  made via SNMP.
+#
+ATTRIBUTE	Riverstone-SNMP-Config-Change		3	string
+
+#
+#  This attribute should be sent in Access-Accept packets, to set
+#  the privilege level.  It MUST be sent when the device is operating
+#  in Mult-User Access mode.
+#
+ATTRIBUTE	Riverstone-User-Level			4	integer
+
+END-VENDOR	Riverstone

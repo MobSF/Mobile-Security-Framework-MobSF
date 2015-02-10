@@ -1,0 +1,3704 @@
+DIFFSERV-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+    Unsigned32, Counter64, MODULE-IDENTITY, OBJECT-TYPE,
+    OBJECT-IDENTITY, zeroDotZero, mib-2
+         FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, RowStatus, RowPointer,
+    StorageType, AutonomousType
+         FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP
+         FROM SNMPv2-CONF
+    ifIndex, InterfaceIndexOrZero
+        FROM IF-MIB
+    InetAddressType, InetAddress, InetAddressPrefixLength,
+    InetPortNumber
+        FROM INET-ADDRESS-MIB
+    BurstSize
+        FROM INTEGRATED-SERVICES-MIB
+    Dscp, DscpOrAny
+        FROM DIFFSERV-DSCP-TC;
+
+diffServMib MODULE-IDENTITY
+    LAST-UPDATED "200202070000Z"
+    ORGANIZATION "IETF Differentiated Services WG"
+    CONTACT-INFO
+       "       Fred Baker
+               Cisco Systems
+               1121 Via Del Rey
+               Santa Barbara, CA 93117, USA
+               E-mail: fred@cisco.com
+
+               Kwok Ho Chan
+               Nortel Networks
+               600 Technology Park Drive
+               Billerica, MA 01821, USA
+               E-mail: khchan@nortelnetworks.com
+
+               Andrew Smith
+               Harbour Networks
+               Jiuling Building
+
+
+               21 North Xisanhuan Ave.
+               Beijing, 100089, PRC
+               E-mail: ah_smith@acm.org
+
+               Differentiated Services Working Group:
+               diffserv@ietf.org"
+    DESCRIPTION
+       "This MIB defines the objects necessary to manage a device that
+       uses the Differentiated Services Architecture described in RFC
+       2475. The Conceptual Model of a Differentiated Services Router
+       provides supporting information on how such a router is modeled."
+    REVISION "200202070000Z"
+    DESCRIPTION
+       "Initial version, published as RFC 3289."
+    ::= { mib-2 97 }
+
+diffServMIBObjects     OBJECT IDENTIFIER ::= { diffServMib 1 }
+diffServMIBConformance OBJECT IDENTIFIER ::= { diffServMib 2 }
+diffServMIBAdmin       OBJECT IDENTIFIER ::= { diffServMib 3 }
+
+IndexInteger ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS   current
+    DESCRIPTION
+       "An integer which may be used as a table index."
+    SYNTAX   Unsigned32 (1..4294967295)
+
+IndexIntegerNextFree ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS   current
+    DESCRIPTION
+       "An integer which may be used as a new Index in a table.
+
+       The special value of 0 indicates that no more new entries can be
+       created in the relevant table.
+
+       When a MIB is used for configuration, an object with this SYNTAX
+       always contains a legal value (if non-zero) for an index that is
+       not currently used in the relevant table. The Command Generator
+       (Network Management Application) reads this variable and uses the
+       (non-zero) value read when creating a new row with an SNMP SET.
+       When the SET is performed, the Command Responder (agent) must
+       determine whether the value is indeed still unused; Two Network
+       Management Applications may attempt to create a row
+       (configuration entry) simultaneously and use the same value. If
+       it is currently unused, the SET succeeds and the Command
+       Responder (agent) changes the value of this object, according to
+       an implementation-specific algorithm.  If the value is in use,
+
+
+
+       however, the SET fails.  The Network Management Application must
+       then re-read this variable to obtain a new usable value.
+
+       An OBJECT-TYPE definition using this SYNTAX MUST specify the
+       relevant table for which the object is providing this
+       functionality."
+    SYNTAX   Unsigned32 (0..4294967295)
+
+IfDirection ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+       "IfDirection specifies a direction of data travel on an
+       interface. 'inbound' traffic is operated on during reception from
+       the interface, while 'outbound' traffic is operated on prior to
+       transmission on the interface."
+    SYNTAX  INTEGER {
+                inbound(1),     -- ingress interface
+                outbound(2)     -- egress interface
+}
+
+--
+-- Data Path
+--
+
+diffServDataPath       OBJECT IDENTIFIER ::= { diffServMIBObjects 1 }
+
+--
+-- Data Path Table
+--
+-- The Data Path Table enumerates the Differentiated Services
+-- Functional Data Paths within this device.  Each entry in this table
+-- is indexed by ifIndex and ifDirection.  Each entry provides the
+-- first Differentiated Services Functional Data Path Element to
+-- process data flowing along specific data path.  This table should
+-- have at most two entries for each interface capable of
+-- Differentiated Services processing on this device: ingress and
+-- egress.
+
+-- Note that Differentiated Services Functional Data Path Elements
+-- linked together using their individual next pointers and anchored by
+-- an entry of the diffServDataPathTable constitute a functional data
+-- path.
+--
+
+diffServDataPathTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServDataPathEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "The data path table contains RowPointers indicating the start of
+       the functional data path for each interface and traffic direction
+       in this device. These may merge, or be separated into parallel
+       data paths."
+    ::= { diffServDataPath 1 }
+
+diffServDataPathEntry OBJECT-TYPE
+    SYNTAX       DiffServDataPathEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry in the data path table indicates the start of a single
+       Differentiated Services Functional Data Path in this device.
+
+       These are associated with individual interfaces, logical or
+       physical, and therefore are instantiated by ifIndex. Therefore,
+       the interface index must have been assigned, according to the
+       procedures applicable to that, before it can be meaningfully
+       used. Generally, this means that the interface must exist.
+
+       When diffServDataPathStorage is of type nonVolatile, however,
+       this may reflect the configuration for an interface whose ifIndex
+       has been assigned but for which the supporting implementation is
+       not currently present."
+    INDEX { ifIndex, diffServDataPathIfDirection }
+    ::= { diffServDataPathTable 1 }
+
+DiffServDataPathEntry ::= SEQUENCE  {
+    diffServDataPathIfDirection    IfDirection,
+    diffServDataPathStart          RowPointer,
+    diffServDataPathStorage        StorageType,
+    diffServDataPathStatus         RowStatus
+}
+
+diffServDataPathIfDirection OBJECT-TYPE
+    SYNTAX       IfDirection
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "IfDirection specifies whether the reception or transmission path
+       for this interface is in view."
+    ::= { diffServDataPathEntry 1 }
+
+diffServDataPathStart OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "This selects the first Differentiated Services Functional Data
+       Path Element to handle traffic for this data path. This
+       RowPointer should point to an instance of one of:
+         diffServClfrEntry
+         diffServMeterEntry
+         diffServActionEntry
+         diffServAlgDropEntry
+         diffServQEntry
+
+       A value of zeroDotZero in this attribute indicates that no
+       Differentiated Services treatment is performed on traffic of this
+       data path. A pointer with the value zeroDotZero normally
+       terminates a functional data path.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+    ::= { diffServDataPathEntry 2 }
+
+diffServDataPathStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServDataPathEntry 3 }
+
+diffServDataPathStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time."
+    ::= { diffServDataPathEntry 4 }
+
+--
+-- Classifiers
+--
+
+diffServClassifier     OBJECT IDENTIFIER ::= { diffServMIBObjects 2 }
+
+--
+
+
+
+-- Classifier Table
+--
+-- The Classifier Table allows multiple classifier elements, of same or
+-- different types, to be used together. A classifier must completely
+-- classify all packets presented to it. This means that all traffic
+-- presented to a classifier must match at least one classifier element
+-- within the classifier, with the classifier element parameters
+-- specified by a filter.
+
+-- If there is ambiguity between classifier elements of different
+-- classifier, classifier linkage order indicates their precedence; the
+-- first classifier in the link is applied to the traffic first.
+
+-- Entries in the classifier element table serves as the anchor for
+-- each classification pattern, defined in filter table entries.  Each
+-- classifier element table entry also specifies the subsequent
+-- downstream Differentiated Services Functional Data Path Element when
+-- the classification pattern is satisfied. Each entry in the
+-- classifier element table describes one branch of the fan-out
+-- characteristic of a classifier indicated in the Informal
+-- Differentiated Services Model section 4.1.  A classifier is composed
+-- of one or more classifier elements.
+
+diffServClfrNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for diffServClfrId, or a
+       zero to indicate that none exist."
+    ::= { diffServClassifier 1 }
+
+diffServClfrTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServClfrEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table enumerates all the diffserv classifier functional
+       data path elements of this device.  The actual classification
+       definitions are defined in diffServClfrElementTable entries
+       belonging to each classifier.
+
+       An entry in this table, pointed to by a RowPointer specifying an
+       instance of diffServClfrStatus, is frequently used as the name
+       for a set of classifier elements, which all use the index
+       diffServClfrId. Per the semantics of the classifier element
+       table, these entries constitute one or more unordered sets of
+       tests which may be simultaneously applied to a message to
+
+
+
+       classify it.
+
+       The primary function of this table is to ensure that the value of
+       diffServClfrId is unique before attempting to use it in creating
+       a diffServClfrElementEntry. Therefore, the diffServClfrEntry must
+       be created on the same SET as the diffServClfrElementEntry, or
+       before the diffServClfrElementEntry is created."
+    ::= { diffServClassifier 2 }
+
+diffServClfrEntry OBJECT-TYPE
+    SYNTAX       DiffServClfrEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry in the classifier table describes a single classifier.
+       All classifier elements belonging to the same classifier use the
+       classifier's diffServClfrId as part of their index."
+    INDEX { diffServClfrId }
+    ::= { diffServClfrTable 1 }
+
+DiffServClfrEntry ::= SEQUENCE  {
+    diffServClfrId              IndexInteger,
+    diffServClfrStorage         StorageType,
+    diffServClfrStatus          RowStatus
+}
+
+diffServClfrId OBJECT-TYPE
+    SYNTAX       IndexInteger
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An index that enumerates the classifier entries.  Managers
+       should obtain new values for row creation in this table by
+       reading diffServClfrNextFree."
+    ::= { diffServClfrEntry 1 }
+
+diffServClfrStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServClfrEntry 2 }
+
+diffServClfrStatus OBJECT-TYPE
+
+
+
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServClfrEntry 3 }
+
+--
+-- Classifier Element Table
+--
+diffServClfrElementNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for diffServClfrElementId,
+       or a zero to indicate that none exist."
+    ::= { diffServClassifier 3 }
+
+diffServClfrElementTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServClfrElementEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "The classifier element table enumerates the relationship between
+       classification patterns and subsequent downstream Differentiated
+       Services Functional Data Path elements.
+       diffServClfrElementSpecific points to a filter that specifies the
+       classification parameters. A classifier may use filter tables of
+       different types together.
+
+       One example of a filter table defined in this MIB is
+       diffServMultiFieldClfrTable, for IP Multi-Field Classifiers
+       (MFCs). Such an entry might identify anything from a single
+       micro-flow (an identifiable sub-session packet stream directed
+       from one sending transport to the receiving transport or
+       transports), or aggregates of those such as the traffic from a
+       host, traffic for an application, or traffic between two hosts
+       using an application and a given DSCP. The standard Behavior
+       Aggregate used in the Differentiated Services Architecture is
+       encoded as a degenerate case of such an aggregate - the traffic
+       using a particular DSCP value.
+
+       Filter tables for other filter types may be defined elsewhere."
+
+
+
+    ::= { diffServClassifier 4 }
+
+diffServClfrElementEntry OBJECT-TYPE
+    SYNTAX       DiffServClfrElementEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry in the classifier element table describes a single
+       element of the classifier."
+    INDEX { diffServClfrId, diffServClfrElementId }
+    ::= { diffServClfrElementTable 1 }
+
+DiffServClfrElementEntry ::= SEQUENCE  {
+    diffServClfrElementId          IndexInteger,
+    diffServClfrElementPrecedence  Unsigned32,
+    diffServClfrElementNext        RowPointer,
+    diffServClfrElementSpecific    RowPointer,
+    diffServClfrElementStorage     StorageType,
+    diffServClfrElementStatus      RowStatus
+}
+
+diffServClfrElementId OBJECT-TYPE
+    SYNTAX       IndexInteger
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An index that enumerates the Classifier Element entries.
+       Managers obtain new values for row creation in this table by
+       reading diffServClfrElementNextFree."
+    ::= { diffServClfrElementEntry 1 }
+
+diffServClfrElementPrecedence OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The relative order in which classifier elements are applied:
+       higher numbers represent classifier element with higher
+       precedence.  Classifier elements with the same order must be
+       unambiguous i.e. they must define non-overlapping patterns, and
+       are considered to be applied simultaneously to the traffic
+       stream. Classifier elements with different order may overlap in
+       their filters:  the classifier element with the highest order
+       that matches is taken.
+
+       On a given interface, there must be a complete classifier in
+       place at all times in the ingress direction.  This means one or
+       more filters must match any possible pattern. There is no such
+
+
+
+       requirement in the egress direction."
+    ::= { diffServClfrElementEntry 2 }
+
+diffServClfrElementNext OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This attribute provides one branch of the fan-out functionality
+       of a classifier described in the Informal Differentiated Services
+       Model section 4.1.
+
+       This selects the next Differentiated Services Functional Data
+       Path Element to handle traffic for this data path. This
+       RowPointer should point to an instance of one of:
+         diffServClfrEntry
+         diffServMeterEntry
+         diffServActionEntry
+         diffServAlgDropEntry
+         diffServQEntry
+
+       A value of zeroDotZero in this attribute indicates no further
+       Differentiated Services treatment is performed on traffic of this
+       data path. The use of zeroDotZero is the normal usage for the
+       last functional data path element of the current data path.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+
+    ::= { diffServClfrElementEntry 3 }
+
+diffServClfrElementSpecific OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "A pointer to a valid entry in another table, filter table, that
+       describes the applicable classification parameters, e.g. an entry
+       in diffServMultiFieldClfrTable.
+
+       The value zeroDotZero is interpreted to match anything not
+       matched by another classifier element - only one such entry may
+       exist for each classifier.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+
+
+
+       becomes inactive by other means, the element is ignored."
+    ::= { diffServClfrElementEntry 4 }
+
+diffServClfrElementStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServClfrElementEntry 5 }
+
+diffServClfrElementStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServClfrElementEntry 6 }
+
+--
+-- IP Multi-field Classification Table
+--
+-- Classification based on six different fields in the IP header.
+-- Functional Data Paths may share definitions by using the same entry.
+--
+
+diffServMultiFieldClfrNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for
+       diffServMultiFieldClfrId, or a zero to indicate that none exist."
+    ::= { diffServClassifier 5 }
+
+diffServMultiFieldClfrTable OBJECT-TYPE
+    SYNTAX   SEQUENCE OF DiffServMultiFieldClfrEntry
+    MAX-ACCESS   not-accessible
+    STATUS   current
+    DESCRIPTION
+       "A table of IP Multi-field Classifier filter entries that a
+
+
+
+       system may use to identify IP traffic."
+    ::= { diffServClassifier 6 }
+
+diffServMultiFieldClfrEntry OBJECT-TYPE
+    SYNTAX       DiffServMultiFieldClfrEntry
+    MAX-ACCESS   not-accessible
+    STATUS   current
+    DESCRIPTION
+       "An IP Multi-field Classifier entry describes a single filter."
+    INDEX { diffServMultiFieldClfrId }
+    ::= { diffServMultiFieldClfrTable 1 }
+
+DiffServMultiFieldClfrEntry ::= SEQUENCE {
+    diffServMultiFieldClfrId           IndexInteger,
+    diffServMultiFieldClfrAddrType     InetAddressType,
+    diffServMultiFieldClfrDstAddr      InetAddress,
+    diffServMultiFieldClfrDstPrefixLength InetAddressPrefixLength,
+    diffServMultiFieldClfrSrcAddr      InetAddress,
+    diffServMultiFieldClfrSrcPrefixLength InetAddressPrefixLength,
+    diffServMultiFieldClfrDscp         DscpOrAny,
+    diffServMultiFieldClfrFlowId       Unsigned32,
+    diffServMultiFieldClfrProtocol     Unsigned32,
+    diffServMultiFieldClfrDstL4PortMin InetPortNumber,
+    diffServMultiFieldClfrDstL4PortMax InetPortNumber,
+    diffServMultiFieldClfrSrcL4PortMin InetPortNumber,
+    diffServMultiFieldClfrSrcL4PortMax InetPortNumber,
+    diffServMultiFieldClfrStorage      StorageType,
+    diffServMultiFieldClfrStatus       RowStatus
+}
+
+diffServMultiFieldClfrId OBJECT-TYPE
+    SYNTAX         IndexInteger
+    MAX-ACCESS     not-accessible
+    STATUS     current
+    DESCRIPTION
+       "An index that enumerates the MultiField Classifier filter
+       entries.  Managers obtain new values for row creation in this
+       table by reading diffServMultiFieldClfrNextFree."
+
+    ::= { diffServMultiFieldClfrEntry 1 }
+
+diffServMultiFieldClfrAddrType OBJECT-TYPE
+    SYNTAX         InetAddressType
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The type of IP address used by this classifier entry.  While
+       other types of addresses are defined in the InetAddressType
+
+
+
+       textual convention, and DNS names, a classifier can only look at
+       packets on the wire. Therefore, this object is limited to IPv4
+       and IPv6 addresses."
+    ::= { diffServMultiFieldClfrEntry 2 }
+
+diffServMultiFieldClfrDstAddr OBJECT-TYPE
+    SYNTAX         InetAddress
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The IP address to match against the packet's destination IP
+       address. This may not be a DNS name, but may be an IPv4 or IPv6
+       prefix.  diffServMultiFieldClfrDstPrefixLength indicates the
+       number of bits that are relevant."
+    ::= { diffServMultiFieldClfrEntry 3 }
+
+diffServMultiFieldClfrDstPrefixLength OBJECT-TYPE
+    SYNTAX         InetAddressPrefixLength
+    UNITS          "bits"
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The length of the CIDR Prefix carried in
+       diffServMultiFieldClfrDstAddr. In IPv4 addresses, a length of 0
+       indicates a match of any address; a length of 32 indicates a
+       match of a single host address, and a length between 0 and 32
+       indicates the use of a CIDR Prefix. IPv6 is similar, except that
+       prefix lengths range from 0..128."
+    DEFVAL         { 0 }
+    ::= { diffServMultiFieldClfrEntry 4 }
+
+diffServMultiFieldClfrSrcAddr OBJECT-TYPE
+    SYNTAX         InetAddress
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The IP address to match against the packet's source IP address.
+       This may not be a DNS name, but may be an IPv4 or IPv6 prefix.
+       diffServMultiFieldClfrSrcPrefixLength indicates the number of
+       bits that are relevant."
+    ::= { diffServMultiFieldClfrEntry 5 }
+
+diffServMultiFieldClfrSrcPrefixLength OBJECT-TYPE
+    SYNTAX         InetAddressPrefixLength
+    UNITS          "bits"
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+
+
+
+       "The length of the CIDR Prefix carried in
+       diffServMultiFieldClfrSrcAddr. In IPv4 addresses, a length of 0
+       indicates a match of any address; a length of 32 indicates a
+       match of a single host address, and a length between 0 and 32
+       indicates the use of a CIDR Prefix. IPv6 is similar, except that
+       prefix lengths range from 0..128."
+    DEFVAL         { 0 }
+    ::= { diffServMultiFieldClfrEntry 6 }
+
+diffServMultiFieldClfrDscp OBJECT-TYPE
+    SYNTAX         DscpOrAny
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The value that the DSCP in the packet must have to match this
+       entry. A value of -1 indicates that a specific DSCP value has not
+       been defined and thus all DSCP values are considered a match."
+    DEFVAL         { -1 }
+    ::= { diffServMultiFieldClfrEntry 7 }
+
+diffServMultiFieldClfrFlowId OBJECT-TYPE
+    SYNTAX         Unsigned32 (0..1048575)
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The flow identifier in an IPv6 header."
+    ::= { diffServMultiFieldClfrEntry 8 }
+
+diffServMultiFieldClfrProtocol OBJECT-TYPE
+    SYNTAX         Unsigned32 (0..255)
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The IP protocol to match against the IPv4 protocol number or the
+       IPv6 Next- Header number in the packet. A value of 255 means
+       match all.  Note the protocol number of 255 is reserved by IANA,
+       and Next-Header number of 0 is used in IPv6."
+    DEFVAL         { 255 }
+    ::= { diffServMultiFieldClfrEntry 9 }
+
+diffServMultiFieldClfrDstL4PortMin OBJECT-TYPE
+    SYNTAX         InetPortNumber
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The minimum value that the layer-4 destination port number in
+       the packet must have in order to match this classifier entry."
+    DEFVAL         { 0 }
+
+
+
+    ::= { diffServMultiFieldClfrEntry 10 }
+
+diffServMultiFieldClfrDstL4PortMax OBJECT-TYPE
+    SYNTAX         InetPortNumber
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The maximum value that the layer-4 destination port number in
+       the packet must have in order to match this classifier entry.
+       This value must be equal to or greater than the value specified
+       for this entry in diffServMultiFieldClfrDstL4PortMin."
+    DEFVAL         { 65535 }
+    ::= { diffServMultiFieldClfrEntry 11 }
+
+diffServMultiFieldClfrSrcL4PortMin OBJECT-TYPE
+    SYNTAX         InetPortNumber
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The minimum value that the layer-4 source port number in the
+       packet must have in order to match this classifier entry."
+    DEFVAL         { 0 }
+    ::= { diffServMultiFieldClfrEntry 12 }
+
+diffServMultiFieldClfrSrcL4PortMax OBJECT-TYPE
+    SYNTAX         InetPortNumber
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The maximum value that the layer-4 source port number in the
+       packet must have in order to match this classifier entry. This
+       value must be equal to or greater than the value specified for
+       this entry in diffServMultiFieldClfrSrcL4PortMin."
+    DEFVAL         { 65535 }
+    ::= { diffServMultiFieldClfrEntry 13 }
+
+diffServMultiFieldClfrStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServMultiFieldClfrEntry 14 }
+
+diffServMultiFieldClfrStatus OBJECT-TYPE
+
+
+
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServMultiFieldClfrEntry 15 }
+
+--
+-- Meters
+--
+
+diffServMeter          OBJECT IDENTIFIER ::= { diffServMIBObjects 3 }
+
+--
+-- This MIB supports a variety of Meters.  It includes a specific
+-- definition for Token Bucket Meter, which are but one type of
+-- specification. Other metering parameter sets can be defined in other
+-- MIBs.
+
+-- Multiple meter elements may be logically cascaded using their
+-- diffServMeterSucceedNext and diffServMeterFailNext pointers if
+-- required. One example of this might be for an AF PHB implementation
+-- that uses multiple level conformance meters.
+
+-- Cascading of individual meter elements in the MIB is intended to be
+-- functionally equivalent to multiple level conformance determination
+-- of a packet.  The sequential nature of the representation is merely
+-- a notational convenience for this MIB.
+
+-- srTCM meters (RFC 2697) can be specified using two sets of
+-- diffServMeterEntry and diffServTBParamEntry. The first set specifies
+-- the Committed Information Rate and Committed Burst Size
+-- token-bucket.  The second set specifies the Excess Burst Size
+-- token-bucket.
+
+-- trTCM meters (RFC 2698) can be specified using two sets of
+-- diffServMeterEntry and diffServTBParamEntry. The first set specifies
+-- the Committed Information Rate and Committed Burst Size
+-- token-bucket.  The second set specifies the Peak Information Rate
+-- and Peak Burst Size token-bucket.
+
+-- tswTCM meters (RFC 2859) can be specified using two sets of
+-- diffServMeterEntry and diffServTBParamEntry. The first set specifies
+-- the Committed Target Rate token-bucket.  The second set specifies
+
+
+
+-- the Peak Target Rate token-bucket. diffServTBParamInterval in each
+-- token bucket reflects the Average Interval.
+--
+
+diffServMeterNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for diffServMeterId, or a
+       zero to indicate that none exist."
+    ::= { diffServMeter 1 }
+
+diffServMeterTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServMeterEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table enumerates specific meters that a system may use to
+       police a stream of traffic. The traffic stream to be metered is
+       determined by the Differentiated Services Functional Data Path
+       Element(s) upstream of the meter i.e. by the object(s) that point
+       to each entry in this table.  This may include all traffic on an
+       interface.
+
+       Specific meter details are to be found in table entry referenced
+       by diffServMeterSpecific."
+    ::= { diffServMeter 2 }
+
+diffServMeterEntry OBJECT-TYPE
+    SYNTAX       DiffServMeterEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry in the meter table describes a single conformance level
+       of a meter."
+    INDEX { diffServMeterId }
+    ::= { diffServMeterTable 1 }
+
+DiffServMeterEntry ::= SEQUENCE  {
+    diffServMeterId                IndexInteger,
+    diffServMeterSucceedNext       RowPointer,
+    diffServMeterFailNext          RowPointer,
+    diffServMeterSpecific          RowPointer,
+    diffServMeterStorage           StorageType,
+    diffServMeterStatus            RowStatus
+}
+
+
+
+
+diffServMeterId OBJECT-TYPE
+    SYNTAX       IndexInteger
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An index that enumerates the Meter entries.  Managers obtain new
+       values for row creation in this table by reading
+       diffServMeterNextFree."
+    ::= { diffServMeterEntry 1 }
+
+diffServMeterSucceedNext OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "If the traffic does conform, this selects the next
+       Differentiated Services Functional Data Path element to handle
+       traffic for this data path. This RowPointer should point to an
+       instance of one of:
+         diffServClfrEntry
+         diffServMeterEntry
+         diffServActionEntry
+         diffServAlgDropEntry
+         diffServQEntry
+
+       A value of zeroDotZero in this attribute indicates that no
+       further Differentiated Services treatment is performed on traffic
+       of this data path. The use of zeroDotZero is the normal usage for
+       the last functional data path element of the current data path.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+    DEFVAL      { zeroDotZero }
+    ::= { diffServMeterEntry 2 }
+
+diffServMeterFailNext OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "If the traffic does not conform, this selects the next
+       Differentiated Services Functional Data Path element to handle
+       traffic for this data path. This RowPointer should point to an
+       instance of one of:
+         diffServClfrEntry
+         diffServMeterEntry
+
+
+
+         diffServActionEntry
+         diffServAlgDropEntry
+         diffServQEntry
+
+       A value of zeroDotZero in this attribute indicates no further
+       Differentiated Services treatment is performed on traffic of this
+       data path. The use of zeroDotZero is the normal usage for the
+       last functional data path element of the current data path.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+    DEFVAL      { zeroDotZero }
+    ::= { diffServMeterEntry 3 }
+
+diffServMeterSpecific OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This indicates the behavior of the meter by pointing to an entry
+       containing detailed parameters. Note that entries in that
+       specific table must be managed explicitly.
+
+       For example, diffServMeterSpecific may point to an entry in
+       diffServTBParamTable, which contains an instance of a single set
+       of Token Bucket parameters.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the meter always succeeds."
+    ::= { diffServMeterEntry 4 }
+
+diffServMeterStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServMeterEntry 5 }
+
+diffServMeterStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+
+
+
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServMeterEntry 6 }
+
+--
+-- Token Bucket Parameter Table
+--
+
+diffServTBParam        OBJECT IDENTIFIER ::= { diffServMIBObjects 4 }
+
+-- Each entry in the Token Bucket Parameter Table parameterize a single
+-- token bucket.  Multiple token buckets can be used together to
+-- parameterize multiple levels of conformance.
+
+-- Note that an entry in the Token Bucket Parameter Table can be shared
+-- by multiple diffServMeterTable entries.
+--
+
+diffServTBParamNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for diffServTBParamId, or a
+       zero to indicate that none exist."
+    ::= { diffServTBParam 1 }
+
+diffServTBParamTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServTBParamEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table enumerates a single set of token bucket meter
+       parameters that a system may use to police a stream of traffic.
+       Such meters are modeled here as having a single rate and a single
+       burst size. Multiple entries are used when multiple rates/burst
+       sizes are needed."
+    ::= { diffServTBParam 2 }
+
+diffServTBParamEntry OBJECT-TYPE
+    SYNTAX       DiffServTBParamEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "An entry that describes a single set of token bucket
+       parameters."
+    INDEX { diffServTBParamId }
+    ::= { diffServTBParamTable 1 }
+
+DiffServTBParamEntry ::= SEQUENCE  {
+    diffServTBParamId              IndexInteger,
+    diffServTBParamType            AutonomousType,
+    diffServTBParamRate            Unsigned32,
+    diffServTBParamBurstSize       BurstSize,
+    diffServTBParamInterval        Unsigned32,
+    diffServTBParamStorage         StorageType,
+    diffServTBParamStatus          RowStatus
+}
+
+diffServTBParamId OBJECT-TYPE
+    SYNTAX       IndexInteger
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An index that enumerates the Token Bucket Parameter entries.
+       Managers obtain new values for row creation in this table by
+       reading diffServTBParamNextFree."
+    ::= { diffServTBParamEntry 1 }
+
+diffServTBParamType OBJECT-TYPE
+    SYNTAX       AutonomousType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The Metering algorithm associated with the Token Bucket
+       parameters.  zeroDotZero indicates this is unknown.
+
+       Standard values for generic algorithms:
+       diffServTBParamSimpleTokenBucket, diffServTBParamAvgRate,
+       diffServTBParamSrTCMBlind, diffServTBParamSrTCMAware,
+       diffServTBParamTrTCMBlind, diffServTBParamTrTCMAware, and
+       diffServTBParamTswTCM are specified in this MIB as OBJECT-
+       IDENTITYs; additional values may be further specified in other
+       MIBs."
+    ::= { diffServTBParamEntry 2 }
+
+diffServTBParamRate OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "kilobits per second"
+    MAX-ACCESS   read-create
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "The token-bucket rate, in kilobits per second (kbps). This
+       attribute is used for:
+       1. CIR in RFC 2697 for srTCM
+       2. CIR and PIR in RFC 2698 for trTCM
+       3. CTR and PTR in RFC 2859 for TSWTCM
+       4. AverageRate in RFC 3290."
+    ::= { diffServTBParamEntry 3 }
+
+diffServTBParamBurstSize OBJECT-TYPE
+    SYNTAX       BurstSize
+    UNITS        "Bytes"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The maximum number of bytes in a single transmission burst. This
+       attribute is used for:
+       1. CBS and EBS in RFC 2697 for srTCM
+       2. CBS and PBS in RFC 2698 for trTCM
+       3. Burst Size in RFC 3290."
+    ::= { diffServTBParamEntry 4 }
+
+diffServTBParamInterval OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4294967295)
+    UNITS        "microseconds"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The time interval used with the token bucket.  For:
+       1. Average Rate Meter, the Informal Differentiated Services Model
+          section 5.2.1, - Delta.
+       2. Simple Token Bucket Meter, the Informal Differentiated
+          Services Model section 5.1, - time interval t.
+       3. RFC 2859 TSWTCM, - AVG_INTERVAL.
+       4. RFC 2697 srTCM, RFC 2698 trTCM, - token bucket update time
+          interval."
+    ::= { diffServTBParamEntry 5 }
+
+diffServTBParamStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServTBParamEntry 6 }
+
+
+
+diffServTBParamStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServTBParamEntry 7 }
+
+--
+-- OIDs for diffServTBParamType definitions.
+--
+
+diffServTBMeters  OBJECT IDENTIFIER ::= { diffServMIBAdmin 1 }
+
+diffServTBParamSimpleTokenBucket OBJECT-IDENTITY
+    STATUS       current
+    DESCRIPTION
+       "Two Parameter Token Bucket Meter as described in the Informal
+       Differentiated Services Model section 5.2.3."
+    ::= { diffServTBMeters 1 }
+
+diffServTBParamAvgRate OBJECT-IDENTITY
+    STATUS       current
+    DESCRIPTION
+       "Average Rate Meter as described in the Informal Differentiated
+       Services Model section 5.2.1."
+    ::= { diffServTBMeters 2 }
+
+diffServTBParamSrTCMBlind OBJECT-IDENTITY
+    STATUS       current
+    DESCRIPTION
+       "Single Rate Three Color Marker Metering as defined by RFC 2697,
+       in the `Color Blind' mode as described by the RFC."
+    REFERENCE
+        "RFC 2697"
+    ::= { diffServTBMeters 3 }
+
+diffServTBParamSrTCMAware OBJECT-IDENTITY
+    STATUS       current
+    DESCRIPTION
+       "Single Rate Three Color Marker Metering as defined by RFC 2697,
+       in the `Color Aware' mode as described by the RFC."
+    REFERENCE
+        "RFC 2697"
+
+
+
+    ::= { diffServTBMeters 4 }
+
+diffServTBParamTrTCMBlind OBJECT-IDENTITY
+    STATUS       current
+    DESCRIPTION
+       "Two Rate Three Color Marker Metering as defined by RFC 2698, in
+       the `Color Blind' mode as described by the RFC."
+    REFERENCE
+        "RFC 2698"
+    ::= { diffServTBMeters 5 }
+
+diffServTBParamTrTCMAware OBJECT-IDENTITY
+    STATUS       current
+    DESCRIPTION
+       "Two Rate Three Color Marker Metering as defined by RFC 2698, in
+       the `Color Aware' mode as described by the RFC."
+    REFERENCE
+        "RFC 2698"
+    ::= { diffServTBMeters 6 }
+
+diffServTBParamTswTCM OBJECT-IDENTITY
+    STATUS       current
+    DESCRIPTION
+       "Time Sliding Window Three Color Marker Metering as defined by
+       RFC 2859."
+    REFERENCE
+        "RFC 2859"
+    ::= { diffServTBMeters 7 }
+
+--
+-- Actions
+--
+
+diffServAction         OBJECT IDENTIFIER ::= { diffServMIBObjects 5 }
+
+--
+-- The Action Table allows enumeration of the different types of
+-- actions to be applied to a traffic flow.
+--
+
+diffServActionNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for diffServActionId, or a
+       zero to indicate that none exist."
+    ::= { diffServAction 1 }
+
+
+
+diffServActionTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServActionEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "The Action Table enumerates actions that can be performed to a
+       stream of traffic. Multiple actions can be concatenated. For
+       example, traffic exiting from a meter may be counted, marked, and
+       potentially dropped before entering a queue.
+
+       Specific actions are indicated by diffServActionSpecific which
+       points to an entry of a specific action type parameterizing the
+       action in detail."
+    ::= { diffServAction 2 }
+
+diffServActionEntry OBJECT-TYPE
+    SYNTAX       DiffServActionEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "Each entry in the action table allows description of one
+       specific action to be applied to traffic."
+    INDEX { diffServActionId }
+    ::= { diffServActionTable 1 }
+
+DiffServActionEntry ::= SEQUENCE  {
+    diffServActionId                IndexInteger,
+    diffServActionInterface         InterfaceIndexOrZero,
+    diffServActionNext              RowPointer,
+    diffServActionSpecific          RowPointer,
+    diffServActionStorage           StorageType,
+    diffServActionStatus            RowStatus
+}
+
+diffServActionId OBJECT-TYPE
+    SYNTAX       IndexInteger
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An index that enumerates the Action entries.  Managers obtain
+       new values for row creation in this table by reading
+       diffServActionNextFree."
+    ::= { diffServActionEntry 1 }
+
+diffServActionInterface  OBJECT-TYPE
+     SYNTAX        InterfaceIndexOrZero
+     MAX-ACCESS    read-create
+     STATUS        current
+
+
+
+     DESCRIPTION
+       "The interface index (value of ifIndex) that this action occurs
+       on. This may be derived from the diffServDataPathStartEntry's
+       index by extension through the various RowPointers. However, as
+       this may be difficult for a network management station, it is
+       placed here as well.  If this is indeterminate, the value is
+       zero.
+
+       This is of especial relevance when reporting the counters which
+       may apply to traffic crossing an interface:
+          diffServCountActOctets,
+          diffServCountActPkts,
+          diffServAlgDropOctets,
+          diffServAlgDropPkts,
+          diffServAlgRandomDropOctets, and
+          diffServAlgRandomDropPkts.
+
+       It is also especially relevant to the queue and scheduler which
+       may be subsequently applied."
+     ::= { diffServActionEntry 2 }
+
+diffServActionNext OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This selects the next Differentiated Services Functional Data
+       Path Element to handle traffic for this data path. This
+       RowPointer should point to an instance of one of:
+         diffServClfrEntry
+         diffServMeterEntry
+         diffServActionEntry
+         diffServAlgDropEntry
+         diffServQEntry
+
+       A value of zeroDotZero in this attribute indicates no further
+       Differentiated Services treatment is performed on traffic of this
+       data path. The use of zeroDotZero is the normal usage for the
+       last functional data path element of the current data path.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+    DEFVAL      { zeroDotZero }
+    ::= { diffServActionEntry 3 }
+
+diffServActionSpecific OBJECT-TYPE
+
+
+
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "A pointer to an object instance providing additional information
+       for the type of action indicated by this action table entry.
+
+       For the standard actions defined by this MIB module, this should
+       point to either a diffServDscpMarkActEntry or a
+       diffServCountActEntry. For other actions, it may point to an
+       object instance defined in some other MIB.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the Meter should be treated as
+       if it were not present.  This may lead to incorrect policy
+       behavior."
+    ::= { diffServActionEntry 4 }
+
+diffServActionStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServActionEntry 5 }
+
+diffServActionStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServActionEntry 6 }
+
+-- DSCP Mark Action Table
+--
+-- Rows of this table are pointed to by diffServActionSpecific to
+-- provide detailed parameters specific to the DSCP Mark action.
+--
+-- A single entry in this table can be shared by multiple
+
+
+
+-- diffServActionTable entries.
+--
+
+diffServDscpMarkActTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServDscpMarkActEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table enumerates specific DSCPs used for marking or
+       remarking the DSCP field of IP packets. The entries of this table
+       may be referenced by a diffServActionSpecific attribute."
+    ::= { diffServAction 3 }
+
+diffServDscpMarkActEntry OBJECT-TYPE
+    SYNTAX       DiffServDscpMarkActEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry in the DSCP mark action table that describes a single
+       DSCP used for marking."
+    INDEX { diffServDscpMarkActDscp }
+    ::= { diffServDscpMarkActTable 1 }
+
+DiffServDscpMarkActEntry ::= SEQUENCE  {
+    diffServDscpMarkActDscp          Dscp
+}
+
+diffServDscpMarkActDscp OBJECT-TYPE
+    SYNTAX       Dscp
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The DSCP that this Action will store into the DSCP field of the
+       subject. It is quite possible that the only packets subject to
+       this Action are already marked with this DSCP. Note also that
+       Differentiated Services processing may result in packet being
+       marked on both ingress to a network and on egress from it, and
+       that ingress and egress can occur in the same router."
+    ::= { diffServDscpMarkActEntry 1 }
+
+--
+-- Count Action Table
+--
+-- Because the MIB structure allows multiple cascading
+-- diffServActionEntry be used to describe multiple actions for a data
+-- path, the counter became an optional action type.  In normal
+-- implementation, either a data path has counters or it does not, as
+-- opposed to being configurable. The management entity may choose to
+
+
+
+-- read the counter or not.  Hence it is recommended for implementation
+-- that have counters to always configure the count action as the first
+-- of multiple actions.
+--
+
+diffServCountActNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for
+       diffServCountActId, or a zero to indicate that none exist."
+    ::= { diffServAction 4 }
+
+diffServCountActTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServCountActEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table contains counters for all the traffic passing through
+       an action element."
+    ::= { diffServAction 5 }
+
+diffServCountActEntry OBJECT-TYPE
+    SYNTAX       DiffServCountActEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry in the count action table describes a single set of
+       traffic counters."
+    INDEX { diffServCountActId }
+    ::= { diffServCountActTable 1 }
+
+DiffServCountActEntry ::= SEQUENCE  {
+    diffServCountActId           IndexInteger,
+    diffServCountActOctets       Counter64,
+    diffServCountActPkts         Counter64,
+    diffServCountActStorage      StorageType,
+    diffServCountActStatus       RowStatus
+}
+
+diffServCountActId OBJECT-TYPE
+    SYNTAX       IndexInteger
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An index that enumerates the Count Action entries.  Managers
+       obtain new values for row creation in this table by reading
+
+
+
+       diffServCountActNextFree."
+    ::= { diffServCountActEntry 1 }
+
+diffServCountActOctets OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The number of octets at the Action data path element.
+
+       Discontinuities in the value of this counter can occur at re-
+       initialization of the management system and at other times as
+       indicated by the value of ifCounterDiscontinuityTime on the
+       relevant interface."
+    ::= { diffServCountActEntry 2 }
+
+diffServCountActPkts OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The number of packets at the Action data path element.
+
+       Discontinuities in the value of this counter can occur at re-
+       initialization of the management system and at other times as
+       indicated by the value of ifCounterDiscontinuityTime on the
+       relevant interface."
+    ::= { diffServCountActEntry 3 }
+
+diffServCountActStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServCountActEntry 4 }
+
+diffServCountActStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+
+
+
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServCountActEntry 5 }
+
+--
+-- Algorithmic Drop Table
+--
+
+diffServAlgDrop        OBJECT IDENTIFIER ::= { diffServMIBObjects 6 }
+
+diffServAlgDropNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for diffServAlgDropId, or a
+       zero to indicate that none exist."
+    ::= { diffServAlgDrop 1 }
+
+diffServAlgDropTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServAlgDropEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "The algorithmic drop table contains entries describing an
+       element that drops packets according to some algorithm."
+    ::= { diffServAlgDrop 2 }
+
+diffServAlgDropEntry OBJECT-TYPE
+    SYNTAX       DiffServAlgDropEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry describes a process that drops packets according to
+       some algorithm. Further details of the algorithm type are to be
+       found in diffServAlgDropType and with more detail parameter entry
+       pointed to by diffServAlgDropSpecific when necessary."
+    INDEX { diffServAlgDropId }
+    ::= { diffServAlgDropTable 1 }
+
+DiffServAlgDropEntry ::= SEQUENCE  {
+    diffServAlgDropId               IndexInteger,
+    diffServAlgDropType             INTEGER,
+    diffServAlgDropNext             RowPointer,
+    diffServAlgDropQMeasure         RowPointer,
+    diffServAlgDropQThreshold       Unsigned32,
+    diffServAlgDropSpecific         RowPointer,
+    diffServAlgDropOctets           Counter64,
+
+
+
+    diffServAlgDropPkts             Counter64,
+    diffServAlgRandomDropOctets     Counter64,
+    diffServAlgRandomDropPkts       Counter64,
+    diffServAlgDropStorage          StorageType,
+    diffServAlgDropStatus           RowStatus
+}
+
+diffServAlgDropId OBJECT-TYPE
+    SYNTAX       IndexInteger
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An index that enumerates the Algorithmic Dropper entries.
+       Managers obtain new values for row creation in this table by
+       reading diffServAlgDropNextFree."
+    ::= { diffServAlgDropEntry 1 }
+
+diffServAlgDropType OBJECT-TYPE
+    SYNTAX       INTEGER {
+                     other(1),
+                     tailDrop(2),
+                     headDrop(3),
+                     randomDrop(4),
+                     alwaysDrop(5)
+}
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The type of algorithm used by this dropper. The value other(1)
+       requires further specification in some other MIB module.
+
+       In the tailDrop(2) algorithm, diffServAlgDropQThreshold
+       represents the maximum depth of the queue, pointed to by
+       diffServAlgDropQMeasure, beyond which all newly arriving packets
+       will be dropped.
+
+       In the headDrop(3) algorithm, if a packet arrives when the
+       current depth of the queue, pointed to by
+       diffServAlgDropQMeasure, is at diffServAlgDropQThreshold, packets
+       currently at the head of the queue are dropped to make room for
+       the new packet to be enqueued at the tail of the queue.
+
+       In the randomDrop(4) algorithm, on packet arrival, an Active
+       Queue Management algorithm is executed which may randomly drop a
+       packet. This algorithm may be proprietary, and it may drop either
+       the arriving packet or another packet in the queue.
+       diffServAlgDropSpecific points to a diffServRandomDropEntry that
+       describes the algorithm. For this algorithm,
+
+
+
+       diffServAlgDropQThreshold is understood to be the absolute
+       maximum size of the queue and additional parameters are described
+       in diffServRandomDropTable.
+
+       The alwaysDrop(5) algorithm is as its name specifies; always
+       drop. In this case, the other configuration values in this Entry
+       are not meaningful; There is no useful 'next' processing step,
+       there is no queue, and parameters describing the queue are not
+       useful. Therefore, diffServAlgDropNext, diffServAlgDropMeasure,
+       and diffServAlgDropSpecific are all zeroDotZero."
+    ::= { diffServAlgDropEntry 2 }
+
+diffServAlgDropNext OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This selects the next Differentiated Services Functional Data
+       Path Element to handle traffic for this data path. This
+       RowPointer should point to an instance of one of:
+         diffServClfrEntry
+         diffServMeterEntry
+         diffServActionEntry
+         diffServQEntry
+
+       A value of zeroDotZero in this attribute indicates no further
+       Differentiated Services treatment is performed on traffic of this
+       data path. The use of zeroDotZero is the normal usage for the
+       last functional data path element of the current data path.
+
+       When diffServAlgDropType is alwaysDrop(5), this object is
+       ignored.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+    ::= { diffServAlgDropEntry 3 }
+
+diffServAlgDropQMeasure OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "Points to an entry in the diffServQTable to indicate the queue
+       that a drop algorithm is to monitor when deciding whether to drop
+       a packet. If the row pointed to does not exist, the algorithmic
+       dropper element is considered inactive.
+
+
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+    ::= { diffServAlgDropEntry 4 }
+
+diffServAlgDropQThreshold OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "Bytes"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "A threshold on the depth in bytes of the queue being measured at
+       which a trigger is generated to the dropping algorithm, unless
+       diffServAlgDropType is alwaysDrop(5) where this object is
+       ignored.
+
+       For the tailDrop(2) or headDrop(3) algorithms, this represents
+       the depth of the queue, pointed to by diffServAlgDropQMeasure, at
+       which the drop action will take place. Other algorithms will need
+       to define their own semantics for this threshold."
+    ::= { diffServAlgDropEntry 5 }
+
+diffServAlgDropSpecific OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "Points to a table entry that provides further detail regarding a
+       drop algorithm.
+
+       Entries with diffServAlgDropType equal to other(1) may have this
+       point to a table defined in another MIB module.
+
+       Entries with diffServAlgDropType equal to randomDrop(4) must have
+       this point to an entry in diffServRandomDropTable.
+
+       For all other algorithms specified in this MIB, this should take
+       the value zeroDotZero.
+
+       The diffServAlgDropType is authoritative for the type of the drop
+       algorithm and the specific parameters for the drop algorithm
+       needs to be evaluated based on the diffServAlgDropType.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+
+
+
+    ::= { diffServAlgDropEntry 6 }
+
+diffServAlgDropOctets OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The number of octets that have been deterministically dropped by
+       this drop process.
+
+       Discontinuities in the value of this counter can occur at re-
+       initialization of the management system and at other times as
+       indicated by the value of ifCounterDiscontinuityTime on the
+       relevant interface."
+    ::= { diffServAlgDropEntry 7 }
+
+diffServAlgDropPkts OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The number of packets that have been deterministically dropped
+       by this drop process.
+
+       Discontinuities in the value of this counter can occur at re-
+       initialization of the management system and at other times as
+       indicated by the value of ifCounterDiscontinuityTime on the
+       relevant interface."
+    ::= { diffServAlgDropEntry 8 }
+
+diffServAlgRandomDropOctets OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The number of octets that have been randomly dropped by this
+       drop process.  This counter applies, therefore, only to random
+       droppers.
+
+       Discontinuities in the value of this counter can occur at re-
+       initialization of the management system and at other times as
+       indicated by the value of ifCounterDiscontinuityTime on the
+       relevant interface."
+    ::= { diffServAlgDropEntry 9 }
+
+diffServAlgRandomDropPkts OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+
+
+
+    STATUS       current
+    DESCRIPTION
+       "The number of packets that have been randomly dropped by this
+       drop process. This counter applies, therefore, only to random
+       droppers.
+
+       Discontinuities in the value of this counter can occur at re-
+       initialization of the management system and at other times as
+       indicated by the value of ifCounterDiscontinuityTime on the
+       relevant interface."
+    ::= { diffServAlgDropEntry 10 }
+
+diffServAlgDropStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServAlgDropEntry 11 }
+
+diffServAlgDropStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServAlgDropEntry 12 }
+
+--
+-- Random Drop Table
+--
+
+diffServRandomDropNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for diffServRandomDropId,
+       or a zero to indicate that none exist."
+    ::= { diffServAlgDrop 3 }
+
+
+
+
+diffServRandomDropTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServRandomDropEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "The random drop table contains entries describing a process that
+       drops packets randomly. Entries in this table are pointed to by
+       diffServAlgDropSpecific."
+    ::= { diffServAlgDrop 4 }
+
+diffServRandomDropEntry OBJECT-TYPE
+    SYNTAX       DiffServRandomDropEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry describes a process that drops packets according to a
+       random algorithm."
+    INDEX { diffServRandomDropId }
+    ::= { diffServRandomDropTable 1 }
+
+DiffServRandomDropEntry ::= SEQUENCE  {
+    diffServRandomDropId               IndexInteger,
+    diffServRandomDropMinThreshBytes   Unsigned32,
+    diffServRandomDropMinThreshPkts    Unsigned32,
+    diffServRandomDropMaxThreshBytes   Unsigned32,
+    diffServRandomDropMaxThreshPkts    Unsigned32,
+    diffServRandomDropProbMax          Unsigned32,
+    diffServRandomDropWeight           Unsigned32,
+    diffServRandomDropSamplingRate     Unsigned32,
+    diffServRandomDropStorage          StorageType,
+    diffServRandomDropStatus           RowStatus
+}
+
+diffServRandomDropId OBJECT-TYPE
+    SYNTAX       IndexInteger
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An index that enumerates the Random Drop entries.  Managers
+       obtain new values for row creation in this table by reading
+       diffServRandomDropNextFree."
+    ::= { diffServRandomDropEntry 1 }
+
+diffServRandomDropMinThreshBytes OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "bytes"
+    MAX-ACCESS   read-create
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "The average queue depth in bytes, beyond which traffic has a
+       non-zero probability of being dropped. Changes in this variable
+       may or may not be reflected in the reported value of
+       diffServRandomDropMinThreshPkts."
+    ::= { diffServRandomDropEntry 2 }
+
+diffServRandomDropMinThreshPkts OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "packets"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The average queue depth in packets, beyond which traffic has a
+       non-zero probability of being dropped. Changes in this variable
+       may or may not be reflected in the reported value of
+       diffServRandomDropMinThreshBytes."
+    ::= { diffServRandomDropEntry 3 }
+
+diffServRandomDropMaxThreshBytes OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "bytes"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The average queue depth beyond which traffic has a probability
+       indicated by diffServRandomDropProbMax of being dropped or
+       marked. Note that this differs from the physical queue limit,
+       which is stored in diffServAlgDropQThreshold. Changes in this
+       variable may or may not be reflected in the reported value of
+       diffServRandomDropMaxThreshPkts."
+    ::= { diffServRandomDropEntry 4 }
+
+diffServRandomDropMaxThreshPkts OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "packets"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The average queue depth beyond which traffic has a probability
+       indicated by diffServRandomDropProbMax of being dropped or
+       marked. Note that this differs from the physical queue limit,
+       which is stored in diffServAlgDropQThreshold. Changes in this
+       variable may or may not be reflected in the reported value of
+       diffServRandomDropMaxThreshBytes."
+    ::= { diffServRandomDropEntry 5 }
+
+diffServRandomDropProbMax OBJECT-TYPE
+
+
+
+    SYNTAX       Unsigned32 (0..1000)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The worst case random drop probability, expressed in drops per
+       thousand packets.
+
+       For example, if in the worst case every arriving packet may be
+       dropped (100%) for a period, this has the value 1000.
+       Alternatively, if in the worst case only one percent (1%) of
+       traffic may be dropped, it has the value 10."
+   ::= { diffServRandomDropEntry 6 }
+
+diffServRandomDropWeight OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..65536)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The weighting of past history in affecting the Exponentially
+       Weighted Moving Average function that calculates the current
+       average queue depth.  The equation uses
+       diffServRandomDropWeight/65536 as the coefficient for the new
+       sample in the equation, and (65536 -
+       diffServRandomDropWeight)/65536 as the coefficient of the old
+       value.
+
+       Implementations may limit the values of diffServRandomDropWeight
+       to a subset of the possible range of values, such as powers of
+       two. Doing this would facilitate implementation of the
+       Exponentially Weighted Moving Average using shift instructions or
+       registers."
+    ::= { diffServRandomDropEntry 7 }
+
+diffServRandomDropSamplingRate OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..1000000)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The number of times per second the queue is sampled for queue
+       average calculation.  A value of zero is used to mean that the
+       queue is sampled approximately each time a packet is enqueued (or
+       dequeued)."
+    ::= { diffServRandomDropEntry 8 }
+
+diffServRandomDropStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServRandomDropEntry 9 }
+
+diffServRandomDropStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServRandomDropEntry 10 }
+
+--
+-- Queue Table
+--
+
+diffServQueue          OBJECT IDENTIFIER ::= { diffServMIBObjects 7 }
+
+--
+-- An entry of diffServQTable represents a FIFO queue Differentiated
+-- Services Functional Data Path element as described in the Informal
+-- Differentiated Services Model section 7.1.1. Note that the
+-- specification of scheduling parameters for a queue as part of the
+-- input to a scheduler functional data path element as described in
+-- the Informal Differentiated Services Model section 7.1.2. This
+-- allows building of hierarchical queuing/scheduling. A queue
+-- therefore has these attributes:
+--
+-- 1. Which scheduler will service this queue, diffServQNext.
+-- 2. How the scheduler will service this queue, with respect
+--    to all the other queues the same scheduler needs to service,
+--    diffServQMinRate.
+--
+-- Note that upstream Differentiated Services Functional Data Path
+-- elements may point to a shared diffServQTable entry as described
+-- in the Informal Differentiated Services Model section 7.1.1.
+--
+
+diffServQNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+
+
+
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for diffServQId, or a zero
+       to indicate that none exist."
+    ::= { diffServQueue 1 }
+
+diffServQTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServQEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "The Queue Table enumerates the individual queues.  Note that the
+       MIB models queuing systems as composed of individual queues, one
+       per class of traffic, even though they may in fact be structured
+       as classes of traffic scheduled using a common calendar queue, or
+       in other ways."
+    ::= { diffServQueue 2 }
+
+diffServQEntry OBJECT-TYPE
+    SYNTAX       DiffServQEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry in the Queue Table describes a single queue or class of
+       traffic."
+    INDEX { diffServQId }
+    ::= { diffServQTable 1 }
+
+DiffServQEntry ::= SEQUENCE  {
+    diffServQId                      IndexInteger,
+    diffServQNext                    RowPointer,
+    diffServQMinRate                 RowPointer,
+    diffServQMaxRate                 RowPointer,
+    diffServQStorage                 StorageType,
+    diffServQStatus                  RowStatus
+}
+
+diffServQId OBJECT-TYPE
+    SYNTAX       IndexInteger
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An index that enumerates the Queue entries.  Managers obtain new
+       values for row creation in this table by reading
+       diffServQNextFree."
+    ::= { diffServQEntry 1 }
+
+diffServQNext OBJECT-TYPE
+
+
+
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This selects the next Differentiated Services Scheduler.  The
+       RowPointer must point to a diffServSchedulerEntry.
+
+       A value of zeroDotZero in this attribute indicates an incomplete
+       diffServQEntry instance. In such a case, the entry has no
+       operational effect, since it has no parameters to give it
+       meaning.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+    ::= { diffServQEntry 2 }
+
+diffServQMinRate OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This RowPointer indicates the diffServMinRateEntry that the
+       scheduler, pointed to by diffServQNext, should use to service
+       this queue.
+
+       If the row pointed to is zeroDotZero, the minimum rate and
+       priority is unspecified.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+    ::= { diffServQEntry 3 }
+
+diffServQMaxRate OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This RowPointer indicates the diffServMaxRateEntry that the
+       scheduler, pointed to by diffServQNext, should use to service
+       this queue.
+
+       If the row pointed to is zeroDotZero, the maximum rate is the
+       line speed of the interface.
+
+
+
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+    ::= { diffServQEntry 4 }
+
+diffServQStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServQEntry 5 }
+
+diffServQStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServQEntry 6 }
+
+--
+-- Scheduler Table
+--
+
+diffServScheduler      OBJECT IDENTIFIER ::= { diffServMIBObjects 8 }
+
+--
+-- A Scheduler Entry represents a packet scheduler, such as a priority
+-- scheduler or a WFQ scheduler. It provides flexibility for multiple
+-- scheduling algorithms, each servicing multiple queues, to be used on
+-- the same logical/physical interface.
+--
+-- Note that upstream queues or schedulers specify several of the
+-- scheduler's parameters. These must be properly specified if the
+-- scheduler is to behave as expected.
+--
+-- The diffServSchedulerMaxRate attribute specifies the parameters when
+-- a scheduler's output is sent to another scheduler. This is used in
+-- building hierarchical queues or schedulers.
+
+
+
+--
+-- More discussion of the scheduler functional data path element is in
+-- the Informal Differentiated Services Model section 7.1.2.
+--
+
+diffServSchedulerNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for diffServSchedulerId, or
+       a zero to indicate that none exist."
+    ::= { diffServScheduler 1 }
+
+diffServSchedulerTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServSchedulerEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "The Scheduler Table enumerates packet schedulers. Multiple
+       scheduling algorithms can be used on a given data path, with each
+       algorithm described by one diffServSchedulerEntry."
+    ::= { diffServScheduler 2 }
+
+diffServSchedulerEntry OBJECT-TYPE
+    SYNTAX       DiffServSchedulerEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry in the Scheduler Table describing a single instance of
+       a scheduling algorithm."
+    INDEX { diffServSchedulerId }
+    ::= { diffServSchedulerTable 1 }
+
+DiffServSchedulerEntry ::= SEQUENCE  {
+    diffServSchedulerId                   IndexInteger,
+    diffServSchedulerNext                 RowPointer,
+    diffServSchedulerMethod               AutonomousType,
+    diffServSchedulerMinRate              RowPointer,
+    diffServSchedulerMaxRate              RowPointer,
+    diffServSchedulerStorage              StorageType,
+    diffServSchedulerStatus               RowStatus
+}
+
+diffServSchedulerId OBJECT-TYPE
+    SYNTAX       IndexInteger
+    MAX-ACCESS   not-accessible
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "An index that enumerates the Scheduler entries.  Managers obtain
+       new values for row creation in this table by reading
+       diffServSchedulerNextFree."
+    ::= { diffServSchedulerEntry 1 }
+
+diffServSchedulerNext OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This selects the next Differentiated Services Functional Data
+       Path Element to handle traffic for this data path. This normally
+       is null (zeroDotZero), or points to a diffServSchedulerEntry or a
+       diffServQEntry.
+
+       However, this RowPointer may also point to an instance of:
+         diffServClfrEntry,
+         diffServMeterEntry,
+         diffServActionEntry,
+         diffServAlgDropEntry.
+
+       It would point another diffServSchedulerEntry when implementing
+       multiple scheduler methods for the same data path, such as having
+       one set of queues scheduled by WRR and that group participating
+       in a priority scheduling system in which other queues compete
+       with it in that way.  It might also point to a second scheduler
+       in a hierarchical scheduling system.
+
+       If the row pointed to is zeroDotZero, no further Differentiated
+       Services treatment is performed on traffic of this data path.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+    DEFVAL       { zeroDotZero }
+    ::= { diffServSchedulerEntry 2 }
+
+diffServSchedulerMethod OBJECT-TYPE
+    SYNTAX       AutonomousType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The scheduling algorithm used by this Scheduler. zeroDotZero
+       indicates that this is unknown.  Standard values for generic
+       algorithms: diffServSchedulerPriority, diffServSchedulerWRR, and
+       diffServSchedulerWFQ are specified in this MIB; additional values
+
+
+
+       may be further specified in other MIBs."
+    ::= { diffServSchedulerEntry 3 }
+
+diffServSchedulerMinRate OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This RowPointer indicates the entry in diffServMinRateTable
+       which indicates the priority or minimum output rate from this
+       scheduler. This attribute is used only when there is more than
+       one level of scheduler.
+
+       When it has the value zeroDotZero, it indicates that no minimum
+       rate or priority is imposed.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+    DEFVAL      { zeroDotZero }
+    ::= { diffServSchedulerEntry 4 }
+
+diffServSchedulerMaxRate OBJECT-TYPE
+    SYNTAX       RowPointer
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This RowPointer indicates the entry in diffServMaxRateTable
+       which indicates the maximum output rate from this scheduler.
+       When more than one maximum rate applies (eg, when a multi-rate
+       shaper is in view), it points to the first of those rate entries.
+       This attribute is used only when there is more than one level of
+       scheduler.
+
+       When it has the value zeroDotZero, it indicates that no maximum
+       rate is imposed.
+
+       Setting this to point to a target that does not exist results in
+       an inconsistentValue error.  If the row pointed to is removed or
+       becomes inactive by other means, the treatment is as if this
+       attribute contains a value of zeroDotZero."
+    DEFVAL      { zeroDotZero }
+    ::= { diffServSchedulerEntry 5 }
+
+diffServSchedulerStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+
+
+
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServSchedulerEntry 6 }
+
+diffServSchedulerStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServSchedulerEntry 7 }
+
+--
+-- OIDs for diffServTBParamType definitions.
+--
+
+diffServSchedulers  OBJECT IDENTIFIER ::= { diffServMIBAdmin 2 }
+
+diffServSchedulerPriority OBJECT-IDENTITY
+    STATUS       current
+    DESCRIPTION
+       "For use with diffServSchedulerMethod to indicate the Priority
+       scheduling method.  This is defined as an algorithm in which the
+       presence of data in a queue or set of queues absolutely precludes
+       dequeue from another queue or set of queues of lower priority.
+       Note that attributes from diffServMinRateEntry of the
+       queues/schedulers feeding this scheduler are used when
+       determining the next packet to schedule."
+    ::= { diffServSchedulers 1 }
+
+diffServSchedulerWRR OBJECT-IDENTITY
+    STATUS       current
+    DESCRIPTION
+       "For use with diffServSchedulerMethod to indicate the Weighted
+       Round Robin scheduling method, defined as any algorithm in which
+       a set of queues are visited in a fixed order, and varying amounts
+       of traffic are removed from each queue in turn to implement an
+       average output rate by class. Notice attributes from
+       diffServMinRateEntry of the queues/schedulers feeding this
+       scheduler are used when determining the next packet to schedule."
+
+
+
+    ::= { diffServSchedulers 2 }
+
+diffServSchedulerWFQ OBJECT-IDENTITY
+    STATUS       current
+    DESCRIPTION
+       "For use with diffServSchedulerMethod to indicate the Weighted
+       Fair Queuing scheduling method, defined as any algorithm in which
+       a set of queues are conceptually visited in some order, to
+       implement an average output rate by class. Notice attributes from
+       diffServMinRateEntry of the queues/schedulers feeding this
+       scheduler are used when determining the next packet to schedule."
+    ::= { diffServSchedulers 3 }
+
+--
+-- Minimum Rate Parameters Table
+--
+-- The parameters used by a scheduler for its inputs or outputs are
+-- maintained separately from the Queue or Scheduler table entries for
+-- reusability reasons and so that they may be used by both queues and
+-- schedulers.  This follows the approach for separation of data path
+-- elements from parameterization that is used throughout this MIB.
+-- Use of these Minimum Rate Parameter Table entries by Queues and
+-- Schedulers allows the modeling of hierarchical scheduling systems.
+--
+-- Specifically, a Scheduler has one or more inputs and one output.
+-- Any queue feeding a scheduler, or any scheduler which feeds a second
+-- scheduler, might specify a minimum transfer rate by pointing to an
+-- Minimum Rate Parameter Table entry.
+--
+-- The diffServMinRatePriority/Abs/Rel attributes are used as
+-- parameters to the work-conserving portion of a scheduler:
+-- "work-conserving" implies that the scheduler can continue to emit
+-- data as long as there is data available at its input(s).  This has
+-- the effect of guaranteeing a certain priority relative to other
+-- scheduler inputs and/or a certain minimum proportion of the
+-- available output bandwidth. Properly configured, this means a
+-- certain minimum rate, which may be exceeded should traffic be
+-- available should there be spare bandwidth after all other classes
+-- have had opportunities to consume their own minimum rates.
+--
+
+diffServMinRateNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for diffServMinRateId, or a
+       zero to indicate that none exist."
+
+
+
+    ::= { diffServScheduler 3 }
+
+diffServMinRateTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServMinRateEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "The Minimum Rate Parameters Table enumerates individual sets of
+       scheduling parameter that can be used/reused by Queues and
+       Schedulers."
+    ::= { diffServScheduler 4 }
+
+diffServMinRateEntry OBJECT-TYPE
+    SYNTAX       DiffServMinRateEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry in the Minimum Rate Parameters Table describes a single
+       set of scheduling parameters for use by one or more queues or
+       schedulers."
+    INDEX { diffServMinRateId }
+    ::= { diffServMinRateTable 1 }
+
+DiffServMinRateEntry ::= SEQUENCE  {
+    diffServMinRateId              IndexInteger,
+    diffServMinRatePriority        Unsigned32,
+    diffServMinRateAbsolute        Unsigned32,
+    diffServMinRateRelative        Unsigned32,
+    diffServMinRateStorage         StorageType,
+    diffServMinRateStatus          RowStatus
+}
+
+diffServMinRateId OBJECT-TYPE
+    SYNTAX       IndexInteger
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An index that enumerates the Scheduler Parameter entries.
+       Managers obtain new values for row creation in this table by
+       reading diffServMinRateNextFree."
+    ::= { diffServMinRateEntry 1 }
+
+diffServMinRatePriority OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The priority of this input to the associated scheduler, relative
+
+
+
+       to the scheduler's other inputs. A queue or scheduler with a
+       larger numeric value will be served before another with a smaller
+       numeric value."
+    ::= { diffServMinRateEntry 2 }
+
+diffServMinRateAbsolute OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "kilobits per second"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The minimum absolute rate, in kilobits/sec, that a downstream
+       scheduler element should allocate to this queue. If the value is
+       zero, then there is effectively no minimum rate guarantee. If the
+       value is non-zero, the scheduler will assure the servicing of
+       this queue to at least this rate.
+
+       Note that this attribute value and that of
+       diffServMinRateRelative are coupled: changes to one will affect
+       the value of the other. They are linked by the following
+       equation, in that setting one will change the other:
+
+         diffServMinRateRelative =
+                 (diffServMinRateAbsolute*1000000)/ifSpeed
+
+       or, if appropriate:
+
+         diffServMinRateRelative = diffServMinRateAbsolute/ifHighSpeed"
+    REFERENCE
+        "ifSpeed, ifHighSpeed, Interface MIB, RFC 2863"
+    ::= { diffServMinRateEntry 3 }
+
+diffServMinRateRelative OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The minimum rate that a downstream scheduler element should
+       allocate to this queue, relative to the maximum rate of the
+       interface as reported by ifSpeed or ifHighSpeed, in units of
+       1/1000 of 1. If the value is zero, then there is effectively no
+       minimum rate guarantee. If the value is non-zero, the scheduler
+       will assure the servicing of this queue to at least this rate.
+
+       Note that this attribute value and that of
+       diffServMinRateAbsolute are coupled: changes to one will affect
+       the value of the other. They are linked by the following
+       equation, in that setting one will change the other:
+
+
+
+         diffServMinRateRelative =
+                 (diffServMinRateAbsolute*1000000)/ifSpeed
+
+       or, if appropriate:
+
+         diffServMinRateRelative = diffServMinRateAbsolute/ifHighSpeed"
+    REFERENCE
+        "ifSpeed, ifHighSpeed, Interface MIB, RFC 2863"
+    ::= { diffServMinRateEntry 4 }
+
+diffServMinRateStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServMinRateEntry 5 }
+
+diffServMinRateStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServMinRateEntry 6 }
+
+--
+-- Maximum Rate Parameter Table
+--
+-- The parameters used by a scheduler for its inputs or outputs are
+-- maintained separately from the Queue or Scheduler table entries for
+-- reusability reasons and so that they may be used by both queues and
+-- schedulers.  This follows the approach for separation of data path
+-- elements from parameterization that is used throughout this MIB.
+-- Use of these Maximum Rate Parameter Table entries by Queues and
+-- Schedulers allows the modeling of hierarchical scheduling systems.
+--
+-- Specifically, a Scheduler has one or more inputs and one output.
+-- Any queue feeding a scheduler, or any scheduler which feeds a second
+-- scheduler, might specify a maximum transfer rate by pointing to a
+-- Maximum Rate Parameter Table entry. Multi-rate shapers, such as a
+
+
+
+-- Dual Leaky Bucket algorithm, specify their rates using multiple
+-- Maximum Rate Parameter Entries with the same diffServMaxRateId but
+-- different diffServMaxRateLevels.
+--
+-- The diffServMaxRateLevel/Abs/Rel attributes are used as
+-- parameters to the non-work-conserving portion of a scheduler:
+-- non-work-conserving implies that the scheduler may sometimes not
+-- emit a packet, even if there is data available at its input(s).
+-- This has the effect of limiting the servicing of the queue/scheduler
+-- input or output, in effect performing shaping of the packet stream
+-- passing through the queue/scheduler, as described in the Informal
+-- Differentiated Services Model section 7.2.
+--
+
+diffServMaxRateNextFree OBJECT-TYPE
+    SYNTAX       IndexIntegerNextFree
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This object contains an unused value for diffServMaxRateId, or a
+       zero to indicate that none exist."
+    ::= { diffServScheduler 5 }
+
+diffServMaxRateTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServMaxRateEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "The Maximum Rate Parameter Table enumerates individual sets of
+       scheduling parameter that can be used/reused by Queues and
+       Schedulers."
+    ::= { diffServScheduler 6 }
+
+diffServMaxRateEntry OBJECT-TYPE
+    SYNTAX       DiffServMaxRateEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry in the Maximum Rate Parameter Table describes a single
+       set of scheduling parameters for use by one or more queues or
+       schedulers."
+    INDEX { diffServMaxRateId, diffServMaxRateLevel }
+    ::= { diffServMaxRateTable 1 }
+
+DiffServMaxRateEntry ::= SEQUENCE  {
+    diffServMaxRateId              IndexInteger,
+    diffServMaxRateLevel           Unsigned32,
+    diffServMaxRateAbsolute        Unsigned32,
+
+
+
+    diffServMaxRateRelative        Unsigned32,
+    diffServMaxRateThreshold       BurstSize,
+    diffServMaxRateStorage         StorageType,
+    diffServMaxRateStatus          RowStatus
+}
+
+diffServMaxRateId OBJECT-TYPE
+    SYNTAX       IndexInteger
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An index that enumerates the Maximum Rate Parameter entries.
+       Managers obtain new values for row creation in this table by
+       reading diffServMaxRateNextFree."
+    ::= { diffServMaxRateEntry 1 }
+
+diffServMaxRateLevel OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..32)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An index that indicates which level of a multi-rate shaper is
+       being given its parameters. A multi-rate shaper has some number
+       of rate levels. Frame Relay's dual rate specification refers to a
+       'committed' and an 'excess' rate; ATM's dual rate specification
+       refers to a 'mean' and a 'peak' rate. This table is generalized
+       to support an arbitrary number of rates. The committed or mean
+       rate is level 1, the peak rate (if any) is the highest level rate
+       configured, and if there are other rates they are distributed in
+       monotonically increasing order between them."
+    ::= { diffServMaxRateEntry 2 }
+
+diffServMaxRateAbsolute OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    UNITS        "kilobits per second"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The maximum rate in kilobits/sec that a downstream scheduler
+       element should allocate to this queue. If the value is zero, then
+       there is effectively no maximum rate limit and that the scheduler
+       should attempt to be work conserving for this queue. If the value
+       is non-zero, the scheduler will limit the servicing of this queue
+       to, at most, this rate in a non-work-conserving manner.
+
+       Note that this attribute value and that of
+       diffServMaxRateRelative are coupled: changes to one will affect
+       the value of the other. They are linked by the following
+
+
+
+       equation, in that setting one will change the other:
+
+         diffServMaxRateRelative =
+                 (diffServMaxRateAbsolute*1000000)/ifSpeed
+
+       or, if appropriate:
+
+         diffServMaxRateRelative = diffServMaxRateAbsolute/ifHighSpeed"
+    REFERENCE
+        "ifSpeed, ifHighSpeed, Interface MIB, RFC 2863"
+    ::= { diffServMaxRateEntry 3 }
+
+diffServMaxRateRelative OBJECT-TYPE
+    SYNTAX       Unsigned32  (1..4294967295)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The maximum rate that a downstream scheduler element should
+       allocate to this queue, relative to the maximum rate of the
+       interface as reported by ifSpeed or ifHighSpeed, in units of
+       1/1000 of 1. If the value is zero, then there is effectively no
+       maximum rate limit and the scheduler should attempt to be work
+       conserving for this queue. If the value is non-zero, the
+       scheduler will limit the servicing of this queue to, at most,
+       this rate in a non-work-conserving manner.
+
+       Note that this attribute value and that of
+       diffServMaxRateAbsolute are coupled: changes to one will affect
+       the value of the other. They are linked by the following
+       equation, in that setting one will change the other:
+
+         diffServMaxRateRelative =
+                 (diffServMaxRateAbsolute*1000000)/ifSpeed
+
+       or, if appropriate:
+
+         diffServMaxRateRelative = diffServMaxRateAbsolute/ifHighSpeed"
+    REFERENCE
+        "ifSpeed, ifHighSpeed, Interface MIB, RFC 2863"
+    ::= { diffServMaxRateEntry 4 }
+
+diffServMaxRateThreshold OBJECT-TYPE
+    SYNTAX       BurstSize
+    UNITS        "Bytes"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The number of bytes of queue depth at which the rate of a
+
+
+
+       multi-rate scheduler will increase to the next output rate. In
+       the last conceptual row for such a shaper, this threshold is
+       ignored and by convention is zero."
+    REFERENCE
+        "Adaptive rate Shaper, RFC 2963"
+    ::= { diffServMaxRateEntry 5 }
+
+diffServMaxRateStorage OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The storage type for this conceptual row.  Conceptual rows
+       having the value 'permanent' need not allow write-access to any
+       columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { diffServMaxRateEntry 6 }
+
+diffServMaxRateStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The status of this conceptual row. All writable objects in this
+       row may be modified at any time. Setting this variable to
+       'destroy' when the MIB contains one or more RowPointers pointing
+       to it results in destruction being delayed until the row is no
+       longer used."
+    ::= { diffServMaxRateEntry 7 }
+
+--
+-- MIB Compliance statements.
+--
+
+diffServMIBCompliances OBJECT IDENTIFIER ::=
+                                     { diffServMIBConformance 1 }
+diffServMIBGroups      OBJECT IDENTIFIER ::=
+                                     { diffServMIBConformance 2 }
+
+diffServMIBFullCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+       "When this MIB is implemented with support for read-create, then
+       such an implementation can claim full compliance. Such devices
+       can then be both monitored and configured with this MIB."
+
+    MODULE IF-MIB -- The interfaces MIB, RFC2863
+    MANDATORY-GROUPS {
+
+
+
+       ifCounterDiscontinuityGroup
+    }
+
+    MODULE -- This Module
+    MANDATORY-GROUPS {
+        diffServMIBDataPathGroup, diffServMIBClfrGroup,
+        diffServMIBClfrElementGroup, diffServMIBMultiFieldClfrGroup,
+        diffServMIBActionGroup, diffServMIBAlgDropGroup,
+        diffServMIBQGroup, diffServMIBSchedulerGroup,
+        diffServMIBMaxRateGroup, diffServMIBMinRateGroup,
+        diffServMIBCounterGroup
+    }
+
+    GROUP diffServMIBMeterGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement metering
+       functions."
+
+    GROUP diffServMIBTBParamGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement token-bucket
+       metering functions."
+
+    GROUP diffServMIBDscpMarkActGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement DSCP-Marking
+       functions."
+
+    GROUP diffServMIBRandomDropGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement Random Drop
+       functions."
+
+    OBJECT diffServDataPathStatus
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+       "Support for createAndWait and notInService is not required."
+
+    OBJECT diffServClfrStatus
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+       "Support for createAndWait and notInService is not required."
+
+    OBJECT diffServClfrElementStatus
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+
+
+
+    DESCRIPTION
+       "Support for createAndWait and notInService is not required."
+
+    OBJECT diffServMultiFieldClfrAddrType
+    SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+    DESCRIPTION
+       "An implementation is only required to support IPv4 and IPv6
+       addresses."
+
+    OBJECT diffServMultiFieldClfrDstAddr
+    SYNTAX  InetAddress (SIZE(0|4|16))
+    DESCRIPTION
+       "An implementation is only required to support IPv4 and globally
+       unique IPv6 addresses."
+
+    OBJECT diffServAlgDropStatus
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+       "Support for createAndWait and notInService is not required."
+
+    OBJECT diffServRandomDropStatus
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+       "Support for createAndWait and notInService is not required."
+
+    OBJECT diffServQStatus
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+       "Support for createAndWait and notInService is not required."
+
+    OBJECT diffServSchedulerStatus
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+       "Support for createAndWait and notInService is not required."
+
+    OBJECT diffServMinRateStatus
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+       "Support for createAndWait and notInService is not required."
+
+    OBJECT diffServMaxRateStatus
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+
+
+
+    DESCRIPTION
+       "Support for createAndWait and notInService is not required."
+
+    ::= { diffServMIBCompliances 1 }
+
+--
+-- Read-Only Compliance
+--
+
+diffServMIBReadOnlyCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+       "When this MIB is implemented without support for read-create
+       (i.e. in read-only mode), then such an implementation can claim
+       read-only compliance. Such a device can then be monitored but can
+       not be configured with this MIB."
+
+    MODULE IF-MIB -- The interfaces MIB, RFC2863
+    MANDATORY-GROUPS {
+       ifCounterDiscontinuityGroup
+    }
+
+    MODULE -- This Module
+    MANDATORY-GROUPS {
+        diffServMIBDataPathGroup, diffServMIBClfrGroup,
+        diffServMIBClfrElementGroup, diffServMIBMultiFieldClfrGroup,
+        diffServMIBActionGroup, diffServMIBAlgDropGroup,
+        diffServMIBQGroup, diffServMIBSchedulerGroup,
+        diffServMIBMaxRateGroup, diffServMIBMinRateGroup,
+        diffServMIBCounterGroup
+    }
+
+    GROUP diffServMIBMeterGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement metering
+       functions."
+
+    GROUP diffServMIBTBParamGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement token-bucket
+       metering functions."
+
+    GROUP        diffServMIBDscpMarkActGroup
+    DESCRIPTION
+       "This group is mandatory for devices that implement DSCP-Marking
+       functions."
+
+    GROUP        diffServMIBRandomDropGroup
+
+
+
+    DESCRIPTION
+       "This group is mandatory for devices that implement Random Drop
+       functions."
+
+    OBJECT       diffServDataPathStart
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServDataPathStorage
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServDataPathStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    OBJECT       diffServClfrNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object not needed when diffServClfrTable is implemented read-
+       only"
+
+    OBJECT       diffServClfrStorage
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServClfrStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    OBJECT       diffServClfrElementNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object not needed when diffServClfrelementTable is implemented
+       read-only"
+
+    OBJECT       diffServClfrElementPrecedence
+    MIN-ACCESS   read-only
+    DESCRIPTION
+
+
+
+       "Write access is not required."
+
+    OBJECT       diffServClfrElementNext
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServClfrElementSpecific
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServClfrElementStorage
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServClfrElementStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    OBJECT       diffServMultiFieldClfrNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object is not needed when diffServMultiFieldClfrTable is
+       implemented in read-only mode."
+
+    OBJECT       diffServMultiFieldClfrAddrType
+    SYNTAX       InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required. An implementation is only required
+       to support IPv4 and IPv6 addresses."
+
+    OBJECT       diffServMultiFieldClfrDstAddr
+    SYNTAX       InetAddress (SIZE(0|4|16))
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required. An implementation is only required
+       to support IPv4 and globally unique IPv6 addresses."
+
+    OBJECT       diffServMultiFieldClfrDstPrefixLength
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+
+
+    OBJECT       diffServMultiFieldClfrSrcAddr
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required. An implementation is only required
+       to support IPv4 and globally unique IPv6 addresses."
+
+    OBJECT       diffServMultiFieldClfrSrcPrefixLength
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMultiFieldClfrDscp
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMultiFieldClfrFlowId
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMultiFieldClfrProtocol
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMultiFieldClfrDstL4PortMin
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMultiFieldClfrDstL4PortMax
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMultiFieldClfrSrcL4PortMin
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMultiFieldClfrSrcL4PortMax
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMultiFieldClfrStorage
+    MIN-ACCESS   read-only
+
+
+
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMultiFieldClfrStatus
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, createAndWait and notInService
+       support is not required."
+
+    OBJECT       diffServMeterNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object is not needed when diffServMultiFieldClfrTable is
+       implemented in read-only mode."
+
+    OBJECT       diffServMeterSucceedNext
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMeterFailNext
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMeterSpecific
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMeterStorage
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMeterStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    OBJECT       diffServTBParamNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object is not needed when diffServTBParamTable is implemented in
+       read-only mode."
+
+
+
+
+    OBJECT       diffServTBParamType
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServTBParamRate
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServTBParamBurstSize
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServTBParamInterval
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServTBParamStorage
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServTBParamStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    OBJECT       diffServActionNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object is not needed when diffServActionTable is implemented in
+       read-only mode."
+
+    OBJECT       diffServActionInterface
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServActionNext
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+
+
+
+    OBJECT       diffServActionSpecific
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServActionStorage
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServActionStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    OBJECT       diffServCountActNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object is not needed when diffServCountActTable is implemented
+       in read-only mode."
+
+    OBJECT       diffServCountActStorage
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServCountActStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    OBJECT       diffServAlgDropNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object is not needed when diffServAlgDropTable is implemented in
+       read-only mode."
+
+    OBJECT       diffServAlgDropType
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServAlgDropNext
+    MIN-ACCESS   read-only
+
+
+
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServAlgDropQMeasure
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServAlgDropQThreshold
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServAlgDropSpecific
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServAlgDropStorage
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServAlgDropStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    OBJECT       diffServRandomDropNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object is not needed when diffServRandomDropTable is implemented
+       in read-only mode."
+
+    OBJECT       diffServRandomDropMinThreshBytes
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServRandomDropMinThreshPkts
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServRandomDropMaxThreshBytes
+    MIN-ACCESS   read-only
+
+
+
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServRandomDropMaxThreshPkts
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServRandomDropProbMax
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServRandomDropWeight
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServRandomDropSamplingRate
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServRandomDropStorage
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServRandomDropStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    OBJECT       diffServQNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object is not needed when diffServQTable is implemented in
+       read-only mode."
+
+    OBJECT       diffServQNext
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServQMinRate
+    MIN-ACCESS   read-only
+
+
+
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServQMaxRate
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServQStorage
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServQStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    OBJECT       diffServSchedulerNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object is not needed when diffServSchedulerTable is implemented
+       in read-only mode."
+
+    OBJECT       diffServSchedulerNext
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServSchedulerMethod
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServSchedulerMinRate
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServSchedulerMaxRate
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServSchedulerStorage
+    MIN-ACCESS   read-only
+
+
+
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServSchedulerStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    OBJECT       diffServMinRateNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object is not needed when diffServMinRateTable is implemented in
+       read-only mode."
+
+    OBJECT       diffServMinRatePriority
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMinRateAbsolute
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMinRateRelative
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMinRateStorage
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMinRateStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    OBJECT       diffServMaxRateNextFree
+    MIN-ACCESS   not-accessible
+    DESCRIPTION
+       "Object is not needed when diffServMaxrateTable is implemented in
+       read-only mode."
+
+
+
+    OBJECT       diffServMaxRateAbsolute
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMaxRateRelative
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMaxRateThreshold
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMaxRateStorage
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       diffServMaxRateStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the only status that
+       needs to be supported."
+
+    ::= { diffServMIBCompliances 2 }
+
+diffServMIBDataPathGroup OBJECT-GROUP
+    OBJECTS {
+              diffServDataPathStart, diffServDataPathStorage,
+              diffServDataPathStatus
+    }
+    STATUS       current
+    DESCRIPTION
+       "The Data Path Group defines the MIB Objects that describe a
+       functional data path."
+    ::= { diffServMIBGroups 1 }
+
+diffServMIBClfrGroup OBJECT-GROUP
+    OBJECTS {
+              diffServClfrNextFree, diffServClfrStorage,
+              diffServClfrStatus
+    }
+    STATUS       current
+    DESCRIPTION
+       "The Classifier Group defines the MIB Objects that describe the
+
+
+
+       list the starts of individual classifiers."
+    ::= { diffServMIBGroups 2 }
+
+diffServMIBClfrElementGroup OBJECT-GROUP
+    OBJECTS {
+              diffServClfrElementNextFree,
+              diffServClfrElementPrecedence, diffServClfrElementNext,
+              diffServClfrElementSpecific, diffServClfrElementStorage,
+              diffServClfrElementStatus
+    }
+    STATUS       current
+    DESCRIPTION
+       "The Classifier Element Group defines the MIB Objects that
+       describe the classifier elements that make up a generic
+       classifier."
+    ::= { diffServMIBGroups 3 }
+
+diffServMIBMultiFieldClfrGroup OBJECT-GROUP
+    OBJECTS {
+              diffServMultiFieldClfrNextFree,
+              diffServMultiFieldClfrAddrType,
+              diffServMultiFieldClfrDstAddr,
+              diffServMultiFieldClfrDstPrefixLength,
+              diffServMultiFieldClfrFlowId,
+              diffServMultiFieldClfrSrcAddr,
+              diffServMultiFieldClfrSrcPrefixLength,
+              diffServMultiFieldClfrDscp,
+              diffServMultiFieldClfrProtocol,
+              diffServMultiFieldClfrDstL4PortMin,
+              diffServMultiFieldClfrDstL4PortMax,
+              diffServMultiFieldClfrSrcL4PortMin,
+              diffServMultiFieldClfrSrcL4PortMax,
+              diffServMultiFieldClfrStorage,
+              diffServMultiFieldClfrStatus
+    }
+    STATUS       current
+    DESCRIPTION
+       "The Multi-field Classifier Group defines the MIB Objects that
+       describe a classifier element for matching on various fields of
+       an IP and upper-layer protocol header."
+    ::= { diffServMIBGroups 4 }
+
+diffServMIBMeterGroup OBJECT-GROUP
+    OBJECTS {
+              diffServMeterNextFree, diffServMeterSucceedNext,
+              diffServMeterFailNext, diffServMeterSpecific,
+              diffServMeterStorage, diffServMeterStatus
+    }
+
+
+
+    STATUS       current
+    DESCRIPTION
+       "The Meter Group defines the objects used in describing a generic
+       meter element."
+    ::= { diffServMIBGroups 5 }
+
+diffServMIBTBParamGroup OBJECT-GROUP
+    OBJECTS {
+              diffServTBParamNextFree, diffServTBParamType,
+              diffServTBParamRate, diffServTBParamBurstSize,
+              diffServTBParamInterval, diffServTBParamStorage,
+              diffServTBParamStatus
+    }
+    STATUS       current
+    DESCRIPTION
+       "The Token-Bucket Meter Group defines the objects used in
+       describing a token bucket meter element."
+    ::= { diffServMIBGroups 6 }
+
+diffServMIBActionGroup OBJECT-GROUP
+    OBJECTS {
+              diffServActionNextFree, diffServActionNext,
+              diffServActionSpecific, diffServActionStorage,
+              diffServActionInterface, diffServActionStatus
+    }
+    STATUS       current
+    DESCRIPTION
+       "The Action Group defines the objects used in describing a
+       generic action element."
+    ::= { diffServMIBGroups 7 }
+
+diffServMIBDscpMarkActGroup OBJECT-GROUP
+    OBJECTS {
+              diffServDscpMarkActDscp
+    }
+    STATUS       current
+    DESCRIPTION
+       "The DSCP Mark Action Group defines the objects used in
+       describing a DSCP Marking Action element."
+    ::= { diffServMIBGroups 8 }
+
+diffServMIBCounterGroup OBJECT-GROUP
+    OBJECTS {
+              diffServCountActOctets, diffServCountActPkts,
+              diffServAlgDropOctets, diffServAlgDropPkts,
+              diffServAlgRandomDropOctets, diffServAlgRandomDropPkts,
+              diffServCountActStorage, diffServCountActStatus,
+              diffServCountActNextFree
+
+
+
+    }
+    STATUS       current
+    DESCRIPTION
+       "A collection of objects providing information specific to
+       packet-oriented network interfaces."
+    ::= { diffServMIBGroups 9 }
+
+diffServMIBAlgDropGroup OBJECT-GROUP
+    OBJECTS {
+              diffServAlgDropNextFree, diffServAlgDropType,
+              diffServAlgDropNext, diffServAlgDropQMeasure,
+              diffServAlgDropQThreshold, diffServAlgDropSpecific,
+              diffServAlgDropStorage, diffServAlgDropStatus
+    }
+    STATUS       current
+    DESCRIPTION
+       "The Algorithmic Drop Group contains the objects that describe
+       algorithmic dropper operation and configuration."
+    ::= { diffServMIBGroups 10 }
+
+diffServMIBRandomDropGroup OBJECT-GROUP
+    OBJECTS {
+              diffServRandomDropNextFree,
+              diffServRandomDropMinThreshBytes,
+              diffServRandomDropMinThreshPkts,
+              diffServRandomDropMaxThreshBytes,
+              diffServRandomDropMaxThreshPkts,
+              diffServRandomDropProbMax,
+              diffServRandomDropWeight,
+              diffServRandomDropSamplingRate,
+              diffServRandomDropStorage,
+              diffServRandomDropStatus
+    }
+    STATUS       current
+    DESCRIPTION
+       "The Random Drop Group augments the Algorithmic Drop Group for
+       random dropper operation and configuration."
+    ::= { diffServMIBGroups 11 }
+
+diffServMIBQGroup OBJECT-GROUP
+
+    OBJECTS {
+              diffServQNextFree, diffServQNext, diffServQMinRate,
+              diffServQMaxRate, diffServQStorage, diffServQStatus
+    }
+    STATUS       current
+    DESCRIPTION
+       "The Queue Group contains the objects that describe an
+
+
+
+       interface's queues."
+    ::= { diffServMIBGroups 12 }
+
+diffServMIBSchedulerGroup OBJECT-GROUP
+    OBJECTS {
+              diffServSchedulerNextFree, diffServSchedulerNext,
+              diffServSchedulerMethod, diffServSchedulerMinRate,
+              diffServSchedulerMaxRate, diffServSchedulerStorage,
+              diffServSchedulerStatus
+    }
+    STATUS       current
+    DESCRIPTION
+       "The Scheduler Group contains the objects that describe packet
+       schedulers on interfaces."
+    ::= { diffServMIBGroups 13 }
+
+diffServMIBMinRateGroup OBJECT-GROUP
+    OBJECTS {
+              diffServMinRateNextFree, diffServMinRatePriority,
+              diffServMinRateAbsolute, diffServMinRateRelative,
+              diffServMinRateStorage, diffServMinRateStatus
+    }
+    STATUS       current
+    DESCRIPTION
+       "The Minimum Rate Parameter Group contains the objects that
+       describe packet schedulers' minimum rate or priority guarantees."
+    ::= { diffServMIBGroups 14 }
+
+diffServMIBMaxRateGroup OBJECT-GROUP
+    OBJECTS {
+              diffServMaxRateNextFree, diffServMaxRateAbsolute,
+              diffServMaxRateRelative, diffServMaxRateThreshold,
+              diffServMaxRateStorage, diffServMaxRateStatus
+    }
+    STATUS       current
+    DESCRIPTION
+       "The Maximum Rate Parameter Group contains the objects that
+       describe packet schedulers' maximum rate guarantees."
+    ::= { diffServMIBGroups 15 }
+
+END

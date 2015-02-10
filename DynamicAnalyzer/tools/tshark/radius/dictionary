@@ -1,0 +1,256 @@
+# -*- text -*-
+#
+# Version $Id$
+#
+# 2011-05-24 Updated based upon FreeRadius v2.1.10 dictionary file
+#            - Added: acme, alcatel.sr, iea, motorola.wimax, rfc4603, rfc 5580, rfc5607, rfc5904, wichorus
+#            - Added: additional Integer Translations
+#
+# 2009-07-09 Wireshark changes to FreeRadius v2.1.6 dictionary file
+#            - enabled  include: dictionary.cisco.vpn3000
+#            - disabled include: dictionary.vqp
+#            - disabled include: dictionary.freeradius.internal
+#            - added    include: dictionary.chillispot: as per 2009-06-11 commit in FreeRadius repository.
+#            - added: Comment re Wireshark usage of the integer data type.
+#
+#	DO NOT EDIT THE FILES IN THIS DIRECTORY
+#
+#	The files in this directory are maintained and updated by
+#	the FreeRADIUS project.  Newer releases of software may update
+#	or change these files.
+#
+#	Use the main dictionary file (usually /etc/raddb/dictionary)
+#	for local system attributes and $INCLUDEs.
+#
+#
+#
+#	This file contains dictionary translations for parsing
+#	requests and generating responses.  All transactions are
+#	composed of Attribute/Value Pairs.  The value of each attribute
+#	is specified as one of 4 data types.  Valid data types are:
+#
+#	text       - printable, generally UTF-8 encoded (subset of 'string')
+#	string     - 0-253 octets
+#	ipaddr     - 4 octets in network byte order
+#	integer    - 32 bit value in big endian order (high byte first)
+#                    [wireshark uses this type for non-standard 1-2-3 and 8 byte integers as well]
+#	date       - 32 bit value in big endian order - seconds since
+#		     00:00:00 GMT,  Jan.  1,  1970
+#	ifid       - 8 octets in network byte order
+#	ipv6addr   - 16 octets in network byte order
+#	ipv6prefix - 18 octets in network byte order
+#	ether      - 6 octets of hh:hh:hh:hh:hh:hh
+#		     where 'h' is hex digits, upper or lowercase.
+#
+#	FreeRADIUS includes extended data types which are not defined
+#	in the RFC's.  These data types are:
+#
+#	abinary - Ascend's binary filter format.
+#	octets  - raw octets, printed and input as hex strings.
+#		  e.g.: 0x123456789abcdef
+#
+#
+#	Enumerated values are stored in the user file with dictionary
+#	VALUE translations for easy administration.
+#
+#	Example:
+#
+#	ATTRIBUTE	  VALUE
+#	---------------   -----
+#	Framed-Protocol = PPP
+#	7		= 1	(integer encoding)
+#
+
+#
+#	Include compatibility dictionary for older users file. Move
+#	this directive to the end of this file if you want to see the
+#	old names in the logfiles, INSTEAD OF the new names.
+#
+$INCLUDE dictionary.compat
+
+#
+#	Include the RFC dictionaries next.
+#
+#	For a complete list of the standard attributes and values,
+#	see:
+#		http://www.iana.org/assignments/radius-types
+#
+$INCLUDE dictionary.rfc2865
+$INCLUDE dictionary.rfc2866
+$INCLUDE dictionary.rfc2867
+$INCLUDE dictionary.rfc2868
+$INCLUDE dictionary.rfc2869
+$INCLUDE dictionary.rfc3162
+$INCLUDE dictionary.rfc3576
+$INCLUDE dictionary.rfc3580
+$INCLUDE dictionary.rfc4072
+$INCLUDE dictionary.rfc4372
+$INCLUDE dictionary.rfc4603
+$INCLUDE dictionary.rfc4675
+$INCLUDE dictionary.rfc4679
+$INCLUDE dictionary.rfc4818
+$INCLUDE dictionary.rfc4849
+$INCLUDE dictionary.rfc5176
+$INCLUDE dictionary.rfc5447
+$INCLUDE dictionary.rfc5580
+$INCLUDE dictionary.rfc5607
+$INCLUDE dictionary.rfc5904
+$INCLUDE dictionary.rfc6519
+$INCLUDE dictionary.rfc6572
+
+#
+#	Include vendor dictionaries after the standard ones.
+#
+$INCLUDE dictionary.3com
+$INCLUDE dictionary.3gpp
+$INCLUDE dictionary.3gpp2
+$INCLUDE dictionary.acc
+$INCLUDE dictionary.acme
+$INCLUDE dictionary.airespace
+$INCLUDE dictionary.alcatel
+$INCLUDE dictionary.alcatel.sr
+$INCLUDE dictionary.alcatel-lucent.xylan
+$INCLUDE dictionary.alteon
+$INCLUDE dictionary.alvarion
+$INCLUDE dictionary.apc
+$INCLUDE dictionary.aruba
+$INCLUDE dictionary.azaire
+$INCLUDE dictionary.ascend
+$INCLUDE dictionary.bay
+$INCLUDE dictionary.bintec
+$INCLUDE dictionary.cablelabs
+$INCLUDE dictionary.cabletron
+$INCLUDE dictionary.chillispot
+$INCLUDE dictionary.cisco
+#
+#	 The Cisco VPN300 dictionary is the same as the altiga one.
+#	 You shouldn't use both at the same time.
+#
+$INCLUDE dictionary.cisco.vpn3000
+$INCLUDE dictionary.cisco.vpn5000
+$INCLUDE dictionary.cisco.bbsm
+$INCLUDE dictionary.clavister
+$INCLUDE dictionary.colubris
+$INCLUDE dictionary.cosine
+#$INCLUDE dictionary.dhcp
+$INCLUDE dictionary.digium
+$INCLUDE dictionary.eltex
+$INCLUDE dictionary.epygi
+$INCLUDE dictionary.erx
+$INCLUDE dictionary.ericsson
+$INCLUDE dictionary.extreme
+$INCLUDE dictionary.freeradius
+$INCLUDE dictionary.freeswitch
+$INCLUDE dictionary.fortinet
+$INCLUDE dictionary.foundry
+$INCLUDE dictionary.gandalf
+$INCLUDE dictionary.gemtek
+$INCLUDE dictionary.h3c
+$INCLUDE dictionary.hp
+$INCLUDE dictionary.huawei
+$INCLUDE dictionary.iea
+$INCLUDE dictionary.infonet
+$INCLUDE dictionary.issanni
+$INCLUDE dictionary.itk
+$INCLUDE dictionary.ipunplugged
+$INCLUDE dictionary.juniper
+$INCLUDE dictionary.jradius
+$INCLUDE dictionary.karlnet
+$INCLUDE dictionary.lancom
+$INCLUDE dictionary.livingston
+$INCLUDE dictionary.localweb
+$INCLUDE dictionary.lucent
+$INCLUDE dictionary.manzara
+$INCLUDE dictionary.merit
+$INCLUDE dictionary.microsoft
+$INCLUDE dictionary.mikrotik
+$INCLUDE dictionary.motorola.wimax
+$INCLUDE dictionary.navini
+$INCLUDE dictionary.netscreen
+$INCLUDE dictionary.networkphysics
+$INCLUDE dictionary.nexans
+$INCLUDE dictionary.ntua
+$INCLUDE dictionary.nokia
+#
+#  Commented out because of attribute conflicts.
+#
+#$INCLUDE dictionary.nokia.conflict
+$INCLUDE dictionary.nomadix
+$INCLUDE dictionary.nortel
+#
+#  Commented out because of attribute conflicts.
+#
+#$INCLUDE dictionary.openser
+$INCLUDE dictionary.packeteer
+$INCLUDE dictionary.patton
+$INCLUDE dictionary.propel
+$INCLUDE dictionary.prosoft
+$INCLUDE dictionary.quiconnect
+$INCLUDE dictionary.quintum
+$INCLUDE dictionary.redback
+$INCLUDE dictionary.redcreek
+$INCLUDE dictionary.riverstone
+$INCLUDE dictionary.roaringpenguin
+$INCLUDE dictionary.shasta
+$INCLUDE dictionary.shiva
+$INCLUDE dictionary.slipstream
+$INCLUDE dictionary.sonicwall
+$INCLUDE dictionary.springtide
+$INCLUDE dictionary.starent
+$INCLUDE dictionary.telebit
+$INCLUDE dictionary.trapeze
+$INCLUDE dictionary.tropos
+$INCLUDE dictionary.t_systems_nova
+$INCLUDE dictionary.usr
+$INCLUDE dictionary.utstarcom
+$INCLUDE dictionary.valemount
+$INCLUDE dictionary.versanet
+###$INCLUDE dictionary.vqp
+$INCLUDE dictionary.waverider
+$INCLUDE dictionary.walabi
+$INCLUDE dictionary.wichorus
+$INCLUDE dictionary.wimax
+$INCLUDE dictionary.wispr
+$INCLUDE dictionary.xedia
+$INCLUDE custom.includes
+
+#
+#	And finally the server internal attributes.
+#
+###$INCLUDE dictionary.freeradius.internal
+
+#
+#	Miscellaneous attributes defined in weird places that
+#	don't really belong anywhere else...
+#
+ATTRIBUTE	Originating-Line-Info			94	string
+
+#  As defined in draft-sterman-aaa-sip-00.txt
+ATTRIBUTE	Digest-Response				206	string
+ATTRIBUTE	Digest-Attributes			207	octets	# stupid format
+
+#
+#	Integer Translations
+#
+VALUE	Service-Type			Voice			12
+VALUE	Service-Type			Fax			13
+VALUE	Service-Type			Modem-Relay		14
+VALUE	Service-Type			IAPP-Register		15
+VALUE	Service-Type			IAPP-AP-Check		16
+
+VALUE	Framed-Protocol			GPRS-PDP-Context	7
+
+VALUE	NAS-Port-Type			Wireless-CDMA2000	22
+VALUE	NAS-Port-Type			Wireless-UMTS		23
+VALUE	NAS-Port-Type			Wireless-1X-EV		24
+VALUE	NAS-Port-Type			IAPP			25
+
+VALUE   NAS-Port-Type                   FTTP                    26
+VALUE   NAS-Port-Type                   Wireless-802.16         27
+VALUE   NAS-Port-Type                   Wireless-802.20         28
+VALUE   NAS-Port-Type                   Wireless-802.22         29
+
+VALUE   NAS-Port-Type                   xPON                    35
+VALUE   NAS-Port-Type                   Wireless-XGP            36
+
+VALUE	Framed-Protocol			PPTP			9

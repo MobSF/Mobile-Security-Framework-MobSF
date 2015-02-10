@@ -1,0 +1,788 @@
+DIRECTORY-SERVER-MIB DEFINITIONS ::= BEGIN
+
+ IMPORTS
+   MODULE-IDENTITY,  Counter32, Gauge32, OBJECT-TYPE
+              FROM SNMPv2-SMI
+   mib-2      FROM RFC1213-MIB
+   DisplayString,    TimeStamp
+              FROM SNMPv2-TC
+   MODULE-COMPLIANCE, OBJECT-GROUP
+              FROM SNMPv2-CONF
+   ZeroBasedCounter32
+              FROM RMON2-MIB
+   applIndex, DistinguishedName, URLString
+
+              FROM NETWORK-SERVICES-MIB;
+
+ dsMIB MODULE-IDENTITY
+    LAST-UPDATED "9906070000Z"
+    ORGANIZATION "IETF Mail and Directory Management Working
+                  Group"
+    CONTACT-INFO
+   "                      Glenn Mansfield
+                  Postal: Cyber Solutions Inc.
+                          6-6-3, Minami Yoshinari
+                          Aoba-ku, Sendai, Japan 989-3204.
+
+                     Tel: +81-22-303-4012
+                     Fax: +81-22-303-4015
+                E-mail: glenn@cysols.com
+    Working Group E-mail: ietf-madman@innosoft.com
+            To subscribe: ietf-madman-request@innosoft.com"
+
+    DESCRIPTION
+            " The MIB module for monitoring Directory Services."
+
+    -- revision information
+
+    REVISION "9906070000Z"
+    DESCRIPTION
+      "This revision of this MIB is published in RFC 2605.
+
+       This revision obsoletes RFC 1567. It is incompatible with
+       the original MIB and so it has been renamed from dsaMIB
+       to dsMIB."
+
+    REVISION "9311250000Z" -- 25th November 1993
+    DESCRIPTION
+      "The original version of this MIB was published in RFC 1567."
+    ::= { mib-2 66 }
+
+ dsTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF DsTableEntry
+     MAX-ACCESS not-accessible
+     STATUS current
+     DESCRIPTION
+       " The table holding information related to the Directory
+         Servers."
+     ::= {dsMIB 1}
+
+ dsTableEntry OBJECT-TYPE
+     SYNTAX DsTableEntry
+     MAX-ACCESS not-accessible
+     STATUS current
+     DESCRIPTION
+       " Entry containing summary description for a Directory
+         Server."
+     INDEX { applIndex }
+     ::= {dsTable 1}
+
+-- General description of the Directory Server application will be
+-- available in the applTable of the NETWORK-SERVICES-MIB indexed by
+-- applIndex.
+
+ DsTableEntry ::= SEQUENCE {
+     dsServerType
+         BITS,
+     dsServerDescription
+         DisplayString,
+
+ -- Entry statistics/Cache performance
+     dsMasterEntries
+         Gauge32,
+     dsCopyEntries
+         Gauge32,
+     dsCacheEntries
+         Gauge32,
+     dsCacheHits
+         Counter32,
+     dsSlaveHits
+         Counter32
+ }
+
+ dsServerType OBJECT-TYPE
+     SYNTAX BITS {
+                  frontEndDirectoryServer(0),
+                  backEndDirectoryServer(1)
+            }
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       "This object indicates whether the server is
+        a frontend or, a backend or, both. If the server
+        is a frontend, then the frontEndDirectoryServer
+        bit will be set. Similarly for the backend."
+     ::= {dsTableEntry 1}
+
+ dsServerDescription OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "A text description of the application.  This information
+       is intended to identify and briefly describe the
+       application in a status display."
+     ::= {dsTableEntry 2}
+
+
+-- A (C)LDAP frontend to the X.500 Directory will not have
+-- MasterEntries, CopyEntries; the following counters will
+-- be inaccessible for LDAP/CLDAP frontends to the X.500
+-- directory: dsMasterEntries, dsCopyEntries, dsSlaveHits.
+
+ dsMasterEntries OBJECT-TYPE
+     SYNTAX Gauge32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of entries mastered in the Directory Server."
+     ::= {dsTableEntry 3}
+
+ dsCopyEntries OBJECT-TYPE
+     SYNTAX Gauge32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of entries for which systematic (slave)
+         copies are maintained in the Directory Server."
+     ::= {dsTableEntry 4}
+
+ dsCacheEntries OBJECT-TYPE
+     SYNTAX Gauge32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of entries cached (non-systematic copies) in
+         the Directory Server. This will include the entries that
+         are cached partially. The negative cache is not counted."
+     ::= {dsTableEntry 5}
+
+ dsCacheHits OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of operations that were serviced from
+         the locally held cache."
+     ::= {dsTableEntry 6}
+
+ dsSlaveHits  OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of operations that were serviced from
+         the locally held object replications ( copy-
+         entries)."
+     ::= {dsTableEntry 7}
+
+ dsApplIfOpsTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF DsApplIfOpsEntry
+     MAX-ACCESS not-accessible
+     STATUS current
+     DESCRIPTION
+       " The table holding information related to the
+         Directory Server operations."
+     ::= {dsMIB 2}
+
+ dsApplIfOpsEntry OBJECT-TYPE
+     SYNTAX DsApplIfOpsEntry
+     MAX-ACCESS not-accessible
+     STATUS current
+     DESCRIPTION
+       " Entry containing operations related statistics
+         for a Directory Server."
+     INDEX { applIndex, dsApplIfProtocolIndex }
+     ::= {dsApplIfOpsTable 1}
+ DsApplIfOpsEntry ::= SEQUENCE {
+
+     dsApplIfProtocolIndex
+          INTEGER,
+     dsApplIfProtocol
+          OBJECT IDENTIFIER,
+
+ -- Bindings
+
+     dsApplIfUnauthBinds
+         Counter32,
+     dsApplIfSimpleAuthBinds
+         Counter32,
+     dsApplIfStrongAuthBinds
+         Counter32,
+     dsApplIfBindSecurityErrors
+         Counter32,
+
+ -- In-coming operations
+
+     dsApplIfInOps
+         Counter32,
+     dsApplIfReadOps
+         Counter32,
+     dsApplIfCompareOps
+         Counter32,
+     dsApplIfAddEntryOps
+         Counter32,
+     dsApplIfRemoveEntryOps
+         Counter32,
+     dsApplIfModifyEntryOps
+         Counter32,
+     dsApplIfModifyRDNOps
+         Counter32,
+     dsApplIfListOps
+         Counter32,
+     dsApplIfSearchOps
+         Counter32,
+     dsApplIfOneLevelSearchOps
+         Counter32,
+     dsApplIfWholeSubtreeSearchOps
+         Counter32,
+
+ -- Out going operations
+
+     dsApplIfReferrals
+         Counter32,
+     dsApplIfChainings
+         Counter32,
+
+ -- Errors
+
+     dsApplIfSecurityErrors
+         Counter32,
+     dsApplIfErrors
+         Counter32,
+
+--  replications
+
+     dsApplIfReplicationUpdatesIn
+         Counter32,
+     dsApplIfReplicationUpdatesOut
+         Counter32,
+
+ -- Traffic Volume
+
+     dsApplIfInBytes
+         Counter32,
+     dsApplIfOutBytes
+         Counter32
+ }
+
+ -- CLDAP does not use binds; for the CLDAP interface of a Directory
+ -- Server the bind related counters will be inaccessible.
+ --
+ -- CLDAP and LDAP implement "Read" and "List" operations
+ -- indirectly via the "search" operation; the following
+ -- counters will be inaccessible for the CLDAP and LDAP interfaces of
+ -- Directory Servers:  dsApplIfReadOps, dsApplIfListOps
+ --
+ -- CLDAP does not implement "Compare", "Add", "Remove",
+ -- "Modify", "ModifyRDN"; the following counters will be
+ -- inaccessible for the CLDAP interfaces of Directory Servers:
+ -- dsApplIfCompareOps, dsApplIfAddEntryOps,  dsApplIfRemoveEntryOps,
+ -- dsApplIfModifyEntryOps, dsApplIfModifyRDNOps.
+ --
+ -- CLDAP Directory Servers do not return Referrals
+ -- the following fields will remain inaccessible for
+ -- CLDAP interfaces of Directory Servers: dsApplIfReferrals.
+
+ dsApplIfProtocolIndex OBJECT-TYPE
+     SYNTAX INTEGER (1..2147483647)
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+      "An index to uniquely identify an entry corresponding to a
+       application-layer protocol interface. This index is used
+       for lexicographic ordering of the table."
+     ::= {dsApplIfOpsEntry 1}
+
+ dsApplIfProtocol OBJECT-TYPE
+     SYNTAX OBJECT IDENTIFIER
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+      "An identification of the protocol being used by the application
+       on this interface.  For an OSI Application, this will be the
+       Application Context.  For Internet applications, the IANA
+       maintains a registry[22] of the OIDs which correspond to
+       well-known applications.  If the application protocol is
+       not listed in the registry, an OID value of the form
+       {applTCPProtoID port} or {applUDProtoID port} are used for
+       TCP-based and UDP-based protocols, respectively. In either
+       case 'port' corresponds to the primary port number being
+       used by the protocol. The OIDs applTCPProtoID and
+       applUDPProtoID are defined in NETWORK-SERVICES-MIB"
+     ::= {dsApplIfOpsEntry 2}
+
+ dsApplIfUnauthBinds OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of unauthenticated/anonymous bind requests
+         received."
+     ::= {dsApplIfOpsEntry 3}
+
+ dsApplIfSimpleAuthBinds OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of bind requests that were authenticated
+         using simple authentication procedures like password
+         checks. This includes the
+         password authentication using SASL mechanisms like
+         CRAM-MD5."
+     ::= {dsApplIfOpsEntry 4}
+
+ dsApplIfStrongAuthBinds OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of bind requests that were authenticated
+         using TLS and X.500 strong authentication procedures.
+         This includes the binds that were
+         authenticated using external authentication procedures."
+     ::= {dsApplIfOpsEntry 5}
+
+ dsApplIfBindSecurityErrors OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of bind requests that have been rejected
+         due to inappropriate authentication or
+         invalid credentials."
+     ::= {dsApplIfOpsEntry 6}
+
+ dsApplIfInOps OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of requests received from DUAs or other
+         Directory Servers."
+     ::= {dsApplIfOpsEntry 7}
+
+ dsApplIfReadOps OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of read requests  received."
+     ::= {dsApplIfOpsEntry 8}
+
+
+ dsApplIfCompareOps OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of compare requests received."
+     ::= {dsApplIfOpsEntry 9}
+
+ dsApplIfAddEntryOps OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of addEntry requests received."
+     ::= {dsApplIfOpsEntry 10}
+
+
+ dsApplIfRemoveEntryOps OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of removeEntry requests received."
+     ::= {dsApplIfOpsEntry 11}
+
+
+ dsApplIfModifyEntryOps OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of modifyEntry requests received."
+     ::= {dsApplIfOpsEntry 12}
+
+
+ dsApplIfModifyRDNOps OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of modifyRDN requests received."
+     ::= {dsApplIfOpsEntry 13}
+
+ dsApplIfListOps OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of list requests received."
+     ::= {dsApplIfOpsEntry 14}
+
+ dsApplIfSearchOps OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of search requests- baseObject searches,
+         oneLevel searches and  whole subtree searches,
+         received."
+     ::= {dsApplIfOpsEntry 15}
+
+ dsApplIfOneLevelSearchOps OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of oneLevel search requests received."
+     ::= {dsApplIfOpsEntry 16}
+
+
+ dsApplIfWholeSubtreeSearchOps   OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of whole subtree search requests received."
+     ::= {dsApplIfOpsEntry 17}
+
+
+ dsApplIfReferrals OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of referrals returned in response
+         to requests for operations."
+     ::= {dsApplIfOpsEntry 18}
+
+ dsApplIfChainings OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of operations forwarded by this Directory Server
+         to other Directory Servers."
+     ::= {dsApplIfOpsEntry 19}
+
+ dsApplIfSecurityErrors OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of requests received
+         which did not meet the security requirements. "
+     ::= {dsApplIfOpsEntry 20}
+
+ dsApplIfErrors  OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of requests that could not be serviced
+         due to errors other than security errors, and
+         referrals.
+         A partially serviced operation will not be counted
+         as an error.
+         The errors include naming-related, update-related,
+         attribute-related and service-related errors."
+     ::= {dsApplIfOpsEntry 21}
+
+-- Replication operations
+
+ dsApplIfReplicationUpdatesIn OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of replication updates fetched or received from
+         supplier Directory Servers."
+     ::= {dsApplIfOpsEntry 22}
+
+ dsApplIfReplicationUpdatesOut OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Number of replication updates sent to or taken by
+         consumer Directory Servers."
+     ::= {dsApplIfOpsEntry 23}
+
+ dsApplIfInBytes  OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Incoming traffic, in bytes, on the interface.
+         This will include requests from DUAs as well
+         as responses from other Directory Servers."
+     ::= {dsApplIfOpsEntry 24}
+
+ dsApplIfOutBytes OBJECT-TYPE
+     SYNTAX Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Outgoing traffic in bytes on the interface.
+         This will include responses to DUAs and Directory
+         Servers as well as requests to other Directory Servers."
+     ::= {dsApplIfOpsEntry 25}
+
+
+ -- The dsIntTable contains statistical data on the peer
+ -- Directory Servers  with which the monitored Directory
+ -- Server interacts or, attempts to interact. This  table is
+ -- expected to provide a useful insight into the effect of
+ -- neighbours on the Directory Server's performance.
+ -- The table keeps track of the last "N" Directory Servers
+ -- with which  the  monitored   Directory  has  interacted
+ -- (attempted to interact), where "N" is a locally-defined
+ -- constant.
+ -- For a multiprotocol server, statistics for each protocol
+
+ -- are kept separetely.
+
+ dsIntTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF DsIntEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+       " Each row of this table contains some details
+         related to the history of the interaction
+         of the monitored Directory Server with its
+         peer Directory Servers."
+     ::= { dsMIB 3 }
+
+ dsIntEntry OBJECT-TYPE
+     SYNTAX  DsIntEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+       " Entry containing interaction details of a Directory
+         Server with a peer Directory Server."
+     INDEX { applIndex,dsIntEntIndex, dsApplIfProtocolIndex }
+     ::= { dsIntTable 1 }
+
+ DsIntEntry ::= SEQUENCE {
+    dsIntEntIndex
+              INTEGER,
+    dsIntEntDirectoryName
+              DistinguishedName,
+    dsIntEntTimeOfCreation
+              TimeStamp,
+    dsIntEntTimeOfLastAttempt
+              TimeStamp,
+    dsIntEntTimeOfLastSuccess
+              TimeStamp,
+    dsIntEntFailuresSinceLastSuccess
+              Gauge32,
+    dsIntEntFailures
+              ZeroBasedCounter32,
+    dsIntEntSuccesses
+              ZeroBasedCounter32,
+    dsIntEntURL
+              URLString
+ }
+
+ dsIntEntIndex  OBJECT-TYPE
+     SYNTAX INTEGER (1..2147483647)
+     MAX-ACCESS not-accessible
+     STATUS current
+     DESCRIPTION
+       " Together with applIndex and dsApplIfProtocolIndex, this
+         object forms the unique key to
+         identify the conceptual row which contains useful info
+         on the (attempted) interaction between the Directory
+         Server (referred to by applIndex) and a peer Directory
+         Server using a particular protocol."
+     ::= {dsIntEntry 1}
+
+ dsIntEntDirectoryName  OBJECT-TYPE
+     SYNTAX DistinguishedName
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Distinguished Name of the peer Directory Server to
+         which this entry pertains."
+     ::= {dsIntEntry 2}
+
+ dsIntEntTimeOfCreation  OBJECT-TYPE
+     SYNTAX TimeStamp
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " The value of sysUpTime when this row was created.
+         If the entry was created before the network management
+         subsystem was initialized, this object will contain
+         a value of zero."
+     ::= {dsIntEntry 3}
+
+ dsIntEntTimeOfLastAttempt  OBJECT-TYPE
+     SYNTAX TimeStamp
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " The value of sysUpTime when the last attempt was made
+         to contact the peer Directory Server. If the last attempt
+         was made before the network management subsystem was
+         initialized, this object will contain a value of zero."
+     ::= {dsIntEntry 4}
+
+ dsIntEntTimeOfLastSuccess  OBJECT-TYPE
+     SYNTAX TimeStamp
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " The value of sysUpTime when the last attempt made to
+         contact the peer Directory Server was successful. If there
+         have been no successful attempts this entry will have a value
+         of zero. If the last successful attempt was made before
+         the network management subsystem was initialized, this
+         object will contain a value of zero."
+     ::= {dsIntEntry 5}
+
+ dsIntEntFailuresSinceLastSuccess  OBJECT-TYPE
+     SYNTAX Gauge32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " The number of failures since the last time an
+         attempt to contact the peer Directory Server was successful.
+         If there have been no successful attempts, this counter
+         will contain the number of failures since this entry
+         was created."
+     ::= {dsIntEntry 6}
+
+-- note this gauge has a maximum value of 4294967295 and,
+-- it does not wrap.[5]
+
+ dsIntEntFailures  OBJECT-TYPE
+     SYNTAX ZeroBasedCounter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Cumulative failures in contacting the peer Directory Server
+         since the creation of this entry."
+     ::= {dsIntEntry 7}
+
+ dsIntEntSuccesses  OBJECT-TYPE
+     SYNTAX ZeroBasedCounter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " Cumulative successes in contacting the peer Directory Server
+         since the creation of this entry."
+     ::= {dsIntEntry 8}
+
+ dsIntEntURL  OBJECT-TYPE
+     SYNTAX URLString
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+       " URL of the peer Directory Server."
+     ::= {dsIntEntry 9}
+
+
+ -- Conformance information
+ dsConformance OBJECT IDENTIFIER ::= { dsMIB 4 }
+
+ dsGroups      OBJECT IDENTIFIER ::= { dsConformance 1 }
+ dsCompliances OBJECT IDENTIFIER ::= { dsConformance 2 }
+
+ -- Compliance statements
+
+ dsEntryCompliance MODULE-COMPLIANCE
+     STATUS  current
+     DESCRIPTION
+             "The compliance statement for SNMP entities
+             which implement the DIRECTORY-SERVER-MIB for
+             a summary overview of the Directory Servers ."
+
+     MODULE  -- this module
+         MANDATORY-GROUPS { dsEntryGroup }
+
+     ::= { dsCompliances 1 }
+
+ dsOpsCompliance MODULE-COMPLIANCE
+     STATUS  current
+     DESCRIPTION
+             "The compliance statement for SNMP entities
+             which implement the DIRECTORY-SERVER-MIB for monitoring
+             Directory Server operations,  entry statistics and cache
+             performance."
+
+     MODULE  -- this module
+         MANDATORY-GROUPS { dsEntryGroup, dsOpsGroup }
+
+     ::= { dsCompliances 2 }
+
+ dsIntCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                " The compliance statement  for SNMP  entities
+                  which implement the DIRECTORY-SERVER-MIB for
+                  monitoring Directory Server operations and the
+                  interaction of the Directory Server with peer
+                  Directory Servers."
+
+        MODULE  -- this module
+        MANDATORY-GROUPS { dsEntryGroup, dsIntGroup }
+
+        ::= { dsCompliances 3 }
+
+ dsOpsIntCompliance MODULE-COMPLIANCE
+     STATUS  current
+     DESCRIPTION
+             " The compliance statement  for SNMP  entities
+               which implement the DIRECTORY-SERVER-MIB for monitoring
+               Directory Server operations and the interaction of the
+               Directory Server with peer Directory Servers."
+
+     MODULE  -- this module
+     MANDATORY-GROUPS { dsEntryGroup, dsOpsGroup, dsIntGroup }
+
+     ::= { dsCompliances 4 }
+
+
+ -- Units of conformance
+
+ dsEntryGroup    OBJECT-GROUP
+     OBJECTS {dsServerType,            dsServerDescription,
+              dsMasterEntries,         dsCopyEntries,
+              dsCacheEntries,          dsCacheHits,
+              dsSlaveHits}
+     STATUS  current
+     DESCRIPTION
+             " A collection of objects for a summary overview of the
+               Directory Servers."
+     ::= { dsGroups 1 }
+
+ dsOpsGroup    OBJECT-GROUP
+     OBJECTS {
+       dsApplIfProtocolIndex,          dsApplIfProtocol,
+       dsApplIfUnauthBinds,            dsApplIfSimpleAuthBinds,
+       dsApplIfStrongAuthBinds,        dsApplIfBindSecurityErrors,
+       dsApplIfInOps,                  dsApplIfReadOps,
+       dsApplIfCompareOps,             dsApplIfAddEntryOps,
+       dsApplIfRemoveEntryOps,         dsApplIfModifyEntryOps,
+       dsApplIfModifyRDNOps,           dsApplIfListOps,
+       dsApplIfSearchOps,              dsApplIfOneLevelSearchOps,
+       dsApplIfWholeSubtreeSearchOps,  dsApplIfReferrals,
+       dsApplIfChainings,              dsApplIfSecurityErrors,
+       dsApplIfErrors,                 dsApplIfReplicationUpdatesIn,
+       dsApplIfReplicationUpdatesOut,  dsApplIfInBytes,
+       dsApplIfOutBytes      }
+     STATUS  current
+     DESCRIPTION
+             " A collection of objects for monitoring the Directory
+               Server operations."
+     ::= { dsGroups 2 }
+
+ dsIntGroup    OBJECT-GROUP
+     OBJECTS {
+       dsIntEntDirectoryName,         dsIntEntTimeOfCreation,
+       dsIntEntTimeOfLastAttempt,     dsIntEntTimeOfLastSuccess,
+       dsIntEntFailuresSinceLastSuccess, dsIntEntFailures,
+       dsIntEntSuccesses,             dsIntEntURL}
+     STATUS  current
+     DESCRIPTION
+             " A collection of objects for monitoring the Directory
+               Server's interaction with peer Directory Servers."
+     ::= { dsGroups 3 }
+
+
+END

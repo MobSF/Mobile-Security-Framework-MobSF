@@ -1,0 +1,841 @@
+TOKENRING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, OBJECT-IDENTITY,
+    Counter32, Integer32                 FROM SNMPv2-SMI
+    transmission                         FROM RFC1213-MIB
+    MacAddress,TimeStamp                 FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP      FROM SNMPv2-CONF;
+
+dot5 MODULE-IDENTITY
+    LAST-UPDATED "9410231150Z"
+    ORGANIZATION "IETF Interfaces MIB Working Group"
+    CONTACT-INFO
+            "        Keith McCloghrie
+
+             Postal: cisco Systems, Inc.
+                     170 West Tasman Drive,
+                     San Jose, CA 95134-1706
+                     US
+
+              Phone: +1 408 526 5260
+              EMail: kzm@cisco.com"
+    DESCRIPTION
+        "The MIB module for IEEE Token Ring entities."
+    ::= { transmission 9 }
+
+
+--              The 802.5 Interface Table
+
+-- This table contains state and parameter information which
+-- is specific to 802.5 interfaces.  It is mandatory that
+-- systems having 802.5 interfaces implement this table in
+-- addition to the ifTable (see RFCs 1213 and 1573).
+
+dot5Table       OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot5Entry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "This table contains Token Ring interface
+            parameters and state variables, one entry
+            per 802.5 interface."
+    ::= { dot5 1 }
+
+dot5Entry       OBJECT-TYPE
+    SYNTAX      Dot5Entry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of Token Ring status and parameter
+             values for an 802.5 interface."
+    INDEX       { dot5IfIndex }
+    ::= { dot5Table 1 }
+
+Dot5Entry ::= SEQUENCE {
+     dot5IfIndex              Integer32,
+     dot5Commands             INTEGER,
+     dot5RingStatus           INTEGER,
+     dot5RingState            INTEGER,
+     dot5RingOpenStatus       INTEGER,
+     dot5RingSpeed            INTEGER,
+     dot5UpStream             MacAddress,
+     dot5ActMonParticipate    INTEGER,
+     dot5Functional           MacAddress,
+     dot5LastBeaconSent       TimeStamp
+}
+
+dot5IfIndex     OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The value of this object identifies the
+             802.5 interface for which this entry
+             contains management information.  The
+             value of this object for a particular
+             interface has the same value as the
+             ifIndex object, defined in MIB-II for
+             the same interface."
+    ::= { dot5Entry 1 }
+
+dot5Commands    OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    noop(1),
+                    open(2),
+                    reset(3),
+                    close(4)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "When this object is set to the value of
+             open(2), the station should go into the
+             open state.  The progress and success of
+             the open is given by the values of the
+             objects dot5RingState and
+             dot5RingOpenStatus.
+                 When this object is set to the value
+             of reset(3), then the station should do
+             a reset.  On a reset, all MIB counters
+             should retain their values, if possible.
+             Other side affects are dependent on the
+             hardware chip set.
+                 When this object is set to the value
+             of close(4), the station should go into
+             the stopped state by removing itself
+             from the ring.
+                 Setting this object to a value of
+             noop(1) has no effect.
+                 When read, this object always has a
+             value of noop(1).
+                 The open(2) and close(4) values
+             correspond to the up(1) and down(2) values
+             of MIB-II's ifAdminStatus and ifOperStatus,
+             i.e., the setting of ifAdminStatus and
+             dot5Commands affects the values of both
+             dot5Commands and ifOperStatus."
+    ::= { dot5Entry 2 }
+
+dot5RingStatus  OBJECT-TYPE
+    SYNTAX      INTEGER (0..262143)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The current interface status which can
+            be used to diagnose fluctuating problems
+            that can occur on token rings, after a
+            station has successfully been added to
+            the ring.
+               Before an open is completed, this
+            object has the value for the 'no status'
+            condition.  The dot5RingState and
+            dot5RingOpenStatus objects provide for
+            debugging problems when the station
+            can not even enter the ring.
+                The object's value is a sum of
+            values, one for each currently applicable
+            condition.  The following values are
+            defined for various conditions:
+
+                    0 = No Problems detected
+                   32 = Ring Recovery
+                   64 = Single Station
+                  256 = Remove Received
+                  512 = reserved
+                 1024 = Auto-Removal Error
+                 2048 = Lobe Wire Fault
+                 4096 = Transmit Beacon
+                 8192 = Soft Error
+                16384 = Hard Error
+                32768 = Signal Loss
+               131072 = no status, open not completed."
+    ::= { dot5Entry 3 }
+
+dot5RingState   OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    opened(1),
+                    closed(2),
+                    opening(3),
+                    closing(4),
+                    openFailure(5),
+                    ringFailure(6)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The current interface state with respect
+            to entering or leaving the ring."
+    ::= { dot5Entry 4 }
+
+dot5RingOpenStatus  OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    noOpen(1),     -- no open attempted
+                    badParam(2),
+                    lobeFailed(3),
+                    signalLoss(4),
+                    insertionTimeout(5),
+                    ringFailed(6),
+                    beaconing(7),
+                    duplicateMAC(8),
+                    requestFailed(9),
+                    removeReceived(10),
+                    open(11)      -- last open successful
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This object indicates the success, or the
+            reason for failure, of the station's most
+            recent attempt to enter the ring."
+    ::= { dot5Entry 5 }
+
+dot5RingSpeed   OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    unknown(1),
+                    oneMegabit(2),
+                    fourMegabit(3),
+                    sixteenMegabit(4)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The ring-speed at the next insertion into
+            the ring.  Note that this may or may not be
+            different to the current ring-speed which is
+            given by MIB-II's ifSpeed.  For interfaces
+            which do not support changing ring-speed,
+            dot5RingSpeed can only be set to its current
+            value.  When dot5RingSpeed has the value
+            unknown(1), the ring's actual ring-speed is
+            to be used."
+    ::= { dot5Entry 6 }
+
+dot5UpStream    OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC-address of the up stream neighbor
+             station in the ring."
+    ::= { dot5Entry 7 }
+
+dot5ActMonParticipate OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    true(1),
+                    false(2)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "If this object has a value of true(1) then
+            this interface will participate in the
+            active monitor selection process.  If the
+            value is false(2) then it will not.
+            Setting this object does not take effect
+            until the next Active Monitor election, and
+            might not take effect until the next time
+            the interface is opened."
+    ::= { dot5Entry 8 }
+
+dot5Functional  OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The bit mask of all Token Ring functional
+            addresses for which this interface will
+            accept frames."
+    ::= { dot5Entry 9 }
+
+dot5LastBeaconSent OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The value of MIB-II's sysUpTime object at which
+            the local system last transmitted a Beacon frame
+            on this interface."
+    ::= { dot5Entry 10 }
+
+--   The 802.5 Statistics Table
+
+-- This table contains statistics and error counter which are
+-- specific to 802.5 interfaces.  It is mandatory that systems
+-- having 802.5 interfaces implement this table.
+
+dot5StatsTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot5StatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table containing Token Ring statistics,
+            one entry per 802.5 interface.
+                All the statistics are defined using
+            the syntax Counter32 as 32-bit wrap around
+            counters.  Thus, if an interface's
+            hardware maintains these statistics in
+            16-bit counters, then the agent must read
+            the hardware's counters frequently enough
+            to prevent loss of significance, in order
+            to maintain 32-bit counters in software."
+    ::= { dot5 2 }
+
+dot5StatsEntry  OBJECT-TYPE
+    SYNTAX      Dot5StatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An entry contains the 802.5 statistics
+             for a particular interface."
+    INDEX       { dot5StatsIfIndex }
+    ::= { dot5StatsTable 1 }
+
+
+Dot5StatsEntry ::= SEQUENCE {
+     dot5StatsIfIndex              Integer32,
+     dot5StatsLineErrors           Counter32,
+     dot5StatsBurstErrors          Counter32,
+     dot5StatsACErrors             Counter32,
+     dot5StatsAbortTransErrors     Counter32,
+     dot5StatsInternalErrors       Counter32,
+     dot5StatsLostFrameErrors      Counter32,
+     dot5StatsReceiveCongestions   Counter32,
+     dot5StatsFrameCopiedErrors    Counter32,
+     dot5StatsTokenErrors          Counter32,
+     dot5StatsSoftErrors           Counter32,
+     dot5StatsHardErrors           Counter32,
+     dot5StatsSignalLoss           Counter32,
+     dot5StatsTransmitBeacons      Counter32,
+     dot5StatsRecoverys            Counter32,
+     dot5StatsLobeWires            Counter32,
+     dot5StatsRemoves              Counter32,
+     dot5StatsSingles              Counter32,
+     dot5StatsFreqErrors           Counter32
+}
+
+
+dot5StatsIfIndex  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The value of this object identifies the
+            802.5 interface for which this entry
+            contains management information.  The
+            value of this object for a particular
+            interface has the same value as MIB-II's
+            ifIndex object for the same interface."
+    ::= { dot5StatsEntry 1 }
+
+dot5StatsLineErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This counter is incremented when a frame
+            or token is copied or repeated by a
+            station, the E bit is zero in the frame
+            or token and one of the following
+            conditions exists: 1) there is a
+            non-data bit (J or K bit) between the SD
+            and the ED of the frame or token, or
+            2) there is an FCS error in the frame."
+    ::= { dot5StatsEntry 2 }
+
+dot5StatsBurstErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This counter is incremented when a station
+            detects the absence of transitions for five
+            half-bit timers (burst-five error)."
+    ::= { dot5StatsEntry 3 }
+
+dot5StatsACErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This counter is incremented when a station
+            receives an AMP or SMP frame in which A is
+            equal to C is equal to 0, and then receives
+            another SMP frame with A is equal to C is
+            equal to 0 without first receiving an AMP
+            frame. It denotes a station that cannot set
+            the AC bits properly."
+    ::= { dot5StatsEntry 4 }
+
+dot5StatsAbortTransErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This counter is incremented when a station
+            transmits an abort delimiter while
+            transmitting."
+    ::= { dot5StatsEntry 5 }
+
+dot5StatsInternalErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This counter is incremented when a station
+            recognizes an internal error."
+    ::= { dot5StatsEntry 6 }
+
+dot5StatsLostFrameErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This counter is incremented when a station
+            is transmitting and its TRR timer expires.
+            This condition denotes a condition where a
+            transmitting station in strip mode does not
+            receive the trailer of the frame before the
+            TRR timer goes off."
+    ::= { dot5StatsEntry 7 }
+
+dot5StatsReceiveCongestions OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This counter is incremented when a station
+            recognizes a frame addressed to its
+            specific address, but has no available
+            buffer space indicating that the station
+            is congested."
+    ::= { dot5StatsEntry 8 }
+
+dot5StatsFrameCopiedErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This counter is incremented when a station
+            recognizes a frame addressed to its
+            specific address and detects that the FS
+            field A bits are set to 1 indicating a
+            possible line hit or duplicate address."
+    ::= { dot5StatsEntry 9 }
+
+dot5StatsTokenErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This counter is incremented when a station
+            acting as the active monitor recognizes an
+            error condition that needs a token
+            transmitted."
+    ::= { dot5StatsEntry 10 }
+
+dot5StatsSoftErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of Soft Errors the interface
+            has detected. It directly corresponds to
+            the number of Report Error MAC frames
+            that this interface has transmitted.
+            Soft Errors are those which are
+            recoverable by the MAC layer protocols."
+    ::= { dot5StatsEntry 11 }
+
+dot5StatsHardErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of times this interface has
+            detected an immediately recoverable
+            fatal error.  It denotes the number of
+            times this interface is either
+            transmitting or receiving beacon MAC
+            frames."
+    ::= { dot5StatsEntry 12 }
+
+dot5StatsSignalLoss OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of times this interface has
+            detected the loss of signal condition from
+            the ring."
+    ::= { dot5StatsEntry 13 }
+
+dot5StatsTransmitBeacons OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of times this interface has
+            transmitted a beacon frame."
+    ::= { dot5StatsEntry 14 }
+
+dot5StatsRecoverys OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of Claim Token MAC frames
+            received or transmitted after the interface
+            has received a Ring Purge MAC frame.  This
+            counter signifies the number of times the
+            ring has been purged and is being recovered
+            back into a normal operating state."
+    ::= { dot5StatsEntry 15 }
+
+dot5StatsLobeWires OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of times the interface has
+            detected an open or short circuit in the
+            lobe data path.  The adapter will be closed
+            and dot5RingState will signify this
+            condition."
+    ::= { dot5StatsEntry 16 }
+
+dot5StatsRemoves OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of times the interface has
+            received a Remove Ring Station MAC frame
+            request.  When this frame is received
+            the interface will enter the close state
+            and dot5RingState will signify this
+            condition."
+    ::= { dot5StatsEntry 17 }
+
+dot5StatsSingles OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of times the interface has
+            sensed that it is the only station on the
+            ring.  This will happen if the interface
+            is the first one up on a ring, or if
+            there is a hardware problem."
+    ::= { dot5StatsEntry 18 }
+
+dot5StatsFreqErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of times the interface has
+            detected that the frequency of the
+            incoming signal differs from the expected
+            frequency by more than that specified by
+            the IEEE 802.5 standard."
+    ::= { dot5StatsEntry 19 }
+
+-- The Timer Table
+
+-- This group contains the values of timers for 802.5
+-- interfaces.  This table is obsolete, but its definition
+-- is retained here for backwards compatibility.
+
+dot5TimerTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot5TimerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      obsolete
+    DESCRIPTION
+            "This table contains Token Ring interface
+            timer values, one entry per 802.5
+            interface."
+    ::= { dot5 5 }
+
+dot5TimerEntry  OBJECT-TYPE
+    SYNTAX      Dot5TimerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      obsolete
+    DESCRIPTION
+            "A list of Token Ring timer values for an
+            802.5 interface."
+    INDEX       { dot5TimerIfIndex }
+    ::= { dot5TimerTable 1 }
+
+Dot5TimerEntry ::= SEQUENCE {
+    dot5TimerIfIndex          Integer32,
+    dot5TimerReturnRepeat     Integer32,
+    dot5TimerHolding          Integer32,
+    dot5TimerQueuePDU         Integer32,
+    dot5TimerValidTransmit    Integer32,
+    dot5TimerNoToken          Integer32,
+    dot5TimerActiveMon        Integer32,
+    dot5TimerStandbyMon       Integer32,
+    dot5TimerErrorReport      Integer32,
+    dot5TimerBeaconTransmit   Integer32,
+    dot5TimerBeaconReceive    Integer32
+}
+
+dot5TimerIfIndex  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The value of this object identifies the
+             802.5 interface for which this entry
+             contains timer values.  The value of
+             this object for a particular interface
+             has the same value as MIB-II's ifIndex
+             object for the same interface."
+    ::= { dot5TimerEntry 1 }
+
+dot5TimerReturnRepeat  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The time-out value used to ensure the
+            interface will return to Repeat State, in
+            units of 100 micro-seconds.  The value
+            should be greater than the maximum ring
+            latency."
+    ::= { dot5TimerEntry 2 }
+
+dot5TimerHolding  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "Maximum period of time a station is
+            permitted to transmit frames after capturing
+            a token, in units of 100 micro-seconds."
+    ::= { dot5TimerEntry 3 }
+
+dot5TimerQueuePDU  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The time-out value for enqueuing of an SMP
+            PDU after reception of an AMP or SMP
+            frame in which the A and C bits were
+            equal to 0, in units of 100
+            micro-seconds."
+    ::= { dot5TimerEntry 4 }
+
+dot5TimerValidTransmit OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The time-out value used by the active
+            monitor to detect the absence of valid
+            transmissions, in units of 100
+            micro-seconds."
+    ::= { dot5TimerEntry 5 }
+
+dot5TimerNoToken  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The time-out value used to recover from
+            various-related error situations.
+            If N is the maximum number of stations on
+            the ring, the value of this timer is
+            normally:
+            dot5TimerReturnRepeat + N*dot5TimerHolding."
+    ::= { dot5TimerEntry 6 }
+
+dot5TimerActiveMon  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The time-out value used by the active
+            monitor to stimulate the enqueuing of an
+            AMP PDU for transmission, in units of
+            100 micro-seconds."
+    ::= { dot5TimerEntry 7 }
+
+dot5TimerStandbyMon  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The time-out value used by the stand-by
+            monitors to ensure that there is an active
+            monitor on the ring and to detect a
+            continuous stream of tokens, in units of
+            100 micro-seconds."
+    ::= { dot5TimerEntry 8 }
+
+dot5TimerErrorReport  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The time-out value which determines how
+            often a station shall send a Report Error
+            MAC frame to report its error counters,
+            in units of 100 micro-seconds."
+    ::= { dot5TimerEntry 9 }
+
+dot5TimerBeaconTransmit  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The time-out value which determines how
+            long a station shall remain in the state
+            of transmitting Beacon frames before
+            entering the Bypass state, in units of
+            100 micro-seconds."
+    ::= { dot5TimerEntry 10 }
+
+dot5TimerBeaconReceive  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The time-out value which determines how
+            long a station shall receive Beacon
+            frames from its downstream neighbor
+            before entering the Bypass state, in
+            units of 100 micro-seconds."
+    ::= { dot5TimerEntry 11 }
+
+
+--                802.5 Interface Tests
+
+dot5Tests   OBJECT IDENTIFIER ::= { dot5 3 }
+
+-- RFC 1573 defines the ifTestTable, through which a
+-- network manager can instruct an agent to test an interface
+-- for various faults.  A test to be performed is identified
+-- as an OBJECT IDENTIFIER.
+
+-- The Insert Function test
+
+dot5TestInsertFunc  OBJECT-IDENTITY
+    STATUS       current
+    DESCRIPTION
+        "Invoking this test causes the station to test the insert
+        ring logic of the hardware if the station's lobe media
+        cable is connected to a wiring concentrator.  Note that
+        this command inserts the station into the network, and
+        thus, could cause problems if the station is connected
+        to a operational network."
+    ::= { dot5Tests 1 }
+
+-- The Full-Duplex Loop Back test
+
+dot5TestFullDuplexLoopBack OBJECT-IDENTITY
+    STATUS       current
+    DESCRIPTION
+        "Invoking this test on a 802.5 interface causes the
+        interface to check the path from memory through the
+        chip set's internal logic and back to memory, thus
+        checking the proper functioning of the system's
+        interface to the chip set."
+    ::= { dot5Tests 2 }
+
+
+--              802.5 Hardware Chip Sets
+
+-- RFC 1229 specified an object, ifExtnsChipSet, with the
+-- syntax of OBJECT IDENTIFIER, to identify the hardware
+-- chip set in use by an interface.  RFC 1573 obsoletes
+-- the use of ifExtnsChipSet.  However, the following
+-- definitions are retained for backwards compatibility.
+
+dot5ChipSets   OBJECT IDENTIFIER ::= { dot5 4 }
+
+dot5ChipSetIBM16  OBJECT-IDENTITY
+    STATUS        current
+    DESCRIPTION
+        "IBM's 16/4 Mbs chip set."
+    ::= { dot5ChipSets 1 }
+
+dot5ChipSetTItms380 OBJECT-IDENTITY
+    STATUS        current
+    DESCRIPTION
+        "Texas Instruments' TMS 380 4Mbs chip-set"
+    ::= { dot5ChipSets 2 }
+
+dot5ChipSetTItms380c16 OBJECT-IDENTITY
+    STATUS        current
+    DESCRIPTION
+        "Texas Instruments' TMS 380C16 16/4 Mbs chip-set"
+    ::= { dot5ChipSets 3 }
+
+-- conformance information
+
+dot5Conformance OBJECT IDENTIFIER ::= { dot5 6 }
+
+dot5Groups      OBJECT IDENTIFIER ::= { dot5Conformance 1 }
+dot5Compliances OBJECT IDENTIFIER ::= { dot5Conformance 2 }
+
+
+-- compliance statements
+
+dot5Compliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for SNMPv2 entities
+        which implement the IEEE 802.5 MIB."
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { dot5StateGroup, dot5StatsGroup }
+
+        OBJECT     dot5ActMonParticipate
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT     dot5Functional
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "Write access is not required."
+
+    ::= { dot5Compliances 1 }
+
+
+-- units of conformance
+
+dot5StateGroup  OBJECT-GROUP
+    OBJECTS   { dot5Commands, dot5RingStatus, dot5RingState,
+                dot5RingOpenStatus, dot5RingSpeed, dot5UpStream,
+                dot5ActMonParticipate, dot5Functional,
+                dot5LastBeaconSent
+              }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects providing state information
+        and parameters for IEEE 802.5 interfaces."
+    ::= { dot5Groups 1 }
+
+dot5StatsGroup  OBJECT-GROUP
+    OBJECTS   { dot5StatsLineErrors, dot5StatsBurstErrors,
+                dot5StatsACErrors, dot5StatsAbortTransErrors,
+                dot5StatsInternalErrors, dot5StatsLostFrameErrors,
+                dot5StatsReceiveCongestions,
+                dot5StatsFrameCopiedErrors, dot5StatsTokenErrors,
+                dot5StatsSoftErrors, dot5StatsHardErrors,
+                dot5StatsSignalLoss, dot5StatsTransmitBeacons,
+                dot5StatsRecoverys, dot5StatsLobeWires,
+                dot5StatsRemoves, dot5StatsSingles,
+                dot5StatsFreqErrors
+              }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects providing statistics for
+        IEEE 802.5 interfaces."
+    ::= { dot5Groups 2 }
+
+END

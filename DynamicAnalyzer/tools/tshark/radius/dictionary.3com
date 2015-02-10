@@ -1,0 +1,52 @@
+# -*- text -*-
+#
+#	3com SuperStack Firewall dictionary
+#	Bought from Sonicwall, apparently, from Enterprise number 8741.
+#
+#		$Id$
+#
+
+VENDOR		3com				43
+
+#
+#	These attributes contain the access-level value.
+#
+BEGIN-VENDOR	3com
+
+ATTRIBUTE	3Com-User-Access-Level			1	integer
+
+#	Read-only access to basic network tools (ping, etc)
+VALUE	3Com-User-Access-Level		3Com-Visitor		0
+
+#	Read-only access to manageable (not security) parameters
+VALUE	3Com-User-Access-Level		3Com-Monitor		1
+
+# 	Read-write access to manageable (not security) parameters
+VALUE	3Com-User-Access-Level		3Com-Manager		2
+
+#	Read-write access to all manageable parameters
+VALUE	3Com-User-Access-Level		3Com-Administrator	3
+
+ATTRIBUTE	3Com-VLAN-Name				2	string
+ATTRIBUTE	3Com-Mobility-Profile			3	string
+ATTRIBUTE	3Com-Encryption-Type			4	string
+ATTRIBUTE	3Com-Time-Of-Day			5	string
+ATTRIBUTE	3Com-SSID				6	string
+
+#	String formatted as: YY/MM/DD-HH:MM
+#	NOT as a "date" attribute!
+ATTRIBUTE	3Com-End-Date				7	string
+
+#	Commented out, because the 3Com documentation
+#	gives it the same number as End-Date, above.
+#ATTRIBUTE	3Com-Start-Date				7	string
+
+#	URL where the user is redirected after WebAAA
+ATTRIBUTE	3Com-URL				8	string
+
+ATTRIBUTE	3Com-Connect_Id				26	integer
+ATTRIBUTE	3Com-NAS-Startup-Timestamp		59	integer
+ATTRIBUTE	3Com-Ip-Host-Addr			60	string
+ATTRIBUTE	3Com-Product-ID				255	string
+
+END-VENDOR	3com

@@ -1,0 +1,133 @@
+# -*- text -*-
+##############################################################################
+#
+#	Ericsson dictionary
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR		Ericsson			193
+
+BEGIN-VENDOR	Ericsson
+
+ATTRIBUTE	Ericsson-ViG-Balance			3	integer
+ATTRIBUTE	Ericsson-ViG-Codec			4	integer
+ATTRIBUTE	Ericsson-ViG-Currency			5	string
+ATTRIBUTE	Ericsson-ViG-Currency-Quote		6	string
+ATTRIBUTE	Ericsson-ViG-Endpoint-Type		8	integer
+ATTRIBUTE	Ericsson-ViG-Sequence-Number		9	integer
+ATTRIBUTE	Ericsson-ViG-Access-Agent-IP-Address	11	ipaddr
+ATTRIBUTE	Ericsson-ViG-QoS-Class			12	integer
+
+#
+#  These next two attributes look to be similar to Digest-Response (206) and
+#  Digest-Attributes (207)
+#
+ATTRIBUTE	Ericsson-ViG-Digest-Response		14	string
+ATTRIBUTE	Ericsson-ViG-Digest-Attributes		15	octets
+
+ATTRIBUTE	Ericsson-ViG-Business-Agreement-Name	16	string
+ATTRIBUTE	Ericsson-ViG-Call-Role			17	integer
+ATTRIBUTE	Ericsson-ViG-Remote-SK-UA-IP-Address	20	ipaddr
+ATTRIBUTE	Ericsson-ViG-Site			23	string
+ATTRIBUTE	Ericsson-ViG-TTL-relative		32	integer
+ATTRIBUTE	Ericsson-ViG-Account-error-reason	33	integer
+ATTRIBUTE	Ericsson-ViG-Layer-identity		34	integer
+ATTRIBUTE	Ericsson-ViG-Major-protocol-version	35	integer
+ATTRIBUTE	Ericsson-ViG-Minor-protocol-version	36	integer
+ATTRIBUTE	Ericsson-ViG-Authentication-type	37	integer
+ATTRIBUTE	Ericsson-ViG-Trusted-access		38	integer
+ATTRIBUTE	Ericsson-ViG-User-name			39	string
+ATTRIBUTE	Ericsson-ViG-Global-unique-call-ID	40	string
+ATTRIBUTE	Ericsson-ViG-Global-unique-service-ID	41	string
+ATTRIBUTE	Ericsson-ViG-Interim-interval		42	integer
+ATTRIBUTE	Ericsson-ViG-Alive-Indicator		43	integer
+ATTRIBUTE	Ericsson-ViG-TTL-Absolute		44	integer
+ATTRIBUTE	Ericsson-ViG-TTL-Start-Event		45	integer
+ATTRIBUTE	Ericsson-ViG-SK-IP-address		46	ipaddr
+ATTRIBUTE	Ericsson-ViG-UA-IP-address		47	ipaddr
+ATTRIBUTE	Ericsson-ViG-SA-IP-address		48	ipaddr
+ATTRIBUTE	Ericsson-ViG-Calling-e164-number	49	string
+ATTRIBUTE	Ericsson-ViG-Calling-H323Id		50	string
+ATTRIBUTE	Ericsson-ViG-Calling-Email-address	51	string
+ATTRIBUTE	Ericsson-ViG-Dialled-e164-number	52	string
+ATTRIBUTE	Ericsson-ViG-Dialled-H323Id		53	string
+ATTRIBUTE	Ericsson-ViG-Dialled-Email-address	54	string
+ATTRIBUTE	Ericsson-ViG-Routed-e164-number		55	string
+ATTRIBUTE	Ericsson-ViG-Routed-H323Id		56	string
+ATTRIBUTE	Ericsson-ViG-Routed-Email-address	57	string
+ATTRIBUTE	Ericsson-ViG-SiteKeeper-name		58	string
+ATTRIBUTE	Ericsson-ViG-Access-Group-name		59	string
+ATTRIBUTE	Ericsson-ViG-Access-Agent-name		60	string
+ATTRIBUTE	Ericsson-ViG-User-agent-group-name	61	string
+ATTRIBUTE	Ericsson-ViG-User-agent-name		62	string
+ATTRIBUTE	Ericsson-ViG-Routing-tariff		63	integer
+ATTRIBUTE	Ericsson-ViG-Re-selection-counter	64	integer
+ATTRIBUTE	Ericsson-ViG-CPN-digits			65	string
+ATTRIBUTE	Ericsson-ViG-CPN-TON			66	integer
+ATTRIBUTE	Ericsson-ViG-CPN-NP			67	integer
+ATTRIBUTE	Ericsson-ViG-CPN-PI			68	integer
+ATTRIBUTE	Ericsson-ViG-CPN-SI			69	integer
+ATTRIBUTE	Ericsson-ViG-Dialled-num-digits		70	string
+ATTRIBUTE	Ericsson-ViG-Dialled-num-TON		71	integer
+ATTRIBUTE	Ericsson-ViG-Dialled-num-NP		72	integer
+ATTRIBUTE	Ericsson-ViG-Routing-num-digits		73	string
+ATTRIBUTE	Ericsson-ViG-Routing-num-TON		74	integer
+ATTRIBUTE	Ericsson-ViG-Routing-num-NP		75	integer
+ATTRIBUTE	Ericsson-ViG-Redirecting-num-digits	76	string
+ATTRIBUTE	Ericsson-ViG-Redirecting-num-TON	77	integer
+ATTRIBUTE	Ericsson-ViG-Redirecting-num-NP		78	integer
+ATTRIBUTE	Ericsson-ViG-Redirecting-num-PI		79	integer
+ATTRIBUTE	Ericsson-ViG-Redirecting-num-RFD	80	integer
+ATTRIBUTE	Ericsson-ViG-Time-stamp-UTC		81	integer
+ATTRIBUTE	Ericsson-ViG-Time-stamp-UTC		81	integer
+ATTRIBUTE	Ericsson-ViG-Time-stamp-TZ		82	integer
+ATTRIBUTE	Ericsson-ViG-Time-stamp-DST		83	integer
+ATTRIBUTE	Ericsson-ViG-Session-routing-duration	84	integer
+ATTRIBUTE	Ericsson-ViG-Session-ringing-duration	85	integer
+ATTRIBUTE	Ericsson-ViG-Access-type		86	integer
+ATTRIBUTE	Ericsson-ViG-Requested-bandwidth	87	integer
+ATTRIBUTE	Ericsson-ViG-Allowed-bandwidth		88	integer
+ATTRIBUTE	Ericsson-ViG-Media-channel-count	89	integer
+ATTRIBUTE	Ericsson-ViG-Voice-media-rec-forward	90	string
+ATTRIBUTE	Ericsson-ViG-Voice-media-rec-backward	91	string
+ATTRIBUTE	Ericsson-ViG-Video-media-rec-forward	92	string
+ATTRIBUTE	Ericsson-ViG-Video-media-rec-backward	93	string
+ATTRIBUTE	Ericsson-ViG-Fax-media-rec-forward	94	string
+ATTRIBUTE	Ericsson-ViG-Fax-media-rec-backward	95	string
+ATTRIBUTE	Ericsson-ViG-Data-media-rec-forward	96	string
+ATTRIBUTE	Ericsson-ViG-Data-media-rec-backward	97	string
+ATTRIBUTE	Ericsson-ViG-Charging-Case		98	integer
+ATTRIBUTE	Ericsson-ViG-Rel-cause-coding-std	99	integer
+ATTRIBUTE	Ericsson-ViG-Rel-cause-location		100	integer
+ATTRIBUTE	Ericsson-ViG-Rel-cause-class		101	integer
+ATTRIBUTE	Ericsson-ViG-Rel-cause-value		102	integer
+ATTRIBUTE	Ericsson-ViG-Rel-reason			103	integer
+ATTRIBUTE	Ericsson-ViG-Internal-Rel-reason-val	104	integer
+ATTRIBUTE	Ericsson-ViG-Internal-Rel-reason-orig	105	integer
+ATTRIBUTE	Ericsson-ViG-Service-ID			106	integer
+ATTRIBUTE	Ericsson-ViG-User-ID			107	string
+ATTRIBUTE	Ericsson-ViG-Service-Name		108	string
+ATTRIBUTE	Ericsson-ViG-Test-Call-Indicator	109	integer
+ATTRIBUTE	Ericsson-ViG-Test-Call-Indicator	109	integer
+ATTRIBUTE	Ericsson-ViG-Emergency-Call-Indicator	110	integer
+ATTRIBUTE	Ericsson-ViG-Calling-ID			111	string
+ATTRIBUTE	Ericsson-ViG-Called-ID			112	string
+ATTRIBUTE	Ericsson-ViG-Translated-ID		113	string
+ATTRIBUTE	Ericsson-ViG-Calling-User-Group-ID	114	string
+ATTRIBUTE	Ericsson-ViG-Calling-Usr-Sub-Group-ID	115	string
+ATTRIBUTE	Ericsson-ViG-Called-Usr-Group-ID	116	string
+ATTRIBUTE	Ericsson-ViG-Called-Usr-Sub-Group-ID	117	string
+ATTRIBUTE	Ericsson-ViG-Terminal-Type		118	string
+ATTRIBUTE	Ericsson-ViG-Service-Duration		119	integer
+ATTRIBUTE	Ericsson-ViG-Service-Execution-Result	120	integer
+ATTRIBUTE	Ericsson-ViG-Service-Exe-Rslt-Desc	121	string
+ATTRIBUTE	Ericsson-ViG-Service-Description	122	string
+ATTRIBUTE	Ericsson-ViG-Service-Specific-Info	123	string
+ATTRIBUTE	Ericsson-ViG-Proxy-IP-Address		124	ipaddr
+ATTRIBUTE	Ericsson-ViG-Auth-DataRequest		125	integer
+ATTRIBUTE	Ericsson-ViG-IPT-Time-Stamp		126	integer
+ATTRIBUTE	Ericsson-ViG-User-Name-Info		127	integer
+
+END-VENDOR	Ericsson

@@ -1,0 +1,1641 @@
+SCTP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  MODULE-IDENTITY, OBJECT-TYPE, Integer32, Unsigned32, Gauge32,
+  Counter32, Counter64, mib-2
+       FROM SNMPv2-SMI                        -- [RFC2578]
+  TimeStamp, TruthValue
+       FROM SNMPv2-TC                         -- [RFC2579]
+  MODULE-COMPLIANCE, OBJECT-GROUP
+       FROM SNMPv2-CONF                       -- [RFC2580]
+  InetAddressType, InetAddress, InetPortNumber
+       FROM INET-ADDRESS-MIB;                 -- [RFC3291]
+
+
+
+
+
+
+
+sctpMIB MODULE-IDENTITY
+  LAST-UPDATED "200409020000Z"       -- 2nd September 2004
+  ORGANIZATION "IETF SIGTRAN Working Group"
+  CONTACT-INFO
+       "
+        WG EMail: sigtran@ietf.org
+
+        Web Page:
+              http://www.ietf.org/html.charters/sigtran-charter.html
+
+        Chair:     Lyndon Ong
+                   Ciena Corporation
+                   0480 Ridgeview Drive
+                   Cupertino, CA  95014
+                   USA
+                   Tel:
+                   Email: lyong@ciena.com
+
+        Editors:   Maria-Carmen Belinchon
+                   R&D Department
+                   Ericsson Espana S. A.
+                   Via de los Poblados, 13
+                   28033 Madrid
+                   Spain
+                   Tel:   +34 91 339 3535
+                   Email: Maria.C.Belinchon@ericsson.com
+
+                   Jose-Javier Pastor-Balbas
+                   R&D Department
+                   Ericsson Espana S. A.
+                   Via de los Poblados, 13
+                   28033 Madrid
+                   Spain
+                   Tel:   +34 91 339 1397
+            Email: J.Javier.Pastor@ericsson.com
+       "
+  DESCRIPTION
+       "The MIB module for managing SCTP implementations.
+
+       Copyright (C) The Internet Society (2004).  This version of
+       this MIB module is part of RFC 3873; see the RFC itself for
+       full legal notices. "
+
+  REVISION "200409020000Z"       -- 2nd September 2004
+
+  DESCRIPTION " Initial version, published as RFC 3873"
+
+  ::= {  mib-2 104 }
+
+
+
+-- the SCTP base variables group
+
+sctpObjects OBJECT IDENTIFIER ::= { sctpMIB 1 }
+
+sctpStats   OBJECT IDENTIFIER ::= { sctpObjects 1 }
+sctpParams  OBJECT IDENTIFIER ::= { sctpObjects 2 }
+
+-- STATISTICS
+-- **********
+
+-- STATE-RELATED STATISTICS
+
+sctpCurrEstab OBJECT-TYPE
+  SYNTAX         Gauge32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of associations for which the current state is
+       either ESTABLISHED, SHUTDOWN-RECEIVED or SHUTDOWN-PENDING."
+  REFERENCE
+       "Section 4 in RFC2960 covers the SCTP   Association state
+       diagram."
+
+  ::= { sctpStats 1 }
+
+
+sctpActiveEstabs OBJECT-TYPE
+  SYNTAX         Counter32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of times that associations have made a direct
+       transition to the ESTABLISHED state from the COOKIE-ECHOED
+       state: COOKIE-ECHOED -> ESTABLISHED. The upper layer initiated
+       the association attempt."
+  REFERENCE
+       "Section 4 in RFC2960 covers the SCTP   Association state
+       diagram."
+
+  ::= { sctpStats  2 }
+
+
+
+
+
+
+
+
+
+
+
+sctpPassiveEstabs OBJECT-TYPE
+  SYNTAX         Counter32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of times that associations have made a direct
+       transition to the ESTABLISHED state from the CLOSED state:
+       CLOSED -> ESTABLISHED. The remote endpoint initiated the
+       association attempt."
+  REFERENCE
+       "Section 4 in RFC2960 covers the SCTP   Association state
+       diagram."
+
+  ::= { sctpStats  3 }
+
+
+sctpAborteds OBJECT-TYPE
+  SYNTAX         Counter32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of times that associations have made a direct
+       transition to the CLOSED state from any state using the
+       primitive 'ABORT': AnyState --Abort--> CLOSED. Ungraceful
+       termination of the association."
+  REFERENCE
+       "Section 4 in RFC2960 covers the SCTP   Association state
+       diagram."
+
+  ::= { sctpStats  4 }
+
+
+sctpShutdowns OBJECT-TYPE
+  SYNTAX         Counter32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of times that associations have made a direct
+       transition to the CLOSED state from either the SHUTDOWN-SENT
+       state or the SHUTDOWN-ACK-SENT state. Graceful termination of
+       the association."
+  REFERENCE
+       "Section 4 in RFC2960 covers the SCTP   Association state
+       diagram."
+
+  ::= { sctpStats  5 }
+
+
+
+
+
+-- OTHER LAYER STATISTICS
+
+sctpOutOfBlues OBJECT-TYPE
+  SYNTAX         Counter32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of out of the blue packets received by the host.
+       An out of the blue packet is an SCTP packet correctly formed,
+       including the proper checksum, but for which the receiver was
+       unable to identify an appropriate association."
+  REFERENCE
+       "Section 8.4 in RFC2960 deals with the Out-Of-The-Blue
+        (OOTB) packet definition and procedures."
+
+  ::= { sctpStats  6 }
+
+sctpChecksumErrors OBJECT-TYPE
+  SYNTAX         Counter32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of SCTP packets received with an invalid
+       checksum."
+  REFERENCE
+       "The checksum is located at the end of the SCTP packet as per
+       Section 3.1 in RFC2960. RFC3309 updates SCTP to use a 32 bit
+       CRC checksum."
+
+::= { sctpStats  7 }
+
+sctpOutCtrlChunks OBJECT-TYPE
+  SYNTAX         Counter64
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of SCTP control chunks sent (retransmissions are
+       not included). Control chunks are those chunks different from
+       DATA."
+  REFERENCE
+       "Sections 1.3.5 and 1.4 in RFC2960 refer to control chunk as
+       those chunks different from those that contain user
+       information, i.e., DATA chunks."
+
+  ::= { sctpStats  8 }
+
+
+
+
+
+
+sctpOutOrderChunks OBJECT-TYPE
+  SYNTAX         Counter64
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of SCTP ordered data chunks sent (retransmissions
+       are not included)."
+  REFERENCE
+       "Section 3.3.1 in RFC2960 defines the ordered data chunk."
+
+  ::= { sctpStats  9 }
+
+sctpOutUnorderChunks OBJECT-TYPE
+  SYNTAX         Counter64
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of SCTP unordered chunks (data chunks in which the
+       U bit is set to 1) sent (retransmissions are not included)."
+  REFERENCE
+       "Section 3.3.1 in RFC2960 defines the unordered data chunk."
+
+  ::= { sctpStats  10 }
+
+sctpInCtrlChunks OBJECT-TYPE
+  SYNTAX         Counter64
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of SCTP control chunks received (no duplicate
+       chunks included)."
+  REFERENCE
+       "Sections 1.3.5 and 1.4 in RFC2960 refer to control chunk as
+       those chunks different from those that contain user
+       information, i.e., DATA chunks."
+
+  ::= { sctpStats  11 }
+
+
+sctpInOrderChunks OBJECT-TYPE
+  SYNTAX         Counter64
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of SCTP ordered data chunks received (no duplicate
+       chunks included)."
+
+
+
+
+
+  REFERENCE
+       "Section 3.3.1 in RFC2960 defines the ordered data chunk."
+
+  ::= { sctpStats  12 }
+
+
+sctpInUnorderChunks OBJECT-TYPE
+  SYNTAX         Counter64
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of SCTP unordered chunks (data chunks in which the
+       U bit is set to 1) received (no duplicate chunks included)."
+  REFERENCE
+       "Section 3.3.1 in RFC2960 defines the unordered data chunk."
+
+  ::= { sctpStats  13 }
+
+
+
+sctpFragUsrMsgs OBJECT-TYPE
+  SYNTAX         Counter64
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+
+       "The number of user messages that have to be fragmented
+       because of the MTU."
+
+  ::= { sctpStats  14 }
+
+
+sctpReasmUsrMsgs OBJECT-TYPE
+  SYNTAX         Counter64
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of user messages reassembled, after conversion
+       into DATA chunks."
+  REFERENCE
+       "Section 6.9 in RFC2960 includes a description of the
+       reassembly process."
+
+  ::= { sctpStats  15 }
+
+
+
+
+
+
+
+sctpOutSCTPPacks OBJECT-TYPE
+  SYNTAX         Counter64
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of SCTP packets sent. Retransmitted DATA chunks
+       are included."
+
+  ::= { sctpStats  16 }
+
+
+sctpInSCTPPacks OBJECT-TYPE
+  SYNTAX         Counter64
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The number of SCTP packets received. Duplicates are
+       included."
+
+  ::= { sctpStats  17 }
+
+sctpDiscontinuityTime OBJECT-TYPE
+  SYNTAX         TimeStamp
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The value of sysUpTime on the most recent occasion at which
+       any one or more of this general statistics counters suffered a
+       discontinuity.  The relevant counters are the specific
+       instances associated with this interface of any Counter32 or
+       Counter64 object contained in the SCTP layer statistics
+       (defined below sctpStats branch).  If no such discontinuities
+       have occurred since the last re-initialization of the local
+       management subsystem, then this object contains a zero value."
+  REFERENCE
+       "The inclusion of this object is recommended by RFC2578."
+
+  ::= { sctpStats 18 }
+
+
+-- PROTOCOL GENERAL VARIABLES
+-- **************************
+
+sctpRtoAlgorithm OBJECT-TYPE
+  SYNTAX         INTEGER {
+                      other(1),      -- Other new one. Future use
+                      vanj(2)        -- Van Jacobson's algorithm
+                 }
+
+
+
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The algorithm used to determine the timeout value (T3-rtx)
+       used for re-transmitting unacknowledged chunks."
+  REFERENCE
+       "Section 6.3.1 and 6.3.2 in RFC2960 cover the RTO calculation
+       and retransmission timer rules."
+  DEFVAL {vanj} -- vanj(2)
+
+  ::= { sctpParams 1 }
+
+
+sctpRtoMin OBJECT-TYPE
+  SYNTAX         Unsigned32
+  UNITS          "milliseconds"
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The minimum value permitted by a SCTP implementation for the
+       retransmission timeout value, measured in milliseconds.  More
+       refined semantics for objects of this type depend upon the
+       algorithm used to determine the retransmission timeout value.
+
+       A retransmission time value of zero means immediate
+       retransmission.
+
+       The value of this object has to be lower than or equal to
+       stcpRtoMax's value."
+  DEFVAL {1000} -- milliseconds
+
+  ::= { sctpParams 2 }
+
+sctpRtoMax OBJECT-TYPE
+  SYNTAX         Unsigned32
+  UNITS          "milliseconds"
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The maximum value permitted by a SCTP implementation for the
+       retransmission timeout value, measured in milliseconds.  More
+       refined semantics for objects of this type depend upon the
+       algorithm used to determine the retransmission timeout value.
+
+       A retransmission time value of zero means immediate re-
+       transmission.
+
+
+
+
+
+       The value of this object has to be greater than or equal to
+       stcpRtoMin's value."
+  DEFVAL {60000} -- milliseconds
+
+    ::= { sctpParams 3 }
+
+
+sctpRtoInitial OBJECT-TYPE
+  SYNTAX         Unsigned32
+  UNITS          "milliseconds"
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The initial value for the retransmission timer.
+
+       A retransmission time value of zero means immediate re-
+       transmission."
+  DEFVAL {3000} -- milliseconds
+
+  ::= { sctpParams 4 }
+
+
+sctpMaxAssocs OBJECT-TYPE
+  SYNTAX         Integer32 (-1 | 0..2147483647)
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The limit on the total number of associations the entity can
+       support. In entities where the maximum number of associations
+       is dynamic, this object should contain the value -1."
+
+  ::= { sctpParams 5 }
+
+
+sctpValCookieLife OBJECT-TYPE
+  SYNTAX         Unsigned32
+  UNITS          "milliseconds"
+
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "Valid cookie life in the 4-way start-up handshake procedure."
+  REFERENCE
+       "Section 5.1.3 in RFC2960 explains the cookie generation
+       process. Recommended value is per section 14 in RFC2960."
+  DEFVAL {60000} -- milliseconds
+
+  ::= { sctpParams 6 }
+
+
+
+sctpMaxInitRetr OBJECT-TYPE
+  SYNTAX         Unsigned32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The maximum number of retransmissions at the start-up phase
+       (INIT and COOKIE ECHO chunks). "
+  REFERENCE
+       "Section 5.1.4, 5.1.6 in RFC2960 refers to Max.Init.Retransmit
+       parameter. Recommended value is per section 14 in RFC2960."
+  DEFVAL {8} -- number of attempts
+
+  ::= { sctpParams 7 }
+
+
+-- TABLES
+-- ******
+
+-- the SCTP Association TABLE
+
+-- The SCTP association table contains information about each
+-- association in which the local endpoint is involved.
+
+
+sctpAssocTable OBJECT-TYPE
+  SYNTAX         SEQUENCE OF SctpAssocEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "A table containing SCTP association-specific information."
+
+  ::= { sctpObjects 3 }
+
+
+sctpAssocEntry OBJECT-TYPE
+  SYNTAX         SctpAssocEntry
+  MAX-ACCESS     not-accessible
+
+  STATUS         current
+  DESCRIPTION
+       "General common variables and statistics for the whole
+       association."
+  INDEX          { sctpAssocId }
+
+  ::= { sctpAssocTable 1 }
+
+
+
+
+
+
+SctpAssocEntry ::= SEQUENCE {
+  sctpAssocId                        Unsigned32,
+  sctpAssocRemHostName               OCTET STRING,
+  sctpAssocLocalPort                 InetPortNumber,
+  sctpAssocRemPort                   InetPortNumber,
+  sctpAssocRemPrimAddrType           InetAddressType,
+  sctpAssocRemPrimAddr               InetAddress,
+  sctpAssocHeartBeatInterval         Unsigned32,
+  sctpAssocState                     INTEGER,
+  sctpAssocInStreams                 Unsigned32,
+  sctpAssocOutStreams                Unsigned32,
+  sctpAssocMaxRetr                   Unsigned32,
+  sctpAssocPrimProcess               Unsigned32,
+  sctpAssocT1expireds                Counter32,     -- Statistic
+  sctpAssocT2expireds                Counter32,     -- Statistic
+  sctpAssocRtxChunks                 Counter32,     -- Statistic
+  sctpAssocStartTime                 TimeStamp,
+  sctpAssocDiscontinuityTime         TimeStamp
+  }
+
+
+sctpAssocId OBJECT-TYPE
+  SYNTAX         Unsigned32 (1..4294967295)
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "Association Identification. Value identifying the
+       association. "
+
+  ::= { sctpAssocEntry 1 }
+
+
+sctpAssocRemHostName OBJECT-TYPE
+  SYNTAX         OCTET STRING (SIZE(0..255))
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The peer's DNS name. This object needs to have the same
+       format as the encoding in the DNS protocol.  This implies that
+       the domain name can be up to 255 octets long, each octet being
+       0<=x<=255 as value with US-ASCII A-Z having a case insensitive
+       matching.
+
+       If no DNS domain name was received from the peer at init time
+       (embedded in the INIT or INIT-ACK chunk), this object is
+       meaningless. In such cases the object MUST contain a zero-
+       length string value. Otherwise, it contains the remote host
+       name received at init time."
+
+
+
+  ::= { sctpAssocEntry 2 }
+
+
+sctpAssocLocalPort OBJECT-TYPE
+  SYNTAX         InetPortNumber (1..65535)
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The local SCTP port number used for this association."
+
+  ::= { sctpAssocEntry 3 }
+
+
+sctpAssocRemPort OBJECT-TYPE
+  SYNTAX         InetPortNumber (1..65535)
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The remote SCTP port number used for this association."
+
+  ::= { sctpAssocEntry 4 }
+
+
+sctpAssocRemPrimAddrType OBJECT-TYPE
+  SYNTAX         InetAddressType
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The internet type of primary remote IP address. "
+
+  ::= { sctpAssocEntry 5 }
+
+sctpAssocRemPrimAddr OBJECT-TYPE
+  SYNTAX         InetAddress
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The primary remote IP address. The type of this address is
+       determined by the value of sctpAssocRemPrimAddrType.
+
+       The client side will know this value after INIT_ACK message
+       reception, the server side will know this value when sending
+       INIT_ACK message. However, values will be filled in at
+       established(4) state."
+
+  ::= { sctpAssocEntry 6 }
+
+
+
+
+
+sctpAssocHeartBeatInterval OBJECT-TYPE
+  SYNTAX         Unsigned32
+  UNITS          "milliseconds"
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The current heartbeat interval..
+
+       Zero value means no HeartBeat, even when the concerned
+       sctpAssocRemAddrHBFlag object is true."
+  DEFVAL {30000} -- milliseconds
+
+  ::= { sctpAssocEntry 7 }
+
+
+sctpAssocState OBJECT-TYPE
+  SYNTAX         INTEGER {
+                      closed(1),
+                      cookieWait(2),
+                      cookieEchoed(3),
+                      established(4),
+                      shutdownPending(5),
+                      shutdownSent(6),
+                      shutdownReceived(7),
+                      shutdownAckSent(8),
+                      deleteTCB(9)
+                      }
+  MAX-ACCESS     read-write
+  STATUS         current
+  DESCRIPTION
+       "The state of this SCTP association.
+
+       As in TCP, deleteTCB(9) is the only value that may be set by a
+       management station. If any other value is received, then the
+       agent must return a wrongValue error.
+
+       If a management station sets this object to the value
+       deleteTCB(9), then this has the effect of deleting the TCB (as
+       defined in SCTP) of the corresponding association on the
+       managed node, resulting in immediate termination of the
+       association.
+
+       As an implementation-specific option, an ABORT chunk may be
+       sent from the managed node to the other SCTP endpoint as a
+       result of setting the deleteTCB(9) value. The ABORT chunk
+       implies an ungraceful association shutdown."
+
+
+
+
+
+  REFERENCE
+
+       "Section 4 in RFC2960 covers the SCTP Association state
+       diagram."
+
+  ::= { sctpAssocEntry 8 }
+
+
+sctpAssocInStreams OBJECT-TYPE
+  SYNTAX         Unsigned32 (1..65535)
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "Inbound Streams according to the negotiation at association
+       start up."
+  REFERENCE
+       "Section 1.3 in RFC2960 includes a definition of stream.
+       Section 5.1.1 in RFC2960 covers the streams negotiation
+       process."
+
+  ::= { sctpAssocEntry 9 }
+
+sctpAssocOutStreams OBJECT-TYPE
+  SYNTAX         Unsigned32 (1..65535)
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "Outbound Streams according to the negotiation at association
+       start up. "
+  REFERENCE
+       "Section 1.3 in RFC2960 includes a definition of stream.
+       Section 5.1.1 in RFC2960 covers the streams negotiation
+       process."
+
+  ::= { sctpAssocEntry 10 }
+
+
+sctpAssocMaxRetr OBJECT-TYPE
+  SYNTAX         Unsigned32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The maximum number of data retransmissions in the association
+       context. This value is specific for each association and the
+       upper layer can change it by calling the appropriate
+       primitives. This value has to be smaller than the addition of
+       all the maximum number for all the paths
+       (sctpAssocRemAddrMaxPathRtx).
+
+
+
+       A value of zero value means no retransmissions."
+  DEFVAL {10} -- number of attempts
+
+  ::= { sctpAssocEntry 11 }
+
+sctpAssocPrimProcess OBJECT-TYPE
+      SYNTAX      Unsigned32
+      MAX-ACCESS read-only
+      STATUS      current
+      DESCRIPTION
+       "This object identifies the system level process which holds
+       primary responsibility for the SCTP association.
+       Wherever possible, this should be the system's native unique
+       identification number. The special value 0 can be used to
+       indicate that no primary process is known.
+
+       Note that the value of this object can be used as a pointer
+       into the swRunTable of the HOST-RESOURCES-MIB(if the value is
+       smaller than 2147483647) or into the sysApplElmtRunTable of
+       the SYSAPPL-MIB."
+
+  ::= { sctpAssocEntry 12 }
+
+
+-- Association Statistics
+
+sctpAssocT1expireds OBJECT-TYPE
+  SYNTAX         Counter32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The T1 timer determines how long to wait for an
+       acknowledgement after sending an INIT or COOKIE-ECHO chunk.
+       This object reflects the number of times the T1 timer expires
+       without having received the acknowledgement.
+
+       Discontinuities in the value of this counter can occur at re-
+       initialization of the management system, and at other times as
+       indicated by the value of sctpAssocDiscontinuityTime."
+  REFERENCE
+       "Section 5 in RFC2960."
+
+
+  ::= { sctpAssocEntry 13 }
+
+sctpAssocT2expireds OBJECT-TYPE
+  SYNTAX         Counter32
+  MAX-ACCESS     read-only
+
+
+
+  STATUS         current
+  DESCRIPTION
+       "The T2 timer determines how long to wait for an
+       acknowledgement after sending a SHUTDOWN or SHUTDOWN-ACK
+       chunk. This object reflects the number of times that T2- timer
+       expired.
+
+       Discontinuities in the value of this counter can occur at re-
+       initialization of the management system, and at other times as
+       indicated by the value of sctpAssocDiscontinuityTime."
+REFERENCE
+       "Section 9.2 in RFC2960."
+  ::= { sctpAssocEntry 14 }
+
+
+sctpAssocRtxChunks OBJECT-TYPE
+  SYNTAX         Counter32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "When T3-rtx expires, the DATA chunks that triggered the T3
+       timer will be re-sent according with the retransmissions
+       rules. Every DATA chunk that was included in the SCTP packet
+       that triggered the T3-rtx timer must be added to the value of
+       this counter.
+
+       Discontinuities in the value of this counter can occur at re-
+       initialization of the management system, and at other times as
+       indicated by the value of sctpAssocDiscontinuityTime."
+  REFERENCE
+       "Section 6 in RFC2960 covers the retransmission process and
+       rules."
+
+  ::= { sctpAssocEntry 15 }
+
+
+sctpAssocStartTime OBJECT-TYPE
+  SYNTAX         TimeStamp
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The value of sysUpTime at the time that the association
+       represented by this row enters the ESTABLISHED state, i.e.,
+       the sctpAssocState object is set to established(4). The
+       value of this object will be zero:
+       - before the association enters the established(4)
+         state, or
+
+
+
+
+       - if the established(4) state was entered prior to
+         the last re-initialization of the local network management
+         subsystem."
+
+  ::= { sctpAssocEntry 16 }
+
+sctpAssocDiscontinuityTime OBJECT-TYPE
+  SYNTAX         TimeStamp
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The value of sysUpTime on the most recent occasion at which
+       any one or more of this SCTP association counters suffered a
+       discontinuity.  The relevant counters are the specific
+       instances associated with this interface of any Counter32 or
+       Counter64 object contained in the sctpAssocTable or
+       sctpLocalAddrTable or sctpRemAddrTable.  If no such
+       discontinuities have occurred since the last re-initialization
+       of the local management subsystem, then this object contains a
+       zero value. "
+  REFERENCE
+       "The inclusion of this object is recommended by RFC2578."
+
+  ::= { sctpAssocEntry 17 }
+
+-- Expanded tables: Including Multi-home feature
+
+-- Local Address TABLE
+-- *******************
+
+sctpAssocLocalAddrTable OBJECT-TYPE
+  SYNTAX         SEQUENCE OF SctpAssocLocalAddrEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "Expanded table of sctpAssocTable based on the AssocId index.
+       This table shows data related to each local IP address which
+       is used by this association."
+
+  ::= { sctpObjects  4 }
+
+sctpAssocLocalAddrEntry OBJECT-TYPE
+  SYNTAX         SctpAssocLocalAddrEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "Local information about the available addresses. There will
+       be an entry for every local IP address defined for this
+
+
+
+       association.
+       Implementors need to be aware that if the size of
+       sctpAssocLocalAddr exceeds 114 octets then OIDs of column
+       instances in this table will have more than 128 sub-
+       identifiers and cannot be accessed using SNMPv1, SNMPv2c, or
+       SNMPv3."
+  INDEX     {    sctpAssocId,   -- shared index
+                 sctpAssocLocalAddrType,
+                 sctpAssocLocalAddr }
+
+  ::= { sctpAssocLocalAddrTable 1 }
+
+
+SctpAssocLocalAddrEntry ::= SEQUENCE {
+  sctpAssocLocalAddrType        InetAddressType,
+  sctpAssocLocalAddr            InetAddress,
+  sctpAssocLocalAddrStartTime   TimeStamp
+  }
+
+
+sctpAssocLocalAddrType OBJECT-TYPE
+  SYNTAX         InetAddressType
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "Internet type of local IP address used for this association."
+
+
+  ::= { sctpAssocLocalAddrEntry 1 }
+
+sctpAssocLocalAddr OBJECT-TYPE
+  SYNTAX         InetAddress
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "The value of a local IP address available for this
+       association. The type of this address is determined by the
+       value of sctpAssocLocalAddrType."
+
+  ::= { sctpAssocLocalAddrEntry 2 }
+
+
+
+
+
+
+
+
+
+
+
+sctpAssocLocalAddrStartTime OBJECT-TYPE
+  SYNTAX         TimeStamp
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The value of sysUpTime at the time that this row was
+       created."
+
+  ::= { sctpAssocLocalAddrEntry 3 }
+
+-- Remote Addresses TABLE
+-- **********************
+
+sctpAssocRemAddrTable OBJECT-TYPE
+  SYNTAX         SEQUENCE OF SctpAssocRemAddrEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "Expanded table of sctpAssocTable based on the AssocId index.
+       This table shows data related to each remote peer IP address
+       which is used by this association."
+
+  ::= { sctpObjects  5 }
+
+
+sctpAssocRemAddrEntry OBJECT-TYPE
+  SYNTAX         SctpAssocRemAddrEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "Information about the most important variables for every
+       remote IP address. There will be an entry for every remote IP
+       address defined for this association.
+
+       Implementors need to be aware that if the size of
+       sctpAssocRemAddr exceeds 114 octets then OIDs of column
+       instances in this table will have more than 128 sub-
+       identifiers and cannot be accessed using SNMPv1, SNMPv2c, or
+       SNMPv3."
+  INDEX   { sctpAssocId,   -- shared index
+            sctpAssocRemAddrType,
+            sctpAssocRemAddr }
+
+  ::= { sctpAssocRemAddrTable 1 }
+
+
+
+
+
+
+
+SctpAssocRemAddrEntry ::= SEQUENCE {
+  sctpAssocRemAddrType               InetAddressType,
+  sctpAssocRemAddr                   InetAddress,
+  sctpAssocRemAddrActive             TruthValue,
+  sctpAssocRemAddrHBActive           TruthValue,
+  sctpAssocRemAddrRTO                Unsigned32,
+  sctpAssocRemAddrMaxPathRtx         Unsigned32,
+  sctpAssocRemAddrRtx                Counter32,     -- Statistic
+  sctpAssocRemAddrStartTime          TimeStamp
+  }
+
+
+sctpAssocRemAddrType OBJECT-TYPE
+  SYNTAX         InetAddressType
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "Internet type of a remote IP address available for this
+       association."
+  ::= { sctpAssocRemAddrEntry 1 }
+
+
+sctpAssocRemAddr OBJECT-TYPE
+  SYNTAX         InetAddress
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "The value of a remote IP address available for this
+       association. The type of this address is determined by the
+       value of sctpAssocLocalAddrType."
+
+  ::= { sctpAssocRemAddrEntry 2 }
+
+
+sctpAssocRemAddrActive OBJECT-TYPE
+  SYNTAX         TruthValue
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "This object gives information about the reachability of this
+       specific remote IP address.
+
+       When the object is set to 'true' (1), the remote IP address is
+       understood as Active. Active means that the threshold of no
+       answers received from this IP address has not been reached.
+
+
+
+
+
+
+       When the object is set to 'false' (2), the remote IP address
+       is understood as Inactive. Inactive means that either no
+       heartbeat or any other message was received from this address,
+       reaching the threshold defined by the protocol."
+
+  REFERENCE
+       "The remote transport states are defined as Active and
+       Inactive in the SCTP, RFC2960."
+
+  ::= { sctpAssocRemAddrEntry 3 }
+
+
+sctpAssocRemAddrHBActive OBJECT-TYPE
+  SYNTAX         TruthValue
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "This object indicates whether the optional Heartbeat check
+       associated to one destination transport address is activated
+       or not (value equal to true or false, respectively). "
+
+  ::= { sctpAssocRemAddrEntry 4 }
+
+
+sctpAssocRemAddrRTO OBJECT-TYPE -- T3-rtx- Timer
+  SYNTAX         Unsigned32
+  UNITS          "milliseconds"
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The current Retransmission Timeout. T3-rtx timer as defined
+       in the protocol SCTP."
+  REFERENCE
+       "Section 6.3 in RFC2960 deals with the Retransmission Timer
+       Management."
+
+  ::= { sctpAssocRemAddrEntry 5 }
+
+
+sctpAssocRemAddrMaxPathRtx OBJECT-TYPE
+  SYNTAX         Unsigned32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "Maximum number of DATA chunks retransmissions allowed to a
+       remote IP address before it is considered inactive, as defined
+       in RFC2960."
+
+
+
+
+  REFERENCE
+       "Section 8.2, 8.3 and 14 in RFC2960."
+  DEFVAL {5} -- number of attempts
+
+  ::= { sctpAssocRemAddrEntry 6 }
+
+
+-- Remote Address Statistic
+
+sctpAssocRemAddrRtx OBJECT-TYPE
+  SYNTAX         Counter32
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "Number of DATA chunks retransmissions to this specific IP
+       address. When T3-rtx expires, the DATA chunk that triggered
+       the T3 timer will be re-sent according to the retransmissions
+       rules. Every DATA chunk that is included in a SCTP packet and
+       was transmitted to this specific IP address before, will be
+       included in this counter.
+
+       Discontinuities in the value of this counter can occur at re-
+       initialization of the management system, and at other times as
+       indicated by the value of sctpAssocDiscontinuityTime."
+
+  ::= { sctpAssocRemAddrEntry 7 }
+
+sctpAssocRemAddrStartTime OBJECT-TYPE
+  SYNTAX         TimeStamp
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The value of sysUpTime at the time that this row was
+       created."
+
+  ::= { sctpAssocRemAddrEntry 8 }
+
+-- ASSOCIATION INVERSE TABLE
+-- *************************
+
+-- BY LOCAL PORT
+
+sctpLookupLocalPortTable OBJECT-TYPE
+  SYNTAX         SEQUENCE OF SctpLookupLocalPortEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "With the use of this table, a list of associations which are
+
+
+
+       using the specified local port can be retrieved."
+
+  ::= { sctpObjects  6 }
+
+
+sctpLookupLocalPortEntry OBJECT-TYPE
+  SYNTAX         SctpLookupLocalPortEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "This table is indexed by local port and association ID.
+       Specifying a local port, we would get a list of the
+       associations whose local port is the one specified."
+
+  INDEX         { sctpAssocLocalPort,
+                 sctpAssocId }
+
+  ::= { sctpLookupLocalPortTable 1 }
+
+
+SctpLookupLocalPortEntry::= SEQUENCE {
+  sctpLookupLocalPortStartTime            TimeStamp
+  }
+
+
+sctpLookupLocalPortStartTime OBJECT-TYPE
+  SYNTAX         TimeStamp
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The value of sysUpTime at the time that this row was created.
+
+       As the table will be created after the sctpAssocTable
+       creation, this value could be equal to the sctpAssocStartTime
+       object from the main table."
+
+  ::= { sctpLookupLocalPortEntry 1 }
+
+-- BY REMOTE PORT
+
+sctpLookupRemPortTable OBJECT-TYPE
+  SYNTAX         SEQUENCE OF SctpLookupRemPortEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+
+
+
+
+
+
+
+  DESCRIPTION
+       "With the use of this table, a list of associations which are
+       using the specified remote port can be got"
+
+  ::= { sctpObjects  7 }
+
+sctpLookupRemPortEntry OBJECT-TYPE
+  SYNTAX         SctpLookupRemPortEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "This table is indexed by remote port and association ID.
+       Specifying a remote port we would get a list of the
+       associations whose local port is the one specified "
+
+  INDEX         { sctpAssocRemPort,
+                 sctpAssocId }
+
+  ::= { sctpLookupRemPortTable 1 }
+
+SctpLookupRemPortEntry::= SEQUENCE {
+  sctpLookupRemPortStartTime              TimeStamp
+  }
+
+
+sctpLookupRemPortStartTime OBJECT-TYPE
+  SYNTAX         TimeStamp
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The value of sysUpTime at the time that this row was created.
+
+       As the table will be created after the sctpAssocTable
+       creation, this value could be equal to the sctpAssocStartTime
+       object from the main table."
+
+  ::= { sctpLookupRemPortEntry 1 }
+
+-- BY REMOTE HOST NAME
+
+sctpLookupRemHostNameTable OBJECT-TYPE
+  SYNTAX         SEQUENCE OF SctpLookupRemHostNameEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "With the use of this table, a list of associations with that
+       particular host can be retrieved."
+
+
+
+
+  ::= { sctpObjects  8 }
+
+
+sctpLookupRemHostNameEntry OBJECT-TYPE
+  SYNTAX         SctpLookupRemHostNameEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "This table is indexed by remote host name and association ID.
+       Specifying a host name we would get a list of the associations
+       specifying that host name as the remote one.
+
+       Implementors need to be aware that if the size of
+       sctpAssocRemHostName exceeds 115 octets then OIDs of column
+       instances in this table will have more than 128 sub-
+       identifiers and cannot be accessed using SNMPv1, SNMPv2c, or
+       SNMPv3."
+
+  INDEX         { sctpAssocRemHostName,
+                 sctpAssocId }
+
+  ::= { sctpLookupRemHostNameTable 1 }
+
+
+SctpLookupRemHostNameEntry::= SEQUENCE {
+  sctpLookupRemHostNameStartTime               TimeStamp
+  }
+
+sctpLookupRemHostNameStartTime OBJECT-TYPE
+  SYNTAX         TimeStamp
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The value of sysUpTime at the time that this row was created.
+
+       As the table will be created after the sctpAssocTable
+       creation, this value could be equal to the sctpAssocStartTime
+       object from the main table."
+
+  ::= { sctpLookupRemHostNameEntry 1 }
+
+
+
+
+
+
+
+
+
+
+
+-- BY REMOTE PRIMARY IP ADDRESS
+
+sctpLookupRemPrimIPAddrTable OBJECT-TYPE
+  SYNTAX         SEQUENCE OF SctpLookupRemPrimIPAddrEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "With the use of this table, a list of associations that have
+       the specified IP address as primary within the remote set of
+       active addresses can be retrieved."
+
+  ::= { sctpObjects  9 }
+
+
+sctpLookupRemPrimIPAddrEntry OBJECT-TYPE
+  SYNTAX         SctpLookupRemPrimIPAddrEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "This table is indexed by primary address and association ID.
+       Specifying a primary address, we would get a list of the
+       associations that have the specified remote IP address marked
+       as primary.
+       Implementors need to be aware that if the size of
+       sctpAssocRemPrimAddr exceeds 114 octets then OIDs of column
+       instances in this table will have more than 128 sub-
+       identifiers and cannot be accessed using SNMPv1, SNMPv2c, or
+       SNMPv3."
+
+  INDEX         { sctpAssocRemPrimAddrType,
+                 sctpAssocRemPrimAddr,
+                 sctpAssocId }
+
+  ::= { sctpLookupRemPrimIPAddrTable 1 }
+
+SctpLookupRemPrimIPAddrEntry::= SEQUENCE {
+  sctpLookupRemPrimIPAddrStartTime             TimeStamp
+  }
+
+
+sctpLookupRemPrimIPAddrStartTime OBJECT-TYPE
+  SYNTAX         TimeStamp
+  MAX-ACCESS     read-only
+  STATUS         current
+
+
+
+
+
+
+
+  DESCRIPTION
+       "The value of SysUpTime at the time that this row was created.
+
+       As the table will be created after the sctpAssocTable
+       creation, this value could be equal to the sctpAssocStartTime
+       object from the main table."
+
+  ::= { sctpLookupRemPrimIPAddrEntry 1 }
+
+
+-- BY REMOTE IP ADDRESS
+
+sctpLookupRemIPAddrTable OBJECT-TYPE
+  SYNTAX         SEQUENCE OF SctpLookupRemIPAddrEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "With the use of this table, a list of associations that have
+       the specified IP address as one of the remote ones can be
+       retrieved. "
+
+  ::= { sctpObjects  10 }
+
+
+sctpLookupRemIPAddrEntry OBJECT-TYPE
+  SYNTAX         SctpLookupRemIPAddrEntry
+  MAX-ACCESS     not-accessible
+  STATUS         current
+  DESCRIPTION
+       "This table is indexed by a remote IP address and association
+       ID. Specifying an IP address we would get a list of the
+       associations that have the specified IP address included
+       within the set of remote IP addresses."
+
+  INDEX         { sctpAssocRemAddrType,
+                 sctpAssocRemAddr,
+                 sctpAssocId }
+
+  ::= { sctpLookupRemIPAddrTable 1 }
+
+
+SctpLookupRemIPAddrEntry::= SEQUENCE {
+
+  sctpLookupRemIPAddrStartTime            TimeStamp
+  }
+
+
+
+
+
+
+sctpLookupRemIPAddrStartTime OBJECT-TYPE
+  SYNTAX         TimeStamp
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+       "The value of SysUpTime at the time that this row was created.
+
+       As the table will be created after the sctpAssocTable
+       creation, this value could be equal to the sctpAssocStartTime
+       object from the main table."
+
+  ::= { sctpLookupRemIPAddrEntry 1 }
+
+
+-- 4.1 Conformance Information
+
+sctpMibConformance    OBJECT IDENTIFIER ::= { sctpMIB 2 }
+sctpMibCompliances    OBJECT IDENTIFIER ::= { sctpMibConformance 1 }
+sctpMibGroups         OBJECT IDENTIFIER ::= { sctpMibConformance 2 }
+
+
+-- 4.1.1 Units of conformance
+
+--
+-- MODULE GROUPS
+--
+
+sctpLayerParamsGroup OBJECT-GROUP
+  OBJECTS   { sctpRtoAlgorithm,
+              sctpRtoMin,
+              sctpRtoMax,
+              sctpRtoInitial,
+              sctpMaxAssocs,
+              sctpValCookieLife,
+              sctpMaxInitRetr
+            }
+
+  STATUS    current
+  DESCRIPTION
+       "Common parameters for the SCTP layer, i.e., for all the
+       associations. They can usually be referred to as configuration
+       parameters."
+
+  ::= { sctpMibGroups 1 }
+
+
+
+
+
+
+
+sctpStatsGroup OBJECT-GROUP
+  OBJECTS   { sctpCurrEstab,
+              sctpActiveEstabs,
+              sctpPassiveEstabs,
+              sctpAborteds,
+              sctpShutdowns,
+              sctpOutOfBlues,
+              sctpChecksumErrors,
+              sctpOutCtrlChunks,
+              sctpOutOrderChunks,
+              sctpOutUnorderChunks,
+              sctpInCtrlChunks,
+              sctpInOrderChunks,
+              sctpInUnorderChunks,
+              sctpFragUsrMsgs,
+              sctpReasmUsrMsgs,
+              sctpOutSCTPPacks,
+              sctpInSCTPPacks,
+              sctpDiscontinuityTime,
+              sctpAssocT1expireds,
+              sctpAssocT2expireds,
+              sctpAssocRtxChunks,
+              sctpAssocRemAddrRtx
+            }
+
+  STATUS    current
+  DESCRIPTION
+       "Statistics group. It includes the objects to collect state
+       changes in the SCTP protocol local layer and flow control
+       statistics."
+
+  ::= { sctpMibGroups 2 }
+
+
+sctpPerAssocParamsGroup OBJECT-GROUP
+  OBJECTS   { sctpAssocRemHostName,
+              sctpAssocLocalPort,
+              sctpAssocRemPort,
+              sctpAssocRemPrimAddrType,
+              sctpAssocRemPrimAddr,
+              sctpAssocHeartBeatInterval,
+              sctpAssocState,
+              sctpAssocInStreams,
+              sctpAssocOutStreams,
+              sctpAssocMaxRetr,
+              sctpAssocPrimProcess,
+              sctpAssocStartTime,
+              sctpAssocDiscontinuityTime,
+
+
+
+              sctpAssocLocalAddrStartTime,
+              sctpAssocRemAddrActive,
+              sctpAssocRemAddrHBActive,
+              sctpAssocRemAddrRTO,
+              sctpAssocRemAddrMaxPathRtx,
+              sctpAssocRemAddrStartTime
+            }
+
+  STATUS    current
+  DESCRIPTION
+       "The SCTP group of objects to manage per-association
+       parameters. These variables include all the SCTP basic
+       features."
+
+  ::= { sctpMibGroups 3 }
+
+sctpPerAssocStatsGroup OBJECT-GROUP
+              OBJECTS
+            { sctpAssocT1expireds,
+              sctpAssocT2expireds,
+              sctpAssocRtxChunks,
+              sctpAssocRemAddrRtx
+            }
+
+  STATUS    current
+  DESCRIPTION
+       "Per Association Statistics group. It includes the objects to
+       collect flow control statistics per association."
+
+  ::= { sctpMibGroups 4 }
+
+sctpInverseGroup OBJECT-GROUP
+  OBJECTS   { sctpLookupLocalPortStartTime,
+             sctpLookupRemPortStartTime,
+             sctpLookupRemHostNameStartTime,
+             sctpLookupRemPrimIPAddrStartTime,
+             sctpLookupRemIPAddrStartTime
+            }
+
+  STATUS    current
+  DESCRIPTION
+       "Objects used in the inverse lookup tables."
+
+  ::= { sctpMibGroups 5 }
+
+
+
+
+
+
+
+-- 4.1.2 Compliance Statements
+
+--
+-- MODULE COMPLIANCES
+--
+
+sctpMibCompliance MODULE-COMPLIANCE
+  STATUS  current
+  DESCRIPTION
+       "The compliance statement for SNMP entities which implement
+       this SCTP MIB Module.
+
+       There are a number of INDEX objects that cannot be represented
+       in the form of OBJECT clauses in SMIv2, but for which we have
+       the following compliance requirements, expressed in OBJECT
+       clause form in this description clause:
+
+-- OBJECT        sctpAssocLocalAddrType
+-- SYNTAX        InetAddressType {ipv4(1), ipv6(2)}
+-- DESCRIPTION
+--       It is only required to have IPv4 and IPv6 addresses without
+--       zone indices.
+--       The address with zone indices is required if an
+--       implementation can connect multiple zones.
+--
+-- OBJECT        sctpAssocLocalAddr
+-- SYNTAX        InetAddress (SIZE(4|16))
+-- DESCRIPTION
+--       An implementation is only required to support globally
+--       unique IPv4 and IPv6 addresses.
+--
+-- OBJECT        sctpAssocRemAddrType
+-- SYNTAX        InetAddressType {ipv4(1), ipv6(2)}
+-- DESCRIPTION
+--       It is only required to have IPv4 and IPv6 addresses without
+--       zone indices.
+--       The address with zone indices is required if an
+--       implementation can connect multiple zones.
+--
+-- OBJECT        sctpAssocRemAddr
+-- SYNTAX        InetAddress (SIZE(4|16))
+-- DESCRIPTION
+--       An implementation is only required to support globally
+--       unique IPv4 and IPv6 addresses.
+--
+       "  -- closes DESCRIPTION clause of MODULE-COMPLIANCE
+
+  MODULE  -- this module
+
+
+
+       MANDATORY-GROUPS    {  sctpLayerParamsGroup,
+                              sctpPerAssocParamsGroup,
+                              sctpStatsGroup,
+                              sctpPerAssocStatsGroup
+                           }
+
+       OBJECT  sctpAssocRemPrimAddrType
+       SYNTAX  InetAddressType { ipv4(1),
+                                 ipv6(2)
+                               }
+       DESCRIPTION
+            "It is only required to have IPv4 and IPv6 addresses
+            without zone indices.
+
+            The address with zone indices is required if an
+            implementation can connect multiple zones."
+
+       OBJECT  sctpAssocRemPrimAddr
+       SYNTAX  InetAddress (SIZE(4|16))
+       DESCRIPTION
+            "An implementation is only required to support globally
+            unique IPv4 and globally unique IPv6 addresses."
+
+
+       OBJECT sctpAssocState
+       WRITE-SYNTAX  INTEGER { deleteTCB(9) }
+       MIN-ACCESS read-only
+       DESCRIPTION
+            "Only the deleteTCB(9) value MAY be set by a management
+            station at most. A read-only option is also considered to
+            be compliant with this MIB module description."
+
+       GROUP sctpInverseGroup
+       DESCRIPTION
+            "Objects used in inverse lookup tables. This should be
+            implemented, at the discretion of the implementers, for
+            easier lookups in the association tables"
+
+  ::= { sctpMibCompliances 1 }
+
+END

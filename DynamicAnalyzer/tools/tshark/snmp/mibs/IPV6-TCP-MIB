@@ -1,0 +1,209 @@
+IPV6-TCP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   MODULE-COMPLIANCE, OBJECT-GROUP      FROM SNMPv2-CONF
+   MODULE-IDENTITY, OBJECT-TYPE,
+   mib-2, experimental                  FROM SNMPv2-SMI
+   Ipv6Address, Ipv6IfIndexOrZero       FROM IPV6-TC;
+
+ipv6TcpMIB MODULE-IDENTITY
+   LAST-UPDATED "9801290000Z"
+   ORGANIZATION "IETF IPv6 MIB Working Group"
+   CONTACT-INFO
+        "       Mike Daniele
+
+                Postal: Compaq Computer Corporation
+                        110 Spitbrook Rd
+                        Nashua, NH 03062.
+                        US
+
+                Phone:  +1 603 884 1423
+                Email:  daniele@zk3.dec.com"
+   DESCRIPTION
+        "The MIB module for entities implementing TCP over IPv6."
+   ::= { experimental 86 }
+
+-- objects specific to TCP for IPv6
+
+tcp      OBJECT IDENTIFIER ::= { mib-2 6 }
+
+-- the TCP over IPv6 Connection table
+
+-- This connection table contains information about this
+-- entity's existing TCP connections between IPv6 endpoints.
+-- Only connections between IPv6 addresses are contained in
+-- this table.  This entity's connections between IPv4
+-- endpoints are contained in tcpConnTable.
+
+ipv6TcpConnTable OBJECT-TYPE
+   SYNTAX      SEQUENCE OF Ipv6TcpConnEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+        "A table containing TCP connection-specific information,
+         for only those connections whose endpoints are IPv6 addresses."
+   ::= { tcp 16 }
+
+ipv6TcpConnEntry OBJECT-TYPE
+   SYNTAX      Ipv6TcpConnEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+        "A conceptual row of the ipv6TcpConnTable containing
+         information about a particular current TCP connection.
+         Each row of this table is transient, in that it ceases to
+         exist when (or soon after) the connection makes the transition
+         to the CLOSED state.
+
+         Note that conceptual rows in this table require an additional
+         index object compared to tcpConnTable, since IPv6 addresses
+         are not guaranteed to be unique on the managed node."
+   INDEX   { ipv6TcpConnLocalAddress,
+             ipv6TcpConnLocalPort,
+             ipv6TcpConnRemAddress,
+             ipv6TcpConnRemPort,
+             ipv6TcpConnIfIndex }
+   ::= { ipv6TcpConnTable 1 }
+
+Ipv6TcpConnEntry ::=
+   SEQUENCE { ipv6TcpConnLocalAddress    Ipv6Address,
+              ipv6TcpConnLocalPort       INTEGER,
+              ipv6TcpConnRemAddress      Ipv6Address,
+              ipv6TcpConnRemPort         INTEGER,
+              ipv6TcpConnIfIndex         Ipv6IfIndexOrZero,
+              ipv6TcpConnState           INTEGER }
+
+ipv6TcpConnLocalAddress OBJECT-TYPE
+   SYNTAX     Ipv6Address
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+        "The local IPv6 address for this TCP connection. In
+         the case of a connection in the listen state which
+         is willing to accept connections for any IPv6
+         address associated with the managed node, the value
+         ::0 is used."
+   ::= { ipv6TcpConnEntry 1 }
+
+ipv6TcpConnLocalPort OBJECT-TYPE
+   SYNTAX     INTEGER (0..65535)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+        "The local port number for this TCP connection."
+   ::= { ipv6TcpConnEntry 2 }
+
+ipv6TcpConnRemAddress OBJECT-TYPE
+   SYNTAX     Ipv6Address
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+        "The remote IPv6 address for this TCP connection."
+   ::= { ipv6TcpConnEntry 3 }
+
+ipv6TcpConnRemPort OBJECT-TYPE
+   SYNTAX     INTEGER (0..65535)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+        "The remote port number for this TCP connection."
+   ::= { ipv6TcpConnEntry 4 }
+
+ipv6TcpConnIfIndex OBJECT-TYPE
+   SYNTAX     Ipv6IfIndexOrZero
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+        "An index object used to disambiguate conceptual rows in
+         the table, since the connection 4-tuple may not be unique.
+
+         If the connection's remote address (ipv6TcpConnRemAddress)
+         is a link-local address and the connection's local address
+         (ipv6TcpConnLocalAddress) is not a link-local address, this
+         object identifies a local interface on the same link as
+         the connection's remote link-local address.
+
+         Otherwise, this object identifies the local interface that
+         is associated with the ipv6TcpConnLocalAddress for this
+         TCP connection.  If such a local interface cannot be determined,
+         this object should take on the value 0.  (A possible example
+         of this would be if the value of ipv6TcpConnLocalAddress is ::0.)
+
+         The interface identified by a particular non-0 value of this
+         index is the same interface as identified by the same value
+         of ipv6IfIndex.
+
+         The value of this object must remain constant during the life
+         of the TCP connection."
+   ::= { ipv6TcpConnEntry 5 }
+
+ipv6TcpConnState OBJECT-TYPE
+   SYNTAX     INTEGER {
+        closed(1),
+        listen(2),
+        synSent(3),
+        synReceived(4),
+        established(5),
+        finWait1(6),
+        finWait2(7),
+        closeWait(8),
+        lastAck(9),
+        closing(10),
+        timeWait(11),
+        deleteTCB(12) }
+   MAX-ACCESS read-write
+   STATUS     current
+   DESCRIPTION
+        "The state of this TCP connection.
+
+         The only value which may be set by a management station is
+         deleteTCB(12).  Accordingly, it is appropriate for an agent
+         to return an error response (`badValue' for SNMPv1, 'wrongValue'
+         for SNMPv2) if a management station attempts to set this
+         object to any other value.
+
+         If a management station sets this object to the value
+         deleteTCB(12), then this has the effect of deleting the TCB
+         (as defined in RFC 793) of the corresponding connection on
+         the managed node, resulting in immediate termination of the
+         connection.
+         As an implementation-specific option, a RST segment may be
+         sent from the managed node to the other TCP endpoint (note
+         however that RST segments are not sent reliably)."
+   ::= { ipv6TcpConnEntry 6 }
+
+--
+-- conformance information
+--
+
+ipv6TcpConformance OBJECT IDENTIFIER ::= { ipv6TcpMIB 2 }
+
+ipv6TcpCompliances OBJECT IDENTIFIER ::= { ipv6TcpConformance 1 }
+ipv6TcpGroups      OBJECT IDENTIFIER ::= { ipv6TcpConformance 2 }
+
+-- compliance statements
+
+ipv6TcpCompliance MODULE-COMPLIANCE
+   STATUS  current
+   DESCRIPTION
+        "The compliance statement for SNMPv2 entities which
+         implement TCP over IPv6."
+   MODULE  -- this module
+   MANDATORY-GROUPS { ipv6TcpGroup }
+   ::= { ipv6TcpCompliances 1 }
+
+ipv6TcpGroup OBJECT-GROUP
+   OBJECTS   { -- these are defined in this module
+               -- ipv6TcpConnLocalAddress (not-accessible)
+               -- ipv6TcpConnLocalPort (not-accessible)
+               -- ipv6TcpConnRemAddress (not-accessible)
+               -- ipv6TcpConnRemPort (not-accessible)
+               -- ipv6TcpConnIfIndex (not-accessible)
+               ipv6TcpConnState }
+   STATUS    current
+   DESCRIPTION
+        "The group of objects providing management of
+         TCP over IPv6."
+   ::= { ipv6TcpGroups 1 }
+
+END

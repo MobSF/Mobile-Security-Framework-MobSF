@@ -1,0 +1,602 @@
+QOS-POLICY-802-PIB PIB-DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Unsigned32, Integer32,
+    MODULE-IDENTITY, OBJECT-TYPE
+            FROM SNMPv2-SMI
+    TruthValue, PhysAddress,
+    TEXTUAL-CONVENTION
+            FROM SNMPv2-TC
+    RoleCombination, PolicyInstanceId
+            FROM POLICY-FRAMEWORK-PIB
+    Dscp
+            FROM QOS-POLICY-IP-PIB;
+
+qosPolicy802Pib  MODULE-IDENTITY
+    LAST-UPDATED "9906241800Z"
+    ORGANIZATION "IETF RAP WG"
+    CONTACT-INFO "
+                  Michael Fine
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA  95134-1706 USA
+                  Phone: +1 408 527 8218
+                  Email: mfine@cisco.com
+
+                  Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive,
+                  San Jose, CA 95134-1706 USA
+                  Phone: +1 408 526 5260
+                  Email: kzm@cisco.com
+
+                  John Seligson
+                  Nortel Networks, Inc.
+                  4401 Great America Parkway
+                  Santa Clara, CA 95054 USA
+                  Phone: +1 408 495 2992
+                  Email: jseligso@nortelnetworks.com"
+    DESCRIPTION
+            "The PIB module containing an initial set of policy
+             rule classes that describe the quality of service
+             (QoS) policies supported by devices for IEEE 802-
+             based traffic."
+
+    ::= { tbd }
+
+qosPolicy802PibClasses OBJECT IDENTIFIER ::= { qosPolicy802Pib 1 }
+
+--
+-- Textual Conventions
+--
+
+--
+-- IEEE 802 CoS
+--
+
+QosIeee802Cos ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "An integer that is in the range of the IEEE 802 CoS
+        values. This corresponds to the 802.1p priority values."
+
+    SYNTAX INTEGER (0..7)
+
+--
+-- General configuration information for the entire domain
+--
+
+qos802DomainConfig OBJECT IDENTIFIER ::= { qosPolicy802PibClasses 1 }
+
+--
+-- Differentiated Services Code Point Mapping Table
+--
+-- Supports the mapping of DSCP values to IEEE CoS values.
+--
+
+qos802DscpMappingTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF Qos802DscpMappingEntry
+    POLICY-ACCESS  install
+    STATUS         current
+    DESCRIPTION
+        "Maps each DSCP to an QosIeee802Cos.  When configured
+        for the first time, all 64 entries of the table must
+        be specified. Thereafter, instances may be modified but
+        not deleted unless all instances are deleted."
+
+    INSTALL-ERRORS {
+        priInstNotComplete(1)    -- required instances not created
+        }
+
+    ::= { qos802DomainConfig 1 }
+
+qos802DscpMappingEntry OBJECT-TYPE
+    SYNTAX         Qos802DscpMappingEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of the qos802DscpMapping class. A total of 64
+        class instances are constantly maintained after initial device
+        configuration."
+
+    INDEX { qos802DscpMappingId }
+    ::= { qos802DscpMappingTable 1 }
+
+Qos802DscpMappingEntry ::= SEQUENCE {
+        qos802DscpMappingId           PolicyInstanceId,
+        qos802DscpMappingDscp         Dscp,
+        qos802DscpMapping802Cos       QosIeee802Cos
+}
+
+qos802DscpMappingId OBJECT-TYPE
+    SYNTAX         PolicyInstanceId
+    STATUS         current
+    DESCRIPTION
+        "A unique ID for this policy rule instance."
+
+    ::= { qos802DscpMappingEntry 1 }
+
+qos802DscpMappingDscp OBJECT-TYPE
+    SYNTAX         Dscp
+    STATUS         current
+    DESCRIPTION
+        "The DSCP class instance attribute that is used to
+        determine the appropriate layer 2 CoS mappings. DSCP
+        values 0 through 63 (inclusive) are maintained in
+        the table."
+
+    ::= { qos802DscpMappingEntry 2 }
+
+qos802DscpMapping802Cos OBJECT-TYPE
+    SYNTAX         QosIeee802Cos
+    STATUS         current
+    DESCRIPTION
+        "The IEEE 802 CoS value to use when mapping the DSCP
+        value specified by the qos802DscpMappingDscp attribute
+        to a IEEE 802 CoS."
+
+    ::= { qos802DscpMappingEntry 3 }
+
+--
+-- Layer 2 CoS-to-DSCP Mapping Table
+--
+-- Supports the mapping of IEEE CoS values to DSCP values
+-- for generic QoS traffic classification
+--
+
+qos802CosToDscpTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF Qos802CosToDscpEntry
+    POLICY-ACCESS  install
+    STATUS         current
+    DESCRIPTION
+        "Maps each of eight layer 2 CoS values to a DSCP.  When
+        configured for the first time, all 8 entries of the table
+        must be specified. Thereafter, instances may be modified
+        but not deleted unless all instances are deleted."
+
+    INSTALL-ERRORS {
+        priInstNotComplete(1)    -- required instances not created
+        }
+
+    ::= { qos802DomainConfig 2 }
+
+qos802CosToDscpEntry OBJECT-TYPE
+    SYNTAX         Qos802CosToDscpEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of the qosCosToDscp class. A total of 8
+        class instances are constantly maintained after initial
+        device configuration."
+
+    INDEX { qos802CosToDscpId }
+    ::= { qos802CosToDscpTable 1 }
+
+Qos802CosToDscpEntry ::= SEQUENCE {
+        qos802CosToDscpId   PolicyInstanceId,
+        qos802CosToDscpCos  QosIeee802Cos,
+        qos802CosToDscpDscp Dscp
+}
+
+qos802CosToDscpId OBJECT-TYPE
+    SYNTAX         PolicyInstanceId
+    STATUS         current
+
+    DESCRIPTION
+        "A unique index for this policy rule instance."
+
+    ::= { qos802CosToDscpEntry 1 }
+
+qos802CosToDscpCos OBJECT-TYPE
+    SYNTAX         QosIeee802Cos
+    STATUS         current
+    DESCRIPTION
+        "The layer 2 CoS class instance attribute that is used to
+        determine the appropriate DSCP mappings. CoS values 0
+        through 7 (inclusive) are maintained in the table."
+
+    ::= { qos802CosToDscpEntry 2 }
+
+qos802CosToDscpDscp OBJECT-TYPE
+    SYNTAX         Dscp
+    STATUS         current
+    DESCRIPTION
+        "The DSCP value to use when mapping the layer 2 CoS value
+        specified by the qosCosToDscp attribute to a DSCP."
+
+    ::= { qos802CosToDscpEntry 3 }
+
+--
+-- The IEEE 802 Classification and Policing Group
+--
+
+qos802Qos OBJECT IDENTIFIER ::= { qosPolicy802PibClasses 2 }
+
+--
+-- The IEEE 802 ACE Table
+--
+-- The IEEE 802 ACE Table supports the specification of IEEE
+-- 802-based (e.g., 802.3) information that is used to perform
+-- traffic classification.
+--
+
+qos802AceTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF Qos802AceEntry
+    POLICY-ACCESS  install
+    STATUS         current
+    DESCRIPTION
+        "IEEE 802-based ACE definitions. A class that contains
+        attributes of IEEE 802 (e.g., 802.3) traffic that form
+
+        an association that is used to perform traffic
+        classification."
+
+    ::= { qos802Qos 1 }
+
+qos802AceEntry OBJECT-TYPE
+    SYNTAX         Qos802AceEntry
+    STATUS         current
+    DESCRIPTION
+        "IEEE 802-based ACE definitions.  An entry specifies
+        (potentially) several distinct matching components. Each
+        component is tested against the data in a frame
+        individually. An overall match occurs when all of the
+        individual components match the data they are compared
+        against in the frame being processed. A failure of any
+        one test causes the overall match to fail.
+
+        Wildcards may be specified for those fields that are not
+        relevant."
+
+    INDEX { qos802AceId }
+    ::= { qos802AceTable 1 }
+
+Qos802AceEntry ::= SEQUENCE {
+        qos802AceId              PolicyInstanceId,
+        qos802AceDstAddr         PhysAddress,
+        qos802AceDstAddrMask     PhysAddress,
+        qos802AceSrcAddr         PhysAddress,
+        qos802AceSrcAddrMask     PhysAddress,
+        qos802AceVlanId          Integer32,
+        qos802AceVlanTagRequired INTEGER,
+        qos802AceEtherType       Integer32,
+        qos802AceUserPriority    BITS,
+        qos802AcePermit          TruthValue
+}
+
+qos802AceId OBJECT-TYPE
+    SYNTAX         PolicyInstanceId
+    STATUS         current
+    DESCRIPTION
+        "An arbitrary integer index that uniquely identifies this
+        802 ACE among all of the 802 ACEs. Note that this identifier
+        is used in instances of the qos802Acl class to associate a
+        802 ACE with a 802 ACL. An active ACE/ACL association
+        prohibits the deletion of the 802 ACE until the ACE/ACL
+
+        association is terminated. Class instances may not be
+        contiguous."
+
+    ::= { qos802AceEntry 1 }
+
+qos802AceDstAddr OBJECT-TYPE
+    SYNTAX         PhysAddress
+    STATUS         current
+    DESCRIPTION
+        "The 802 address against which the 802 DA of incoming traffic
+        streams will be compared. Frames whose 802 DA matches the
+        physical address specified by this object, taking into account
+        address wildcarding as specified by the qos802AceDstAddrMask
+        object, are potentially subject to the processing guidelines
+        that are associated with this entry through the related
+        action class."
+
+    ::= { qos802AceEntry 2 }
+
+qos802AceDstAddrMask OBJECT-TYPE
+    SYNTAX         PhysAddress
+    STATUS         current
+    DESCRIPTION
+        "This object specifies the bits in a 802 destination address
+        that should be considered when performing a 802 DA comparison
+        against the address specified in the qos802AceDstAddr object.
+
+        The value of this object represents a mask that is logically
+        and'ed with the 802 DA in received frames to derive the value
+        to be compared against the qos802AceDstAddr address. A zero
+        bit in the mask thus means that the corresponding bit in the
+        address always matches. The qos802AceDstAddr value must also
+        be masked using this value prior to any comparisons.
+
+        The length of this object in octets must equal the length in
+        octets of the qos802AceDstAddr. Note that a mask with no bits
+        set (i.e., all zeroes) effectively wildcards the
+        qos802AceDstAddr object."
+
+    ::= { qos802AceEntry 3 }
+
+qos802AceSrcAddr OBJECT-TYPE
+    SYNTAX         PhysAddress
+    STATUS         current
+    DESCRIPTION
+
+        "The 802 MAC address against which the 802 MAC SA of incoming
+        traffic streams will be compared. Frames whose 802 MAC SA
+        matches the physical address specified by this object,
+        taking into account address wildcarding as specified by the
+        qos802AceSrcAddrMask object, are potentially subject to the
+        processing guidelines that are associated with this entry
+        through the related action class."
+
+    ::= { qos802AceEntry 4 }
+
+qos802AceSrcAddrMask OBJECT-TYPE
+    SYNTAX         PhysAddress
+    STATUS         current
+    DESCRIPTION
+        "This object specifies the bits in a 802 MAC source address
+        that should be considered when performing a 802 MAC SA
+        comparison against the address specified in the
+        qos802AceSrcAddr object.
+
+        The value of this object represents a mask that is logically
+        and'ed with the 802 MAC SA in received frames to derive the
+        value to be compared against the qos802AceSrcAddr address. A
+        zero bit in the mask thus means that the corresponding bit
+        in the address always matches. The qos802AceSrcAddr value
+        must also be masked using this value prior to any
+        comparisons.
+
+        The length of this object in octets must equal the length in
+        octets of the qos802AceSrcAddr. Note that a mask with no bits
+        set (i.e., all zeroes) effectively wildcards the
+        qos802AceSrcAddr object."
+
+    ::= { qos802AceEntry 5 }
+
+qos802AceVlanId OBJECT-TYPE
+    SYNTAX         Integer32 (-1 | 1..4094)
+    STATUS         current
+    DESCRIPTION
+        "The VLAN ID (VID) that uniquely identifies a VLAN
+        within the device. This VLAN may be known or unknown
+        (i.e., traffic associated with this VID has not yet
+        been seen by the device) at the time this entry
+        is instantiated.
+
+        Setting the qos802AceVlanId object to -1 indicates that
+
+        VLAN data should not be considered during traffic
+        classification."
+
+    ::= { qos802AceEntry 6 }
+
+qos802AceVlanTagRequired OBJECT-TYPE
+    SYNTAX         INTEGER {
+                       taggedOnly(1),
+                       priorityTaggedPlus(2),
+                       untaggedOnly(3),
+                       ignoreTag(4)
+                   }
+    STATUS         current
+    DESCRIPTION
+        "This object indicates whether the presence of an
+        IEEE 802.1Q VLAN tag in data link layer frames must
+        be considered when determining if a given frame
+        matches this 802 ACE entry.
+
+        A value of 'taggedOnly(1)' means that only frames
+        containing a VLAN tag with a non-Null VID (i.e., a
+        VID in the range 1..4094) will be considered a match.
+
+        A value of 'priorityTaggedPlus(2)' means that only
+        frames containing a VLAN tag, regardless of the value
+        of the VID, will be considered a match.
+
+        A value of 'untaggedOnly(3)' indicates that only
+        untagged frames will match this filter component.
+
+        The presence of a VLAN tag is not taken into
+        consideration in terms of a match if the value is
+        'ignoreTag(4)'."
+
+    ::= { qos802AceEntry 7 }
+
+qos802AceEtherType OBJECT-TYPE
+    SYNTAX         Integer32 (-1 | 0..'ffff'h)
+    STATUS         current
+    DESCRIPTION
+        "This object specifies the value that will be compared
+        against the value contained in the EtherType field of an
+        IEEE 802 frame. Example settings would include 'IP'
+        (0x0800), 'ARP' (0x0806) and 'IPX' (0x8137).
+
+        Setting the qos802AceEtherTypeMin object to -1 indicates
+        that EtherType data should not be considered during traffic
+        classification.
+
+        Note that the position of the EtherType field depends on
+        the underlying frame format. For Ethernet-II encapsulation,
+        the EtherType field follows the 802 MAC source address. For
+        802.2 LLC/SNAP encapsulation, the EtherType value follows the
+        Organization Code field in the 802.2 SNAP header. The value
+        that is tested with regard to this filter component therefore
+        depends on the data link layer frame format being used. If
+        this 802 ACE component is active when there is no EtherType
+        field in a frame (e.g., 802.2 LLC), a match is implied."
+
+    ::= { qos802AceEntry 8 }
+
+qos802AceUserPriority OBJECT-TYPE
+    SYNTAX         BITS {
+                        matchPriority0(0),
+                        matchPriority1(1),
+                        matchPriority2(2),
+                        matchPriority3(3),
+                        matchPriority4(4),
+                        matchPriority5(5),
+                        matchPriority6(6),
+                        matchPriority7(7)
+                   }
+    STATUS         current
+    DESCRIPTION
+        "The set of values, representing the potential range
+        of user priority values, against which the value contained
+        in the user priority field of a tagged 802.1 frame is
+        compared. A test for equality is performed when determining
+        if a match exists between the data in a data link layer
+        frame and the value of this 802 ACE component. Multiple
+        values may be set at one time such that potentially several
+        different user priority values may match this 802 ACE
+        component.
+
+        Setting all of the bits that are associated with this
+        object causes all user priority values to match this
+        attribute. This essentially makes any comparisons
+        with regard to user priority values unnecessary. Untagged
+        frames are treated as an implicit match."
+
+    ::= { qos802AceEntry 9 }
+
+qos802AcePermit OBJECT-TYPE
+    SYNTAX         TruthValue
+    STATUS         current
+    DESCRIPTION
+        "If the frame matches this ACE and the value of this
+        attribute is true, then the matching process terminates
+        and the QoS associated with this 802-based ACE (indirectly
+        through the 802 ACL) is applied to the packet.  If the
+        value of this attribute is false, then no more 802 ACEs in
+        this 802 ACL are compared to this packet and matching
+        continues with the first 802-based ACE of the next 802 ACL."
+
+    ::= { qos802AceEntry 10 }
+
+--
+-- The IEEE 802 ACL Definition Table
+--
+-- The IEEE 802 ACL Definition Table supports the association of
+-- distinct IEEE 802-based (e.g., 802.3) traffic classification
+-- specifications into an ordered list.
+--
+
+qos802AclDefinitionTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF Qos802AclDefinitionEntry
+    POLICY-ACCESS  install
+    STATUS         current
+    DESCRIPTION
+        "IEEE 802-based ACL definitions. A class that defines a
+        set of 802 ACLs, each of which is comprised of an ordered
+        list of 802 ACEs."
+
+    INSTALL-ERRORS {
+        priPrecedenceConflict(1) -- precedence conflict detected
+        }
+
+    ::= { qos802Qos 2 }
+
+qos802AclDefinitionEntry OBJECT-TYPE
+    SYNTAX         Qos802AclDefinitionEntry
+    STATUS         current
+    DESCRIPTION
+        "IEEE 802-based ACL definitions. An entry specifies an
+        instance of this class that associates an 802 ACE with
+
+        a given 802 ACL. The evaluation order of distinct 802
+        ACEs that are associated with a specific 802 ACL is
+        specified as well."
+
+    INDEX { qos802AclDefinitionId }
+    ::= { qos802AclDefinitionTable 1 }
+
+Qos802AclDefinitionEntry ::= SEQUENCE {
+        qos802AclDefinitionId       PolicyInstanceId,
+        qos802AclDefinitionAclId    PolicyInstanceId,
+        qos802AclDefinitionAceId    PolicyInstanceId,
+        qos802AclDefinitionAceOrder Unsigned32
+}
+
+qos802AclDefinitionId OBJECT-TYPE
+    SYNTAX         PolicyInstanceId
+    STATUS         current
+    DESCRIPTION
+        "An arbitrary integer index that uniquely identifies this
+        802 ACE / 802 ACL association."
+
+    ::= { qos802AclDefinitionEntry 1 }
+
+qos802AclDefinitionAclId OBJECT-TYPE
+    SYNTAX         PolicyInstanceId
+    STATUS         current
+    DESCRIPTION
+        "An index for this 802 ACL. Each 802 ACL in the device is
+        assigned a unique integer index. There will (potentially) be
+        multiple instances of the qos802AclDefinition class with this
+        identifier, one for each 802 ACE that is associated with the
+        specified 802 ACL.
+
+        For example, assume that 2 802 ACLs, each comprised of 4 802
+        ACEs, have been installed. The instances of this class may
+        appear as follows:
+
+                 Index   AclId   AceId   AceOrder
+                   10      6       4        1
+                   11      6       5        2
+                   12      6       9        23
+                   13      6       11       24
+                   65      18      5        8
+                   66      18      9        12
+                   67      18      13       15
+
+                   70      18      14       16
+
+        Note that this identifier is used in instances of the
+        qosAclTarget class to associate an 802 ACL with an interface
+        set and action. An active ACL Target association prohibits
+        the deletion of all of the qos802AclDefinition instances
+        with a given qos802AclDefinitionAclId (i.e., at least one
+        entry for the specific qos802AclDefinitionAclId must be
+        present in this table) until the ACL Target association is
+        terminated."
+
+    ::= { qos802AclDefinitionEntry 2 }
+
+qos802AclDefinitionAceId OBJECT-TYPE
+    SYNTAX         PolicyInstanceId
+    STATUS         current
+    DESCRIPTION
+        "This attribute identifies the 802 ACE in the qos802AceTable
+        that is associated with the 802 ACL specified by
+        qos802AclDefinitionAclId object. The corresponding instance
+        in the qos802Ace class must exist prior to being associated
+        with a 802 ACL.
+
+        Attempting to specify an unknown class instance will result
+        in an appropriate error indication being returned to the
+        entity that is attempting to install the conflicting entry.
+        For example, a 'priUnknown(2)' error indication is returned
+        to the policy server in this situation."
+
+    ::= { qos802AclDefinitionEntry 3 }
+
+qos802AclDefinitionAceOrder OBJECT-TYPE
+    SYNTAX         Unsigned32
+    STATUS         current
+    DESCRIPTION
+        "The precedence of the 802 ACE, identified via the
+        qos802AclDefinitionAceId object, with regard to evaluation
+        order. The precedence determines the order of evaluation of
+        this ACE in relation to related 802 ACEs that are associated
+        with an ACL. An ACE with a given precedence order in the
+        access control list is evaluated before one with a higher-
+        valued precedence order.
+
+        Precedence values within a group must be unique otherwise
+        instance installation will be prohibited and an error
+
+        value will be returned.
+
+        Note that qos802AclDefinitionAceOrder values within a given
+        ACL need not be contiguous."
+
+    ::= { qos802AclDefinitionEntry 4 }
+
+END

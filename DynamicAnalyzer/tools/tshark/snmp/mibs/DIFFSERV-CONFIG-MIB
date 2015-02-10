@@ -1,0 +1,258 @@
+DIFFSERV-CONFIG-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+
+    OBJECT-TYPE, MODULE-IDENTITY,
+    zeroDotZero, mib-2            FROM SNMPv2-SMI          -- [RFC2578]
+
+    RowStatus, StorageType,
+    RowPointer, DateAndTime       FROM SNMPv2-TC           -- [RFC2579]
+
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP                  FROM SNMPv2-CONF         -- [RFC2580]
+
+
+
+
+    SnmpAdminString               FROM SNMP-FRAMEWORK-MIB; -- [RFC3411]
+
+diffServConfigMib MODULE-IDENTITY
+    LAST-UPDATED "200401220000Z" -- 22 January 2004
+    ORGANIZATION "SNMPCONF WG"
+    CONTACT-INFO
+       "SNMPCONF Working Group
+        http://www.ietf.org/html.charters/snmpconf-charter.html
+        WG mailing list: snmpconf@snmp.com
+
+        Editors:
+        Harrie Hazewinkel
+        I.Net
+        via Darwin 85
+        20019 - Settimo Milanese (MI)
+        Italy
+        EMail: harrie@inet.it
+
+        David Partain
+        Ericsson AB
+        P.O. Box 1248
+        SE-581 12 Linkoping
+        Sweden
+        E-mail: David.Partain@ericsson.com"
+    DESCRIPTION
+        "This MIB module contains differentiated services
+        specific managed objects to perform higher-level
+        configuration management.  This MIB allows policies
+        to use 'templates' to instantiate Differentiated
+        Services functional datapath configurations to
+        be assigned (associated with an interface and
+        direction) when a policy is activated.
+
+        Copyright (C) The Internet Society (2004).  This version
+        of this MIB module is part of RFC 3747;  see the RFC
+        itself for full legal notices."
+    REVISION "200401220000Z" -- 22 January 2004
+    DESCRIPTION
+        "Initial version published as RFC 3747"
+    ::= { mib-2 108 }
+
+diffServConfigMIBObjects OBJECT IDENTIFIER ::= { diffServConfigMib 1 }
+diffServConfigMIBConformance OBJECT IDENTIFIER ::=
+                                               { diffServConfigMib 2 }
+
+--
+-- The Differentiated Services configuration objects
+--
+
+
+
+diffServConfigTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF DiffServConfigEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "A table which defines the various per-hop-behaviors
+       for which the system has default 'templates'."
+    ::= { diffServConfigMIBObjects 2 }
+
+diffServConfigEntry OBJECT-TYPE
+    SYNTAX       DiffServConfigEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry defining a per-hop-behavior.  Each entry in
+       this table combines the various parameters (entries)
+       into a specific per-hop-behavior.  Entries in this
+       table might be defined by a vendor (pre-configured)
+       or defined by a management application."
+    INDEX { diffServConfigId }
+    ::= { diffServConfigTable 1 }
+
+DiffServConfigEntry ::= SEQUENCE {
+    diffServConfigId           SnmpAdminString,
+    diffServConfigDescr        SnmpAdminString,
+    diffServConfigOwner        SnmpAdminString,
+    diffServConfigLastChange   DateAndTime,
+    diffServConfigStart        RowPointer,
+    diffServConfigStorage      StorageType,
+    diffServConfigStatus       RowStatus
+}
+
+diffServConfigId OBJECT-TYPE
+    SYNTAX         SnmpAdminString (SIZE(1..116))
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+      "A unique id for the per-hop-behavior policy for at
+       least the SNMP agent.  For ease of administration the
+       value may be unique within an administrative domain,
+       but this is not required.
+
+       The range of up to 116 octets is chosen to stay within
+       the SMI limit of 128 sub-identifiers in an object
+       identifier."
+    ::= { diffServConfigEntry 1 }
+
+diffServConfigDescr OBJECT-TYPE
+
+
+
+    SYNTAX         SnmpAdminString
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "A human-readable description to identify this defined
+       per-hop-behavior.  Note that this is an SnmpAdminString,
+       which permits UTF-8 strings.  An administratively assigned
+       identifier for a template that would be unique within
+       an administrative domain.  It is up to the management
+       applications to agree how these are assigned within the
+       administrative domain.  Once a description, such as
+       'EF' is assigned, that has a certain set of parameters
+       that achieve 'EF' from box to box. Management
+       application code or script code can then scan
+       the table to find the proper template and then
+       assign it."
+    ::= { diffServConfigEntry 2 }
+
+diffServConfigOwner OBJECT-TYPE
+    SYNTAX         SnmpAdminString
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The owner who created this entry."
+    ::= { diffServConfigEntry 3 }
+
+diffServConfigLastChange OBJECT-TYPE
+    SYNTAX         DateAndTime
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+       "The date and time when this entry was last changed."
+    ::= { diffServConfigEntry 4 }
+
+diffServConfigStart OBJECT-TYPE
+    SYNTAX         RowPointer
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The pointer to a functional datapath configuration template as
+       set up in the DIFFSERV-MIB.  This RowPointer should
+       point to an instance of one of:
+         diffServClfrEntry
+         diffServMeterEntry
+         diffServActionEntry
+         diffServAlgDropEntry
+         diffServQEntry
+
+
+
+
+       A value of zeroDotZero in this attribute indicates no
+       further Diffserv treatment is performed on traffic of
+       this functional datapath.  This also means that the
+       template described by this row is not defined.
+
+       If the row pointed to does not exist, the treatment
+       is as if this attribute contains a value of zeroDotZero."
+    REFERENCE
+       "Differentiated Services MIB module"
+    DEFVAL { zeroDotZero }
+    ::= { diffServConfigEntry 5 }
+
+diffServConfigStorage OBJECT-TYPE
+    SYNTAX         StorageType
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "The type of storage used for this row.
+
+       Since an entry in this table serves as a starting
+       point for a configuration, it is recommended that
+       all entries comprising the configuration started by
+       diffServConfigStart follow the storage type of this
+       entry.  Otherwise, after agent reboots a configuration
+       may differ.  It may very well be that the agent is
+       not capable of detecting such changes and therefore,
+       the management application should verify the correct
+       configuration after a reboot.  Rows with a StorageType
+       of 'permanent' do not need to allow write access to
+       any of the columnar objects in that row."
+    DEFVAL { nonVolatile }
+    ::= { diffServConfigEntry 6 }
+
+diffServConfigStatus OBJECT-TYPE
+    SYNTAX         RowStatus
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+       "RowStatus object used for creation and deletion of
+       rows in this table.  All writable objects in this row
+       may be modified at any time."
+    DEFVAL { notInService }
+    ::= { diffServConfigEntry 7 }
+
+--
+-- MIB Compliance statements.
+--
+
+
+
+
+diffServConfigMIBCompliances
+   OBJECT IDENTIFIER ::= { diffServConfigMIBConformance 1 }
+diffServConfigMIBGroups
+   OBJECT IDENTIFIER ::= { diffServConfigMIBConformance 2 }
+
+diffServConfigMIBFullCompliance MODULE-COMPLIANCE
+    STATUS       current
+    DESCRIPTION
+       "The full compliance for this MIB module.
+
+       For this compliance level the 'diffServMIBFullCompliance'
+       must be met, since this MIB module depends on it in order
+       to provide the configuration entries.
+       "
+    MODULE  -- This module
+    MANDATORY-GROUPS {  diffServConfigMIBConfigGroup }
+
+    OBJECT diffServConfigStatus
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+       "Support for createAndWait and notInService is not required."
+
+    ::= { diffServConfigMIBCompliances 1 }
+
+diffServConfigMIBConfigGroup OBJECT-GROUP
+    OBJECTS {  diffServConfigDescr,
+               diffServConfigOwner,
+               diffServConfigLastChange,
+               diffServConfigStart,
+               diffServConfigStorage,
+               diffServConfigStatus
+    }
+    STATUS current
+    DESCRIPTION
+       "The per-hop-behavior Group defines the MIB objects that
+       describe the configuration template for the per-hop-behavior."
+    ::= { diffServConfigMIBGroups 1 }
+END

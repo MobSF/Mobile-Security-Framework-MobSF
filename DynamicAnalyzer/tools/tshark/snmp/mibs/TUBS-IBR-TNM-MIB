@@ -1,0 +1,330 @@
+TUBS-IBR-TNM-MIB DEFINITIONS ::= BEGIN
+
+-- @(#) $Id: TUBS-IBR-TNM-MIB 807 2000-02-12 11:52:35Z strauss $
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Counter32, Integer32, Unsigned32
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, DisplayString, RowStatus, DateAndTime,
+    TruthValue, TimeStamp, TAddress
+	FROM SNMPv2-TC
+    ibr
+	FROM TUBS-SMI;
+
+tnmMIB MODULE-IDENTITY
+    LAST-UPDATED "200002090000Z"
+    ORGANIZATION "TU Braunschweig"
+    CONTACT-INFO
+	"Juergen Schoenwaelder
+	 TU Braunschweig
+	 Bueltenweg 74/75
+	 38106 Braunschweig
+	 Germany
+
+	 Tel: +49 531 391 3283
+	 Fax: +49 531 391 5936
+	 E-mail: schoenw@ibr.cs.tu-bs.de"
+    DESCRIPTION
+            "Experimental MIB modules for tnm based agents."
+    REVISION	"200002090000Z"
+    DESCRIPTION
+	"Updated IMPORTS and minor stylistic fixes."
+    REVISION	"9702141023Z"
+    DESCRIPTION
+	"Various cleanups to make the module conforming to SNMPv2 SMI."
+    REVISION	"9607152024Z"
+    DESCRIPTION
+	"The initial revision of this module."
+    ::= { ibr 1 }
+
+-- the tnm group
+
+tnmStatus OBJECT IDENTIFIER ::= { tnmMIB 1 }
+
+tnmVersion OBJECT-TYPE
+    SYNTAX	DisplayString
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The version number of the tnm agent."
+    ::= { tnmStatus 1 }
+
+tnmTclVersion OBJECT-TYPE
+   SYNTAX	DisplayString
+   MAX-ACCESS	read-only
+   STATUS	current
+   DESCRIPTION
+	"The version number of the running Tcl interpreter."
+   ::= { tnmStatus 2 }
+
+tnmTclCmdCount OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION	
+	"The nummber of Tcl statements evaluated so far."
+    ::= { tnmStatus 3 }
+
+tnmDate OBJECT-TYPE
+    SYNTAX	DateAndTime
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION	
+	"The current date."
+    ::= { tnmStatus 4 }
+
+tnmTrapDst OBJECT-TYPE
+    SYNTAX	DisplayString
+    MAX-ACCESS	read-write
+    STATUS	current
+    DESCRIPTION
+	"The host name of the trap sink host."
+    ::= { tnmStatus 5 }
+
+tnmTrapMsg OBJECT-TYPE
+    SYNTAX	DisplayString
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The description of the last trap create by this entity."
+    ::= { tnmStatus 6 }
+
+-- the download mechanism
+
+tnmDownload OBJECT IDENTIFIER ::= { tnmMIB 2 }
+
+URL ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT	"255a"
+    STATUS		current
+    DESCRIPTION
+	"A uniform ressource locator as defined in RFC 1738."
+    SYNTAX OCTET STRING (SIZE (0..255))
+
+tnmHttpProxy OBJECT-TYPE
+    SYNTAX	DisplayString
+    MAX-ACCESS	read-write
+    STATUS	current
+    DESCRIPTION
+	"This variable specifies the proxy server. It must be of the
+	 form <name>[:<port>] where <name> is either a domain name
+	 or an IP address and <port> is the port number used to access
+	 the proxy server. The default port number is 80."
+    ::= { tnmDownload 1 }
+
+tnmHttpSource OBJECT-TYPE
+    SYNTAX	URL
+    MAX-ACCESS	read-write
+    STATUS	current
+    DESCRIPTION
+	"Setting this variable will make tnm to download
+	 and source the document with the given URL. The agent
+	 will try to retrieve the document and sets the variable
+	 to the URL if this operations was successfull. 
+	 Otherwise, the value will become an empty string."
+    ::= { tnmDownload 2 }
+
+tnmHttpError OBJECT-TYPE
+    SYNTAX	DisplayString
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This variable contains an error string is an http
+	 operation fails. An empty string signals that the
+	 last operation completed successfully."
+    ::= { tnmDownload 3 }
+
+-- the peer table
+
+tnmPeers OBJECT IDENTIFIER ::= { tnmMIB 3 }
+
+tnmPeerTable OBJECT-TYPE
+    SYNTAX	SEQUENCE OF TnmPeerEntry
+    MAX-ACCESS	not-accessible
+    STATUS	current
+    DESCRIPTION
+	"A (conceptual) table storing known tnm peers."
+    ::= { tnmPeers 1 }
+
+tnmPeerEntry OBJECT-TYPE
+    SYNTAX	TnmPeerEntry
+    MAX-ACCESS	not-accessible
+    STATUS	current
+    DESCRIPTION
+	"An entry (conceptual row) in the peer table."
+    INDEX { tnmPeerTAddress }
+    ::= { tnmPeerTable 1 }
+
+TnmPeerEntry ::= SEQUENCE {
+    tnmPeerTAddress	TAddress,
+    tnmPeerAuth		OCTET STRING,
+    tnmPeerState	INTEGER,
+    tnmPeerLastChecked	TimeStamp,
+    tnmPeerStatus	RowStatus
+}
+
+tnmPeerTAddress OBJECT-TYPE
+    SYNTAX	TAddress
+    MAX-ACCESS	read-create
+    STATUS	current
+    DESCRIPTION
+	"The address and port number of the peer agent."
+    ::= { tnmPeerEntry 1 }
+
+tnmPeerAuth OBJECT-TYPE
+    SYNTAX	OCTET STRING
+    MAX-ACCESS	read-create
+    STATUS	current
+    DESCRIPTION
+	"The authentication information for this peer. This will
+	 usually be a community string until we get the final SNMPv2
+	 decisions about the security model."
+    ::= { tnmPeerEntry 2 }
+
+tnmPeerState OBJECT-TYPE
+    SYNTAX	INTEGER { up(1), down(2) }
+    MAX-ACCESS	read-create
+    STATUS	current
+    DESCRIPTION
+	"The current status of the peer as returned by the last
+	status probe message."
+    ::= { tnmPeerEntry 3 }
+
+tnmPeerLastChecked OBJECT-TYPE
+    SYNTAX	TimeStamp
+    MAX-ACCESS	read-create
+    STATUS	current
+    DESCRIPTION
+	"The value of sysUpTime when the status of the peer was
+	 retrieved and written to tnmPeerState."
+    ::= { tnmPeerEntry 4 }
+
+tnmPeerStatus OBJECT-TYPE
+    SYNTAX	RowStatus
+    MAX-ACCESS	read-create
+    STATUS	current
+    DESCRIPTION
+	"The status column used for creating, modifying,
+	and deleting instances of the columnar objects in
+	the tnm peer table."
+    DEFVAL  { active }
+    ::= { tnmPeerEntry 5 }
+
+-- election section
+
+tnmElection OBJECT IDENTIFIER ::= { tnmMIB 4 }
+
+tnmElectionIndex OBJECT-TYPE
+    SYNTAX	Unsigned32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The (hopefully) unique index of this peer used by the
+	 bully election algorithm."
+    ::= { tnmElection 1 }
+
+tnmElectionPanic OBJECT-TYPE
+    SYNTAX	TruthValue
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"Reading this variable will start the panic algorithm
+	 on this peer. (We should use an inform request here.)"
+    ::= { tnmElection 2 }
+
+tnmElectionMaster OBJECT-TYPE
+    SYNTAX	TAddress
+    MAX-ACCESS	read-write
+    STATUS	current
+    DESCRIPTION
+	"This variable will be set by a new master appearing
+	 on the scene. (We should use an inform request here.)"
+    ::= { tnmElection 3 }
+
+-- the tnmEvalTable example adopted from RFC 1442
+
+tnmEval OBJECT IDENTIFIER ::= { tnmMIB 5 }
+
+tnmEvalSlot OBJECT-TYPE
+    SYNTAX	Integer32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The index number of the first unassigned entry in
+	 the evaluation table.	
+
+	 A management station should create new entries in
+	 the evaluation table using this algorithm: first,
+	 issue a management protocol retrieval operation to
+	 determine the value of evalSlot; and, second,
+	 issue a management protocol set operation to
+	 create an instance of the evalStatus object
+	 setting its value to underCreation(1).  If this
+	 latter operation succeeds, then the management
+	 station may continue modifying the instances
+	 corresponding to the newly created conceptual row,
+	 without fear of collision with other management
+	 stations."
+    ::= { tnmEval 1 }
+
+tnmEvalTable OBJECT-TYPE
+    SYNTAX	SEQUENCE OF TnmEvalEntry
+    MAX-ACCESS	not-accessible
+    STATUS	current
+    DESCRIPTION
+	"The (conceptual) evaluation table."
+    ::= { tnmEval 2 }
+
+tnmEvalEntry OBJECT-TYPE
+    SYNTAX	TnmEvalEntry
+    MAX-ACCESS	not-accessible
+    STATUS	current
+    DESCRIPTION
+	"An entry (conceptual row) in the evaluation table."
+    INDEX { tnmEvalIndex }
+    ::= { tnmEvalTable 1 }
+
+TnmEvalEntry ::= SEQUENCE {
+    tnmEvalIndex	Integer32,
+    tnmEvalString	DisplayString,
+    tnmEvalValue	DisplayString,
+    tnmEvalStatus	RowStatus
+}
+
+tnmEvalIndex OBJECT-TYPE
+    SYNTAX	Integer32 (1..'7fffffff'h)
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The auxiliary variable used for identifying
+	 instances of the columnar objects in the
+	 evaluation table."
+    ::= { tnmEvalEntry 1 }
+
+tnmEvalString OBJECT-TYPE
+    SYNTAX	DisplayString
+    MAX-ACCESS	read-create
+    STATUS	current
+    DESCRIPTION
+	"The string to evaluate."
+    ::= { tnmEvalEntry 2 }
+
+tnmEvalValue OBJECT-TYPE
+    SYNTAX	DisplayString
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The value resturned by executing evalString."
+    ::= { tnmEvalEntry 3 }
+
+tnmEvalStatus OBJECT-TYPE
+    SYNTAX	RowStatus
+    MAX-ACCESS	read-create
+    STATUS	current
+    DESCRIPTION
+	"The status column used for creating, modifying,
+	 and deleting instances of the columnar objects in
+	 the evaluation table."
+    DEFVAL  { active }
+    ::= { tnmEvalEntry 4 }
+
+END

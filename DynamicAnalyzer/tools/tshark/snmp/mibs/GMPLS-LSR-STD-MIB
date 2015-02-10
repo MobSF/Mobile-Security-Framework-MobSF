@@ -1,0 +1,531 @@
+GMPLS-LSR-STD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  MODULE-IDENTITY, OBJECT-TYPE, Unsigned32, zeroDotZero
+    FROM SNMPv2-SMI                                   -- RFC 2578
+  MODULE-COMPLIANCE, OBJECT-GROUP
+    FROM SNMPv2-CONF                                  -- RFC 2580
+  RowPointer
+    FROM SNMPv2-TC                                    -- RFC 2579
+  GmplsSegmentDirectionTC
+    FROM GMPLS-TC-STD-MIB                             -- RFC 4801
+  mplsInterfaceIndex, mplsInSegmentIndex, mplsOutSegmentIndex,
+  mplsInterfaceGroup, mplsInSegmentGroup, mplsOutSegmentGroup,
+  mplsXCGroup, mplsPerfGroup, mplsLsrNotificationGroup
+    FROM MPLS-LSR-STD-MIB                             -- RFC 3813
+  ifGeneralInformationGroup, ifCounterDiscontinuityGroup
+    FROM IF-MIB                                       -- RFC 2863
+  mplsStdMIB
+    FROM MPLS-TC-STD-MIB                              -- RFC 3811
+;
+
+gmplsLsrStdMIB MODULE-IDENTITY
+  LAST-UPDATED
+    "200702270000Z" -- 27 February 2007 00:00:00 GMT
+  ORGANIZATION
+    "IETF Common Control And Measurement Plane (CCAMP) Working Group"
+  CONTACT-INFO
+    "       Thomas D. Nadeau
+            Cisco Systems, Inc.
+     Email: tnadeau@cisco.com
+            Adrian Farrel
+            Old Dog Consulting
+
+
+
+     Email: adrian@olddog.co.uk
+     Comments about this document should be emailed directly to the
+     CCAMP working group mailing list at ccamp@ops.ietf.org."
+
+  DESCRIPTION
+    "Copyright (C) The IETF Trust (2007).  This version of
+     this MIB module is part of RFC 4803; see the RFC itself for
+     full legal notices.
+
+     This MIB module contains managed object definitions for the
+     Generalized Multiprotocol (GMPLS) Label Switching Router as
+     defined in Generalized Multi-Protocol Label Switching (GMPLS)
+     Architecture, Mannie et al., RFC 3945, October 2004."
+  REVISION
+    "200702270000Z" -- 27 February 2007 00:00:00 GMT
+  DESCRIPTION
+    "Initial version issued as part of RFC 4803."
+  ::= { mplsStdMIB 15 }
+
+-- no notifications are currently defined.
+gmplsLsrObjects       OBJECT IDENTIFIER ::= { gmplsLsrStdMIB 1 }
+gmplsLsrConformance   OBJECT IDENTIFIER ::= { gmplsLsrStdMIB 2 }
+
+gmplsInterfaceTable OBJECT-TYPE
+  SYNTAX        SEQUENCE OF GmplsInterfaceEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+    "This table specifies per-interface GMPLS capability and
+     associated information.  It extends the information in the
+     mplsInterfaceTable of MPLS-LSR-STD-MIB through a
+     sparse augmentation relationship."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Label Switching
+        Router (LSR) Management Information Base (MIB), RFC 3813."
+  ::= { gmplsLsrObjects 1 }
+
+gmplsInterfaceEntry OBJECT-TYPE
+  SYNTAX        GmplsInterfaceEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+    "A conceptual row in this table is created automatically by an
+     LSR for each interface that is both capable of supporting
+     GMPLS and configured to support GMPLS.  Note that
+     support of GMPLS is not limited to control plane signaling,
+     but may include data-plane-only function configured through
+     SNMP SET commands performed on this MIB module.
+
+
+
+     A conceptual row in this table may also be created via SNMP
+     SET commands or automatically by the LSR to supplement a
+     conceptual row in the mplsInterfaceTable where the interface
+     is not capable of GMPLS but where the other objects carried
+     in this row provide useful additional information for an
+     MPLS interface.
+
+     A conceptual row in this table will exist if and only if a
+     corresponding entry in the mplsInterfaceTable exists, and a
+     corresponding entry in the ifTable exists with ifType = mpls(166).
+     If the associated entry in the ifTable is operationally disabled
+     (thus removing the GMPLS capabilities on the interface) or the
+     entry in the mplsInterfaceTable is deleted, the corresponding entry
+     in this table MUST be deleted shortly thereafter.
+
+     The indexes are the same as for the mplsInterfaceTable.  Thus, the
+     entry with index 0 represents the per-platform label space and
+     contains parameters that apply to all interfaces that
+     participate in the per-platform label space."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Label Switching
+        Router (LSR) Management Information Base (MIB), RFC 3813."
+  INDEX { mplsInterfaceIndex }
+::= { gmplsInterfaceTable 1 }
+
+GmplsInterfaceEntry ::= SEQUENCE {
+  gmplsInterfaceSignalingCaps      BITS,
+  gmplsInterfaceRsvpHelloPeriod    Unsigned32
+}
+
+gmplsInterfaceSignalingCaps OBJECT-TYPE
+  SYNTAX  BITS {
+    unknown(0),
+    rsvpGmpls(1),
+    crldpGmpls(2), -- note the use of CR-LDP is deprecated
+    otherGmpls(3)
+  }
+  MAX-ACCESS   read-create
+  STATUS       current
+  DESCRIPTION
+    "Defines the signaling capabilities on this interface.  Multiple
+     bits may legitimately be set at once, but if 'unknown' is set
+     then no other bit may be set.  Setting no bits implies that GMPLS
+     signaling cannot be performed on this interface and all LSPs
+     must be manually provisioned or that this table entry is only
+     present to supplement an entry in the mplsInterfaceTable by
+     providing the information carried in other objects in this row."
+  REFERENCE
+
+
+
+    "1. Generalized MPLS Signaling - CR-LDP Extensions, RFC 3472.
+     2. The Multiprotocol Label Switching (MPLS) Working Group
+        decision on MPLS signaling protocols, RFC 3468.
+     3. Generalized MPLS Signaling - RSVP-TE Extensions, RFC 3473."
+  DEFVAL { { rsvpGmpls } }
+::= { gmplsInterfaceEntry 1 }
+
+gmplsInterfaceRsvpHelloPeriod OBJECT-TYPE
+  SYNTAX       Unsigned32
+  UNITS        "milliseconds"
+  MAX-ACCESS   read-create
+  STATUS       current
+  DESCRIPTION
+    "Period, in milliseconds, between sending Resource Reservation
+     Protocol (RSVP) Hello messages on this interface.  A value of 0
+     indicates that no Hello messages should be sent on this
+     interface.
+
+     This object is only valid if gmplsInterfaceSignalingCaps has no
+     bits set or includes the rsvpGmpls bit."
+  REFERENCE
+    "1. RSVP-TE: Extensions to RSVP for LSP Tunnels, RFC 3209,
+        section 5.
+     2. Generalized MPLS Signaling - RSVP-TE Extensions, RFC 3473,
+        section 9.3."
+  DEFVAL { 3000 }
+::= { gmplsInterfaceEntry 2 }
+
+gmplsInSegmentTable  OBJECT-TYPE
+  SYNTAX        SEQUENCE OF GmplsInSegmentEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+    "This table sparse augments the mplsInSegmentTable of
+     MPLS-LSR-STD-MIB to provide GMPLS-specific information about
+     incoming segments to an LSR."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Label Switching
+        Router (LSR) Management Information Base (MIB), RFC 3813."
+::= { gmplsLsrObjects 2 }
+
+gmplsInSegmentEntry  OBJECT-TYPE
+  SYNTAX        GmplsInSegmentEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+    "An entry in this table extends the representation of an incoming
+     segment represented by an entry in the mplsInSegmentTable in
+
+
+
+     MPLS-LSR-STD-MIB through a sparse augmentation.  An entry can be
+     created by a network administrator via SNMP SET commands, or in
+     response to signaling protocol events.
+
+     Note that the storage type for this entry is given by the value
+     of mplsInSegmentStorageType in the corresponding entry of the
+     mplsInSegmentTable."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Label Switching
+        Router (LSR) Management Information Base (MIB), RFC 3813."
+  INDEX { mplsInSegmentIndex }
+::= { gmplsInSegmentTable 1 }
+
+GmplsInSegmentEntry ::= SEQUENCE {
+  gmplsInSegmentDirection        GmplsSegmentDirectionTC,
+  gmplsInSegmentExtraParamsPtr   RowPointer
+}
+
+gmplsInSegmentDirection OBJECT-TYPE
+  SYNTAX        GmplsSegmentDirectionTC
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "This object indicates the direction of data flow on this
+     segment.  This object cannot be modified if
+     mplsInSegmentRowStatus for the corresponding entry in the
+     mplsInSegmentTable is active(1)."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Label Switching
+        Router (LSR) Management Information Base (MIB), RFC 3813."
+  DEFVAL        { forward }
+::= { gmplsInSegmentEntry 1 }
+
+gmplsInSegmentExtraParamsPtr  OBJECT-TYPE
+  SYNTAX       RowPointer
+  MAX-ACCESS   read-create
+  STATUS       current
+  DESCRIPTION
+    "Some tunnels will run over transports that can usefully support
+     technology-specific additional parameters (for example,
+     Synchronous Optical Network (SONET) resource usage).  Such can be
+     supplied from an external table and referenced from here.  A value
+     of zeroDotZero in this attribute indicates that there is no such
+     additional information."
+  DEFVAL      { zeroDotZero }
+  ::= { gmplsInSegmentEntry 2 }
+
+gmplsOutSegmentTable  OBJECT-TYPE
+
+
+
+  SYNTAX        SEQUENCE OF GmplsOutSegmentEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+    "This table sparse augments the mplsOutSegmentTable of
+     MPLS-LSR-STD-MIB to provide GMPLS-specific information about
+     outgoing segments from an LSR."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Label Switching
+        Router (LSR) Management Information Base (MIB), RFC 3813."
+::= { gmplsLsrObjects 3 }
+
+gmplsOutSegmentEntry  OBJECT-TYPE
+  SYNTAX        GmplsOutSegmentEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+    "An entry in this table extends the representation of an outgoing
+     segment represented by an entry in the mplsOutSegmentTable of
+     MPLS-LSR-STD-MIB through a sparse augmentation.  An entry can be
+     created by a network administrator via SNMP SET commands, or in
+     response to signaling protocol events.
+
+     Note that the storage type for this entry is given by the value
+     of mplsOutSegmentStorageType in the corresponding entry of the
+     mplsOutSegmentTable."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Label Switching
+        Router (LSR) Management Information Base (MIB), RFC 3813."
+  INDEX  { mplsOutSegmentIndex }
+::= { gmplsOutSegmentTable 1 }
+
+GmplsOutSegmentEntry ::= SEQUENCE {
+  gmplsOutSegmentDirection       GmplsSegmentDirectionTC,
+  gmplsOutSegmentTTLDecrement    Unsigned32,
+  gmplsOutSegmentExtraParamsPtr  RowPointer
+}
+
+gmplsOutSegmentDirection OBJECT-TYPE
+  SYNTAX        GmplsSegmentDirectionTC
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "This object indicates the direction of data flow on this
+     segment.  This object cannot be modified if
+     mplsOutSegmentRowStatus for the corresponding entry in the
+     mplsOutSegmentTable is active(1)."
+  REFERENCE
+
+
+
+    "1. Multiprotocol Label Switching (MPLS) Label Switching
+        Router (LSR) Management Information Base (MIB), RFC 3813."
+  DEFVAL  { forward }
+::= { gmplsOutSegmentEntry 1 }
+
+gmplsOutSegmentTTLDecrement OBJECT-TYPE
+  SYNTAX        Unsigned32
+  MAX-ACCESS    read-create
+  STATUS        current
+  DESCRIPTION
+    "This object indicates the amount by which to decrement the Time
+     to Live (TTL) of any payload packets forwarded on this segment if
+     per-hop decrementing is being done.
+
+     A value of zero indicates that no decrement should be made or
+     that per-hop decrementing is not in use.
+
+     See the gmplsTunnelTTLDecrement object in the gmplsTunnelTable
+     of GMPLS-TE-STD-MIB for a value by which to decrement the TTL
+     for the whole of a tunnel.
+
+     This object cannot be modified if mplsOutSegmentRowStatus for
+     the associated entry in the mplsOutSegmentTable is active(1)."
+  REFERENCE
+    "1. Time To Live (TTL) Processing in Multi-Protocol Label
+        Switching (MPLS) Networks, RFC 3443.
+     2. Generalized Multiprotocol Label Switching (GMPLS) Traffic
+        Engineering Management Information Base, RFC 4802."
+  DEFVAL  { 0 }
+::= { gmplsOutSegmentEntry 2 }
+
+gmplsOutSegmentExtraParamsPtr  OBJECT-TYPE
+  SYNTAX       RowPointer
+  MAX-ACCESS   read-create
+  STATUS       current
+  DESCRIPTION
+    "Some tunnels will run over transports that can usefully support
+     technology-specific additional parameters (for example, SONET
+     resource usage).  Such can be supplied from an external table and
+     referenced from here.
+
+     A value of zeroDotZero in this attribute indicates that there is
+     no such additional information."
+  DEFVAL      { zeroDotZero }
+  ::= { gmplsOutSegmentEntry 3 }
+
+gmplsLsrGroups
+  OBJECT IDENTIFIER ::= { gmplsLsrConformance 1 }
+
+
+
+gmplsLsrCompliances
+  OBJECT IDENTIFIER ::= { gmplsLsrConformance 2 }
+
+-- Compliance requirement for fully compliant implementations.
+
+gmplsLsrModuleFullCompliance MODULE-COMPLIANCE
+  STATUS current
+  DESCRIPTION
+    "Compliance statement for agents that provide full support for
+     GMPLS-LSR-STD-MIB.
+
+     The mandatory group has to be implemented by all LSRs that
+     originate, terminate, or act as transit for TE-LSPs/tunnels.
+     In addition, depending on the type of tunnels supported, other
+     groups become mandatory as explained below."
+
+  MODULE IF-MIB -- The Interfaces Group MIB, RFC 2863.
+
+  MANDATORY-GROUPS {
+    ifGeneralInformationGroup,
+    ifCounterDiscontinuityGroup
+  }
+
+  MODULE MPLS-LSR-STD-MIB -- The MPLS-LSR-STD-MIB, RFC3813
+
+  MANDATORY-GROUPS {
+    mplsInterfaceGroup,
+    mplsInSegmentGroup,
+    mplsOutSegmentGroup,
+    mplsXCGroup,
+    mplsPerfGroup,
+    mplsLsrNotificationGroup
+  }
+
+  MODULE -- this module
+
+  MANDATORY-GROUPS    {
+    gmplsInterfaceGroup,
+    gmplsInSegmentGroup,
+    gmplsOutSegmentGroup
+  }
+
+  OBJECT      gmplsInSegmentDirection
+  SYNTAX      GmplsSegmentDirectionTC
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "The only valid value for unidirectional LSPs is forward(1)."
+
+
+
+
+  OBJECT      gmplsOutSegmentDirection
+  SYNTAX      GmplsSegmentDirectionTC
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "The only valid value for unidirectional LSPs is forward(1)."
+
+  OBJECT      gmplsOutSegmentTTLDecrement
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsInSegmentExtraParamsPtr
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+  OBJECT      gmplsOutSegmentExtraParamsPtr
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+::= { gmplsLsrCompliances 1 }
+
+-- Compliance requirement for implementations that provide read-only
+-- access.
+
+gmplsLsrModuleReadOnlyCompliance MODULE-COMPLIANCE
+  STATUS current
+  DESCRIPTION
+    "Compliance requirement for implementations that only provide
+     read-only support for GMPLS-LSR-STD-MIB.  Such devices can then
+     be monitored but cannot be configured using this MIB module."
+
+  MODULE IF-MIB -- The interfaces Group MIB, RFC 2863
+
+  MANDATORY-GROUPS {
+    ifGeneralInformationGroup,
+    ifCounterDiscontinuityGroup
+  }
+
+  MODULE MPLS-LSR-STD-MIB
+
+  MANDATORY-GROUPS {
+    mplsInterfaceGroup,
+    mplsInSegmentGroup,
+    mplsOutSegmentGroup,
+    mplsXCGroup,
+    mplsPerfGroup
+  }
+
+
+
+  MODULE -- this module
+
+  MANDATORY-GROUPS {
+    gmplsInterfaceGroup,
+    gmplsInSegmentGroup,
+    gmplsOutSegmentGroup
+  }
+
+  OBJECT      gmplsInterfaceSignalingCaps
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsInterfaceRsvpHelloPeriod
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsInSegmentDirection
+  SYNTAX      GmplsSegmentDirectionTC
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "The only valid value for unidirectional LSPs is forward(1)."
+
+  OBJECT      gmplsInSegmentExtraParamsPtr
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+  OBJECT      gmplsOutSegmentDirection
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "The only valid value for unidirectional LSPs is forward(1)."
+
+  OBJECT      gmplsOutSegmentTTLDecrement
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+  OBJECT      gmplsOutSegmentExtraParamsPtr
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+::= { gmplsLsrCompliances 2 }
+
+gmplsInterfaceGroup OBJECT-GROUP
+  OBJECTS {
+    gmplsInterfaceSignalingCaps,
+
+
+
+    gmplsInterfaceRsvpHelloPeriod
+  }
+  STATUS  current
+  DESCRIPTION
+   "Collection of objects that provide additional
+    information for an MPLS interface and are needed
+    for GMPLS interface configuration and performance
+    information."
+::= { gmplsLsrGroups 1 }
+
+gmplsInSegmentGroup  OBJECT-GROUP
+  OBJECTS {
+    gmplsInSegmentDirection,
+    gmplsInSegmentExtraParamsPtr
+  }
+  STATUS  current
+  DESCRIPTION
+    "Collection of objects that provide additional
+     information for an MPLS in-segment and are needed
+     for GMPLS in-segment configuration and performance
+     information."
+::= { gmplsLsrGroups 2 }
+
+gmplsOutSegmentGroup  OBJECT-GROUP
+  OBJECTS {
+    gmplsOutSegmentDirection,
+    gmplsOutSegmentTTLDecrement,
+    gmplsOutSegmentExtraParamsPtr
+  }
+  STATUS  current
+  DESCRIPTION
+    "Collection of objects that provide additional
+     information for an MPLS out-segment and are needed
+     for GMPLS out-segment configuration and performance
+     information."
+::= { gmplsLsrGroups 3 }
+END

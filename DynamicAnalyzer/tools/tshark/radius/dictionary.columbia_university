@@ -1,0 +1,24 @@
+# -*- text -*-
+VALUE	Service-Type			Sip-session		12
+
+#  Columbia University VSAs, from:
+#
+#  http://www.cs.columbia.edu/IRT/cinema/release/radius_notes.html
+#
+#	$Id$
+#
+VENDOR		Columbia-University		11862
+
+BEGIN-VENDOR	Columbia-University
+
+ATTRIBUTE	Sip-Method				0	integer
+ATTRIBUTE	Sip-From				1	string
+ATTRIBUTE	Sip-To					2	string
+ATTRIBUTE	Sip-Translated-Request-URI		4	string
+
+VALUE	Sip-Method			INVITE			0
+VALUE	Sip-Method			BYE			1
+VALUE	Sip-Method			REGISTER		2
+VALUE	Sip-Method			OTHER			3
+
+END-VENDOR	Columbia-University

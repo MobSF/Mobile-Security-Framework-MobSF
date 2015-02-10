@@ -1,0 +1,1197 @@
+ROHC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Unsigned32, Counter32, mib-2
+        FROM SNMPv2-SMI                                -- [RFC2578]
+
+    TEXTUAL-CONVENTION, TruthValue,
+    TimeInterval, DateAndTime
+        FROM SNMPv2-TC                                 -- [RFC2579]
+
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF                               -- [RFC2580]
+
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB                        -- [RFC3411]
+
+    ifIndex
+        FROM IF-MIB;                                   -- [RFC2863]
+
+rohcMIB MODULE-IDENTITY
+    LAST-UPDATED "200406030000Z"  -- June 3, 2004
+    ORGANIZATION "IETF Robust Header Compression Working Group"
+    CONTACT-INFO
+       "WG charter:
+          http://www.ietf.org/html.charters/rohc-charter.html
+
+        Mailing Lists:
+          General Discussion: rohc@ietf.org
+          To Subscribe: rohc-request@ietf.org
+          In Body: subscribe your_email_address
+
+        Editor:
+          Juergen Quittek
+          NEC Europe Ltd.
+          Network Laboratories
+          Kurfuersten-Anlage 36
+
+
+
+          69221 Heidelberg
+          Germany
+          Tel: +49 6221 90511-15
+          EMail: quittek@netlab.nec.de"
+    DESCRIPTION
+        "This MIB module defines a set of basic objects for
+         monitoring and configuring robust header compression.
+         The module covers information about running instances
+         of ROHC (compressors or decompressors) at IP interfaces.
+
+         Information about compressor contexts and decompressor
+         contexts has different structure for different profiles.
+         Therefore it is not provided by this MIB module, but by
+         individual modules for different profiles.
+
+         Copyright (C) The Internet Society (2004). The
+         initial version of this MIB module was published
+         in RFC 3816. For full legal notices see the RFC
+         itself or see:
+         http://www.ietf.org/copyrights/ianamib.html"
+
+    REVISION    "200406030000Z"  -- June 3, 2004
+    DESCRIPTION "Initial version, published as RFC 3816."
+    ::= { mib-2 112 }
+
+RohcChannelIdentifier ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "A number identifying a channel.
+         The value of 0 must not be used as identifier
+         of an existing channel."
+    SYNTAX       Unsigned32 (1..4294967295)
+
+RohcChannelIdentifierOrZero ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "A number identifying a channel.
+         The value of 0 is indicates that
+         no channel is identified."
+    SYNTAX       Unsigned32 (0..4294967295)
+
+RohcCompressionRatio ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "A number indicating a compression ratio over
+
+
+
+         a set of bytes.  The value is defined as
+         1000 * bytes(compressed) / bytes(original)
+         rounded to the next integer value.
+
+         Note that compressed sets of bytes can be larger
+         than the corresponding uncompressed ones.
+         Therefore, the number can be greater than 1000."
+    SYNTAX       Unsigned32
+
+--
+-- The groups defined within this MIB module:
+--
+
+rohcObjects       OBJECT IDENTIFIER ::= { rohcMIB 1 }
+rohcConformance   OBJECT IDENTIFIER ::= { rohcMIB 2 }
+
+--
+-- The ROHC Instance group lists properties of ROHC
+-- instances in the rohcInstanceTable, about the channels used
+-- by the instances in the rohcChanneltable and about the profiles
+-- available at the instances in the rohcProfileTable.
+--
+
+rohcInstanceObjects       OBJECT IDENTIFIER ::= { rohcObjects 1 }
+
+--
+-- Channel Table
+--
+-- Listing all channels used for ROHC data channel
+-- and/or as feedback channel.
+--
+
+rohcChannelTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RohcChannelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists and describes all ROHC channels
+         per interface."
+    ::= { rohcInstanceObjects 1 }
+
+rohcChannelEntry OBJECT-TYPE
+    SYNTAX      RohcChannelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular script.  Every script that
+         is stored in non-volatile memory is required to appear in
+
+
+
+         this script table.
+
+         Note, that the rohcChannelID identifies the channel
+         uniquely.  The ifIndex is part of the index of this table
+         just in order to allow addressing channels per interface."
+    INDEX { ifIndex, rohcChannelID }
+    ::= { rohcChannelTable 1 }
+
+RohcChannelEntry ::= SEQUENCE {
+    rohcChannelID               RohcChannelIdentifier,
+    rohcChannelType             INTEGER,
+    rohcChannelFeedbackFor      RohcChannelIdentifierOrZero,
+    rohcChannelDescr            SnmpAdminString,
+    rohcChannelStatus           INTEGER
+}
+
+rohcChannelID OBJECT-TYPE
+    SYNTAX      RohcChannelIdentifier
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The locally arbitrary, but unique identifier associated
+         with this channel.  The value is REQUIRED to be unique
+         per ROHC MIB implementation independent of the associated
+         interface.
+
+         The value is REQUIRED to remain constant at least from one
+         re-initialization of the entity's network management system
+         to the next re-initialization.  It is RECOMMENDED that the
+         value persist across such re-initializations."
+    REFERENCE
+        "RFC 3095, Section 5.1.1"
+    ::= { rohcChannelEntry 2 }
+
+rohcChannelType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    notInUse(1),
+                    rohc(2),
+                    dedicatedFeedback(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Type of usage of the channel.  A channel might be currently
+         not in use for ROHC or feedback, it might be in use as
+         a ROHC channel carrying packets and optional piggy-backed
+         feedback, or it might be used as a dedicated feedback
+         channel exclusively carrying feedback."
+
+
+
+    ::= { rohcChannelEntry 3 }
+
+rohcChannelFeedbackFor OBJECT-TYPE
+    SYNTAX      RohcChannelIdentifierOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The index of another channel of this interface for which
+         the channel serves as feedback channel.
+
+         If no feedback information is transferred on this channel,
+         then the value of this ID is 0.  If the channel type is set
+         to notInUse(1), then the value of this object must be 0.
+         If the channel type is rohc(2) and the value of this object
+         is a valid channel ID, then feedback information is
+         piggy-backed on the ROHC channel.  If the channel type is
+         dedicatedFeedback(3), then feedback is transferred on this
+         channel and the value of this object MUST be different from
+         0 and MUST identify an existing ROHC channel."
+    REFERENCE
+        "RFC 3095, Section 5.1.1"
+    ::= { rohcChannelEntry 4 }
+
+rohcChannelDescr OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A textual description of the channel."
+    ::= { rohcChannelEntry 5 }
+
+rohcChannelStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    enabled(1),
+                    disabled(2)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Status of the channel."
+    ::= { rohcChannelEntry 6 }
+
+--
+-- Instances of ROHC
+--
+-- This table lists properties of running instances of ROHC
+-- compressors and decompressors at the managed node.
+--
+
+
+
+
+rohcInstanceTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RohcInstanceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists properties of running instances
+         of robust header compressors and decompressors
+         at IP interfaces.  It is indexed by interface number,
+         the type of instance (compressor or decompressor),
+         and the ID of the channel used by the instance as
+         ROHC channel.
+
+         Note that the rohcChannelID uniquely identifies an
+         instance.  The ifIndex and rohcInstanceType are part
+         of the index, because it simplifies accessing instances
+         per interface and for addressing either compressors or
+         decompressors only."
+    ::= { rohcInstanceObjects 2 }
+
+rohcInstanceEntry OBJECT-TYPE
+    SYNTAX      RohcInstanceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular instance
+         of a robust header compressor or decompressor."
+    INDEX { ifIndex, rohcInstanceType, rohcChannelID }
+    ::= { rohcInstanceTable 1 }
+
+RohcInstanceEntry ::= SEQUENCE {
+    rohcInstanceType               INTEGER,
+    rohcInstanceFBChannelID        RohcChannelIdentifierOrZero,
+    rohcInstanceVendor             OBJECT IDENTIFIER,
+    rohcInstanceVersion            SnmpAdminString,
+    rohcInstanceDescr              SnmpAdminString,
+    rohcInstanceClockRes           Unsigned32,
+    rohcInstanceMaxCID             Unsigned32,
+    rohcInstanceLargeCIDs          TruthValue,
+    rohcInstanceMRRU               Unsigned32,
+    rohcInstanceContextStorageTime TimeInterval,
+    rohcInstanceStatus             INTEGER,
+    rohcInstanceContextsTotal      Counter32,
+    rohcInstanceContextsCurrent    Unsigned32,
+    rohcInstancePackets            Counter32,
+    rohcInstanceIRs                Counter32,
+    rohcInstanceIRDYNs             Counter32,
+    rohcInstanceFeedbacks          Counter32,
+
+
+
+    rohcInstanceCompressionRatio   RohcCompressionRatio
+}
+
+rohcInstanceType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    compressor(1),
+                    decompressor(2)
+                }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Type of the instance of ROHC. It is either a
+         compressor instance or a decompressor instance."
+    ::= { rohcInstanceEntry 2 }
+
+rohcInstanceFBChannelID OBJECT-TYPE
+    SYNTAX      RohcChannelIdentifierOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Identifier of the channel used for feedback.
+         If no feedback channel is used, the value of
+         this object is 0 ."
+    REFERENCE
+        "RFC 3095, Section 5.1.1"
+    ::= { rohcInstanceEntry 4 }
+
+rohcInstanceVendor OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "An object identifier that identifies the vendor who
+         provides the implementation of robust header description.
+         This object identifier SHALL point to the object identifier
+         directly below the enterprise object identifier
+         {1 3 6 1 4 1} allocated for the vendor.  The value must be
+         the object identifier {0 0} if the vendor is not known."
+    ::= { rohcInstanceEntry 5 }
+
+rohcInstanceVersion OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The version number of the implementation of robust header
+         compression.  The zero-length string shall be used if the
+         implementation does not have a version number.
+
+
+
+
+         It is suggested that the version number consist of one or
+         more decimal numbers separated by dots, where the first
+         number is called the major version number."
+    ::= { rohcInstanceEntry 6 }
+
+rohcInstanceDescr OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A textual description of the implementation."
+    ::= { rohcInstanceEntry 7 }
+
+rohcInstanceClockRes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the system clock resolution in
+         units of milliseconds.  A zero (0) value means that there
+         is no clock available."
+    ::= { rohcInstanceEntry 8 }
+
+rohcInstanceMaxCID OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..16383)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The highest context ID number to be used by the
+         compressor.  Note that this parameter is not coupled to,
+         but in effect further constrained by,
+         rohcChannelLargeCIDs."
+    REFERENCE
+        "RFC 3095, Section 5.1.1"
+    ::= { rohcInstanceEntry 9 }
+
+rohcInstanceLargeCIDs OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "When retrieved, this boolean object returns false if
+         the short CID representation (0 bytes or 1 prefix byte,
+         covering CID 0 to 15) is used; it returns true, if the
+         embedded CID representation (1 or 2 embedded CID bytes
+         covering CID 0 to 16383) is used."
+
+
+
+    REFERENCE
+        "RFC 3095, Section 5.1.1"
+    ::= { rohcInstanceEntry 10 }
+
+rohcInstanceMRRU OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Maximum reconstructed reception unit.  This is the
+         size of the largest reconstructed unit in octets that
+         the decompressor is expected to reassemble from
+         segments (see RFC 3095, Section 5.2.5).  Note that this
+         size includes the CRC.  If MRRU is negotiated to be 0,
+         no segment headers are allowed on the channel."
+    REFERENCE
+        "RFC 3095, Section 5.1.1"
+    ::= { rohcInstanceEntry 11 }
+
+rohcInstanceContextStorageTime OBJECT-TYPE
+    SYNTAX      TimeInterval
+    UNITS       "centi-seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the default maximum amount of time
+         information on a context belonging to this instance is kept
+         as entry in the rohcContextTable after the context is
+         expired or terminated.  The value of this object is used
+         to initialize rohcContexStorageTime object when a new
+         context is created.
+         Changing the value of an rohcInstanceContextStorageTime
+         instance does not affect any entry of the rohcContextTable
+         created previously.
+         ROHC-MIB implementations SHOULD store the set value of this
+         object persistently."
+    DEFVAL { 360000 }
+    ::= { rohcInstanceEntry 12 }
+
+rohcInstanceStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    enabled(1),
+                    disabled(2)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Status of the instance of ROHC."
+
+
+
+    ::= { rohcInstanceEntry 13 }
+
+rohcInstanceContextsTotal OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Counter of all contexts created by this instance.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime."
+    ::= { rohcInstanceEntry 14 }
+
+rohcInstanceContextsCurrent OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of currently active contexts created by this
+         instance."
+    ::= { rohcInstanceEntry 15 }
+
+rohcInstancePackets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Counter of all packets passing this instance.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime."
+    ::= { rohcInstanceEntry 16 }
+
+rohcInstanceIRs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of all IR packets that are either sent
+         or received by this instance.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+
+
+
+         value of ifCounterDiscontinuityTime."
+    REFERENCE
+        "RFC 3095, Section 5.7.7.1"
+    ::= { rohcInstanceEntry 17 }
+
+rohcInstanceIRDYNs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of all IR-DYN packets that are either sent
+         or received by this instance.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime."
+    REFERENCE
+        "RFC 3095, Section 5.7.7.2"
+    ::= { rohcInstanceEntry 18 }
+
+rohcInstanceFeedbacks OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of all feedbacks that are either sent
+         or received by this instance.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime."
+    ::= { rohcInstanceEntry 19 }
+
+rohcInstanceCompressionRatio OBJECT-TYPE
+    SYNTAX      RohcCompressionRatio
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the compression ratio so far over all
+         packets on the channel served by this instance.  The
+         compression is computed over all bytes of the IP packets
+         including the IP header but excluding all lower layer
+         headers."
+    ::= { rohcInstanceEntry 20 }
+
+--
+
+
+
+-- Profile Table
+--
+
+rohcProfileTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RohcProfileEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists a set of profiles supported by the
+         instance."
+    REFERENCE
+        "RFC 3095, Section 5.1.1"
+    ::= { rohcInstanceObjects 3 }
+
+rohcProfileEntry OBJECT-TYPE
+    SYNTAX      RohcProfileEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular profile supported by
+         the instance.  It is indexed by the rohcChannelID
+         identifying the instance and by the rohcProfile."
+    INDEX { rohcChannelID, rohcProfile }
+    ::= { rohcProfileTable 1 }
+
+RohcProfileEntry ::= SEQUENCE {
+    rohcProfile            Unsigned32,
+    rohcProfileVendor      OBJECT IDENTIFIER,
+    rohcProfileVersion     SnmpAdminString,
+    rohcProfileDescr       SnmpAdminString,
+    rohcProfileNegotiated  TruthValue
+}
+
+rohcProfile OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Identifier of a profile supported.  For a listing of
+         possible profile values, see the IANA registry for
+         'RObust Header Compression (ROHC) Profile Identifiers'
+         at http://www.iana.org/assignments/rohc-pro-ids"
+    ::= { rohcProfileEntry 2 }
+
+rohcProfileVendor OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+
+
+
+    DESCRIPTION
+        "An object identifier that identifies the vendor who
+         provides the implementation of robust header description.
+         This object identifier SHALL point to the object identifier
+         directly below the enterprise object identifier
+         {1 3 6 1 4 1} allocated for the vendor.  The value must be
+         the object identifier {0 0} if the vendor is not known."
+    ::= { rohcProfileEntry 3 }
+
+rohcProfileVersion OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The version number of the implementation of robust header
+         compression.  The zero-length string shall be used if the
+         implementation does not have a version number.
+
+         It is suggested that the version number consist of one or
+         more decimal numbers separated by dots, where the first
+         number is called the major version number."
+    ::= { rohcProfileEntry 4 }
+
+rohcProfileDescr OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A textual description of the implementation."
+    ::= { rohcProfileEntry 5 }
+
+rohcProfileNegotiated OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "When retrieved, this boolean object returns true
+         if the profile has been negotiated to be used at
+         the instance, i.e., is supported also be the
+         corresponding compressor/decompressor."
+    ::= { rohcProfileEntry 6 }
+
+--
+-- Context Table
+--
+
+rohcContextTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RohcContextEntry
+
+
+
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists and describes all compressor contexts
+         per instance."
+    ::= { rohcObjects 2 }
+
+rohcContextEntry OBJECT-TYPE
+    SYNTAX      RohcContextEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular compressor context."
+    INDEX {
+        rohcChannelID,
+        rohcContextCID
+    }
+    ::= { rohcContextTable 1 }
+
+RohcContextEntry ::= SEQUENCE {
+    rohcContextCID                  Unsigned32,
+    rohcContextCIDState             INTEGER,
+    rohcContextProfile              Unsigned32,
+    rohcContextDecompressorDepth    Unsigned32,
+    rohcContextStorageTime          TimeInterval,
+    rohcContextActivationTime       DateAndTime,
+    rohcContextDeactivationTime     DateAndTime,
+    rohcContextPackets              Counter32,
+    rohcContextIRs                  Counter32,
+    rohcContextIRDYNs               Counter32,
+    rohcContextFeedbacks            Counter32,
+    rohcContextDecompressorFailures Counter32,
+    rohcContextDecompressorRepairs  Counter32,
+    rohcContextAllPacketsRatio      RohcCompressionRatio,
+    rohcContextAllHeadersRatio      RohcCompressionRatio,
+    rohcContextAllPacketsMeanSize   Unsigned32,
+    rohcContextAllHeadersMeanSize   Unsigned32,
+    rohcContextLastPacketsRatio     RohcCompressionRatio,
+    rohcContextLastHeadersRatio     RohcCompressionRatio,
+    rohcContextLastPacketsMeanSize  Unsigned32,
+    rohcContextLastHeadersMeanSize  Unsigned32
+}
+
+rohcContextCID OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..16383)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+
+
+
+        "The context identifier (CID) of this context."
+    REFERENCE
+        "RFC 3095, Sections 5.1.1 and 5.1.3"
+    ::= { rohcContextEntry 2 }
+
+rohcContextCIDState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    unused(1),
+                    active(2),
+                    expired(3),
+                    terminated(4)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "State of the CID.  When a CID is assigned to a context,
+         its state changes from `unused' to `active'.  The active
+         context may stop operation due to some explicit
+         signalling or after observing no packet for some specified
+         time.  In the first case then the CID state changes to
+         `terminated', in the latter case it changes to `expired'.
+         If the CID is re-used again for another context, the
+         state changes back to `active'."
+    ::= { rohcContextEntry 3 }
+
+rohcContextProfile OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Identifier of the profile for this context.
+         The profile is identified by its index in the
+         rohcProfileTable for this instance.  There MUST exist a
+         corresponding entry in the rohcProfileTable using the
+         value of rohcContextProfile as second part of the index
+         (and using the same rohcChannelID as first part of the
+         index)."
+    ::= { rohcContextEntry 4 }
+
+rohcContextDecompressorDepth OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates whether reverse decompression, for
+         example as described in RFC 3095, Section 6.1, is used
+         on this channel or not, and if used, to what extent.
+
+
+
+
+         Its value is only valid for decompressor contexts, i.e.,
+         if rohcInstanceType has the value decompressor(2).  For
+         compressor contexts where rohcInstanceType has the value
+         compressor(1), the value of this object is irrelevant
+         and MUST be set to zero (0).
+
+         The value of the reverse decompression depth indicates
+         the maximum number of packets that are buffered, and thus
+         possibly be reverse decompressed by the decompressor.
+         A zero (0) value means that reverse decompression is not
+         used."
+    ::= { rohcContextEntry 5 }
+
+rohcContextStorageTime OBJECT-TYPE
+    SYNTAX      TimeInterval
+    UNITS       "centi-seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of this object specifies how long this row
+         can exist in the rohcContextTable after the
+         rohcContextCIDState switched to expired(3) or
+         terminated(4).  This object returns  the remaining time
+         that the row may exist before it is aged out.  The object
+         is initialized with the value of the  associated
+         rohcContextStorageTime object.  After expiration or
+         termination of the context, the value of this object ticks
+         backwards.  The entry in the rohcContextTable is destroyed
+         when the value reaches 0.
+
+         The value of this object may be set in order to increase or
+         reduce the remaining time that the row may exist.  Setting
+         the value to 0 will destroy this entry as soon as the
+         rochContextCIDState has the value expired(3) or
+         terminated(4).
+
+         Note that there is no guarantee that the row is stored as
+         long as this object indicates.  In case of limited CID
+         space, the instance may re-use a CID before the storage
+         time of the corresponding row in rohcContextTable reaches
+         the value of 0.  In this case the information stored in this
+         row is not anymore available."
+    ::= { rohcContextEntry 6 }
+
+rohcContextActivationTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+
+
+
+    DESCRIPTION
+        "The date and time when the context started to be able to
+         compress packets or decompress packets, respectively.
+         The value '0000000000000000'H is returned if the context
+         has not been activated yet."
+    DEFVAL { '0000000000000000'H }
+    ::= { rohcContextEntry 7 }
+
+rohcContextDeactivationTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when the context stopped being able to
+         compress packets or decompress packets, respectively,
+         because it expired or was terminated for other reasons.
+         The value '0000000000000000'H is returned if the context
+         has not been deactivated yet."
+    DEFVAL { '0000000000000000'H }
+    ::= { rohcContextEntry 8 }
+
+rohcContextPackets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of all packets passing this context.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable."
+    ::= { rohcContextEntry 9 }
+
+rohcContextIRs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of all IR packets sent or received,
+         respectively, by this context.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+
+
+
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable."
+    REFERENCE
+        "RFC 3095, Section 5.7.7.1"
+    ::= { rohcContextEntry 10 }
+
+rohcContextIRDYNs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of all IR-DYN packets sent or received,
+         respectively, by this context.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable."
+    REFERENCE
+        "RFC 3095, Section 5.7.7.2"
+    ::= { rohcContextEntry 11 }
+
+rohcContextFeedbacks OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of all feedbacks sent or received,
+         respectively, by this context.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable."
+    ::= { rohcContextEntry 12 }
+
+rohcContextDecompressorFailures OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+
+
+
+    DESCRIPTION
+        "The number of all decompressor failures so far in this
+         context. The number is only valid for decompressor
+         contexts, i.e., if rohcInstanceType has the value
+         decompressor(2).
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable."
+    ::= { rohcContextEntry 13 }
+
+rohcContextDecompressorRepairs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of all context repairs so far in this
+         context.  The number is only valid for decompressor
+         contexts, i.e., if rohcInstanceType has the value
+         decompressor(2).
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable."
+    ::= { rohcContextEntry 14 }
+
+rohcContextAllPacketsRatio OBJECT-TYPE
+    SYNTAX      RohcCompressionRatio
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the compression ratio so far over all
+         packets passing this context.  The compression is computed
+         over all bytes of the IP packets including the IP header
+         but excluding all lower layer headers."
+    ::= { rohcContextEntry 15 }
+
+rohcContextAllHeadersRatio OBJECT-TYPE
+    SYNTAX      RohcCompressionRatio
+    MAX-ACCESS  read-only
+
+
+
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the compression ratio so far over all
+         packet headers passing this context.  The compression is
+         computed over all bytes of all headers that are subject to
+         compression for the used profile."
+    ::= { rohcContextEntry 16 }
+
+rohcContextAllPacketsMeanSize OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the mean compressed packet size
+         of all packets passing this context.  The packet size
+         includes the IP header and payload but excludes all lower
+         layer headers.  The mean value is given in byte rounded
+         to the next integer value."
+    ::= { rohcContextEntry 17 }
+
+rohcContextAllHeadersMeanSize OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the mean compressed packet header size
+         of all packets passing this context.  The packet header size
+         is the sum of the size of all headers of a packet that are
+         subject to compression for the used profile.  The mean value
+         is given in byte rounded to the next integer value."
+    ::= { rohcContextEntry 18 }
+
+rohcContextLastPacketsRatio OBJECT-TYPE
+    SYNTAX      RohcCompressionRatio
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the compression ratio
+         concerning the last 16 packets passing this context
+         or concerning all packets passing this context
+         if they are less than 16, so far.  The compression is
+         computed over all bytes of the IP packets including the IP
+         header but excluding all lower layer headers."
+    ::= { rohcContextEntry 19 }
+
+rohcContextLastHeadersRatio OBJECT-TYPE
+    SYNTAX      RohcCompressionRatio
+    MAX-ACCESS  read-only
+
+
+
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the compression ratio concerning the
+         headers of the last 16 packets passing this context or
+         concerning the headers of all packets passing this context
+         if they are less than 16, so far.  The compression is
+         computed over all bytes of all headers that are subject to
+         compression for the used profile."
+    ::= { rohcContextEntry 20 }
+
+rohcContextLastPacketsMeanSize OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the mean compressed packet size
+         concerning the last 16 packets passing this context or
+         concerning all packets passing this context if they are
+         less than 16, so far.  The packet size includes the IP
+         header and payload but excludes all lower layer headers.
+         The mean value is given in byte rounded to the next
+         integer value."
+    ::= { rohcContextEntry 21 }
+
+rohcContextLastHeadersMeanSize OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the mean compressed packet header size
+         concerning the last 16 packets passing this context or
+         concerning all packets passing this context if they are
+         less than 16, so far.  The packet header size is the sum of
+         the size of all headers of a packet that are subject to
+         compression for the used profile.  The mean value is given
+         in byte rounded to the next integer value."
+    ::= { rohcContextEntry 22 }
+
+--
+-- conformance information
+--
+
+rohcCompliances OBJECT IDENTIFIER ::= { rohcConformance 1 }
+rohcGroups      OBJECT IDENTIFIER ::= { rohcConformance 2 }
+
+--
+-- compliance statements
+--
+
+
+
+
+
+rohcCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for SNMP entities that implement
+         the ROHC-MIB.
+
+         Note that compliance with this compliance
+         statement requires compliance with the
+         ifCompliance3 MODULE-COMPLIANCE statement of the
+         IF-MIB (RFC2863)."
+    MODULE      -- this module
+    MANDATORY-GROUPS {
+            rohcInstanceGroup, rohcContextGroup
+    }
+    GROUP   rohcStatisticsGroup
+    DESCRIPTION
+       "A compliant implementation does not have to implement
+        the rohcStatisticsGroup."
+    GROUP   rohcTimerGroup
+    DESCRIPTION
+       "A compliant implementation does not have to implement
+        the rohcTimerGroup."
+    OBJECT  rohcInstanceContextStorageTime
+    MIN-ACCESS  read-only
+    DESCRIPTION
+        "A compliant implementation does not have to support changing
+         the value of object rohcInstanceContextStorageTime."
+    OBJECT  rohcContextStorageTime
+    MIN-ACCESS  read-only
+    DESCRIPTION
+        "A compliant implementation does not have to support changing
+         the value of object rohcContextStorageTime."
+    GROUP   rohcContextStatisticsGroup
+    DESCRIPTION
+       "A compliant implementation does not have to implement
+        the rohcContextStatisticsGroup."
+    ::= { rohcCompliances 1 }
+
+rohcInstanceGroup OBJECT-GROUP
+    OBJECTS {
+        rohcChannelType,
+        rohcChannelFeedbackFor,
+        rohcChannelDescr,
+        rohcChannelStatus,
+        rohcInstanceFBChannelID,
+        rohcInstanceVendor,
+
+
+
+        rohcInstanceVersion,
+        rohcInstanceDescr,
+        rohcInstanceClockRes,
+        rohcInstanceMaxCID,
+        rohcInstanceLargeCIDs,
+        rohcInstanceMRRU,
+        rohcInstanceStatus,
+        rohcProfileVendor,
+        rohcProfileVersion,
+        rohcProfileDescr,
+        rohcProfileNegotiated
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+         ROHC instances, used channels and available profiles."
+    ::= { rohcGroups 2 }
+
+rohcStatisticsGroup OBJECT-GROUP
+    OBJECTS {
+        rohcInstanceContextsTotal,
+        rohcInstanceContextsCurrent,
+        rohcInstancePackets,
+        rohcInstanceIRs,
+        rohcInstanceIRDYNs,
+        rohcInstanceFeedbacks,
+        rohcInstanceCompressionRatio
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing ROHC statistics."
+    ::= { rohcGroups 4 }
+
+rohcContextGroup OBJECT-GROUP
+    OBJECTS {
+        rohcContextCIDState,
+        rohcContextProfile,
+        rohcContextDecompressorDepth
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+         ROHC compressor contexts and decompressor contexts."
+    ::= { rohcGroups 5 }
+
+rohcTimerGroup OBJECT-GROUP
+    OBJECTS {
+        rohcInstanceContextStorageTime,
+
+
+
+        rohcContextStorageTime,
+        rohcContextActivationTime,
+        rohcContextDeactivationTime
+
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing statistical information
+         about ROHC compressor contexts and decompressor contexts."
+    ::= { rohcGroups 6 }
+
+rohcContextStatisticsGroup OBJECT-GROUP
+    OBJECTS {
+        rohcContextPackets,
+        rohcContextIRs,
+        rohcContextIRDYNs,
+        rohcContextFeedbacks,
+        rohcContextDecompressorFailures,
+        rohcContextDecompressorRepairs,
+        rohcContextAllPacketsRatio,
+        rohcContextAllHeadersRatio,
+        rohcContextAllPacketsMeanSize,
+        rohcContextAllHeadersMeanSize,
+        rohcContextLastPacketsRatio,
+        rohcContextLastHeadersRatio,
+        rohcContextLastPacketsMeanSize,
+        rohcContextLastHeadersMeanSize
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing statistical information
+         about ROHC compressor contexts and decompressor contexts."
+    ::= { rohcGroups 7 }
+
+END

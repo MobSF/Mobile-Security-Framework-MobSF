@@ -1,0 +1,112 @@
+# -*- text -*-
+#
+# dictionary.freeswitch
+#
+# cparker@segv.org
+#
+# Version:	$Id$
+#
+
+VENDOR		Freeswitch			27880
+
+#
+#	Standard attribute
+#
+BEGIN-VENDOR	Freeswitch
+
+ATTRIBUTE	Freeswitch-AVPair			1	string
+ATTRIBUTE	Freeswitch-CLID				2	string
+ATTRIBUTE	Freeswitch-Dialplan			3	string
+ATTRIBUTE	Freeswitch-Src				4	string
+ATTRIBUTE	Freeswitch-Dst				5	string
+ATTRIBUTE	Freeswitch-Src-Channel			6	string
+ATTRIBUTE	Freeswitch-Dst-Channel			7	string
+ATTRIBUTE	Freeswitch-Ani				8	string
+ATTRIBUTE	Freeswitch-Aniii			9	string
+ATTRIBUTE	Freeswitch-Lastapp			10	string
+ATTRIBUTE	Freeswitch-Lastdata			11	string
+ATTRIBUTE	Freeswitch-Disposition			12	string
+ATTRIBUTE	Freeswitch-Hangupcause			13	integer
+ATTRIBUTE	Freeswitch-Billusec			15	integer
+ATTRIBUTE	Freeswitch-AMAFlags			16	integer
+ATTRIBUTE	Freeswitch-RDNIS			17	string
+ATTRIBUTE	Freeswitch-Context			18	string
+ATTRIBUTE	Freeswitch-Source			19	string
+ATTRIBUTE	Freeswitch-Callstartdate		20	string
+ATTRIBUTE	Freeswitch-Callanswerdate		21	string
+ATTRIBUTE	Freeswitch-Calltransferdate		22	string
+ATTRIBUTE	Freeswitch-Callenddate			23	string
+ATTRIBUTE	Freeswitch-Signalbond			24	string
+
+#
+#  Freeswitch-Hangupcause
+#
+VALUE	Freeswitch-Hangupcause		None			0
+VALUE	Freeswitch-Hangupcause		Unallocated-Number	1
+VALUE	Freeswitch-Hangupcause		No-Route-Transit-Net	2
+VALUE	Freeswitch-Hangupcause		No-Route-Destination	3
+VALUE	Freeswitch-Hangupcause		Channel-Unacceptable	6
+VALUE	Freeswitch-Hangupcause		Call-Awarded-Delivery	7
+VALUE	Freeswitch-Hangupcause		Normal-Clearing		16
+VALUE	Freeswitch-Hangupcause		User-Busy		17
+VALUE	Freeswitch-Hangupcause		No-User-Response	18
+VALUE	Freeswitch-Hangupcause		No-Answer		19
+VALUE	Freeswitch-Hangupcause		Subscriber-Absent	20
+VALUE	Freeswitch-Hangupcause		Call-Rejected		21
+VALUE	Freeswitch-Hangupcause		Number-Changed		22
+VALUE	Freeswitch-Hangupcause		Redirecto-To-New-Destination 23
+VALUE	Freeswitch-Hangupcause		Exchange-Routing-Error	25
+VALUE	Freeswitch-Hangupcause		Destination-Out-Of-Order 27
+VALUE	Freeswitch-Hangupcause		Invalid-Number-Format	28
+VALUE	Freeswitch-Hangupcause		Facility-Rejected	29
+VALUE	Freeswitch-Hangupcause		Response-To-Status-Enquiry 30
+VALUE	Freeswitch-Hangupcause		Normal-Unspecified	31
+VALUE	Freeswitch-Hangupcause		Normal-Circuit-Congestion 34
+VALUE	Freeswitch-Hangupcause		Network-Out-Of-Order	38
+VALUE	Freeswitch-Hangupcause		Normal-Temporary-Failure 41
+VALUE	Freeswitch-Hangupcause		Switch-Congestion	42
+VALUE	Freeswitch-Hangupcause		Access-Info-Discarded	43
+VALUE	Freeswitch-Hangupcause		Requested-Chan-Unavail	44
+VALUE	Freeswitch-Hangupcause		Pre-Empted		45
+VALUE	Freeswitch-Hangupcause		Facility-Not-Subscribed	50
+VALUE	Freeswitch-Hangupcause		Outgoing-Call-Barred	52
+VALUE	Freeswitch-Hangupcause		Incoming-Call-Barred	54
+VALUE	Freeswitch-Hangupcause		Bearercapability-Notauth 57
+VALUE	Freeswitch-Hangupcause		Bearercapability-Notavail 58
+VALUE	Freeswitch-Hangupcause		Service-Unavailable	63
+VALUE	Freeswitch-Hangupcause		Bearercapability-Notimpl 65
+VALUE	Freeswitch-Hangupcause		Chan-Not-Implemented	66
+VALUE	Freeswitch-Hangupcause		Facility-Not-Implemented 69
+VALUE	Freeswitch-Hangupcause		Service-Not-Implemented	79
+VALUE	Freeswitch-Hangupcause		Invalid-Call-Reference	81
+VALUE	Freeswitch-Hangupcause		Incompatible-Destination 88
+VALUE	Freeswitch-Hangupcause		Invalid-Msg-Unspecified	95
+VALUE	Freeswitch-Hangupcause		Mandatory-IE-Missing	96
+VALUE	Freeswitch-Hangupcause		Message-Type-Nonexist	97
+VALUE	Freeswitch-Hangupcause		Wrong-Message		98
+VALUE	Freeswitch-Hangupcause		IE-Nonexist		99
+VALUE	Freeswitch-Hangupcause		Invalid-IE-Contents	100
+VALUE	Freeswitch-Hangupcause		Wrong-Call-State	101
+VALUE	Freeswitch-Hangupcause		Recovery-On-Timer-Expire 102
+VALUE	Freeswitch-Hangupcause		Mandatory-IE-Length-Error 103
+VALUE	Freeswitch-Hangupcause		Protocol-Error		111
+VALUE	Freeswitch-Hangupcause		Interworking		127
+VALUE	Freeswitch-Hangupcause		Success			142
+VALUE	Freeswitch-Hangupcause		Originator-Cancel	487
+VALUE	Freeswitch-Hangupcause		Crash			500
+VALUE	Freeswitch-Hangupcause		System-Shutdown		501
+VALUE	Freeswitch-Hangupcause		Lose-Race		502
+VALUE	Freeswitch-Hangupcause		Manager-Request		503
+VALUE	Freeswitch-Hangupcause		Blind-Transfer		600
+VALUE	Freeswitch-Hangupcause		Attended-Transfer	601
+VALUE	Freeswitch-Hangupcause		Allotted-Timeout	602
+VALUE	Freeswitch-Hangupcause		User-Challenge		603
+VALUE	Freeswitch-Hangupcause		Media-Timeout		604
+VALUE	Freeswitch-Hangupcause		Picked-Off		605
+VALUE	Freeswitch-Hangupcause		User-Not-Registered	606
+
+#
+#
+#
+
+END-VENDOR	Freeswitch

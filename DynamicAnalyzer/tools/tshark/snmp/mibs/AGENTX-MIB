@@ -1,0 +1,547 @@
+AGENTX-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+ MODULE-IDENTITY, OBJECT-TYPE, Unsigned32, mib-2
+    FROM SNMPv2-SMI
+ SnmpAdminString
+    FROM SNMP-FRAMEWORK-MIB
+ MODULE-COMPLIANCE, OBJECT-GROUP
+    FROM SNMPv2-CONF
+ TEXTUAL-CONVENTION, TimeStamp, TruthValue, TDomain
+    FROM SNMPv2-TC;
+agentxMIB MODULE-IDENTITY
+ LAST-UPDATED "200001100000Z" -- Midnight 10 January 2000
+ ORGANIZATION "AgentX Working Group"
+ CONTACT-INFO "WG-email:   agentx@dorothy.bmc.com
+               Subscribe:  agentx-request@dorothy.bmc.com
+               WG-email Archive:  ftp://ftp.peer.com/pub/agentx/archives
+               FTP repository:  ftp://ftp.peer.com/pub/agentx
+               http://www.ietf.org/html.charters/agentx-charter.html
+
+               Chair:      Bob Natale
+                           ACE*COMM Corporation
+               Email:      bnatale@acecomm.com
+
+               WG editor:  Mark Ellison
+                           Ellison Software Consulting, Inc.
+               Email:      ellison@world.std.com
+
+               Co-author:  Lauren Heintz
+                           Cisco Systems,
+               EMail:      lheintz@cisco.com
+
+               Co-author:  Smitha Gudur
+                           Independent Consultant
+               Email:      sgudur@hotmail.com
+
+
+              "
+ DESCRIPTION    "This is the MIB module for the SNMP Agent Extensibility
+     Protocol (AgentX).  This MIB module will be implemented by
+     the master agent.
+    "
+
+  REVISION     "200001100000Z" -- Midnight 10 January 2000
+ DESCRIPTION
+    "Initial version published as RFC 2742."
+
+  ::= { mib-2  74 }
+
+ -- Textual Conventions
+
+ AgentxTAddress ::= TEXTUAL-CONVENTION
+   STATUS       current
+   DESCRIPTION
+     "Denotes a transport service address.  This is identical to
+      the TAddress textual convention (SNMPv2-SMI) except that
+      zero-length values are permitted.
+     "
+   SYNTAX       OCTET STRING (SIZE (0..255))
+
+ -- Administrative assignments
+
+ agentxObjects OBJECT IDENTIFIER      ::= { agentxMIB 1 }
+ agentxGeneral OBJECT IDENTIFIER      ::= { agentxObjects 1 }
+ agentxConnection OBJECT IDENTIFIER   ::= { agentxObjects 2 }
+ agentxSession OBJECT IDENTIFIER      ::= { agentxObjects 3 }
+ agentxRegistration OBJECT IDENTIFIER ::= { agentxObjects 4 }
+
+ agentxDefaultTimeout OBJECT-TYPE
+  SYNTAX      INTEGER (0..255)
+  UNITS       "seconds"
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "The default length of time, in seconds, that the master
+      agent should allow to elapse after dispatching a message
+      to a session before it regards the subagent as not
+      responding.  This is a system-wide value that may
+      override the timeout value associated with a particular
+      session (agentxSessionTimeout) or a particular registered
+      MIB region (agentxRegTimeout).  If the associated value of
+      agentxSessionTimeout and agentxRegTimeout are zero, or
+      impractical in accordance with implementation-specific
+      procedure of the master agent, the value represented by
+      this object will be the effective timeout value for the
+
+
+      master agent to await a response to a dispatch from a
+      given subagent.
+     "
+  DEFVAL      { 5 }
+  ::= { agentxGeneral 1 }
+
+ agentxMasterAgentXVer OBJECT-TYPE
+  SYNTAX      INTEGER (1..255)
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "The AgentX protocol version supported by this master agent.
+      The current protocol version is 1.  Note that the master agent
+      must also allow interaction with earlier version subagents.
+     "
+  ::= { agentxGeneral 2 }
+
+ --      The AgentX Subagent Connection Group
+
+ agentxConnTableLastChange OBJECT-TYPE
+  SYNTAX      TimeStamp
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "The value of sysUpTime when the last row creation or deletion
+      occurred in the agentxConnectionTable.
+     "
+  ::= { agentxConnection 1 }
+
+ agentxConnectionTable OBJECT-TYPE
+   SYNTAX      SEQUENCE OF AgentxConnectionEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+     "The agentxConnectionTable tracks all current AgentX transport
+      connections.  There may be zero, one, or more AgentX sessions
+      carried on a given AgentX connection.
+     "
+   ::= { agentxConnection 2 }
+
+ agentxConnectionEntry OBJECT-TYPE
+   SYNTAX      AgentxConnectionEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+
+   DESCRIPTION
+     "An agentxConnectionEntry contains information describing a
+      single AgentX transport connection.  A connection may be
+
+
+      used to support zero or more AgentX sessions.  An entry is
+      created when a new transport connection is established,
+      and is destroyed when the transport connection is terminated.
+     "
+   INDEX { agentxConnIndex }
+   ::= { agentxConnectionTable 1 }
+
+ AgentxConnectionEntry ::= SEQUENCE {
+          agentxConnIndex            Unsigned32,
+          agentxConnOpenTime         TimeStamp,
+          agentxConnTransportDomain  TDomain,
+          agentxConnTransportAddress AgentxTAddress }
+
+ agentxConnIndex OBJECT-TYPE
+   SYNTAX       Unsigned32 (1..4294967295)
+   MAX-ACCESS   not-accessible
+   STATUS       current
+   DESCRIPTION
+     "agentxConnIndex contains the value that uniquely identifies
+      an open transport connection used by this master agent
+      to provide AgentX service.  Values of this index should
+      not be re-used.  The value assigned to a given transport
+      connection is constant for the lifetime of that connection.
+     "
+   ::= { agentxConnectionEntry 1 }
+
+ agentxConnOpenTime OBJECT-TYPE
+   SYNTAX       TimeStamp
+   MAX-ACCESS   read-only
+   STATUS       current
+   DESCRIPTION
+     "The value of sysUpTime when this connection was established
+      and, therefore, its value when this entry was added to the table.
+     "
+   ::= { agentxConnectionEntry 2 }
+
+ agentxConnTransportDomain OBJECT-TYPE
+   SYNTAX       TDomain
+   MAX-ACCESS   read-only
+   STATUS       current
+   DESCRIPTION
+     "The transport protocol in use for this connection to the
+      subagent.
+     "
+   ::= { agentxConnectionEntry 3 }
+
+ agentxConnTransportAddress OBJECT-TYPE
+   SYNTAX       AgentxTAddress
+
+
+   MAX-ACCESS   read-only
+   STATUS       current
+   DESCRIPTION
+     "The transport address of the remote (subagent) end of this
+      connection to the master agent.  This object may be zero-length
+      for unix-domain sockets (and possibly other types of transport
+      addresses) since the subagent need not bind a filename to its
+      local socket.
+     "
+   ::= { agentxConnectionEntry 4 }
+
+ -- The AgentX Subagent Session Group
+
+ agentxSessionTableLastChange OBJECT-TYPE
+  SYNTAX      TimeStamp
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "The value of sysUpTime when the last row creation or deletion
+      occurred in the agentxSessionTable.
+     "
+  ::= { agentxSession 1 }
+
+ agentxSessionTable OBJECT-TYPE
+  SYNTAX      SEQUENCE OF AgentxSessionEntry
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+     "A table of AgentX subagent sessions currently in effect.
+     "
+  ::= { agentxSession 2 }
+
+ agentxSessionEntry OBJECT-TYPE
+  SYNTAX      AgentxSessionEntry
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+     "Information about a single open session between the AgentX
+      master agent and a subagent is contained in this entry.  An
+      entry is created when a new session is successfully established
+      and is destroyed either when the subagent transport connection
+      has terminated or when the subagent session is closed.
+     "
+  INDEX       { agentxConnIndex, agentxSessionIndex }
+  ::= { agentxSessionTable 1 }
+
+ AgentxSessionEntry ::= SEQUENCE {
+  agentxSessionIndex         Unsigned32,
+
+
+  agentxSessionObjectID      OBJECT IDENTIFIER,
+  agentxSessionDescr         SnmpAdminString,
+  agentxSessionAdminStatus   INTEGER,
+  agentxSessionOpenTime      TimeStamp,
+  agentxSessionAgentXVer     INTEGER,
+  agentxSessionTimeout       INTEGER
+ }
+
+ agentxSessionIndex OBJECT-TYPE
+  SYNTAX      Unsigned32 (0..4294967295)
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+     "A unique index for the subagent session.  It is the same as
+      h.sessionID defined in the agentx header.  Note that if
+      a subagent's session with the master agent is closed for
+      any reason its index should not be re-used.
+      A value of zero(0) is specifically allowed in order
+      to be compatible with the definition of h.sessionId.
+     "
+  ::= { agentxSessionEntry 1 }
+
+ agentxSessionObjectID OBJECT-TYPE
+  SYNTAX      OBJECT IDENTIFIER
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "This is taken from the o.id field of the agentx-Open-PDU.
+      This attribute will report a value of '0.0' for subagents
+      not supporting the notion of an AgentX session object
+      identifier.
+     "
+  ::= { agentxSessionEntry 2 }
+
+ agentxSessionDescr OBJECT-TYPE
+  SYNTAX      SnmpAdminString
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "A textual description of the session.  This is analogous to
+      sysDescr defined in the SNMPv2-MIB in RFC 1907 [19] and is
+      taken from the o.descr field of the agentx-Open-PDU.
+      This attribute will report a zero-length string value for
+      subagents not supporting the notion of a session description.
+     "
+  ::= { agentxSessionEntry 3 }
+
+ agentxSessionAdminStatus OBJECT-TYPE
+
+
+  SYNTAX      INTEGER {
+                 up(1),
+                 down(2)
+              }
+  MAX-ACCESS  read-write
+  STATUS      current
+  DESCRIPTION
+     "The administrative (desired) status of the session.  Setting
+      the value to 'down(2)' closes the subagent session (with c.reason
+      set to 'reasonByManager').
+     "
+  ::= { agentxSessionEntry 4 }
+
+ agentxSessionOpenTime OBJECT-TYPE
+  SYNTAX      TimeStamp
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "The value of sysUpTime when this session was opened and,
+      therefore, its value when this entry was added to the table.
+     "
+  ::= { agentxSessionEntry 5 }
+
+ agentxSessionAgentXVer OBJECT-TYPE
+  SYNTAX      INTEGER (1..255)
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "The version of the AgentX protocol supported by the
+      session.  This must be less than or equal to the value of
+      agentxMasterAgentXVer.
+     "
+  ::= { agentxSessionEntry 6 }
+
+ agentxSessionTimeout OBJECT-TYPE
+  SYNTAX     INTEGER (0..255)
+  UNITS      "seconds"
+  MAX-ACCESS read-only
+  STATUS     current
+  DESCRIPTION
+     "The length of time, in seconds, that a master agent should
+      allow to elapse after dispatching a message to this session
+      before it regards the subagent as not responding.  This value
+      is taken from the o.timeout field of the agentx-Open-PDU.
+      This is a session-specific value that may be overridden by
+      values associated with the specific registered MIB regions
+      (see agentxRegTimeout). A value of zero(0) indicates that
+      the master agent's default timeout value should be used
+
+
+      (see agentxDefaultTimeout).
+     "
+  ::= { agentxSessionEntry 7 }
+
+ -- The AgentX Registration Group
+
+ agentxRegistrationTableLastChange OBJECT-TYPE
+  SYNTAX      TimeStamp
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "The value of sysUpTime when the last row creation or deletion
+      occurred in the agentxRegistrationTable.
+     "
+  ::= { agentxRegistration 1 }
+
+ agentxRegistrationTable OBJECT-TYPE
+  SYNTAX      SEQUENCE OF AgentxRegistrationEntry
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+     "A table of registered regions.
+     "
+  ::= { agentxRegistration 2 }
+
+ agentxRegistrationEntry OBJECT-TYPE
+  SYNTAX      AgentxRegistrationEntry
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+     "Contains information for a single registered region.  An
+      entry is created when a session  successfully registers a
+      region and is destroyed for any of three reasons: this region
+      is unregistered by the session, the session is closed,
+      or the subagent connection is closed.
+     "
+  INDEX       { agentxConnIndex, agentxSessionIndex, agentxRegIndex }
+  ::= { agentxRegistrationTable 1 }
+
+ AgentxRegistrationEntry ::= SEQUENCE {
+  agentxRegIndex           Unsigned32,
+  agentxRegContext         OCTET STRING,
+  agentxRegStart           OBJECT IDENTIFIER,
+  agentxRegRangeSubId      Unsigned32,
+  agentxRegUpperBound      Unsigned32,
+  agentxRegPriority        Unsigned32,
+  agentxRegTimeout         INTEGER,
+  agentxRegInstance        TruthValue }
+
+
+ agentxRegIndex OBJECT-TYPE
+  SYNTAX      Unsigned32 (1..4294967295)
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+     "agentxRegIndex uniquely identifies a registration entry.
+      This value is constant for the lifetime of an entry.
+     "
+  ::= { agentxRegistrationEntry 1 }
+
+ agentxRegContext OBJECT-TYPE
+  SYNTAX      OCTET STRING
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "The context in which the session supports the objects in this
+      region.  A zero-length context indicates the default context.
+     "
+  ::= { agentxRegistrationEntry 2 }
+
+ agentxRegStart OBJECT-TYPE
+  SYNTAX      OBJECT IDENTIFIER
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "The starting OBJECT IDENTIFIER of this registration entry.  The
+      session identified by agentxSessionIndex implements objects
+      starting at this value (inclusive).  Note that this value could
+      identify an object type, an object instance, or a partial object
+      instance.
+     "
+  ::= { agentxRegistrationEntry 3 }
+
+ agentxRegRangeSubId OBJECT-TYPE
+  SYNTAX      Unsigned32
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "agentxRegRangeSubId is used to specify the range.  This is
+      taken from r.region_subid in the registration PDU.  If the value
+      of this object is zero, no range is specified.  If it is non-zero,
+      it identifies the `nth' sub-identifier in r.region for which
+      this entry's agentxRegUpperBound value is substituted in the
+      OID for purposes of defining the region's upper bound.
+     "
+  ::= { agentxRegistrationEntry 4 }
+
+ agentxRegUpperBound OBJECT-TYPE
+
+
+  SYNTAX      Unsigned32
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+    "agentxRegUpperBound represents the upper-bound sub-identifier in
+     a registration.  This is taken from the r.upper_bound in the
+     registration PDU.  If agentxRegRangeSubid (r.region_subid) is
+     zero, this value is also zero and is not used to define an upper
+     bound for this registration.
+    "
+  ::= { agentxRegistrationEntry 5 }
+
+ agentxRegPriority OBJECT-TYPE
+  SYNTAX      Unsigned32
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "The registration priority.  Lower values have higher priority.
+      This value is taken from r.priority in the register PDU.
+      Sessions should use the value of 127 for r.priority if a
+      default value is desired.
+     "
+  ::= { agentxRegistrationEntry 6 }
+
+ agentxRegTimeout OBJECT-TYPE
+  SYNTAX      INTEGER (0..255)
+  UNITS       "seconds"
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "The timeout value, in seconds, for responses to
+      requests associated with this registered MIB region.
+      A value of zero(0) indicates the default value (indicated
+      by by agentxSessionTimeout or agentxDefaultTimeout) is to
+      be used.  This value is taken from the r.timeout field of
+      the agentx-Register-PDU.
+     "
+  ::= { agentxRegistrationEntry 7 }
+
+ agentxRegInstance OBJECT-TYPE
+  SYNTAX      TruthValue
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+     "The value of agentxRegInstance is `true' for
+      registrations for which the INSTANCE_REGISTRATION
+      was set, and is `false' for all other registrations.
+     "
+
+
+  ::= { agentxRegistrationEntry 8 }
+
+ -- Conformance Statements for AgentX
+
+ agentxConformance     OBJECT IDENTIFIER ::= { agentxMIB 2 }
+ agentxMIBGroups       OBJECT IDENTIFIER ::= { agentxConformance 1 }
+ agentxMIBCompliances  OBJECT IDENTIFIER ::= { agentxConformance 2 }
+
+ -- Compliance Statements for AgentX
+
+ agentxMIBCompliance MODULE-COMPLIANCE
+  STATUS      current
+  DESCRIPTION
+     "The compliance statement for SNMP entities that implement the
+      AgentX protocol.  Note that a compliant agent can implement all
+      objects in this MIB module as read-only.
+     "
+  MODULE -- this module
+     MANDATORY-GROUPS  { agentxMIBGroup }
+
+     OBJECT agentxSessionAdminStatus
+        MIN-ACCESS read-only
+        DESCRIPTION
+           "Write access is not required.
+           "
+  ::= { agentxMIBCompliances 1 }
+
+ agentxMIBGroup OBJECT-GROUP
+  OBJECTS {
+     agentxDefaultTimeout,
+     agentxMasterAgentXVer,
+     agentxConnTableLastChange,
+     agentxConnOpenTime,
+     agentxConnTransportDomain,
+     agentxConnTransportAddress,
+     agentxSessionTableLastChange,
+     agentxSessionTimeout,
+     agentxSessionObjectID,
+     agentxSessionDescr,
+     agentxSessionAdminStatus,
+     agentxSessionOpenTime,
+     agentxSessionAgentXVer,
+     agentxRegistrationTableLastChange,
+     agentxRegContext,
+     agentxRegStart,
+     agentxRegRangeSubId,
+     agentxRegUpperBound,
+     agentxRegPriority,
+
+
+     agentxRegTimeout,
+     agentxRegInstance
+    }
+  STATUS      current
+  DESCRIPTION
+     "All accessible objects in the AgentX MIB.
+     "
+  ::= { agentxMIBGroups 1 }
+
+ END

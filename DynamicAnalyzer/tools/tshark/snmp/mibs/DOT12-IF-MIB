@@ -1,0 +1,764 @@
+DOT12-IF-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        transmission, Counter32, Counter64, OBJECT-TYPE,
+        MODULE-IDENTITY
+            FROM SNMPv2-SMI
+        MODULE-COMPLIANCE, OBJECT-GROUP
+            FROM SNMPv2-CONF
+        ifIndex
+            FROM IF-MIB;
+
+    dot12MIB MODULE-IDENTITY
+         LAST-UPDATED "9602220452Z"  -- February 22, 1996
+         ORGANIZATION "IETF 100VG-AnyLAN MIB Working Group"
+         CONTACT-INFO
+                 "       John Flick
+
+                 Postal: Hewlett Packard Company
+                         8000 Foothills Blvd. M/S 5556
+                         Roseville, CA 95747-5556
+                 Tel:    +1 916 785 4018
+                 Fax:    +1 916 785 3583
+
+                 E-mail: johnf@hprnd.rose.hp.com"
+         DESCRIPTION
+                 "This MIB module describes objects for
+                 managing IEEE 802.12 interfaces."
+         ::= { transmission 45 }
+
+    dot12MIBObjects     OBJECT IDENTIFIER ::= { dot12MIB 1 }
+
+    dot12ConfigTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF Dot12ConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+                "Configuration information for a collection of
+                802.12 interfaces attached to a particular
+                system."
+        ::= { dot12MIBObjects 1 }
+
+    dot12ConfigEntry OBJECT-TYPE
+        SYNTAX     Dot12ConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+                "Configuration for a particular interface to an
+                802.12 medium."
+        INDEX      { ifIndex }
+        ::= { dot12ConfigTable 1 }
+
+    Dot12ConfigEntry ::=
+        SEQUENCE {
+            dot12CurrentFramingType         INTEGER,
+            dot12DesiredFramingType         INTEGER,
+            dot12FramingCapability          INTEGER,
+            dot12DesiredPromiscStatus       INTEGER,
+            dot12TrainingVersion            INTEGER,
+            dot12LastTrainingConfig         OCTET STRING,
+            dot12Commands                   INTEGER,
+            dot12Status                     INTEGER,
+            dot12ControlMode                INTEGER
+        }
+
+    dot12CurrentFramingType OBJECT-TYPE
+        SYNTAX     INTEGER {
+                       frameType88023(1),
+                       frameType88025(2),
+                       frameTypeUnknown(3)
+                   }
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "When dot12DesiredFramingType is one of
+                'frameType88023' or 'frameType88025', this is the
+                type of framing asserted by the interface.
+
+                When dot12DesiredFramingType is 'frameTypeEither',
+                dot12CurrentFramingType shall be one of
+                'frameType88023' or 'frameType88025' when the
+                dot12Status is 'opened'.   When the dot12Status is
+                anything other than 'opened',
+                dot12CurrentFramingType shall take the value of
+                'frameTypeUnknown'."
+        ::= { dot12ConfigEntry 1 }
+
+    dot12DesiredFramingType OBJECT-TYPE
+        SYNTAX     INTEGER {
+                       frameType88023(1),
+                       frameType88025(2),
+                       frameTypeEither(3)
+                   }
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+                "The type of framing which will be requested by
+                the interface during the next interface MAC
+                initialization or open action.
+
+                In master mode, this is the framing mode which
+                will be granted by the interface.  Note that
+                for a master mode interface, this object must be
+                equal to 'frameType88023' or 'frameType88025',
+                since a master mode interface cannot grant
+                'frameTypeEither'."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aDesiredFramingType."
+        ::= { dot12ConfigEntry 2 }
+
+    dot12FramingCapability OBJECT-TYPE
+        SYNTAX     INTEGER {
+                       frameType88023(1),
+                       frameType88025(2),
+                       frameTypeEither(3)
+                   }
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The type of framing this interface is capable of
+                supporting."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aFramingCapability."
+        ::= { dot12ConfigEntry 3 }
+
+    dot12DesiredPromiscStatus OBJECT-TYPE
+        SYNTAX     INTEGER {
+                       singleAddressMode(1),
+                       promiscuousMode(2)
+                   }
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+                "This object is used to select the promiscuous
+                mode that this interface will request in the next
+                training packet issued on this interface.
+                Whether the repeater grants the requested mode
+                must be verified by examining the state of the PP
+                bits in the corresponding instance of
+                dot12LastTrainingConfig.
+                In master mode, this object controls whether or
+                not promiscuous mode will be granted by the
+                interface when requested by the lower level
+                device.
+
+                Note that this object indicates the desired mode
+                for the next time the interface trains.  The
+                currently active mode will be reflected in
+                dot12LastTrainingConfig and in ifPromiscuousMode."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aDesiredPromiscuousStatus."
+        ::= { dot12ConfigEntry 4 }
+
+    dot12TrainingVersion OBJECT-TYPE
+        SYNTAX     INTEGER (0..7)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The value that will be used in the version bits
+                (vvv bits) in training frames on this interface.
+                This is the highest version number supported by
+                this MAC."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aMACVersion."
+        ::= { dot12ConfigEntry 5 }
+
+    dot12LastTrainingConfig OBJECT-TYPE
+        SYNTAX     OCTET STRING (SIZE(2))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This 16 bit field contains the configuration
+                bits from the most recent error-free training
+                frame received during training on this interface.
+                Training request frames are received when in
+                master mode, while training response frames are
+                received in slave mode.  On master mode interfaces,
+                this object contains the contents of the
+                requested configuration field of the most recent
+                training request frame.  On slave mode interfaces,
+                this object contains the contents of the allowed
+                configuration field of the most recent training
+                response frame.  The format of the current version
+                of this field is described in section 3.8.  Please
+                refer to the most recent version of the IEEE
+                802.12 standard for the most up-to-date definition
+                of the format of this object."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aLastTrainingConfig."
+        ::= { dot12ConfigEntry 6 }
+
+    dot12Commands OBJECT-TYPE
+        SYNTAX     INTEGER {
+                       noOp(1),
+                       open(2),
+                       reset(3),
+                       close(4)
+                   }
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+                "If the current value of dot12Status is 'closed',
+                setting the value of this object to 'open' will
+                change the corresponding instance of MIB-II's
+                ifAdminStatus to 'up', cause this interface to
+                enter the 'opening' state, and will cause training
+                to be initiated on this interface.  The progress
+                and success of the open is given by the values of
+                the dot12Status object.  Setting this object to
+                'open' when dot12Status has a value other than
+                'closed' has no effect.
+
+                Setting the corresponding instance of ifAdminStatus
+                to 'up' when the current value of dot12Status is
+                'closed' will have the same effect as setting this
+                object to 'open'.  Setting ifAdminStatus to 'up'
+                when dot12Status has a value other than 'closed'
+                has no effect.
+
+                Setting the value of this object to 'close' will
+                move this interface into the 'closed' state and
+                cause all transmit and receive actions to stop.
+                This object will then have to be set to 'open' in
+                order to reinitiate training.
+
+                Setting the corresponding instance of ifAdminStatus
+                to 'down' will have the same effect as setting this
+                object to 'close'.
+
+                Setting the value of this object to 'reset' when
+                the current value of dot12Status has a value other
+                than 'closed' will reset the interface.  On a
+                reset, all MIB counters should retain their values.
+                This will cause the MAC to initiate an
+                acInitializeMAC action as specified in IEEE 802.12.
+                This will cause training to be reinitiated on this
+                interface.  Setting this object to 'reset' when
+                dot12Status has a value of 'closed' has no effect.
+                Setting this object to 'reset' has no effect on the
+                corresponding instance of ifAdminStatus.
+
+                Setting the value of this object to 'noOp' has no
+                effect.
+
+                When read, this object will always have a value
+                of 'noOp'."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.2,
+                acOpen, acClose, acInitializeMAC.
+                Also, RFC1231 IEEE802.5 Token Ring MIB,
+                dot5Commands."
+        ::= { dot12ConfigEntry 7 }
+
+    dot12Status OBJECT-TYPE
+        SYNTAX     INTEGER {
+                       opened(1),
+                       closed(2),
+                       opening(3),
+                       openFailure(5),
+                       linkFailure(6)
+                   }
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The current interface status with respect to
+                training.  One of the following values:
+
+                    opened      - Training has completed
+                                  successfully.
+                    closed      - MAC has been disabled by
+                                  setting dot12Commands to
+                                  'close'.
+                    opening     - MAC is in training.  Training
+                                  signals have been received.
+                    openFailure - Passed 24 error-free packets,
+                                  but there is a problem, noted
+                                  in the training configuration
+                                  bits (dot12LastTrainingConfig).
+                    linkFailure - Training signals not received,
+                                  or could not pass 24 error-free
+                                  packets.
+                Whenever the dot12Commands object is set to
+                'close' or ifAdminStatus is set to 'down', the MAC
+                will go silent, dot12Status will be 'closed', and
+                ifOperStatus will be 'down'.
+
+                When the value of this object is equal to 'closed'
+                and the dot12Commands object is set to 'open' or
+                the ifAdminStatus object is set to 'up', training
+                will be initiated on this interface.  When the
+                value of this object is not equal to 'closed' and
+                the dot12Commands object is set to 'reset',
+                training will be reinitiated on this interface.
+                Note that sets of some other objects (e.g.
+                dot12ControlMode) or external events (e.g. MAC
+                protocol violations) may also cause training to be
+                reinitiated on this interface.
+
+                When training is initiated or reinitiated on an
+                interface, the end node will send Training_Up to
+                the master and initially go to the 'linkFailure'
+                state and ifOperStatus will go to 'down'.
+                When the master sends back Training_Down,
+                dot12Status will change to the 'opening' state,
+                and training packets will be transferred.
+
+                After all of the training packets have been
+                passed, dot12Status will change to 'linkFailure'
+                if 24 consecutive error-free packets were not
+                passed, 'opened' if 24 consecutive error-free
+                packets were passed and the training
+                configuration bits were OK, or 'openFailure' if
+                there were 24 consecutive error-free packets, but
+                there was a problem with the training
+                configuration bits.
+
+                When in the 'openFailure' state, the
+                dot12LastTrainingConfig object will contain the
+                configuration bits from the last training
+                packet which can be examined to determine the
+                exact reason for the training configuration
+                failure.
+
+                If training did not succeed (dot12Status is
+                'linkFailure' or 'openFailure), the entire
+                process will be restarted after
+                MAC_Retraining_Delay_Timer seconds.
+
+                If training does succeed (dot12Status changes to
+                'opened'), ifOperStatus will change to 'up'.  If
+                training does not succeed (dot12Status changes to
+                'linkFailure' or 'openFailure'), ifOperStatus will
+                remain 'down'."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aMACStatus."
+        ::= { dot12ConfigEntry 8 }
+
+    dot12ControlMode OBJECT-TYPE
+        SYNTAX     INTEGER {
+                       masterMode(1),
+                       slaveMode(2),
+                       learn(3)
+                   }
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+                "This object is used to configure and report
+                whether or not this interface is operating in
+                master mode.  In a Demand Priority network, end
+                node interfaces typically operate in slave mode,
+                while switch interfaces may control the Demand
+                Priority protocol and operate in master mode.
+
+                This object may be implemented as a read-only
+                object by those agents and interfaces that do not
+                implement software control of master mode.  In
+                particular, interfaces that cannot operate in
+                master mode, and interfaces on which master mode
+                is controlled by a pushbutton on the device,
+                should implement this object read-only.
+
+                Some interfaces do not require network management
+                configuration of this feature and can autosense
+                whether to use master mode or slave mode.  The
+                value 'learn' is used for that purpose.  While
+                autosense is taking place, the value 'learn' is
+                returned.
+
+                A network management operation which modifies the
+                value of dot12ControlMode causes the interface
+                to retrain."
+        ::= { dot12ConfigEntry 9 }
+
+    dot12StatTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF Dot12StatEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+                "Statistics for a collection of 802.12 interfaces
+                attached to a particular system."
+        ::= { dot12MIBObjects 2 }
+
+    dot12StatEntry OBJECT-TYPE
+        SYNTAX     Dot12StatEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+                "Statistics for a particular interface to an
+                802.12 medium.  The receive statistics in this
+                table apply only to packets received by this
+                station (i.e., packets whose destination address
+                is either the local station address, the
+                broadcast address, or a multicast address that
+                this station is receiving, unless the station is
+                in promiscuous mode)."
+        INDEX      { ifIndex }
+        ::= { dot12StatTable 1 }
+
+    Dot12StatEntry ::=
+        SEQUENCE {
+            dot12InHighPriorityFrames       Counter32,
+            dot12InHighPriorityOctets       Counter32,
+            dot12InNormPriorityFrames       Counter32,
+            dot12InNormPriorityOctets       Counter32,
+            dot12InIPMErrors                Counter32,
+            dot12InOversizeFrameErrors      Counter32,
+            dot12InDataErrors               Counter32,
+            dot12InNullAddressedFrames      Counter32,
+            dot12OutHighPriorityFrames      Counter32,
+            dot12OutHighPriorityOctets      Counter32,
+            dot12TransitionIntoTrainings    Counter32,
+            dot12HCInHighPriorityOctets     Counter64,
+            dot12HCInNormPriorityOctets     Counter64,
+            dot12HCOutHighPriorityOctets    Counter64
+        }
+
+    dot12InHighPriorityFrames OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This object is a count of high priority frames
+                that have been received on this interface.
+                Includes both good and bad high priority frames,
+                as well as high priority training frames.  Does
+                not include normal priority frames which were
+                priority promoted."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aHighPriorityFramesReceived."
+        ::= { dot12StatEntry 1 }
+
+    dot12InHighPriorityOctets OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This object is a count of the number of octets
+                contained in high priority frames that have been
+                received on this interface. This counter is
+                incremented by OctetCount for each frame received
+                on this interface which is counted by
+                dot12InHighPriorityFrames.
+
+                Note that this counter will roll over very
+                quickly.  It is provided for backward
+                compatibility for Network Management protocols
+                that do not support 64 bit counters (e.g. SNMP
+                version 1)."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aHighPriorityOctetsReceived."
+        ::= { dot12StatEntry 2 }
+
+    dot12InNormPriorityFrames OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This object is a count of normal priority frames
+                that have been received on this interface.
+                Includes both good and bad normal priority
+                frames, as well as normal priority training
+                frames and normal priority frames which were
+                priority promoted."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aNormalPriorityFramesReceived."
+        ::= { dot12StatEntry 3 }
+
+    dot12InNormPriorityOctets OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This object is a count of the number of octets
+                contained in normal priority frames that have
+                been received on this interface. This counter is
+                incremented by OctetCount for each frame received
+                on this interface which is counted by
+                dot12InNormPriorityFrames.
+
+                Note that this counter will roll over very
+                quickly.  It is provided for backward
+                compatibility for Network Management protocols
+                that do not support 64 bit counters (e.g. SNMP
+                version 1)."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aNormalPriorityOctetsReceived."
+        ::= { dot12StatEntry 4 }
+
+    dot12InIPMErrors OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This object is a count of the number of frames
+                that have been received on this interface with an
+                invalid packet marker and no PMI errors.  A
+                repeater will write an invalid packet marker to
+                the end of a frame containing errors as it is
+                forwarded through the repeater to the other
+                ports.  This counter is incremented by one for
+                each frame received on this interface which has
+                had an invalid packet marker added to the end of
+                the frame."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aIPMFramesReceived."
+        ::= { dot12StatEntry 5 }
+
+    dot12InOversizeFrameErrors OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This object is a count of oversize frames
+                received on this interface.  This counter is
+                incremented by one for each frame received on
+                this interface whose OctetCount is larger than
+                the maximum legal frame size.  The frame size
+                which causes this counter to increment is
+                dependent on the current framing type."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aOversizeFramesReceived."
+        ::= { dot12StatEntry 6 }
+
+    dot12InDataErrors OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This object is a count of errored frames
+                received on this interface.  This counter is
+                incremented by one for each frame received on
+                this interface with any of the following errors:
+                bad FCS (with no IPM), PMI errors (excluding
+                frames with an IPM as the only PMI error),
+                undersize, bad start of frame delimiter, or bad
+                end of packet marker.  Does not include frames
+                counted by dot12InIPMErrors,
+                dot12InNullAddressedFrames, or
+                dot12InOversizeFrameErrors.
+
+                This counter indicates problems with the cable
+                directly attached to this interface, while
+                dot12InIPMErrors indicates problems with remote
+                cables."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aDataErrorFramesReceived."
+        ::= { dot12StatEntry 7 }
+
+    dot12InNullAddressedFrames OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This object is a count of null addressed frames
+                received on this interface.  This counter is
+                incremented by one for each frame received on
+                this interface with a destination MAC address
+                consisting of all zero bits.  Both void and
+                training frames are included in this counter.
+
+                Note that since this station would normally not
+                receive null addressed frames, this counter is
+                only incremented when this station is operating
+                in promiscuous mode or in training."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aNullAddressedFramesReceived."
+        ::= { dot12StatEntry 8 }
+
+    dot12OutHighPriorityFrames OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This counter is incremented by one for each high
+                priority frame successfully transmitted out this
+                interface."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aHighPriorityFramesTransmitted."
+        ::= { dot12StatEntry 9 }
+
+    dot12OutHighPriorityOctets OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This counter is incremented by OctetCount for
+                each frame counted by dot12OutHighPriorityFrames.
+
+                Note that this counter will roll over very
+                quickly.  It is provided for backward
+                compatibility for Network Management protocols
+                that do not support 64 bit counters (e.g. SNMP
+                version 1)."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aHighPriorityOctetsTransmitted."
+        ::= { dot12StatEntry 10 }
+
+    dot12TransitionIntoTrainings OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This object is a count of the number of times
+                this interface has entered the training state.
+                This counter is incremented by one each time
+                dot12Status transitions to 'linkFailure' from any
+                state other than 'opening' or 'openFailure'."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aTransitionsIntoTraining."
+        ::= { dot12StatEntry 11 }
+
+    dot12HCInHighPriorityOctets OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This object is a count of the number of octets
+                contained in high priority frames that have been
+                received on this interface. This counter is
+                incremented by OctetCount for each frame received
+                on this interface which is counted by
+                dot12InHighPriorityFrames.
+
+                This counter is a 64 bit version of
+                dot12InHighPriorityOctets.  It should be used by
+                Network Management protocols which support 64 bit
+                counters (e.g. SNMPv2)."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aHighPriorityOctetsReceived."
+        ::= { dot12StatEntry 12 }
+
+    dot12HCInNormPriorityOctets OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This object is a count of the number of octets
+                contained in normal priority frames that have
+                been received on this interface. This counter is
+                incremented by OctetCount for each frame received
+                on this interface which is counted by
+                dot12InNormPriorityFrames.
+
+                This counter is a 64 bit version of
+                dot12InNormPriorityOctets.  It should be used by
+                Network Management protocols which support 64 bit
+                counters (e.g. SNMPv2)."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aNormalPriorityOctetsReceived."
+        ::= { dot12StatEntry 13 }
+
+    dot12HCOutHighPriorityOctets OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This counter is incremented by OctetCount for
+                each frame counted by dot12OutHighPriorityFrames.
+
+                This counter is a 64 bit version of
+                dot12OutHighPriorityOctets.  It should be used by
+                Network Management protocols which support 64 bit
+                counters (e.g. SNMPv2)."
+        REFERENCE
+                "IEEE Standard 802.12-1995, 13.2.5.2.1,
+                aHighPriorityOctetsTransmitted."
+       ::= { dot12StatEntry 14 }
+
+    -- conformance information
+
+    dot12Conformance  OBJECT IDENTIFIER ::= { dot12MIB 2 }
+
+    dot12Compliances  OBJECT IDENTIFIER ::= { dot12Conformance 1 }
+    dot12Groups       OBJECT IDENTIFIER ::= { dot12Conformance 2 }
+
+    -- compliance statements
+
+    dot12Compliance MODULE-COMPLIANCE
+        STATUS     current
+        DESCRIPTION
+                   "The compliance statement for managed network
+                   entities that have 802.12 interfaces."
+
+        MODULE  -- this module
+            MANDATORY-GROUPS { dot12ConfigGroup, dot12StatsGroup }
+
+            OBJECT       dot12DesiredFramingType
+            MIN-ACCESS   read-only
+            DESCRIPTION
+                   "Write access to this object is not required."
+
+            OBJECT       dot12DesiredPromiscStatus
+            MIN-ACCESS   read-only
+            DESCRIPTION
+                   "Write access to this object is not required."
+
+            OBJECT       dot12Commands
+            MIN-ACCESS   read-only
+            DESCRIPTION
+                   "Write access to this object is not required."
+
+            OBJECT       dot12ControlMode
+            MIN-ACCESS   read-only
+            DESCRIPTION
+                   "Write access to this object is not required."
+        ::= { dot12Compliances 1 }
+
+    -- units of conformance
+
+    dot12ConfigGroup OBJECT-GROUP
+        OBJECTS    { dot12DesiredFramingType,
+                     dot12FramingCapability,
+                     dot12DesiredPromiscStatus,
+                     dot12TrainingVersion,
+                     dot12LastTrainingConfig,
+                     dot12Commands, dot12Status,
+                     dot12CurrentFramingType,
+                     dot12ControlMode }
+        STATUS     current
+        DESCRIPTION
+                "A collection of objects for managing the status
+                and configuration of IEEE 802.12 interfaces."
+        ::= { dot12Groups 1 }
+
+    dot12StatsGroup OBJECT-GROUP
+        OBJECTS    { dot12InHighPriorityFrames,
+                     dot12InHighPriorityOctets,
+                     dot12InNormPriorityFrames,
+                     dot12InNormPriorityOctets,
+                     dot12InIPMErrors,
+                     dot12InOversizeFrameErrors,
+                     dot12InDataErrors,
+                     dot12InNullAddressedFrames,
+                     dot12OutHighPriorityFrames,
+                     dot12OutHighPriorityOctets,
+                     dot12TransitionIntoTrainings,
+                     dot12HCInHighPriorityOctets,
+                     dot12HCInNormPriorityOctets,
+                     dot12HCOutHighPriorityOctets }
+        STATUS     current
+        DESCRIPTION
+                "A collection of objects providing statistics for
+                IEEE 802.12 interfaces."
+        ::= { dot12Groups 2 }
+
+END

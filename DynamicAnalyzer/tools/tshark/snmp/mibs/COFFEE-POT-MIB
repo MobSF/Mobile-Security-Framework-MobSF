@@ -1,0 +1,145 @@
+COFFEE-POT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Integer32, transmission
+        FROM SNMPv2-SMI
+    TimeInterval, DisplayString
+        FROM SNMPv2-TC;
+
+coffee MODULE-IDENTITY
+     LAST-UPDATED "9803231700Z"
+     ORGANIZATION "Networked Appliance Management Working Group"
+
+     CONTACT-INFO
+            "        Michael Slavitch
+                     Loran Technologies,
+                     955 Green Valley Crescent
+                     Ottawa, Ontario Canada K2A 0B6
+
+                Tel: 613-723-7505
+                Fax: 613-723-7209
+             E-mail: slavitch@loran.com"
+     DESCRIPTION
+            "The MIB Module for coffee vending devices."
+    ::= { transmission 132 }
+
+potName OBJECT-TYPE
+     SYNTAX     DisplayString (SIZE (0..255))
+     MAX-ACCESS read-only
+
+
+     STATUS current
+     DESCRIPTION
+             "The vendor description of the pot under management"
+     ::= { coffee 1 }
+
+
+potCapacity OBJECT-TYPE
+     SYNTAX Integer32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+        "The number of units of beverage supported by this device
+         (regardless of its current state) ."
+    ::= { coffee 2 }
+
+
+potType OBJECT-TYPE
+     SYNTAX     INTEGER {
+        automatic-drip(1),
+        percolator(2),
+        french-press(3),
+        espresso(4)
+        }
+     MAX-ACCESS read-write
+     STATUS current
+     DESCRIPTION
+             "The brew type of the coffee pot."
+     ::= { coffee 3 }
+
+potLocation OBJECT-TYPE
+     SYNTAX     DisplayString (SIZE (0..255))
+     MAX-ACCESS read-write
+     STATUS current
+     DESCRIPTION
+             "The physical location of the pot in question"
+     ::= { coffee 4 }
+
+
+potMonitor            OBJECT IDENTIFIER ::= { coffee 6 }
+
+
+potOperStatus OBJECT-TYPE
+     SYNTAX     INTEGER {
+                     off(1),
+                     brewing(2),
+                     holding(3),
+                     other(4),
+                     waiting(5)
+                     }
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The operating status of the pot in question. Note
+              that this is a read-only feature. Current hardware
+              prevents us from changing the port state via SNMP."
+     ::= { potMonitor 1 }
+
+ potLevel OBJECT-TYPE
+     SYNTAX     Integer32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The number of units of coffee under management. The
+              units of level are defined in potMetric below."
+     ::= { potMonitor 2 }
+
+ potMetric  OBJECT-TYPE
+     SYNTAX     INTEGER {
+                 espresso(1),
+                 demi-tasse(2),
+                 cup(3),
+                 mug(4),
+                 bucket(5)
+                 }
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The vendor description of the pot under management"
+     ::= { potMonitor 3 }
+
+
+potStartTime OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "The time in seconds since Jan 1 1970 to start the pot
+             if and only if potOperStatus is waiting(5)"
+    ::= { potMonitor 4 }
+
+
+ lastStartTime OBJECT-TYPE
+    SYNTAX     TimeInterval
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+
+
+            "The amount of time, in TimeTicks, since the coffee
+            making process was initiated."
+    ::= { potMonitor 5 }
+
+
+ potTemperature OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "degrees Centigrade"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The ambient temperature of the coffee within the pot"
+
+   ::= { potMonitor 6 }
+
+END

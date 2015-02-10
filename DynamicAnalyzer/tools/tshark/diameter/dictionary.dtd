@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   $Log: dictionary.dtd,v $
+   Revision 1.1  2001/11/01 21:52:44  guy
+   From David Frascone: duUpdate to Diameter dissector to load the
+   dictionary as an XML file rather than building it in, and various
+   Diameter updates.
+
+   Revision 1.1  2001/08/24 18:04:44  chaos
+   Added per Mark's request
+
+   Revision 1.3  2001/07/31 17:43:36  chaos
+   Oops, forgot to turn on validity checking.  Fixed some errors found with validity checking turned on
+
+   Revision 1.2  2001/07/31 16:56:15  chaos
+   Lots of changes to support flags like in the draft, and to support commands
+
+-->
+<!ELEMENT dictionary (base, application*)>
+<!ELEMENT base (command*, vendor*, typedefn+, avp+)>
+<!ATTLIST base
+	uri CDATA #IMPLIED
+>
+
+<!ELEMENT application (command*, vendor*, typedefn*, avp*)>
+<!ATTLIST application
+	id CDATA #REQUIRED
+	name CDATA #IMPLIED
+	uri CDATA #IMPLIED
+>
+<!ELEMENT command (#PCDATA)>
+<!ATTLIST command
+	name CDATA #REQUIRED
+	code CDATA #REQUIRED
+	vendor-id IDREF #IMPLIED
+>
+<!ELEMENT vendor EMPTY>
+<!ATTLIST vendor
+	vendor-id ID #REQUIRED
+	code CDATA #REQUIRED
+	name CDATA #IMPLIED
+>
+<!ELEMENT typedefn EMPTY>
+<!ATTLIST typedefn
+	type-name ID #REQUIRED
+	type-parent IDREF #IMPLIED
+	description CDATA #IMPLIED
+>
+<!ELEMENT avp ((type | grouped), (enum*))>
+<!ATTLIST avp
+	name IDREF #REQUIRED
+	description CDATA #IMPLIED
+	code CDATA #REQUIRED
+	may-encrypt (yes | no) "yes"
+	mandatory (must | may | mustnot | shouldnot) "may"
+	protected (must | may | mustnot | shouldnot) "may"
+	vendor-bit (must | may | mustnot | shouldnot) "mustnot"
+	vendor-id IDREF #IMPLIED
+	constrained (true | false) "false"
+>
+<!ELEMENT type EMPTY>
+<!ATTLIST type
+	type-name IDREF #REQUIRED
+>
+<!ELEMENT grouped (gavp+)>
+<!ELEMENT gavp EMPTY>
+<!ATTLIST gavp
+	name IDREF #REQUIRED
+>
+<!ELEMENT enum EMPTY>
+<!ATTLIST enum
+	name CDATA #REQUIRED
+	code CDATA #REQUIRED
+>

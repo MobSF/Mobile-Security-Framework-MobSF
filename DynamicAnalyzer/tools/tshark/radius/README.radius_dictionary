@@ -1,0 +1,74 @@
+[Dec-01-2010]
+ Commented out global VSA:s from dictionary.ascend to avoid name clashes with IANA assigned VSA:s
+ https://bugs.wireshark.org/bugzilla/show_bug.cgi?id=5455
+
+[Jul-09-2009]
+
+As of the above date the dictionary files in this directory are those from the FreeRadius 2.1.6 [May-18-2009] release
+with the following changes:
+
+1. dictionary
+   - enabled  include: dictionary.cisco.vpn3000
+   - disabled include: dictionary.vqp
+   - disabled include: dictionary.freeradius.internal
+   - added    include: dictionary.chillispot: as per the 2009-06-11 commit in the FreeRadius repository.
+   - added: Comment re Wireshark usage of the integer data type.
+
+2. Added <return> to the end of several of the files;
+   - dictionary.airespace
+   - dictionary.freeswitch
+   - dictionary.h3c
+
+3. dictionary.wimax
+   - Freeradius 2.1.6 dictionary.wimax plus:
+      Added missing END-VENDOR WIMAX statement.
+   - Note that Attribute WiMAX-MN-hHA-MIP4-SPI [11] had a type of "octets"
+     in the previous Wireshark version of this file.
+     This attribute in the FreeRadius version of this file
+     has an attribute type of "integer".
+
+4. dictionary.cablelabs
+   - FreeRadius v 2.1.6 dictionary.cablelabs plus additions based upon:
+      PacketCable(TM) 1.5 Specification: Event Messages [PKT-SP-EM1.5-I03-070412]
+      PacketCable(TM) Specification: Multimedia Specification [PKT-SP-MM-I04-080522]
+   - Added additional comments and changes related to Wireshark use of this file.
+
+5. dictionary.microsoft
+   - FreeRadius v 2.1.6 dictionary.microsoft plus additions based upon
+     Wireshark commit SVN #17706.
+     Essentially: Add "VALUES" for
+      ATTRIBUTE MS-MPPE-Encryption-Policy  and
+      ATTRIBUTE MS-MPPE-Encryption-Types.
+
+6. dictionary.nortel
+   - FreeRadius v 2.1.6 dictionary.nortel plus addition per:
+     2009-07-01 commit in the FreeRadius repository.
+
+7. dictionary.cisco.vpn3000
+   - FreeRadius 2.1.6 dictionary.cisco.vpn3000 plus additions:
+     a. VALUEs as defined in the previous Wireshark version of dictionary.cisco.vpn3000;
+     b. ATTRIBUTEs as defined in:
+        http://www.cisco.com/en/US/docs/security/vpn3000/vpn3000_47/configuration/guide/ldapapp.html#wp1564468
+        Additions from the FreeRadius version are marked with "## [wireshark]".
+
+8. dictionary.aruba
+   - FreeRadius 2.1.6 dictionary.aruba plus additions:
+     See Wireshark Bug #3104 and SVN #26945;
+     See also: https://airheads.arubanetworks.com/vBulletin/showthread.php?t=910
+
+9. dictionary.3gpp2
+   - FreeRadius 2.1.6 dictionary.3gpp2 plus updates based upon
+      the latest 3GPP2 specification:
+       "cdma2000 Wireless IP Network Standard: Accounting Services and 3GPP2 Radius VSAs
+        3GPP2 X.S0011-005-D
+        Version: 2.0
+        Version Date: November 2008"
+       http://www.3gpp2.org/public_html/Specs/X.S0011-005-D_v2.0_081103.pdf
+
+10. dictionary.3gpp
+   - FreeRadius 2.1.6 dictionary.3gpp plus updates based upon:
+	http://pda.etsi.org/exchangefolder/ts_129061v080300p.pdf
+ 	 (ETSI TS 129 061 V8.3.0 (2009-06))
+
+11. dictionary.eltex
+   - New dictionary from Taras Kotov via https://bugs.wireshark.org/bugzilla/show_bug.cgi?id=5415

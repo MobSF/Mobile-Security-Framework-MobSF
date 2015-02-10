@@ -1,0 +1,34 @@
+RFC-1215 DEFINITIONS ::= BEGIN
+
+  IMPORTS
+      ObjectName
+          FROM RFC1155-SMI;
+
+  TRAP-TYPE MACRO ::=
+  BEGIN
+      TYPE NOTATION ::= "ENTERPRISE" value
+                            (enterprise OBJECT IDENTIFIER)
+                        VarPart
+                        DescrPart
+                        ReferPart
+      VALUE NOTATION ::= value (VALUE INTEGER)
+
+      VarPart ::=
+                 "VARIABLES" "{" VarTypes "}"
+                      | empty
+      VarTypes ::=
+                 VarType | VarTypes "," VarType
+      VarType ::=
+                 value (vartype ObjectName)
+
+      DescrPart ::=
+                 "DESCRIPTION" value (description DisplayString)
+                      | empty
+
+      ReferPart ::=
+                 "REFERENCE" value (reference DisplayString)
+                      | empty
+
+  END
+
+END

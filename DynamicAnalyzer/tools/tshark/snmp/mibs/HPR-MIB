@@ -1,0 +1,1346 @@
+HPR-MIB DEFINITIONS ::= BEGIN
+
+  IMPORTS
+        DisplayString, DateAndTime, TimeStamp, TEXTUAL-CONVENTION
+                FROM SNMPv2-TC
+
+        Counter32, Gauge32, Unsigned32, TimeTicks,
+        OBJECT-TYPE, MODULE-IDENTITY
+                FROM SNMPv2-SMI
+
+        MODULE-COMPLIANCE, OBJECT-GROUP
+                FROM SNMPv2-CONF
+
+        snanauMIB
+                FROM SNA-NAU-MIB
+
+        SnaControlPointName
+                FROM APPN-MIB;
+
+hprMIB MODULE-IDENTITY
+        LAST-UPDATED  "9705140000Z"
+        ORGANIZATION  "AIW APPN / HPR MIB SIG"
+        CONTACT-INFO
+
+                "
+
+                        Bob Clouston
+                        Cisco Systems
+                        7025 Kit Creek Road
+                        P.O. Box 14987
+                        Research Triangle Park, NC 27709, USA
+                        Tel:    1 919 472 2333
+                        E-mail: clouston@cisco.com
+
+                        Bob Moore
+                        IBM Corporation
+                        800 Park Offices Drive
+                        RHJA/664
+                        P.O. Box 12195
+                        Research Triangle Park, NC 27709, USA
+                        Tel:    1 919 254 4436
+                        E-mail: remoore@ralvm6.vnet.ibm.com
+                "
+      DESCRIPTION
+                "This is the MIB module for objects used to
+                 manage network devices with HPR capabilities."
+::= { snanauMIB 6 }
+-- snanauMIB ::= { mib-2 34 }
+
+-- *********************************************************************
+-- Textual Conventions
+-- *********************************************************************
+-- SnaControlPointName is imported from the APPN MIB
+
+HprNceTypes ::= TEXTUAL-CONVENTION
+      STATUS current
+      DESCRIPTION
+          "A bit string identifying the set of functions provided by a
+          network connection endpoint (NCE).  The following values are
+          defined:
+
+                bit 0:  control point
+                bit 1:  logical unit
+                bit 2:  boundary function
+                bit 3:  route setup
+          "
+
+      SYNTAX BITS { controlPoint(0),
+                    logicalUnit(1),
+                    boundaryFunction(2),
+                    routeSetup(3) }
+
+HprRtpCounter ::= TEXTUAL-CONVENTION
+      STATUS current
+      DESCRIPTION
+          "An object providing statistics for an RTP connection.  A
+          Management Station can detect discontinuities in this counter
+          by monitoring the correspondingly indexed
+          hprRtpCounterDisconTime object."
+
+      SYNTAX Counter32
+
+-- *********************************************************************
+  hprObjects         OBJECT IDENTIFIER ::= { hprMIB 1 }
+-- *********************************************************************
+
+-- *********************************************************************
+hprGlobal            OBJECT IDENTIFIER ::= { hprObjects 1 }
+-- *********************************************************************
+-- The hprGlobal group applies to both intermediate and end nodes.
+-- *********************************************************************
+
+hprNodeCpName OBJECT-TYPE
+      SYNTAX SnaControlPointName
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Administratively assigned network name for the APPN node
+          where this HPR implementation resides.  If this object has
+          the same value as the appnNodeCpName object in the APPN MIB,
+          then the two objects are referring to the same APPN node."
+
+      ::= { hprGlobal 1 }
+
+hprOperatorPathSwitchSupport  OBJECT-TYPE
+      SYNTAX INTEGER {
+                      notSupported(1),
+                      switchTriggerSupported(2),
+                      switchToPathSupported(3)
+                     }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "This object indicates an implementation's level of support
+          for an operator-requested path switch.
+
+            notSupported(1)           - the agent does not support
+                                        operator-requested path switches
+            switchTriggerSupported(2) - the agent supports a 'switch
+                                        path now' command from an
+                                        operator, but not a command to
+                                        switch to a specified path
+            switchToPathSupported(3)  - the agent supports both a
+                                        'switch path now' command and a
+                                        command to switch to a specified
+                                        path.  Note that the latter
+                                        command is not available via
+                                        this MIB; a system that supports
+                                        it must do so via other means,
+                                        such as a local operator
+                                        interface."
+
+      ::= { hprGlobal 2 }
+
+-- *********************************************************************
+hprAnrRouting        OBJECT IDENTIFIER ::= { hprObjects 2 }
+-- *********************************************************************
+
+hprAnrsAssigned OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "ANR labels"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of ANR labels assigned by this node since it was
+          last re-initialized.  A Management Station can detect
+          discontinuities in this counter by monitoring the
+          appnNodeCounterDisconTime object in the APPN MIB."
+
+      ::= { hprAnrRouting 1 }
+
+hprAnrCounterState  OBJECT-TYPE
+      SYNTAX INTEGER {
+                      notActive(1),
+                      active(2)
+                     }
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+          "This object is used for a network management station to turn
+          on/off the counting of ANR packets in the hprAnrRoutingTable.
+          The initial value of this object is an implementation choice.
+
+                 notActive(1) - the counter hprAnrPacketsReceived
+                                returns no meaningful value
+                 active(2)    - the counter hprAnrPacketsReceived is
+                                being incremented and is returning
+                                meaningful values"
+
+      ::= { hprAnrRouting 2 }
+
+hprAnrCounterStateTime OBJECT-TYPE
+      SYNTAX DateAndTime
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The time when the hprAnrCounterState object last changed its
+          value.  The initial value returned by this object is the time
+          at which the APPN node instrumented with this MIB was last
+          brought up."
+
+      ::= { hprAnrRouting 3 }
+
+hprAnrRoutingTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF HprAnrRoutingEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The ANR Routing table provides a means of correlating an
+          incoming ANR label (i.e., one assigned by this node) with the
+          TG over which a packet containing the label will be forwarded.
+          When the ANR label identifies a local NCE, the hprAnrOutTgDest
+          and hprAnrOutTgNum objects have no meaning.  The table also
+          contains an object to count the number of packets received
+          with a given ANR label."
+
+      ::= { hprAnrRouting 4 }
+
+hprAnrRoutingEntry OBJECT-TYPE
+      SYNTAX HprAnrRoutingEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The ANR label is used to index this table."
+
+      INDEX  { hprAnrLabel }
+
+      ::= { hprAnrRoutingTable 1 }
+
+HprAnrRoutingEntry ::= SEQUENCE {
+     hprAnrLabel             OCTET STRING,
+     hprAnrType              INTEGER,
+     hprAnrOutTgDest         DisplayString,
+     hprAnrOutTgNum          INTEGER,
+     hprAnrPacketsReceived   Counter32,
+     hprAnrCounterDisconTime TimeStamp
+     }
+
+hprAnrLabel OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..8))
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The first ANR label in an incoming packet."
+
+      ::= { hprAnrRoutingEntry 1 }
+
+hprAnrType OBJECT-TYPE
+      SYNTAX INTEGER {
+                      nce(1),
+                      tg(2)
+                     }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "An object indicating whether an ANR label assigned by this
+          node identifies a local NCE or a TG on which outgoing packets
+          are forwarded.
+
+              nce(1)  - the ANR label identifies a local NCE.  In this
+                        case the hprAnrOutTgDest and hprAnrOutTgNum
+                        objects have no meaning.
+              tg(2)   - the ANR label identifies a TG."
+
+      ::= { hprAnrRoutingEntry 2 }
+
+hprAnrOutTgDest OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (0 | 3..17))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Destination node for the TG over which packets with this ANR
+          label are forwarded.  This is the fully qualified name of an
+          APPN network node or end node, formatted according to the
+          SnaControlPointName textual convention.  If the ANR label
+          identifies a local NCE, then this object returns a zero-length
+          string.
+
+          This object corresponds to the appnLocalTgDest object in the
+          APPN MIB."
+
+      ::= { hprAnrRoutingEntry 3 }
+
+hprAnrOutTgNum OBJECT-TYPE
+      SYNTAX INTEGER (0..255)
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Number of the TG over which packets with this ANR label are
+          forwarded.  If the ANR label identifies a local NCE, then this
+          object returns the value 0, since 0 is not a valid TG number
+          for a TG that supports HPR.
+
+          This object corresponds to the appnLocalTgNum object in the
+          APPN MIB."
+
+      ::= { hprAnrRoutingEntry 4 }
+
+hprAnrPacketsReceived OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "ANR packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of packets received with this ANR label as their
+          first label.
+
+          A Management Station can detect discontinuities in this
+          counter by monitoring the hprAnrCounterDisconTime object in
+          the same row."
+
+      ::= { hprAnrRoutingEntry 5 }
+
+hprAnrCounterDisconTime OBJECT-TYPE
+      SYNTAX TimeStamp
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The value of the sysUpTime object when the
+          hprAnrPacketsReceived counter for this ANR label last
+          experienced a discontinuity.  This will be the more recent of
+          two times:  the time at which the ANR label was associated with
+          either an outgoing TG or a local NCE, or the time at which the
+          ANR counters were last turned on or off."
+
+      ::= { hprAnrRoutingEntry 6 }
+
+-- *********************************************************************
+hprTransportUser     OBJECT IDENTIFIER ::= { hprObjects 3 }
+-- *********************************************************************
+-- Transport Service User (TU) Table: (RTP Connection Users)
+--
+-- There will be several users of the HPR transport and each HPR node
+-- shall maintain a table of these users.
+-- *********************************************************************
+
+hprNceTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF HprNceEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The Network Connection Endpoint (NCE) table."
+
+      ::= { hprTransportUser 1 }
+
+hprNceEntry OBJECT-TYPE
+      SYNTAX HprNceEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The NCE ID is used to index this table."
+
+      INDEX  { hprNceId }
+
+      ::= { hprNceTable 1 }
+
+HprNceEntry ::= SEQUENCE {
+     hprNceId            OCTET STRING,
+     hprNceType          HprNceTypes,
+     hprNceDefault       HprNceTypes,
+     hprNceInstanceId    OCTET STRING
+     }
+
+hprNceId OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..8))
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The Network Connection Endpoint (NCE) ID.  NCEs identify
+          Control Points (Cp), Logical Units (Lu), HPR Boundary
+          Functions (Bf) and Route Setup (Rs) Functions.  A value for
+          this object can be retrieved from any of the following
+          objects in the APPN MIB:
+
+               - appnLsCpCpNceId
+               - appnLsRouteNceId
+               - appnLsBfNceId
+               - appnIsInRtpNceId
+               - appnIsRtpNceId
+
+          In each case this value identifies a row in this table
+          containing information related to that in the APPN MIB."
+
+      ::= { hprNceEntry 1 }
+
+hprNceType OBJECT-TYPE
+      SYNTAX HprNceTypes
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "A bit string identifying the function types provided by this
+          Network Connection Endpoint (NCE)."
+
+      ::= { hprNceEntry 2 }
+
+hprNceDefault OBJECT-TYPE
+      SYNTAX HprNceTypes
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "A bit string identifying the function types for which this
+          Network Connection Endpoint (NCE) is the default NCE.  While
+          default NCEs are not explicitly defined in the architecture,
+          some implementations provide them; for such implementations,
+          it is useful to make this information available to a
+          Management Station."
+
+      ::= { hprNceEntry 3 }
+
+hprNceInstanceId   OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (4))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The NCE instance identifier (NCEII) identifying the current
+          instance of this NCE.  An NCEII is used to denote different
+          instances (IPLs) of an NCE component.  Each time an NCE is
+          activated (IPL'd), it acquires a different, unique NCEII."
+
+      ::= { hprNceEntry 4 }
+
+-- *********************************************************************
+hprRtp               OBJECT IDENTIFIER ::= { hprObjects 4 }
+-- *********************************************************************
+-- *********************************************************************
+--
+-- The RTP group is implemented by all managed nodes supporting the
+-- HPR Transport Tower.  The group contains several scalars (simple
+-- objects) and a table.
+-- *********************************************************************
+
+-- *********************************************************************
+hprRtpGlobe          OBJECT IDENTIFIER ::= { hprRtp 1}
+-- *********************************************************************
+hprRtpGlobeConnSetups  OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "RTP connection setups"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of RTP connection setups in which this node has
+          participated, as either sender or receiver, since it was last
+          re-initialized.  Retries of a setup attempt do not cause the
+          counter to be incremented.
+
+          A Management Station can detect discontinuities in this
+          counter by monitoring the appnNodeCounterDisconTime object
+          in the APPN MIB."
+
+      ::= { hprRtpGlobe 1 }
+
+hprRtpGlobeCtrState OBJECT-TYPE
+      SYNTAX INTEGER {
+                      notActive(1),
+                      active(2)
+                     }
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+          "This object allows a network management station to turn the
+          counters in the hprRtpTable on and off.  The initial value of
+          this object is an implementation choice.
+
+                 notActive(1) - the counters in the hprRtpTable are
+                                returning no meaningful values
+                 active(2)    - the counters in the hprRtpTable are
+                                being incremented and are returning
+                                meaningful values"
+
+      ::= { hprRtpGlobe 2 }
+
+hprRtpGlobeCtrStateTime OBJECT-TYPE
+      SYNTAX DateAndTime
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The time when the value of the hprRtpGlobeCtrState object
+          last changed.  The initial value returned by this object is
+          the time at which the APPN node instrumented with this MIB
+          was last brought up."
+
+      ::= { hprRtpGlobe 3 }
+
+-- *********************************************************************
+-- The RTP Connection Table
+-- There may be many RTP connections on a node supporting the functions
+-- specified in the RTP option set.  Each node implementing this option
+-- set shall maintain a table of these RTP connections.
+-- *********************************************************************
+
+hprRtpTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF HprRtpEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The RTP Connection table"
+
+      ::= { hprRtp 2 }
+
+hprRtpEntry OBJECT-TYPE
+      SYNTAX HprRtpEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The local NCE ID and local TCID are used to index this
+          table."
+
+      INDEX
+             { hprRtpLocNceId,
+               hprRtpLocTcid }
+
+      ::= { hprRtpTable 1 }
+
+HprRtpEntry ::= SEQUENCE {
+     hprRtpLocNceId          OCTET STRING,       -- local nce id
+     hprRtpLocTcid           OCTET STRING,       -- local tcid
+     hprRtpRemCpName         SnaControlPointName,-- remote cp name
+     hprRtpRemNceId          OCTET STRING,       -- remote nce id
+     hprRtpRemTcid           OCTET STRING,       -- remote tcid
+     hprRtpPathSwitchTrigger INTEGER,            -- trigger (read-write)
+     hprRtpRscv              OCTET STRING,       -- rscv
+     hprRtpTopic             DisplayString,      -- topic (cos)
+     hprRtpState             INTEGER,            -- state
+     hprRtpUpTime            TimeTicks,          -- up time
+
+     hprRtpLivenessTimer     Unsigned32,         -- liveness timer
+     hprRtpShortReqTimer     Unsigned32,         -- short request timer
+     hprRtpPathSwTimer       Unsigned32,         -- path switch timer
+     hprRtpLivenessTimeouts  HprRtpCounter,      -- liveness timeouts
+     hprRtpShortReqTimeouts  HprRtpCounter,      -- short req timeouts
+
+     hprRtpMaxSendRate       Gauge32,            -- maximum send rate
+     hprRtpMinSendRate       Gauge32,            -- minimum send rate
+     hprRtpCurSendRate       Gauge32,            -- current send rate
+
+     hprRtpSmRdTripDelay     Gauge32,            -- smooth rnd trip
+                                                 -- delay
+
+     hprRtpSendPackets       HprRtpCounter,      -- packets sent
+     hprRtpRecvPackets       HprRtpCounter,      -- packets received
+     hprRtpSendBytes         HprRtpCounter,      -- bytes sent
+     hprRtpRecvBytes         HprRtpCounter,      -- bytes received
+
+     hprRtpRetrPackets       HprRtpCounter,      -- pkts re-xmitted
+     hprRtpPacketsDiscarded  HprRtpCounter,      -- pkts discarded
+     hprRtpDetectGaps        HprRtpCounter,      -- gaps detected
+     hprRtpRateReqSends      HprRtpCounter,      -- rate req send
+
+     hprRtpOkErrPathSws      HprRtpCounter,      -- ok  err path sws
+     hprRtpBadErrPathSws     HprRtpCounter,      -- bad err path sws
+     hprRtpOkOpPathSws       HprRtpCounter,      -- ok  op  path sws
+     hprRtpBadOpPathSws      HprRtpCounter,      -- bad op  path sws
+
+     hprRtpCounterDisconTime TimeStamp           -- discontinuity ind
+        }
+
+hprRtpLocNceId OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..8))
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The local Network Connection Endpoint (NCE) ID of this RTP
+          connection.  NCEs identify CPs, LUs, Boundary Functions (BFs),
+          and Route Setup (RS) components.  A value for this object can
+          be retrieved from any of the following objects in the APPN
+          MIB:
+
+               - appnLsCpCpNceId
+               - appnLsRouteNceId
+               - appnLsBfNceId
+               - appnIsInRtpNceId
+               - appnIsRtpNceId
+
+          In each case this value identifies a row in this table
+          containing information related to that in the APPN MIB."
+
+      ::= { hprRtpEntry 1 }
+
+hprRtpLocTcid OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (8))
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The local TCID of this RTP connection.  A value for this
+          object can be retrieved from either the appnIsInRtpTcid object
+          or the appnIsRtpTcid object the APPN MIB; in each case this
+          value identifies a row in this table containing information
+          related to that in the APPN MIB."
+
+      ::= { hprRtpEntry 2 }
+
+hprRtpRemCpName OBJECT-TYPE
+      SYNTAX SnaControlPointName
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Administratively assigned network name for the remote node of
+          this RTP connection."
+
+      ::= { hprRtpEntry 3 }
+
+hprRtpRemNceId OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..8))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The remote Network Connection Endpoint (NCE) of this RTP
+          connection.  NCEs identify CPs, LUs, Boundary Functions (BFs),
+          and Route Setup (RS) components."
+
+      ::= { hprRtpEntry 4 }
+
+hprRtpRemTcid OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (8))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The remote TCID of this RTP connection."
+
+      ::= { hprRtpEntry 5 }
+
+hprRtpPathSwitchTrigger OBJECT-TYPE
+      SYNTAX INTEGER {
+                      ready(1),
+                      switchPathNow(2)
+                     }
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+          "Object by which a Management Station can trigger an operator-
+          requested path switch, by setting the value to
+          switchPathNow(2).  Setting this object to switchPathNow(2)
+          triggers a path switch even if its previous value was already
+          switchPathNow(2).
+          The value ready(1) is returned on GET operations until a SET
+          has been processed; after that the value received on the most
+          recent SET is returned.
+
+          This MIB module provides no support for an operator-requested
+          switch to a specified path."
+
+      ::= { hprRtpEntry 6 }
+
+hprRtpRscv OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (0..255))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The forward Route Selection Control Vector for this RTP
+          connection.  The format of this vector is described in SNA
+          Formats.
+
+          The value returned in this object during a path switch is
+          implementation-dependent:  it may be the old path, the new
+          path, a zero-length string, or some other valid RSCV string."
+
+      ::= { hprRtpEntry 7 }
+
+hprRtpTopic OBJECT-TYPE
+      SYNTAX DisplayString (SIZE(8))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The topic for this RTP connection.  This is used to indicate
+          the Class of Service."
+
+      ::= { hprRtpEntry 8 }
+
+hprRtpState OBJECT-TYPE
+      SYNTAX INTEGER {
+                      rtpListening(1),
+                      rtpCalling(2),
+                      rtpConnected(3),
+                      rtpPathSwitching(4),
+                      rtpDisconnecting(5),
+                      other(99)
+                     }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The state of the RTP connection, from the perspective of the
+          local RTP protocol machine:
+              rtpListening      - connection open; waiting for other end
+                                  to call in
+              rtpCalling        - connection opened, attempting to call
+                                  out, have not yet received any data
+                                  from other end
+              rtpConnected      - connection is active; responded to a
+                                  call-in or received other end's TCID
+                                  from a call-out attempt
+              rtpPathSwitching  - the path switch timer is running;
+                                  attempting to find a new path for this
+                                  connection.
+              rtpDisconnecting  - no sessions are using this connection;
+                                  in process of bringing it down
+              other             - the connection is not in any of the
+                                  states listed above."
+
+      ::= { hprRtpEntry 9 }
+
+hprRtpUpTime OBJECT-TYPE
+      SYNTAX TimeTicks
+      UNITS "1/100ths of a second"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The length of time the RTP connection has been up, measured
+          in 1/100ths of a second."
+
+      ::= { hprRtpEntry 10 }
+
+hprRtpLivenessTimer OBJECT-TYPE
+      SYNTAX Unsigned32
+      UNITS "1/100ths of a second"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The value of the liveness (ALIVE) timer of this RTP
+          connection, in units of 1/100th of a second.  When this timer
+          expires and no packet has arrived from the partner since it
+          was last set, packets with Status Request indicators will be
+          sent to see if the RTP connection is still alive."
+
+      ::= { hprRtpEntry 11 }
+
+hprRtpShortReqTimer  OBJECT-TYPE
+      SYNTAX Unsigned32
+      UNITS "1/100ths of a second"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The value of the RTP SHORT_REQ timer, in units of 1/100 of a
+          second.  This timer represents the maximum time that a sender
+          waits for a reply from a receiver."
+
+      ::= { hprRtpEntry 12 }
+
+hprRtpPathSwTimer OBJECT-TYPE
+      SYNTAX Unsigned32
+      UNITS "1/100ths of a second"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The length of time that RTP should attempt a path switch
+          for a connection, in units of 1/100th of a second."
+
+      ::= { hprRtpEntry 13 }
+
+hprRtpLivenessTimeouts OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "liveness timeouts"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of liveness timeouts for this RTP connection."
+
+      ::= { hprRtpEntry 14 }
+
+hprRtpShortReqTimeouts OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "short request timeouts"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of short request timeouts for this RTP connection."
+
+      ::= { hprRtpEntry 15 }
+
+hprRtpMaxSendRate OBJECT-TYPE
+      SYNTAX Gauge32
+      UNITS "bytes per second"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The high-water mark for this RTP connection's send rate, in
+          units of bytes per second.  This is the high-water mark for
+          the entire life of the connection, not just the high-water
+          mark for the connection's current path.
+          For more details on this and other parameters related to HPR,
+          see the High Performance Routing Architecture Reference."
+
+      ::= { hprRtpEntry 16 }
+
+hprRtpMinSendRate OBJECT-TYPE
+      SYNTAX Gauge32
+      UNITS "bytes per second"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The low-water mark for this RTP connection's send rate, in
+          units of bytes per second.  This is the low-water mark for the
+          entire life of the connection, not just the low-water mark for
+          the connection's current path.
+
+          For more details on this and other parameters related to HPR,
+          see the High Performance Routing Architecture Reference."
+
+      ::= { hprRtpEntry 17 }
+
+hprRtpCurSendRate OBJECT-TYPE
+      SYNTAX Gauge32
+      UNITS "bytes per second"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The current send rate for this RTP connection, in units of
+          bytes per second.
+
+          For more details on this and other parameters related to HPR,
+          see the High Performance Routing Architecture Reference."
+
+      ::= { hprRtpEntry 18 }
+
+hprRtpSmRdTripDelay OBJECT-TYPE
+      SYNTAX Gauge32
+      UNITS "1/1000ths of a second"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The smoothed round trip delay for this RTP connection, in
+          units of 1/1000th of a second (ms).
+
+          For more details on this and other parameters related to HPR,
+          see the High Performance Routing Architecture Reference."
+
+      ::= { hprRtpEntry 19 }
+
+hprRtpSendPackets OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "RTP packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of packets successfully sent on this RTP
+          connection."
+
+      ::= { hprRtpEntry 20 }
+
+hprRtpRecvPackets OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "RTP packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of packets received on this RTP connection.  The
+          counter is incremented only once if duplicate copies of a
+          packet are received."
+
+      ::= { hprRtpEntry 21 }
+
+hprRtpSendBytes OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "bytes"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of bytes sent on this RTP connection.  Both RTP
+          Transport Header (THDR) bytes and data bytes are included in
+          this count."
+
+      ::= { hprRtpEntry 22 }
+
+hprRtpRecvBytes OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "bytes"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of bytes received on this RTP connection.  Both RTP
+          Transport Header (THDR) bytes and data bytes are included in
+          this count."
+
+      ::= { hprRtpEntry 23 }
+
+hprRtpRetrPackets OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "RTP packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of packets retransmitted on this RTP connection."
+
+      ::= { hprRtpEntry 24 }
+
+hprRtpPacketsDiscarded OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "RTP packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of packets received on this RTP connection and then
+          discarded.  A packet may be discarded because it is determined
+          to be a duplicate, or for other reasons."
+
+      ::= { hprRtpEntry 25 }
+
+hprRtpDetectGaps OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "gaps"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of gaps detected on this RTP connection."
+
+      ::= { hprRtpEntry 26 }
+
+hprRtpRateReqSends OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "rate requests"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of Rate Requests sent on this RTP connection."
+
+      ::= { hprRtpEntry 27 }
+
+hprRtpOkErrPathSws OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "path switch attempts"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of successful path switch attempts for this RTP
+          connection due to errors."
+
+      ::= { hprRtpEntry 28 }
+
+hprRtpBadErrPathSws OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "path switch attempts"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of unsuccessful path switches for this RTP
+          connection due to errors."
+
+      ::= { hprRtpEntry 29 }
+
+hprRtpOkOpPathSws OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "path switches"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of successful path switches for this RTP connection
+          due to operator requests."
+
+      ::= { hprRtpEntry 30 }
+
+hprRtpBadOpPathSws OBJECT-TYPE
+      SYNTAX HprRtpCounter
+      UNITS "path switches"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The count of unsuccessful path switches for this RTP
+          connection due to operator requests.  This counter is not
+          incremented by an implementation that does not support
+          operator-requested path switches, even if a Management Station
+          requests such a path switch by setting the
+          hprRtpPathSwitchTrigger object."
+
+      ::= { hprRtpEntry 31 }
+
+hprRtpCounterDisconTime OBJECT-TYPE
+      SYNTAX TimeStamp
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The value of the sysUpTime object when the counters for this
+          RTP connection last experienced a discontinuity.  This will be
+          the more recent of two times:  the time at which the
+          connection was established or the time at which the HPR
+          counters were last turned on or off."
+
+      ::= { hprRtpEntry 32 }
+
+-- *********************************************************************
+-- The RTP Connection Status Table
+--  This table contains statistics and historical information related to
+--  both successful and unsuccessful RTP path switches.  This
+--  information can be important for both trend analysis and problem
+--  determination.
+--
+--  Note the terminology here:  when RTP is triggered to find a new path
+--  for a connection, this initiates a 'path switch,' which will end up
+--  being either successful or unsuccessful.  During this path switch,
+--  RTP will make one or more 'path switch attempts,' which are attempts
+--  to find a new path for the connection and switch the connection to
+--  it.  This 'new' path may be the same path that the connection was
+--  using before the path switch.
+--
+--  It is an implementation option how many entries to keep in this
+--  table, and how long to retain any individual entry.
+-- *********************************************************************
+hprRtpStatusTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF HprRtpStatusEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "RTP Connection Status Table:  This table contains historical
+          information on RTP connections.  An entry is created in this
+          table when a path switch is completed, either successfully or
+          unsuccessfully."
+
+      ::= { hprRtp 3 }
+
+hprRtpStatusEntry OBJECT-TYPE
+      SYNTAX HprRtpStatusEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "This table is indexed by local NCE ID, local TCID, and an
+          integer hprRtpStatusIndex.  Thus the primary grouping of table
+          rows is by RTP connection, with the multiple entries for a
+          given RTP connection ordered by time."
+
+      INDEX
+             { hprRtpStatusLocNceId,
+               hprRtpStatusLocTcid,
+               hprRtpStatusIndex }
+
+      ::= { hprRtpStatusTable 1 }
+
+  HprRtpStatusEntry ::= SEQUENCE {
+     hprRtpStatusLocNceId          OCTET STRING, -- local nce id
+     hprRtpStatusLocTcid           OCTET STRING, -- local tcid
+     hprRtpStatusIndex             Unsigned32,   -- index
+     hprRtpStatusStartTime         DateAndTime,  -- time stamp
+     hprRtpStatusEndTime           DateAndTime,  -- time stamp
+     hprRtpStatusRemCpName         SnaControlPointName,-- remote cp name
+     hprRtpStatusRemNceId          OCTET STRING, -- remote nce id
+     hprRtpStatusRemTcid           OCTET STRING, -- remote tcid
+     hprRtpStatusNewRscv           OCTET STRING, -- new rscv
+     hprRtpStatusOldRscv           OCTET STRING, -- old rscv
+     hprRtpStatusCause             INTEGER,      -- cause
+     hprRtpStatusLastAttemptResult INTEGER       -- result of last
+                                          }
+
+hprRtpStatusLocNceId OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..8))
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The local Network Connection Endpoint (NCE) of this RTP
+          connection.  NCEs identify CPs, LUs, Boundary Functions (BFs),
+          and Route Setup (RS) components."
+
+      ::= { hprRtpStatusEntry 1 }
+
+hprRtpStatusLocTcid OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (8))
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The local TCID of this RTP connection."
+
+      ::= { hprRtpStatusEntry 2 }
+
+hprRtpStatusIndex OBJECT-TYPE
+      SYNTAX Unsigned32 (1..4294967295)
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Table index.  This value begins at one and is incremented
+          when a new entry is added to the table.  It is an
+          implementation choice whether to run a single counter for
+          all entries in the table, or to run a separate counter for
+          the entries for each RTP connection.  In the unlikely event
+          of a wrap, it is assumed that Management Stations will have
+          the ability to order table entries correctly."
+
+      ::= { hprRtpStatusEntry 3 }
+
+hprRtpStatusStartTime OBJECT-TYPE
+      SYNTAX DateAndTime
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The time when the path switch began."
+
+      ::= { hprRtpStatusEntry 4 }
+
+hprRtpStatusEndTime OBJECT-TYPE
+      SYNTAX DateAndTime
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The time when the path switch was ended, either successfully
+          or unsuccessfully."
+
+      ::= { hprRtpStatusEntry 5 }
+
+hprRtpStatusRemCpName OBJECT-TYPE
+      SYNTAX SnaControlPointName
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Administratively assigned network name for the remote node of
+          this RTP connection."
+
+      ::= { hprRtpStatusEntry 6 }
+
+hprRtpStatusRemNceId OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..8))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The remote Network Connection Endpoint (NCE) of this RTP
+          connection.  NCEs identify CPs, LUs, Boundary Functions (BFs),
+          and Route Setup (RS) components."
+
+      ::= { hprRtpStatusEntry 7 }
+
+hprRtpStatusRemTcid OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (8))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The remote TCID of this RTP connection."
+
+      ::= { hprRtpStatusEntry 8 }
+
+hprRtpStatusNewRscv OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (0..255))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The new Route Selection Control Vector for this RTP
+          connection.  A zero-length string indicates that no value is
+          available, perhaps because the implementation does not save
+          RSCVs."
+
+      ::= { hprRtpStatusEntry 9 }
+
+hprRtpStatusOldRscv OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (0..255))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The old Route Selection Control Vector for this RTP
+          connection.  A zero-length string indicates that no value is
+          available, perhaps because the implementation does not save
+          RSCVs."
+
+      ::= { hprRtpStatusEntry 10 }
+
+hprRtpStatusCause OBJECT-TYPE
+      SYNTAX INTEGER {
+                      other(1),
+                      rtpConnFail(2),
+                      locLinkFail(3),
+                      remLinkFail(4),
+                      operRequest(5)
+                     }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The reason for the path switch:
+
+               other(1)       - Reason other than those listed below,
+               rtpConnFail(2) - RTP connection failure detected,
+               locLinkFail(3) - Local link failure,
+               remLinkFail(4) - Remote link failure (learned from TDUs),
+               operRequest(5) - Operator requested path switch. "
+
+      ::= { hprRtpStatusEntry 11 }
+
+hprRtpStatusLastAttemptResult  OBJECT-TYPE
+      SYNTAX INTEGER { successful(1),
+                       initiatorMoving(2),
+                       directorySearchFailed(3),
+                       rscvCalculationFailed(4),
+                       negativeRouteSetupReply(5),
+                       backoutRouteSetupReply(6),
+                       timeoutDuringFirstAttempt(7),
+                       otherUnsuccessful(8)
+                     }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The result of the last completed path switch attempt.  If the
+          path switch is aborted in the middle of a path switch attempt
+          because the path switch timer expires, the result of the
+          previous path switch attempt is reported.
+
+          The values are defined as follows:
+
+             successful(1)                - The final path switch
+                                            attempt was successful.
+             initiatorMoving(2)           - The final path switch
+                                            attempt failed because the
+                                            initiator is mobile, and
+                                            there was no active link
+                                            out of this node.
+             directorySearchFailed(3)     - The final path switch
+                                            attempt failed because a
+                                            directory search for the
+                                            destination node's CP name
+                                            failed.
+             rscvCalculationFailed(4)     - The final path switch
+                                            attempt failed because an
+                                            RSCV to the node containing
+                                            the remote RTP endpoint
+                                            could not be calculated.
+             negativeRouteSetupReply(5)   - The final path switch
+                                            attempt failed because route
+                                            setup failed for the new
+                                            path.
+             backoutRouteSetupReply(6)    - The final path switch
+                                            attempt failed because the
+                                            remote RTP endpoint refused
+                                            to continue the RTP
+                                            connection.
+             timeoutDuringFirstAttempt(7) - The path switch timer
+                                            expired during the first
+                                            path switch attempt.
+             otherUnsuccessful(8)         - The final path switch
+                                            attempt failed for a reason
+                                            other than those listed
+                                            above."
+
+
+      ::= { hprRtpStatusEntry 12 }
+
+
+-- ***************************************************************
+-- Conformance information
+-- ***************************************************************
+
+hprConformance       OBJECT IDENTIFIER ::= { hprMIB 2 }
+
+hprCompliances       OBJECT IDENTIFIER ::= { hprConformance 1 }
+hprGroups            OBJECT IDENTIFIER ::= { hprConformance 2 }
+
+-- Compliance statements
+
+hprCompliance  MODULE-COMPLIANCE
+      STATUS  current
+      DESCRIPTION
+          "The compliance statement for the SNMPv2 entities that
+          implement the HPR MIB."
+
+      MODULE  -- this module
+
+--    Unconditionally mandatory groups
+          MANDATORY-GROUPS  {
+                             hprGlobalConfGroup,
+                             hprAnrRoutingConfGroup,
+                             hprTransportUserConfGroup
+                            }
+
+--    Conditionally mandatory groups
+          GROUP   hprRtpConfGroup
+          DESCRIPTION
+              "The hprRtpConfGroup is mandatory for HPR implementations
+              supporting the HPR transport tower."
+
+      ::= { hprCompliances 1 }
+
+-- Units of conformance
+hprGlobalConfGroup OBJECT-GROUP
+        OBJECTS {
+                 hprNodeCpName,
+                 hprOperatorPathSwitchSupport
+                }
+      STATUS  current
+      DESCRIPTION
+          "A collection of objects providing the instrumentation of HPR
+          general information and capabilities."
+
+      ::= { hprGroups 1 }
+
+hprAnrRoutingConfGroup OBJECT-GROUP
+        OBJECTS {
+                 hprAnrsAssigned,
+                 hprAnrCounterState,
+                 hprAnrCounterStateTime,
+                 hprAnrType,
+                 hprAnrOutTgDest,
+                 hprAnrOutTgNum,
+                 hprAnrPacketsReceived,
+                 hprAnrCounterDisconTime
+                }
+      STATUS  current
+      DESCRIPTION
+          "A collection of objects providing instrumentation for the
+          node's ANR routing."
+
+      ::= { hprGroups 2 }
+
+hprTransportUserConfGroup OBJECT-GROUP
+        OBJECTS {
+                 hprNceType,
+                 hprNceDefault,
+                 hprNceInstanceId
+                }
+      STATUS  current
+      DESCRIPTION
+          "A collection of objects providing information on the users of
+          the HPR transport known to the node."
+
+      ::= { hprGroups 3 }
+
+hprRtpConfGroup  OBJECT-GROUP
+        OBJECTS {
+                 hprRtpGlobeConnSetups,
+                 hprRtpGlobeCtrState,
+                 hprRtpGlobeCtrStateTime,
+                 hprRtpRemCpName,
+                 hprRtpRemNceId,
+                 hprRtpRemTcid,
+                 hprRtpPathSwitchTrigger,
+                 hprRtpRscv,
+                 hprRtpTopic,
+                 hprRtpState,
+                 hprRtpUpTime,
+                 hprRtpLivenessTimer,
+                 hprRtpShortReqTimer,
+                 hprRtpPathSwTimer,
+                 hprRtpLivenessTimeouts,
+                 hprRtpShortReqTimeouts,
+
+                 hprRtpMaxSendRate,
+                 hprRtpMinSendRate,
+                 hprRtpCurSendRate,
+
+                 hprRtpSmRdTripDelay,
+
+                 hprRtpSendPackets,
+                 hprRtpRecvPackets,
+                 hprRtpSendBytes,
+                 hprRtpRecvBytes,
+
+                 hprRtpRetrPackets,
+                 hprRtpPacketsDiscarded,
+                 hprRtpDetectGaps,
+                 hprRtpRateReqSends,
+
+                 hprRtpOkErrPathSws,
+                 hprRtpBadErrPathSws,
+                 hprRtpOkOpPathSws,
+                 hprRtpBadOpPathSws,
+                 hprRtpCounterDisconTime,
+
+                 hprRtpStatusStartTime,
+                 hprRtpStatusEndTime,
+                 hprRtpStatusRemNceId,
+                 hprRtpStatusRemTcid,
+                 hprRtpStatusRemCpName,
+                 hprRtpStatusNewRscv,
+                 hprRtpStatusOldRscv,
+                 hprRtpStatusCause,
+                 hprRtpStatusLastAttemptResult
+
+                }
+      STATUS  current
+      DESCRIPTION
+          "A collection of objects providing the instrumentation for RTP
+          connection end points."
+
+      ::= { hprGroups 4 }
+
+-- end of conformance statement
+
+END

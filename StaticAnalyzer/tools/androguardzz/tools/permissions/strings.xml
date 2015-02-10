@@ -1,0 +1,907 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+/* //device/apps/common/assets/res/any/strings.xml
+**
+** Copyright 2006, The Android Open Source Project
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+*/
+ -->
+
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="byteShort" msgid="8340973892742019101">"B"</string>
+    <string name="kilobyteShort" msgid="5973789783504771878">"KB"</string>
+    <string name="megabyteShort" msgid="6355851576770428922">"MB"</string>
+    <string name="gigabyteShort" msgid="3259882455212193214">"GB"</string>
+    <string name="terabyteShort" msgid="231613018159186962">"TB"</string>
+    <string name="petabyteShort" msgid="5637816680144990219">"PB"</string>
+    <string name="fileSizeSuffix" msgid="7670819340156489359">"<xliff:g id="NUMBER">%1$s</xliff:g><xliff:g id="UNIT">%2$s</xliff:g>"</string>
+    <string name="untitled" msgid="6071602020171759109">"&lt;untitled&gt;"</string>
+    <string name="ellipsis" msgid="7899829516048813237">"…"</string>
+    <string name="emptyPhoneNumber" msgid="7694063042079676517">"(No phone number)"</string>
+    <string name="unknownName" msgid="2277556546742746522">"(Unknown)"</string>
+    <string name="defaultVoiceMailAlphaTag" msgid="2660020990097733077">"Voicemail"</string>
+    <string name="defaultMsisdnAlphaTag" msgid="2850889754919584674">"MSISDN1"</string>
+    <string name="mmiError" msgid="5154499457739052907">"Connection problem or invalid MMI code."</string>
+    <string name="mmiFdnError" msgid="5224398216385316471">"Operation is restricted to fixed dialling numbers only."</string>
+    <string name="serviceEnabled" msgid="8147278346414714315">"Service was enabled."</string>
+    <string name="serviceEnabledFor" msgid="6856228140453471041">"Service was enabled for:"</string>
+    <string name="serviceDisabled" msgid="1937553226592516411">"Service has been disabled."</string>
+    <string name="serviceRegistered" msgid="6275019082598102493">"Registration was successful."</string>
+    <string name="serviceErased" msgid="1288584695297200972">"Erasure was successful."</string>
+    <string name="passwordIncorrect" msgid="7612208839450128715">"Incorrect password."</string>
+    <string name="mmiComplete" msgid="8232527495411698359">"MMI complete."</string>
+    <string name="badPin" msgid="5085454289896032547">"The old PIN that you typed is not correct."</string>
+    <string name="badPuk" msgid="5702522162746042460">"The PUK that you typed is not correct."</string>
+    <string name="mismatchPin" msgid="3695902225843339274">"The PINs that you entered do not match."</string>
+    <string name="invalidPin" msgid="3850018445187475377">"Type a PIN that is 4 to 8 numbers."</string>
+    <string name="needPuk" msgid="919668385956251611">"Your SIM card is PUK-locked. Type the PUK code to unlock it."</string>
+    <string name="needPuk2" msgid="4526033371987193070">"Type PUK2 to unblock SIM card."</string>
+    <string name="ClipMmi" msgid="6952821216480289285">"Incoming Caller ID"</string>
+    <string name="ClirMmi" msgid="7784673673446833091">"Outgoing Caller ID"</string>
+    <string name="CfMmi" msgid="5123218989141573515">"Call forwarding"</string>
+    <string name="CwMmi" msgid="9129678056795016867">"Call waiting"</string>
+    <string name="BaMmi" msgid="455193067926770581">"Call barring"</string>
+    <string name="PwdMmi" msgid="7043715687905254199">"Password change"</string>
+    <string name="PinMmi" msgid="3113117780361190304">"PIN change"</string>
+    <string name="CnipMmi" msgid="3110534680557857162">"Calling number present"</string>
+    <string name="CnirMmi" msgid="3062102121430548731">"Calling number restricted"</string>
+    <string name="ThreeWCMmi" msgid="9051047170321190368">"Three-way calling"</string>
+    <string name="RuacMmi" msgid="7827887459138308886">"Rejection of undesired annoying calls"</string>
+    <string name="CndMmi" msgid="3116446237081575808">"Calling number delivery"</string>
+    <string name="DndMmi" msgid="1265478932418334331">"Do not disturb"</string>
+    <string name="CLIRDefaultOnNextCallOn" msgid="429415409145781923">"Caller ID defaults to restricted. Next call: Restricted"</string>
+    <string name="CLIRDefaultOnNextCallOff" msgid="3092918006077864624">"Caller ID defaults to restricted. Next call: Not restricted"</string>
+    <string name="CLIRDefaultOffNextCallOn" msgid="6179425182856418465">"Caller ID defaults to not restricted. Next call: Restricted"</string>
+    <string name="CLIRDefaultOffNextCallOff" msgid="2567998633124408552">"Caller ID defaults to not restricted. Next call: Not restricted"</string>
+    <string name="serviceNotProvisioned" msgid="8614830180508686666">"Service not provisioned."</string>
+    <string name="CLIRPermanent" msgid="5460892159398802465">"The caller ID setting cannot be changed."</string>
+    <string name="RestrictedChangedTitle" msgid="5592189398956187498">"Restricted access changed"</string>
+    <string name="RestrictedOnData" msgid="8653794784690065540">"Data service is blocked."</string>
+    <string name="RestrictedOnEmergency" msgid="6581163779072833665">"Emergency service is blocked."</string>
+    <string name="RestrictedOnNormal" msgid="4953867011389750673">"Voice service is blocked."</string>
+    <string name="RestrictedOnAllVoice" msgid="1459318899842232234">"All Voice services are blocked."</string>
+    <string name="RestrictedOnSms" msgid="8314352327461638897">"SMS service is blocked."</string>
+    <string name="RestrictedOnVoiceData" msgid="8244438624660371717">"Voice/Data services are blocked."</string>
+    <string name="RestrictedOnVoiceSms" msgid="1888588152792023873">"Voice/SMS services are blocked."</string>
+    <string name="RestrictedOnAll" msgid="2714924667937117304">"All Voice/Data/SMS services are blocked."</string>
+    <string name="serviceClassVoice" msgid="1258393812335258019">"Voice"</string>
+    <string name="serviceClassData" msgid="872456782077937893">"Data"</string>
+    <string name="serviceClassFAX" msgid="5566624998840486475">"FAX"</string>
+    <string name="serviceClassSMS" msgid="2015460373701527489">"SMS"</string>
+    <string name="serviceClassDataAsync" msgid="4523454783498551468">"Async"</string>
+    <string name="serviceClassDataSync" msgid="7530000519646054776">"Sync"</string>
+    <string name="serviceClassPacket" msgid="6991006557993423453">"Packet"</string>
+    <string name="serviceClassPAD" msgid="3235259085648271037">"PAD"</string>
+    <string name="roamingText0" msgid="7170335472198694945">"Roaming Indicator On"</string>
+    <string name="roamingText1" msgid="5314861519752538922">"Roaming Indicator Off"</string>
+    <string name="roamingText2" msgid="8969929049081268115">"Roaming Indicator Flashing"</string>
+    <string name="roamingText3" msgid="5148255027043943317">"Out of local area"</string>
+    <string name="roamingText4" msgid="8808456682550796530">"Out of Building"</string>
+    <string name="roamingText5" msgid="7604063252850354350">"Roaming - Preferred System"</string>
+    <string name="roamingText6" msgid="2059440825782871513">"Roaming - Available System"</string>
+    <string name="roamingText7" msgid="7112078724097233605">"Roaming - Alliance Partner"</string>
+    <string name="roamingText8" msgid="5989569778604089291">"Roaming - Premium Partner"</string>
+    <string name="roamingText9" msgid="7969296811355152491">"Roaming - Full Service Functionality"</string>
+    <string name="roamingText10" msgid="3992906999815316417">"Roaming - Partial Service Functionality"</string>
+    <string name="roamingText11" msgid="4154476854426920970">"Roaming Banner On"</string>
+    <string name="roamingText12" msgid="1189071119992726320">"Roaming Banner Off"</string>
+    <string name="roamingTextSearching" msgid="8360141885972279963">"Searching for Service"</string>
+    <string name="cfTemplateNotForwarded" msgid="1683685883841272560">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: Not forwarded"</string>
+    <string name="cfTemplateForwarded" msgid="1302922117498590521">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: <xliff:g id="DIALING_NUMBER">{1}</xliff:g>"</string>
+    <string name="cfTemplateForwardedTime" msgid="9206251736527085256">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: <xliff:g id="DIALING_NUMBER">{1}</xliff:g> after <xliff:g id="TIME_DELAY">{2}</xliff:g> seconds"</string>
+    <string name="cfTemplateRegistered" msgid="5073237827620166285">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: Not forwarded"</string>
+    <string name="cfTemplateRegisteredTime" msgid="6781621964320635172">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: Not forwarded"</string>
+    <string name="fcComplete" msgid="3118848230966886575">"Feature code complete."</string>
+    <string name="fcError" msgid="3327560126588500777">"Connection problem or invalid feature code."</string>
+    <string name="httpErrorOk" msgid="1191919378083472204">"OK"</string>
+    <string name="httpError" msgid="2567300624552921790">"The web page contains an error."</string>
+    <string name="httpErrorLookup" msgid="4517085806977851374">"The URL could not be found."</string>
+    <string name="httpErrorUnsupportedAuthScheme" msgid="2781440683514730227">"The site authentication scheme is not supported."</string>
+    <string name="httpErrorAuth" msgid="7293960746955020542">"Authentication was unsuccessful."</string>
+    <string name="httpErrorProxyAuth" msgid="1788207010559081331">"Authentication via the proxy server was unsuccessful."</string>
+    <string name="httpErrorConnect" msgid="7623096283505770433">"The connection to the server was unsuccessful."</string>
+    <string name="httpErrorIO" msgid="5047872902739125260">"The server failed to communicate. Try again later."</string>
+    <string name="httpErrorTimeout" msgid="4743403703762883954">"The connection to the server timed out."</string>
+    <string name="httpErrorRedirectLoop" msgid="8679596090392779516">"The page contains too many server redirects."</string>
+    <string name="httpErrorUnsupportedScheme" msgid="5257172771607996054">"The protocol is not supported."</string>
+    <string name="httpErrorFailedSslHandshake" msgid="3088290300440289771">"A secure connection could not be established."</string>
+    <string name="httpErrorBadUrl" msgid="6088183159988619736">"The page could not be opened because the URL is invalid."</string>
+    <string name="httpErrorFile" msgid="8250549644091165175">"The file could not be accessed."</string>
+    <string name="httpErrorFileNotFound" msgid="5588380756326017105">"The file requested was not found."</string>
+    <string name="httpErrorTooManyRequests" msgid="1235396927087188253">"Too many requests are being processed. Try again later."</string>
+    <string name="notification_title" msgid="1259940370369187045">"Sign-in error for <xliff:g id="ACCOUNT">%1$s</xliff:g>"</string>
+    <string name="contentServiceSync" msgid="8353523060269335667">"Sync"</string>
+    <string name="contentServiceSyncNotificationTitle" msgid="397743349191901458">"Sync"</string>
+    <string name="contentServiceTooManyDeletesNotificationDesc" msgid="8100981435080696431">"Too many <xliff:g id="CONTENT_TYPE">%s</xliff:g> deletions."</string>
+    <string name="low_memory" msgid="6632412458436461203">"Phone storage is full! Delete some files to free space."</string>
+    <string name="me" msgid="6545696007631404292">"Me"</string>
+    <string name="power_dialog" msgid="1319919075463988638">"Phone options"</string>
+    <string name="silent_mode" msgid="7167703389802618663">"Silent mode"</string>
+    <string name="turn_on_radio" msgid="3912793092339962371">"Turn on wireless"</string>
+    <string name="turn_off_radio" msgid="8198784949987062346">"Turn off wireless"</string>
+    <string name="screen_lock" msgid="799094655496098153">"Screen lock"</string>
+    <string name="power_off" msgid="4266614107412865048">"Power off"</string>
+    <string name="shutdown_progress" msgid="2281079257329981203">"Shutting down…"</string>
+    <string name="shutdown_confirm" msgid="649792175242821353">"Your phone will shut down."</string>
+    <string name="recent_tasks_title" msgid="3691764623638127888">"Recent"</string>
+    <string name="no_recent_tasks" msgid="279702952298056674">"No recent applications."</string>
+    <string name="global_actions" msgid="2406416831541615258">"Phone options"</string>
+    <string name="global_action_lock" msgid="2844945191792119712">"Screen lock"</string>
+    <string name="global_action_power_off" msgid="4471879440839879722">"Power off"</string>
+    <string name="global_action_toggle_silent_mode" msgid="8219525344246810925">"Silent mode"</string>
+    <string name="global_action_silent_mode_on_status" msgid="3289841937003758806">"Sound is OFF"</string>
+    <string name="global_action_silent_mode_off_status" msgid="1506046579177066419">"Sound is ON"</string>
+    <string name="global_actions_toggle_airplane_mode" msgid="5884330306926307456">"Airplane mode"</string>
+    <string name="global_actions_airplane_mode_on_status" msgid="2719557982608919750">"Aiplane mode is ON"</string>
+    <string name="global_actions_airplane_mode_off_status" msgid="5075070442854490296">"Airplane mode is OFF"</string>
+    <string name="safeMode" msgid="2788228061547930246">"Safe mode"</string>
+    <string name="android_system_label" msgid="6577375335728551336">"Android System"</string>
+    <string name="permgrouplab_costMoney" msgid="5429808217861460401">"Services that cost you money"</string>
+    <string name="permgroupdesc_costMoney" msgid="8193824940620517189">"Allow applications to do things that can cost you money."</string>
+    <string name="permgrouplab_messages" msgid="7521249148445456662">"Your messages"</string>
+    <string name="permgroupdesc_messages" msgid="7045736972019211994">"Read and write your SMS, email and other messages."</string>
+    <string name="permgrouplab_personalInfo" msgid="3519163141070533474">"Your personal information"</string>
+    <string name="permgroupdesc_personalInfo" msgid="5488050357388806068">"Direct access to your contacts and calendar stored on the phone."</string>
+    <string name="permgrouplab_location" msgid="635149742436692049">"Your location"</string>
+    <string name="permgroupdesc_location" msgid="2430258821648348660">"Monitor your physical location"</string>
+    <string name="permgrouplab_network" msgid="5808983377727109831">"Network communication"</string>
+    <string name="permgroupdesc_network" msgid="5035763698958415998">"Allow applications to access various network features."</string>
+    <string name="permgrouplab_accounts" msgid="3359646291125325519">"Your accounts"</string>
+    <string name="permgroupdesc_accounts" msgid="4948732641827091312">"Access the available accounts."</string>
+    <string name="permgrouplab_hardwareControls" msgid="7998214968791599326">"Hardware controls"</string>
+    <string name="permgroupdesc_hardwareControls" msgid="4357057861225462702">"Direct access to hardware on the handset."</string>
+    <string name="permgrouplab_phoneCalls" msgid="9067173988325865923">"Phone calls"</string>
+    <string name="permgroupdesc_phoneCalls" msgid="7489701620446183770">"Monitor, record and process phone calls."</string>
+    <string name="permgrouplab_systemTools" msgid="4652191644082714048">"System tools"</string>
+    <string name="permgroupdesc_systemTools" msgid="8162102602190734305">"Lower-level access and control of the system."</string>
+    <string name="permgrouplab_developmentTools" msgid="3446164584710596513">"Development tools"</string>
+    <string name="permgroupdesc_developmentTools" msgid="9056431193893809814">"Features only needed for application developers."</string>
+    <string name="permgrouplab_storage" msgid="1971118770546336966">"Storage"</string>
+    <string name="permgroupdesc_storage" product="nosdcard" msgid="7442318502446874999">"Access the USB storage."</string>
+    <string name="permgroupdesc_storage" product="default" msgid="9203302214915355774">"Access the SD card."</string>
+    <string name="permlab_statusBar" msgid="7417192629601890791">"disable or modify status bar"</string>
+    <string name="permdesc_statusBar" msgid="1365473595331989732">"Allows application to disable the status bar or add and remove system icons."</string>
+    <string name="permlab_statusBarService" msgid="7247281911387931485">"status bar"</string>
+    <string name="permdesc_statusBarService" msgid="4097605867643520920">"Allows the application to be the status bar."</string>
+    <string name="permlab_expandStatusBar" msgid="1148198785937489264">"expand/collapse status bar"</string>
+    <string name="permdesc_expandStatusBar" msgid="7088604400110768665">"Allows application to expand or collapse the status bar."</string>
+    <string name="permlab_processOutgoingCalls" msgid="1136262550878335980">"intercept outgoing calls"</string>
+    <string name="permdesc_processOutgoingCalls" msgid="2228988201852654461">"Allows application to process outgoing calls and change the number to be dialled. Malicious applications may monitor, redirect or prevent outgoing calls."</string>
+    <string name="permlab_receiveSms" msgid="2697628268086208535">"receive SMS"</string>
+    <string name="permdesc_receiveSms" msgid="6298292335965966117">"Allows application to receive and process SMS messages. Malicious applications may monitor your messages or delete them without showing them to you."</string>
+    <string name="permlab_receiveMms" msgid="8894700916188083287">"receive MMS"</string>
+    <string name="permdesc_receiveMms" msgid="4563346832000174373">"Allows application to receive and process MMS messages. Malicious applications may monitor your messages or delete them without showing them to you."</string>
+    <string name="permlab_sendSms" msgid="5600830612147671529">"send SMS messages"</string>
+    <string name="permdesc_sendSms" msgid="1946540351763502120">"Allows application to send SMS messages. Malicious applications may cost you money by sending messages without your confirmation."</string>
+    <string name="permlab_readSms" msgid="4085333708122372256">"read SMS or MMS"</string>
+    <string name="permdesc_readSms" msgid="3002170087197294591">"Allows application to read SMS messages stored on your phone or SIM card. Malicious applications may read your confidential messages."</string>
+    <string name="permlab_writeSms" msgid="6881122575154940744">"edit SMS or MMS"</string>
+    <string name="permdesc_writeSms" msgid="6299398896177548095">"Allows application to write to SMS messages stored on your phone or SIM card. Malicious applications may delete your messages."</string>
+    <string name="permlab_receiveWapPush" msgid="8258226427716551388">"receive WAP"</string>
+    <string name="permdesc_receiveWapPush" msgid="5979623826128082171">"Allows application to receive and process WAP messages. Malicious applications may monitor your messages or delete them without showing them to you."</string>
+    <string name="permlab_getTasks" msgid="5005277531132573353">"retrieve running applications"</string>
+    <string name="permdesc_getTasks" msgid="7048711358713443341">"Allows application to retrieve information about currently and recently running tasks. May allow malicious applications to discover private information about other applications."</string>
+    <string name="permlab_reorderTasks" msgid="5669588525059921549">"reorder applications running"</string>
+    <string name="permdesc_reorderTasks" msgid="126252774270522835">"Allows an application to move tasks to the foreground and background. Malicious applications can force themselves to the front without your control."</string>
+    <string name="permlab_setDebugApp" msgid="4339730312925176742">"enable application debugging"</string>
+    <string name="permdesc_setDebugApp" msgid="5584310661711990702">"Allows an application to turn on debugging for another application. Malicious applications can use this to kill other applications."</string>
+    <string name="permlab_changeConfiguration" msgid="8214475779521218295">"change your UI settings"</string>
+    <string name="permdesc_changeConfiguration" msgid="3465121501528064399">"Allows an application to change the current configuration, such as the locale or overall font size."</string>
+    <string name="permlab_enableCarMode" msgid="5684504058192921098">"enable car mode"</string>
+    <string name="permdesc_enableCarMode" msgid="5673461159384850628">"Allows an application to enable the car mode."</string>
+    <string name="permlab_killBackgroundProcesses" msgid="8373714752793061963">"kill background processes"</string>
+    <string name="permdesc_killBackgroundProcesses" msgid="2908829602869383753">"Allows an application to kill background processes of other applications, even if memory is not low."</string>
+    <string name="permlab_forceStopPackages" msgid="1447830113260156236">"force-stop other applications"</string>
+    <string name="permdesc_forceStopPackages" msgid="7263036616161367402">"Allows an application to stop other applications forcibly."</string>
+    <string name="permlab_forceBack" msgid="1804196839880393631">"force application to close"</string>
+    <string name="permdesc_forceBack" msgid="6534109744159919013">"Allows an application to force any activity that is in the foreground to close and go back. Should never be needed for normal applications."</string>
+    <string name="permlab_dump" msgid="1681799862438954752">"retrieve system internal status"</string>
+    <string name="permdesc_dump" msgid="2198776174276275220">"Allows application to retrieve internal status of the system. Malicious applications may retrieve a wide variety of private and secure information that they should never normally need."</string>
+    <string name="permlab_shutdown" msgid="7185747824038909016">"partial shutdown"</string>
+    <string name="permdesc_shutdown" msgid="7046500838746291775">"Puts the activity manager into a shut-down state. Does not perform a complete shut down."</string>
+    <string name="permlab_stopAppSwitches" msgid="4138608610717425573">"prevent app switches"</string>
+    <string name="permdesc_stopAppSwitches" msgid="3857886086919033794">"Prevents the user from switching to another application."</string>
+    <string name="permlab_runSetActivityWatcher" msgid="7811586187574696296">"monitor and control all application launching"</string>
+    <string name="permdesc_runSetActivityWatcher" msgid="3228701938345388092">"Allows an application to monitor and control how the system launches activities. Malicious applications may compromise the system completely. This permission is needed only for development, never for normal phone usage."</string>
+    <string name="permlab_broadcastPackageRemoved" msgid="2576333434893532475">"send package removed broadcast"</string>
+    <string name="permdesc_broadcastPackageRemoved" msgid="3453286591439891260">"Allows an application to broadcast a notification that an application package has been removed. Malicious applications may use this to kill any other application running."</string>
+    <string name="permlab_broadcastSmsReceived" msgid="5689095009030336593">"send SMS-received broadcast"</string>
+    <string name="permdesc_broadcastSmsReceived" msgid="9122419277306740155">"Allows an application to broadcast a notification that an SMS message has been received. Malicious applications may use this to forge incoming SMS messages."</string>
+    <string name="permlab_broadcastWapPush" msgid="3145347413028582371">"send WAP-PUSH-received broadcast"</string>
+    <string name="permdesc_broadcastWapPush" msgid="3955303669461378091">"Allows an application to broadcast a notification that a WAP-PUSH message has been received. Malicious applications may use this to forge MMS message receipt or to replace the content of any web page silently with malicious variants."</string>
+    <string name="permlab_setProcessLimit" msgid="2451873664363662666">"limit number of running processes"</string>
+    <string name="permdesc_setProcessLimit" msgid="7824786028557379539">"Allows an application to control the maximum number of processes that will run. Never needed for normal applications."</string>
+    <string name="permlab_setAlwaysFinish" msgid="5342837862439543783">"make all background applications close"</string>
+    <string name="permdesc_setAlwaysFinish" msgid="8773936403987091620">"Allows an application to control whether activities are always finished as soon as they go to the background. Never needed for normal applications."</string>
+    <string name="permlab_batteryStats" msgid="7863923071360031652">"modify battery statistics"</string>
+    <string name="permdesc_batteryStats" msgid="5847319823772230560">"Allows the modification of collected battery statistics. Not for use by normal applications."</string>
+    <string name="permlab_backup" msgid="470013022865453920">"control system back up and restore"</string>
+    <string name="permdesc_backup" msgid="4837493065154256525">"Allows the application to control the system\'s back-up and restore mechanism. Not for use by normal applications."</string>
+    <string name="permlab_internalSystemWindow" msgid="2148563628140193231">"display unauthorised windows"</string>
+    <string name="permdesc_internalSystemWindow" msgid="5895082268284998469">"Allows the creation of windows that are intended to be used by the internal system user interface. Not for use by normal applications."</string>
+    <string name="permlab_systemAlertWindow" msgid="3372321942941168324">"display system-level alerts"</string>
+    <string name="permdesc_systemAlertWindow" msgid="5109622689323490558">"Allows an application to show system-alert windows. Malicious applications can take over the entire screen of the phone."</string>
+    <string name="permlab_setAnimationScale" msgid="2805103241153907174">"modify global animation speed"</string>
+    <string name="permdesc_setAnimationScale" msgid="7181522138912391988">"Allows an application to change the global animation speed (faster or slower animations) at any time."</string>
+    <string name="permlab_manageAppTokens" msgid="17124341698093865">"manage application tokens"</string>
+    <string name="permdesc_manageAppTokens" msgid="977127907524195988">"Allows applications to create and manage their own tokens, bypassing their normal Z-ordering. Should never be needed for normal applications."</string>
+    <string name="permlab_injectEvents" msgid="1378746584023586600">"press keys and control buttons"</string>
+    <string name="permdesc_injectEvents" msgid="3946098050410874715">"Allows an application to deliver its own input events (key presses, etc.) to other applications. Malicious applications can use this to take over the phone."</string>
+    <string name="permlab_readInputState" msgid="469428900041249234">"record what you type and actions that you take"</string>
+    <string name="permdesc_readInputState" msgid="5132879321450325445">"Allows applications to watch the keys that you press even when interacting with another application (such as entering a password). Should never be needed for normal applications."</string>
+    <string name="permlab_bindInputMethod" msgid="3360064620230515776">"bind to an input method"</string>
+    <string name="permdesc_bindInputMethod" msgid="3734838321027317228">"Allows the holder to bind to the top-level interface of an input method. Should never be needed for normal applications."</string>
+    <string name="permlab_bindWallpaper" msgid="8716400279937856462">"bind to wallpaper"</string>
+    <string name="permdesc_bindWallpaper" msgid="5287754520361915347">"Allows the holder to bind to the top-level interface of wallpaper. Should never be needed for normal applications."</string>
+    <string name="permlab_bindDeviceAdmin" msgid="8704986163711455010">"interact with device admin"</string>
+    <string name="permdesc_bindDeviceAdmin" msgid="8714424333082216979">"Allows the holder to send intents to a device administrator. Should never be needed for normal applications."</string>
+    <string name="permlab_setOrientation" msgid="3365947717163866844">"change screen orientation"</string>
+    <string name="permdesc_setOrientation" msgid="6335814461615851863">"Allows an application to change the rotation of the screen at any time. Should never be needed for normal applications."</string>
+    <string name="permlab_signalPersistentProcesses" msgid="4255467255488653854">"send Linux signals to applications"</string>
+    <string name="permdesc_signalPersistentProcesses" msgid="3565530463215015289">"Allows application to request that the supplied signal be sent to all persistent processes."</string>
+    <string name="permlab_persistentActivity" msgid="8659652042401085862">"make application always run"</string>
+    <string name="permdesc_persistentActivity" msgid="5037199778265006008">"Allows an application to make parts of itself persistent, so that the system can\'t use it for other applications."</string>
+    <string name="permlab_deletePackages" msgid="3343439331576348805">"delete applications"</string>
+    <string name="permdesc_deletePackages" msgid="3634943677518723314">"Allows an application to delete Android packages. Malicious applications can use this to delete important applications."</string>
+    <string name="permlab_clearAppUserData" msgid="2192134353540277878">"delete other applications\' data"</string>
+    <string name="permdesc_clearAppUserData" msgid="7546345080434325456">"Allows an application to clear user data."</string>
+    <string name="permlab_deleteCacheFiles" msgid="1518556602634276725">"delete other applications\' caches"</string>
+    <string name="permdesc_deleteCacheFiles" msgid="2283074077168165971">"Allows an application to delete cache files."</string>
+    <string name="permlab_getPackageSize" msgid="4799785352306641460">"measure application storage space"</string>
+    <string name="permdesc_getPackageSize" msgid="5557253039670753437">"Allows an application to retrieve its code, data and cache sizes"</string>
+    <string name="permlab_installPackages" msgid="335800214119051089">"directly install applications"</string>
+    <string name="permdesc_installPackages" msgid="526669220850066132">"Allows an application to install new or updated Android packages. Malicious applications can use this to add new applications with arbitrarily powerful permissions."</string>
+    <string name="permlab_clearAppCache" msgid="4747698311163766540">"delete all application cache data"</string>
+    <string name="permdesc_clearAppCache" msgid="7740465694193671402">"Allows an application to free phone storage by deleting files in application cache directory. Access is usually very restricted to system process."</string>
+    <string name="permlab_movePackage" msgid="728454979946503926">"Move application resources"</string>
+    <string name="permdesc_movePackage" msgid="6323049291923925277">"Allows an application to move application resources from internal to external media and vice versa."</string>
+    <string name="permlab_readLogs" msgid="6615778543198967614">"read sensitive log data"</string>
+    <string name="permdesc_readLogs" msgid="8896449437464867766">"Allows an application to read from the system\'s various log files. This allows it to discover general information about what you are doing with the phone, potentially including personal or private information."</string>
+    <string name="permlab_diagnostic" msgid="8076743953908000342">"read/write to resources owned by diag"</string>
+    <string name="permdesc_diagnostic" msgid="3121238373951637049">"Allows an application to read and write to any resource owned by the diag group; for example, files in /dev. This could potentially affect system stability and security. This should ONLY be used for hardware-specific diagnostics by the manufacturer or operator."</string>
+    <string name="permlab_changeComponentState" msgid="79425198834329406">"enable or disable application components"</string>
+    <string name="permdesc_changeComponentState" msgid="4569107043246700630">"Allows an application to change whether or not a component of another application is enabled. Malicious applications can use this to disable important phone capabilities. It is important to be careful with permission, as it is possible to bring application components into an unusable, inconsistent or unstable state."</string>
+    <string name="permlab_setPreferredApplications" msgid="3393305202145172005">"set preferred applications"</string>
+    <string name="permdesc_setPreferredApplications" msgid="760008293501937546">"Allows an application to modify your preferred applications. This can allow malicious applications to silently change the applications that are run, spoofing your existing applications to collect private data from you."</string>
+    <string name="permlab_writeSettings" msgid="1365523497395143704">"modify global system settings"</string>
+    <string name="permdesc_writeSettings" msgid="838789419871034696">"Allows an application to modify the system\'s settings data. Malicious applications can corrupt your system\'s configuration."</string>
+    <string name="permlab_writeSecureSettings" msgid="204676251876718288">"modify secure system settings"</string>
+    <string name="permdesc_writeSecureSettings" msgid="5497873143539034724">"Allows an application to modify the system\'s secure settings data. Not for use by normal applications."</string>
+    <string name="permlab_writeGservices" msgid="2149426664226152185">"modify the Google services map"</string>
+    <string name="permdesc_writeGservices" msgid="6602362746516676175">"Allows an application to modify the Google services map. Not for use by normal applications."</string>
+    <string name="permlab_receiveBootCompleted" msgid="7776779842866993377">"automatically start at boot"</string>
+    <string name="permdesc_receiveBootCompleted" msgid="698336728415008796">"Allows an application to start itself as soon as the system has finished booting. This can make it take longer to start the phone and allow the application to slow down the overall phone by always running."</string>
+    <string name="permlab_broadcastSticky" msgid="7919126372606881614">"send sticky broadcast"</string>
+    <string name="permdesc_broadcastSticky" msgid="1920045289234052219">"Allows an application to send sticky broadcasts, which remain after the broadcast ends. Malicious applications can make the phone slow or unstable by causing it to use too much memory."</string>
+    <string name="permlab_readContacts" msgid="6219652189510218240">"read contact data"</string>
+    <string name="permdesc_readContacts" msgid="3371591512896545975">"Allows an application to read all of the contact (address) data stored on your phone. Malicious applications can use this to send your data to other people."</string>
+    <string name="permlab_writeContacts" msgid="644616215860933284">"write contact data"</string>
+    <string name="permdesc_writeContacts" msgid="3924383579108183601">"Allows an application to modify the contact (address) data stored on your phone. Malicious applications can use this to erase or modify your contact data."</string>
+    <string name="permlab_readCalendar" msgid="6898987798303840534">"read calendar events"</string>
+    <string name="permdesc_readCalendar" msgid="5533029139652095734">"Allows an application to read all of the calendar events stored on your phone. Malicious applications can use this to send your calendar events to other people."</string>
+    <string name="permlab_writeCalendar" msgid="3894879352594904361">"add or modify calendar events and send emails to guests"</string>
+    <string name="permdesc_writeCalendar" msgid="2988871373544154221">"Allows an application to add or change the events on your calendar, which may send emails to guests. Malicious applications can use this to erase or modify your calendar events or to send emails to guests."</string>
+    <string name="permlab_accessMockLocation" msgid="8688334974036823330">"mock location sources for testing"</string>
+    <string name="permdesc_accessMockLocation" msgid="7648286063459727252">"Create mock location sources for testing. Malicious applications can use this to override the location and/or status returned by real-location sources such as GPS or Network providers."</string>
+    <string name="permlab_accessLocationExtraCommands" msgid="2836308076720553837">"access extra location provider commands"</string>
+    <string name="permdesc_accessLocationExtraCommands" msgid="1948144701382451721">"Access extra location provider commands. Malicious applications could use this to interfere with the operation of the GPS or other location sources."</string>
+    <string name="permlab_installLocationProvider" msgid="6578101199825193873">"permission to install a location provider"</string>
+    <string name="permdesc_installLocationProvider" msgid="5449175116732002106">"Create mock location sources for testing. Malicious applications can use this to override the location and/or status returned by real-location sources such as GPS or Network providers, or monitor and report your location to an external source."</string>
+    <string name="permlab_accessFineLocation" msgid="8116127007541369477">"fine (GPS) location"</string>
+    <string name="permdesc_accessFineLocation" msgid="7411213317434337331">"Access fine location sources, such as the Global Positioning System on the phone, where available. Malicious applications can use this to determine where you are and may consume additional battery power."</string>
+    <string name="permlab_accessCoarseLocation" msgid="4642255009181975828">"coarse (network-based) location"</string>
+    <string name="permdesc_accessCoarseLocation" msgid="8235655958070862293">"Access coarse location sources, such as the mobile network database, to determine an approximate phone location, where available. Malicious applications can use this to determine approximately where you are."</string>
+    <string name="permlab_accessSurfaceFlinger" msgid="2363969641792388947">"access SurfaceFlinger"</string>
+    <string name="permdesc_accessSurfaceFlinger" msgid="6805241830020733025">"Allows application to use SurfaceFlinger low-level features."</string>
+    <string name="permlab_readFrameBuffer" msgid="6690504248178498136">"read frame buffer"</string>
+    <string name="permdesc_readFrameBuffer" msgid="7530020370469942528">"Allows application to read the content of the frame buffer."</string>
+    <string name="permlab_modifyAudioSettings" msgid="6095859937069146086">"change your audio settings"</string>
+    <string name="permdesc_modifyAudioSettings" msgid="5793461287365991922">"Allows application to modify global audio settings, such as volume and routing."</string>
+    <string name="permlab_recordAudio" msgid="3876049771427466323">"record audio"</string>
+    <string name="permdesc_recordAudio" msgid="6493228261176552356">"Allows application to access the audio record path."</string>
+    <string name="permlab_camera" msgid="3616391919559751192">"take pictures and videos"</string>
+    <string name="permdesc_camera" msgid="6004878235852154239">"Allows application to take pictures and videos with the camera. This allows the application to collect images that the camera is seeing at any time."</string>
+    <string name="permlab_brick" msgid="8337817093326370537">"permanently disable phone"</string>
+    <string name="permdesc_brick" msgid="5569526552607599221">"Allows the application to disable the entire phone permanently. This is very dangerous."</string>
+    <string name="permlab_reboot" msgid="2898560872462638242">"force phone reboot"</string>
+    <string name="permdesc_reboot" msgid="7914933292815491782">"Allows the application to force the phone to reboot."</string>
+    <string name="permlab_mount_unmount_filesystems" msgid="1761023272170956541">"mount and unmount file systems"</string>
+    <string name="permdesc_mount_unmount_filesystems" msgid="6253263792535859767">"Allows the application to mount and unmount file systems for removable storage."</string>
+    <string name="permlab_mount_format_filesystems" msgid="5523285143576718981">"format external storage"</string>
+    <string name="permdesc_mount_format_filesystems" msgid="574060044906047386">"Allows the application to format removable storage."</string>
+    <string name="permlab_asec_access" msgid="3411338632002193846">"get information on internal storage"</string>
+    <string name="permdesc_asec_access" msgid="8820326551687285439">"Allows the application to get information on internal storage."</string>
+    <string name="permlab_asec_create" msgid="6414757234789336327">"create internal storage"</string>
+    <string name="permdesc_asec_create" msgid="2621346764995731250">"Allows the application to create internal storage."</string>
+    <string name="permlab_asec_destroy" msgid="526928328301618022">"destroy internal storage"</string>
+    <string name="permdesc_asec_destroy" msgid="2746706889208066256">"Allows the application to destroy internal storage."</string>
+    <string name="permlab_asec_mount_unmount" msgid="2456287623689029744">"mount/unmount internal storage"</string>
+    <string name="permdesc_asec_mount_unmount" msgid="5934375590189368200">"Allows the application to mount/unmount internal storage."</string>
+    <string name="permlab_asec_rename" msgid="7496633954080472417">"rename internal storage"</string>
+    <string name="permdesc_asec_rename" msgid="2152829985238876790">"Allows the application to rename internal storage."</string>
+    <string name="permlab_vibrate" msgid="7768356019980849603">"control vibrator"</string>
+    <string name="permdesc_vibrate" msgid="2886677177257789187">"Allows the application to control the vibrator."</string>
+    <string name="permlab_flashlight" msgid="2155920810121984215">"control flashlight"</string>
+    <string name="permdesc_flashlight" msgid="6433045942283802309">"Allows the application to control the flashlight."</string>
+    <string name="permlab_accessUsb" msgid="7362327818655760496">"access USB devices"</string>
+    <string name="permdesc_accessUsb" msgid="2414271762914049292">"Allows the application to access USB devices."</string>
+    <string name="permlab_hardware_test" msgid="4148290860400659146">"test hardware"</string>
+    <string name="permdesc_hardware_test" msgid="3668894686500081699">"Allows the application to control various peripherals for the purpose of hardware testing."</string>
+    <string name="permlab_callPhone" msgid="3925836347681847954">"directly call phone numbers"</string>
+    <string name="permdesc_callPhone" msgid="3369867353692722456">"Allows the application to call phone numbers without your intervention. Malicious applications may cause unexpected calls on your phone bill. Note that this does not allow the application to call emergency numbers."</string>
+    <string name="permlab_callPrivileged" msgid="4198349211108497879">"directly call any phone numbers"</string>
+    <string name="permdesc_callPrivileged" msgid="244405067160028452">"Allows the application to call any phone number, including emergency numbers, without your intervention. Malicious applications may place unnecessary and illegal calls to emergency services."</string>
+    <string name="permlab_performCdmaProvisioning" msgid="5604848095315421425">"directly start CDMA phone setup"</string>
+    <string name="permdesc_performCdmaProvisioning" msgid="6457447676108355905">"Allows the application to start CDMA provisioning. Malicious applications may start CDMA provisioning unnecessarily"</string>
+    <string name="permlab_locationUpdates" msgid="7785408253364335740">"control location update notifications"</string>
+    <string name="permdesc_locationUpdates" msgid="2300018303720930256">"Allows enabling/disabling location update notifications from the radio. Not for use by normal applications."</string>
+    <string name="permlab_checkinProperties" msgid="7855259461268734914">"access check-in properties"</string>
+    <string name="permdesc_checkinProperties" msgid="7150307006141883832">"Allows read/write access to properties uploaded by the check-in service. Not for use by normal applications."</string>
+    <string name="permlab_bindGadget" msgid="776905339015863471">"choose widgets"</string>
+    <string name="permdesc_bindGadget" msgid="2098697834497452046">"Allows the application to tell the system which widgets can be used by which application. With this permission, applications can give access to personal data to other applications. Not for use by normal applications."</string>
+    <string name="permlab_modifyPhoneState" msgid="8423923777659292228">"modify phone status"</string>
+    <string name="permdesc_modifyPhoneState" msgid="3302284561346956587">"Allows the application to control the phone features of the device. An application with this permission can switch networks, turn the phone radio on and off and the like, without ever notifying you."</string>
+    <string name="permlab_readPhoneState" msgid="2326172951448691631">"read phone state and identity"</string>
+    <string name="permdesc_readPhoneState" msgid="188877305147626781">"Allows the application to access the phone features of the device. An application with this permission can determine the phone number and serial number of this phone, whether a call is active, the number that call is connected to and so on."</string>
+    <string name="permlab_wakeLock" msgid="573480187941496130">"prevent phone from sleeping"</string>
+    <string name="permdesc_wakeLock" msgid="7584036471227467099">"Allows an application to prevent the phone from going to sleep."</string>
+    <string name="permlab_devicePower" msgid="4928622470980943206">"turn phone on or off"</string>
+    <string name="permdesc_devicePower" msgid="4577331933252444818">"Allows the application to turn the phone on or off."</string>
+    <string name="permlab_factoryTest" msgid="3715225492696416187">"run in factory test mode"</string>
+    <string name="permdesc_factoryTest" msgid="8136644990319244802">"Run as a low-level manufacturer test, allowing complete access to the phone hardware. Only available when a phone is running in manufacturer test mode."</string>
+    <string name="permlab_setWallpaper" msgid="6627192333373465143">"set wallpaper"</string>
+    <string name="permdesc_setWallpaper" msgid="6417041752170585837">"Allows the application to set the system wallpaper."</string>
+    <string name="permlab_setWallpaperHints" msgid="3600721069353106851">"set wallpaper size hints"</string>
+    <string name="permdesc_setWallpaperHints" msgid="6019479164008079626">"Allows the application to set the system wallpaper size hints."</string>
+    <string name="permlab_masterClear" msgid="2315750423139697397">"reset system to factory defaults"</string>
+    <string name="permdesc_masterClear" msgid="5033465107545174514">"Allows an application to completely reset the system to its factory settings, erasing all data, configuration and installed applications."</string>
+    <string name="permlab_setTime" msgid="2021614829591775646">"set time"</string>
+    <string name="permdesc_setTime" msgid="667294309287080045">"Allows an application to change the phone\'s clock time."</string>
+    <string name="permlab_setTimeZone" msgid="2945079801013077340">"set time zone"</string>
+    <string name="permdesc_setTimeZone" msgid="1902540227418179364">"Allows an application to change the phone\'s time zone."</string>
+    <string name="permlab_accountManagerService" msgid="4829262349691386986">"act as the Account Manager Service"</string>
+    <string name="permdesc_accountManagerService" msgid="6056903274106394752">"Allows an application to make calls to Account Authenticators"</string>
+    <string name="permlab_getAccounts" msgid="4549918644233460103">"discover known accounts"</string>
+    <string name="permdesc_getAccounts" msgid="6839262446413155394">"Allows an application to access the list of accounts known by the phone."</string>
+    <string name="permlab_authenticateAccounts" msgid="3940505577982882450">"act as an account authenticator"</string>
+    <string name="permdesc_authenticateAccounts" msgid="4006839406474208874">"Allows an application to use the account authenticator capabilities of the Account Manager, including creating accounts as well as obtaining and setting their passwords."</string>
+    <string name="permlab_manageAccounts" msgid="4440380488312204365">"manage the accounts list"</string>
+    <string name="permdesc_manageAccounts" msgid="8804114016661104517">"Allows an application to perform operations like adding and removing accounts and deleting their password."</string>
+    <string name="permlab_useCredentials" msgid="6401886092818819856">"use the authentication credentials of an account"</string>
+    <string name="permdesc_useCredentials" msgid="7416570544619546974">"Allows an application to request authentication tokens."</string>
+    <string name="permlab_accessNetworkState" msgid="6865575199464405769">"view network status"</string>
+    <string name="permdesc_accessNetworkState" msgid="558721128707712766">"Allows an application to view the status of all networks."</string>
+    <string name="permlab_createNetworkSockets" msgid="9121633680349549585">"full Internet access"</string>
+    <string name="permdesc_createNetworkSockets" msgid="4593339106921772192">"Allows an application to create network sockets."</string>
+    <string name="permlab_writeApnSettings" msgid="7823599210086622545">"write Access Point Name settings"</string>
+    <string name="permdesc_writeApnSettings" msgid="7443433457842966680">"Allows an application to modify the APN settings, such as Proxy and Port of any APN."</string>
+    <string name="permlab_changeNetworkState" msgid="958884291454327309">"change network connectivity"</string>
+    <string name="permdesc_changeNetworkState" msgid="4199958910396387075">"Allows an application to change the state of network connectivity."</string>
+    <string name="permlab_changeTetherState" msgid="2702121155761140799">"Change tethered connectivity"</string>
+    <string name="permdesc_changeTetherState" msgid="8905815579146349568">"Allows an application to change the status of tethered network connectivity."</string>
+    <string name="permlab_changeBackgroundDataSetting" msgid="1400666012671648741">"change background data usage setting"</string>
+    <string name="permdesc_changeBackgroundDataSetting" msgid="1001482853266638864">"Allows an application to change the background data usage setting."</string>
+    <string name="permlab_accessWifiState" msgid="8100926650211034400">"view Wi-Fi status"</string>
+    <string name="permdesc_accessWifiState" msgid="485796529139236346">"Allows an application to view the information about the status of Wi-Fi."</string>
+    <string name="permlab_changeWifiState" msgid="7280632711057112137">"change Wi-Fi status"</string>
+    <string name="permdesc_changeWifiState" msgid="2950383153656873267">"Allows an application to connect to and disconnect from Wi-Fi access points and to make changes to configured Wi-Fi networks."</string>
+    <string name="permlab_changeWifiMulticastState" msgid="1368253871483254784">"allow Wi-Fi Multicast reception"</string>
+    <string name="permdesc_changeWifiMulticastState" msgid="8199464507656067553">"Allows an application to receive packets not directly addressed to your device. This can be useful when discovering services offered nearby. It uses more power than the non-multicast mode."</string>
+    <string name="permlab_bluetoothAdmin" msgid="1092209628459341292">"bluetooth administration"</string>
+    <string name="permdesc_bluetoothAdmin" msgid="7256289774667054555">"Allows an application to configure the local Bluetooth phone and to discover and pair with remote devices."</string>
+    <string name="permlab_bluetooth" msgid="8361038707857018732">"create Bluetooth connections"</string>
+    <string name="permdesc_bluetooth" msgid="762515380679392945">"Allows an application to view configuration of the local Bluetooth phone and to make and accept connections with paired devices."</string>
+    <string name="permlab_nfc" msgid="4423351274757876953">"control Near-Field Communication"</string>
+    <string name="permdesc_nfc" msgid="9171401851954407226">"Allows an application to communicate with Near-Field Communication (NFC) tags, cards and readers."</string>
+    <string name="permlab_disableKeyguard" msgid="4977406164311535092">"disable key lock"</string>
+    <string name="permdesc_disableKeyguard" msgid="3189763479326302017">"Allows an application to disable the key lock and any associated password security. A legitimate example of this is the phone disabling the key lock when receiving an incoming phone call, then re-enabling the key lock when the call is finished."</string>
+    <string name="permlab_readSyncSettings" msgid="6201810008230503052">"read sync settings"</string>
+    <string name="permdesc_readSyncSettings" msgid="5315925706353341823">"Allows an application to read the sync settings, such as whether sync is enabled for Contacts."</string>
+    <string name="permlab_writeSyncSettings" msgid="6297138566442486462">"write sync settings"</string>
+    <string name="permdesc_writeSyncSettings" msgid="2498201614431360044">"Allows an application to modify the sync settings, such as whether sync is enabled for Contacts."</string>
+    <string name="permlab_readSyncStats" msgid="7396577451360202448">"read sync statistics"</string>
+    <string name="permdesc_readSyncStats" msgid="7511448343374465000">"Allows an application to read the sync stats; e.g. the history of syncs that have occurred."</string>
+    <string name="permlab_subscribedFeedsRead" msgid="4756609637053353318">"read subscribed feeds"</string>
+    <string name="permdesc_subscribedFeedsRead" msgid="3622200625634207660">"Allows an application to receive details about the currently synced feeds."</string>
+    <string name="permlab_subscribedFeedsWrite" msgid="9015246325408209296">"write subscribed feeds"</string>
+    <string name="permdesc_subscribedFeedsWrite" msgid="8121607099326533878">"Allows an application to modify your currently synced feeds. This could allow a malicious application to change your synced feeds."</string>
+    <string name="permlab_readDictionary" msgid="432535716804748781">"read user-defined dictionary"</string>
+    <string name="permdesc_readDictionary" msgid="1082972603576360690">"Allows an application to read any private words, names and phrases that the user may have stored in the user dictionary."</string>
+    <string name="permlab_writeDictionary" msgid="6703109511836343341">"write to user-defined dictionary"</string>
+    <string name="permdesc_writeDictionary" msgid="2241256206524082880">"Allows an application to write new words into the user dictionary."</string>
+    <string name="permlab_sdcardWrite" product="nosdcard" msgid="85430876310764752">"modify/delete USB storage contents"</string>
+    <string name="permlab_sdcardWrite" product="default" msgid="8079403759001777291">"modify/delete SD card contents"</string>
+    <string name="permdesc_sdcardWrite" product="nosdcard" msgid="6594393334785738252">"Allows an application to write to the USB storage."</string>
+    <string name="permdesc_sdcardWrite" product="default" msgid="6643963204976471878">"Allows an application to write to the SD card."</string>
+    <string name="permlab_cache_filesystem" msgid="5656487264819669824">"access the cache file system"</string>
+    <string name="permdesc_cache_filesystem" msgid="1624734528435659906">"Allows an application to read and write the cache file system."</string>
+    <string name="permlab_use_sip" msgid="5986952362795870502">"make/receive Internet calls"</string>
+    <string name="permdesc_use_sip" msgid="6320376185606661843">"Allows an application to use the SIP service to make/receive Internet calls."</string>
+    <string name="policylab_limitPassword" msgid="4497420728857585791">"Set password rules"</string>
+    <string name="policydesc_limitPassword" msgid="9083400080861728056">"Control the length and the characters allowed in screen-unlock passwords"</string>
+    <string name="policylab_watchLogin" msgid="914130646942199503">"Monitor screen-unlock attempts"</string>
+    <string name="policydesc_watchLogin" msgid="7227578260165172673">"Monitor the number of incorrect passwords entered when unlocking the screen and lock the phone or erase all the phone\'s data if too many incorrect passwords are entered"</string>
+    <string name="policylab_resetPassword" msgid="2620077191242688955">"Change the screen-unlock password"</string>
+    <string name="policydesc_resetPassword" msgid="5391240616981297361">"Change the screen-unlock password"</string>
+    <string name="policylab_forceLock" msgid="2274085384704248431">"Lock the screen"</string>
+    <string name="policydesc_forceLock" msgid="5696964126226028442">"Control how and when the screen locks"</string>
+    <string name="policylab_wipeData" msgid="3910545446758639713">"Erase all data"</string>
+    <string name="policydesc_wipeData" msgid="7669895333814222586">"Erase the phone\'s data without warning by performing a factory data reset"</string>
+  <string-array name="phoneTypes">
+    <item msgid="8901098336658710359">"Home"</item>
+    <item msgid="869923650527136615">"Mobile"</item>
+    <item msgid="7897544654242874543">"Work"</item>
+    <item msgid="1103601433382158155">"Work Fax"</item>
+    <item msgid="1735177144948329370">"Home Fax"</item>
+    <item msgid="603878674477207394">"Pager"</item>
+    <item msgid="1650824275177931637">"Other"</item>
+    <item msgid="9192514806975898961">"Custom"</item>
+  </string-array>
+  <string-array name="emailAddressTypes">
+    <item msgid="8073994352956129127">"Home"</item>
+    <item msgid="7084237356602625604">"Work"</item>
+    <item msgid="1112044410659011023">"Other"</item>
+    <item msgid="2374913952870110618">"Custom"</item>
+  </string-array>
+  <string-array name="postalAddressTypes">
+    <item msgid="6880257626740047286">"Home"</item>
+    <item msgid="5629153956045109251">"Work"</item>
+    <item msgid="4966604264500343469">"Other"</item>
+    <item msgid="4932682847595299369">"Custom"</item>
+  </string-array>
+  <string-array name="imAddressTypes">
+    <item msgid="1738585194601476694">"Home"</item>
+    <item msgid="1359644565647383708">"Work"</item>
+    <item msgid="7868549401053615677">"Other"</item>
+    <item msgid="3145118944639869809">"Custom"</item>
+  </string-array>
+  <string-array name="organizationTypes">
+    <item msgid="7546335612189115615">"Work"</item>
+    <item msgid="4378074129049520373">"Other"</item>
+    <item msgid="3455047468583965104">"Custom"</item>
+  </string-array>
+  <string-array name="imProtocols">
+    <item msgid="8595261363518459565">"AIM"</item>
+    <item msgid="7390473628275490700">"Windows Live"</item>
+    <item msgid="7882877134931458217">"Yahoo"</item>
+    <item msgid="5035376313200585242">"Skype"</item>
+    <item msgid="7532363178459444943">"QQ"</item>
+    <item msgid="3713441034299660749">"Google Talk"</item>
+    <item msgid="2506857312718630823">"ICQ"</item>
+    <item msgid="1648797903785279353">"Jabber"</item>
+  </string-array>
+    <string name="phoneTypeCustom" msgid="1644738059053355820">"Custom"</string>
+    <string name="phoneTypeHome" msgid="2570923463033985887">"Home"</string>
+    <string name="phoneTypeMobile" msgid="6501463557754751037">"Mobile"</string>
+    <string name="phoneTypeWork" msgid="8863939667059911633">"Work"</string>
+    <string name="phoneTypeFaxWork" msgid="3517792160008890912">"Work Fax"</string>
+    <string name="phoneTypeFaxHome" msgid="2067265972322971467">"Home Fax"</string>
+    <string name="phoneTypePager" msgid="7582359955394921732">"Pager"</string>
+    <string name="phoneTypeOther" msgid="1544425847868765990">"Other"</string>
+    <string name="phoneTypeCallback" msgid="2712175203065678206">"Callback"</string>
+    <string name="phoneTypeCar" msgid="8738360689616716982">"Car"</string>
+    <string name="phoneTypeCompanyMain" msgid="540434356461478916">"Company Main"</string>
+    <string name="phoneTypeIsdn" msgid="8022453193171370337">"ISDN"</string>
+    <string name="phoneTypeMain" msgid="6766137010628326916">"Main"</string>
+    <string name="phoneTypeOtherFax" msgid="8587657145072446565">"Other Fax"</string>
+    <string name="phoneTypeRadio" msgid="4093738079908667513">"Radio"</string>
+    <string name="phoneTypeTelex" msgid="3367879952476250512">"Telex"</string>
+    <string name="phoneTypeTtyTdd" msgid="8606514378585000044">"TTY/TDD"</string>
+    <string name="phoneTypeWorkMobile" msgid="1311426989184065709">"Work Mobile"</string>
+    <string name="phoneTypeWorkPager" msgid="649938731231157056">"Work Pager"</string>
+    <string name="phoneTypeAssistant" msgid="5596772636128562884">"Assistant"</string>
+    <string name="phoneTypeMms" msgid="7254492275502768992">"MMS"</string>
+    <string name="eventTypeBirthday" msgid="2813379844211390740">"Birthday"</string>
+    <string name="eventTypeAnniversary" msgid="3876779744518284000">"Anniversary"</string>
+    <string name="eventTypeOther" msgid="5834288791948564594">"Event"</string>
+    <string name="emailTypeCustom" msgid="8525960257804213846">"Custom"</string>
+    <string name="emailTypeHome" msgid="449227236140433919">"Home"</string>
+    <string name="emailTypeWork" msgid="3548058059601149973">"Work"</string>
+    <string name="emailTypeOther" msgid="2923008695272639549">"Other"</string>
+    <string name="emailTypeMobile" msgid="119919005321166205">"Mobile"</string>
+    <string name="postalTypeCustom" msgid="8903206903060479902">"Custom"</string>
+    <string name="postalTypeHome" msgid="8165756977184483097">"Home"</string>
+    <string name="postalTypeWork" msgid="5268172772387694495">"Work"</string>
+    <string name="postalTypeOther" msgid="2726111966623584341">"Other"</string>
+    <string name="imTypeCustom" msgid="2074028755527826046">"Custom"</string>
+    <string name="imTypeHome" msgid="6241181032954263892">"Home"</string>
+    <string name="imTypeWork" msgid="1371489290242433090">"Work"</string>
+    <string name="imTypeOther" msgid="5377007495735915478">"Other"</string>
+    <string name="imProtocolCustom" msgid="6919453836618749992">"Custom"</string>
+    <string name="imProtocolAim" msgid="7050360612368383417">"AIM"</string>
+    <string name="imProtocolMsn" msgid="144556545420769442">"Windows Live"</string>
+    <string name="imProtocolYahoo" msgid="8271439408469021273">"Yahoo"</string>
+    <string name="imProtocolSkype" msgid="9019296744622832951">"Skype"</string>
+    <string name="imProtocolQq" msgid="8887484379494111884">"QQ"</string>
+    <string name="imProtocolGoogleTalk" msgid="3808393979157698766">"Google Talk"</string>
+    <string name="imProtocolIcq" msgid="1574870433606517315">"ICQ"</string>
+    <string name="imProtocolJabber" msgid="2279917630875771722">"Jabber"</string>
+    <string name="imProtocolNetMeeting" msgid="8287625655986827971">"Net Meeting"</string>
+    <string name="orgTypeWork" msgid="29268870505363872">"Work"</string>
+    <string name="orgTypeOther" msgid="3951781131570124082">"Other"</string>
+    <string name="orgTypeCustom" msgid="225523415372088322">"Custom"</string>
+    <string name="sipAddressTypeCustom" msgid="2473580593111590945">"Customised"</string>
+    <string name="sipAddressTypeHome" msgid="6093598181069359295">"Home"</string>
+    <string name="sipAddressTypeWork" msgid="6920725730797099047">"Work"</string>
+    <string name="sipAddressTypeOther" msgid="4408436162950119849">"Other"</string>
+    <string name="contact_status_update_attribution" msgid="5112589886094402795">"via <xliff:g id="SOURCE">%1$s</xliff:g>"</string>
+    <string name="contact_status_update_attribution_with_date" msgid="5945386376369979909">"<xliff:g id="DATE">%1$s</xliff:g> via <xliff:g id="SOURCE">%2$s</xliff:g>"</string>
+    <string name="keyguard_password_enter_pin_code" msgid="3731488827218876115">"Enter PIN code"</string>
+    <string name="keyguard_password_enter_password_code" msgid="9138158344813213754">"Enter password to unlock"</string>
+    <string name="keyguard_password_wrong_pin_code" msgid="1295984114338107718">"Incorrect PIN code!"</string>
+    <string name="keyguard_label_text" msgid="861796461028298424">"To unlock, press Menu, then 0."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="696192103195090970">"Emergency number"</string>
+    <string name="lockscreen_carrier_default" msgid="8812714795156374435">"(No service)"</string>
+    <string name="lockscreen_screen_locked" msgid="7288443074806832904">"Screen locked."</string>
+    <string name="lockscreen_instructions_when_pattern_enabled" msgid="46154051614126049">"Press Menu to unlock or place emergency call."</string>
+    <string name="lockscreen_instructions_when_pattern_disabled" msgid="686260028797158364">"Press Menu to unlock."</string>
+    <string name="lockscreen_pattern_instructions" msgid="7478703254964810302">"Draw pattern to unlock"</string>
+    <string name="lockscreen_emergency_call" msgid="5347633784401285225">"Emergency call"</string>
+    <string name="lockscreen_return_to_call" msgid="5244259785500040021">"Return to call"</string>
+    <string name="lockscreen_pattern_correct" msgid="9039008650362261237">"Correct!"</string>
+    <string name="lockscreen_pattern_wrong" msgid="4817583279053112312">"Sorry, try again"</string>
+    <string name="lockscreen_plugged_in" msgid="613343852842944435">"Charging (<xliff:g id="NUMBER">%d</xliff:g><xliff:g id="PERCENT">%%</xliff:g>)"</string>
+    <string name="lockscreen_charged" msgid="4938930459620989972">"Charged."</string>
+    <string name="lockscreen_battery_short" msgid="3617549178603354656">"<xliff:g id="NUMBER">%d</xliff:g><xliff:g id="PERCENT">%%</xliff:g>"</string>
+    <string name="lockscreen_low_battery" msgid="1482873981919249740">"Connect your charger."</string>
+    <string name="lockscreen_missing_sim_message_short" msgid="7381499217732227295">"No SIM card."</string>
+    <string name="lockscreen_missing_sim_message" msgid="2186920585695169078">"No SIM card in phone."</string>
+    <string name="lockscreen_missing_sim_instructions" msgid="8874620818937719067">"Please insert a SIM card."</string>
+    <string name="emergency_calls_only" msgid="6733978304386365407">"Emergency calls only"</string>
+    <string name="lockscreen_network_locked_message" msgid="143389224986028501">"Network locked"</string>
+    <string name="lockscreen_sim_puk_locked_message" msgid="7441797339976230">"SIM card is PUK-locked."</string>
+    <string name="lockscreen_sim_puk_locked_instructions" msgid="635967534992394321">"Please see the User Guide or contact Customer Care."</string>
+    <string name="lockscreen_sim_locked_message" msgid="8066660129206001039">"SIM card is locked."</string>
+    <string name="lockscreen_sim_unlock_progress_dialog_message" msgid="595323214052881264">"Unlocking SIM card…"</string>
+    <string name="lockscreen_too_many_failed_attempts_dialog_message" msgid="3514742106066877476">"You have drawn your unlock pattern incorrectly <xliff:g id="NUMBER_0">%d</xliff:g> times. "\n\n"Please try again in <xliff:g id="NUMBER_1">%d</xliff:g> seconds."</string>
+    <string name="lockscreen_failed_attempts_almost_glogin" msgid="3351013842320127827">"You have drawn your unlock pattern incorrectly <xliff:g id="NUMBER_0">%d</xliff:g> times. After <xliff:g id="NUMBER_1">%d</xliff:g> more unsuccessful attempts, you will be asked to unlock your phone using your Google sign-in."\n\n" Please try again in <xliff:g id="NUMBER_2">%d</xliff:g> seconds."</string>
+    <string name="lockscreen_too_many_failed_attempts_countdown" msgid="6251480343394389665">"Try again in <xliff:g id="NUMBER">%d</xliff:g> seconds."</string>
+    <string name="lockscreen_forgot_pattern_button_text" msgid="2626999449610695930">"Forgotten pattern?"</string>
+    <string name="lockscreen_glogin_forgot_pattern" msgid="2588521501166032747">"Account unlock"</string>
+    <string name="lockscreen_glogin_too_many_attempts" msgid="2446246026221678244">"Too many pattern attempts!"</string>
+    <string name="lockscreen_glogin_instructions" msgid="1816635201812207709">"To unlock, sign in with your Google account"</string>
+    <string name="lockscreen_glogin_username_hint" msgid="8846881424106484447">"Username (email)"</string>
+    <string name="lockscreen_glogin_password_hint" msgid="5958028383954738528">"Password"</string>
+    <string name="lockscreen_glogin_submit_button" msgid="7130893694795786300">"Sign in"</string>
+    <string name="lockscreen_glogin_invalid_input" msgid="1364051473347485908">"Invalid username or password."</string>
+    <string name="lockscreen_glogin_checking_password" msgid="6758890536332363322">"Checking..."</string>
+    <string name="lockscreen_unlock_label" msgid="737440483220667054">"Unlock"</string>
+    <string name="lockscreen_sound_on_label" msgid="9068877576513425970">"Sound on"</string>
+    <string name="lockscreen_sound_off_label" msgid="996822825154319026">"Sound off"</string>
+    <string name="password_keyboard_label_symbol_key" msgid="992280756256536042">"?123"</string>
+    <string name="password_keyboard_label_alpha_key" msgid="8001096175167485649">"ABC"</string>
+    <string name="password_keyboard_label_alt_key" msgid="1284820942620288678">"ALT"</string>
+    <string name="hour_ampm" msgid="4329881288269772723">"<xliff:g id="HOUR">%-l</xliff:g><xliff:g id="AMPM">%P</xliff:g>"</string>
+    <string name="hour_cap_ampm" msgid="1829009197680861107">"<xliff:g id="HOUR">%-l</xliff:g><xliff:g id="AMPM">%p</xliff:g>"</string>
+    <string name="factorytest_failed" msgid="5410270329114212041">"Factory test failed"</string>
+    <string name="factorytest_not_system" msgid="4435201656767276723">"The FACTORY_TEST action is only supported for packages installed in /system/app."</string>
+    <string name="factorytest_no_action" msgid="872991874799998561">"No package was found that provides the FACTORY_TEST action."</string>
+    <string name="factorytest_reboot" msgid="6320168203050791643">"Reboot"</string>
+    <string name="js_dialog_title" msgid="8143918455087008109">"The page at \'<xliff:g id="TITLE">%s</xliff:g>\' says:"</string>
+    <string name="js_dialog_title_default" msgid="6961903213729667573">"JavaScript"</string>
+    <string name="js_dialog_before_unload" msgid="1901675448179653089">"Navigate away from this page?"\n\n"<xliff:g id="MESSAGE">%s</xliff:g>"\n\n"Select OK to continue or Cancel to stay on the current page."</string>
+    <string name="save_password_label" msgid="6860261758665825069">"Confirm"</string>
+    <string name="double_tap_toast" msgid="1068216937244567247">"Tip: double-tap to zoom in and out."</string>
+    <string name="permlab_readHistoryBookmarks" msgid="1284843728203412135">"read Browser\'s history and bookmarks"</string>
+    <string name="permdesc_readHistoryBookmarks" msgid="4981489815467617191">"Allows the application to read all the URLs that the browser has visited and all of the browser\'s bookmarks."</string>
+    <string name="permlab_writeHistoryBookmarks" msgid="9009434109836280374">"write Browser\'s history and bookmarks"</string>
+    <string name="permdesc_writeHistoryBookmarks" msgid="945571990357114950">"Allows an application to modify the browser\'s history or bookmarks stored on your phone. Malicious applications can use this to erase or modify your browser\'s data."</string>
+    <string name="permlab_setAlarm" msgid="5924401328803615165">"set alarm in alarm clock"</string>
+    <string name="permdesc_setAlarm" msgid="5966966598149875082">"Allows the application to set an alarm in an installed alarm clock application. Some alarm clock applications may not implement this feature."</string>
+    <string name="permlab_writeGeolocationPermissions" msgid="4715212655598275532">"Modify Browser geo-location permissions"</string>
+    <string name="permdesc_writeGeolocationPermissions" msgid="4011908282980861679">"Allows an application to modify the browser\'s geo-location permissions. Malicious applications can use this to allow the sending of location information to arbitrary websites."</string>
+    <string name="save_password_message" msgid="767344687139195790">"Do you want the browser to remember this password?"</string>
+    <string name="save_password_notnow" msgid="6389675316706699758">"Not now"</string>
+    <string name="save_password_remember" msgid="6491879678996749466">"Remember"</string>
+    <string name="save_password_never" msgid="8274330296785855105">"Never"</string>
+    <string name="open_permission_deny" msgid="5661861460947222274">"You do not have permission to open this page."</string>
+    <string name="text_copied" msgid="4985729524670131385">"Text copied to clipboard."</string>
+    <string name="more_item_label" msgid="4650918923083320495">"More"</string>
+    <string name="prepend_shortcut_label" msgid="2572214461676015642">"Menu+"</string>
+    <string name="menu_space_shortcut_label" msgid="2410328639272162537">"space"</string>
+    <string name="menu_enter_shortcut_label" msgid="2743362785111309668">"enter"</string>
+    <string name="menu_delete_shortcut_label" msgid="3658178007202748164">"delete"</string>
+    <string name="search_go" msgid="8298016669822141719">"Search"</string>
+    <string name="oneMonthDurationPast" msgid="7396384508953779925">"1 month ago"</string>
+    <string name="beforeOneMonthDurationPast" msgid="909134546836499826">"Before 1 month ago"</string>
+  <plurals name="num_seconds_ago">
+    <item quantity="one" msgid="4869870056547896011">"1 second ago"</item>
+    <item quantity="other" msgid="3903706804349556379">"<xliff:g id="COUNT">%d</xliff:g> seconds ago"</item>
+  </plurals>
+  <plurals name="num_minutes_ago">
+    <item quantity="one" msgid="3306787433088810191">"1 minute ago"</item>
+    <item quantity="other" msgid="2176942008915455116">"<xliff:g id="COUNT">%d</xliff:g> minutes ago"</item>
+  </plurals>
+  <plurals name="num_hours_ago">
+    <item quantity="one" msgid="9150797944610821849">"1 hour ago"</item>
+    <item quantity="other" msgid="2467273239587587569">"<xliff:g id="COUNT">%d</xliff:g> hours ago"</item>
+  </plurals>
+  <plurals name="last_num_days">
+    <item quantity="other" msgid="3069992808164318268">"Last <xliff:g id="COUNT">%d</xliff:g> days"</item>
+  </plurals>
+    <string name="last_month" msgid="3959346739979055432">"Last month"</string>
+    <string name="older" msgid="5211975022815554840">"Older"</string>
+  <plurals name="num_days_ago">
+    <item quantity="one" msgid="861358534398115820">"yesterday"</item>
+    <item quantity="other" msgid="2479586466153314633">"<xliff:g id="COUNT">%d</xliff:g> days ago"</item>
+  </plurals>
+  <plurals name="in_num_seconds">
+    <item quantity="one" msgid="2729745560954905102">"in 1 second"</item>
+    <item quantity="other" msgid="1241926116443974687">"in <xliff:g id="COUNT">%d</xliff:g> seconds"</item>
+  </plurals>
+  <plurals name="in_num_minutes">
+    <item quantity="one" msgid="8793095251325200395">"in 1 minute"</item>
+    <item quantity="other" msgid="3330713936399448749">"in <xliff:g id="COUNT">%d</xliff:g> minutes"</item>
+  </plurals>
+  <plurals name="in_num_hours">
+    <item quantity="one" msgid="7164353342477769999">"in 1 hour"</item>
+    <item quantity="other" msgid="547290677353727389">"in <xliff:g id="COUNT">%d</xliff:g> hours"</item>
+  </plurals>
+  <plurals name="in_num_days">
+    <item quantity="one" msgid="5413088743009839518">"tomorrow"</item>
+    <item quantity="other" msgid="5109449375100953247">"in <xliff:g id="COUNT">%d</xliff:g> days"</item>
+  </plurals>
+  <plurals name="abbrev_num_seconds_ago">
+    <item quantity="one" msgid="1849036840200069118">"1 sec ago"</item>
+    <item quantity="other" msgid="3699169366650930415">"<xliff:g id="COUNT">%d</xliff:g> secs ago"</item>
+  </plurals>
+  <plurals name="abbrev_num_minutes_ago">
+    <item quantity="one" msgid="6361490147113871545">"1 min ago"</item>
+    <item quantity="other" msgid="851164968597150710">"<xliff:g id="COUNT">%d</xliff:g> mins ago"</item>
+  </plurals>
+  <plurals name="abbrev_num_hours_ago">
+    <item quantity="one" msgid="4796212039724722116">"1 hour ago"</item>
+    <item quantity="other" msgid="6889970745748538901">"<xliff:g id="COUNT">%d</xliff:g> hours ago"</item>
+  </plurals>
+  <plurals name="abbrev_num_days_ago">
+    <item quantity="one" msgid="8463161711492680309">"yesterday"</item>
+    <item quantity="other" msgid="3453342639616481191">"<xliff:g id="COUNT">%d</xliff:g> days ago"</item>
+  </plurals>
+  <plurals name="abbrev_in_num_seconds">
+    <item quantity="one" msgid="5842225370795066299">"in 1 sec"</item>
+    <item quantity="other" msgid="5495880108825805108">"in <xliff:g id="COUNT">%d</xliff:g> secs"</item>
+  </plurals>
+  <plurals name="abbrev_in_num_minutes">
+    <item quantity="one" msgid="562786149928284878">"in 1 min"</item>
+    <item quantity="other" msgid="4216113292706568726">"in <xliff:g id="COUNT">%d</xliff:g> mins"</item>
+  </plurals>
+  <plurals name="abbrev_in_num_hours">
+    <item quantity="one" msgid="3274708118124045246">"in 1 hour"</item>
+    <item quantity="other" msgid="3705373766798013406">"in <xliff:g id="COUNT">%d</xliff:g> hours"</item>
+  </plurals>
+  <plurals name="abbrev_in_num_days">
+    <item quantity="one" msgid="2178576254385739855">"tomorrow"</item>
+    <item quantity="other" msgid="2973062968038355991">"in <xliff:g id="COUNT">%d</xliff:g> days"</item>
+  </plurals>
+    <string name="preposition_for_date" msgid="9093949757757445117">"on <xliff:g id="DATE">%s</xliff:g>"</string>
+    <string name="preposition_for_time" msgid="5506831244263083793">"at <xliff:g id="TIME">%s</xliff:g>"</string>
+    <string name="preposition_for_year" msgid="5040395640711867177">"in<xliff:g id="YEAR">%s</xliff:g>"</string>
+    <string name="day" msgid="8144195776058119424">"day"</string>
+    <string name="days" msgid="4774547661021344602">"days"</string>
+    <string name="hour" msgid="2126771916426189481">"hour"</string>
+    <string name="hours" msgid="894424005266852993">"hours"</string>
+    <string name="minute" msgid="9148878657703769868">"min"</string>
+    <string name="minutes" msgid="5646001005827034509">"mins"</string>
+    <string name="second" msgid="3184235808021478">"sec"</string>
+    <string name="seconds" msgid="3161515347216589235">"secs"</string>
+    <string name="week" msgid="5617961537173061583">"week"</string>
+    <string name="weeks" msgid="6509623834583944518">"weeks"</string>
+    <string name="year" msgid="4001118221013892076">"year"</string>
+    <string name="years" msgid="6881577717993213522">"years"</string>
+    <string name="VideoView_error_title" msgid="3359437293118172396">"Cannot play video"</string>
+    <string name="VideoView_error_text_invalid_progressive_playback" msgid="897920883624437033">"Sorry, this video is not valid for streaming to this device."</string>
+    <string name="VideoView_error_text_unknown" msgid="710301040038083944">"Sorry, this video cannot be played."</string>
+    <string name="VideoView_error_button" msgid="2822238215100679592">"OK"</string>
+    <string name="relative_time" msgid="1818557177829411417">"<xliff:g id="DATE">%1$s</xliff:g>, <xliff:g id="TIME">%2$s</xliff:g>"</string>
+    <string name="noon" msgid="7245353528818587908">"noon"</string>
+    <string name="Noon" msgid="3342127745230013127">"Noon"</string>
+    <string name="midnight" msgid="7166259508850457595">"midnight"</string>
+    <string name="Midnight" msgid="5630806906897892201">"Midnight"</string>
+    <string name="elapsed_time_short_format_mm_ss" msgid="4431555943828711473">"<xliff:g id="MINUTES">%1$02d</xliff:g>:<xliff:g id="SECONDS">%2$02d</xliff:g>"</string>
+    <string name="elapsed_time_short_format_h_mm_ss" msgid="1846071997616654124">"<xliff:g id="HOURS">%1$d</xliff:g>:<xliff:g id="MINUTES">%2$02d</xliff:g>:<xliff:g id="SECONDS">%3$02d</xliff:g>"</string>
+    <string name="selectAll" msgid="6876518925844129331">"Select all"</string>
+    <string name="selectText" msgid="4862359311088898878">"Select word"</string>
+    <string name="cut" msgid="3092569408438626261">"Cut"</string>
+    <string name="copy" msgid="2681946229533511987">"Copy"</string>
+    <string name="paste" msgid="5629880836805036433">"Paste"</string>
+    <string name="copyUrl" msgid="2538211579596067402">"Copy URL"</string>
+    <string name="inputMethod" msgid="1653630062304567879">"Input method"</string>
+    <string name="addToDictionary" msgid="8793624991686948709">"Add \"<xliff:g id="WORD">%s</xliff:g>\" to dictionary"</string>
+    <string name="editTextMenuTitle" msgid="1672989176958581452">"Edit text"</string>
+    <string name="low_internal_storage_view_title" msgid="1399732408701697546">"Low on space"</string>
+    <string name="low_internal_storage_view_text" msgid="635106544616378836">"Phone storage space is getting low."</string>
+    <string name="ok" msgid="5970060430562524910">"OK"</string>
+    <string name="cancel" msgid="6442560571259935130">"Cancel"</string>
+    <string name="yes" msgid="5362982303337969312">"OK"</string>
+    <string name="no" msgid="5141531044935541497">"Cancel"</string>
+    <string name="dialog_alert_title" msgid="2049658708609043103">"Attention"</string>
+    <string name="capital_on" msgid="1544682755514494298">"ON"</string>
+    <string name="capital_off" msgid="6815870386972805832">"OFF"</string>
+    <string name="whichApplication" msgid="4533185947064773386">"Complete action using"</string>
+    <string name="alwaysUse" msgid="4583018368000610438">"Use by default for this action."</string>
+    <string name="clearDefaultHintMsg" msgid="4815455344600932173">"Clear default in Home Settings &gt; Applications &gt; Manage applications."</string>
+    <string name="chooseActivity" msgid="1009246475582238425">"Select an action"</string>
+    <string name="noApplications" msgid="1691104391758345586">"No applications can perform this action."</string>
+    <string name="aerr_title" msgid="653922989522758100">"Sorry!"</string>
+    <string name="aerr_application" msgid="4683614104336409186">"The application <xliff:g id="APPLICATION">%1$s</xliff:g> (process <xliff:g id="PROCESS">%2$s</xliff:g>) has stopped unexpectedly. Please try again."</string>
+    <string name="aerr_process" msgid="1551785535966089511">"The process <xliff:g id="PROCESS">%1$s</xliff:g> has stopped unexpectedly. Please try again."</string>
+    <string name="anr_title" msgid="3100070910664756057">"Sorry!"</string>
+    <string name="anr_activity_application" msgid="3538242413112507636">"Activity <xliff:g id="ACTIVITY">%1$s</xliff:g> (in application <xliff:g id="APPLICATION">%2$s</xliff:g>) is not responding."</string>
+    <string name="anr_activity_process" msgid="5420826626009561014">"Activity <xliff:g id="ACTIVITY">%1$s</xliff:g> (in process <xliff:g id="PROCESS">%2$s</xliff:g>) is not responding."</string>
+    <string name="anr_application_process" msgid="4185842666452210193">"Application <xliff:g id="APPLICATION">%1$s</xliff:g> (in process <xliff:g id="PROCESS">%2$s</xliff:g>) is not responding."</string>
+    <string name="anr_process" msgid="1246866008169975783">"Process <xliff:g id="PROCESS">%1$s</xliff:g> is not responding."</string>
+    <string name="force_close" msgid="3653416315450806396">"Force close"</string>
+    <string name="report" msgid="4060218260984795706">"Report"</string>
+    <string name="wait" msgid="7147118217226317732">"Wait"</string>
+    <string name="launch_warning_title" msgid="8323761616052121936">"Application redirected"</string>
+    <string name="launch_warning_replace" msgid="6202498949970281412">"<xliff:g id="APP_NAME">%1$s</xliff:g> is now running."</string>
+    <string name="launch_warning_original" msgid="188102023021668683">"<xliff:g id="APP_NAME">%1$s</xliff:g> was originally launched."</string>
+    <string name="smv_application" msgid="295583804361236288">"The application <xliff:g id="APPLICATION">%1$s</xliff:g> (process <xliff:g id="PROCESS">%2$s</xliff:g>) has violated its self-enforced StrictMode policy."</string>
+    <string name="smv_process" msgid="5120397012047462446">"The process <xliff:g id="PROCESS">%1$s</xliff:g> has violated its self-enforced StrictMode policy."</string>
+    <string name="heavy_weight_notification" msgid="9087063985776626166">"<xliff:g id="APP">%1$s</xliff:g> running"</string>
+    <string name="heavy_weight_notification_detail" msgid="2423977499339403402">"Select to switch to application"</string>
+    <string name="heavy_weight_switcher_title" msgid="1135403633766694316">"Switch applications?"</string>
+    <string name="heavy_weight_switcher_text" msgid="4592075610079319667">"Another application is already running that must be stopped before you can start a new one."</string>
+    <string name="old_app_action" msgid="493129172238566282">"Return to <xliff:g id="OLD_APP">%1$s</xliff:g>"</string>
+    <string name="old_app_description" msgid="942967900237208466">"Don\'t start the new application."</string>
+    <string name="new_app_action" msgid="5472756926945440706">"Start <xliff:g id="OLD_APP">%1$s</xliff:g>"</string>
+    <string name="new_app_description" msgid="6830398339826789493">"Stop the old application without saving."</string>
+    <string name="sendText" msgid="5132506121645618310">"Select an action for text"</string>
+    <string name="volume_ringtone" msgid="6885421406845734650">"Ringer volume"</string>
+    <string name="volume_music" msgid="5421651157138628171">"Media volume"</string>
+    <string name="volume_music_hint_playing_through_bluetooth" msgid="9165984379394601533">"Playing through Bluetooth"</string>
+    <string name="volume_music_hint_silent_ringtone_selected" msgid="6158339745293431194">"Silent ringtone selected"</string>
+    <string name="volume_call" msgid="3941680041282788711">"In-call volume"</string>
+    <string name="volume_bluetooth_call" msgid="2002891926351151534">"Bluetooth in-call volume"</string>
+    <string name="volume_alarm" msgid="1985191616042689100">"Alarm volume"</string>
+    <string name="volume_notification" msgid="2422265656744276715">"Notification volume"</string>
+    <string name="volume_unknown" msgid="1400219669770445902">"Volume"</string>
+    <string name="ringtone_default" msgid="3789758980357696936">"Default ringtone"</string>
+    <string name="ringtone_default_with_actual" msgid="8129563480895990372">"Default ringtone (<xliff:g id="ACTUAL_RINGTONE">%1$s</xliff:g>)"</string>
+    <string name="ringtone_silent" msgid="4440324407807468713">"Silent"</string>
+    <string name="ringtone_picker_title" msgid="3515143939175119094">"Ringtones"</string>
+    <string name="ringtone_unknown" msgid="5477919988701784788">"Unknown ringtone"</string>
+  <plurals name="wifi_available">
+    <item quantity="one" msgid="6654123987418168693">"Wi-Fi network available"</item>
+    <item quantity="other" msgid="4192424489168397386">"Wi-Fi networks available"</item>
+  </plurals>
+  <plurals name="wifi_available_detailed">
+    <item quantity="one" msgid="1634101450343277345">"Open available Wi-Fi network"</item>
+    <item quantity="other" msgid="7915895323644292768">"Open Wi-Fi networks available"</item>
+  </plurals>
+    <string name="select_character" msgid="3365550120617701745">"Insert character"</string>
+    <string name="sms_control_default_app_name" msgid="7630529934366549163">"Unknown application"</string>
+    <string name="sms_control_title" msgid="7296612781128917719">"Sending SMS messages"</string>
+    <string name="sms_control_message" msgid="1289331457999236205">"A large number of SMS messages are being sent. Select \"OK\" to continue or \"Cancel\" to stop sending."</string>
+    <string name="sms_control_yes" msgid="2532062172402615953">"OK"</string>
+    <string name="sms_control_no" msgid="1715320703137199869">"Cancel"</string>
+    <string name="date_time_set" msgid="5777075614321087758">"Set"</string>
+    <string name="default_permission_group" msgid="2690160991405646128">"Default"</string>
+    <string name="no_permissions" msgid="7283357728219338112">"No permission required"</string>
+    <string name="perms_hide" msgid="7283915391320676226"><b>"Hide"</b></string>
+    <string name="perms_show_all" msgid="2671791163933091180"><b>"Show all"</b></string>
+    <string name="usb_storage_activity_title" msgid="2399289999608900443">"USB Mass Storage"</string>
+    <string name="usb_storage_title" msgid="5901459041398751495">"USB connected"</string>
+    <string name="usb_storage_message" product="nosdcard" msgid="115779324551502062">"You have connected your phone to your computer via USB. Select the button below if you want to copy files between your computer and your Android‘s USB storage."</string>
+    <string name="usb_storage_message" product="default" msgid="4796759646167247178">"You have connected your phone to your computer via USB. Select the button below if you want to copy files between your computer and your Android\'s SD card."</string>
+    <string name="usb_storage_button_mount" msgid="1052259930369508235">"Turn off USB storage"</string>
+    <string name="usb_storage_error_message" product="nosdcard" msgid="3276413764430468454">"There is a problem with using your USB storage for USB mass storage."</string>
+    <string name="usb_storage_error_message" product="default" msgid="120810397713773275">"There is a problem with using your SD card for USB mass storage."</string>
+    <string name="usb_storage_notification_title" msgid="8175892554757216525">"USB connected"</string>
+    <string name="usb_storage_notification_message" msgid="7380082404288219341">"Select to copy files to/from your computer."</string>
+    <string name="usb_storage_stop_notification_title" msgid="2336058396663516017">"Turn off USB storage"</string>
+    <string name="usb_storage_stop_notification_message" msgid="2591813490269841539">"Select to turn off USB storage."</string>
+    <string name="usb_storage_stop_title" msgid="660129851708775853">"USB storage in use"</string>
+    <string name="usb_storage_stop_message" product="nosdcard" msgid="1368842269463745067">"Before turning off USB storage, make sure that you have unmounted (“ejected”) your Android‘s USB storage from your computer."</string>
+    <string name="usb_storage_stop_message" product="default" msgid="3613713396426604104">"Before turning off USB storage, make sure that you have unmounted (“ejected”) your Android‘s SD card from your computer."</string>
+    <string name="usb_storage_stop_button_mount" msgid="7060218034900696029">"Turn off USB storage"</string>
+    <string name="usb_storage_stop_error_message" msgid="143881914840412108">"We\'ve encountered a problem turning off USB storage. Check to ensure that you have unmounted the USB host, then try again."</string>
+    <string name="dlg_confirm_kill_storage_users_title" msgid="963039033470478697">"Turn off USB storage"</string>
+    <string name="dlg_confirm_kill_storage_users_text" msgid="3202838234780505886">"If you turn on USB storage, some applications that you are using will stop and may be unavailable until you turn off USB storage."</string>
+    <string name="dlg_error_title" msgid="8048999973837339174">"USB operation failed"</string>
+    <string name="dlg_ok" msgid="7376953167039865701">"OK"</string>
+    <string name="extmedia_format_title" product="nosdcard" msgid="7980995592595097841">"Format USB storage"</string>
+    <string name="extmedia_format_title" product="default" msgid="8663247929551095854">"Format SD card"</string>
+    <string name="extmedia_format_message" product="nosdcard" msgid="8296908079722897772">"Format USB storage, erasing all files stored there? Action cannot be reversed!"</string>
+    <string name="extmedia_format_message" product="default" msgid="3621369962433523619">"Are you sure that you want to format the SD card? All data on your card will be lost."</string>
+    <string name="extmedia_format_button_format" msgid="4131064560127478695">"Format"</string>
+    <string name="adb_active_notification_title" msgid="6729044778949189918">"USB debugging connected"</string>
+    <string name="adb_active_notification_message" msgid="8470296818270110396">"Select to disable USB debugging."</string>
+    <string name="select_input_method" msgid="6865512749462072765">"Select input method"</string>
+    <string name="fast_scroll_alphabet" msgid="5433275485499039199">" ABCDEFGHIJKLMNOPQRSTUVWXYZ"</string>
+    <string name="fast_scroll_numeric_alphabet" msgid="4030170524595123610">" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"</string>
+    <string name="candidates_style" msgid="4333913089637062257"><u>"candidates"</u></string>
+    <string name="ext_media_checking_notification_title" product="nosdcard" msgid="3449816005351468560">"Preparing USB storage"</string>
+    <string name="ext_media_checking_notification_title" product="default" msgid="5457603418970994050">"Preparing SD card"</string>
+    <string name="ext_media_checking_notification_message" msgid="8287319882926737053">"Checking for errors."</string>
+    <string name="ext_media_nofs_notification_title" product="nosdcard" msgid="7788040745686229307">"Blank USB storage"</string>
+    <string name="ext_media_nofs_notification_title" product="default" msgid="780477838241212997">"Blank SD card"</string>
+    <string name="ext_media_nofs_notification_message" product="nosdcard" msgid="8623130522556087311">"USB storage blank or has unsupported file system."</string>
+    <string name="ext_media_nofs_notification_message" product="default" msgid="3817704088027829380">"SD card blank or has unsupported file system."</string>
+    <string name="ext_media_unmountable_notification_title" product="nosdcard" msgid="2090046769532713563">"Damaged USB storage"</string>
+    <string name="ext_media_unmountable_notification_title" product="default" msgid="6410723906019100189">"Damaged SD card"</string>
+    <string name="ext_media_unmountable_notification_message" product="nosdcard" msgid="529021299294450667">"USB storage damaged. You may have to reformat it."</string>
+    <string name="ext_media_unmountable_notification_message" product="default" msgid="6902531775948238989">"SD card damaged. You may have to reformat it."</string>
+    <string name="ext_media_badremoval_notification_title" product="nosdcard" msgid="1661683031330951073">"USB storage removed unexpectedly"</string>
+    <string name="ext_media_badremoval_notification_title" product="default" msgid="6872152882604407837">"SD card removed unexpectedly"</string>
+    <string name="ext_media_badremoval_notification_message" product="nosdcard" msgid="4329848819865594241">"Unmount USB storage before removing to avoid data loss."</string>
+    <string name="ext_media_badremoval_notification_message" product="default" msgid="7260183293747448241">"Unmount SD card before removing to avoid data loss."</string>
+    <string name="ext_media_safe_unmount_notification_title" product="nosdcard" msgid="3967973893270360230">"USB storage safe to remove"</string>
+    <string name="ext_media_safe_unmount_notification_title" product="default" msgid="6729801130790616200">"SD card safe to remove"</string>
+    <string name="ext_media_safe_unmount_notification_message" product="nosdcard" msgid="6142195361606493530">"You can safely remove USB storage."</string>
+    <string name="ext_media_safe_unmount_notification_message" product="default" msgid="568841278138377604">"You can safely remove SD card."</string>
+    <string name="ext_media_nomedia_notification_title" product="nosdcard" msgid="4486377230140227651">"Removed USB storage"</string>
+    <string name="ext_media_nomedia_notification_title" product="default" msgid="8902518030404381318">"Removed SD card"</string>
+    <string name="ext_media_nomedia_notification_message" product="nosdcard" msgid="6921126162580574143">"USB storage removed. Insert new media."</string>
+    <string name="ext_media_nomedia_notification_message" product="default" msgid="3870120652983659641">"SD card removed. Insert a new one."</string>
+    <string name="activity_list_empty" msgid="4168820609403385789">"No matching activities found"</string>
+    <string name="permlab_pkgUsageStats" msgid="8787352074326748892">"update component usage statistics"</string>
+    <string name="permdesc_pkgUsageStats" msgid="891553695716752835">"Allows the modification of collected component usage statistics. Not for use by normal applications."</string>
+    <string name="permlab_copyProtectedData" msgid="1660908117394854464">"Allows to invoke default container service to copy content. Not for use by normal applications."</string>
+    <string name="permdesc_copyProtectedData" msgid="537780957633976401">"Allows to invoke default container service to copy content. Not for use by normal applications."</string>
+    <string name="tutorial_double_tap_to_zoom_message_short" msgid="1311810005957319690">"Tap twice for zoom control"</string>
+    <string name="gadget_host_error_inflating" msgid="2613287218853846830">"Error inflating widget"</string>
+    <string name="ime_action_go" msgid="8320845651737369027">"Go"</string>
+    <string name="ime_action_search" msgid="658110271822807811">"Search"</string>
+    <string name="ime_action_send" msgid="2316166556349314424">"Send"</string>
+    <string name="ime_action_next" msgid="3138843904009813834">"Next"</string>
+    <string name="ime_action_done" msgid="8971516117910934605">"Done"</string>
+    <string name="ime_action_default" msgid="2840921885558045721">"Execute"</string>
+    <string name="dial_number_using" msgid="5789176425167573586">"Dial number"\n", using <xliff:g id="NUMBER">%s</xliff:g>"</string>
+    <string name="create_contact_using" msgid="4947405226788104538">"Create contact"\n", using <xliff:g id="NUMBER">%s</xliff:g>"</string>
+    <string name="accessibility_compound_button_selected" msgid="5612776946036285686">"ticked"</string>
+    <string name="accessibility_compound_button_unselected" msgid="8864512895673924091">"not ticked"</string>
+    <string name="grant_credentials_permission_message_header" msgid="6824538733852821001">"The following one or more applications request permission to access your account, now and in the future."</string>
+    <string name="grant_credentials_permission_message_footer" msgid="3125211343379376561">"Do you want to allow this request?"</string>
+    <string name="grant_permissions_header_text" msgid="2722567482180797717">"Access Request"</string>
+    <string name="allow" msgid="7225948811296386551">"Allow"</string>
+    <string name="deny" msgid="2081879885755434506">"Deny"</string>
+    <string name="permission_request_notification_title" msgid="5390555465778213840">"Permission Requested"</string>
+    <string name="permission_request_notification_with_subtitle" msgid="4325409589686688000">"Permission Requested"\n"for account <xliff:g id="ACCOUNT">%s</xliff:g>"</string>
+    <string name="input_method_binding_label" msgid="1283557179944992649">"Input Method"</string>
+    <string name="sync_binding_label" msgid="3687969138375092423">"Sync"</string>
+    <string name="accessibility_binding_label" msgid="4148120742096474641">"Accessibility"</string>
+    <string name="wallpaper_binding_label" msgid="1240087844304687662">"Wallpaper"</string>
+    <string name="chooser_wallpaper" msgid="7873476199295190279">"Change wallpaper"</string>
+    <string name="pptp_vpn_description" msgid="2688045385181439401">"Point-to-Point Tunnelling Protocol"</string>
+    <string name="l2tp_vpn_description" msgid="3750692169378923304">"Layer 2 Tunnelling Protocol"</string>
+    <string name="l2tp_ipsec_psk_vpn_description" msgid="3945043564008303239">"Pre-shared key-based L2TP/IPSec VPN"</string>
+    <string name="l2tp_ipsec_crt_vpn_description" msgid="5382714073103653577">"Certificate-based L2TP/IPSec VPN"</string>
+    <string name="upload_file" msgid="2897957172366730416">"Choose file"</string>
+    <string name="reset" msgid="2448168080964209908">"Reset"</string>
+    <string name="submit" msgid="1602335572089911941">"Submit"</string>
+    <string name="description_star" msgid="2654319874908576133">"favourite"</string>
+    <string name="car_mode_disable_notification_title" msgid="3164768212003864316">"Car mode enabled"</string>
+    <string name="car_mode_disable_notification_message" msgid="668663626721675614">"Select to exit car mode."</string>
+    <string name="tethered_notification_title" msgid="3146694234398202601">"Tethering or hotspot active"</string>
+    <string name="tethered_notification_message" msgid="3067108323903048927">"Touch to configure"</string>
+    <string name="throttle_warning_notification_title" msgid="4890894267454867276">"High mobile data use"</string>
+    <string name="throttle_warning_notification_message" msgid="2609734763845705708">"Touch to learn more about mobile data usage"</string>
+    <string name="throttled_notification_title" msgid="6269541897729781332">"Mobile data limit exceeded"</string>
+    <string name="throttled_notification_message" msgid="4712369856601275146">"Touch to learn more about mobile data usage"</string>
+    <string name="progress_unmounting" product="nosdcard" msgid="535863554318797377">"Unmounting USB storage..."</string>
+    <string name="progress_unmounting" product="default" msgid="5556813978958789471">"Unmounting SD card..."</string>
+    <string name="progress_erasing" product="nosdcard" msgid="4183664626203056915">"Erasing USB storage..."</string>
+    <string name="progress_erasing" product="default" msgid="2115214724367534095">"Erasing SD card..."</string>
+    <string name="format_error" product="nosdcard" msgid="4320339096529911637">"Failed to erase USB storage."</string>
+    <string name="format_error" product="default" msgid="1343380371925238343">"Failed to erase SD card."</string>
+    <string name="media_bad_removal" msgid="7960864061016603281">"SD card was removed before being unmounted."</string>
+    <string name="media_checking" product="nosdcard" msgid="418188720009569693">"USB storage is currently being checked."</string>
+    <string name="media_checking" product="default" msgid="7334762503904827481">"SD card is currently being checked."</string>
+    <string name="media_removed" msgid="7001526905057952097">"SD card has been removed."</string>
+    <string name="media_shared" product="nosdcard" msgid="5830814349250834225">"USB storage is currently in use by a computer."</string>
+    <string name="media_shared" product="default" msgid="5706130568133540435">"SD card is currently in use by a computer."</string>
+    <string name="media_unknown_state" msgid="729192782197290385">"External media in unknown state."</string>
+</resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+
+<application id="555" name="Sun Ping Application" uri="ftp://ftp.ietf.org/internet-drafts/draft-calhoun-diameter-sun-ping-02.txt">
+	<command name="Ping" code="511" vendor-id="Sun"/>
+
+	<avp name="Ping-Timestamp-Secs" code="1" vendor-id="Sun" mandatory="mustnot" vendor-bit="must">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Ping-Timestamp-Usecs" code="2" vendor-id="Sun" mandatory="mustnot" vendor-bit="must">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Ping-Timestamp" code="3" vendor-id="Sun" mandatory="mustnot" vendor-bit="must">
+		<grouped>
+			<gavp name="Ping-Timestamp-Secs"/>
+			<gavp name="Ping-Timestamp-Usecs"/>
+		</grouped>
+	</avp>
+</application>

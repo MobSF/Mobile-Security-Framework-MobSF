@@ -1,0 +1,304 @@
+PPP-SEC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+     Counter
+          FROM RFC1155-SMI
+     OBJECT-TYPE
+          FROM RFC-1212
+     ppp
+          FROM PPP-LCP-MIB;
+
+     pppSecurity OBJECT IDENTIFIER ::= { ppp 2 }
+
+     pppSecurityProtocols OBJECT IDENTIFIER ::= { pppSecurity 1 }
+
+-- The following uniquely identify the various protocols
+-- used by PPP security. These OBJECT IDENTIFIERS are
+-- used in the pppSecurityConfigProtocol and
+-- pppSecuritySecretsProtocol objects to identify to which
+-- protocols the table entries apply.
+
+     pppSecurityPapProtocol OBJECT IDENTIFIER ::=
+               { pppSecurityProtocols 1 }
+     pppSecurityChapMD5Protocol OBJECT IDENTIFIER ::=
+               { pppSecurityProtocols 2 }
+
+-- PPP Security Group
+-- Implementation of this group is optional.
+
+-- This table allows the network manager to configure
+-- which security protocols are to be used on which
+-- link and in what order of preference each is to be tried
+
+
+pppSecurityConfigTable   OBJECT-TYPE
+     SYNTAX    SEQUENCE OF PppSecurityConfigEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Table containing the configuration and
+               preference parameters for PPP Security."
+     ::= { pppSecurity 2 }
+
+
+pppSecurityConfigEntry   OBJECT-TYPE
+     SYNTAX    PppSecurityConfigEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Security configuration information for a
+               particular PPP link."
+     INDEX     { pppSecurityConfigLink,
+               pppSecurityConfigPreference }
+     ::= { pppSecurityConfigTable 1 }
+
+
+PppSecurityConfigEntry ::= SEQUENCE {
+     pppSecurityConfigLink
+          INTEGER,
+     pppSecurityConfigPreference
+          INTEGER,
+     pppSecurityConfigProtocol
+          OBJECT IDENTIFIER,
+     pppSecurityConfigStatus
+          INTEGER
+     }
+
+
+pppSecurityConfigLink   OBJECT-TYPE
+     SYNTAX    INTEGER(0..2147483647)
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "The value of ifIndex that identifies the entry
+               in the interface table that is associated with
+               the local PPP entity's link for which this
+               particular security algorithm shall be
+               attempted. A value of 0 indicates the default
+               algorithm - i.e., this entry applies to all
+               links for which explicit entries in the table
+               do not exist."
+     ::= { pppSecurityConfigEntry 1 }
+
+
+pppSecurityConfigPreference   OBJECT-TYPE
+     SYNTAX    INTEGER(0..2147483647)
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "The relative preference of the security
+               protocol identified by
+               pppSecurityConfigProtocol. Security protocols
+               with lower values of
+               pppSecurityConfigPreference are tried before
+               protocols with higher values of
+               pppSecurityConfigPreference."
+     ::= { pppSecurityConfigEntry 2 }
+
+
+pppSecurityConfigProtocol   OBJECT-TYPE
+     SYNTAX    OBJECT IDENTIFIER
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "Identifies the security protocol to be
+               attempted on the link identified by
+               pppSecurityConfigLink at the preference level
+               identified by pppSecurityConfigPreference. "
+     ::= { pppSecurityConfigEntry 3 }
+
+
+pppSecurityConfigStatus   OBJECT-TYPE
+     SYNTAX    INTEGER  {
+               invalid(1),
+               valid(2)
+          }
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "Setting this object to the value invalid(1)
+               has the effect of invalidating the
+               corresponding entry in the
+               pppSecurityConfigTable. It is an
+               implementation-specific matter as to whether
+               the agent removes an invalidated entry from the
+               table.  Accordingly, management stations must
+               be prepared to receive tabular information from
+               agents that corresponds to entries not
+               currently in use.  Proper interpretation of
+               such entries requires examination of the
+               relevant pppSecurityConfigStatus object."
+     DEFVAL    { valid }
+     ::= { pppSecurityConfigEntry 4 }
+
+
+-- This table contains all of the ID/Secret pair information.
+
+
+pppSecuritySecretsTable   OBJECT-TYPE
+     SYNTAX    SEQUENCE OF PppSecuritySecretsEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Table containing the identities and secrets
+               used by the PPP authentication protocols.  As
+               this table contains secret information, it is
+               expected that access to this table be limited
+               to those SNMP Party-Pairs for which a privacy
+               protocol is in use for all SNMP messages that
+               the parties exchange.  This table contains both
+               the ID and secret pair(s) that the local PPP
+               entity will advertise to the remote entity and
+               the pair(s) that the local entity will expect
+               from the remote entity.  This table allows for
+               multiple id/secret password pairs to be
+               specified for a particular link by using the
+               pppSecuritySecretsIdIndex object."
+     ::= { pppSecurity 3 }
+
+
+pppSecuritySecretsEntry   OBJECT-TYPE
+     SYNTAX    PppSecuritySecretsEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Secret information."
+     INDEX     { pppSecuritySecretsLink,
+               pppSecuritySecretsIdIndex }
+     ::= { pppSecuritySecretsTable 1 }
+
+PppSecuritySecretsEntry ::= SEQUENCE {
+     pppSecuritySecretsLink
+          INTEGER,
+     pppSecuritySecretsIdIndex
+          INTEGER,
+     pppSecuritySecretsDirection
+          INTEGER,
+     pppSecuritySecretsProtocol
+          OBJECT IDENTIFIER,
+     pppSecuritySecretsIdentity
+          OCTET STRING,
+     pppSecuritySecretsSecret
+          OCTET STRING,
+     pppSecuritySecretsStatus
+          INTEGER
+}
+
+pppSecuritySecretsLink   OBJECT-TYPE
+     SYNTAX    INTEGER(0..2147483647)
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "The link to which this ID/Secret pair applies.
+               By convention, if the value of this object is 0
+               then the ID/Secret pair applies to all links."
+     ::= { pppSecuritySecretsEntry 1 }
+
+
+pppSecuritySecretsIdIndex   OBJECT-TYPE
+     SYNTAX    INTEGER(0..2147483647)
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "A unique value for each ID/Secret pair that
+               has been defined for use on this link.  This
+               allows multiple ID/Secret pairs to be defined
+               for each link.  How the local entity selects
+               which pair to use is a local implementation
+               decision."
+     ::= { pppSecuritySecretsEntry 2 }
+
+
+pppSecuritySecretsDirection   OBJECT-TYPE
+     SYNTAX    INTEGER  {
+               local-to-remote(1),
+               remote-to-local(2)
+          }
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "This object defines the direction in which a
+               particular ID/Secret pair is valid.  If this
+               object is local-to-remote then the local PPP
+               entity will use the ID/Secret pair when
+               attempting to authenticate the local PPP entity
+               to the remote PPP entity.  If this object is
+               remote-to-local then the local PPP entity will
+               expect the ID/Secret pair to be used by the
+               remote PPP entity when the remote PPP entity
+               attempts to authenticate itself to the local
+               PPP entity."
+     ::= { pppSecuritySecretsEntry 3 }
+
+
+pppSecuritySecretsProtocol   OBJECT-TYPE
+     SYNTAX    OBJECT IDENTIFIER
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "The security protocol (e.g. CHAP or PAP) to
+               which this ID/Secret pair applies."
+     ::= { pppSecuritySecretsEntry 4 }
+
+
+pppSecuritySecretsIdentity   OBJECT-TYPE
+     SYNTAX    OCTET STRING (SIZE(0..255))
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "The Identity of the ID/Secret pair.  The
+               actual format, semantics, and use of
+               pppSecuritySecretsIdentity depends on the
+               actual security protocol used.  For example, if
+               pppSecuritySecretsProtocol is
+               pppSecurityPapProtocol then this object will
+               contain a PAP Peer-ID. If
+               pppSecuritySecretsProtocol is
+               pppSecurityChapMD5Protocol then this object
+               would contain the CHAP NAME parameter."
+     ::= { pppSecuritySecretsEntry 5 }
+
+
+pppSecuritySecretsSecret   OBJECT-TYPE
+     SYNTAX    OCTET STRING (SIZE(0..255))
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "The secret of the ID/Secret pair.  The actual
+               format, semantics, and use of
+               pppSecuritySecretsSecret depends on the actual
+               security protocol used.  For example, if
+               pppSecuritySecretsProtocol is
+               pppSecurityPapProtocol then this object will
+               contain a PAP Password. If
+               pppSecuritySecretsProtocol is
+               pppSecurityChapMD5Protocol then this object
+               would contain the CHAP MD5 Secret."
+     ::= { pppSecuritySecretsEntry 6 }
+
+
+pppSecuritySecretsStatus   OBJECT-TYPE
+     SYNTAX    INTEGER  {
+               invalid(1),
+               valid(2)
+          }
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "Setting this object to the value invalid(1)
+               has the effect of invalidating the
+               corresponding entry in the
+               pppSecuritySecretsTable. It is an
+               implementation-specific matter as to whether
+               the agent removes an invalidated entry from the
+               table.  Accordingly, management stations must
+               be prepared to receive tabular information from
+               agents that corresponds to entries not
+               currently in use.  Proper interpretation of
+               such entries requires examination of the
+               relevant pppSecuritySecretsStatus object."
+     DEFVAL    { valid }
+     ::= { pppSecuritySecretsEntry 7 }
+
+
+END

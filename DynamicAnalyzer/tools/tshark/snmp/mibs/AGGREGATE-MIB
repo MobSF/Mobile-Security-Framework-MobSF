@@ -1,0 +1,506 @@
+   AGGREGATE-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+      MODULE-IDENTITY,  experimental, Unsigned32,
+      OBJECT-TYPE, Opaque
+                 FROM SNMPv2-SMI
+      OwnerString
+                 FROM RMON-MIB
+      RowStatus, StorageType, TEXTUAL-CONVENTION
+                 FROM SNMPv2-TC
+      MODULE-COMPLIANCE, OBJECT-GROUP
+                 FROM SNMPv2-CONF
+      SnmpAdminString
+                 FROM SNMP-FRAMEWORK-MIB;
+
+  aggrMIB MODULE-IDENTITY
+       LAST-UPDATED "200604270000Z"        --  27th April, 2006
+       ORGANIZATION "Cyber Solutions Inc. NetMan Working Group"
+       CONTACT-INFO
+      "                      Glenn Mansfield Keeni
+                     Postal: Cyber Solutions Inc.
+                             6-6-3, Minami Yoshinari
+                             Aoba-ku, Sendai, Japan 989-3204.
+                        Tel: +81-22-303-4012
+                        Fax: +81-22-303-4015
+                     E-mail: glenn@cysols.com
+
+          Support Group E-mail: mibsupport@cysols.com"
+
+
+
+          DESCRIPTION
+                  "The MIB for servicing aggregate objects.
+
+                   Copyright (C) The Internet Society (2006).  This
+                   version of this MIB module is part of RFC 4498;
+                   see the RFC itself for full legal notices.
+                  "
+          REVISION    "200604270000Z"      -- 27th April, 2006
+          DESCRIPTION "Initial version, published as RFC 4498."
+               ::= { experimental 123 }
+
+   AggrMOErrorStatus ::= TEXTUAL-CONVENTION
+     STATUS       current
+     DESCRIPTION
+       "This data type is used to model the error status of the
+        constituent MO instances.  The error status for a
+        constituent MO instance is given in terms of two elements:
+          o The moIndex, which indicates the position of the MO
+            instance (starting at 1) in the value of the aggregated
+            MO instance.
+          o The moError, which indicates the error that was
+            encountered in fetching that MO instance.
+        The syntax in ASN.1 Notation will be
+        ErrorStatus :: = SEQUENCE {
+           moIndex  Integer32,
+           moError  SnmpPduErrorStatus
+        }
+        AggrMOErrorStatus ::= SEQUENCE OF {
+           ErrorStatus
+        }
+        Note1: The command responder will supply values for all
+               constituent MO instances, in the same order in
+               which the MO instances are specified for the AgMO.
+               If an error is encountered for an MO instance, then
+               the corresponding value will have an ASN.1 value NULL,
+               and an error will be flagged in the corresponding
+               AggrMOErrorStatus object.
+               Only MOs for which errors have been encountered will
+               have their corresponding moIndex and moError values
+               set.
+        Note2: The error code for the component MO instances will be
+               in accordance with the SnmpPduErrorStatus TC defined
+               in the DISMAN-SCHEDULE-MIB [RFC3231].
+        Note3: The command generator will need to know
+               constituent MO instances and their order to correctly
+               interpret AggrMOErrorStatus.
+       "
+     SYNTAX      Opaque (SIZE (0..1024))
+
+
+
+   AggrMOValue ::= TEXTUAL-CONVENTION
+     STATUS       current
+     DESCRIPTION
+       "This data type is used to model the aggregate
+        MOs.  It will have a format dependent on the constituent
+        MOs, a sequence of values.  The syntax in ASN.1 Notation will
+        be
+        MOValue :: = SEQUENCE {
+             value ObjectSyntax
+        }
+        where 'value' is the value of a constituent MO instance.
+        AggrMOValue :: = SEQUENCE OF {
+            MOValue
+        }
+
+        Note: The command generator will need to know the
+        constituent MO instances and their order to
+        correctly interpret AggrMOValue."
+     SYNTAX      Opaque (SIZE (0..1024))
+
+   AggrMOCompressedValue ::= TEXTUAL-CONVENTION
+     STATUS       current
+     DESCRIPTION
+       "This data type is used to model the compressed
+        aggregate MOs."
+     SYNTAX      OCTET STRING (SIZE (0..1024))
+
+--
+-- The aggregation control table
+-- There will be a row for each aggregate MO
+--
+   aggrCtlTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF AggrCtlEntry
+        MAX-ACCESS  not-accessible
+        STATUS current
+        DESCRIPTION
+          "A table that controls the aggregation of the MOs."
+        ::= {aggrMIB 1}
+
+    aggrCtlEntry OBJECT-TYPE
+        SYNTAX  AggrCtlEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+          "A row of the control table that defines one aggregated
+           MO.
+
+
+
+
+
+           Entries in this table are required to survive a reboot
+           of the managed entity depending on the value of the
+           corresponding aggrCtlEntryStorageType instance.
+          "
+        INDEX {aggrCtlEntryID }
+        ::= {aggrCtlTable 1 }
+
+    AggrCtlEntry ::= SEQUENCE {
+       aggrCtlEntryID
+                     SnmpAdminString,
+       aggrCtlMOIndex
+                     Unsigned32,
+       aggrCtlMODescr
+                     SnmpAdminString,
+       aggrCtlCompressionAlgorithm
+                     INTEGER,
+       aggrCtlEntryOwner
+                     OwnerString,
+       aggrCtlEntryStorageType
+                     StorageType,
+       aggrCtlEntryStatus
+                     RowStatus
+    }
+
+   aggrCtlEntryID OBJECT-TYPE
+        SYNTAX SnmpAdminString (SIZE(1..32))
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+          "A locally unique, administratively assigned name
+           for this aggregated MO.  It is used as an index to
+           uniquely identify this row in the table."
+        ::= { aggrCtlEntry 1 }
+
+   aggrCtlMOIndex OBJECT-TYPE
+        SYNTAX Unsigned32 (1..2147483647)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+          "A pointer to a group of MOs identified by aggrMOEntryID
+           in the aggrMOTable.  This is the group of MOs that will
+           be aggregated."
+        ::= { aggrCtlEntry 2 }
+
+   aggrCtlMODescr OBJECT-TYPE
+        SYNTAX SnmpAdminString (SIZE(0..64))
+        MAX-ACCESS read-create
+        STATUS current
+
+
+
+        DESCRIPTION
+          "A textual description of the object that is
+           being aggregated."
+        ::= {aggrCtlEntry 3}
+
+   -- only one compression algorithm is defined as of now.
+   aggrCtlCompressionAlgorithm OBJECT-TYPE
+        SYNTAX INTEGER {
+               none      (1),
+               deflate   (2)
+        }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+          "The compression algorithm that will be used by
+           the agent to compress the value of the aggregated
+           object.
+           The deflate algorithm and corresponding data format
+           specification is described in RFC 1951.  It is
+           compatible with the widely used gzip utility.
+          "
+        REFERENCE
+          "RFC1951 : DEFLATE Compressed Data Format Specification
+           version 1.3
+          "
+        DEFVAL { none }
+        ::= {aggrCtlEntry 4}
+
+   aggrCtlEntryOwner OBJECT-TYPE
+        SYNTAX OwnerString
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+          "The entity that created this entry."
+        ::= {aggrCtlEntry 5}
+
+   aggrCtlEntryStorageType OBJECT-TYPE
+        SYNTAX StorageType
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "This object defines whether the parameters defined in
+            this row are kept in volatile storage and lost upon
+            reboot or backed up by non-volatile (permanent)
+            storage.
+
+            Conceptual rows having the value 'permanent' need not
+            allow write-access to any columnar objects in the row.
+
+
+
+           "
+        ::= {aggrCtlEntry 6}
+
+   aggrCtlEntryStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "The row status variable, used according to row
+            installation and removal conventions.
+            Objects in a row can be modified only when the value of
+            this object in the corresponding conceptual row is not
+            'active'.
+            Thus, to modify one or more of the objects in this
+            conceptual row,
+              a. change the row status to 'notInService',
+              b. change the values of the row, and
+              c. change the row status to 'active'.
+            The aggrCtlEntryStatus may be changed to 'active' if
+            all the MOs in the conceptual row have been assigned
+            valid values.
+           "
+        ::= {aggrCtlEntry 7}
+
+--
+-- The Table of primary(simple) MOs
+--
+   aggrMOTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF AggrMOEntry
+        MAX-ACCESS  not-accessible
+        STATUS current
+        DESCRIPTION
+           "The table of primary(simple) MOs that will be aggregated.
+            Each row in this table represents a MO that will be
+            aggregated.  The aggrMOEntryID index is used to identify
+            the group of MOs that will be aggregated.  The
+            aggrMOIndex instance in the corresponding row of the
+            aggrCtlTable will have a value equal to the value of
+            aggrMOEntryID.  The aggrMOEntryMOID index is used to
+            identify an MO in the group.
+           "
+        ::= {aggrMIB 2}
+
+    aggrMOEntry OBJECT-TYPE
+        SYNTAX  AggrMOEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+
+
+
+           "A row of the table that specifies one MO.
+            Entries in this table are required to survive a reboot
+            of the managed entity depending on the value of the
+            corresponding aggrMOEntryStorageType instance.
+           "
+        INDEX { aggrMOEntryID, aggrMOEntryMOID }
+        ::= {aggrMOTable 1 }
+
+    AggrMOEntry ::= SEQUENCE {
+       aggrMOEntryID
+                     Unsigned32,
+       aggrMOEntryMOID
+                     Unsigned32,
+       aggrMOInstance
+                     OBJECT IDENTIFIER,
+       aggrMODescr
+                     SnmpAdminString,
+       aggrMOEntryStorageType
+                     StorageType,
+       aggrMOEntryStatus
+                     RowStatus
+    }
+
+   aggrMOEntryID OBJECT-TYPE
+        SYNTAX Unsigned32 (1..2147483647)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+          "An index uniquely identifying a group of MOs
+           that will be aggregated."
+        ::= { aggrMOEntry 1 }
+
+   aggrMOEntryMOID OBJECT-TYPE
+        SYNTAX Unsigned32 (1..65535)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+          "An index to uniquely identify an MO instance in the
+           group of MO instances that will be aggregated."
+        ::= { aggrMOEntry 2 }
+
+   aggrMOInstance OBJECT-TYPE
+        SYNTAX OBJECT IDENTIFIER
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+          "The OID of the MO instance, the value of which will
+           be sampled by the agent."
+
+
+
+        ::= { aggrMOEntry 3 }
+
+   aggrMODescr OBJECT-TYPE
+        SYNTAX SnmpAdminString (SIZE(0..64))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "A textual description of the object that will
+            be aggregated."
+        ::= {aggrMOEntry 4}
+
+   aggrMOEntryStorageType OBJECT-TYPE
+        SYNTAX StorageType
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "This object defines whether the parameters defined in
+            this row are kept in volatile storage and lost upon
+            reboot or backed up by non-volatile (permanent)
+            storage.
+            Conceptual rows having the value 'permanent' need not
+            allow write-access to any columnar objects in the row.
+           "
+        ::= {aggrMOEntry 5}
+
+   aggrMOEntryStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "The row status variable, used according to row
+            installation and removal conventions.
+            Objects in a row can be modified only when the value of
+            this object in the corresponding conceptual row is not
+            'active'.
+            Thus, to modify one or more of the objects in this
+            conceptual row,
+              a. change the row status to 'notInService',
+              b. change the values of the row, and
+              c. change the row status to 'active'.
+            The aggrMOEntryStatus may be changed to 'active' iff
+            all the MOs in the conceptual row have been assigned
+            valid values.
+           "
+        ::= {aggrMOEntry 6}
+
+   --
+   -- aggrDataTable: The Table of Data.  Each row represents a Data
+
+
+
+   --                set.  aggrCtlEntryID is the key to the table.
+   --                It is used to identify instances of the
+   --                aggregated MO that are present in the table.
+   --
+   aggrDataTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF AggrDataEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Each row of this table contains information
+            about an aggregateMO indexed by aggrCtlEntryID."
+        ::= {aggrMIB 3}
+
+   aggrDataEntry OBJECT-TYPE
+        SYNTAX  AggrDataEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Entry containing information pertaining to
+            an aggregate MO."
+        INDEX {aggrCtlEntryID}
+        ::= {aggrDataTable 1 }
+
+   AggrDataEntry ::= SEQUENCE {
+      aggrDataRecord
+                 AggrMOValue,
+      aggrDataRecordCompressed
+                 AggrMOCompressedValue,
+      aggrDataErrorRecord
+                 AggrMOErrorStatus
+      }
+
+   aggrDataRecord OBJECT-TYPE
+        SYNTAX AggrMOValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+          "The snapshot value of the aggregated MO.
+           Note that the access privileges to this object will be
+           governed by the access privileges of the component
+           objects.  Thus, an entity attempting to access an
+           instance of this MO MUST have access rights to all the
+           component instance objects and this MO instance.
+          "
+        ::= { aggrDataEntry 1}
+
+   aggrDataRecordCompressed OBJECT-TYPE
+        SYNTAX AggrMOCompressedValue
+
+
+
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+          "The compressed value of the aggregated MO.
+           The compression algorithm will depend on the
+           aggrCtlCompressionAlgorithm given in the corresponding
+           aggrCtlEntry.  If the value of the corresponding
+           aggrCtlCompressionAlgorithm is (1) 'none', then the value
+           of all instances of this object will be a string of zero
+           length.
+           Note that the access privileges to this object will be
+           governed by the access privileges of the component
+           objects.  Thus, an entity attempting to access an instance
+           of this MO MUST have access rights to all the component
+           instance objects and this MO instance.
+          "
+        ::= { aggrDataEntry 2}
+
+   aggrDataErrorRecord OBJECT-TYPE
+        SYNTAX AggrMOErrorStatus
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+           "The error status corresponding to the MO instances
+            aggregated in aggrDataRecord (and
+            aggrDataRecordCompressed)."
+        ::= { aggrDataEntry 3}
+
+    -- Conformance information
+   aggrConformance OBJECT IDENTIFIER ::= { aggrMIB 4 }
+   aggrGroups      OBJECT IDENTIFIER ::= { aggrConformance 1 }
+   aggrCompliances OBJECT IDENTIFIER ::= { aggrConformance 2 }
+
+    -- Compliance statements
+   aggrMibCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for SNMP entities
+                 that implement the AGGREGATE-MIB."
+        MODULE  -- this module
+            MANDATORY-GROUPS { aggrMibBasicGroup }
+        ::= { aggrCompliances 1 }
+
+    -- Units of conformance
+   aggrMibBasicGroup    OBJECT-GROUP
+        OBJECTS {
+                   aggrCtlMOIndex,
+                   aggrCtlMODescr,
+
+
+
+                   aggrCtlCompressionAlgorithm,
+                   aggrCtlEntryOwner,
+                   aggrCtlEntryStorageType,
+                   aggrCtlEntryStatus,
+                   aggrMOInstance,
+                   aggrMODescr,
+                   aggrMOEntryStorageType,
+                   aggrMOEntryStatus,
+                   aggrDataRecord,
+                   aggrDataRecordCompressed,
+                   aggrDataErrorRecord
+       }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects for aggregation of MOs."
+        ::= { aggrGroups 1 }
+   END

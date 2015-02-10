@@ -1,0 +1,214 @@
+PPP-IP-NCP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+     Counter
+          FROM RFC1155-SMI
+     ifIndex
+          FROM RFC1213-MIB
+     OBJECT-TYPE
+          FROM RFC-1212
+     ppp
+          FROM PPP-LCP-MIB;
+
+     -- The PPP IP Group.
+     -- Implementation of this group is mandatory for all
+     -- PPP implementations that support operating IP over PPP.
+
+     pppIp OBJECT IDENTIFIER ::= { ppp 3 }
+
+
+pppIpTable   OBJECT-TYPE
+     SYNTAX    SEQUENCE OF PppIpEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Table containing the IP parameters and
+               statistics for the local PPP entity."
+     ::= { pppIp 1 }
+
+
+pppIpEntry   OBJECT-TYPE
+     SYNTAX    PppIpEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "IPCP status information for a particular PPP
+               link."
+     INDEX     { ifIndex }
+     ::= { pppIpTable 1 }
+
+
+PppIpEntry ::= SEQUENCE {
+     pppIpOperStatus
+          INTEGER,
+     pppIpLocalToRemoteCompressionProtocol
+          INTEGER,
+     pppIpRemoteToLocalCompressionProtocol
+          INTEGER,
+     pppIpRemoteMaxSlotId
+          INTEGER,
+     pppIpLocalMaxSlotId
+          INTEGER
+}
+
+-- The following object reflect the values of the option
+-- parameters used in the PPP IP Control Protocol
+--   pppIpLocalToRemoteCompressionProtocol
+--   pppIpRemoteToLocalCompressionProtocol
+--   pppIpRemoteMaxSlotId
+--   pppIpLocalMaxSlotId
+-- These values are not available until after the PPP Option
+-- negotiation has completed, which is indicated by the link
+-- reaching the open state (i.e., pppIpOperStatus is set to
+-- opened).
+--
+-- Therefore, when pppIpOperStatus is not opened
+-- the contents of these objects is undefined. The value
+-- returned when accessing the objects is an implementation
+-- dependent issue.
+
+
+pppIpOperStatus   OBJECT-TYPE
+     SYNTAX    INTEGER {opened(1), not-opened(2)}
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "The operational status of the IP network
+               protocol. If the value of this object is up
+               then the finite state machine for the IP
+               network protocol has reached the Opened state."
+     ::= { pppIpEntry 1 }
+
+
+pppIpLocalToRemoteCompressionProtocol   OBJECT-TYPE
+     SYNTAX    INTEGER {
+               none(1),
+               vj-tcp(2)
+          }
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "The IP compression protocol that the local
+               PPP-IP entity uses when sending packets to the
+               remote PPP-IP entity. The value of this object
+               is meaningful only when the link has reached
+               the open state (pppIpOperStatus is opened)."
+     ::= { pppIpEntry 2 }
+
+
+pppIpRemoteToLocalCompressionProtocol   OBJECT-TYPE
+     SYNTAX    INTEGER {
+               none(1),
+               vj-tcp(2)
+          }
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "The IP compression protocol that the remote
+               PPP-IP entity uses when sending packets to the
+               local PPP-IP entity. The value of this object
+               is meaningful only when the link has reached
+               the open state (pppIpOperStatus is opened)."
+     ::= { pppIpEntry 3 }
+
+
+pppIpRemoteMaxSlotId   OBJECT-TYPE
+     SYNTAX    INTEGER(0..255)
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "The Max-Slot-Id parameter that the remote node
+               has advertised and that is in use on the link.
+               If vj-tcp header compression is not in use on
+               the link then the value of this object shall be
+               0. The value of this object is meaningful only
+               when the link has reached the open state
+               (pppIpOperStatus is opened)."
+     ::= { pppIpEntry 4 }
+
+
+pppIpLocalMaxSlotId   OBJECT-TYPE
+     SYNTAX    INTEGER(0..255)
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "The Max-Slot-Id parameter that the local node
+               has advertised and that is in use on the link.
+               If vj-tcp header compression is not in use on
+               the link then the value of this object shall be
+               0. The value of this object is meaningful only
+               when the link has reached the open state
+               (pppIpOperStatus is opened)."
+     ::= { pppIpEntry 5 }
+
+
+--
+-- The PPP IP Configuration table.
+-- This is a separate table in order to facilitate
+-- placing these variables in a separate MIB view.
+--
+
+pppIpConfigTable   OBJECT-TYPE
+     SYNTAX    SEQUENCE OF PppIpConfigEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Table containing configuration variables for
+               the IPCP for the local PPP entity."
+     ::= { pppIp 2 }
+
+
+pppIpConfigEntry   OBJECT-TYPE
+     SYNTAX    PppIpConfigEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "IPCP information for a particular PPP link."
+     INDEX     { ifIndex }
+     ::= { pppIpConfigTable 1 }
+
+
+PppIpConfigEntry ::= SEQUENCE {
+     pppIpConfigAdminStatus
+          INTEGER,
+     pppIpConfigCompression
+          INTEGER
+}
+
+pppIpConfigAdminStatus   OBJECT-TYPE
+     SYNTAX    INTEGER {open(1), close(2)}
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "The immediate desired status of the IP network
+               protocol. Setting this object to open will
+               inject an administrative open event into the IP
+               network protocol's finite state machine.
+               Setting this object to close will inject an
+               administrative close event into the IP network
+               protocol's finite state machine."
+     ::= { pppIpConfigEntry 1 }
+
+
+pppIpConfigCompression   OBJECT-TYPE
+     SYNTAX    INTEGER {
+               none(1),
+               vj-tcp(2)
+          }
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "If none(1) then the local node will not
+               attempt to negotiate any IP Compression option.
+               Otherwise, the local node will attempt to
+               negotiate compression mode indicated by the
+               enumerated value. Changing this object will
+               have effect when the link is next restarted."
+     REFERENCE
+               "Section 4.0, Van Jacobson TCP/IP Header
+               Compression of RFC1332."
+     DEFVAL    { none }
+     ::= { pppIpConfigEntry 2 }
+
+
+END

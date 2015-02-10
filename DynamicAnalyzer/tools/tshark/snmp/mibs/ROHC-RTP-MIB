@@ -1,0 +1,655 @@
+ROHC-RTP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Unsigned32, Counter32, mib-2
+        FROM SNMPv2-SMI                               -- [RFC2578]
+
+
+    TruthValue
+        FROM SNMPv2-TC                                -- [RFC2579]
+
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF                              -- [RFC2580]
+
+    rohcChannelID, rohcContextCID
+        FROM ROHC-MIB;                                -- [RFC3816]
+
+rohcRtpMIB MODULE-IDENTITY
+    LAST-UPDATED "200406030000Z"  -- June 3, 2004
+    ORGANIZATION "IETF Robust Header Compression Working Group"
+    CONTACT-INFO
+       "WG charter:
+          http://www.ietf.org/html.charters/rohc-charter.html
+
+        Mailing Lists:
+          General Discussion: rohc@ietf.org
+          To Subscribe: rohc-request@ietf.org
+          In Body: subscribe your_email_address
+
+        Editor:
+          Juergen Quittek
+          NEC Europe Ltd.
+          Network Laboratories
+          Kurfuersten-Anlage 36
+          69221 Heidelberg
+          Germany
+          Tel: +49 6221 90511-15
+          EMail: quittek@netlab.nec.de"
+    DESCRIPTION
+        "This MIB module defines a set of objects for monitoring
+         and configuring RObust Header Compression (ROHC).
+         The objects are specific to ROHC RTP (profile 0x0001),
+         ROHC UDP (profile 0x0002), and ROHC ESP (profile 0x0003)
+         defined in RFC 3095 and for the ROHC LLA profile (profile
+         0x0005) defined in RFC 3242.
+
+         Copyright (C) The Internet Society (2004). The
+         initial version of this MIB module was published
+         in RFC 3816. For full legal notices see the RFC
+         itself or see:
+         http://www.ietf.org/copyrights/ianamib.html"
+
+    REVISION    "200406030000Z"  -- June 3, 2004
+    DESCRIPTION "Initial version, published as RFC 3816."
+    ::= { mib-2 114 }
+
+
+
+--
+-- The groups defined within this MIB module:
+--
+
+rohcRtpObjects       OBJECT IDENTIFIER ::= { rohcRtpMIB 1 }
+rohcRtpConformance   OBJECT IDENTIFIER ::= { rohcRtpMIB 2 }
+
+--
+-- Context Table
+--
+-- The rohcRtpContextTable lists all contexts per interface
+-- and instance.  It extends the rohcContextTable.
+--
+
+rohcRtpContextTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RohcRtpContextEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists and describes RTP profile specific
+         properties of compressor contexts and decompressor
+         contexts.  It extends the rohcContextTable of the
+         ROHC-MIB module."
+    ::= { rohcRtpObjects 1 }
+
+rohcRtpContextEntry OBJECT-TYPE
+    SYNTAX      RohcRtpContextEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular context."
+    INDEX {
+        rohcChannelID,
+        rohcContextCID
+    }
+    ::= { rohcRtpContextTable 1 }
+
+RohcRtpContextEntry ::= SEQUENCE {
+    rohcRtpContextState             INTEGER,
+    rohcRtpContextMode              INTEGER,
+    rohcRtpContextAlwaysPad         TruthValue,
+    rohcRtpContextLargePktsAllowed  TruthValue,
+    rohcRtpContextVerifyPeriod      Unsigned32,
+    rohcRtpContextSizesAllowed      Unsigned32,
+    rohcRtpContextSizesUsed         Unsigned32,
+    rohcRtpContextACKs              Counter32,
+    rohcRtpContextNACKs             Counter32,
+    rohcRtpContextSNACKs            Counter32,
+
+
+    rohcRtpContextNHPs              Counter32,
+    rohcRtpContextCSPs              Counter32,
+    rohcRtpContextCCPs              Counter32,
+    rohcRtpContextPktsLostPhysical  Counter32,
+    rohcRtpContextPktsLostPreLink   Counter32
+}
+
+rohcRtpContextState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    initAndRefresh(1),
+                    firstOrder(2),
+                    secondOrder(3),
+                    noContext(4),
+                    staticContext(5),
+                    fullContext(6)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "State of the context as defined in RFC 3095.  States
+         initAndRefresh(1), firstOrder(2), and secondOrder(3)
+         are states of compressor contexts, states noContext(4),
+         staticContext(5) and fullContext(6) are states of
+         decompressor contexts."
+    REFERENCE
+        "RFC 3095"
+    ::= { rohcRtpContextEntry 3 }
+
+rohcRtpContextMode OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    unidirectional(1),
+                    optimistic(2),
+                    reliable(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Mode of the context."
+    REFERENCE
+        "RFC 3095, Section 4.4"
+    ::= { rohcRtpContextEntry 4 }
+
+rohcRtpContextAlwaysPad OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Boolean, only applicable to compressor contexts using the
+
+
+         LLA profile.  If its value is true, the compressor must
+         pad every RHP packet with a minimum of one octet ROHC
+         padding.
+
+         The value of this object is only valid for LLA profiles,
+         i.e., if the corresponding rohcProfile has a value of
+         0x0005.  If the corresponding rohcProfile has a value
+         other than 0x0005, then this object MUST NOT be
+         instantiated."
+    REFERENCE
+        "RFC 3242, Section 5.1.1"
+    DEFVAL { false }
+    ::= { rohcRtpContextEntry 5 }
+
+rohcRtpContextLargePktsAllowed OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Boolean, only applicable to compressor contexts using the
+         LLA profile.  It specifies how to handle packets that do
+         not fit any of the preferred packet sizes specified.  If
+         its value is true, the compressor must deliver the larger
+         packet as-is and must not use segmentation.  If it is set
+         to false, the ROHC segmentation scheme must be used to
+         split the packet into two or more segments, and each
+         segment must further be padded to fit one of the preferred
+         packet sizes.
+
+         The value of this object is only valid for LLA profiles,
+         i.e., if the corresponding rohcProfile has a value of
+         0x0005.  If the corresponding rohcProfile has a value
+         other than 0x0005, then this object MUST NOT be
+         instantiated."
+    REFERENCE
+        "RFC 3242, Section 5.1.1"
+    DEFVAL { true }
+    ::= { rohcRtpContextEntry 6 }
+
+rohcRtpContextVerifyPeriod OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object is only applicable to compressor contexts
+         using the LLA profile.  It specifies the minimum frequency
+         with which a packet validating the context must be sent.
+         This tells the compressor that a packet containing a CRC
+
+
+         field must be sent at least once every N packets, where N
+         is the value of the object.  A value of 0 indicates that
+         periodical verifications are disabled.
+
+         The value of this object is only valid for LLA profiles,
+         i.e., if the corresponding rohcProfile has a value of
+         0x0005.  If the corresponding rohcProfile has a value
+         other than 0x0005, then this object MUST NOT be
+         instantiated."
+    REFERENCE
+        "RFC 3242, Section 5.1.1"
+    DEFVAL { 0 }
+    ::= { rohcRtpContextEntry 7 }
+
+rohcRtpContextSizesAllowed  OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object is only valid for decompressor
+         contexts, i.e., if rohcInstanceType of the corresponding
+         rohcContextEntry has the value decompressor(2).  For
+         compressor contexts where rohcInstanceType has the value
+         compressor(1), this object MUST NOT be instantiated.
+
+         This object contains the number of different packet sizes
+         that may be used in the context."
+    REFERENCE
+        "RFC 3095, Section 6.3.1"
+    ::= { rohcRtpContextEntry 8 }
+
+rohcRtpContextSizesUsed  OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object is only valid for decompressor
+         contexts, i.e., if rohcInstanceType of the corresponding
+         rohcContextEntry has the value decompressor(2).  For
+         compressor contexts where rohcInstanceType has the value
+         compressor(1), this object MUST NOT be instantiated.
+
+         This object contains the number of different packet sizes
+         that are used in the context."
+    REFERENCE
+        "RFC 3095, Section 6.3.1"
+    ::= { rohcRtpContextEntry 9 }
+
+
+
+rohcRtpContextACKs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of all positive feedbacks (ACK) sent or
+         received in this context, respectively.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable of the ROHC-MIB."
+    REFERENCE
+        "RFC 3095, Section 5.2.1."
+    ::= { rohcRtpContextEntry 10 }
+
+rohcRtpContextNACKs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of all dynamic negative feedbacks (ACK) sent
+         or received in this context, respectively.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable of the ROHC-MIB."
+    REFERENCE
+        "RFC 3095, Section 5.2.1."
+    ::= { rohcRtpContextEntry 11 }
+
+rohcRtpContextSNACKs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of all static negative feedbacks (ACK) sent
+         or received in this context, respectively.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+
+
+
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable of the ROHC-MIB."
+    REFERENCE
+        "RFC 3095, Section 5.2.1."
+    ::= { rohcRtpContextEntry 12 }
+
+rohcRtpContextNHPs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object is only applicable to contexts using the
+         LLA profile.  It contains the number of all no-header
+         packets (NHP) sent or received in this context,
+         respectively.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable of the ROHC-MIB.
+
+         The value of this object is only valid for LLA profiles,
+         i.e., if the corresponding rohcProfile has a value of
+         0x0005.  If the corresponding rohcProfile has a value
+         other than 0x0005, then this object MUST NOT be
+         instantiated."
+    REFERENCE
+        "RFC 3242, Section 4.1.1."
+    ::= { rohcRtpContextEntry 13 }
+
+rohcRtpContextCSPs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object is only applicable to contexts using the
+         LLA profile.  It contains the number of all context
+         synchronization packets (CSP) sent or received in this
+         context, respectively.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+
+
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable of the ROHC-MIB.
+
+         The value of this object is only valid for LLA profiles,
+         i.e., if the corresponding rohcProfile has a value of
+         0x0005.  If the corresponding rohcProfile has a value
+         other than 0x0005, then this object MUST NOT be
+         instantiated."
+    REFERENCE
+        "RFC 3242, Section 4.1.2."
+    ::= { rohcRtpContextEntry 14 }
+
+rohcRtpContextCCPs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object is only applicable to contexts using the
+         LLA profile.  It contains the number of all context check
+         packets (CCP) sent or received in this context,
+         respectively.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable of the ROHC-MIB.
+
+         The value of this object is only valid for LLA profiles,
+         i.e., if the corresponding rohcProfile has a value of
+         0x0005.  If the corresponding rohcProfile has a value
+         other than 0x0005, then this object MUST NOT be
+         instantiated."
+    REFERENCE
+        "RFC 3242, Section 4.1.3."
+    ::= { rohcRtpContextEntry 15 }
+
+rohcRtpContextPktsLostPhysical OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object is only applicable to decompressor contexts
+
+
+         using the LLA profile.  It contains the number of physical
+         packet losses on the link between compressor and
+         decompressor, that have been indicated to the decompressor.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable of the ROHC-MIB.
+
+         The value of this object is only valid for LLA profiles,
+         i.e., if the corresponding rohcProfile has a value of
+         0x0005.  If the corresponding rohcProfile has a value
+         other than 0x0005, then this object MUST NOT be
+         instantiated."
+    REFERENCE
+        "RFC 3242, Section 5.1.2."
+    ::= { rohcRtpContextEntry 16 }
+
+rohcRtpContextPktsLostPreLink OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object is only applicable to decompressor contexts
+         using the LLA profile.  It contains the number of pre-link
+         packet losses on the link between compressor and
+         decompressor, that have been indicated to the decompressor.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable of the ROHC-MIB.
+
+         The value of this object is only valid for LLA profiles,
+         i.e., if the corresponding rohcProfile has a value of
+         0x0005.  If the corresponding rohcProfile has a value
+         other than 0x0005, then this object MUST NOT be
+         instantiated."
+    REFERENCE
+        "RFC 3242, Section 5.1.2."
+    ::= { rohcRtpContextEntry 17 }
+
+
+
+--
+-- Packet Sizes Table
+--
+-- The rohcPacketSizeTable lists allowed, preferred, and used
+-- packet sizes per compressor context.
+
+rohcRtpPacketSizeTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RohcRtpPacketSizeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists all allowed, preferred, and used packet
+         sizes per compressor context and channel.
+
+         Note, that the sizes table represents implementation
+         parameters that are suggested by RFC 3095 and/or RFC 3242,
+         but that are not mandatory."
+    ::= { rohcRtpObjects 2 }
+
+rohcRtpPacketSizeEntry OBJECT-TYPE
+    SYNTAX      RohcRtpPacketSizeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry of a particular packet size."
+    INDEX {
+        rohcChannelID,
+        rohcContextCID,
+        rohcRtpPacketSize
+    }
+    ::= { rohcRtpPacketSizeTable 1 }
+
+RohcRtpPacketSizeEntry ::= SEQUENCE {
+    rohcRtpPacketSize                Unsigned32,
+    rohcRtpPacketSizePreferred       TruthValue,
+    rohcRtpPacketSizeUsed            TruthValue,
+    rohcRtpPacketSizeRestrictedType  INTEGER
+}
+
+rohcRtpPacketSize OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A packet size used as index."
+    ::= { rohcRtpPacketSizeEntry 3 }
+
+rohcRtpPacketSizePreferred OBJECT-TYPE
+
+
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object is only applicable to compressor contexts
+         using the LLA profile.  When retrieved, it will have
+         the value true(1) if the packet size is preferred.
+         Otherwise, its value will be false(2).
+
+         The value of this object is only valid for LLA profiles,
+         i.e., if the corresponding rohcProfile has a value of
+         0x0005.  If the corresponding rohcProfile has a value
+         other than 0x0005, then this object MUST NOT be
+         instantiated."
+    REFERENCE
+         "RFC 3242, Section 5.1.1"
+    ::= { rohcRtpPacketSizeEntry 4 }
+
+rohcRtpPacketSizeUsed OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object is only applicable to compressor contexts
+         using the UDP, RTP, or ESP profile.  When retrieved,
+         it will have the value true(1) if the packet size is
+         used.  Otherwise, its value will be false(2).
+
+         The value of this object is only valid for UDP, RTP,
+         and ESP profiles, i.e., if the corresponding rohcProfile
+         has a value of either 0x0001, 0x0002 or 0x0003.  If
+         the corresponding rohcProfile has a value other than
+         0x0001, 0x0002 or 0x0003, then this object MUST NOT be
+         instantiated."
+    REFERENCE
+         "RFC 3095, Section 6.3.1"
+    ::= { rohcRtpPacketSizeEntry 5 }
+
+rohcRtpPacketSizeRestrictedType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    nhpOnly(1),
+                    rhpOnly(2),
+                    noRestrictions(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object is only applicable to preferred packet
+
+
+         sizes of compressor contexts using the LLA profile.
+         When retrieved, it will indicate whether the packet
+         size is preferred for NHP only, for RHP only, or
+         for both of them.
+
+         The value of this object is only valid for LLA profiles,
+         i.e., if the corresponding rohcProfile has a value of
+         0x0005.  If the corresponding rohcProfile has a value
+         other than 0x0005, then this object MUST NOT be
+         instantiated."
+    REFERENCE
+         "RFC 3242, Section 5.1.1"
+    ::= { rohcRtpPacketSizeEntry 6 }
+--
+-- conformance information
+--
+
+rohcRtpCompliances OBJECT IDENTIFIER ::= { rohcRtpConformance 1 }
+rohcRtpGroups      OBJECT IDENTIFIER ::= { rohcRtpConformance 2 }
+
+--
+-- compliance statements
+--
+
+rohcRtpCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for SNMP entities that implement
+         the ROHC-RTP-MIB.
+
+         Note that compliance with this compliance
+         statement requires compliance with the
+         rohcCompliance MODULE-COMPLIANCE statement of the
+         ROHC-MIB and with the ifCompliance3 MODULE-COMPLIANCE
+         statement of the IF-MIB (RFC2863)."
+    MODULE      -- this module
+    MANDATORY-GROUPS {
+            rohcRtpContextGroup
+    }
+    GROUP   rohcRtpPacketSizesGroup
+    DESCRIPTION
+       "A compliant implementation does not have to implement
+        the rohcRtpPacketSizesGroup."
+    GROUP   rohcRtpStatisticsGroup
+    DESCRIPTION
+       "A compliant implementation does not have to implement
+        the rohcRtpStatisticsGroup."
+    ::= { rohcRtpCompliances 1 }
+
+
+rohcRtpContextGroup OBJECT-GROUP
+    OBJECTS {
+        rohcRtpContextState,
+        rohcRtpContextMode,
+        rohcRtpContextAlwaysPad,
+        rohcRtpContextLargePktsAllowed,
+        rohcRtpContextVerifyPeriod
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+         ROHC RTP compressors and decompressors."
+    ::= { rohcRtpGroups 1 }
+
+rohcRtpPacketSizesGroup OBJECT-GROUP
+    OBJECTS {
+        rohcRtpContextSizesAllowed,
+        rohcRtpContextSizesUsed,
+        rohcRtpPacketSizePreferred,
+        rohcRtpPacketSizeUsed,
+        rohcRtpPacketSizeRestrictedType
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+         allowed and used packet sizes at a ROHC RTP compressor."
+    ::= { rohcRtpGroups 2 }
+
+rohcRtpStatisticsGroup OBJECT-GROUP
+    OBJECTS {
+        rohcRtpContextACKs,
+        rohcRtpContextNACKs,
+        rohcRtpContextSNACKs,
+        rohcRtpContextNHPs,
+        rohcRtpContextCSPs,
+        rohcRtpContextCCPs,
+        rohcRtpContextPktsLostPhysical,
+        rohcRtpContextPktsLostPreLink
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing ROHC compressor and
+         decompressor statistics."
+    ::= { rohcRtpGroups 3 }
+
+END

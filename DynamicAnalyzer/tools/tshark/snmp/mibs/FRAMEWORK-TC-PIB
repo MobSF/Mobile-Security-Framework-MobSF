@@ -1,0 +1,259 @@
+FRAMEWORK-TC-PIB  PIB-DEFINITIONS ::= BEGIN
+
+IMPORTS  MODULE-IDENTITY, TEXTUAL-CONVENTION,
+         Unsigned32, pib FROM COPS-PR-SPPI;
+
+frwkTcPib  MODULE-IDENTITY
+    SUBJECT-CATEGORIES   { all }
+    LAST-UPDATED "200302130000Z"  -- 13 Feb 2003
+    ORGANIZATION "IETF RAP WG"
+
+
+
+    CONTACT-INFO "Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive,
+                  San Jose, CA 95134-1706 USA
+                  Phone: +1 408 526 5260
+                  Email: kzm@cisco.com
+
+                  John Seligson
+                  Nortel Networks, Inc.
+                  4401 Great America Parkway
+                  Santa Clara, CA 95054 USA
+                  Phone: +1 408 495 2992
+                  Email: jseligso@nortelnetworks.com
+
+                  Ravi Sahita
+                  Intel Labs.
+                  2111 NE 25th Ave.
+                  Hillsboro, OR 97124 USA
+                  Phone: +1 503 712 1554
+                  Email: ravi.sahita@intel.com
+
+                  RAP WG Mailing list: rap@ops.ietf.org "
+    DESCRIPTION
+         "The PIB module containing the Role and RoleCombination
+         Textual Conventions and other generic TCs.
+
+         Copyright (C) The Internet Society (2003). This version of
+         this PIB module is part of RFC 3318; see the RFC itself for
+         full legal notices."
+
+    REVISION     "200302130000Z"  -- 13 Feb 2003
+    DESCRIPTION  "Initial version, published in RFC 3318."
+      ::= { pib 3 }
+
+Role ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "A role represents a functionality characteristic or
+        capability of a resource to which policies are applied.
+        Examples of roles include Backbone_interface,
+        Frame_Relay_interface, BGP-capable-router, web-server,
+        firewall, etc.
+        The only valid character set is US-ASCII. Valid characters
+        are a-z, A-Z, 0-9, period, hyphen and underscore. A role
+        must always start with a letter (a-z or A-Z). A role must
+        not contain the US-ASCII characters '*' or '+' since they
+        have special meaning associated with them, explained in the
+        RoleCombination TEXTUAL CONVENTION."
+
+
+
+    SYNTAX OCTET STRING (SIZE (1..31))
+
+RoleCombination ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "An octet string containing concatenated Roles. For the
+        format specification of roles, refer to the 'Role' TEXTUAL-
+        CONVENTION. A valid Role Combination must be formed by a set
+        of valid Roles, concatenated by the US-ASCII character '+',
+        where the roles are in lexicographic order from minimum to
+        maximum. For example, 'a+b' and 'b+a' are NOT different
+        role-combinations; rather, they are different formatting of
+        the same (one) role-combination.
+
+        Notice the roles within a role-combination are in
+        Lexicographic order from minimum to maximum, hence, we
+        declare:
+        'a+b' is the valid formatting of the role-combination,
+        'b+a' is an invalid formatting of the role-combination.
+
+        Notice the need of zero-length role-combination as the role-
+        combination of interfaces to which no roles have been
+        assigned. This role-combination is also known as the 'null'
+        role-combination. (Note the deliberate use of lower case
+        letters to avoid confusion with the US-ASCII NULL character
+        which has a value of zero but length of one.)
+
+        The US-ASCII character '*' is used to specify a wild carded
+        Role Combination. '*' must not be used to wildcard Roles.
+        Hence, we declare:
+        '*+a+b' is a valid wild carded Role Combination.
+        'eth*+a+b' is not a valid wild carded Role Combination.
+        Note that since Roles are lexicographically listed in a Role
+        Combination, the following is an invalid role combination,
+        since '*' is lexicographically before 'a': 'a+b+*'."
+    SYNTAX OCTET STRING  (SIZE (0..255))
+
+PrcIdentifierOid ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "An OID that identifies a PRC. The value MUST be an OID
+        assigned to a PRC's entry definition. The Entry definition
+        of a PRC has an OID value XxxTable.1 where XxxTable is the
+        OID assigned to the PRC table object.
+
+        An attribute with this syntax MUST specify a PRC, which is
+        defined in the PIB module(s) registered in the context of
+        the client-type used.
+
+
+
+
+        An attribute with this syntax cannot have the value 0.0
+        (zeroDotZero). If the attribute using this syntax can be set
+        to 0.0 use the PrcIdentifierOidOrZero TEXTUAL-CONVENTION
+        which makes such use explicit."
+    SYNTAX    OBJECT IDENTIFIER
+
+PrcIdentifierOidOrZero ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "An OID that identifies a PRC or zeroDotZero (0.0). The
+        value MUST be an OID assigned to a PRC's entry definition or
+        0.0  (zeroDotZero). The Entry definition of a PRC has an OID
+        value XxxTable.1 where XxxTable is the OID assigned to the
+        PRC table object.
+
+        An attribute with this syntax can have the value 0.0
+        (zeroDotZero) to indicate that it currently does not
+        identify a PRC."
+    SYNTAX    OBJECT IDENTIFIER
+
+AttrIdentifier ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "A Unsigned32 value that identifies an attribute in a PRC by
+        its sub-id. The sub-id is the OID assigned to this attribute
+        in the PRC definition.
+
+        A AttrIdentifier value is always interpreted within the
+        context of an attribute of type PrcIdentifierOid or
+        PrcIdentifierOidOrZero. The PrcIdentifierOid (or
+           PrcIdentifierOidOrZero) object which defines the context
+        must be registered immediately before the object which uses
+        the AttrIdentifier textual convention. If the context
+        defining attribute is of type PrcIdentifierOidOrZero and has
+        the value 0.0, then in that case this attribute value has no
+        meaning.
+
+        An attribute with this syntax MUST specify a sub-id which
+        MUST be defined in the PRC identified (if any) in the
+        PrcIdentifierOid (or PrcIdentifierOidOrZero) attribute. The
+        PrcIdentifierOid (orZero) and the AttrIdentifier attributes
+        together identify a particular attribute in a particular
+        PRC.
+
+
+
+
+
+
+
+        An attribute with this syntax cannot have the value 0
+        (zero). If the attribute using this syntax can be set
+        to 0 use the AttrIdentifierOrZero TEXTUAL-CONVENTION which
+        makes that explicit."
+    SYNTAX    Unsigned32 (1..4294967295)
+
+AttrIdentifierOrZero ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "A Unsigned32 value that identifies an attribute in a PRC by
+        its sub-id or has the value 0 (zero). The sub-id if non-
+        zero, is the OID assigned to this attribute in the PRC
+        definition.
+
+        An AttrIdentifierOrZero value is always interpreted within
+        the context of an attribute of type PrcIdentifierOid or
+        PrcIdentifierOidOrZero. The PrcIdentifierOid (or
+        PrcIdentifierOidOrZero) object that defines the context must
+        be registered immediately before the object which uses the
+        AttrIdentifierOrZero textual convention. If the context
+        defining attribute is of type PrcIdentifierOidOrZero and has
+        the value 0.0, then in that case this attribute value has no
+        meaning.
+
+        An attribute with this syntax can have the value 0 (zero) to
+        indicate that it currently does not identify a PRC
+        attribute. If it has a non-zero value, the
+        PrcIdentifierOid (orZero) and the AttrIdentifierOrZero
+        attributes together identify a particular attribute in a
+        particular PRC."
+    SYNTAX    Unsigned32
+
+AttrIdentifierOid ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "An OID that identifies an attribute in a PRC. The value
+        MUST be an OID assigned to a PRC's attribute definition. The
+        last sub-id is the sub-id of the attribute as it is
+        defined in the PRC entry definition. The prefix OID (after
+        dropping the last sub-id) is the OID assigned to the Entry
+        object of a defined PRC. The Entry definition of a PRC has
+        an OID value XxxTable.1 where XxxTable is the OID assigned
+        to the PRC Table object.
+
+        An attribute with this syntax MUST not have the value 0.0
+        (zeroDotZero). If 0.0 is a valid value, the TEXTUAL
+        CONVENTION AttrIdentifierOidOrZero must be used which makes
+        such use explicit."
+
+
+
+    SYNTAX    OBJECT IDENTIFIER
+
+AttrIdentifierOidOrZero ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "An OID that identifies an attribute in a PRC or has a value
+         0.0 (zeroDotZero). The value MUST be an OID assigned to a
+         PRC's attribute definition or the value 0.0.
+
+         If not 0.0, the last sub-id MUST be the sub-id of the
+         attribute as it is defined in the PRC Entry object
+         definition. The prefix OID (after dropping the last sub-id)
+         is the OID assigned to the Entry object of a defined PRC.
+         The Entry definition of a PRC has an OID value XxxTable.1
+         Where, XxxTable is the OID assigned to the PRC Table
+         object.
+
+         An attribute with this syntax can have the value 0.0
+         (zeroDotZero) to indicate that it currently does not
+         identify a PRC's attribute."
+    SYNTAX    OBJECT IDENTIFIER
+
+ClientType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "An Unsigned32 value that identifies a COPS Client-type. An
+        attribute with this syntax must be set to zero if it does
+        not specify a COPS client-type for the PRI."
+    REFERENCE
+        "The COPS (Common Open Policy Service) Protocol, RFC 2748."
+    SYNTAX    Unsigned32 (0..65535)
+
+ClientHandle ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "An octet string that identifies a COPS Client handle. A
+        zero length value implies the attribute does not specify a
+        valid client handle."
+    REFERENCE
+        "The COPS (Common Open Policy Service) Protocol, RFC 2748."
+    SYNTAX    OCTET STRING (SIZE(0..65535))
+
+END

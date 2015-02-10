@@ -1,0 +1,3452 @@
+ATM2-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+       Gauge32, Counter32, Integer32
+           FROM SNMPv2-SMI
+       TruthValue, RowStatus, TimeStamp
+           FROM SNMPv2-TC
+       MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+           FROM SNMPv2-CONF
+       SnmpAdminString
+           FROM SNMP-FRAMEWORK-MIB
+       InterfaceIndex, InterfaceIndexOrZero, ifIndex
+           FROM IF-MIB
+       atmMIBObjects, atmInterfaceConfEntry,
+       atmVplEntry, atmVplVpi,
+       atmVclEntry, atmVclVpi, atmVclVci,
+
+
+
+       atmVpCrossConnectEntry, atmVcCrossConnectEntry
+           FROM ATM-MIB
+       AtmAddr, AtmSigDescrParamIndex,
+       AtmInterfaceType, AtmIlmiNetworkPrefix,
+       AtmVcIdentifier, AtmVpIdentifier,
+       AtmTrafficDescrParamIndex
+           FROM ATM-TC-MIB;
+
+   atm2MIB MODULE-IDENTITY
+       LAST-UPDATED "200309230000Z"
+       ORGANIZATION "IETF AToMMIB Working Group"
+       CONTACT-INFO
+         "AToMMIB WG
+             http://www.ietf.org/html.charters/atommib-charter.html
+           Editors:
+                    Faye Ly
+           Postal:  Pedestal Networks
+                    6503 Dumbarton Circle
+                    Fremont, CA 94555
+                    USA
+           Tel:     +1 510 896 2908
+           E-Mail:  faye@pedestalnetworks.com
+
+                    Michael Noto
+           Postal:  Cisco Systems
+                    170 W. Tasman Drive
+                    San Jose, CA 95134-1706
+                    USA
+
+           E-mail:  mnoto@cisco.com
+
+                    Andrew Smith
+           Postal:  Consultant
+
+           E-Mail:  ah_smith@acm.org
+
+                    Ethan Mickey Spiegel
+           Postal:  Cisco Systems
+                    170 W. Tasman Drive
+                    San Jose, CA 95134-1706
+                    USA
+           Tel:     +1 408 526 6408
+           Fax:     +1 408 526 6488
+           E-Mail:  mspiegel@cisco.com
+
+                    Kaj Tesink
+           Postal:  Telcordia Technologies
+                    331 Newman Springs Road
+
+
+
+                    Red Bank, NJ 07701
+                    USA
+           Tel:     +1 732 758 5254
+           E-mail:  kaj@research.telcordia.com"
+       DESCRIPTION
+         "Copyright (C) The Internet Society (2003). This version of
+         this MIB module is part of RFC 3606; see the RFC itself for
+         full legal notices.
+
+         This MIB Module is a supplement to the ATM-MIB
+         defined in RFC 2515."
+       REVISION "200309230000Z"
+       DESCRIPTION
+         "Initial version of this MIB, published as RFC 3606."
+
+         ::= { atmMIBObjects 14 }
+
+   atm2MIBObjects  OBJECT IDENTIFIER ::= {atm2MIB 1}
+
+   atm2MIBTraps OBJECT IDENTIFIER ::= {atm2MIB 2}
+
+   -- This ATM2-MIB Module consists of the following tables,
+   -- plus ATM trap support:
+   --      1. atmSvcVpCrossConnectTable
+   --      2. atmSvcVcCrossConnectTable
+   --      3. atmSigStatTable
+   --      4. atmSigSupportTable
+   --      5. atmSigDescrParamTable
+   --      6. atmIfRegisteredAddrTable
+   --      7. atmVclAddrTable
+   --      8. atmAddrVclTable
+   --      9. atmVplStatTable
+   --      10. atmVplLogicalPortTable
+   --      11. atmVclStatTable
+   --      12. atmAal5VclStatTable
+   --      13. atmVclGenTable
+   --      14. atmInterfaceExtTable
+   --      15. atmIlmiSrvcRegTable
+   --      16. atmIlmiNetworkPrefixTable
+   --      17. atmSwitchAddressTable
+   --      18. atmVpCrossConnectXTable
+   --      19. atmVcCrossConnectXTable
+   --      20. atmCurrentlyFailingPVplTable
+   --      21. atmCurrentlyFailingPVclTable
+
+   -- 1. ATM VPL SVC Cross-Connect Table
+
+   atmSvcVpCrossConnectTable OBJECT-TYPE
+
+
+
+       SYNTAX       SEQUENCE OF
+                    AtmSvcVpCrossConnectEntry
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+         "The ATM SVPC Cross-Connect table.  A
+         bi-directional VP cross-connect between two
+         switched VPLs is modeled as one entry in this
+         table.  A Soft PVPC cross-connect, between a
+         soft permanent VPL and a switched VPL, is
+         also modeled as one entry in this table."
+       ::= { atm2MIBObjects 1 }
+
+   atmSvcVpCrossConnectEntry OBJECT-TYPE
+       SYNTAX       AtmSvcVpCrossConnectEntry
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+         "An entry in the ATM SVPC Cross-Connect table.
+         This entry is used to model a bi-directional
+         ATM VP cross-connect between two VPLs."
+       INDEX { atmSvcVpCrossConnectIndex,
+               atmSvcVpCrossConnectLowIfIndex,
+               atmSvcVpCrossConnectLowVpi,
+               atmSvcVpCrossConnectHighIfIndex,
+               atmSvcVpCrossConnectHighVpi }
+       ::= { atmSvcVpCrossConnectTable 1 }
+
+   AtmSvcVpCrossConnectEntry ::= SEQUENCE {
+       atmSvcVpCrossConnectIndex           INTEGER,
+       atmSvcVpCrossConnectLowIfIndex      InterfaceIndex,
+       atmSvcVpCrossConnectLowVpi          AtmVpIdentifier,
+       atmSvcVpCrossConnectHighIfIndex     InterfaceIndex,
+       atmSvcVpCrossConnectHighVpi         AtmVpIdentifier,
+       atmSvcVpCrossConnectCreationTime    TimeStamp,
+       atmSvcVpCrossConnectRowStatus       RowStatus
+                     }
+
+   atmSvcVpCrossConnectIndex OBJECT-TYPE
+       SYNTAX       INTEGER (1..2147483647)
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+         "A unique value to identify this SVPC
+         cross-connect.  For each VP associated
+         with this cross-connect, the agent reports
+         this cross-connect index value in the
+         atmVplCrossConnectIdentifer attribute of the
+
+
+
+         corresponding atmVplTable entries."
+       ::= { atmSvcVpCrossConnectEntry 1 }
+
+   atmSvcVpCrossConnectLowIfIndex OBJECT-TYPE
+       SYNTAX       InterfaceIndex
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+         "The value of this object is equal to the
+         ifIndex value of the ATM interface port for this
+         SVPC cross-connect.  The term low implies
+         that this ATM interface has the numerically lower
+         ifIndex value than the other ATM interface
+         identified in the same atmSvcVpCrossConnectEntry."
+       ::= { atmSvcVpCrossConnectEntry 2 }
+
+   atmSvcVpCrossConnectLowVpi OBJECT-TYPE
+       SYNTAX       AtmVpIdentifier
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+         "The value of this object is equal to the VPI
+         value associated with the SVPC cross-connect
+         at the ATM interface that is identified by
+         atmSvcVpCrossConnectLowIfIndex.  The VPI value
+         cannot exceed the number supported by the
+         atmInterfaceCurrentMaxSvpcVpi at the low ATM interface
+         port."
+       ::= { atmSvcVpCrossConnectEntry 3 }
+
+   atmSvcVpCrossConnectHighIfIndex OBJECT-TYPE
+       SYNTAX       InterfaceIndex
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+        "The value of this object is equal to the
+         ifIndex value of the ATM interface port for
+         this SVC VP cross-connect.  The term high
+         implies that this ATM interface has the
+         numerically higher ifIndex value than the
+         other ATM interface identified in the same
+         atmSvcVpCrossConnectEntry."
+       ::= { atmSvcVpCrossConnectEntry 4 }
+
+   atmSvcVpCrossConnectHighVpi OBJECT-TYPE
+       SYNTAX       AtmVpIdentifier
+       MAX-ACCESS   not-accessible
+       STATUS       current
+
+
+
+       DESCRIPTION
+        "The value of this object is equal to the VPI
+         value associated with the SVPC cross-connect
+         at the ATM interface that is identified by
+         atmSvcVpCrossConnectHighIfIndex.  The VPI value
+         cannot exceed the number supported by the
+         atmInterfaceCurrentMaxSvpcVpi at the high ATM interface
+         port."
+       ::= { atmSvcVpCrossConnectEntry 5 }
+
+   atmSvcVpCrossConnectCreationTime OBJECT-TYPE
+       SYNTAX       TimeStamp
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+        "The value of the sysUpTime object
+         at the time this bi-directional SVPC
+         cross-connect was created.  If the current
+         state was entered prior to the last
+         re-initialization of the agent, then this
+         object contains a zero value."
+       ::= { atmSvcVpCrossConnectEntry 6 }
+
+   atmSvcVpCrossConnectRowStatus OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+           "This object is used to delete rows in the
+            atmSvcVpCrossConnectTable."
+       ::= { atmSvcVpCrossConnectEntry 7 }
+
+   -- 2. ATM VCL SVC Cross-Connect Table
+
+   atmSvcVcCrossConnectTable OBJECT-TYPE
+       SYNTAX       SEQUENCE OF AtmSvcVcCrossConnectEntry
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+        "The ATM SVCC Cross-Connect table.  A
+         bi-directional VC cross-connect between two
+         switched VCLs is modeled as one entry in
+         this table.  A Soft PVCC cross-connect,
+         between a soft permanent VCL and a switched
+         VCL, is also modeled as one entry in this
+         table."
+       ::= { atm2MIBObjects 2 }
+
+
+
+
+   atmSvcVcCrossConnectEntry OBJECT-TYPE
+       SYNTAX       AtmSvcVcCrossConnectEntry
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+        "An entry in the ATM SVCC Cross-Connect table.
+         This entry is used to model a bi-directional ATM
+         VC cross-connect between two VCLs."
+       INDEX { atmSvcVcCrossConnectIndex,
+               atmSvcVcCrossConnectLowIfIndex,
+               atmSvcVcCrossConnectLowVpi,
+               atmSvcVcCrossConnectLowVci,
+               atmSvcVcCrossConnectHighIfIndex,
+               atmSvcVcCrossConnectHighVpi,
+               atmSvcVcCrossConnectHighVci }
+       ::= { atmSvcVcCrossConnectTable 1 }
+
+   AtmSvcVcCrossConnectEntry ::= SEQUENCE {
+       atmSvcVcCrossConnectIndex           INTEGER,
+       atmSvcVcCrossConnectLowIfIndex      InterfaceIndex,
+       atmSvcVcCrossConnectLowVpi          AtmVpIdentifier,
+       atmSvcVcCrossConnectLowVci          AtmVcIdentifier,
+       atmSvcVcCrossConnectHighIfIndex     InterfaceIndex,
+       atmSvcVcCrossConnectHighVpi         AtmVpIdentifier,
+       atmSvcVcCrossConnectHighVci         AtmVcIdentifier,
+       atmSvcVcCrossConnectCreationTime    TimeStamp,
+       atmSvcVcCrossConnectRowStatus       RowStatus
+               }
+
+   atmSvcVcCrossConnectIndex OBJECT-TYPE
+       SYNTAX       INTEGER (1..2147483647)
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+        "A unique value to identify this SVCC cross-connect.
+         For each VP associated with this cross-connect, the
+         agent reports this cross-connect index value in the
+         atmVclCrossConnectIdentifier attribute of the
+         corresponding atmVplTable entries."
+       ::= { atmSvcVcCrossConnectEntry 1 }
+
+   atmSvcVcCrossConnectLowIfIndex OBJECT-TYPE
+       SYNTAX       InterfaceIndex
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+        "The value of this object is equal to the
+         ifIndex value of the ATM interface port for this
+
+
+
+         SVCC cross-connect.  The term low implies that
+         this ATM interface has the numerically lower
+         ifIndex value than the other ATM interface
+         identified in the same atmSvcVcCrossConnectEntry."
+       ::= { atmSvcVcCrossConnectEntry 2 }
+
+   atmSvcVcCrossConnectLowVpi OBJECT-TYPE
+       SYNTAX       AtmVpIdentifier
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+        "The value of this object is equal to the VPI
+         value associated with the SVCC cross-connect
+         at the ATM interface that is identified by
+         atmSvcVcCrossConnectLowIfIndex.  The VPI value
+         cannot exceed the number supported by the
+         atmInterfaceCurrentMaxSvccVpi at the low ATM interface
+         port."
+       ::= { atmSvcVcCrossConnectEntry 3 }
+
+   atmSvcVcCrossConnectLowVci OBJECT-TYPE
+       SYNTAX       AtmVcIdentifier
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+        "The value of this object is equal to the VCI
+         value associated with the SVCC cross-connect
+         at the ATM interface that is identified by
+         atmSvcVcCrossConnectLowIfIndex.  The VCI value
+         cannot exceed the number supported by the
+         atmInterfaceCurrentMaxSvccVci at the low ATM interface
+         port."
+       ::= { atmSvcVcCrossConnectEntry 4 }
+
+   atmSvcVcCrossConnectHighIfIndex OBJECT-TYPE
+       SYNTAX       InterfaceIndex
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+        "The value of this object is equal to the
+         ifIndex value for the ATM interface port for
+         this SVCC cross-connect.  The term high implies
+         that this ATM interface has the numerically
+         higher ifIndex value than the other ATM interface
+         identified in the same atmSvcVcCrossConnectEntry."
+       ::= { atmSvcVcCrossConnectEntry 5 }
+
+   atmSvcVcCrossConnectHighVpi OBJECT-TYPE
+
+
+
+       SYNTAX       AtmVpIdentifier
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+        "The value of this object is equal to the VPI
+         value associated with the SVCC cross-connect
+         at the ATM interface that is identified by
+         atmSvcVcCrossConnectHighIfIndex.  The VPI value
+         cannot exceed the number supported by the
+         atmInterfaceCurrentMaxSvccVpi at the high ATM interface
+         port."
+       ::= { atmSvcVcCrossConnectEntry 6 }
+
+   atmSvcVcCrossConnectHighVci OBJECT-TYPE
+       SYNTAX       AtmVcIdentifier
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+        "The value of this object is equal to the VCI
+         value associated with the SVCC cross-connect
+         at the ATM interface that is identified by
+         atmSvcVcCrossConnectHighIfIndex.  The VCI value
+         cannot exceed the number supported by the
+         atmInterfaceMaxVciBits at the high ATM interface
+         port."
+       ::= { atmSvcVcCrossConnectEntry 7 }
+
+   atmSvcVcCrossConnectCreationTime OBJECT-TYPE
+       SYNTAX       TimeStamp
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+        "The value of the sysUpTime object
+         at the time this bi-directional SVCC
+         cross-connect was created.  If the current
+         state was entered prior to the last
+         re-initialization of the agent, then this
+         object contains a zero value."
+       ::= { atmSvcVcCrossConnectEntry 8 }
+
+   atmSvcVcCrossConnectRowStatus OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+           "This object is used to delete rows in the
+            atmSvcVcCrossConnectTable."
+       ::= { atmSvcVcCrossConnectEntry 9 }
+
+
+
+   -- 3. ATM Interface Signalling Statistics Table --
+
+   atmSigStatTable       OBJECT-TYPE
+       SYNTAX       SEQUENCE OF AtmSigStatEntry
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+        "This table contains ATM interface signalling
+        statistics, one entry per ATM signalling
+        interface."
+       ::= { atm2MIBObjects 3 }
+
+   atmSigStatEntry         OBJECT-TYPE
+       SYNTAX       AtmSigStatEntry
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+        "This list contains signalling statistics variables."
+       INDEX { ifIndex }
+       ::= { atmSigStatTable  1}
+
+   AtmSigStatEntry    ::= SEQUENCE  {
+       atmSigSSCOPConEvents            Counter32,
+       atmSigSSCOPErrdPdus             Counter32,
+       atmSigDetectSetupAttempts       Counter32,
+       atmSigEmitSetupAttempts         Counter32,
+       atmSigDetectUnavailRoutes       Counter32,
+       atmSigEmitUnavailRoutes         Counter32,
+       atmSigDetectUnavailResrcs       Counter32,
+       atmSigEmitUnavailResrcs         Counter32,
+       atmSigDetectCldPtyEvents        Counter32,
+       atmSigEmitCldPtyEvents          Counter32,
+       atmSigDetectMsgErrors           Counter32,
+       atmSigEmitMsgErrors             Counter32,
+       atmSigDetectClgPtyEvents        Counter32,
+       atmSigEmitClgPtyEvents          Counter32,
+       atmSigDetectTimerExpireds       Counter32,
+       atmSigEmitTimerExpireds         Counter32,
+       atmSigDetectRestarts            Counter32,
+       atmSigEmitRestarts              Counter32,
+       atmSigInEstabls                 Counter32,
+       atmSigOutEstabls                Counter32
+            }
+
+   atmSigSSCOPConEvents   OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+
+
+
+       DESCRIPTION
+           "SSCOP Connection Events Counter.  This counter counts
+            the sum of the following errors:
+
+            1) SSCOP Connection Disconnect Counter
+
+                The abnormal occurrence of this event is
+                characterized by the expiry of Timer_NO_RESPONSE.
+                (This event is communicated to the layer management
+                with MAA-ERROR code P.  See ITU-T Q.2110.)
+
+             2) SSCOP Connection Initiation Failure
+
+                This condition indicates the inability to establish
+                an SSCOP connection.  This event occurs whenever the
+                number of expiries of the connection control timer
+                (Timer_CC) equals or exceeds the MaxCC, or upon
+                receipt of a connection reject message BGREJ PDU.
+                (This event is communicated to layer management with
+                MAA-ERROR code O.  See ITU-T Q.2110.)
+
+             3) SSCOP Connection Re-Establ/Resynch
+
+                This event occurs upon receipt of a BGN PDU or
+                RS PDU."
+       REFERENCE
+           "ITU-T Recommendation Q.2110, Broadband
+            Integrated Services Digital Network
+            (B-ISDN) - ATM Adaptation Layer - Service
+            Specific Connection Oriented Protocol (SSCOP)
+            Specification, July 1994."
+       ::= { atmSigStatEntry 1}
+
+   atmSigSSCOPErrdPdus   OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "SSCOP Errored PDUs Counter.  This counter counts the
+           sum of the following errors:
+
+           1) Invalid PDUs.
+              These are defined in SSCOP and consist of PDUs
+              with an incorrect length (MAA-ERROR code U), an
+              undefined PDU type code, or that are not 32-bit
+              aligned.
+
+           2) PDUs that result in MAA-ERROR codes and are
+
+
+
+              discarded.
+
+           See MAA-ERROR codes A-D, F-M, and Q-T defined in
+           ITU-T Q.2110."
+       REFERENCE
+           "ITU-T Recommendation Q.2110, Broadband
+            Integrated Services Digital Network
+            (B-ISDN) - ATM Adaptation Layer - Service
+            Specific Connection Oriented Protocol (SSCOP)
+            Specification, July 1994."
+       ::= { atmSigStatEntry 2 }
+
+   atmSigDetectSetupAttempts    OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "Call Setup Attempts Counter.  This counter counts
+           the number of call setup attempts (both successful
+           and unsuccessful) detected on this interface."
+       ::= { atmSigStatEntry 3 }
+
+   atmSigEmitSetupAttempts    OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "Call Setup Attempts Counter.  This counter counts
+           the number of call setup attempts (both successful
+           and unsuccessful) transmitted on this interface."
+       ::= { atmSigStatEntry 4 }
+
+   atmSigDetectUnavailRoutes    OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "Number of Route Unavailability detected on this interface.
+           This counter is incremented when a RELEASE, RELEASE COMPLETE
+           (only when not preceded by a RELEASE message for the same
+           call), ADD PARTY REJECT, or STATUS message that
+           contains one of the following cause code values is
+           received (Note: These cause values
+           apply to both UNI3.0 and UNI3.1):
+
+           Cause Value            Meaning
+
+
+
+
+
+              1            unallocated (unassigned) number
+              2            no route to specified transit network
+              3            no route to destination
+
+           NOTE:  For this counter, RELEASE COMPLETE
+           messages that are a reply to a previous RELEASE
+           message and contain the same cause value, are
+           redundant (for counting purposes) and should not
+           be counted."
+
+       ::= { atmSigStatEntry 5 }
+
+   atmSigEmitUnavailRoutes    OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "Number of Route Unavailability transmitted from this
+           interface.  This counter is incremented when a RELEASE,
+           RELEASE COMPLETE (only when not preceded by a RELEASE
+           message for the same call), ADD PARTY REJECT, or
+           STATUS message that contains one of the following cause
+           code values is transmitted (Note: These cause values apply
+           to both UNI3.0 and UNI3.1):
+
+           Cause Value            Meaning
+
+              1            unallocated (unassigned) number
+              2            no route to specified transit network
+              3            no route to destination
+
+           NOTE:  For this counter, RELEASE COMPLETE
+           messages that are a reply to a previous RELEASE
+           message and contain the same cause value, are
+           redundant (for counting purposes) and should not
+           be counted."
+       ::= { atmSigStatEntry 6 }
+
+   atmSigDetectUnavailResrcs     OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "Number of Resource Unavailability detected on this
+           interface.  This counter is incremented when a RELEASE,
+           RELEASE COMPLETE (only when not preceded by a RELEASE
+           message for the same call), ADD PARTY REJECT, or
+           STATUS message that contains one of the following
+
+
+
+           cause code values is received (Note: These cause
+           values apply to both UNI3.0 and UNI3.1 unless
+           otherwise stated):
+
+           Cause Value          Meaning
+
+              35          requested VPCI/VCI not available
+              37          user cell rate not available (UNI3.1
+                          only)
+              38          network out of order
+              41          temporary failure
+              45          no VPCI/VCI available
+              47          resource unavailable, unspecified
+              49          Quality of Service unavailable
+              51          user cell rate not available (UNI3.0
+                          only)
+              58          bearer capability not presently
+                          available
+              63          Service or option not available,
+                          unspecified
+              92          too many pending add party requests
+
+           NOTE:  For this counter, RELEASE COMPLETE
+           messages that are a reply to a previous RELEASE
+           message and contain the same cause value, are
+           redundant (for counting purposes) and should not
+           be counted."
+       ::= { atmSigStatEntry 7 }
+
+   atmSigEmitUnavailResrcs     OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+          "Number of Resource Unavailability transmitted from this
+          interface.  This counter is incremented when a RELEASE,
+          RELEASE COMPLETE (only when not preceded by a RELEASE message
+          for the same call), ADD PARTY REJECT, or STATUS message that
+          contains one of the following cause code values is transmitted
+          (Note: These cause values apply to both UNI3.0 and UNI3.1
+          unless otherwise stated):
+
+          Cause Value          Meaning
+
+             35          requested VPCI/VCI not available
+             37          user cell rate not available (UNI3.1
+                         only)
+             38          network out of order
+
+
+
+             41          temporary failure
+             45          no VPCI/VCI available
+             47          resource unavailable, unspecified
+             49          Quality of Service unavailable
+             51          user cell rate not available (UNI3.0
+                         only)
+             58          bearer capability not presently
+                         available
+             63          Service or option not available,
+                         unspecified
+             92          too many pending add party requests
+
+          NOTE:  For this counter, RELEASE COMPLETE messages that are a
+          reply to a previous RELEASE message and contain the same cause
+          value, are redundant (for counting purposes) and should not be
+          counted."
+
+      ::= { atmSigStatEntry 8 }
+
+  atmSigDetectCldPtyEvents     OBJECT-TYPE
+      SYNTAX       Counter32
+      MAX-ACCESS   read-only
+      STATUS       current
+      DESCRIPTION
+         "Number of Called Party Responsible For Unsuccessful Call
+         detected on this interface.  This counter is incremented when a
+         RELEASE, RELEASE COMPLETE (only when not preceded by a RELEASE
+         message for the same call), ADD PARTY REJECT, or STATUS message
+         that contains one of the following cause code values is
+         received (Note: These cause values apply to both UNI3.0 and
+         UNI3.1):
+
+         Cause Value         Meaning
+
+            17           user busy
+            18           no user responding
+            21           call rejected
+            22           number changed
+            23           user rejects all calls with calling
+                         line identification restriction (CLIR)
+            27           destination out of order
+            31           normal, unspecified
+            88           incompatible destination
+
+
+         NOTE:  For this counter, RELEASE COMPLETE messages that are a
+         reply to a previous RELEASE message and contain the same cause
+         value, are redundant (for counting purposes) and should not be
+
+
+
+         counted.
+
+         Note: Cause Value #30 'response to STATUS ENQUIRY' was not
+         included in this memo since it did not apply to a hard
+         failure."
+
+     ::= { atmSigStatEntry 9 }
+
+ atmSigEmitCldPtyEvents     OBJECT-TYPE
+     SYNTAX       Counter32
+     MAX-ACCESS   read-only
+     STATUS       current
+     DESCRIPTION
+
+        "Number of Called Party Responsible For Unsuccessful Call
+        transmitted from this interface.  This counter is incremented
+        when a RELEASE, RELEASE COMPLETE (only when not preceded by a
+        RELEASE message for the same call), ADD PARTY REJECT, or STATUS
+        message that contains one of the following cause code values is
+        transmitted (Note: These cause values apply to both UNI3.0 and
+        UNI3.1):
+
+        Cause Value         Meaning
+
+           17           user busy
+           18           no user responding
+           21           call rejected
+           22           number changed
+           23           user rejects all calls with calling
+                        line identification restriction (CLIR)
+           27           destination out of order
+           31           normal, unspecified
+           88           incompatible destination
+
+        NOTE:  For this counter, RELEASE COMPLETE messages that are a
+        reply to a previous RELEASE message and contain the same cause
+        value, are redundant (for counting purposes) and should not be
+        counted.
+
+        Note: Cause Value #30 'response to STATUS ENQUIRY' was not
+        included in this memo since it did not apply to a hard failure."
+
+    ::= { atmSigStatEntry 10 }
+
+atmSigDetectMsgErrors    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "Number of Incorrect Messages detected on this interface.  The
+       Incorrect Messages Counter reflects any sort of incorrect
+       information in a message.  This includes:
+
+       - RELEASE, RELEASE COMPLETE, ADD PARTY REJECT,
+         and STATUS messages transmitted, that contain any of
+         the Cause values listed below.
+
+       - Ignored messages.  These messages are dropped
+         because the message was so damaged that it could
+         not be further processed.  A list of dropped
+         messages is compiled below:
+
+          1.  Message with invalid protocol discriminator
+
+          2.  Message with errors in the call reference I.E.
+               - Bits 5-8 of the first octet not equal to
+                 '0000'
+               - Bits 1-4 of the first octet indicating a
+                 length other than 3 octets
+               - RELEASE COMPLETE message received with a
+                 call reference that does not relate to a
+                 call active or in progress
+               - SETUP message received with call reference
+                 flag incorrectly set to 1
+               - SETUP message received with a call
+                 reference for a call that is already
+                 active or in progress.
+
+          3.  Message too short
+
+       The following cause values are monitored by this counter (Note:
+       These cause values apply to both UNI3.0 and UNI3.1 unless
+       otherwise stated):
+
+       Cause Value     Meaning
+
+          10     VPCI/VCI unacceptable (UNI3.0 only)
+          36     VPCI/VCI assignment failure (UNI3.1 only)
+          81     invalid call reference value
+          82     identified channel does not exist
+          89     invalid endpoint reference
+          96     mandatory information element is missing
+          97     message type non-existent or not
+                 implemented
+          99     information element non-existent or not
+                 implemented
+
+
+
+          100    invalid information element contents
+          101    message not compatible with call state
+          104    incorrect message length
+          111    protocol error, unspecified
+
+          NOTE:  For this counter, RELEASE COMPLETE messages that are
+          a reply to a previous RELEASE message and contain the same
+          cause value, are redundant (for counting purposes) and
+          should not be counted."
+
+    ::= { atmSigStatEntry 11 }
+
+atmSigEmitMsgErrors    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Number of Incorrect Messages transmitted on this interface.
+       The Incorrect Messages Counter reflects any sort of incorrect
+       information in a message.  This includes:
+
+       - RELEASE, RELEASE COMPLETE, ADD PARTY REJECT,
+         and STATUS messages transmitted or
+         received, that contain any of the Cause values
+         listed below.
+
+       - Ignored messages.  These messages are dropped
+         because the message was so damaged that it could
+         not be further processed.  A list of dropped
+         messages is compiled below:
+
+          1.  Message with invalid protocol discriminator
+
+          2.  Message with errors in the call reference I.E.
+               - Bits 5-8 of the first octet not equal to
+                 '0000'
+               - Bits 1-4 of the first octet indicating a
+                 length other than 3 octets
+               - RELEASE COMPLETE message received with a
+                 call reference that does not relate to a
+                 call active or in progress
+               - SETUP message received with call reference
+                 flag incorrectly set to 1
+               - SETUP message received with a call
+                 reference for a call that is already
+                 active or in progress.
+
+          3.  Message too short
+
+
+
+       The following cause values are monitored by this counter
+       (Note: These cause values apply to both UNI3.0 and UNI3.1
+       unless otherwise stated):
+
+       Cause Value     Meaning
+
+          10     VPCI/VCI unacceptable (UNI3.0 only)
+          36     VPCI/VCI assignment failure (UNI3.1 only)
+          81     invalid call reference value
+          82     identified channel does not exist
+          89     invalid endpoint reference
+          96     mandatory information element is missing
+          97     message type non-existent or not
+                 implemented
+          99     information element non-existent or not
+                 implemented
+          100    invalid information element contents
+          101    message not compatible with call state
+          104    incorrect message length
+          111    protocol error, unspecified
+
+          NOTE:  For this counter, RELEASE COMPLETE messages that are
+          a reply to a previous RELEASE message and contain the same
+          cause value, are redundant (for counting purposes) and
+          should not be counted."
+
+    ::= { atmSigStatEntry 12 }
+
+atmSigDetectClgPtyEvents    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Number of Calling Party Events detected on this interface.
+       This counter monitors error events that occur due to the
+       originating user doing something wrong.  This counter is
+       incremented when a RELEASE, RELEASE COMPLETE (only when not
+       preceded by a RELEASE message for the same call), ADD PARTY
+       REJECT, or STATUS message that contains one of the following
+       cause code values is received (Note: These cause values
+       apply to both UNI3.0 and UNI3.1):
+
+       Cause Value     Meaning
+
+          28     invalid number format (address incomplete)
+          43     access information discarded
+          57     bearer capability not authorized
+          65     bearer capability not implemented
+
+
+
+          73     unsupported combination of traffic
+                 parameters
+          78     AAL parameters cannot be supported (UNI3.1
+                 only)
+          91     invalid transit network selection
+          93     AAL parameters cannot be supported (UNI3.0
+                 only)
+
+          NOTE:  For this counter, RELEASE COMPLETE messages that
+          are a reply to a previous RELEASE message and contain
+          the same cause value, are redundant (for counting purposes)
+          and should not be counted."
+
+    ::= { atmSigStatEntry 13 }
+
+atmSigEmitClgPtyEvents    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Number of Calling Party Events transmitted from this interface.
+       This counter monitors error events that occur due to the
+       originating user doing something wrong.  This counter is
+       incremented when a RELEASE, RELEASE COMPLETE (only when not
+       preceded by a RELEASE message for the same call), ADD PARTY
+       REJECT, or STATUS message that contains one of the following
+       cause code values is transmitted (Note: These cause values
+       apply to both UNI3.0 and UNI3.1):
+
+       Cause Value     Meaning
+
+          28     invalid number format (address incomplete)
+          43     access information discarded
+          57     bearer capability not authorized
+          65     bearer capability not implemented
+          73     unsupported combination of traffic
+                 parameters
+          78     AAL parameters cannot be supported (UNI3.1
+                 only)
+          91     invalid transit network selection
+          93     AAL parameters cannot be supported (UNI3.0
+                 only)
+
+          NOTE:  For this counter, RELEASE COMPLETE messages that are
+          a reply to a previous RELEASE message and contain the same
+          cause value, are redundant (for counting purposes) and
+          should not be counted."
+
+
+
+
+    ::= { atmSigStatEntry 14 }
+
+atmSigDetectTimerExpireds    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Number of Timer Expiries detected on this interface.  The Timer
+       Expiries Counter provides a count of network timer expiries, and
+       to some extent, host or switch timer expiries.  The conditions
+       for incrementing this counter are:
+
+          - Expiry of any network timer
+
+          - Receipt of a RELEASE or RELEASE COMPLETE
+            message with Cause #102, 'recovery on
+            timer expiry'.
+
+          NOTE:  For this counter, RELEASE COMPLETE messages that are
+          a reply to a previous RELEASE message and contain the same
+          cause value, are redundant (for counting purposes) and
+          should not be counted."
+
+    ::= { atmSigStatEntry 15 }
+
+atmSigEmitTimerExpireds    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Number of Timer Expiries transmitted from this interface.
+       The Timer Expiries Counter provides a count of network timer
+       expiries, and to some extent, host or switch timer expiries.
+       The conditions for incrementing this counter are:
+
+          - Expiry of any network timer
+
+          - Receipt of a RELEASE or RELEASE COMPLETE
+            message with Cause #102, 'recovery on
+            timer expiry'.
+
+       NOTE:  For this counter, RELEASE COMPLETE messages that are a
+       reply to a previous RELEASE message and contain the same cause
+       value, are redundant (for counting purposes) and should not be
+       counted."
+
+    ::= { atmSigStatEntry 16 }
+
+
+
+
+atmSigDetectRestarts    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Number of Restart Activity errors detected on this interface.
+       The Restart Activity Counter provides a count of host, switch,
+       or network restart activity.  This counter is incremented when
+       receiving a RESTART message."
+
+    ::= { atmSigStatEntry 17 }
+
+atmSigEmitRestarts    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Number of Restart Activity errors transmitted from this
+       interface.  The Restart Activity Counter provides a count of
+       host, switch, or network restart activity.  This counter is
+       incremented when transmitting a RESTART message."
+
+    ::= { atmSigStatEntry 18 }
+
+atmSigInEstabls    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Number of SVCs established at this signalling entity for
+       incoming connections."
+    ::= { atmSigStatEntry 19 }
+
+atmSigOutEstabls    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Number of SVCs established at this signalling entity for
+       outgoing connections."
+    ::= { atmSigStatEntry 20 }
+
+  -- 4. ATM Interface Signalling Support Table
+  --
+  -- This table provides information to support
+  -- the signalling process which is used to establish
+  -- ATM Switched Virtual Connections (SVCs).
+
+
+
+
+atmSigSupportTable       OBJECT-TYPE
+    SYNTAX       SEQUENCE OF AtmSigSupportEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table contains ATM local interface configuration
+       parameters, one entry per ATM signalling interface."
+    ::= { atm2MIBObjects 4 }
+
+atmSigSupportEntry         OBJECT-TYPE
+    SYNTAX       AtmSigSupportEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This list contains signalling configuration parameters
+       and state variables."
+    INDEX { ifIndex }
+    ::= { atmSigSupportTable  1}
+
+AtmSigSupportEntry    ::= SEQUENCE  {
+    atmSigSupportClgPtyNumDel       INTEGER,
+    atmSigSupportClgPtySubAddr      INTEGER,
+    atmSigSupportCldPtySubAddr      INTEGER,
+    atmSigSupportHiLyrInfo          INTEGER,
+    atmSigSupportLoLyrInfo          INTEGER,
+    atmSigSupportBlliRepeatInd      INTEGER,
+    atmSigSupportAALInfo            INTEGER,
+    atmSigSupportPrefCarrier        OCTET STRING
+}
+
+atmSigSupportClgPtyNumDel     OBJECT-TYPE
+    SYNTAX       INTEGER  { enabled(1), disabled(2) }
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "This object indicates whether the Calling Party Number
+       Information Element is transferred to the called party
+       address.  The value of this object can be:
+
+         - enabled(1)  This Information Element is transferred
+                       to the called party
+
+         - disabled(2) This Information Element is NOT
+                       transferred to the called party."
+
+    ::= { atmSigSupportEntry 1 }
+
+atmSigSupportClgPtySubAddr   OBJECT-TYPE
+
+
+
+    SYNTAX       INTEGER  { enabled(1), disabled(2) }
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "This object indicates whether to accept and transfer the Calling
+       Party Subaddress Information Element from the calling party to
+       the called party.  Calling party subaddress information shall
+       only be transferred to the called party if calling party number
+       delivery is enabled (i.e., atmSigSupportClgPtyNumDel =
+       'enabled(1)'.  The value of this object can be:
+
+         - enabled(1)  This Information Element is transferred
+                       to the called party
+
+         - disabled(2) This Information Element is NOT
+                       transferred to the called party."
+
+    ::= { atmSigSupportEntry 2 }
+
+atmSigSupportCldPtySubAddr    OBJECT-TYPE
+    SYNTAX       INTEGER  { enabled(1), disabled(2) }
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "This object indicates whether to accept, transfer, and deliver
+       the Called Party Subaddress Information Element from the calling
+       party to the called party.  The value of this object can be:
+
+         - enabled(1)  This Information Element is transferred
+                       to the called party
+
+         - disabled(2) This Information Element is NOT
+                       transferred to the called party."
+
+    ::= { atmSigSupportEntry 3 }
+
+atmSigSupportHiLyrInfo     OBJECT-TYPE
+    SYNTAX       INTEGER  { enabled(1), disabled(2) }
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "This object indicates whether to accept, transfer, and deliver
+       the Broadband High Layer Information Element from the calling
+       party to the called party.  The value of this object can be:
+
+         - enabled(1)  This Information Element is transferred
+                       to the called party
+
+
+
+
+         - disabled(2) This Information Element is NOT
+                       transferred to the called party."
+
+    ::= { atmSigSupportEntry 4 }
+
+atmSigSupportLoLyrInfo     OBJECT-TYPE
+    SYNTAX       INTEGER  { enabled(1), disabled(2) }
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "This object indicates whether to accept, transfer, and deliver
+       the Broadband Low Layer Information Element from the calling
+       party to the called party.  The value of this object can be:
+
+         - enabled(1)  This Information Element is transferred
+                       to the called party
+
+         - disabled(2) This Information Element is NOT
+                       transferred to the called party."
+
+    ::= { atmSigSupportEntry 5 }
+
+atmSigSupportBlliRepeatInd      OBJECT-TYPE
+    SYNTAX       INTEGER  { enabled(1), disabled(2) }
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+        "This object indicates whether to accept, transfer, and deliver
+        the Broadband Repeat Indicator with two or three instances of
+        the Broadband Low Layer Information Element for low layer
+        information selection from the calling party to the called
+        party.  This object's value should always be disabled(2) if
+        the value of atmSigSupportLolyrInfo is disabled(2).
+
+        The value of this object can be:
+
+        - enabled(1)  This Information Element is transferred
+              to the called party
+
+        - disabled(2) This Information Element is NOT
+              transferred to the called party."
+    ::= { atmSigSupportEntry 6 }
+
+atmSigSupportAALInfo     OBJECT-TYPE
+    SYNTAX       INTEGER  { enabled(1), disabled(2) }
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+
+
+
+       "This object indicates whether to accept, transfer, and deliver
+       the ATM Adaptation Layer Parameters Information Element from the
+       calling party to the called party.  The value of this object can
+       be:
+
+         - enabled(1)  This Information Element is transferred
+                       to the called party
+
+         - disabled(2) This Information Element is NOT
+                       transferred to the called party."
+
+    ::= { atmSigSupportEntry 7 }
+
+atmSigSupportPrefCarrier     OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE(0|4))
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "This parameter identifies the carrier to which intercarrier
+       calls originated from this interface are routed when transit
+       network selection information is not provided by the calling
+       party.  If a Carrier Identification Code (CIC) is used the
+       parameter shall contain the CIC.  For three-digit CICs, the first
+       octet shall be '0' and the CIC is contained in the three
+       following octets.  If the preferred carrier feature is not
+       supported the value is a zero-length string."
+
+    ::= { atmSigSupportEntry 8 }
+
+  -- 5. ATM Signalling Descriptor Parameter Table
+
+    atmSigDescrParamTable     OBJECT-TYPE
+        SYNTAX       SEQUENCE OF AtmSigDescrParamEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "A table contains signalling capabilities of VCLs except the
+            Traffic Descriptor.  Traffic descriptors are described in
+            the atmTrafficDescrParamTable."
+
+        REFERENCE
+            "ATM User-Network Interface Specification, Version 3.1 (UNI
+            3.1), September 1994, Section 5.4.5 Variable Length
+            Information Elements."
+
+        ::= { atm2MIBObjects 5 }
+
+    atmSigDescrParamEntry        OBJECT-TYPE
+
+
+
+        SYNTAX       AtmSigDescrParamEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "Each entry in this table represents a
+            set of signalling capabilities that can
+            be applied to a VCL.  There is no requirement
+            for unique entries, except that the index must
+            be unique."
+        INDEX { atmSigDescrParamIndex }
+        ::= { atmSigDescrParamTable 1 }
+
+    AtmSigDescrParamEntry ::=
+        SEQUENCE {
+            atmSigDescrParamIndex
+                                   AtmSigDescrParamIndex,
+            atmSigDescrParamAalType         INTEGER,
+            atmSigDescrParamAalSscsType     INTEGER,
+            atmSigDescrParamBhliType        INTEGER,
+
+
+            atmSigDescrParamBhliInfo        OCTET STRING,
+            atmSigDescrParamBbcConnConf     INTEGER,
+            atmSigDescrParamBlliLayer2      INTEGER,
+            atmSigDescrParamBlliLayer3      INTEGER,
+            atmSigDescrParamBlliPktSize     INTEGER,
+            atmSigDescrParamBlliSnapId      INTEGER,
+            atmSigDescrParamBlliOuiPid      OCTET STRING,
+            atmSigDescrParamRowStatus       RowStatus
+        }
+
+    atmSigDescrParamIndex OBJECT-TYPE
+        SYNTAX       AtmSigDescrParamIndex
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "The value of this object is used by the
+            atmVclGenSigDescrIndex object in the atmVclGenTable to
+            identify a row in this table."
+
+        ::= { atmSigDescrParamEntry 1 }
+
+     atmSigDescrParamAalType OBJECT-TYPE
+         SYNTAX       INTEGER {
+            other(1),       -- not defined
+            aal1(2),        -- AAL type 1
+            aal34(3),       -- AAL type 3/4
+            aal5(4),        -- AAL type 5
+
+
+
+            userDefined(5), -- User-Defined AAL
+            aal2(6)         -- AAL type 2
+            }
+         MAX-ACCESS   read-create
+         STATUS       current
+         DESCRIPTION
+            "The AAL type.  The value of this object is set to other(1)
+            when not defined."
+
+         DEFVAL { other }
+         ::= { atmSigDescrParamEntry 2 }
+
+     atmSigDescrParamAalSscsType OBJECT-TYPE
+         SYNTAX       INTEGER {
+            other(1),       -- other, or not used
+            assured(2),     -- Data SSCS based on SSCOP
+                            -- assured operation
+            nonassured(3),  -- Data SSCS based on SSCOP
+                            -- non-assured operation
+            frameRelay(4),  -- frame relay SSCS
+            null(5)         -- null
+
+            }
+         MAX-ACCESS   read-create
+         STATUS       current
+         DESCRIPTION
+            "The SSCS type used by this entry."
+
+         DEFVAL { other }
+         ::= { atmSigDescrParamEntry 3 }
+
+     atmSigDescrParamBhliType OBJECT-TYPE
+         SYNTAX       INTEGER {
+            other(1),         -- not defined
+            iso(2),           -- ISO
+            user(3),          -- User specific
+            hiProfile(4),     -- Higher layer profile
+                              -- this enum applicable to
+                              -- UNI 3.0 only
+            vendorSpecific(5) -- Vender specific
+                              -- application identifier
+            }
+         MAX-ACCESS   read-create
+         STATUS       current
+         DESCRIPTION
+            "The Broadband high layer type."
+
+         DEFVAL { other }
+
+
+
+         ::= { atmSigDescrParamEntry 4 }
+
+     atmSigDescrParamBhliInfo OBJECT-TYPE
+         SYNTAX     OCTET STRING (SIZE(0..8))
+         MAX-ACCESS read-create
+         STATUS     current
+         DESCRIPTION
+            "The Broadband high layer information.  When
+            atmSigDescrParamBhliType is set to iso(2), the value of this
+            object is a zero length string.  When
+            atmSigDescrParamBhliType is set to user(3), the value of
+            this object is an octet string with length ranging from 0 to
+            8.  When atmSigDescrParamBhliType is set to hiProfile(4),
+            the value of this object is a length of 4 octet string
+            containing user to user profile identifier.  When
+            atmSigDescrParamBhliType is set to vendorSpecific(5), the
+            value of this object is a length of 7 octet string, where
+            the most significant 3 octets consist of a globally-
+            administered OUI, and the least significant 4 octets are the
+            vender administered application OUI."
+
+         DEFVAL { ''H }
+
+         ::= { atmSigDescrParamEntry 5 }
+
+     atmSigDescrParamBbcConnConf OBJECT-TYPE
+         SYNTAX       INTEGER {
+             ptp(1),   -- point-to-point
+             ptmp(2)   -- point-to-multipoint
+             }
+         MAX-ACCESS   read-create
+         STATUS       current
+         DESCRIPTION
+             "The Broadband bearer capability user plane connection
+              configuration parameter."
+         DEFVAL { ptp }
+         ::= { atmSigDescrParamEntry 6 }
+
+      atmSigDescrParamBlliLayer2 OBJECT-TYPE
+          SYNTAX       INTEGER {
+             other(1),        -- not specified
+             iso1745(2),      -- Basic mode ISO 1745
+             q921(3),         -- CCITT Recommendation Q.921
+             x25linklayer(4), -- CCITT Recommendation X.25
+                              -- Link Layer
+             x25multilink(5), -- CCITT Recommendation X.25
+                              -- Multilink
+             lapb(6),         -- Extended LAPB; for half
+
+
+
+                              -- duplex operation
+             hdlcArm(7),      -- HDLC ARM (ISO 4335)
+             hdlcNrm(8),      -- HDLC NRM (ISO 4335)
+             hdlcAbm(9),      -- HDLC ABM (ISO 4335)
+             iso88022(10),    -- LAN logical link control
+                              -- (ISO 8802/2)
+             x75slp(11),      -- CCITT Recommendation X.75,
+                              -- single link
+                              -- procedure (SLP)
+             q922(12),        -- CCITT Recommendation Q.922
+             userDef(13),     -- User specified
+             iso7776(14)      -- ISO 7776 DTE-DTE operation
+             }
+          MAX-ACCESS   read-create
+          STATUS       current
+          DESCRIPTION
+            "The Broadband low layer information, protocol type of layer
+            2.  The value of this object is other(1) if layer 2 protocol
+            is not used."
+
+          DEFVAL { other }
+          ::= { atmSigDescrParamEntry 7 }
+
+      atmSigDescrParamBlliLayer3 OBJECT-TYPE
+          SYNTAX       INTEGER {
+             other(1),       -- not specified
+             x25pkt(2),      -- CCITT Recommendation X.25
+                             -- packet layer
+             isoiec8208(3),  -- ISO/IEC 8208 (X.25 packet
+                             -- level protocol for data
+                             -- terminal equipment)
+             x223iso8878(4), -- X.223/ISO 8878
+             isoiec8473(5),  -- ISO/IEC 8473 OSI
+                             -- connectionless
+                             -- mode protocol
+             t70(6),         -- CCITT Recommendation T.70
+                             -- minimum
+                             -- network layer
+             tr9577(7),      -- ISO/IEC TR 9577 Protocol
+                             -- Identification in the
+                             -- network layer
+             userDef(8)      -- user specified
+
+             }
+          MAX-ACCESS   read-create
+          STATUS       current
+          DESCRIPTION
+            "The Broadband low layer information, protocol type of layer
+
+
+
+            3.  The value of this object is other(1) if layer 3 protocol
+            is not used."
+
+          DEFVAL { other }
+          ::= { atmSigDescrParamEntry 8 }
+
+      atmSigDescrParamBlliPktSize OBJECT-TYPE
+          SYNTAX       INTEGER {
+             other(1),        -- not used
+             s16(2),          -- 16 octets
+             s32(3),          -- 32 octets
+             s64(4),          -- 64 octets
+             s128(5),         -- 128 octets
+             s256(6),         -- 256 octets
+             s512(7),         -- 512 octets
+             s1024(8),        -- 1028 octets
+             s2048(9),        -- 2048 octets
+             s4096(10)        -- 4096 octets
+          }
+          MAX-ACCESS   read-create
+          STATUS       current
+          DESCRIPTION
+            "The default packet size defined in B-LLI."
+
+          DEFVAL { other }
+          ::= { atmSigDescrParamEntry 9 }
+
+      atmSigDescrParamBlliSnapId OBJECT-TYPE
+          SYNTAX       INTEGER {
+             other(1),  -- not used
+             true(2),   -- SNAP ID is 1
+             false(3)   -- SNAP ID is 0
+          }
+          MAX-ACCESS   read-create
+          STATUS       current
+          DESCRIPTION
+            "The SNAP ID used for Broadband low layer protocol layer 3.
+            The value of this object is other(1) if
+            atmSigDescrParamBlliLayer3 is set to other(1)."
+
+          DEFVAL { other }
+          ::= { atmSigDescrParamEntry 10 }
+
+      atmSigDescrParamBlliOuiPid OBJECT-TYPE
+          SYNTAX       OCTET STRING (SIZE(0|5))
+          MAX-ACCESS   read-create
+          STATUS       current
+          DESCRIPTION
+
+
+
+            "The OUI/PID encoding for Broadband low layer protocol layer
+            3.  The value of this object is a zero length string if
+            atmSigDescrParamBlliLayer3 is set to other(1).  When used,
+            it is always 5 octets with the most significant octet as the
+            OUI Octet 1 and the least significant octet as the PID Octet
+            2."
+
+          DEFVAL { ''H }
+          ::= { atmSigDescrParamEntry 11 }
+
+       atmSigDescrParamRowStatus OBJECT-TYPE
+           SYNTAX       RowStatus
+           MAX-ACCESS   read-create
+           STATUS       current
+           DESCRIPTION
+            "This object is used to create and delete rows in the
+            atmSigDescrParamTable."
+
+           ::= { atmSigDescrParamEntry 12 }
+
+  -- 6. ATM Interface Registered Address Table --
+
+atmIfRegisteredAddrTable    OBJECT-TYPE
+    SYNTAX       SEQUENCE OF AtmIfRegisteredAddrEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table contains a list of ATM addresses that can be used for
+       calls to and from a given interface by a switch or service.  The
+       ATM addresses are either registered by the endsystem via ILMI or
+       statically configured.  This table does not expose PNNI
+       reachability information.  ILMI registered addresses cannot be
+       deleted using this table.  This table only applies to switches
+       and network services."
+    ::= { atm2MIBObjects 6 }
+
+atmIfRegisteredAddrEntry    OBJECT-TYPE
+    SYNTAX       AtmIfRegisteredAddrEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry in the ATM Interface Registered Address table."
+
+    INDEX { ifIndex, atmIfRegAddrAddress }
+    ::= { atmIfRegisteredAddrTable  1}
+
+AtmIfRegisteredAddrEntry    ::= SEQUENCE  {
+    atmIfRegAddrAddress             AtmAddr,
+
+
+
+    atmIfRegAddrAddressSource       INTEGER,
+    atmIfRegAddrOrgScope            INTEGER,
+    atmIfRegAddrRowStatus           RowStatus
+         }
+
+atmIfRegAddrAddress   OBJECT-TYPE
+    SYNTAX       AtmAddr
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An address registered for a given switch or service interface."
+
+    ::= { atmIfRegisteredAddrEntry 1}
+
+atmIfRegAddrAddressSource  OBJECT-TYPE
+    SYNTAX       INTEGER  {
+       other(1),
+       static(2),
+       dynamic(3)
+       }
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The type of address source for a given ATM Address. The value
+       dynamic(3) is indicated when ILMI is used."
+    ::= { atmIfRegisteredAddrEntry 2}
+
+atmIfRegAddrOrgScope  OBJECT-TYPE
+    SYNTAX       INTEGER {
+        localNetwork(1),
+        localNetworkPlusOne(2),
+        localNetworkPlusTwo(3),
+        siteMinusOne(4),
+        intraSite(5),
+        sitePlusOne(6),
+        organizationMinusOne(7),
+        intraOrganization(8),
+        organizationPlusOne(9),
+        communityMinusOne(10),
+        intraCommunity(11),
+        communityPlusOne(12),
+        regional(13),
+        interRegional(14),
+        global(15)
+    }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+
+
+
+        "This object indicates the organizational scope for
+        the referenced address.  The information of the
+        referenced address shall not be distributed outside
+        the indicated scope.   Refer to Annex 5.3 of ATM
+        Forum UNI Signalling 4.0 for guidelines regarding
+        the use of organizational scopes.
+
+        This value cannot be configured for ILMI-registered
+        addresses.
+
+        The default values for organizational scope are
+        localNetwork(1) for ATM group addresses, and
+        global(15) for individual addresses."
+    ::= { atmIfRegisteredAddrEntry 3}
+
+atmIfRegAddrRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This object is used to create and delete rows in the
+       atmIfRegisteredAddrTable.  Rows created dynamically (e.g., ILMI-
+       registered addresses) cannot be deleted using this object."
+
+    ::= { atmIfRegisteredAddrEntry 4}
+
+  -- 7. ATM VPI/VCI to Address Mapping Table
+
+    atmVclAddrTable  OBJECT-TYPE
+        SYNTAX       SEQUENCE OF AtmVclAddrEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "This table provides a mapping between the atmVclTable and
+            the ATM called party/calling party address.  This table can
+            be used to retrieve the calling party and called party ATM
+            address pair for a given VCL.  Note that there can be more
+            than one pair of calling party and called party ATM
+            addresses for a VCL in a point to multi-point call."
+        ::= { atm2MIBObjects 7 }
+
+    atmVclAddrEntry    OBJECT-TYPE
+        SYNTAX       AtmVclAddrEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "Each entry in this table represents a binding between a VCL
+            and an ATM address associated with this call.  This ATM
+
+
+
+            address can be either the called party address or the
+            calling party address.  There can be more than one pair of
+            calling/called party ATM addresses associated with the VCL
+            entry for point to multi-point calls.  Objects
+            atmVclAddrType, and atmVclAddrRowStatus are
+            required during row creation."
+        INDEX  { ifIndex, atmVclVpi, atmVclVci,
+                 atmVclAddrAddr }
+        ::= { atmVclAddrTable 1 }
+
+    AtmVclAddrEntry ::=
+        SEQUENCE {
+            atmVclAddrAddr          AtmAddr,
+            atmVclAddrType          INTEGER,
+            atmVclAddrRowStatus     RowStatus
+        }
+
+    atmVclAddrAddr     OBJECT-TYPE
+        SYNTAX       AtmAddr
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "An ATM address on one end of the VCL.  For SVCs, the agent
+            supplies the value of this object at creation time.  For PVC
+            VCL, the manager can supply the value of this object during
+            or after the PVC VCL creation."
+        ::= { atmVclAddrEntry 1 }
+
+   atmVclAddrType     OBJECT-TYPE
+       SYNTAX       INTEGER {
+           callingParty(1),
+           calledParty(2)
+       }
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+            "The type of ATM Address represented by the object
+            atmVclAddrAddr.  Choices are either the calling party ATM
+            address or the called party ATM address."
+       ::= { atmVclAddrEntry 2 }
+
+   atmVclAddrRowStatus     OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "This object is used to create or destroy an
+           entry from this table.  Note that the manager entity
+
+
+
+           can only destroy the PVC VCLs."
+       ::= { atmVclAddrEntry 3 }
+
+  -- 8. ATM Address to VPI/VCI Mapping Table
+  --
+  -- This table provides an alternative way to access
+  -- a row in the atmVclAddrTable by using
+  -- an ATM address as an index, instead of
+  -- the ifIndex
+
+    atmAddrVclTable   OBJECT-TYPE
+        SYNTAX       SEQUENCE OF AtmAddrVclEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "This table provides an alternative way to retrieve the
+            atmVclTable.  This table can be used to retrieve the
+            indexing to the atmVclTable by an ATM address."
+
+        ::= { atm2MIBObjects 8 }
+
+    atmAddrVclEntry    OBJECT-TYPE
+        SYNTAX       AtmAddrVclEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "Each entry in this table represents an entry in the
+            atmVclTable of the ATM-MIB by its ATM address.  The ATM
+            address is either the calling or called party ATM address
+            of the call.  Entries in this table are read only.
+            They show up when entries are created in the
+            atmVclAddrTable."
+        REFERENCE
+            "Tesink, K., Editor, Definitions of Managed Objects
+             for ATM Management, RFC 2515, Bell Communications
+             Research, February, 1999."
+        INDEX { atmVclAddrAddr, atmAddrVclAtmIfIndex,
+                atmAddrVclVpi, atmAddrVclVci }
+        ::= { atmAddrVclTable 1 }
+
+    AtmAddrVclEntry ::=
+        SEQUENCE {
+            atmAddrVclAtmIfIndex    InterfaceIndex,
+            atmAddrVclVpi           AtmVpIdentifier,
+            atmAddrVclVci           AtmVcIdentifier,
+            atmAddrVclAddrType      INTEGER
+            }
+
+
+
+
+    atmAddrVclAtmIfIndex     OBJECT-TYPE
+        SYNTAX       InterfaceIndex
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "The interface index of the ATM interface to which this
+             VCL pertains.  This object combined with the
+             atmAddrVclVpi and atmAddrVclVci objects serves as an
+             index to the atmVclTable."
+        ::= { atmAddrVclEntry 1 }
+
+    atmAddrVclVpi     OBJECT-TYPE
+        SYNTAX       AtmVpIdentifier
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "The VPI value of the VCL.  This object combined with the
+            atmAddrVclAtmIfIndex and atmAddrVclVci objects serves as
+            an index to the atmVclTable."
+        ::= { atmAddrVclEntry 2 }
+
+    atmAddrVclVci     OBJECT-TYPE
+        SYNTAX       AtmVcIdentifier
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "The VCI value of the VCL.  This object combined with the
+            atmAddrVclAtmIfIndex and atmAddrVclVpi objects serves as
+            an index to the atmVclTable."
+        ::= { atmAddrVclEntry 3 }
+
+   atmAddrVclAddrType     OBJECT-TYPE
+       SYNTAX       INTEGER {
+           callingParty(1),
+           calledParty(2) }
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+            "The type of ATM Address represented by the object
+            atmVclAddrAddr.  Choices are either calling party address
+            or called party address."
+       ::= { atmAddrVclEntry 4 }
+
+  -- 9. ATM VPL Statistics Table
+
+    atmVplStatTable   OBJECT-TYPE
+        SYNTAX       SEQUENCE OF AtmVplStatEntry
+        MAX-ACCESS   not-accessible
+
+
+
+        STATUS       current
+        DESCRIPTION
+            "This table contains all statistics counters per VPL.  It is
+            used to monitor the usage of the VPL in terms of incoming
+            cells and outgoing cells."
+        ::= { atm2MIBObjects 9 }
+
+    atmVplStatEntry    OBJECT-TYPE
+        SYNTAX       AtmVplStatEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "Each entry in this table represents a VPL."
+        INDEX { ifIndex, atmVplVpi }
+        ::= { atmVplStatTable 1 }
+
+    AtmVplStatEntry ::=
+        SEQUENCE {
+            atmVplStatTotalCellIns      Counter32,
+            atmVplStatClp0CellIns       Counter32,
+            atmVplStatTotalDiscards     Counter32,
+            atmVplStatClp0Discards      Counter32,
+            atmVplStatTotalCellOuts     Counter32,
+            atmVplStatClp0CellOuts      Counter32,
+            atmVplStatClp0Tagged        Counter32
+    }
+
+    atmVplStatTotalCellIns OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The total number of valid ATM cells received by this VPL
+            including both CLP=0 and CLP=1 cells.  The cells are
+            counted prior to the application of the traffic policing."
+        ::= { atmVplStatEntry 1 }
+
+    atmVplStatClp0CellIns OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The number of valid ATM cells received by this VPL with
+            CLP=0.  The cells are counted prior to the application of
+            the traffic policing."
+        ::= { atmVplStatEntry 2 }
+
+    atmVplStatTotalDiscards OBJECT-TYPE
+
+
+
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The total number of valid ATM cells discarded by the
+            traffic policing entity.  This includes cells originally
+            received with CLP=0 and CLP=1."
+        ::= { atmVplStatEntry 3 }
+
+    atmVplStatClp0Discards OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The total number of valid ATM cells received with CLP=0 and
+            discarded by the traffic policing entity."
+        ::= { atmVplStatEntry 4 }
+
+    atmVplStatTotalCellOuts OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The total number of valid ATM cells transmitted  by this
+            VPL.  This includes both CLP=0 and CLP=1 cells."
+        ::= { atmVplStatEntry 5 }
+
+    atmVplStatClp0CellOuts OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The total number of valid ATM cells transmitted with CLP=0
+            by this VPL."
+        ::= { atmVplStatEntry 6 }
+
+    atmVplStatClp0Tagged OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The total number of valid ATM cells tagged by the traffic
+            policing entity from CLP=0 to CLP=1."
+        ::= { atmVplStatEntry 7 }
+
+  -- 10. ATM Logical Port Configuration Table
+
+    atmVplLogicalPortTable OBJECT-TYPE
+
+
+
+        SYNTAX       SEQUENCE OF AtmVplLogicalPortEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "Indicates whether the VPL is an ATM Logical Port interface
+            (ifType=80)."
+        ::= { atm2MIBObjects 10 }
+
+    atmVplLogicalPortEntry OBJECT-TYPE
+        SYNTAX       AtmVplLogicalPortEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "An entry with information about the ATM Logical Port
+            interface."
+        AUGMENTS { atmVplEntry }
+        ::= { atmVplLogicalPortTable 1 }
+
+    AtmVplLogicalPortEntry ::=
+        SEQUENCE {
+            atmVplLogicalPortDef        INTEGER,
+            atmVplLogicalPortIndex      InterfaceIndexOrZero
+            }
+
+    atmVplLogicalPortDef   OBJECT-TYPE
+        SYNTAX       INTEGER {
+                        notLogicalIf(1),
+                        isLogicalIf(2)
+                        }
+        MAX-ACCESS   read-create
+        STATUS       current
+        DESCRIPTION
+            "Indicates whether the VPC at this VPL interface is an ATM
+            Logical Port interface."
+        DEFVAL { notLogicalIf }
+        ::= { atmVplLogicalPortEntry 1 }
+
+    atmVplLogicalPortIndex OBJECT-TYPE
+        SYNTAX       InterfaceIndexOrZero
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The ifTable index of the ATM logical port interface
+            associated with this VPL. The distinguished value of zero
+            indicates that the agent has not (yet) assigned such an
+            ifTable Index. The zero value must be assigned by the agent
+            if the value of atmVplLogicalPortDef is set to notLogicalIf,
+            or if the VPL row is not active."
+
+
+
+        ::= { atmVplLogicalPortEntry 2 }
+
+  -- 11. ATM VCL Statistics Table
+
+    atmVclStatTable   OBJECT-TYPE
+        SYNTAX       SEQUENCE OF AtmVclStatEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "This table contains all statistics counters per VCL.  It is
+            used to monitor the usage of the VCL in terms of incoming
+            cells and outgoing cells."
+        ::= { atm2MIBObjects 11 }
+
+    atmVclStatEntry    OBJECT-TYPE
+        SYNTAX       AtmVclStatEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "Each entry in this table represents a VCL."
+        INDEX { ifIndex, atmVclVpi, atmVclVci }
+        ::= { atmVclStatTable 1 }
+
+    AtmVclStatEntry ::=
+        SEQUENCE {
+            atmVclStatTotalCellIns      Counter32,
+            atmVclStatClp0CellIns       Counter32,
+            atmVclStatTotalDiscards     Counter32,
+            atmVclStatClp0Discards      Counter32,
+            atmVclStatTotalCellOuts     Counter32,
+            atmVclStatClp0CellOuts      Counter32,
+            atmVclStatClp0Tagged        Counter32
+        }
+
+    atmVclStatTotalCellIns OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The total number of valid ATM cells received by this VCL
+            including both CLP=0 and CLP=1 cells.  The cells are counted
+            prior to the application of the traffic policing."
+        ::= { atmVclStatEntry 1 }
+
+    atmVclStatClp0CellIns OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+
+
+
+        DESCRIPTION
+            "The number of valid ATM cells received by this VCL with
+            CLP=0.  The cells are counted prior to the application of
+            the traffic policing."
+        ::= { atmVclStatEntry 2 }
+
+    atmVclStatTotalDiscards OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The total number of valid ATM cells discarded by the
+            traffic policing entity.  This includes cells originally
+            received with CLP=0 and CLP=1."
+        ::= { atmVclStatEntry 3 }
+
+    atmVclStatClp0Discards OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The total number of valid ATM cells received with CLP=0
+             and discarded by the traffic policing entity."
+        ::= { atmVclStatEntry 4 }
+
+    atmVclStatTotalCellOuts OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The total number of valid ATM cells transmitted  by this
+            VCL.  This includes both CLP=0 and CLP=1 cells."
+        ::= { atmVclStatEntry 5 }
+
+    atmVclStatClp0CellOuts OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The total number of valid ATM cells transmitted with CLP=0
+            by this VCL."
+        ::= { atmVclStatEntry 6 }
+
+    atmVclStatClp0Tagged OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+
+
+
+            "The total number of valid ATM cells tagged by the traffic
+            policing entity from CLP=0 to CLP=1."
+        ::= { atmVclStatEntry 7 }
+
+  -- 12. ATM AAL5 per-VCC Statistics Table
+
+    atmAal5VclStatTable   OBJECT-TYPE
+        SYNTAX       SEQUENCE OF AtmAal5VclStatEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "This table provides a collection of objects providing AAL5
+            configuration and performance statistics of a VCL."
+        ::= { atm2MIBObjects 12 }
+
+    atmAal5VclStatEntry    OBJECT-TYPE
+        SYNTAX       AtmAal5VclStatEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "Each entry in this table represents an AAL5 VCL, and
+             is indexed by ifIndex values of AAL5 interfaces and
+             the associated VPI/VCI values."
+        INDEX { ifIndex, atmVclVpi, atmVclVci }
+        ::= { atmAal5VclStatTable 1 }
+
+    AtmAal5VclStatEntry ::=
+        SEQUENCE {
+           atmAal5VclInPkts        Counter32,
+           atmAal5VclOutPkts       Counter32,
+           atmAal5VclInOctets      Counter32,
+           atmAal5VclOutOctets     Counter32
+        }
+
+    atmAal5VclInPkts      OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The number of AAL5 CPCS PDUs received on the AAL5 VCC at
+            the interface identified by the ifIndex."
+        ::= { atmAal5VclStatEntry 1 }
+
+    atmAal5VclOutPkts   OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+
+
+
+            "The number of AAL5 CPCS PDUs transmitted on the AAL5 VCC
+             at the interface identified by the ifIndex."
+        ::= { atmAal5VclStatEntry 2 }
+
+    atmAal5VclInOctets   OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The number of octets contained in AAL5 CPCS PDUs received
+            on the AAL5 VCC at the interface identified by the ifIndex."
+        ::= { atmAal5VclStatEntry 3 }
+
+    atmAal5VclOutOctets   OBJECT-TYPE
+        SYNTAX       Counter32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The number of octets contained in AAL5 CPCS PDUs
+            transmitted on the AAL5 VCC at the interface identified by
+            the ifIndex."
+        ::= { atmAal5VclStatEntry 4 }
+
+  -- 13. ATM VC General Information Table
+
+    atmVclGenTable OBJECT-TYPE
+        SYNTAX       SEQUENCE OF AtmVclGenEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "General Information for each VC."
+        ::= { atm2MIBObjects 13 }
+
+    atmVclGenEntry OBJECT-TYPE
+        SYNTAX       AtmVclGenEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "An entry with general information about the ATM VC."
+
+        AUGMENTS { atmVclEntry }
+        ::= { atmVclGenTable 1 }
+
+    AtmVclGenEntry ::=
+        SEQUENCE {
+          atmVclGenSigDescrIndex      AtmSigDescrParamIndex
+        }
+
+
+
+
+    atmVclGenSigDescrIndex   OBJECT-TYPE
+        SYNTAX       AtmSigDescrParamIndex
+        MAX-ACCESS   read-create
+        STATUS       current
+        DESCRIPTION
+            "The value of this object identifies the row in the ATM
+            Signalling Descriptor Parameter Table which applies to this
+            VCL."
+        ::= { atmVclGenEntry 1 }
+
+  -- 14. ATM Interface Configuration Extension Table
+
+atmInterfaceExtTable    OBJECT-TYPE
+    SYNTAX       SEQUENCE OF AtmInterfaceExtEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table contains ATM interface configuration and monitoring
+       information not defined in the atmInterfaceConfTable from the
+       ATM-MIB.  This includes the type of connection setup procedures,
+       ILMI information, and information on the VPI/VCI range."
+    REFERENCE
+        "Tesink, K., Editor, Definitions of Managed Objects
+         for ATM Management, RFC 2515, Bell Communications
+         Research, February, 1999."
+    ::= { atm2MIBObjects 14 }
+
+atmInterfaceExtEntry    OBJECT-TYPE
+    SYNTAX       AtmInterfaceExtEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry extends the atmInterfaceConfEntry defined in the ATM-
+       MIB.  Each entry corresponds to an ATM interface."
+    REFERENCE
+        "Tesink, K., Editor, Definitions of Managed Objects
+         for ATM Management, RFC 2515, Bell Communications
+         Research, February, 1999."
+    AUGMENTS { atmInterfaceConfEntry }
+    ::= { atmInterfaceExtTable 1 }
+
+AtmInterfaceExtEntry    ::= SEQUENCE  {
+        atmIntfConfigType                   AtmInterfaceType,
+        atmIntfActualType                   AtmInterfaceType,
+        atmIntfConfigSide                   INTEGER,
+        atmIntfActualSide                   INTEGER,
+        atmIntfIlmiAdminStatus              BITS,
+        atmIntfIlmiOperStatus               BITS,
+
+
+
+        atmIntfIlmiFsmState                 INTEGER,
+        atmIntfIlmiEstablishConPollIntvl    Integer32,
+        atmIntfIlmiCheckConPollIntvl        Integer32,
+        atmIntfIlmiConPollInactFactor       Integer32,
+        atmIntfIlmiPublicPrivateIndctr      INTEGER,
+        atmInterfaceConfMaxSvpcVpi          INTEGER,
+        atmInterfaceCurrentMaxSvpcVpi       INTEGER,
+        atmInterfaceConfMaxSvccVpi          INTEGER,
+        atmInterfaceCurrentMaxSvccVpi       INTEGER,
+        atmInterfaceConfMinSvccVci          INTEGER,
+        atmInterfaceCurrentMinSvccVci       INTEGER,
+        atmIntfSigVccRxTrafficDescrIndex
+                                   AtmTrafficDescrParamIndex,
+        atmIntfSigVccTxTrafficDescrIndex
+                                   AtmTrafficDescrParamIndex,
+        atmIntfPvcFailures                  Counter32,
+        atmIntfCurrentlyFailingPVpls        Gauge32,
+        atmIntfCurrentlyFailingPVcls        Gauge32,
+        atmIntfPvcFailuresTrapEnable        TruthValue,
+        atmIntfPvcNotificationInterval      INTEGER,
+        atmIntfLeafSetupFailures            Counter32,
+        atmIntfLeafSetupRequests            Counter32 }
+
+atmIntfConfigType     OBJECT-TYPE
+    SYNTAX       AtmInterfaceType
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "The type of connection setup procedures configured for the ATM
+       interface.  Setting this variable to a value of 'other' is not
+       allowed."
+    DEFVAL { autoConfig }
+    ::= { atmInterfaceExtEntry 1 }
+
+atmIntfActualType     OBJECT-TYPE
+    SYNTAX       AtmInterfaceType
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The type of connection setup procedures currently being used on
+       the interface.  This may reflect a manually configured value for
+       the interface type, or may be determined by other means such as
+       auto-configuration.  A value of `autoConfig' indicates that
+       auto-configuration was requested but has not yet been completed."
+    ::= { atmInterfaceExtEntry 2 }
+
+atmIntfConfigSide     OBJECT-TYPE
+    SYNTAX       INTEGER  {
+
+
+
+                     other(1),
+                     user(2),
+                     network(3) }
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "The configured role of the managed entity as one side of the ATM
+       interface.  This value does not apply when the object
+       atmIntfConfigType is set to `autoConfig', `atmfPnni1Dot0', or
+       `atmfBici2Dot0'."
+    ::= { atmInterfaceExtEntry 3 }
+
+atmIntfActualSide     OBJECT-TYPE
+    SYNTAX       INTEGER  {
+                     other(1),
+                     user(2),
+                     network(3),
+                     symmetric(4) }
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The current role used by the managed entity to represent one
+       side of the ATM interface."
+    ::= { atmInterfaceExtEntry 4 }
+
+atmIntfIlmiAdminStatus    OBJECT-TYPE
+    SYNTAX       BITS { ilmi(0),
+                        ilmiAddressRegistration(1),
+                        ilmiConnectivity(2),
+                        ilmiPvcPvpMgmt(3),
+                        ilmiSigVccParamNegotiation(4) }
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "Indicates which components of ILMI are administratively enabled
+       on this interface.  If the 'ilmi' bit is not set, then no ILMI
+       components are operational.  ILMI components other than auto-
+       configuration that are not represented in the value have their
+       administrative status determined according to the 'ilmi' bit.
+       The ILMI auto-configuration component is enabled/disabled by the
+       atmIntfConfigType object."
+    ::= { atmInterfaceExtEntry 5 }
+
+atmIntfIlmiOperStatus    OBJECT-TYPE
+    SYNTAX       BITS { ilmi(0),
+                        ilmiAddressRegistration(1),
+                        ilmiConnectivity(2),
+                        ilmiPvcPvpMgmt(3),
+
+
+
+                        ilmiSigVccParamNegotiation(4) }
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Indicates which components of ILMI are operational on this
+       interface."
+    ::= { atmInterfaceExtEntry 6 }
+
+atmIntfIlmiFsmState    OBJECT-TYPE
+    SYNTAX       INTEGER { stopped(1),
+                           linkFailing(2),
+                           establishing(3),
+                           configuring(4),
+                           retrievingNetworkPrefixes(5),
+                           registeringNetworkPrefixes(6),
+                           retrievingAddresses(7),
+                           registeringAddresses(8),
+                           verifying(9) }
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Indicates the state of the ILMI Finite State Machine associated
+       with this interface."
+
+        REFERENCE
+            "ATM Forum, Integrated Local Management Interface
+             (ILMI) Specification, Version 4.0, af-ilmi-0065.000,
+             September 1996, Appendix 1"
+    ::= { atmInterfaceExtEntry 7 }
+
+atmIntfIlmiEstablishConPollIntvl    OBJECT-TYPE
+    SYNTAX       Integer32 (1..65535)
+    UNITS        "seconds"
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "The amount of time S between successive transmissions of ILMI
+       messages on this interface for the purpose of detecting
+       establishment of ILMI connectivity."
+    REFERENCE
+       "ATM Forum, Integrated Local Management Interface
+        (ILMI) Specification, Version 4.0, af-ilmi-0065.000,
+        September 1996, Section 8.3.1"
+    DEFVAL { 1 }
+    ::= { atmInterfaceExtEntry 8 }
+
+atmIntfIlmiCheckConPollIntvl    OBJECT-TYPE
+    SYNTAX       Integer32 (0..65535)
+
+
+
+    UNITS        "seconds"
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "The amount of time T between successive transmissions of ILMI
+       messages on this interface for the purpose of detecting loss of
+       ILMI connectivity.  The distinguished value zero disables ILMI
+       connectivity procedures on this interface."
+    REFERENCE
+       "ATM Forum, Integrated Local Management Interface
+        (ILMI) Specification, Version 4.0, af-ilmi-0065.000,
+        September 1996, Section 8.3.1"
+    DEFVAL { 5 }
+    ::= { atmInterfaceExtEntry 9 }
+
+atmIntfIlmiConPollInactFactor    OBJECT-TYPE
+    SYNTAX       Integer32 (0..65535)
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "The number K of consecutive polls on this interface for which no
+       ILMI response message is received before ILMI connectivity is
+       declared lost."
+    REFERENCE
+       "ATM Forum, Integrated Local Management Interface
+        (ILMI) Specification, Version 4.0, af-ilmi-0065.000,
+        September 1996, Section 8.3.1"
+    DEFVAL { 4 }
+    ::= { atmInterfaceExtEntry 10 }
+
+atmIntfIlmiPublicPrivateIndctr    OBJECT-TYPE
+    SYNTAX       INTEGER {
+                           other(1),
+                           public(2),
+                           private(3)
+                           }
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "Specifies whether this end of the interface is advertised in
+       ILMI as a device of the `public' or `private' type."
+    DEFVAL { private }
+    ::= { atmInterfaceExtEntry 11 }
+
+atmInterfaceConfMaxSvpcVpi    OBJECT-TYPE
+    SYNTAX       INTEGER  (0..4095)
+    MAX-ACCESS   read-write
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "The maximum VPI that the signalling stack on the ATM interface
+       is configured to support for allocation to switched virtual path
+       connections."
+    ::= { atmInterfaceExtEntry 12 }
+
+atmInterfaceCurrentMaxSvpcVpi    OBJECT-TYPE
+    SYNTAX       INTEGER  (0..4095)
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The maximum VPI that the signalling stack on the ATM interface
+       may currently allocate to switched virtual path connections.
+       This value is the minimum of atmInterfaceConfMaxSvpcVpi, and the
+       atmInterfaceMaxSvpcVpi of the interface's UNI/NNI peer.
+
+       If the interface does not negotiate with its peer to determine
+       the maximum VPI that can be allocated to SVPCs on the interface,
+       then the value of this object must equal
+       atmInterfaceConfMaxSvpcVpi. "
+    ::= { atmInterfaceExtEntry 13 }
+
+atmInterfaceConfMaxSvccVpi    OBJECT-TYPE
+    SYNTAX       INTEGER  (0..4095)
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "The maximum VPI that the signalling stack on the ATM interface
+       is configured to support for allocation to switched virtual
+       channel connections."
+    ::= { atmInterfaceExtEntry 14 }
+
+atmInterfaceCurrentMaxSvccVpi    OBJECT-TYPE
+    SYNTAX       INTEGER  (0..4095)
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The maximum VPI that the signalling stack on the ATM interface
+       may currently allocate to switched virtual channel connections.
+       This value is the minimum of atmInterfaceConfMaxSvccVpi, and the
+       atmInterfaceConfMaxSvccVpi of the interface's UNI/NNI peer.
+
+       If the interface does not negotiate with its peer to determine
+       the maximum VPI that can be allocated to SVCCs on the interface,
+       then the value of this object must equal
+       atmInterfaceConfMaxSvccVpi."
+    ::= { atmInterfaceExtEntry 15 }
+
+
+
+
+atmInterfaceConfMinSvccVci    OBJECT-TYPE
+    SYNTAX       INTEGER  (0..65535)
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "The minimum VCI that the signalling stack on the ATM interface
+       is configured to support for allocation to switched virtual
+       channel connections."
+    ::= { atmInterfaceExtEntry 16 }
+
+atmInterfaceCurrentMinSvccVci    OBJECT-TYPE
+    SYNTAX       INTEGER  (0..65535)
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The minimum VCI that the signalling stack on the ATM interface
+       may currently allocate to switched virtual channel connections.
+       This value is the maximum of atmInterfaceConfMinSvccVci, and the
+       atmInterfaceConfMinSvccVci of the interface's UNI/NNI peer.
+       If the interface does not negotiate with its peer to determine
+       the minimum VCI that can be allocated to SVCCs on the interface,
+       then the value of this object must equal
+       atmInterfaceConfMinSvccVci."
+    ::= { atmInterfaceExtEntry 17 }
+
+atmIntfSigVccRxTrafficDescrIndex    OBJECT-TYPE
+    SYNTAX       AtmTrafficDescrParamIndex
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "This object identifies the row in the atmTrafficDescrParamTable
+       used during ILMI auto-configuration to specify the advertised
+       signalling VCC traffic parameters for the receive direction.
+       The traffic descriptor resulting from ILMI auto-configuration of
+       the signalling VCC is indicated in the atmVclTable."
+    ::= { atmInterfaceExtEntry 18 }
+
+atmIntfSigVccTxTrafficDescrIndex    OBJECT-TYPE
+    SYNTAX       AtmTrafficDescrParamIndex
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "This object identifies the row in the atmTrafficDescrParamTable
+       used during ILMI auto-configuration to specify the advertised
+       signalling VCC traffic parameters for the transmit direction.
+       The traffic descriptor resulting from ILMI auto-configuration of
+       the signalling VCC is indicated in the atmVclTable."
+    ::= { atmInterfaceExtEntry 19 }
+
+
+
+atmIntfPvcFailures    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The number of times the operational status of a PVPL or PVCL on
+       this interface has gone down."
+    ::= { atmInterfaceExtEntry 20 }
+
+atmIntfCurrentlyFailingPVpls    OBJECT-TYPE
+    SYNTAX       Gauge32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The current number of VPLs on this interface for which there is
+       an active row in the atmVplTable having an atmVplConnKind value
+       of `pvc' and an atmVplOperStatus with a value other than `up'."
+    ::= { atmInterfaceExtEntry 21 }
+
+atmIntfCurrentlyFailingPVcls    OBJECT-TYPE
+    SYNTAX       Gauge32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The current number of VCLs on this interface for which there is
+       an active row in the atmVclTable having an atmVclConnKind value
+       of `pvc' and an atmVclOperStatus with a value other than `up'."
+    ::= { atmInterfaceExtEntry 22 }
+
+atmIntfPvcFailuresTrapEnable    OBJECT-TYPE
+    SYNTAX       TruthValue
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "Allows the generation of traps in response to PVCL or PVPL
+       failures on this interface."
+    DEFVAL { false }
+    ::= { atmInterfaceExtEntry 23 }
+
+atmIntfPvcNotificationInterval    OBJECT-TYPE
+    SYNTAX       INTEGER (1..3600)
+    UNITS        "seconds"
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+       "The minimum interval between the sending of
+       atmIntfPvcFailuresTrap notifications for this interface."
+    DEFVAL { 30 }
+
+
+
+    ::= { atmInterfaceExtEntry 24 }
+
+atmIntfLeafSetupFailures    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Number of setup failures.  For root, this is the number of
+       rejected setup requests and for leaf, this is the number of setup
+       failure received."
+    ::= { atmInterfaceExtEntry 25 }
+
+atmIntfLeafSetupRequests    OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "Number of setup requests.  For root, this includes both incoming
+       setup request and root intiated setup requests."
+    ::= { atmInterfaceExtEntry 26 }
+
+  -- 15. ATM ILMI Service Registry Table
+
+atmIlmiSrvcRegTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF AtmIlmiSrvcRegEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table contains a list of all the ATM network services known
+       by this device.
+
+       The characteristics of these services are made available through
+       the ILMI, using the ILMI general-purpose service registry MIB.
+       These services may be made available to all ATM interfaces
+       (atmIlmiSrvcRegIndex = 0) or to some specific ATM interfaces only
+       (atmIlmiSrvcRegIndex = ATM interface index)."
+    ::= { atm2MIBObjects 15 }
+
+atmIlmiSrvcRegEntry OBJECT-TYPE
+    SYNTAX       AtmIlmiSrvcRegEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "Information about a single service provider that is available to
+       the user-side of an adjacent device through the ILMI.
+
+       Implementors need to be aware that if the size of the
+       atmIlmiSrvcRegServiceID exceeds 112 sub-identifiers then OIDs of
+
+
+
+       column instances in this table will have more than 128 sub-
+       identifiers and cannot be accessed using SNMPv1, SNMPv2, or
+       SNMPv3."
+
+    INDEX { atmIlmiSrvcRegIndex,
+            atmIlmiSrvcRegServiceID,
+            atmIlmiSrvcRegAddressIndex }
+    ::= { atmIlmiSrvcRegTable 1 }
+
+AtmIlmiSrvcRegEntry ::= SEQUENCE {
+           atmIlmiSrvcRegIndex             InterfaceIndexOrZero,
+           atmIlmiSrvcRegServiceID         OBJECT IDENTIFIER,
+           atmIlmiSrvcRegAddressIndex      INTEGER,
+           atmIlmiSrvcRegATMAddress        AtmAddr,
+           atmIlmiSrvcRegParm1             OCTET STRING,
+           atmIlmiSrvcRegRowStatus         RowStatus
+           }
+
+atmIlmiSrvcRegIndex OBJECT-TYPE
+    SYNTAX       InterfaceIndexOrZero
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "The ATM interface where the service defined in this entry can be
+       made available to an ATM device attached to this interface.
+
+       The value of 0 has a special meaning: when an ATM service is
+       defined in an entry whose atmIlmiSrvcRegIndex is zero, the ATM
+       service is available to ATM devices connected to any ATM
+       interface.  (default value(s)).
+
+       When the user-side of an adjacent device queries the content of
+       the ILMI service registry MIB (using the ILMI protocol), the
+       local network-side responds with the ATM services defined in
+       atmIlmiSrvcRegTable entries, provided that these entries are
+       indexed by:
+
+       - the corresponding ifIndex value (atmIlmiSrvcRegIndex
+         equal to the ifIndex of the interface to which the
+         adjacent device is connected) - zero (atmIlmiSrvcRegIndex=0)."
+    ::= { atmIlmiSrvcRegEntry 1 }
+
+atmIlmiSrvcRegServiceID OBJECT-TYPE
+    SYNTAX       OBJECT IDENTIFIER
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This is the service identifier which uniquely identifies the
+
+
+
+       type of service at the address provided in the table.  The object
+       identifiers for the LAN Emulation Configuration Server (LECS) and
+       the ATM Name Server (ANS) are defined in the ATM Forum ILMI
+       Service Registry MIB.  The object identifiers for the ATMARP
+       Server, the Multicast Address Resolution Server (MARS), and the
+       NHRP Server (NHS) are defined in RFC 2601, RFC 2602, and RFC
+       2603, respectively."
+    ::= { atmIlmiSrvcRegEntry 2 }
+
+atmIlmiSrvcRegAddressIndex OBJECT-TYPE
+    SYNTAX       INTEGER (1..2147483647)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An arbitrary integer to differentiate multiple rows containing
+       different ATM addresses for the same service on the same
+       interface.  This number need NOT be the same as the corresponding
+       ILMI atmfSrvcRegAddressIndex MIB object."
+    ::= { atmIlmiSrvcRegEntry 3 }
+
+atmIlmiSrvcRegATMAddress OBJECT-TYPE
+    SYNTAX       AtmAddr
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This is the full address of the service.  The user-side of the
+       adjacent device may use this address to establish a connection
+       with the service."
+    ::= { atmIlmiSrvcRegEntry 4 }
+
+atmIlmiSrvcRegParm1 OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE(1..255))
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "An octet string used according to the value of
+       atmIlmiSrvcRegServiceID."
+    ::= { atmIlmiSrvcRegEntry 5 }
+
+atmIlmiSrvcRegRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This object is used to create or destroy an entry from this
+       table."
+    ::= { atmIlmiSrvcRegEntry 6 }
+
+
+
+
+  -- 16. ILMI Network Prefix Table
+
+atmIlmiNetworkPrefixTable    OBJECT-TYPE
+    SYNTAX       SEQUENCE OF AtmIlmiNetworkPrefixEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "A table specifying per-interface network prefix(es) supplied by
+       the network side of the UNI during ILMI address registration.
+       When no network prefixes are specified for a particular
+       interface, one or more network prefixes based on the switch
+       address(es) may be used for ILMI address registration."
+    ::= { atm2MIBObjects 16 }
+
+atmIlmiNetworkPrefixEntry OBJECT-TYPE
+    SYNTAX       AtmIlmiNetworkPrefixEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "Information about a single network prefix supplied by the
+       network side of the UNI during ILMI address registration.  Note
+       that the index variable atmIlmiNetPrefixPrefix is a variable-
+       length string, and as such the rule for variable-length strings
+       in section 7.7 of RFC 2578 applies."
+    INDEX   { ifIndex,
+              atmIlmiNetPrefixPrefix }
+    ::= { atmIlmiNetworkPrefixTable 1 }
+
+AtmIlmiNetworkPrefixEntry ::=
+    SEQUENCE {
+           atmIlmiNetPrefixPrefix       AtmIlmiNetworkPrefix,
+           atmIlmiNetPrefixRowStatus    RowStatus
+    }
+
+atmIlmiNetPrefixPrefix    OBJECT-TYPE
+    SYNTAX       AtmIlmiNetworkPrefix
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "The network prefix specified for use in ILMI address
+       registration."
+    ::= { atmIlmiNetworkPrefixEntry 1 }
+
+atmIlmiNetPrefixRowStatus    OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+
+
+
+       "Used to create, delete, activate and de-activate network
+       prefixes used in ILMI address registration."
+
+    ::= { atmIlmiNetworkPrefixEntry 2 }
+
+  -- 17. ATM Switch Address Table
+
+atmSwitchAddressTable    OBJECT-TYPE
+    SYNTAX       SEQUENCE OF AtmSwitchAddressEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table contains one or more ATM endsystem addresses on a
+       per-switch basis.  These addresses are used to identify the
+       switch.  When no ILMI network prefixes are configured for certain
+       interfaces, network prefixes based on the switch address(es) may
+       be used for ILMI address registration."
+    ::= { atm2MIBObjects 17 }
+
+atmSwitchAddressEntry    OBJECT-TYPE
+    SYNTAX       AtmSwitchAddressEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An entry in the ATM Switch Address table."
+    INDEX { atmSwitchAddressIndex }
+    ::= { atmSwitchAddressTable 1 }
+
+AtmSwitchAddressEntry ::=
+    SEQUENCE {
+               atmSwitchAddressIndex           Integer32,
+               atmSwitchAddressAddress         OCTET STRING,
+               atmSwitchAddressRowStatus       RowStatus
+    }
+
+atmSwitchAddressIndex   OBJECT-TYPE
+    SYNTAX       Integer32 (1..65535)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "An arbitrary index used to enumerate the ATM endsystem addresses
+       for this switch."
+    ::= { atmSwitchAddressEntry 1 }
+
+atmSwitchAddressAddress   OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE(13|20))
+    MAX-ACCESS   read-create
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "An ATM endsystem address or address prefix used to identify this
+       switch.  When no ESI or SEL field is specified, the switch may
+       generate the ESI and SEL fields automatically to obtain a
+       complete 20-byte ATM endsystem address."
+    ::= { atmSwitchAddressEntry 2 }
+
+atmSwitchAddressRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "Used to create, delete, activate, and de-activate addresses used
+       to identify this switch."
+    ::= { atmSwitchAddressEntry 3 }
+
+  -- 18. ATM VP Cross-Connect Extension Table
+
+atmVpCrossConnectXTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF AtmVpCrossConnectXEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table contains one row per VP Cross-Connect represented in
+       the atmVpCrossConnectTable."
+    ::= { atm2MIBObjects 18 }
+
+atmVpCrossConnectXEntry       OBJECT-TYPE
+    SYNTAX       AtmVpCrossConnectXEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "Information about a particular ATM VP Cross-Connect.
+       Each entry provides an two objects that name the Cross-Connect.
+       One is assigned by the Service User and the other by the Service
+       Provider."
+    AUGMENTS     { atmVpCrossConnectEntry }
+    ::= { atmVpCrossConnectXTable 1 }
+
+AtmVpCrossConnectXEntry ::= SEQUENCE {
+      atmVpCrossConnectUserName       SnmpAdminString,
+      atmVpCrossConnectProviderName   SnmpAdminString
+}
+
+atmVpCrossConnectUserName OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS   read-create
+    STATUS       current
+
+
+
+    DESCRIPTION
+       "This is a service user assigned textual representation of a VPC
+       PVC."
+    ::= { atmVpCrossConnectXEntry 1 }
+
+atmVpCrossConnectProviderName OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This is a system supplied textual representation of VPC PVC.  It
+       is assigned by the service provider."
+    ::= { atmVpCrossConnectXEntry 2 }
+
+  -- 19. ATM VC Cross-Connect Extension Table
+
+atmVcCrossConnectXTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF AtmVcCrossConnectXEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table contains one row per VC Cross-Connect represented in
+       the atmVcCrossConnectTable."
+    ::= { atm2MIBObjects 19 }
+
+atmVcCrossConnectXEntry       OBJECT-TYPE
+    SYNTAX       AtmVcCrossConnectXEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "Information about a particular ATM VC Cross-Connect.
+       Each entry provides an two objects that name the Cross-Connect.
+       One is assigned by the Service User and the other by the Service
+       Provider."
+    AUGMENTS   { atmVcCrossConnectEntry }
+    ::= { atmVcCrossConnectXTable 1 }
+
+AtmVcCrossConnectXEntry ::= SEQUENCE {
+      atmVcCrossConnectUserName       SnmpAdminString,
+      atmVcCrossConnectProviderName   SnmpAdminString
+}
+
+atmVcCrossConnectUserName OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This is a service user assigned textual representation of a VCC
+
+
+
+       PVC."
+    ::= { atmVcCrossConnectXEntry 1 }
+
+atmVcCrossConnectProviderName OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE(0..255))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "This is a system supplied textual representation of VCC PVC.  It
+       is assigned by the service provider."
+    ::= { atmVcCrossConnectXEntry 2 }
+
+
+  -- 20. Currently Failing PVPL Table
+
+atmCurrentlyFailingPVplTable    OBJECT-TYPE
+    SYNTAX       SEQUENCE OF AtmCurrentlyFailingPVplEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "A table indicating all VPLs for which there is an active row in
+       the atmVplTable having an atmVplConnKind value of `pvc' and an
+       atmVplOperStatus with a value other than `up'."
+    ::= { atm2MIBObjects 20 }
+
+atmCurrentlyFailingPVplEntry    OBJECT-TYPE
+    SYNTAX       AtmCurrentlyFailingPVplEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "Each entry in this table represents a VPL for which the
+       atmVplRowStatus is `active', the atmVplConnKind is `pvc', and the
+       atmVplOperStatus is other than `up'."
+    INDEX   { ifIndex, atmVplVpi }
+    ::= { atmCurrentlyFailingPVplTable 1 }
+
+AtmCurrentlyFailingPVplEntry ::=
+    SEQUENCE {
+               atmCurrentlyFailingPVplTimeStamp    TimeStamp
+    }
+
+atmCurrentlyFailingPVplTimeStamp    OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The time at which this PVPL began to fail."
+    ::= { atmCurrentlyFailingPVplEntry 1 }
+
+
+
+  -- 21. Currently Failing PVCL Table
+
+atmCurrentlyFailingPVclTable    OBJECT-TYPE
+    SYNTAX       SEQUENCE OF AtmCurrentlyFailingPVclEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "A table indicating all VCLs for which there is an active row in
+       the atmVclTable having an atmVclConnKind value of `pvc' and an
+       atmVclOperStatus with a value other than `up'."
+    ::= { atm2MIBObjects 21 }
+
+atmCurrentlyFailingPVclEntry    OBJECT-TYPE
+    SYNTAX       AtmCurrentlyFailingPVclEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "Each entry in this table represents a VCL for which the
+       atmVclRowStatus is `active', the atmVclConnKind is `pvc', and the
+       atmVclOperStatus is other than `up'."
+    INDEX        { ifIndex, atmVclVpi, atmVclVci }
+    ::= { atmCurrentlyFailingPVclTable 1 }
+
+AtmCurrentlyFailingPVclEntry ::=
+    SEQUENCE {
+               atmCurrentlyFailingPVclTimeStamp    TimeStamp
+    }
+
+atmCurrentlyFailingPVclTimeStamp    OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The time at which this PVCL began to fail."
+    ::= { atmCurrentlyFailingPVclEntry 1 }
+
+  -- ATM PVC Traps
+
+  atmPvcTraps    OBJECT IDENTIFIER ::= { atm2MIBTraps 1 }
+
+  atmPvcTrapsPrefix    OBJECT IDENTIFIER ::= { atmPvcTraps 0 }
+
+  atmIntfPvcFailuresTrap    NOTIFICATION-TYPE
+    OBJECTS      { ifIndex, atmIntfPvcFailures,
+                   atmIntfCurrentlyFailingPVpls,
+                   atmIntfCurrentlyFailingPVcls }
+    STATUS       current
+    DESCRIPTION
+
+
+
+       "A notification indicating that one or more PVPLs or PVCLs on
+       this interface has failed since the last atmPvcFailuresTrap was
+       sent.  If this trap has not been sent for the last
+       atmIntfPvcNotificationInterval, then it will be sent on the next
+       increment of atmIntfPvcFailures."
+    ::= { atmPvcTrapsPrefix 1 }
+
+  -- Conformance Information
+
+atm2MIBConformance   OBJECT IDENTIFIER ::= {atm2MIB 3}
+
+atm2MIBGroups        OBJECT IDENTIFIER ::= {atm2MIBConformance 1}
+
+atm2MIBCompliances   OBJECT IDENTIFIER ::= {atm2MIBConformance 2}
+
+  -- Compliance Statements
+
+atm2MIBCompliance   MODULE-COMPLIANCE
+    STATUS       current
+    DESCRIPTION
+        "The compliance statement for SNMP entities which represent ATM
+         interfaces.  The compliance statements are used to determine
+         if a particular group or object applies to hosts,
+         networks/switches, or both.  The Common group is defined as
+         applicable to all three."
+
+    MODULE  -- this module
+    MANDATORY-GROUPS  { atmCommonGroup }
+
+  -- Objects in the ATM Switch/Service/Host Group
+
+    GROUP       atmCommonStatsGroup
+    DESCRIPTION
+        "This group is mandatory for systems that are supporting
+         per-VPC or per-VCC counters."
+
+    OBJECT       atmVplLogicalPortDef
+    MIN-ACCESS   read-only
+    DESCRIPTION
+        "This object is mandatory for systems support ATM Logical
+         Port interfaces."
+
+    OBJECT       atmIntfSigVccRxTrafficDescrIndex
+    DESCRIPTION
+        "This object is mandatory for systems that support negotiation
+         of signalling VCC traffic parameters through ILMI."
+
+    OBJECT       atmIntfSigVccTxTrafficDescrIndex
+
+
+
+    DESCRIPTION
+        "This object is mandatory for systems that support negotiation
+         of signalling VCC traffic parameters through ILMI."
+
+    OBJECT       atmCurrentlyFailingPVplTimeStamp
+    DESCRIPTION
+        "This object is optional."
+
+    OBJECT       atmCurrentlyFailingPVclTimeStamp
+    DESCRIPTION
+        "This object is optional."
+
+    OBJECT       atmIntfLeafSetupFailures
+    DESCRIPTION
+        "This object is optional."
+
+    OBJECT       atmIntfLeafSetupRequests
+    DESCRIPTION
+        "This object is optional."
+
+  -- Objects in the ATM Switch/Service Group
+
+    GROUP        atmSwitchServcGroup
+    DESCRIPTION
+        "This group is mandatory for a Switch/Service that implements
+         ATM interfaces."
+
+    OBJECT       atmIfRegAddrRowStatus
+    MIN-ACCESS   read-only
+    DESCRIPTION
+        "Write access is not required, and only one of the six
+         enumerated values for the RowStatus textual convention need
+         be supported, specifically: active(1)."
+
+    OBJECT       atmSvcVpCrossConnectRowStatus
+    MIN-ACCESS   read-only
+    DESCRIPTION
+        "Write access is not required, and only one of the six
+         enumerated values for the RowStatus textual convention need
+         be supported, specifically: active(1)"
+
+    OBJECT       atmSvcVcCrossConnectRowStatus
+    MIN-ACCESS   read-only
+    DESCRIPTION
+        "Write access is not required, and only one of the six
+         enumerated values for the RowStatus textual convention need
+         be supported, specifically: active(1)"
+
+
+
+
+  -- Objects in the ATM Switch/Service Signalling Group
+
+    GROUP       atmSwitchServcSigGroup
+    DESCRIPTION
+        "This group's write access is not required."
+
+  -- Objects in the ATM Switch/Service Notifications Group
+
+    GROUP        atmSwitchServcNotifGroup
+    DESCRIPTION
+        "This group is optional for systems implementing support for
+         an ATM Switch or an ATM Network Service."
+
+  -- Objects in the ATM Switch Group
+
+    GROUP        atmSwitchGroup
+    DESCRIPTION
+        "This group is optional for a switch that implements ATM
+         interfaces."
+
+  -- Objects in the ATM Service Group
+
+    GROUP        atmServcGroup
+    DESCRIPTION
+        "This group is mandatory for systems implementing support for
+         an ATM Network Service."
+
+  -- Objects in the ATM Host Group
+
+    GROUP        atmHostGroup
+    DESCRIPTION
+        "This group is mandatory for a Host that implements ATM
+         interfaces."
+
+    OBJECT       atmVclAddrType
+    MIN-ACCESS   read-only
+    DESCRIPTION
+        "Write access is not required."
+
+    OBJECT       atmVclAddrRowStatus
+    MIN-ACCESS   read-only
+    DESCRIPTION
+        "Write access is not required, and only one of the six
+         enumerated values for the RowStatus textual convention need
+         be supported, specifically:  active(1)."
+
+  -- ATM Host Sig Descriptor Parameter Group
+
+
+
+
+    GROUP        atmHostSigDescrGroup
+    DESCRIPTION
+        "This group is mandatory for a Host that implements ATM
+         interfaces.  Write access is not required for this group."
+
+    ::= { atm2MIBCompliances 1 }
+
+  -- **********************************************
+
+  -- Units of Conformance
+  -- Mandatory for ATM hosts and switch/service providers
+
+atmCommonGroup     OBJECT-GROUP
+
+OBJECTS {
+    atmSigSSCOPConEvents,
+    atmSigSSCOPErrdPdus,
+    atmSigDetectSetupAttempts,
+    atmSigEmitSetupAttempts,
+    atmSigDetectUnavailRoutes,
+    atmSigEmitUnavailRoutes,
+    atmSigDetectUnavailResrcs,
+    atmSigEmitUnavailResrcs,
+    atmSigDetectCldPtyEvents,
+    atmSigEmitCldPtyEvents,
+    atmSigDetectMsgErrors,
+    atmSigEmitMsgErrors,
+    atmSigDetectClgPtyEvents,
+    atmSigEmitClgPtyEvents,
+    atmSigDetectTimerExpireds,
+    atmSigEmitTimerExpireds,
+    atmSigDetectRestarts,
+    atmSigEmitRestarts,
+    atmSigInEstabls,
+    atmSigOutEstabls,
+    atmVplLogicalPortDef,
+    atmVplLogicalPortIndex,
+    atmInterfaceConfMaxSvpcVpi,
+    atmInterfaceCurrentMaxSvpcVpi,
+    atmInterfaceConfMaxSvccVpi,
+    atmInterfaceCurrentMaxSvccVpi,
+    atmInterfaceConfMinSvccVci,
+    atmInterfaceCurrentMinSvccVci,
+    atmIntfSigVccRxTrafficDescrIndex,
+    atmIntfSigVccTxTrafficDescrIndex,
+    atmIntfPvcFailures,
+    atmIntfCurrentlyFailingPVpls,
+    atmIntfCurrentlyFailingPVcls,
+
+
+
+    atmIntfPvcNotificationInterval,
+    atmIntfPvcFailuresTrapEnable,
+    atmIntfLeafSetupFailures,
+    atmIntfLeafSetupRequests,
+    atmIntfConfigType,
+    atmIntfActualType,
+    atmIntfConfigSide,
+    atmIntfActualSide,
+    atmIntfIlmiAdminStatus,
+    atmIntfIlmiOperStatus,
+    atmIntfIlmiFsmState,
+    atmIntfIlmiEstablishConPollIntvl,
+    atmIntfIlmiCheckConPollIntvl,
+    atmIntfIlmiConPollInactFactor,
+    atmIntfIlmiPublicPrivateIndctr,
+    atmCurrentlyFailingPVplTimeStamp,
+    atmCurrentlyFailingPVclTimeStamp
+}
+
+  STATUS       current
+  DESCRIPTION
+    "A collection of objects providing information
+    for a Switch/Service/Host that implements
+    ATM interfaces."
+  ::= { atm2MIBGroups 1 }
+
+atmCommonStatsGroup     OBJECT-GROUP
+
+OBJECTS {
+    atmVclStatTotalCellIns,
+    atmVclStatClp0CellIns,
+    atmVclStatTotalDiscards,
+    atmVclStatClp0Discards,
+    atmVclStatTotalCellOuts,
+    atmVclStatClp0CellOuts,
+    atmVclStatClp0Tagged,
+    atmVplStatTotalCellIns,
+    atmVplStatClp0CellIns,
+    atmVplStatTotalDiscards,
+    atmVplStatClp0Discards,
+    atmVplStatTotalCellOuts,
+    atmVplStatClp0CellOuts,
+    atmVplStatClp0Tagged
+}
+
+  STATUS       current
+  DESCRIPTION
+    "A collection of objects providing information
+
+
+
+    for a Switch/Service/Host that implements
+    ATM VCL and VPL Statistics"
+  ::= { atm2MIBGroups 2 }
+
+  atmSwitchServcGroup     OBJECT-GROUP
+
+  OBJECTS {
+    atmIlmiSrvcRegATMAddress,
+    atmIlmiSrvcRegParm1,
+    atmIlmiSrvcRegRowStatus,
+    atmIlmiNetPrefixRowStatus,
+    atmSvcVpCrossConnectCreationTime,
+    atmSvcVpCrossConnectRowStatus,
+    atmSvcVcCrossConnectCreationTime,
+    atmSvcVcCrossConnectRowStatus,
+    atmIfRegAddrAddressSource,
+    atmIfRegAddrOrgScope,
+    atmIfRegAddrRowStatus}
+  STATUS       current
+  DESCRIPTION
+    "A collection of objects providing information
+    for a Switch/Service that implements ATM interfaces."
+  ::= { atm2MIBGroups 3 }
+
+  atmSwitchServcSigGroup     OBJECT-GROUP
+
+  OBJECTS {
+    atmSigSupportClgPtyNumDel,
+    atmSigSupportClgPtySubAddr,
+    atmSigSupportCldPtySubAddr,
+    atmSigSupportHiLyrInfo,
+    atmSigSupportLoLyrInfo,
+    atmSigSupportBlliRepeatInd,
+    atmSigSupportAALInfo,
+    atmSigSupportPrefCarrier}
+  STATUS       current
+  DESCRIPTION
+    "A collection of objects providing information
+    for a Switch/Service that implements ATM signalling."
+  ::= { atm2MIBGroups 4 }
+
+    atmSwitchServcNotifGroup     NOTIFICATION-GROUP
+
+    NOTIFICATIONS { atmIntfPvcFailuresTrap }
+    STATUS       current
+    DESCRIPTION
+        "A collection of notifications providing information
+        for a Switch/Service that implements ATM interfaces."
+
+
+
+    ::= { atm2MIBGroups 5 }
+
+    atmSwitchGroup     OBJECT-GROUP
+        OBJECTS {
+            atmSwitchAddressAddress,
+            atmSwitchAddressRowStatus }
+        STATUS       current
+        DESCRIPTION
+          "A collection of objects providing information
+          for an ATM switch."
+        ::= { atm2MIBGroups 6 }
+
+    atmServcGroup     OBJECT-GROUP
+
+    OBJECTS {
+        atmVpCrossConnectUserName,
+        atmVpCrossConnectProviderName,
+        atmVcCrossConnectUserName,
+        atmVcCrossConnectProviderName }
+    STATUS       current
+    DESCRIPTION
+        "A collection of objects providing information
+        for an ATM Network Service."
+    ::= { atm2MIBGroups 7 }
+
+    atmHostGroup     OBJECT-GROUP
+
+    OBJECTS {
+        atmAal5VclInPkts,
+        atmAal5VclOutPkts,
+        atmAal5VclInOctets,
+        atmAal5VclOutOctets,
+        atmVclAddrType,
+        atmVclAddrRowStatus,
+        atmAddrVclAddrType,
+        atmVclGenSigDescrIndex}
+    STATUS       current
+    DESCRIPTION
+      "A collection of objects providing information
+      for a Host that implements ATM interfaces."
+    ::= { atm2MIBGroups 8 }
+
+    atmHostSigDescrGroup     OBJECT-GROUP
+
+    OBJECTS {
+           atmSigDescrParamAalType,
+           atmSigDescrParamAalSscsType,
+           atmSigDescrParamBhliType,
+
+
+
+           atmSigDescrParamBhliInfo,
+           atmSigDescrParamBbcConnConf,
+           atmSigDescrParamBlliLayer2,
+           atmSigDescrParamBlliLayer3,
+           atmSigDescrParamBlliPktSize,
+           atmSigDescrParamBlliSnapId,
+           atmSigDescrParamBlliOuiPid,
+           atmSigDescrParamRowStatus}
+    STATUS       current
+    DESCRIPTION
+      "A collection of objects providing information
+      for a Host that implements ATM interfaces."
+    ::= { atm2MIBGroups 9 }
+
+END

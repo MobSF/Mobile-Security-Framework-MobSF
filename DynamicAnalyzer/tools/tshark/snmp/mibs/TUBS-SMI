@@ -1,0 +1,109 @@
+TUBS-SMI DEFINITIONS ::= BEGIN
+
+-- @(#) $Id: TUBS-SMI 9396 2008-07-02 10:56:08Z strauss $
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-IDENTITY, enterprises
+	FROM SNMPv2-SMI;
+
+tubs MODULE-IDENTITY
+    LAST-UPDATED "200002090000Z"
+    ORGANIZATION "TU Braunschweig"
+    CONTACT-INFO
+	"Juergen Schoenwaelder
+	 TU Braunschweig
+         Muehlenpfordtstrasse 23, 1. OG
+	 38106 Braunschweig
+	 Germany
+
+	 Tel: +49 531 391 3283
+	 Fax: +49 531 391 5936
+	 E-mail: schoenw@ibr.cs.tu-bs.de"
+    DESCRIPTION
+	"The toplevel OID registration for the Technical University
+	 of Braunschweig, Germany."
+    REVISION    "200207011500Z"
+    DESCRIPTION
+        "Added ibrpibtomib for automatic PIB to MIB conversion via
+         'smidump -f smiv2'."
+    REVISION    "200205161500Z"
+    DESCRIPTION
+        "Added ibrpib for all PIBs that are temporarily assigned
+         to the ibr tree until they get official assignments
+         from IANA. Fixed CONTACT-INFO to contain the current address."
+    REVISION	"200002090000Z"
+    DESCRIPTION
+	"Changed the module name from TUBS-REGISTRATION to TUBS-SMI."
+    REVISION	"9702141023Z"
+    DESCRIPTION
+	"The initial revision."
+    ::= { enterprises 1575 }
+
+ibr OBJECT-IDENTITY
+    STATUS	current
+    DESCRIPTION
+	"The subtree delegated to the Department of Operating Systems
+	 and Computer Networks (Institut fuer Betriebssysteme und
+	 Rechnerverbund)."
+    ::= { tubs 1 }
+
+ida OBJECT-IDENTITY
+    STATUS	current
+    DESCRIPTION
+	"The subtree delegated to the Institute for
+	Computer and Communication Network Engineering."
+	-- Matthias Ivers <ivers@ida.ing.tu-bs.de>
+    ::= { tubs 2 }
+
+ibrpib OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Only for PIBs that are temporarily assigned to the ibr tree until
+        they get official assignments from IANA."
+    ::= { ibr 10 }
+
+ibrpibtomib OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Only for PIBs that are automatically converted to MIBs via
+         'smidump -f smiv2'."
+    ::= { ibr 11 }
+
+ibrmibtopib OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Only for MIBs that are automatically converted to PIBs via
+         'smidump -f sppi'."
+    ::= { ibr 12 }
+
+IBRUnsigned64 ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION 
+        "A dummy type for automatic PIB to MIB conversion."
+    SYNTAX      OCTET STRING (SIZE(8))
+
+IBRInteger64 ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION 
+        "A dummy type for automatic PIB to MIB conversion."
+    SYNTAX      OCTET STRING (SIZE(8))
+
+
+-- Allocations below TUBS-SMI::ibr:
+--
+--   1  TUBS-IBR-TNM-MIB::tnmMIB
+--   2  TUBS-IBR-NFS-MIB::nfsMIB
+--   3  TUBS-IBR-PROC-MIB::procMIB
+--   4  <obsolete>
+--   5	TUBS-IBR-LINUX-MIB::linuxMIB
+--   6  TUBS-IBR-AGENT-CAPABILITIES::ibrAgentCapabilities
+--   7  TUBS-IBR-TEST-MIB::testMIB
+--   8	<obsolete>
+--   9  LIBSMI-TEST-MIB::testMib
+--  10  TUBS-SMI::ibrpib
+--  11  TUBS-SMI::ibrpibtomib
+--  12  TUBS-SMI::ibrmibtopib
+--  13  TUBS-IBR-LINUX-NETFILTER-MIB::lnfMIB
+--  14  TUBS-IBR-XEN-MIB::xenMIB
+
+END

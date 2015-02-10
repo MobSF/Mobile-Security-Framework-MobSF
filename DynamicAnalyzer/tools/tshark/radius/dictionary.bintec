@@ -1,0 +1,47 @@
+# -*- text -*-
+#
+#	Bintec dictionary
+#	$Id$
+#
+#
+#
+VENDOR		BinTec				272
+
+#							(272 << 16) | N
+#
+VALUE	Framed-Protocol			Bintec-X25		0x01100002
+VALUE	Framed-Protocol			Bintec-X25-PPP		0x01100003
+VALUE	Framed-Protocol			Bintec-IP-LAPB		0x01100004
+VALUE	Framed-Protocol			Bintec-IP-HDLC		0x01100006
+VALUE	Framed-Protocol			Bintec-MPR-LAPB		0x01100007
+VALUE	Framed-Protocol			Bintec-MPR-HDLC		0x01100008
+VALUE	Framed-Protocol			Bintec-FRAME-RELAY	0x01100009
+VALUE	Framed-Protocol			Bintec-X31-BCHAN	0x0110000a
+VALUE	Framed-Protocol			Bintec-X75-PPP		0x0110000b
+VALUE	Framed-Protocol			Bintec-X75BTX-PPP	0x0110000c
+VALUE	Framed-Protocol			Bintec-X25-NOSIG	0x0110000d
+VALUE	Framed-Protocol			Bintec-X25-PPP-OPT	0x0110000e
+
+#
+#
+BEGIN-VENDOR	BinTec
+
+ATTRIBUTE	BinTec-biboPPPTable			224	string
+ATTRIBUTE	BinTec-biboDialTable			225	string
+ATTRIBUTE	BinTec-ipExtIfTable			226	string
+ATTRIBUTE	BinTec-ipRouteTable			227	string
+ATTRIBUTE	BinTec-ipExtRtTable			228	string
+ATTRIBUTE	BinTec-ipNatPresetTable			229	string
+ATTRIBUTE	BinTec-ipxCircTable			230	string
+ATTRIBUTE	BinTec-ripCircTable			231	string
+ATTRIBUTE	BinTec-sapCircTable			232	string
+ATTRIBUTE	BinTec-ipxStaticRouteTable		233	string
+ATTRIBUTE	BinTec-ipxStaticServTable		234	string
+ATTRIBUTE	BinTec-ospfIfTable			235	string
+ATTRIBUTE	BinTec-pppExtIfTable			236	string
+ATTRIBUTE	BinTec-ipFilterTable			237	string
+ATTRIBUTE	BinTec-ipQoSTable			238	string
+ATTRIBUTE	BinTec-qosIfTable			239	string
+ATTRIBUTE	BinTec-qosPolicyTable			240	string
+
+END-VENDOR	BinTec

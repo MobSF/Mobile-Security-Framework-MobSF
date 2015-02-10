@@ -1,0 +1,548 @@
+UDPLITE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    mib-2, Unsigned32,
+    Counter32, Counter64   FROM SNMPv2-SMI           -- [RFC2578]
+
+    TimeStamp              FROM SNMPv2-TC            -- [RFC2579]
+
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP           FROM SNMPv2-CONF          -- [RFC2580]
+
+    InetAddress,
+    InetAddressType,
+    InetPortNumber         FROM INET-ADDRESS-MIB;    -- [RFC4001]
+
+udpliteMIB MODULE-IDENTITY
+    LAST-UPDATED "200712180000Z"       -- 18 December 2007
+    ORGANIZATION "IETF TSV Working Group (TSVWG)"
+    CONTACT-INFO
+           "IETF TSV Working Group
+            http://www.ietf.org/html.charters/tsvwg-charter.html
+            Mailing List: tsvwg@ietf.org
+
+
+
+
+            Gerrit Renker, Godred Fairhurst
+            Electronics Research Group
+            School of Engineering, University of Aberdeen
+            Fraser Noble Building, Aberdeen AB24 3UE, UK"
+    DESCRIPTION
+           "The MIB module for managing UDP-Lite implementations.
+            Copyright (C) The IETF Trust (2008).  This version of
+            this MIB module is part of RFC 5097; see the RFC
+            itself for full legal notices."
+
+    REVISION "200712180000Z"           -- 18 December 2007
+    DESCRIPTION
+           "Initial SMIv2 revision, based on the format of the UDP
+            MIB module (RFC 4113) and published as RFC 5097."
+    ::= { mib-2 170 }
+
+udplite      OBJECT IDENTIFIER ::= { udpliteMIB 1 }
+
+udpliteInDatagrams OBJECT-TYPE         -- as in UDP-MIB
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "The total number of UDP-Lite datagrams that were
+            delivered to UDP-Lite users.
+            Discontinuities in the value of this counter can occur
+            at re-initialisation of the management system, and at
+            other times as indicated by the value of
+            udpliteStatsDiscontinuityTime."
+    ::= { udplite 1 }
+
+udpliteInPartialCov OBJECT-TYPE        -- new in UDP-Lite
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "The total number of UDP-Lite datagrams that were
+            delivered to UDP-Lite users (applications) and whose
+            checksum coverage was strictly less than the datagram
+            length.
+            Discontinuities in the value of this counter can occur
+            at re-initialisation of the management system, and at
+            other times as indicated by the value of
+            udpliteStatsDiscontinuityTime."
+    ::= { udplite 2 }
+
+
+
+
+
+
+udpliteNoPorts OBJECT-TYPE             -- as in UDP-MIB
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "The total number of received UDP-Lite datagrams for
+            which there was no listener at the destination port.
+            Discontinuities in the value of this counter can occur
+            at re-initialisation of the management system, and at
+            other times as indicated by the value of
+            udpliteStatsDiscontinuityTime."
+    ::= { udplite 3 }
+
+udpliteInErrors OBJECT-TYPE            -- as in UDP-MIB
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "The number of received UDP-Lite datagrams that could not
+            be delivered for reasons other than the lack of an
+            application at the destination port.
+            Discontinuities in the value of this counter can occur
+            at re-initialisation of the management system, and at
+            other times as indicated by the value of
+            udpliteStatsDiscontinuityTime."
+    ::= { udplite 4 }
+
+udpliteInBadChecksum OBJECT-TYPE       -- new in UDP-Lite
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "The number of received UDP-Lite datagrams whose checksum
+            could not be validated.  This includes illegal checksum
+            coverage values, as their use would lead to incorrect
+            checksums.
+            Discontinuities in the value of this counter can occur
+            at re-initialisation of the management system, and at
+            other times as indicated by the value of
+            udpliteStatsDiscontinuityTime."
+    REFERENCE "RFC 3828, section 3.1"
+    ::= { udplite 5 }
+
+udpliteOutDatagrams OBJECT-TYPE        -- as in UDP-MIB
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+
+
+
+           "The total number of UDP-Lite datagrams sent from this
+            entity.
+            Discontinuities in the value of this counter can occur
+            at re-initialisation of the management system, and at
+            other times as indicated by the value of
+            udpliteStatsDiscontinuityTime."
+    ::= { udplite 6 }
+
+udpliteOutPartialCov OBJECT-TYPE       -- new in UDP-Lite
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "The total number of udpliteOutDatagrams whose
+            checksum coverage was strictly less than the
+            datagram length.
+            Discontinuities in the value of this counter can occur
+            at re-initialisation of the management system, and at
+            other times as indicated by the value of
+            udpliteStatsDiscontinuityTime."
+    ::= { udplite 7 }
+
+udpliteEndpointTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF UdpLiteEndpointEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "A table containing information about this entity's
+            UDP-Lite endpoints on which a local application is
+            currently accepting or sending datagrams.
+
+            The address type in this table represents the address
+            type used for the communication, irrespective of the
+            higher-layer abstraction.  For example, an application
+            using IPv6 'sockets' to communicate via IPv4 between
+            ::ffff:10.0.0.1 and ::ffff:10.0.0.2 would use
+            InetAddressType ipv4(1).
+
+            Like the udpTable in RFC 4113, this table also allows
+            the representation of an application that completely
+            specifies both local and remote addresses and ports.  A
+            listening application is represented in three possible
+            ways:
+
+            1) An application that is willing to accept both IPv4
+               and IPv6 datagrams is represented by a
+               udpliteEndpointLocalAddressType of unknown(0) and a
+               udpliteEndpointLocalAddress of ''h (a zero-length
+
+
+
+               octet-string).
+
+            2) An application that is willing to accept only IPv4
+               or only IPv6 datagrams is represented by a
+               udpliteEndpointLocalAddressType of the appropriate
+               address type and a udpliteEndpointLocalAddress of
+               '0.0.0.0' or '::' respectively.
+
+            3) An application that is listening for datagrams only
+               for a specific IP address but from any remote
+               system is represented by a
+               udpliteEndpointLocalAddressType of the appropriate
+               address type, with udpliteEndpointLocalAddress
+               specifying the local address.
+
+            In all cases where the remote address is a wildcard,
+            the udpliteEndpointRemoteAddressType is unknown(0),
+            the udpliteEndpointRemoteAddress is ''h (a zero-length
+            octet-string), and the udpliteEndpointRemotePort is 0.
+
+            If the operating system is demultiplexing UDP-Lite
+            packets by remote address/port, or if the application
+            has 'connected' the socket specifying a default remote
+            address/port, the udpliteEndpointRemote* values should
+            be used to reflect this."
+    ::= { udplite 8 }
+
+udpliteEndpointEntry OBJECT-TYPE
+    SYNTAX     UdpLiteEndpointEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "Information about a particular current UDP-Lite endpoint.
+            Implementers need to pay attention to the sizes of
+            udpliteEndpointLocalAddress/RemoteAddress, as Object
+            Identifiers (OIDs) of column instances in this table must
+            have no more than 128 sub-identifiers in order to remain
+             accessible with SNMPv1, SNMPv2c, and SNMPv3."
+    INDEX   { udpliteEndpointLocalAddressType,
+              udpliteEndpointLocalAddress,
+              udpliteEndpointLocalPort,
+              udpliteEndpointRemoteAddressType,
+              udpliteEndpointRemoteAddress,
+              udpliteEndpointRemotePort,
+              udpliteEndpointInstance }
+    ::= { udpliteEndpointTable 1 }
+
+UdpLiteEndpointEntry ::= SEQUENCE {
+
+
+
+        udpliteEndpointLocalAddressType   InetAddressType,
+        udpliteEndpointLocalAddress       InetAddress,
+        udpliteEndpointLocalPort          InetPortNumber,
+        udpliteEndpointRemoteAddressType  InetAddressType,
+        udpliteEndpointRemoteAddress      InetAddress,
+        udpliteEndpointRemotePort         InetPortNumber,
+        udpliteEndpointInstance           Unsigned32,
+        udpliteEndpointProcess            Unsigned32,
+        udpliteEndpointMinCoverage        Unsigned32,
+        udpliteEndpointViolCoverage       Counter32
+}
+
+udpliteEndpointLocalAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The address type of udpliteEndpointLocalAddress.  Only
+            IPv4, IPv4z, IPv6, and IPv6z addresses are expected, or
+            unknown(0) if datagrams for all local IP addresses are
+            accepted."
+    ::= { udpliteEndpointEntry 1 }
+
+udpliteEndpointLocalAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The local IP address for this UDP-Lite endpoint.
+
+            The value of this object can be represented in three
+            possible ways, depending on the characteristics of the
+            listening application:
+
+            1. For an application that is willing to accept both
+               IPv4 and IPv6 datagrams, the value of this object
+               must be ''h (a zero-length octet-string), with
+               the value of the corresponding instance of the
+               EndpointLocalAddressType object being unknown(0).
+
+            2. For an application that is willing to accept only
+               IPv4 or only IPv6 datagrams, the value of this
+               object must be '0.0.0.0' or '::', respectively,
+               while the corresponding instance of the
+               EndpointLocalAddressType object represents the
+               appropriate address type.
+
+            3. For an application that is listening for data
+
+
+
+               destined only to a specific IP address, the value
+               of this object is the specific IP address for
+               which this node is receiving packets, with the
+               corresponding instance of the
+               EndpointLocalAddressType object representing the
+               appropriate address type.
+
+            As this object is used in the index for the
+            udpliteEndpointTable, implementors should be careful
+            not to create entries that would result in OIDs with
+            more than 128 sub-identifiers; this is because of SNMP
+            and SMI limitations."
+    ::= { udpliteEndpointEntry 2 }
+
+udpliteEndpointLocalPort OBJECT-TYPE
+    SYNTAX     InetPortNumber
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The local port number for this UDP-Lite endpoint."
+    ::= { udpliteEndpointEntry 3 }
+
+udpliteEndpointRemoteAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The address type of udpliteEndpointRemoteAddress.  Only
+            IPv4, IPv4z, IPv6, and IPv6z addresses are expected, or
+            unknown(0) if datagrams for all remote IP addresses are
+            accepted.  Also, note that some combinations of
+            udpliteEndpointLocalAdressType and
+            udpliteEndpointRemoteAddressType are not supported.  In
+            particular, if the value of this object is not
+            unknown(0), it is expected to always refer to the
+            same IP version as udpliteEndpointLocalAddressType."
+    ::= { udpliteEndpointEntry 4 }
+
+udpliteEndpointRemoteAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The remote IP address for this UDP-Lite endpoint.  If
+            datagrams from any remote system are to be accepted,
+            this value is ''h (a zero-length octet-string).
+            Otherwise, it has the type described by
+            udpliteEndpointRemoteAddressType and is the address of
+
+
+
+            the remote system from which datagrams are to be
+            accepted (or to which all datagrams will be sent).
+
+            As this object is used in the index for the
+            udpliteEndpointTable, implementors should be careful
+            not to create entries that would result in OIDs with
+            more than 128 sub-identifiers; this is because of SNMP
+            and SMI limitations."
+    ::= { udpliteEndpointEntry 5 }
+
+udpliteEndpointRemotePort OBJECT-TYPE
+    SYNTAX     InetPortNumber
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The remote port number for this UDP-Lite endpoint.  If
+            datagrams from any remote system are to be accepted,
+            this value is zero."
+    ::= { udpliteEndpointEntry 6 }
+
+udpliteEndpointInstance OBJECT-TYPE
+    SYNTAX     Unsigned32 (1..'ffffffff'h)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "The instance of this tuple.  This object is used to
+            distinguish among multiple processes 'connected' to
+            the same UDP-Lite endpoint.  For example, on a system
+            implementing the BSD sockets interface, this would be
+            used to support the SO_REUSEADDR and SO_REUSEPORT
+            socket options."
+    ::= { udpliteEndpointEntry 7 }
+
+udpliteEndpointProcess OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "A unique value corresponding to a piece of software
+            running on this endpoint.
+
+            If this endpoint is associated with more than one piece
+            of software, the agent should choose one of these.  As
+            long as the representative piece of software
+            is running and still associated with the endpoint,
+            subsequent reads will consistently return the same
+            value.  The implementation may use any algorithm
+            satisfying these constraints (e.g., choosing the entity
+
+
+
+            with the oldest start time).
+
+            This identifier is platform-specific.  Wherever possible,
+            it should use the system's native, unique identification
+            number as the value.
+
+            If the SYSAPPL-MIB module is available, the value should
+            be the same as sysApplElmtRunIndex.  If not available, an
+            alternative should be used (e.g., the hrSWRunIndex of the
+            HOST-RESOURCES-MIB module).
+
+            If it is not possible to uniquely identify the pieces of
+            software associated with this endpoint, then the value
+            zero should be used.  (Note that zero is otherwise a
+            valid value for sysApplElmtRunIndex.)"
+    ::= { udpliteEndpointEntry 8 }
+
+udpliteEndpointMinCoverage OBJECT-TYPE -- new in UDP-Lite
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "The minimum checksum coverage expected by this endpoint.
+            A value of 0 indicates that only fully covered datagrams
+            are accepted."
+    REFERENCE "RFC 3828, section 3.1"
+    ::= { udpliteEndpointEntry 9 }
+
+udpliteEndpointViolCoverage OBJECT-TYPE -- new / optional in UDP-Lite
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "The number of datagrams received by this endpoint whose
+            checksum coverage violated the minimum coverage threshold
+            set for this connection (i.e., all valid datagrams whose
+            checksum coverage was strictly smaller than the minimum,
+            as defined in RFC 3828).
+            Discontinuities in the value of this counter can occur
+            at re-initialisation of the management system, and at
+            other times as indicated by the value of
+            udpliteStatsDiscontinuityTime."
+    ::= { udpliteEndpointEntry 10 }
+
+
+
+
+
+
+
+
+udpliteStatsDiscontinuityTime OBJECT-TYPE
+    SYNTAX     TimeStamp
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+           "The value of sysUpTime at the most recent occasion at
+            which one or more of the UDP-Lite counters suffered a
+            discontinuity.
+            A value of zero indicates no such discontinuity has
+            occurred since the last re-initialisation of the local
+            management subsystem."
+    ::= { udplite 9 }
+
+-- Conformance Information
+
+udpliteMIBConformance OBJECT IDENTIFIER ::= { udpliteMIB 2 }
+
+udpliteMIBCompliance MODULE-COMPLIANCE
+       STATUS     current
+       DESCRIPTION
+           "The compliance statement for systems that implement
+            UDP-Lite.
+
+            There are a number of INDEX objects that cannot be
+            represented in the form of OBJECT clauses in SMIv2,
+            but for which we have the following compliance
+            requirements, expressed in OBJECT clause form in this
+            description clause:
+
+            -- OBJECT      udpliteEndpointLocalAddressType
+            -- SYNTAX      InetAddressType { unknown(0), ipv4(1),
+            --                               ipv6(2), ipv4z(3),
+            --                               ipv6z(4) }
+            -- DESCRIPTION
+            --     Support for dns(16) is not required.
+            -- OBJECT      udpliteEndpointLocalAddress
+            -- SYNTAX      InetAddress (SIZE(0|4|8|16|20))
+            -- DESCRIPTION
+            --     Support is only required for zero-length
+            --     octet-strings, and for scoped and unscoped
+            --     IPv4 and IPv6 addresses.
+            -- OBJECT      udpliteEndpointRemoteAddressType
+            -- SYNTAX      InetAddressType { unknown(0), ipv4(1),
+            --                               ipv6(2), ipv4z(3),
+            --                               ipv6z(4) }
+            -- DESCRIPTION
+            --     Support for dns(16) is not required.
+            -- OBJECT      udpliteEndpointRemoteAddress
+
+
+
+            -- SYNTAX      InetAddress (SIZE(0|4|8|16|20))
+            -- DESCRIPTION
+            --     Support is only required for zero-length
+            --     octet-strings, and for scoped and unscoped
+            --     IPv4 and IPv6 addresses.
+           "
+    MODULE  -- this module
+         MANDATORY-GROUPS { udpliteBaseGroup,
+                            udplitePartialCsumGroup,
+                            udpliteEndpointGroup    }
+     GROUP               udpliteAppGroup
+     DESCRIPTION
+            "This group is optional and provides supplementary
+             information about the effectiveness of using minimum
+             checksum coverage thresholds on endpoints."
+    ::= { udpliteMIBConformance 1 }
+
+udpliteMIBGroups OBJECT IDENTIFIER ::= { udpliteMIBConformance 2 }
+
+udpliteBaseGroup OBJECT-GROUP          -- as in UDP
+    OBJECTS   { udpliteInDatagrams, udpliteNoPorts, udpliteInErrors,
+                udpliteOutDatagrams, udpliteStatsDiscontinuityTime }
+    STATUS     current
+    DESCRIPTION
+           "The group of objects providing for counters of
+            basic UDP-like statistics."
+    ::= { udpliteMIBGroups 1 }
+
+udplitePartialCsumGroup OBJECT-GROUP  -- specific to UDP-Lite
+    OBJECTS   { udpliteInPartialCov,
+                udpliteInBadChecksum,
+                udpliteOutPartialCov  }
+    STATUS     current
+    DESCRIPTION
+           "The group of objects providing for counters of
+            transport layer statistics exclusive to UDP-Lite."
+    ::= { udpliteMIBGroups 2 }
+
+udpliteEndpointGroup OBJECT-GROUP
+    OBJECTS    { udpliteEndpointProcess, udpliteEndpointMinCoverage }
+    STATUS     current
+    DESCRIPTION
+           "The group of objects providing for the IP version
+            independent management of UDP-Lite 'endpoints'."
+    ::= { udpliteMIBGroups 3 }
+
+
+
+
+
+
+udpliteAppGroup OBJECT-GROUP
+    OBJECTS    { udpliteEndpointViolCoverage }
+    STATUS     current
+    DESCRIPTION
+           "The group of objects that provide application-level
+            information for the configuration management of
+            UDP-Lite 'endpoints'."
+    ::= { udpliteMIBGroups 4 }
+
+END

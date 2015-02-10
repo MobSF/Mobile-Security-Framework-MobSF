@@ -1,0 +1,208 @@
+TUBS-IBR-AGENT-CAPABILITIES DEFINITIONS ::= BEGIN
+
+-- @(#) $Id: TUBS-IBR-AGENT-CAPABILITIES 814 2000-02-14 08:54:20Z strauss $
+
+IMPORTS
+    MODULE-IDENTITY
+    	FROM SNMPv2-SMI
+    AGENT-CAPABILITIES
+	FROM SNMPv2-CONF
+    ibr
+	FROM TUBS-SMI;
+
+ibrAgentCapabilities MODULE-IDENTITY
+    LAST-UPDATED "200002090000Z"
+    ORGANIZATION "TU Braunschweig"
+    CONTACT-INFO
+	"Juergen Schoenwaelder
+	 TU Braunschweig
+	 Bueltenweg 74/75
+	 38106 Braunschweig
+	 Germany
+
+	 Tel: +49 531 391 3283
+	 Fax: +49 531 391 5936
+	 E-mail: schoenw@ibr.cs.tu-bs.de"
+    DESCRIPTION
+	"Agent capability statements."
+    REVISION	"200002090000Z"
+    DESCRIPTION
+	"Updated IMPORTS and minor stylistic fixes."
+    REVISION	"9808051623Z"
+    DESCRIPTION
+	"Added agent capabilities for the WWW-MIB subagent version 1.0."
+    REVISION	"9702141023Z"
+    DESCRIPTION
+	"The initial revision of this module."
+    ::= { ibr 6 }
+
+linux OBJECT IDENTIFIER
+    ::= { ibrAgentCapabilities 1 }
+
+linuxAgent3dot3 AGENT-CAPABILITIES
+    PRODUCT-RELEASE	"cmu-snmp-linux-3.3"
+    STATUS		current
+    DESCRIPTION		"CMU SNMP v1.1b + SNMPv2 USEC + LINUX"
+
+    SUPPORTS		SNMPv2-MIB
+	INCLUDES	{ snmpGroup, snmpSetGroup, systemGroup,
+		          snmpBasicNotificationsGroup,
+			  snmpCommunityGroup }
+
+    SUPPORTS		SNMPv2-USEC-MIB
+	INCLUDES	{ usecBasicGroup, usecStatsGroup }
+
+    SUPPORTS            IF-MIB
+	INCLUDES	{ ifGeneralGroup, ifPacketGroup }
+	VARIATION	ifLinkUpDownTrapEnable
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	ifConnectorPresent
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	ifName
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	ifHighSpeed
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+
+	VARIATION	ifInMulticastPkts
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	ifInBroadcastPkts
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	ifOutMulticastPkts
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	ifOutBroadcastPkts
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	ifPromiscuousMode
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+
+    SUPPORTS		IP-MIB
+	INCLUDES	{ ipGroup,
+			  icmpGroup }
+	VARIATION	ipAdEntReasmMaxSize
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	ipNetToMediaIfIndex
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	ipNetToMediaPhysAddress
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	ipNetToMediaNetAddress
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	ipNetToMediaType
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	ipRoutingDiscards
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+
+    SUPPORTS		TCP-MIB
+	INCLUDES	{ tcpGroup }
+	VARIATION	tcpInErrs
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	tcpOutRsts
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+
+    SUPPORTS		UDP-MIB
+	INCLUDES	{ udpGroup }
+	VARIATION	udpLocalAddress
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+	VARIATION	udpLocalPort
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+
+    SUPPORTS		HOST-RESOURCES-MIB
+	INCLUDES	{ hrSystemGroup,
+			  hrStorageGroup,
+			  hrDeviceGroup,
+			  hrSWRunGroup,
+			  hrSWRunPerfGroup,
+			  hrSWInstalledGroup }
+
+	VARIATION	hrSWOSIndex
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+
+	VARIATION	hrStorageAllocationFailures
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+
+	VARIATION	hrDeviceErrors
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+
+	VARIATION	hrProcessorFrwID
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+
+	VARIATION	hrFSAccess
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+
+	VARIATION	hrSWRunName
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+
+	VARIATION	hrSWRunID
+	    ACCESS	not-implemented
+	    DESCRIPTION	""
+
+    ::= { ibrAgentCapabilities 2 }
+
+wwwSubagent1dot0 AGENT-CAPABILITIES
+    PRODUCT-RELEASE	"TUBS Apache WWW-MIB sub-agent version 1.0"
+    STATUS		current
+    DESCRIPTION		"TUBS WWW-MIB sub-agent version 1.0 for Solaris."
+
+    SUPPORTS		WWW-MIB
+        INCLUDES	{ wwwServiceGroup, wwwSummaryGroup, 
+			  wwwRequestInGroup, wwwResponseOutGroup,
+			  wwwDocumentGroup }
+
+        VARIATION	wwwServiceOperStatus
+	SYNTAX		INTEGER { running(2) }
+ 	DESCRIPTION	"The sub-agent toolkit does not allow to return
+			 noSuchObject exceptions."
+	VARIATION	wwwServiceLastChange
+	DESCRIPTION	"Always zero. The sub-agent toolkit does not allow
+			 to return noSuchObject exceptions."
+
+	VARIATION	wwwSummaryOutRequests
+	DESCRIPTION	"Always zero. The implementation only supports 
+			 the server role."
+	VARIATION	wwwSummaryInResponses
+	DESCRIPTION	"Always zero. The implementation only supports 
+			 the server role."
+	VARIATION	wwwSummaryInBytes
+	DESCRIPTION	"Counter64 data-type does not exist in SNMPv1."
+	VARIATION	wwwSummaryOutBytes
+	DESCRIPTION	"Counter64 data-type does not exist in SNMPv1."
+
+	VARIATION	wwwRequestInRequests
+	DESCRIPTION	"Uses illegal instance identifier values since
+			 the sub-agent toolkit does not support variable
+			 length OCTET STRING instance identifier."
+	VARIATION	wwwRequestInBytes
+	DESCRIPTION	"Uses illegal instance identifier values since
+			 the sub-agent toolkit does not support variable
+			 length OCTET STRING instance identifier."
+	VARIATION	wwwRequestInLastTime
+	DESCRIPTION	"Uses illegal instance identifier values since
+			 the sub-agent toolkit does not support variable
+			 length OCTET STRING instance identifier."
+
+    ::= { ibrAgentCapabilities 3 }
+
+END

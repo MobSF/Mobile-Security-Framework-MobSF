@@ -1,0 +1,105 @@
+# -*- text -*-
+#  Gandalf dictionary
+#
+# Version:	1.00	24-July-2003 Blaise St-Laurent <bstlaurent@okiok.com>
+#
+#	Notes: Dictionary was made specifically for the Gandalf XpressWay
+#		RLAN with Link Authentication through RADIUS
+#
+#	$Id$
+#
+VENDOR		Gandalf				64
+
+#
+#	Vendor-specific attributes
+#
+BEGIN-VENDOR	Gandalf
+
+ATTRIBUTE	Gandalf-Remote-LAN-Name			0	string
+ATTRIBUTE	Gandalf-Operational-Modes		1	integer
+ATTRIBUTE	Gandalf-Compression-Status		2	integer
+ATTRIBUTE	Gandalf-Min-Outgoing-Bearer		3	integer
+ATTRIBUTE	Gandalf-Authentication-String		5	string
+ATTRIBUTE	Gandalf-PPP-Authentication		6	integer
+ATTRIBUTE	Gandalf-PPP-NCP-Type			7	integer
+ATTRIBUTE	Gandalf-Fwd-Multicast-In		8	integer
+ATTRIBUTE	Gandalf-Fwd-Broadcast-In		9	integer
+ATTRIBUTE	Gandalf-Fwd-Unicast-In			10	integer
+ATTRIBUTE	Gandalf-Fwd-Multicast-Out		11	integer
+ATTRIBUTE	Gandalf-Fwd-Broadcast-Out		12	integer
+ATTRIBUTE	Gandalf-Fwd-Unicast-Out			13	integer
+ATTRIBUTE	Gandalf-Around-The-Corner		14	integer
+ATTRIBUTE	Gandalf-Channel-Group-Name-1		15	string
+ATTRIBUTE	Gandalf-Dial-Prefix-Name-1		16	string
+ATTRIBUTE	Gandalf-Phone-Number-1			17	string
+ATTRIBUTE	Gandalf-Calling-Line-ID-1		18	string
+ATTRIBUTE	Gandalf-Channel-Group-Name-2		19	string
+ATTRIBUTE	Gandalf-Dial-Prefix-Name-2		20	string
+ATTRIBUTE	Gandalf-Phone-Number-2			21	string
+ATTRIBUTE	Gandalf-Calling-Line-ID-2		22	string
+ATTRIBUTE	Gandalf-IPX-Spoofing-State		23	integer
+ATTRIBUTE	Gandalf-IPX-Watchdog-Spoof		24	integer
+ATTRIBUTE	Gandalf-SAP-Group-Name-1		25	string
+ATTRIBUTE	Gandalf-SAP-Group-Name-2		26	string
+ATTRIBUTE	Gandalf-SAP-Group-Name-3		27	string
+ATTRIBUTE	Gandalf-SAP-Group-Name-4		28	string
+ATTRIBUTE	Gandalf-SAP-Group-Name-5		29	string
+ATTRIBUTE	Gandalf-Hunt-Group			30	string
+ATTRIBUTE	Gandalf-Modem-Mode			31	integer
+ATTRIBUTE	Gandalf-Modem-Required-1		32	integer
+ATTRIBUTE	Gandalf-Modem-Required-2		33	integer
+
+VALUE	Gandalf-Operational-Modes	Disabled		1
+VALUE	Gandalf-Operational-Modes	Called-Only		2
+VALUE	Gandalf-Operational-Modes	Calling-Called		3
+VALUE	Gandalf-Operational-Modes	Calling-Only		4
+
+VALUE	Gandalf-Compression-Status	Disabled		1
+VALUE	Gandalf-Compression-Status	Enabled			2
+
+VALUE	Gandalf-Min-Outgoing-Bearer	Unrestricted-64K	1
+VALUE	Gandalf-Min-Outgoing-Bearer	Digital-56K		2
+VALUE	Gandalf-Min-Outgoing-Bearer	3100Hz-Audio		3
+
+VALUE	Gandalf-PPP-Authentication	CHAP			1
+VALUE	Gandalf-PPP-Authentication	PAP			2
+VALUE	Gandalf-PPP-Authentication	PAP-Sending-on-Incoming-Calls 3
+
+VALUE	Gandalf-PPP-NCP-Type		BCP			2
+VALUE	Gandalf-PPP-NCP-Type		IPCP			3
+
+VALUE	Gandalf-Fwd-Multicast-In	Disabled		1
+VALUE	Gandalf-Fwd-Multicast-In	Enabled			2
+
+VALUE	Gandalf-Fwd-Broadcast-In	Disabled		1
+VALUE	Gandalf-Fwd-Broadcast-In	Enabled			2
+
+VALUE	Gandalf-Fwd-Unicast-In		Disabled		1
+VALUE	Gandalf-Fwd-Unicast-In		Enabled			2
+
+VALUE	Gandalf-Fwd-Multicast-Out	Disabled		1
+VALUE	Gandalf-Fwd-Multicast-Out	Enabled			2
+
+VALUE	Gandalf-Fwd-Broadcast-Out	Disabled		1
+VALUE	Gandalf-Fwd-Broadcast-Out	Enabled			2
+
+VALUE	Gandalf-Fwd-Unicast-Out		Disabled		1
+VALUE	Gandalf-Fwd-Unicast-Out		Enabled			2
+
+VALUE	Gandalf-IPX-Spoofing-State	Forward			1
+VALUE	Gandalf-IPX-Spoofing-State	Spoof			2
+VALUE	Gandalf-IPX-Spoofing-State	Filter-all-outgoing-RIP-SAP 3
+
+VALUE	Gandalf-IPX-Watchdog-Spoof	Disabled		1
+VALUE	Gandalf-IPX-Watchdog-Spoof	Enabled			2
+
+VALUE	Gandalf-Modem-Mode		Disabled		1
+VALUE	Gandalf-Modem-Mode		Enabled			2
+
+VALUE	Gandalf-Modem-Required-1	Disabled		1
+VALUE	Gandalf-Modem-Required-1	Enabled			2
+
+VALUE	Gandalf-Modem-Required-2	Disabled		1
+VALUE	Gandalf-Modem-Required-2	Enabled			2
+
+END-VENDOR	Gandalf

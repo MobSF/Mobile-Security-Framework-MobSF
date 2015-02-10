@@ -1,0 +1,131 @@
+TUBS-IBR-LINUX-MIB DEFINITIONS ::= BEGIN
+
+-- @(#) $Id: TUBS-IBR-LINUX-MIB 807 2000-02-12 11:52:35Z strauss $
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, Unsigned32
+    	FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, DisplayString
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP
+	FROM SNMPv2-CONF
+    ibr
+	FROM TUBS-SMI;
+
+linuxMIB MODULE-IDENTITY
+    LAST-UPDATED "200002090000Z"
+    ORGANIZATION "TU Braunschweig"
+    CONTACT-INFO
+	"Juergen Schoenwaelder
+	 TU Braunschweig
+	 Bueltenweg 74/75
+	 38106 Braunschweig
+	 Germany
+
+	 Tel: +49 531 391 3283
+	 Fax: +49 531 391 5936
+	 E-mail: schoenw@ibr.cs.tu-bs.de"
+    DESCRIPTION
+	"Experimental MIB module for the linux operating system."
+    REVISION	"200002090000Z"
+    DESCRIPTION
+	"Updated IMPORTS and minor stylistic fixes."
+    REVISION	"9801070622Z"
+    DESCRIPTION
+	"Load average object-types added, clarification of linuxCPU."
+    REVISION	"9702141023Z"
+    DESCRIPTION
+	"Various cleanups to make the module conforming to SNMPv2 SMI."
+    REVISION	"9411152024Z"
+    DESCRIPTION
+	"The initial revision of this module."
+    ::= { ibr 5 }
+
+-- The various groups defined within this MIB module:
+
+linuxObjects OBJECT IDENTIFIER ::= { linuxMIB 2 }
+
+linuxConformance OBJECT IDENTIFIER ::= { linuxMIB 3 }
+
+-- Textual Conventions:
+
+LoadValue ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d-2"
+    STATUS	 current
+    DESCRIPTION
+	"This data type represents a systems load average over a
+	 given time interval. Every usage of this textual convention
+	 is required to specify the time interval. A value represents
+	 the average number of processes ready to run times 100."
+    SYNTAX Integer32 (0..2147483647)
+
+-- Object definitions:
+
+linuxCPU OBJECT-TYPE
+    SYNTAX	DisplayString
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The identification of the linux CPUs. This string contains
+	 foreach CPU present in the system the CPU type, model and
+	 vendor (if known by the operating system)."
+    ::= { linuxObjects 1 }
+
+linuxBogo OBJECT-TYPE
+    SYNTAX	Unsigned32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of BOGO MIPS of the linux system."
+    ::= { linuxObjects 2 }
+
+linuxLoadAvg1 OBJECT-TYPE
+    SYNTAX	LoadValue
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The average system load during the last 60 seconds."
+    ::= { linuxObjects 3 }
+
+linuxLoadAvg5 OBJECT-TYPE
+    SYNTAX	LoadValue
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The average system load during the last 5 minutes."
+    ::= { linuxObjects 4 }
+
+linuxLoadAvg15 OBJECT-TYPE
+    SYNTAX	LoadValue
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The average system load during the last 15 minutes."
+    ::= { linuxObjects 5 }
+
+-- Conformance statements:
+
+linuxCompliances OBJECT IDENTIFIER ::= { linuxConformance 1 }
+
+linuxGroups OBJECT IDENTIFIER ::= { linuxConformance 2 }
+
+linuxCompliance MODULE-COMPLIANCE
+    STATUS	current
+    DESCRIPTION
+	"The compliance statement for an SNMP entity which implements
+	 the linux MIB."
+    MODULE     -- this module
+    MANDATORY-GROUPS { linuxGroup }
+    ::= { linuxCompliances 1 }
+
+linuxGroup OBJECT-GROUP
+    OBJECTS {
+	linuxCPU, linuxBogo,
+	linuxLoadAvg1, linuxLoadAvg5, linuxLoadAvg15
+    }
+    STATUS	current
+    DESCRIPTION
+	"A collection of linux specific objects."
+    ::= { linuxGroups 1 }
+
+END

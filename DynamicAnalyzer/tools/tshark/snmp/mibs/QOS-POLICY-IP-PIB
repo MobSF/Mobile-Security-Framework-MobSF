@@ -1,0 +1,1341 @@
+QOS-POLICY-IP-PIB PIB-DEFINITIONS ::= BEGIN
+
+IMPORTS
+    ibrpib FROM TUBS-SMI
+    Unsigned32, Integer32,
+    MODULE-IDENTITY, OBJECT-TYPE
+            FROM SNMPv2-SMI
+    TruthValue, TEXTUAL-CONVENTION
+            FROM SNMPv2-TC
+    RoleCombination
+            FROM POLICY-FRAMEWORK-PIB
+    InetAddress
+            FROM INET-ADDRESS-MIB
+    InstanceId
+            FROM COPS-PR-SPPI-TC;
+
+qosPolicyIpPib  MODULE-IDENTITY
+    SUBJECT-CATEGORIES { all } -- to be assigned
+    LAST-UPDATED "9906241800Z"
+    ORGANIZATION "IETF RAP WG"
+    CONTACT-INFO "
+                  Michael Fine
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA  95134-1706 USA
+                  Phone: +1 408 527 8218
+                  Email: mfine@cisco.com
+
+                  Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive,
+                  San Jose, CA 95134-1706 USA
+                  Phone: +1 408 526 5260
+                  Email: kzm@cisco.com
+
+                  John Seligson
+                  Nortel Networks, Inc.
+                  4401 Great America Parkway
+                  Santa Clara, CA 95054 USA
+                  Phone: +1 408 495 2992
+                  Email: jseligso@nortelnetworks.com"
+    DESCRIPTION
+            "The PIB module containing an initial set of policy
+             rule classes that describe the quality of service
+             (QoS) policies. It includes general classes that may
+             be extended by other PIB specifications as well as
+             an initial set of PIB classes related to IP processing."
+
+    ::= { ibrpib 4 } -- to be assigned!
+
+qosPolicyGenPibClasses  OBJECT IDENTIFIER ::= { qosPolicyIpPib 1 }
+qosPolicyIpPibClasses   OBJECT IDENTIFIER ::= { qosPolicyIpPib 2 }
+
+--
+-- Textual Conventions
+--
+
+--
+-- Diffserv Codepoint
+--
+
+Dscp ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "An integer that is in the range of the diffserv codepoint
+        values."
+
+    SYNTAX INTEGER (0..63)
+
+--
+-- Interface types
+--
+
+QosInterfaceQueueCount ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "An integer that describes the number of queues an interface
+        supports.  It is limited to the number of DSCP values."
+
+    SYNTAX INTEGER (1..64)
+
+--
+-- QoS Interface Group
+--
+--
+-- This group specifies the configuration of the various interface
+-- types including the setting of queueing parameters and the
+-- mapping of DSCPs and 802.1 CoS to queues.
+--
+
+qosIfParameters OBJECT IDENTIFIER ::= { qosPolicyGenPibClasses 1 }
+
+--
+-- Interface Type Table
+
+--
+
+qosInterfaceTypeTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF QosInterfaceTypeEntry
+    PIB-ACCESS  notify
+    STATUS         current
+    DESCRIPTION
+        "Interface type definitions. This class describes the types
+        of interfaces that exist on the device. An interface type
+        is denoted by its designated role identifier as well as
+        by the queue set and queue capabilities it supports."
+
+    ::= { qosIfParameters 1 }
+
+qosInterfaceTypeEntry OBJECT-TYPE
+    SYNTAX         QosInterfaceTypeEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of this class describes the characteristics
+        of a type of an interface. Interface type characteristics
+        include a role combination identifier, a queue set
+        identifier and a queue capabilities attribute.  An
+        instance is required for each different unique role
+        combination identifier which represents the different
+        interface types that are operational in the device at
+        any given time.  The PEP does not report which specific
+        interfaces have which characteristics."
+
+    PIB-INDEX { qosInterfaceTypeId }
+    ::= { qosInterfaceTypeTable 1 }
+
+QosInterfaceTypeEntry ::= SEQUENCE {
+        qosInterfaceTypeId           InstanceId,
+        qosInterfaceTypeRoles        RoleCombination,
+        qosInterfaceTypeQueueSet     InstanceId,
+        qosInterfaceTypeCapabilities BITS
+}
+
+qosInterfaceTypeId OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "An arbitrary integer index that uniquely identifies a
+        instance of the qosInterfaceType class. Class instances
+        may not be contiguous."
+
+    ::= { qosInterfaceTypeEntry 1 }
+
+qosInterfaceTypeRoles OBJECT-TYPE
+    SYNTAX         RoleCombination
+    STATUS         current
+    DESCRIPTION
+        "The role combination that is used to identify interfaces
+        with the characteristics specified by the attributes
+        of this class instance. Interface role combination
+        identifiers are used within a number of classes to
+        logically identify a physical set of interfaces to which
+        policy rules and actions are applied. Role combination
+        identifiers must exist in this table prior to being
+        referenced in other class instances."
+
+    ::= { qosInterfaceTypeEntry 2 }
+
+qosInterfaceTypeQueueSet OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "The index of the queue set that is associated with
+        interfaces that are identified with the role combination
+        identifier that is associated with this class instance."
+
+    ::= { qosInterfaceTypeEntry 3 }
+
+qosInterfaceTypeCapabilities OBJECT-TYPE
+    SYNTAX         BITS {
+                        other(0),
+
+                        -- Classification support
+                        inputIpClassification(1),
+                        outputIpClassification(2),
+                        input802Classification(3),
+                        output802Classification(4),
+
+                        -- Queuing discipline support
+                        singleQueuingDiscipline(5),
+                        hybridQueuingDiscipline(6)
+                   }
+    STATUS         current
+    DESCRIPTION
+        "An enumeration of interface capabilities.  Used by the
+        PDP or network manager to select which policies and
+
+        configuration it should push to the PEP."
+
+    ::= { qosInterfaceTypeEntry 4 }
+
+--
+-- Interface Queue Table
+--
+-- The Interface Queue Table enumerates the individual queues that
+-- comprise a given queue set. Information specific to each queue
+-- is exported by this table.
+--
+
+qosIfQueueTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF QosIfQueueEntry
+    PIB-ACCESS  notify
+    STATUS         current
+    DESCRIPTION
+        "Contains information about the individual queues that
+        comprise a queue set implemented on the device."
+
+    ::= { qosIfParameters 2 }
+
+qosIfQueueEntry OBJECT-TYPE
+    SYNTAX         QosIfQueueEntry
+    STATUS         current
+    DESCRIPTION
+        "A conceptual row in the qosIfQueueTable.
+
+        Each row identifies a specific queue within a given queue
+        set and contains detailed information about the queue. Queues
+        are associated with a given set through this table and
+        a queue set is associated with an interface set through
+        the qosInterfaceTypeTable."
+
+    PIB-INDEX { qosIfQueueId }
+    ::= { qosIfQueueTable 1 }
+
+QosIfQueueEntry ::= SEQUENCE {
+        qosIfQueueId                    InstanceId,
+        qosIfQueueSetId                 INTEGER,
+        qosIfQueueIndex                 QosInterfaceQueueCount,
+        qosIfQueueGenDiscipline         INTEGER,
+        qosIfQueueExtDiscipline         OBJECT IDENTIFIER,
+        qosIfQueueDrainSize             Unsigned32,
+        qosIfQueueAbsBandwidth          Unsigned32,
+
+        qosIfQueueBandwidthAllocation   INTEGER,
+        qosIfQueueServiceOrder          QosInterfaceQueueCount,
+        qosIfQueueSize                  Unsigned32
+}
+
+qosIfQueueId OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "The index that uniquely identifies this row in the table,
+        i.e., this PRI."
+
+    ::= { qosIfQueueEntry 1 }
+
+qosIfQueueSetId OBJECT-TYPE
+    SYNTAX         INTEGER
+    STATUS         current
+    DESCRIPTION
+        "An index that uniquely identifies a specific queue set. The
+        queue set that is identified with this value is associated
+        with an interface set through the qosInterfaceTypeQueueSet
+        object in the qosInterfaceTypeTable. The individual queues
+        that are members of this set all have the same value for
+        this attribute (i.e., they have the same set ID)."
+
+    ::= { qosIfQueueEntry 2 }
+
+qosIfQueueIndex OBJECT-TYPE
+    SYNTAX         QosInterfaceQueueCount
+    STATUS         current
+    DESCRIPTION
+        "An arbitrary index that uniquely identifies a specific
+        queue within a set of queues that is identified by the
+        qosIfQueueSetId value."
+
+    ::= { qosIfQueueEntry 3 }
+
+qosIfQueueGenDiscipline OBJECT-TYPE
+    SYNTAX         INTEGER {
+                       other(1),  -- Use qosIfQueueExtDiscipline
+                       fifo(2),   -- First In First Out queuing
+                       pq(3),     -- Priority Queuing
+                       fq(4),     -- Fair Queuing
+                       wfq(5)     -- Weighted Fair Queuing
+                   }
+
+    STATUS         current
+    DESCRIPTION
+        "This object identifies the queuing discipline that is
+        associated with the specified queue. Several general
+        purpose and well-known queuing disciplines are supported
+        by this attribute. Queuing disciplines that differ from
+        those that are supported by this object are specified
+        by setting this attribute to other(1) and providing
+        the object identifier that represents the different
+        queuing paradigm in the qosIfQueueExtDiscipline object.
+
+        A value of fifo(2) indicates that the queue is serviced
+        on a first-in-first-out (FIFO) basis. This discipline is
+        generally employed when only a single queue is available
+        for a given interface.
+
+        A value of pq(3) indicates that the queue is serviced
+        using a priority queuing discipline. This technique is
+        used when several queues are available for a given
+        interface. Each queue is assigned a priority and queues
+        are serviced in order of priority. Higher priority queues
+        are completely drained before lower priority queues are
+        serviced.
+
+        A value of fq(4) indicates that the queue is serviced
+        using a fair queuing discipline. This technique is used
+        when several queues are available for a given interface.
+        Each queue is treated equally and is serviced in a
+        round-robin fashion.
+
+        A value of wfq(5) indicates that the queue is serviced
+        using a weighted fair queuing discipline. This technique is
+        used when several queues are available for a given interface.
+        Each queue is serviced based on queue weights which determine
+        the scheduling and frequency of queue servicing. Queues that
+        are assigned a greater weight are implicitly provided with
+        more bandwidth.
+
+        Note that the processing disciplines for all of the queues
+        in a given set must be considered when trying to establish
+        a processing profile for a given interface."
+
+    ::= { qosIfQueueEntry 4 }
+
+qosIfQueueExtDiscipline OBJECT-TYPE
+
+    SYNTAX         OBJECT IDENTIFIER
+    STATUS         current
+    DESCRIPTION
+        "This object identifies the queuing discipline that is
+        associated with the specified queue.  This attribute
+        provides a means through which additional queuing mechanisms
+        can be identified should the general queuing disciplines
+        be inadequate for a given device. As such. this attribute is
+        consulted only when the value of the qosIfQueueGenDiscipline
+        object is other(1). It contains an object identifier that
+        uniquely identifies a queuing paradigm.
+
+        Note that the processing disciplines for all of the queues
+        in a given set must be considered when trying to establish
+        a processing profile for a given interface."
+
+    ::= { qosIfQueueEntry 5 }
+
+qosIfQueueDrainSize OBJECT-TYPE
+    SYNTAX         Unsigned32
+    STATUS         current
+    DESCRIPTION
+        "The maximum number of bytes that may be drained from the
+        queue in one cycle.  The percentage of the interface
+        bandwidth allocated to this queue can be calculated from
+        this attribute and the sum of the drain sizes of all the
+        queues in a specific queue cluster in a queue set.
+
+        This attribute represents the relative bandwidth that is
+        available to a given queue with respect to other queues with
+        which it is associated. The absolute bandwidth that is
+        available to a given queue is specified by the attribute
+        qosIfQueueAbsBandwidth.  Which of these two applies is
+        specified by the attribute qosIfQueueBandwidthAllocation."
+
+    ::= { qosIfQueueEntry 6 }
+
+qosIfQueueAbsBandwidth OBJECT-TYPE
+    SYNTAX         Unsigned32
+    STATUS         current
+    DESCRIPTION
+        "The maximum interface bandwidth that is available for
+        consumption when servicing this queue. This bandwidth is
+        specified in terms of kilobits per second.
+
+        This attribute represents the absolute bandwidth that is
+        available to a given queue. The relative bandwidth that is
+        available to a given queue, with respect to other queues with
+        which it is associated, is specified by the attribute
+        qosIfQueueDrainSize.  Which of these two applies is specified
+        by the attribute qosIfQueueBandwidthAllocation."
+
+    ::= { qosIfQueueEntry 7 }
+
+qosIfQueueBandwidthAllocation OBJECT-TYPE
+    SYNTAX         INTEGER {
+                        absolute(1),  --use qosIfQueueAbsBandwidth
+                        relative(2)   --use qosIfQueueDrainSize
+                   }
+    STATUS         current
+    DESCRIPTION
+        "This attribute specifies whether to configure the queue for
+        an absolute bandwidth limit or one that is relative to other
+        queues of the interface. i.e., whether to configure the queue
+        using qosIfQueueAbsBandwidth or qosIfQueueDrainSize."
+
+     ::= { qosIfQueueEntry 8 }
+
+qosIfQueueServiceOrder OBJECT-TYPE
+    SYNTAX         QosInterfaceQueueCount
+    STATUS         current
+    DESCRIPTION
+        "This object is used to provide an additional level of
+        priority that is required for certain queuing disciplines
+        and when the different queues that comprise a queue set
+        are serviced using a mix of queuing disciplines. This
+        object can be used to specify, for example, the order in
+        which queues will be serviced when priority queuing is
+        used. It also supports the ability to describe the
+        servicing hierarchy when a hybrid queuing scheme, such
+        as priority queuing coupled with weighted fair queuing,
+        is used.
+
+        Queue service priority is assigned such that a lower
+        service order value indicates a higher priority. For
+        example, a priority queue with a value of 1 will be
+        serviced (i.e., drained) before another priority queue
+        with a service order value of 2.
+
+        Note that multiple queues that are logically associated,
+
+        based on the queuing discipline that is being employed,
+        will be assigned the same service order value.  Under
+        this scenario, other parameters that are related to the
+        queuing discipline determine the order of queue servicing
+        (e.g., queue drain size is used for 'wfq').
+
+        For example, an interface that is associated with a queue
+        set supporting two priority queues and three queues that
+        are serviced using WFQ would be modeled as follows:
+
+          Q Index  Q Discipline  Q Drain Size  Q Service Order
+             22         pq(1)         -              1
+             23         pq(1)         -              2
+             24        wfq(3)        500             3
+             25        wfq(3)        350             3
+             26        wfq(3)        150             3
+
+        The queue set presented in this example would service
+        all queued traffic in queue 22 first, followed by all of
+        the queued traffic in queue 23. Next the queued traffic
+        in queues 24 through 26 would be serviced in a round
+        robin fashion with queue 24 receiving 50% of the available
+        bandwidth, queue 25 receiving 35% of the available
+        bandwidth and queue 26 receiving 15% of the available
+        bandwidth. This example is presented for expository
+        purposes and has been simplified accordingly.
+
+        Note that, in this example, queues 24, 25 and 26 form a
+        queue cluster. Members of a queue cluster are all assigned
+        the same qosIfQueueServiceOrder as there are tightly
+        coupled. The qosIfQueueDrainSize attribute is used to
+        determine the additional processing characteristics of
+        the individual queues in a cluster."
+
+    ::= { qosIfQueueEntry 9 }
+
+qosIfQueueSize OBJECT-TYPE
+    SYNTAX         Unsigned32
+    STATUS         current
+    DESCRIPTION
+       "The size of the queue in bytes.  Some devices set queue size
+        in terms of packets.  These devices must calculate the queue
+        size in packets by assuming an average packet size suitable
+        for the particular interface.
+
+        Some devices have a fixed size buffer to be shared among all
+        queues.  These devices must allocate a fraction of the
+        total buffer space to this queue calculated as the the ratio
+        of the queue size to the sum of the queue sizes for the
+        interface."
+
+    ::= { qosIfQueueEntry 10 }
+
+--
+-- DSCP Assignment Table
+--
+-- Supports the assignment of DSCPs to queues for each
+-- interface type.
+--
+
+qosIfDscpAssignmentTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF QosIfDscpAssignmentEntry
+    PIB-ACCESS  install
+    STATUS         current
+    DESCRIPTION
+        "Supports the assignment of DSCP values to a queue for
+        each interface with a specific queue count. There will be
+        64 instances of this class for each supported combination
+        of queue count and role combination."
+
+    ::= { qosIfParameters 3 }
+
+qosIfDscpAssignmentEntry OBJECT-TYPE
+    SYNTAX         QosIfDscpAssignmentEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of the qosIfDscpAssignment class."
+
+    PIB-INDEX { qosIfDscpAssignmentId }
+    ::= { qosIfDscpAssignmentTable 1 }
+
+QosIfDscpAssignmentEntry ::= SEQUENCE {
+        qosIfDscpAssignmentId         InstanceId,
+        qosIfDscpAssignmentRoles      RoleCombination,
+        qosIfDscpAssignmentDscp       Dscp,
+        qosIfDscpAssignmentQueue      QosInterfaceQueueCount
+}
+
+qosIfDscpAssignmentId OBJECT-TYPE
+    SYNTAX         InstanceId
+
+    STATUS         current
+    DESCRIPTION
+        "An index that is used to uniquely identify the
+        instance of the qosIfDscpAssignment class."
+
+    ::= { qosIfDscpAssignmentEntry 1 }
+
+qosIfDscpAssignmentRoles OBJECT-TYPE
+    SYNTAX         RoleCombination
+    STATUS         current
+    DESCRIPTION
+        "The role combination with which an interface must be
+        configured to support the DSCP-to-queue assignment
+        described by this instance. The specified role
+        combination must be defined in the qosInterfaceType
+        table prior to being referenced by this entry.
+        Otherwise a 'priAssociationUnknown(3)' error code
+        will be returned."
+
+    ::= { qosIfDscpAssignmentEntry 2 }
+
+qosIfDscpAssignmentDscp OBJECT-TYPE
+    SYNTAX         Dscp
+    STATUS         current
+    DESCRIPTION
+        "The DSCP to which this class instance applies."
+
+    ::= { qosIfDscpAssignmentEntry 3 }
+
+qosIfDscpAssignmentQueue OBJECT-TYPE
+    SYNTAX         QosInterfaceQueueCount
+    STATUS         current
+    DESCRIPTION
+        "The specific queue, within the queue set that is
+        associated with the interface set identified by the
+        qosIfDscpAssignmentRoles tag, on which traffic with
+        the specified DSCP, dictated by the
+        qosIfDscpAssignmentDscp value, is placed. Failure to
+        specify an appropriate queue results in a
+        'priAssociationConflict(4)' error indication being
+        returned."
+
+    ::= { qosIfDscpAssignmentEntry 4 }
+
+--
+-- QoS Meter Table
+--
+-- The QoS Meter Table contains metering specifications that
+-- can be used to provide an acceptable flow bandwidth
+-- dimension to the Target table.
+--
+
+qosMeter OBJECT IDENTIFIER ::= { qosPolicyGenPibClasses 2 }
+
+qosMeterTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF QosMeterEntry
+    PIB-ACCESS  install
+    STATUS         current
+    DESCRIPTION
+        "Contains the current set of configured meters. The
+        meters are associated with a classifier during
+        operation through the QoS Target Table."
+
+    ::= { qosMeter 1 }
+
+qosMeterEntry OBJECT-TYPE
+    SYNTAX         QosMeterEntry
+    STATUS         current
+    DESCRIPTION
+        "General metering definitions. Each entry specifies
+        an instance of the qosMeter class which specifies
+        metering information in terms of traffic stream
+        bandwidth parameters. An entry can thus be used to
+        support traffic metering based on the specified
+        service level specification."
+
+    PIB-INDEX { qosMeterId }
+    ::= { qosMeterTable 1 }
+
+QosMeterEntry ::= SEQUENCE {
+        qosMeterId                InstanceId,
+        qosMeterDataSpecification INTEGER,
+        qosMeterCommittedRate     Unsigned32,
+        qosMeterCommittedBurst    Unsigned32,
+        qosMeterPeakRate          Unsigned32,
+        qosMeterPeakBurst         Unsigned32,
+        qosMeterHighConfAction    InstanceId,
+        qosMeterMedConfAction     InstanceId,
+
+        qosMeterLowConfAction     InstanceId
+}
+
+qosMeterId OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "An arbitrary integer index that uniquely identifies
+        the instance of the qosMeter class. Meters are
+        associated with specific flows using this attribute
+        through the qosTargetMeter attribute in the QoS
+        Target class."
+
+    ::= { qosMeterEntry 1 }
+
+qosMeterDataSpecification OBJECT-TYPE
+    SYNTAX         INTEGER {
+                        noMeterData(1),   -- no metering reqd
+                        committedData(2), -- committed rate only
+                        peakData(3)       -- committed and peak
+                   }
+    STATUS         current
+    DESCRIPTION
+        "Specifies the metering data, and thus the actions, that
+        are defined in a given entry.
+
+        A value of noMeterData(1) indicates that no flow metering
+        is necessary. All flows associated with this meter entry
+        are considered to be at a high level of conformance.
+
+        A value of committedData(2) indicates that committed rate
+        and committed burst information has been specified and will
+        be applied to associated flows. No peak rate and burst
+        information has been specified meaning that two levels
+        of conformance (high, medium) are supported.
+
+        A value of peakData(3) indicates that peak rate and peak
+        burst information has been provided in addition to the
+        committed rate and committed burst information. All provided
+        information will be applied to associated flows meaning that
+        three levels of conformance (high, medium, low) are
+        supported."
+
+     ::= { qosMeterEntry 2 }
+
+qosMeterCommittedRate OBJECT-TYPE
+    SYNTAX         Unsigned32 (0..'ffffffff'h)
+    STATUS         current
+    DESCRIPTION
+        "This object represents the committed information rate
+        (CIR) against which associated traffic streams will be
+        metered. The CIR specifies the rate at which incoming
+        traffic can arrive to be considered to be at a high
+        level of conformance. Typically, this value specifies
+        the rate at which tokens are added to a token bucket
+        used to meter received flows.
+
+        This object specifies a rate in bytes per second units
+        such that, for example, a value of 100 equates to a
+        committed information rate of 100 bytes per second.
+
+        Committed rate (and burst) information must be present
+        if the qosMeterDataSpecification object has the value
+        committedData(2) or peakRate(3). This, in turn, requires
+        that at least both high and medium conformance actions
+        be specified."
+
+    ::= { qosMeterEntry 3 }
+
+qosMeterCommittedBurst OBJECT-TYPE
+    SYNTAX         Unsigned32 (0..'ffffffff'h)
+    STATUS         current
+    DESCRIPTION
+        "This object represents the committed burst size
+        (CBS) against which associated traffic streams will
+        be metered. The CBS specifies the maximum burst size
+        that is supported for flows to be considered to be at
+        a high level of conformance. Typically, this value
+        represents the maximum number of tokens in a token
+        bucket.
+
+        This object specifies flow data in bytes per second
+        units such that, for example, a value of 100 equates
+        to a committed information rate of 100 bytes per
+        second.
+
+        Committed burst (and rate) information must be present
+        if the qosMeterDataSpecification object has the value
+        committedData(2) or peakRate(3). This, in turn, requires
+        that at least both high and medium conformance actions
+
+        be specified."
+
+    ::= { qosMeterEntry 4 }
+
+qosMeterPeakRate OBJECT-TYPE
+    SYNTAX         Unsigned32 (0..'ffffffff'h)
+    STATUS         current
+    DESCRIPTION
+        "This object represents the peak information rate (PIR)
+        against which associated traffic streams will be
+        metered. The PIR specifies the rate at which incoming
+        traffic can arrive to be considered to be at a medium
+        level of conformance. Typically, this value specifies
+        the rate at which tokens are added to a token bucket
+        used to meter received flows.
+
+        This object specifies a rate in bytes per second units
+        such that, for example, a value of 100 equates to a
+        committed information rate of 100 bytes per second.
+
+        Peak rate (and burst) information must be present
+        if the qosMeterDataSpecification object has the value
+        peakData(3). This, in turn, requires that high, medium
+        and low conformance actions be specified."
+
+    ::= { qosMeterEntry 5 }
+
+qosMeterPeakBurst OBJECT-TYPE
+    SYNTAX         Unsigned32 (0..'ffffffff'h)
+    STATUS         current
+    DESCRIPTION
+        "This object represents the peak burst size (PBS)
+        against which associated traffic streams will
+        be metered. The CBS specifies the maximum burst size
+        that is supported for flows to be considered to be at
+        a medium level of conformance. Typically, this value
+        represents the maximum number of tokens in a token
+        bucket.
+
+        This object specifies flow data in bytes per second
+        units such that, for example, a value of 100 equates
+        to a committed information rate of 100 bytes per
+        second.
+
+        Peak burst (and rate) information must be present
+
+        if the qosMeterDataSpecification object has the value
+        peakData(3). This, in turn, requires that high, medium
+        and low conformance actions be specified."
+
+    ::= { qosMeterEntry 6 }
+
+qosMeterHighConfAction OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "This attribute identifies the action that is to be
+        initiated for flows that are determined to have a high
+        level of conformance with regard to metering criteria
+        being applied to the flow.
+
+        Actions must be defined in the qosActionTable prior to
+        being referenced by this attribute. A valid value for
+        this attribute must always be provided."
+
+    ::= { qosMeterEntry 7 }
+
+qosMeterMedConfAction OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "This attribute identifies the action that is to be
+        initiated for flows that are determined to have a medium
+        level of conformance with regard to metering criteria
+        being applied to the flow.
+
+        Actions must be defined in the qosActionTable prior to
+        being referenced by this attribute. A valid value for
+        this attribute must be provided if the value of the
+        associated qosMeterDataSpecification object is
+        committedRate(2) or peakRate(3)."
+
+    ::= { qosMeterEntry 8 }
+
+qosMeterLowConfAction OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "This attribute identifies the action that is to be
+        initiated for flows that are determined to have a low
+        level of conformance with regard to metering criteria
+
+        being applied to the flow.
+
+        Actions must be defined in the qosActionTable prior to
+        being referenced by this attribute. A valid value for
+        this attribute must be provided if the value of the
+        associated qosMeterDataSpecification object is
+        peakRate(3)."
+
+    ::= { qosMeterEntry 9 }
+
+--
+-- The Generic QoS ACL Action Group
+--
+
+qosAction OBJECT IDENTIFIER ::= { qosPolicyGenPibClasses 3 }
+
+--
+-- The QoS Action Table
+--
+-- The QoS Action Table describes actions that are associated with
+-- specific IP, IEEE 802 and other ACLs through the QoS Target
+-- Table.  An action specification may be simple (i.e., a single
+-- action) or complex (i.e., multiple actions that are performed
+-- in "parallel").
+--
+
+qosActionTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF QosActionEntry
+    PIB-ACCESS  install
+    STATUS         current
+    DESCRIPTION
+        "Contains the current set of configured actions. The actions
+        are associated with IP, IEEE 802 and other ACLs and
+        interfaces during operation."
+
+    ::= { qosAction 1 }
+
+qosActionEntry OBJECT-TYPE
+    SYNTAX         QosActionEntry
+    STATUS         current
+    DESCRIPTION
+        "General action definitions. Each entry specifies an instance
+        of the qosAction class which describes (potentially)
+
+        several distinct action attributes. Each action is taken
+        individually regarding the data in question. Several actions
+        can be taken for a single frame.
+
+        An instance of this class can not be deleted while it is being
+        referenced in a target instance in another class. This
+        class may be extended with actions that apply to specific QoS
+        policies (e.g., IP, IEEE 802, security) using augmentation."
+
+    PIB-INDEX { qosActionId }
+    ::= { qosActionTable 1 }
+
+QosActionEntry ::= SEQUENCE {
+        qosActionId         InstanceId,
+        qosActionDrop       TruthValue,
+        qosActionUpdateDSCP Integer32,
+        qosActionMeter      InstanceId
+}
+
+qosActionId OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "An arbitrary integer index that uniquely identifies
+        the instance of the QoS Action class. Class instances
+        may not be contiguous. Actions are associated with
+        Target instances in other classes (e.g., the QoS
+        Target class) using this attribute."
+
+    ::= { qosActionEntry 1 }
+
+qosActionDrop OBJECT-TYPE
+    SYNTAX         TruthValue
+    STATUS         current
+    DESCRIPTION
+        "This action attribute, when specified, will cause the
+        frame being evaluated to be dropped if the value is
+        'true(1)'. A value of 'false(2)' indicates that this
+        action will not be initiated (i.e., the frame will not
+        be dropped) based on this attribute.
+
+        Prior to discarding a packet, other actions that have
+        been specified should be performed if they make protocol
+        sense. For example, requests for traffic mirroring (if
+        such an action is supported by a device) should be
+
+        honored. However, updating protocol header values will
+        typically not be necessary."
+
+    ::= { qosActionEntry 2 }
+
+qosActionUpdateDSCP OBJECT-TYPE
+    SYNTAX         Integer32 (-1 | 0..63)
+    STATUS         current
+    DESCRIPTION
+        "This action component, when specified, will cause the
+        value contained in the Differentiated Services (DS)
+        field of an associated IP datagram to be updated with
+        the value of this object.
+
+        A value of -1 indicates that this action component has not
+        been set to an appropriate value and should not be used for
+        action initiation. The DSCP should remain unchanged."
+
+    ::= { qosActionEntry 3 }
+
+qosActionMeter OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "This action component, when specified, will identify
+        another level of metering that should be applied to
+        the given flow. This action is only taken if it is
+        not in conflict with other specified actions, i.e.,
+        qosActionDrop.
+
+        A value of 0 indicates that an additional metering
+        component has not been specified. No additional metering
+        is thus required."
+
+    ::= { qosActionEntry 4 }
+
+--
+-- The QoS Target Table
+--
+-- The QoS Target Table supports the association of ACLs,
+-- interfaces and actions. It allows ACL class instances, as
+-- defined in various ACL Defintion classes, to be associated
+-- with specific interfaces/flow direction (based on interface
+-- role combination and traffic direction) and actions to be
+
+-- performed based on traffic classification. Furthermore, it
+-- allows heterogeneous ACL Definition class instances (e.g.,
+-- IP, IEEE 802, security) to be applied to the same interface
+-- group in a prescribed order of precedence.
+--
+
+qosTargetTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF QosTargetEntry
+    PIB-ACCESS  install
+    STATUS         current
+    DESCRIPTION
+        "A class that applies a set of ACLs to interfaces specifying,
+        for each interface, the precedence order of the ACL with
+        respect to other ACLs applied to the same interface and, for
+        each ACL, the action to take for a packet that matches a
+        permit ACE in that ACL.  Interfaces are specified abstractly
+        in terms of interface roles.
+
+        This class may contain ACLs that specify different types
+        of traffic classification (e.g., IP ACLs and IEEE 802 ACLs
+        defined in their respective definition tables). An ACL is
+        identified by its class and instance within that class. An
+        ACL association is formed when ACLs apply to the same
+        interfaces, as determined by the specified interface role
+        and direction. ACL evaluation precedence within an
+        association is determined by the precedence attribute."
+
+    INSTALL-ERRORS {
+        priPrecedenceConflict(1) -- precedence conflict detected
+        }
+
+    ::= { qosAction 2 }
+
+qosTargetEntry OBJECT-TYPE
+    SYNTAX         QosTargetEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of the qosTarget class. Instance creation
+        may be prohibited based on the status of certain class
+        attributes which must exist prior to class instantiation."
+
+    PIB-INDEX { qosTargetId }
+    ::= { qosTargetTable 1 }
+
+QosTargetEntry ::= SEQUENCE {
+
+        qosTargetId                 InstanceId,
+        qosTargetAclId              InstanceId,
+        qosTargetAclType            OBJECT IDENTIFIER,
+        qosTargetInterfaceRoles     RoleCombination,
+        qosTargetInterfaceDirection INTEGER,
+        qosTargetOrder              Unsigned32,
+        qosTargetMeter              InstanceId
+}
+
+qosTargetId OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "An arbitrary integer index that uniquely identifies
+        the instance of the QoS Target class."
+
+    ::= { qosTargetEntry 1 }
+
+qosTargetAclId OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "This attribute identifies the ACL that is associated
+        with this target. It identifies (potentially many) ACL
+        class instances in a specific ACL Definition table
+        where ACLs, and their associated ACEs, are defined.
+        For example, instances in the qosIpAclDefinitionTable
+        are identified by setting the value of this object
+        equal to the qosIpAclDefinitionAclId of the instances
+        being targeted. This value, together with the value of
+        the corresponding qosTargetAclType attribute,
+        uniquely identifies one or more instances of a specific
+        ACL Definition class.
+
+        Attempting to specify an unknown ACL class instance will
+        result in an appropriate error indication being returned
+        to the entity that is attempting to install the conflicting
+        entry. For example, a 'priUnknown(2)' error indication is
+        returned to the policy server in this situation."
+
+    ::= { qosTargetEntry 2 }
+
+qosTargetAclType OBJECT-TYPE
+    SYNTAX         OBJECT IDENTIFIER
+    STATUS         current
+
+    DESCRIPTION
+        "The ACL Definition class that is being referenced by
+        this instance of the ACL Target class. This policy
+        class identifier, together with the corresponding
+        qosTargetAclId attribute, uniquely identifies
+        instances of a specific ACL Definition class.
+
+        The object identifier value of this attribute must
+        exist in the policyPrcSupportTable."
+
+    ::= { qosTargetEntry 3 }
+
+qosTargetInterfaceRoles OBJECT-TYPE
+    SYNTAX         RoleCombination
+    STATUS         current
+    DESCRIPTION
+        "The interfaces to which this ACL applies specified
+        in terms of a set of roles. The role combination
+        specified by this attribute must exist in the
+        qosInterfaceTypeTable prior to being association
+        with an instance of this class."
+
+    ::= { qosTargetEntry 4 }
+
+qosTargetInterfaceDirection OBJECT-TYPE
+    SYNTAX         INTEGER {
+                       in(1),
+                       out(2)
+                   }
+    STATUS         current
+    DESCRIPTION
+        "The direction of packet flow at the interface in
+        question to which this ACL applies."
+
+    ::= { qosTargetEntry 5 }
+
+qosTargetOrder OBJECT-TYPE
+    SYNTAX         Unsigned32
+    STATUS         current
+    DESCRIPTION
+        "An integer that determines the precedence order of
+        this ACL in the list of ACLs applied to interfaces of
+        the specified role combination. An ACL with a given
+        precedence order is positioned in the list before one
+        with a higher-valued precedence order.
+
+        As an example, consider the following ACL Target association:
+
+          Index   IfRoleCombo  IfDirection AclId AclType Order
+            14  'eth1000+L2+L3'   'in'       8    '802'    1
+            15  'eth1000+L2+L3'   'in'       3    '802'    2
+            16  'eth1000+L2+L3'   'in'      12    'IP'     3
+            17  'eth1000+L2+L3'   'in'       6    'IP'     4
+            18  'eth1000+L2+L3'   'in'      21    'IP'     5
+
+        Five distinct ACL specifications, 3 from an IP ACL
+        Definition class and 2 from an IEEE 802 ACL Definition class,
+        form an Acl Target association (e.g., based on the specified
+        interface role combination and direction attributes) with a
+        prescribed order of evaluation. The AclType and AclId
+        attributes identify the ACL Definition instances in their
+        respective classes.
+
+        Precedence values within an association must be unique
+        otherwise instance installation will be prohibited and an
+        error value will be returned."
+
+    ::= { qosTargetEntry 6 }
+
+qosTargetMeter OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "This attribute identifies the meter that is associated
+        with this QoS Target instance. Meters are defined
+        in the qosMeterTable. The corresponding instance in
+        the qosMeter class (i.e., the class instance where
+        the qosMeterId is equal to the value of this object)
+        must exist prior to being associated with a Target
+        entry."
+
+    ::= { qosTargetEntry 7 }
+
+--
+-- The IP Classification and Policing Group
+--
+
+qosIpQos OBJECT IDENTIFIER ::= { qosPolicyIpPibClasses 1 }
+
+-- The IP ACE Table
+
+qosIpAceTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF QosIpAceEntry
+    PIB-ACCESS  install
+    STATUS         current
+    DESCRIPTION
+        "ACE definitions.  A packet has to match all fields in an
+        ACE.  Wildcards may be specified for those fields that are
+        not relevant."
+
+    ::= { qosIpQos 1 }
+
+qosIpAceEntry OBJECT-TYPE
+    SYNTAX         QosIpAceEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of the qosIpAce class."
+
+    PIB-INDEX { qosIpAceId }
+    ::= { qosIpAceTable 1 }
+
+QosIpAceEntry ::= SEQUENCE {
+        qosIpAceId           InstanceId,
+        qosIpAceDstAddr      InetAddress,
+        qosIpAceDstAddrMask  InetAddress,
+        qosIpAceSrcAddr      InetAddress,
+        qosIpAceSrcAddrMask  InetAddress,
+        qosIpAceDscp         Integer32,
+        qosIpAceProtocol     INTEGER,
+        qosIpAceDstL4PortMin INTEGER,
+        qosIpAceDstL4PortMax INTEGER,
+        qosIpAceSrcL4PortMin INTEGER,
+        qosIpAceSrcL4PortMax INTEGER,
+        qosIpAcePermit       TruthValue
+}
+
+qosIpAceId OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "An integer index to uniquely identify this ACE among all the
+        ACEs."
+
+    ::= { qosIpAceEntry 1 }
+
+qosIpAceDstAddr OBJECT-TYPE
+
+    SYNTAX         InetAddress
+    STATUS         current
+    DESCRIPTION
+        "The IP address to match against the packet's destination IP
+        address."
+
+    ::= { qosIpAceEntry 2 }
+
+qosIpAceDstAddrMask OBJECT-TYPE
+    SYNTAX         InetAddress
+    STATUS         current
+    DESCRIPTION
+        "A mask for the matching of the destination IP address.
+        A zero bit in the mask means that the corresponding bit in
+        the address always matches."
+
+    ::= { qosIpAceEntry 3 }
+
+qosIpAceSrcAddr OBJECT-TYPE
+    SYNTAX         InetAddress
+    STATUS         current
+    DESCRIPTION
+        "The IP address to match against the packet's source IP
+        address."
+
+    ::= { qosIpAceEntry 4 }
+
+qosIpAceSrcAddrMask OBJECT-TYPE
+    SYNTAX         InetAddress
+    STATUS         current
+    DESCRIPTION
+        "A mask for the matching of the source IP address."
+
+    ::= { qosIpAceEntry 5 }
+
+qosIpAceDscp OBJECT-TYPE
+    SYNTAX         Integer32 (-1 | 0..63)
+    STATUS         current
+    DESCRIPTION
+        "The value that the DSCP in the packet can have and
+        match this ACE. A value of -1 indicates that a specific
+        DSCP value has not been defined and thus all DSCP values
+        are considered a match."
+
+    ::= { qosIpAceEntry 6 }
+
+qosIpAceProtocol OBJECT-TYPE
+    SYNTAX         INTEGER (0..255)
+    STATUS         current
+    DESCRIPTION
+        "The IP protocol to match against the packet's protocol.
+        A value of zero means match all."
+
+    ::= { qosIpAceEntry 7 }
+
+qosIpAceDstL4PortMin OBJECT-TYPE
+    SYNTAX         INTEGER (0..65535)
+    STATUS         current
+    DESCRIPTION
+        "The minimum value that the packet's layer 4 destination
+        port number can have and match this ACE."
+
+    ::= { qosIpAceEntry 8 }
+
+qosIpAceDstL4PortMax OBJECT-TYPE
+    SYNTAX         INTEGER (0..65535)
+    STATUS         current
+    DESCRIPTION
+        "The maximum value that the packet's layer 4 destination
+        port number can have and match this ACE. This value must be
+        equal to or greater that the value specified for this ACE in
+        qosIpAceDstL4PortMin."
+
+    ::= { qosIpAceEntry 9 }
+
+qosIpAceSrcL4PortMin OBJECT-TYPE
+    SYNTAX         INTEGER (0..65535)
+    STATUS         current
+    DESCRIPTION
+        "The minimum value that the packet's layer 4 source port
+        number can have and match this ACE."
+
+    ::= { qosIpAceEntry 10 }
+
+qosIpAceSrcL4PortMax OBJECT-TYPE
+    SYNTAX         INTEGER (0..65535)
+    STATUS         current
+    DESCRIPTION
+        "The maximum value that the packet's layer 4 source port
+        number can have and match this ACE.  This value must be equal
+        to or greater that the value specified for this ACE in
+
+        qosIpAceSrcL4PortMin."
+
+    ::= { qosIpAceEntry 11 }
+
+qosIpAcePermit OBJECT-TYPE
+    SYNTAX         TruthValue
+    STATUS         current
+    DESCRIPTION
+        "If the packet matches this ACE and the value of this
+        attribute is true, then the matching process terminates
+        and the QoS associated with this ACE (indirectly through
+        the ACL) is applied to the packet.  If the value of this
+        attribute is false, then no more ACEs in this ACL are
+        compared to this packet and matching continues with the
+        first ACE of the next ACL."
+
+    ::= { qosIpAceEntry 12 }
+
+--
+-- The IP ACL Definition Table
+--
+
+qosIpAclDefinitionTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF QosIpAclDefinitionEntry
+    PIB-ACCESS  install
+    STATUS         current
+    DESCRIPTION
+        "A class that defines a set of ACLs each being an ordered list
+        of ACEs.  Each instance of this class identifies one ACE of
+        an ACL and the precedence order of that ACE with respect to
+        other ACEs in the same ACL."
+
+    INSTALL-ERRORS {
+        priPrecedenceConflict(1) -- precedence conflict detected
+        }
+
+    ::= { qosIpQos 2 }
+
+qosIpAclDefinitionEntry OBJECT-TYPE
+    SYNTAX         QosIpAclDefinitionEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of the qosIpAclDefinition class."
+
+    PIB-INDEX { qosIpAclDefinitionId }
+
+    ::= { qosIpAclDefinitionTable 1 }
+
+QosIpAclDefinitionEntry ::= SEQUENCE {
+        qosIpAclDefinitionId       InstanceId,
+        qosIpAclDefinitionAclId    InstanceId,
+        qosIpAclDefinitionAceId    InstanceId,
+        qosIpAclDefinitionAceOrder Unsigned32
+}
+
+qosIpAclDefinitionId OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "Unique index of this policy rule instance."
+
+    ::= { qosIpAclDefinitionEntry 1 }
+
+qosIpAclDefinitionAclId OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "An ID for this ACL.  There will be one instance of
+        the class qosIpAclDefinition with this ID for each ACE in
+        the ACL per role combination."
+
+    ::= { qosIpAclDefinitionEntry 2 }
+
+qosIpAclDefinitionAceId OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "This attribute specifies the ACE in the qosIpAceTable that
+        is in the ACL specified by qosIpAclDefinitionAclId at the
+        position specified by qosIpAceOrder.
+
+        Attempting to specify an unknown class instance will result
+        in an appropriate error indication being returned to the
+        entity that is attempting to install the conflicting entry.
+        For example, a 'priUnknown(2)' error indication is returned
+        to the policy server in this situation."
+
+    ::= { qosIpAclDefinitionEntry 3 }
+
+qosIpAclDefinitionAceOrder OBJECT-TYPE
+    SYNTAX         Unsigned32
+
+    STATUS         current
+    DESCRIPTION
+        "The precedence order of this ACE.  The precedence order
+        determines the position of this ACE in the ACL.  An ACE with
+        a given precedence order is positioned in the access control
+        list before one with a higher-valued precedence order.
+
+        Precedence values within a group must be unique otherwise
+        instance installation will be prohibited and an error
+        value will be returned."
+
+    ::= { qosIpAclDefinitionEntry 4 }
+
+END

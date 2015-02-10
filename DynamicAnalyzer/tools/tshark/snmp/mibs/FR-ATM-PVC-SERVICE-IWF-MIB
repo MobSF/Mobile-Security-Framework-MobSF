@@ -1,0 +1,1102 @@
+FR-ATM-PVC-SERVICE-IWF-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+              MODULE-IDENTITY, OBJECT-TYPE,
+              NOTIFICATION-TYPE,
+              mib-2, Integer32, Counter32             FROM SNMPv2-SMI
+
+
+
+              RowStatus, TimeStamp                    FROM SNMPv2-TC
+
+              MODULE-COMPLIANCE, OBJECT-GROUP,
+              NOTIFICATION-GROUP                      FROM SNMPv2-CONF
+
+              AtmVpIdentifier, AtmVcIdentifier        FROM ATM-TC-MIB
+
+              atmVclEntry                             FROM ATM-MIB
+
+              InterfaceIndex                          FROM IF-MIB;
+
+         frAtmIwfMIB MODULE-IDENTITY
+             LAST-UPDATED "200009280000Z" -- September 28, 2000
+             ORGANIZATION "IETF Frame Relay Service MIB Working Group"
+             CONTACT-INFO
+                 "WG Charter:
+                    http://www.ietf.org/html.charters/frnetmib-charter
+                  WG-email:
+                    frnetmib@sunroof.eng.sun.com
+                  Subscribe:
+                    frnetmib-request@sunroof.eng.sun.com
+                  Email Archive:
+                    ftp://ftp.ietf.org/ietf-mail-archive/frnetmib
+
+                  Chair:      Andy Malis
+                              Vivace Networks, Inc.
+                  Email:      Andy.Malis@vivacenetworks.com
+
+                  WG editor:  Kenneth Rehbehn
+                              Megisto Systems, Inc.
+                  Email:      krehbehn@megisto.com
+
+                  Co-author:  Orly Nicklass
+                              RAD Data Communications Ltd.
+                  EMail:      orly_n@rad.co.il
+
+                  Co-author:  George Mouradian
+                              AT&T Labs
+                  EMail:      gvm@att.com"
+
+             DESCRIPTION
+                     "The MIB module for monitoring and controlling the
+                     Frame Relay/ATM PVC Service Interworking
+                     Function."
+
+             --
+             -- Revision History
+             --
+
+
+             REVISION "200009280000Z"
+             DESCRIPTION
+                  "Published as RFC 2955"
+
+         ::= { mib-2 86 }
+
+         --
+         -- Object Identifiers
+         --
+            frAtmIwfMIBObjects      OBJECT IDENTIFIER
+                                         ::= { frAtmIwfMIB 1 }
+
+            frAtmIwfTraps           OBJECT IDENTIFIER
+                                         ::= { frAtmIwfMIB 2 }
+            frAtmIwfTrapsPrefix     OBJECT IDENTIFIER
+                                         ::= { frAtmIwfTraps 0 }
+
+            frAtmIwfConformance     OBJECT IDENTIFIER
+                                         ::= { frAtmIwfMIB 3 }
+            frAtmIwfGroups          OBJECT IDENTIFIER
+                                         ::= { frAtmIwfConformance 1 }
+            frAtmIwfCompliances     OBJECT IDENTIFIER
+                                         ::= { frAtmIwfConformance 2 }
+
+         --
+         --  The FR/ATM PVC Service IWF Group
+         --
+         --      The Frame Relay/ATM PVC Service Interworking Function
+         --      Connection Table contains all connections utilizing
+         --      the interworking function.
+         --
+
+         frAtmIwfConnIndexNext OBJECT-TYPE
+              SYNTAX         Integer32 (0..2147483647)
+              MAX-ACCESS     read-only
+              STATUS         current
+              DESCRIPTION
+                     "This object contains an appropriate value to be
+                     used for frAtmIwfConnIndex  when creating entries
+                     in the frAtmIwfConnectionTable. The value 0
+                     indicates that no unassigned entries are
+                     available. To obtain the frAtmIwfConnIndexNext
+                     value for a new entry, the manager issues a
+                     management protocol retrieval operation to obtain
+                     the current value of this object.  After each
+                     retrieval, the agent should modify the value to
+                     the next unassigned index."
+              ::= { frAtmIwfMIBObjects 1 }
+
+
+         frAtmIwfConnectionTable OBJECT-TYPE
+             SYNTAX      SEQUENCE OF FrAtmIwfConnectionEntry
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                     "A table in which each row represents a Frame
+                     Relay/ATM interworking connection."
+             ::= { frAtmIwfMIBObjects 2 }
+
+         frAtmIwfConnectionEntry OBJECT-TYPE
+             SYNTAX      FrAtmIwfConnectionEntry
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                     "The FrAtmIwfConnectionEntry provides an entry for
+                     an interworking connection between a frame relay
+                     PVC and one or more ATM PVCs, or an ATM PVC and
+                     one or more frame relay PVCs.  A single frame
+                     relay PVC connected to a single ATM PVC is
+                     referred to as a `point-to-point' connection and
+                     is represented by a single row in the FR/ATM IWF
+                     Connection Table.  The case of a single frame
+                     relay PVC connected to multiple ATM PVCs (or
+                     single ATM PVC connected to multiple frame relay
+                     PVCs) is referred to as a `point-to-multipoint'
+                     connection and is represented by multiple rows in
+                     the FR/ATM IWF Connection Table.
+
+                     The object frAtmIwfConnIndex uniquely identifies
+                     each point-to-point or point-to-multipoint
+                     connection.  The manager obtains the
+                     frAtmIwfConnIndex value by reading the
+                     frAtmIwfConnIndexNext object.
+
+                     After a frAtmIwfConnIndex is assigned for the
+                     connection, the manager creates one or more rows
+                     in the Cross Connect Table; one for each cross-
+                     connection between the frame relay PVC and an ATM
+                     PVC. In the case of `point-to-multipoint'
+                     connections, all rows are indexed by the same
+                     frAtmIwfConnIndex value and MUST refer to the same
+                     frame relay PVC or ATM PVC respectively.  An entry
+                     can be created only when at least one pair of
+                     frame relay and ATM PVCs exist.
+
+                     A row can be established by one-step set-request
+                     with all required parameter values and
+                     frAtmIwfConnRowStatus set to createAndGo(4). The
+
+
+                     Agent should perform all error checking as needed.
+                     A pair of cross-connected PVCs, as identified by a
+                     particular value of the indexes, is released by
+                     setting frAtmIwfConnRowStatus to destroy(6). The
+                     Agent may release all associated resources. The
+                     manager may remove the related PVCs thereafter.
+                     Indexes are persistent across reboots of the
+                     system."
+             INDEX   { frAtmIwfConnIndex,
+                       frAtmIwfConnAtmPort,
+                       frAtmIwfConnVpi,
+                       frAtmIwfConnVci,
+                       frAtmIwfConnFrPort,
+                       frAtmIwfConnDlci
+                     }
+             ::= { frAtmIwfConnectionTable 1 }
+
+         FrAtmIwfConnectionEntry ::=
+             SEQUENCE {
+                 frAtmIwfConnIndex                      Integer32,
+                 frAtmIwfConnAtmPort                    InterfaceIndex,
+                 frAtmIwfConnVpi                        AtmVpIdentifier,
+                 frAtmIwfConnVci                        AtmVcIdentifier,
+                 frAtmIwfConnFrPort                     InterfaceIndex,
+                 frAtmIwfConnDlci                       Integer32,
+                 frAtmIwfConnRowStatus                  RowStatus,
+                 frAtmIwfConnAdminStatus                INTEGER,
+                 frAtmIwfConnAtm2FrOperStatus           INTEGER,
+                 frAtmIwfConnAtm2FrLastChange           TimeStamp,
+                 frAtmIwfConnFr2AtmOperStatus           INTEGER,
+                 frAtmIwfConnFr2AtmLastChange           TimeStamp,
+                 frAtmIwfConnectionDescriptor           Integer32,
+                 frAtmIwfConnFailedFrameTranslate       Counter32,
+                 frAtmIwfConnOverSizedFrames            Counter32,
+                 frAtmIwfConnFailedAal5PduTranslate     Counter32,
+                 frAtmIwfConnOverSizedSDUs              Counter32,
+                 frAtmIwfConnCrcErrors                  Counter32,
+                 frAtmIwfConnSarTimeOuts                Counter32
+         }
+
+         frAtmIwfConnIndex  OBJECT-TYPE
+             SYNTAX      Integer32  (1..2147483647)
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                     "A unique value for each point-to-point or point-
+                     to-multipoint connection.  The manager obtains the
+                     frAtmIwfConnIndex value by reading the
+
+
+                     frAtmIwfConnIndexNext object.  A point-to-
+                     multipoint connection will be represented in the
+                     frAtmIwfConnectionTable with multiple entries that
+                     share the same frAtmIwfConnIndex value."
+             ::= { frAtmIwfConnectionEntry 1 }
+
+         frAtmIwfConnAtmPort OBJECT-TYPE
+             SYNTAX      InterfaceIndex
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                     "The index in the ifTable that identifies the ATM
+                     port for this interworking connection."
+             ::= { frAtmIwfConnectionEntry 2 }
+
+         frAtmIwfConnVpi OBJECT-TYPE
+             SYNTAX      AtmVpIdentifier
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                     "The VPI of the ATM PVC end point for this
+                      interworking connection."
+             ::= { frAtmIwfConnectionEntry 3 }
+
+         frAtmIwfConnVci OBJECT-TYPE
+             SYNTAX      AtmVcIdentifier
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                     "The VCI of the ATM PVC end point for this
+                     interworking
+                      connection."
+             ::= { frAtmIwfConnectionEntry 4 }
+
+         frAtmIwfConnFrPort OBJECT-TYPE
+             SYNTAX      InterfaceIndex
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                     "The index in the ifTable that identifies the
+                     frame relay port for this interworking
+                     connection."
+             ::= { frAtmIwfConnectionEntry 5 }
+
+         frAtmIwfConnDlci OBJECT-TYPE
+             SYNTAX      Integer32 (16..4194303)
+             MAX-ACCESS  not-accessible
+             STATUS      current
+
+
+             DESCRIPTION
+                     "The DLCI that identifies the frame relay PVC end
+                     point for this interworking connection."
+             ::= { frAtmIwfConnectionEntry 6 }
+
+         frAtmIwfConnRowStatus OBJECT-TYPE
+             SYNTAX      RowStatus
+             MAX-ACCESS  read-create
+             STATUS      current
+             DESCRIPTION
+                     "The table row may be created with
+                     'createAndWait(5)' or 'createAndGo(4)'.
+                     To activate a connection entry, a valid connection
+                     descriptor MUST be established in the
+                     frAtmIwfConnectionDescriptor object.
+
+                     This object is set to 'destroy(6)' to delete the
+                     table row.  Before the table row is destroyed, the
+                     OperStatus/AdminStatus of the corresponding
+                     endpoints MUST be 'down(2)'.  The deactivation of
+                     the ATM endpoint MAY occur as a side-effect of
+                     deleting the FR/ATM IWF cross-connection table
+                     row.  Otherwise, 'destroy(6)' operation MUST fail
+                     (error code 'inconsistentValue')."
+             ::= { frAtmIwfConnectionEntry 7 }
+
+         frAtmIwfConnAdminStatus OBJECT-TYPE
+             SYNTAX      INTEGER { up(1), down(2) }
+             MAX-ACCESS  read-create
+             STATUS      current
+             DESCRIPTION
+                     "The desired operational state for this FR/ATM
+                     interworked connection.
+
+                     up(1)       = Activate the connection. Before the
+                                   activation can be completed, the
+                                   OperStatus/AdminStatus of the
+                                   corresponding endpoints MUST be
+                                   'up(1)'.  The activation of the
+                                   corresponding endpoints MAY occur as
+                                   a side-effect of activating the
+                                   FR/ATM IWF cross-connection.
+
+                     down(2)     = Deactivate the connection. Before
+                                   the deactivation can be completed,
+                                   the atmVclAdminStatus of the
+                                   corresponding ATM endpoint MUST be
+                                   'down(2)'.  The deactivation of the
+
+
+                                   ATM endpoint MAY occur as a
+                                   side-effect of deactivating the
+                                   FR/ATM IWF cross-connection."
+             ::= { frAtmIwfConnectionEntry 8 }
+
+         frAtmIwfConnAtm2FrOperStatus     OBJECT-TYPE
+             SYNTAX      INTEGER { up(1), down(2) }
+             MAX-ACCESS  read-only
+             STATUS      current
+             DESCRIPTION
+                     "The current operational state of this
+                     interworking connection in the ATM to frame
+                     relay direction."
+             ::= { frAtmIwfConnectionEntry 9 }
+
+         frAtmIwfConnAtm2FrLastChange  OBJECT-TYPE
+             SYNTAX      TimeStamp
+             MAX-ACCESS  read-only
+             STATUS      current
+             DESCRIPTION
+                     "The value of sysUpTime at the time this
+                     interworking connection entered its current
+                     operational state in the ATM to FR direction.  If
+                     the current state was entered prior to the last
+                     re-initialization of the local network management
+                     subsystem, then this object contains a zero
+                     value."
+             ::= { frAtmIwfConnectionEntry 10 }
+
+         frAtmIwfConnFr2AtmOperStatus     OBJECT-TYPE
+             SYNTAX      INTEGER { up(1), down(2) }
+             MAX-ACCESS  read-only
+             STATUS      current
+             DESCRIPTION
+                     "The current operational state of this
+                     interworking connection in the frame relay
+                     to ATM direction."
+             ::= { frAtmIwfConnectionEntry 11 }
+
+         frAtmIwfConnFr2AtmLastChange  OBJECT-TYPE
+             SYNTAX      TimeStamp
+             MAX-ACCESS  read-only
+             STATUS      current
+             DESCRIPTION
+                     "The value of sysUpTime at the time this
+                     interworking connection entered its current
+                     operational state in the FR to ATM direction.  If
+                     the current state was entered prior to the last
+
+
+                     re-initialization of the local network management
+                     subsystem, then this object contains a zero
+                     value."
+             ::= { frAtmIwfConnectionEntry 12 }
+
+         frAtmIwfConnectionDescriptor  OBJECT-TYPE
+             SYNTAX      Integer32
+             MAX-ACCESS  read-create
+             STATUS      current
+             DESCRIPTION
+                     "The value represents a pointer to the relevant
+                     descriptor in the IWF descriptor table.  An
+                     attempt to set this value to an inactive or non-
+                     existent row in the Connection Descriptor Table
+                     MUST fail (error code 'inconsistentValue')."
+             ::= { frAtmIwfConnectionEntry 13 }
+
+         frAtmIwfConnFailedFrameTranslate OBJECT-TYPE
+             SYNTAX      Counter32
+             UNITS       "Frames"
+             MAX-ACCESS  read-only
+             STATUS      current
+             DESCRIPTION
+                     "This object counts the number of frames discarded
+                     by the IWF because, while operating in Translation
+                     Mode, the IWF is unable to decode the incoming
+                     frame payload header according to the mapping
+                     rules. (i.e., payload header not recognized by the
+                     IWF).
+
+                     Frame relay frames are received in the frame relay
+                     to ATM direction of the PVC.
+
+                     When operating in Transparent Mode, the IWF MUST
+                     return noSuchInstance."
+                       REFERENCE
+                                "FRF.8 [17], Section 5.3.1"
+                       ::= { frAtmIwfConnectionEntry 14 }
+
+         frAtmIwfConnOverSizedFrames OBJECT-TYPE
+             SYNTAX      Counter32
+             UNITS       "Frames"
+             MAX-ACCESS  read-only
+             STATUS      current
+             DESCRIPTION
+                     "Count of frames discarded by the IWF because the
+                     frame is too large to be processed by the AAL5
+                     segmentation procedure.  Specifically, the frame
+
+
+                     does not conform to the size specified in the
+                     atmVccAal5CpcsTransmitSduSize object associated
+                     with the atmVclEntry at the ATM endpoint.
+                     Frame relay frames are received in the frame relay
+                     to ATM direction of the PVC."
+                       REFERENCE
+                                "ATM MIB [21], atmVclTable
+                                 FRF.8 [17], 5.3.1.4"
+                       ::= { frAtmIwfConnectionEntry 15 }
+
+         frAtmIwfConnFailedAal5PduTranslate OBJECT-TYPE
+             SYNTAX      Counter32
+             UNITS       "PDUs"
+             MAX-ACCESS  read-only
+             STATUS      current
+             DESCRIPTION
+                     "This attribute counts the number of AAL5 PDUs
+                     discarded by the IWF because, while operating in
+                     Translation Mode, the IWF is unable to decode the
+                     incoming AAL5 PDU payload header according to the
+                     mapping rules. (i.e., payload header not
+                     recognized by the IWF).
+
+                     AAL5 PDUs are received in the ATM to frame relay
+                     direction of the PVC.
+
+                     When operating in Transparent Mode, the IWF MUST
+                     return noSuchInstance."
+                       REFERENCE
+                                "FRF.8 [17], Section 5.3.1"
+                       ::= { frAtmIwfConnectionEntry 16 }
+
+         frAtmIwfConnOverSizedSDUs OBJECT-TYPE
+             SYNTAX      Counter32
+             UNITS       "SDUs"
+             MAX-ACCESS  read-only
+             STATUS      current
+             DESCRIPTION
+                     "Count of AAL5 SDUs discarded by the IWF because
+                     the SDU is too large to be forwarded on the frame
+                     relay segment of the connection.  Specifically,
+                     the frame does not conform to the size specified
+                     in the frLportFragSize object of the FRS MIB [19].
+
+                     AAL5 PDUs are received in the ATM to frame relay
+                     direction of the PVC."
+                       REFERENCE
+                                "FRS MIB [19], frLportTable
+
+
+                                 FRF.8 [17], 5.3.1.4"
+                       ::= { frAtmIwfConnectionEntry 17 }
+
+         frAtmIwfConnCrcErrors OBJECT-TYPE
+             SYNTAX      Counter32
+             UNITS       "PDUs"
+             MAX-ACCESS  read-only
+             STATUS      current
+             DESCRIPTION
+                     "The number of AAL5 CPCS PDUs received with CRC-32
+                     errors on this AAL5 VCC at the IWF.
+
+                     AAL5 PDUs are received in the ATM to frame relay
+                     direction of the PVC."
+                       REFERENCE
+                                "ATM MIB [21], atmVclTable"
+                       ::= { frAtmIwfConnectionEntry 18 }
+
+         frAtmIwfConnSarTimeOuts OBJECT-TYPE
+             SYNTAX      Counter32
+             UNITS       "PDUs"
+             MAX-ACCESS  read-only
+             STATUS      current
+             DESCRIPTION
+                     "The number of partially re-assembled AAL5 CPCS
+                     PDUs which were discarded on this AAL5 VCC at the
+                     IWF because they were not fully re-assembled
+                     within the required time period.  If the re-
+                     assembly timer is not supported, then this object
+                     contains a zero value.
+
+                     AAL5 PDUs are received in the ATM to frame relay
+                     direction of the PVC."
+                       REFERENCE
+                                "ATM MIB [21], atmVclTable"
+                       ::= { frAtmIwfConnectionEntry 19 }
+
+         --
+         -- The FR/ATM PVC Service IWF Connection Descriptor Group
+         --
+         --     The Frame Relay/ATM PVC Service Interworking Function
+         --     Connection Descriptor table.  A descriptor provides the
+         --     attributes for a type of interworked connection.
+         --
+
+         frAtmIwfConnectionDescriptorIndexNext OBJECT-TYPE
+              SYNTAX      Integer32 (0..2147483647)
+              MAX-ACCESS  read-only
+
+
+              STATUS      current
+              DESCRIPTION
+                     "This object contains an appropriate value to be
+                     used for frAtmIwfConnectionDescriptorIndex  when
+                     creating entries in the
+                     frAtmIwfConnectionDescriptorTable. The value 0
+                     indicates that no unassigned entries are
+                     available. To obtain the
+                     frAtmIwfConnectionDescriptorIndexNext value for a
+                     new entry, the manager issues a management
+                     protocol retrieval operation to obtain the current
+                     value of this object.  After each retrieval, the
+                     agent should modify the value to the next
+                     unassigned index."
+              ::= { frAtmIwfMIBObjects 3 }
+
+         frAtmIwfConnectionDescriptorTable OBJECT-TYPE
+             SYNTAX      SEQUENCE OF FrAtmIwfConnectionDescriptorEntry
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                     "A table in which each row represents a descriptor
+                     for one type of Frame Relay/ATM interworking
+                     connection.  A descriptor may be assigned to zero
+                     or more FR/ATM PVC service IWF connections."
+             ::= { frAtmIwfMIBObjects 4 }
+
+         frAtmIwfConnectionDescriptorEntry OBJECT-TYPE
+             SYNTAX      FrAtmIwfConnectionDescriptorEntry
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                     "An entry for a descriptor in an interworking
+                     connection between a frame relay PVC and an ATM
+                     PVC."
+             INDEX   { frAtmIwfConnectionDescriptorIndex  }
+             ::= { frAtmIwfConnectionDescriptorTable 1 }
+
+         FrAtmIwfConnectionDescriptorEntry ::=
+             SEQUENCE {
+                 frAtmIwfConnectionDescriptorIndex      Integer32,
+                 frAtmIwfConnDescriptorRowStatus        RowStatus,
+                 frAtmIwfConnDeToClpMappingMode         INTEGER,
+                 frAtmIwfConnClpToDeMappingMode         INTEGER,
+                 frAtmIwfConnCongestionMappingMode      INTEGER,
+                 frAtmIwfConnEncapsulationMappingMode   INTEGER,
+                 frAtmIwfConnEncapsulationMappings      BITS,
+                 frAtmIwfConnFragAndReassEnabled        INTEGER,
+
+
+                 frAtmIwfConnArpTranslationEnabled      INTEGER
+         }
+
+         frAtmIwfConnectionDescriptorIndex OBJECT-TYPE
+             SYNTAX      Integer32 (1..2147483647)
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                     "A unique value to identify a descriptor in the
+                     table "
+             ::= { frAtmIwfConnectionDescriptorEntry 1 }
+
+         frAtmIwfConnDescriptorRowStatus OBJECT-TYPE
+             SYNTAX      RowStatus
+             MAX-ACCESS  read-create
+             STATUS      current
+             DESCRIPTION
+                     "The status of this table row.  This object is
+                     used to create or delete an entry in the
+                     descriptor table.
+
+                     Creation of the row requires a row index (see
+                     frAtmIwfConnectionDescriptorIndexNext).  If not
+                     explicitly set or in existence, all other columns
+                     of the row will be created and initialized to the
+                     default value.  During creation, this object MAY
+                     be set to 'createAndGo(4)' or 'createAndWait(5)'.
+                     The object MUST contain the value 'active(1)'
+                     before any connection table entry references the
+                     row.
+
+                     To destroy a row in this table, this object is set
+                     to the 'destroy(6)' action.  Row destruction MUST
+                     fail (error code 'inconsistentValue') if any
+                     connection references the row."
+             ::= { frAtmIwfConnectionDescriptorEntry 2 }
+
+         frAtmIwfConnDeToClpMappingMode OBJECT-TYPE
+             SYNTAX      INTEGER {
+                            mode1(1),
+                            mode2Const0(2),
+                            mode2Const1(3)
+                         }
+             MAX-ACCESS  read-create
+             STATUS      current
+             DESCRIPTION
+                     "This object describes which mode of translation
+                     is in use for loss priority mapping in the frame
+
+
+                     relay to ATM direction.
+
+                     mode1(1)        = the DE field in the Q.922 core
+                                       frame shall be mapped to the ATM
+                                       CLP field of every cell
+                                       generated by the segmentation
+                                       process of the AAL5 PDU
+                                       containing the information of
+                                       that frame.
+
+                     mode2Contst0(2) = the ATM CLP field of every cell
+                                       generated by the segmentation
+                                       process of the AAL5 PDU
+                                       containing the information of
+                                       that frame shall be set to
+                                       constant 0.
+
+                     mode2Contst1(3) = the ATM CLP field of every cell
+                                       generated by the segmentation
+                                       process of the AAL5 PDU
+                                       containing the information of
+                                       that frame shall be set to
+                                       constant 1."
+             REFERENCE
+                      "FRF.8 [17], Section 4.2.1"
+             DEFVAL { mode1 }
+             ::= { frAtmIwfConnectionDescriptorEntry 3 }
+
+         frAtmIwfConnClpToDeMappingMode OBJECT-TYPE
+             SYNTAX      INTEGER {
+                           mode1(1),
+                           mode2Const0(2),
+                           mode2Const1(3)
+                         }
+             MAX-ACCESS  read-create
+             STATUS      current
+             DESCRIPTION
+                     "This object describes which mode of translation
+                     is in use for loss priority mapping in the ATM to
+                     frame relay direction.
+
+                     mode1(1)       = if one or more cells in a frame
+                                      has its CLP field set, the DE
+                                      field of the Q.922 core frame
+                                      should be set.
+
+                     mode2Const0(2) = the DE field of the Q.922 core
+                                      frame should be set to the
+
+
+                                      constant 0.
+
+                     mode2Const1(3) = the DE field of the Q.922 core
+                                      frame should be set to the
+                                      constant 1."
+             REFERENCE
+                      "FRF.8 [17], Section 4.2.2"
+             DEFVAL { mode1 }
+             ::= { frAtmIwfConnectionDescriptorEntry 4 }
+
+         frAtmIwfConnCongestionMappingMode OBJECT-TYPE
+             SYNTAX      INTEGER {
+                            mode1(1),
+                            mode2(2)
+                         }
+             MAX-ACCESS  read-create
+             STATUS      current
+             DESCRIPTION
+                     "This object describes which mode of translation
+                     is in use for forward congestion indication
+                     mapping in the frame relay to ATM direction.
+
+                     mode1(1) = The FECN field in the Q.922 core frame
+                                shall be mapped to the ATM EFCI field
+                                of every cell generated by the
+                                segmentation process of the AAL5 PDU
+                                containing the information of that
+                                frame.
+
+                     mode2(2) = The FECN field in the Q.922 core frame
+                                shall not be mapped to the ATM EFCI
+                                field of cells generated by the
+                                segmentation process of the AAL5 PDU
+                                containing the information of that
+                                frame. The EFCI field is always set to
+                                'congestion not experienced'.
+
+                     In both of the modes above, if there is congestion
+                     in the forward direction in the ATM layer within
+                     the IWF, then the IWF can set the EFCI field to
+                     'congestion experienced'."
+             REFERENCE
+                         "FRF.8 [17], Section 4.3.1.1"
+             DEFVAL      { mode1 }
+             ::= { frAtmIwfConnectionDescriptorEntry 5 }
+
+         frAtmIwfConnEncapsulationMappingMode OBJECT-TYPE
+             SYNTAX      INTEGER {
+
+
+                            transparentMode(1),
+                            translationMode(2),
+                            translationModeAll(3)
+                         }
+             MAX-ACCESS  read-create
+             STATUS      current
+             DESCRIPTION
+                     "This object indicates whether the mapping of
+                     upper layer protocol encapsulation is enabled on
+                     this interworking connection.
+
+                     transparentMode(1) = Forward the encapsulations
+                                          unaltered.
+
+                     translationMode(2) = Perform mapping between the
+                                          two encapsulations due to the
+                                          incompatibilities of the two
+                                          methods. Mapping is provided
+                                          for a subset of the potential
+                                          encapsulations as itemized in
+                                          frAtmIwfConnEncapsulationMapp
+                                          ings.
+
+                     translationModeAll(3) = Perform mapping between
+                                          the two encapsulations due to
+                                          the incompatibilities of the
+                                          two methods. All
+                                          encapsulations are
+                                          translated."
+             REFERENCE
+                         "FRF.8 [17], Section 5.3"
+             DEFVAL      { transparentMode }
+             ::= { frAtmIwfConnectionDescriptorEntry 6 }
+
+         frAtmIwfConnEncapsulationMappings OBJECT-TYPE
+             SYNTAX      BITS {
+                    none (0),
+                    bridgedPdus(1),
+                    bridged802dot6(2),
+                    bPdus(3),
+                    routedIp(4),
+                    routedOsi(5),
+                    otherRouted(6),
+                    x25Iso8202(7),
+                    q933q2931(8) }
+             MAX-ACCESS  read-create
+             STATUS      current
+             DESCRIPTION
+
+
+                     "If upper layer protocol encapsulation mapping is
+                     enabled on this interworking connection, then this
+                     attribute enumerates which of the encapsulation
+                     mappings are supported.
+
+                     none(0)           = Transparent mode operation
+                     bridgedPdus(1)    = PID: 0x00-01,-07,-02 or -08
+                     bridged802dot6(2) = PID: 0x00-0B
+                     bPdus(3)          = PID: 0x00-0E or -0F
+                     routedIp(4)       = NLPID: OxCC
+                     routedOsi(5)      = NLPID: Ox81, 0x82 or 0x83
+                     otherRouted(6)    = Other routed protocols
+                     x25Iso8202(7)     = X25
+                     q933q2931(8)      = Q.933 and Q.2931"
+             REFERENCE
+                         "FRF.8 [17], Section 5.3.1"
+             DEFVAL      { { none } }
+             ::= { frAtmIwfConnectionDescriptorEntry 7 }
+
+         frAtmIwfConnFragAndReassEnabled OBJECT-TYPE
+             SYNTAX      INTEGER { enabled(1),  disabled(2)}
+             MAX-ACCESS  read-create
+             STATUS      current
+             DESCRIPTION
+                     "The attribute indicates whether fragmentation and
+                     reassembly is enabled for this connection."
+             REFERENCE
+                         "FRF.8 [17], Section 5.3.1.4"
+             DEFVAL      { disabled }
+             ::= { frAtmIwfConnectionDescriptorEntry 8 }
+
+         frAtmIwfConnArpTranslationEnabled OBJECT-TYPE
+             SYNTAX      INTEGER { enabled(1),  disabled(2)}
+             MAX-ACCESS  read-create
+             STATUS      current
+             DESCRIPTION
+                     "The attribute indicates whether ARP translation
+                     is enabled for this connection."
+             REFERENCE
+                         "FRF.8 [17], Section 5.4"
+             DEFVAL      { disabled }
+             ::= { frAtmIwfConnectionDescriptorEntry 9 }
+
+         --
+         -- Augmentation of ATM MIB VCL Endpoint Table (atmVclTable)
+         --
+         frAtmIwfVclTable OBJECT-TYPE
+             SYNTAX      SEQUENCE OF FrAtmIwfVclEntry
+
+
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                     "The FR/ATM IWF VCL Table augments the ATM MIB VCL
+                     Endpoint table."
+             ::= { frAtmIwfMIBObjects 5 }
+
+         frAtmIwfVclEntry OBJECT-TYPE
+             SYNTAX      FrAtmIwfVclEntry
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                     "Entries in this table are created only by the
+                     agent. One entry exists for each ATM VCL managed
+                     by the agent."
+             AUGMENTS    { atmVclEntry }
+             ::= { frAtmIwfVclTable 1 }
+
+         FrAtmIwfVclEntry ::= SEQUENCE {
+             frAtmIwfVclCrossConnectIdentifier    Integer32
+         }
+
+         frAtmIwfVclCrossConnectIdentifier OBJECT-TYPE
+             SYNTAX      Integer32  (1..2147483647)
+             MAX-ACCESS  read-only
+             STATUS      current
+             DESCRIPTION
+                     "This object contains the index value of the
+                     FR/ATM cross-connect table entry used to link the
+                     ATM VCL with a frame relay PVC.
+
+                     Each row of the atmVclTable that is not cross-
+                     connected with a frame relay PVC MUST return the
+                     value zero when this object is read.
+
+                     In the case of (frame relay) point to (ATM)
+                     multipoint, multiple ATM VCLs will have the same
+                     value of this object, and all their cross-
+                     connections are identified by entries that are
+                     indexed by the same value of
+                     frAtmIwfVclCrossConnectIdentifier in the
+                     frAtmIwfConnectionTable of this MIB module.
+
+                     The value of this object is initialized by the
+                     agent after the associated entries in the
+                     frAtmIwfConnectionTable have been created."
+             ::= { frAtmIwfVclEntry 1 }
+
+
+
+         --
+         -- Frame Relay/ATM PVC Service Interworking NOTIFICATION
+         --
+
+         frAtmIwfConnStatusChange NOTIFICATION-TYPE
+             OBJECTS {   frAtmIwfConnAdminStatus,
+                         frAtmIwfConnAtm2FrOperStatus,
+                         frAtmIwfConnFr2AtmOperStatus
+                      }
+             STATUS      current
+             DESCRIPTION
+                     "An indication that the status of this
+                     interworking connection has changed."
+             ::= { frAtmIwfTrapsPrefix 1 }
+
+         --
+         -- Conformance Information
+         --
+
+         --
+         -- Compliance Statement For Equipment
+         --
+
+         frAtmIwfEquipmentCompliance MODULE-COMPLIANCE
+             STATUS      current
+             DESCRIPTION
+                     "The compliance statement for equipment that
+                     implements the FR/ATM Interworking MIB."
+
+             MODULE -- this module
+                 MANDATORY-GROUPS { frAtmIwfBasicGroup,
+                                    frAtmIwfConnectionDescriptorGroup,
+                                    frAtmIwfAtmVclTableAugmentGroup,
+                                    frAtmIwfNotificationsGroup }
+
+                 OBJECT      frAtmIwfConnDeToClpMappingMode
+                 SYNTAX      INTEGER { mode1(1) }
+                 DESCRIPTION
+                     "Only support for Mode 1 is REQUIRED."
+
+                 OBJECT      frAtmIwfConnClpToDeMappingMode
+                 SYNTAX      INTEGER { mode1(1) }
+                 DESCRIPTION
+                     "Only support for Mode 1 is REQUIRED."
+
+                 OBJECT      frAtmIwfConnCongestionMappingMode
+                 SYNTAX      INTEGER { mode1(1) }
+                 DESCRIPTION
+
+
+                     "Only support for Mode 1 is REQUIRED."
+
+                 OBJECT      frAtmIwfConnEncapsulationMappingMode
+                 SYNTAX      INTEGER { transparentMode(1) }
+                 DESCRIPTION
+                     "Support for Translation Mode is OPTIONAL."
+
+                 OBJECT      frAtmIwfConnEncapsulationMappings
+                 SYNTAX      BITS { none(0) }
+                 DESCRIPTION
+                     "The IWF may provide one, some or none of the
+                     encapsulation translations defined in section
+                     5.3.1 of FRF.8 [17]."
+
+                 OBJECT      frAtmIwfConnFragAndReassEnabled
+                 SYNTAX      INTEGER { disabled(2) }
+                 DESCRIPTION
+                     "Only support for Mode 1 is REQUIRED."
+
+                 OBJECT      frAtmIwfConnArpTranslationEnabled
+                 SYNTAX      INTEGER { disabled(2) }
+                 DESCRIPTION
+                     "Support for ARP Translation is NOT REQUIRED."
+
+             ::= { frAtmIwfCompliances 1 }
+
+         --
+         -- Compliance Statement For Service (CNM Interface)
+         --
+
+         frAtmIwfServiceCompliance MODULE-COMPLIANCE
+             STATUS  current
+             DESCRIPTION
+                     "The compliance statement for a CNM interface that
+                     implements the FR/ATM Interworking MIB."
+
+             MODULE  -- this module
+                 MANDATORY-GROUPS { frAtmIwfBasicGroup,
+                                    frAtmIwfConnectionDescriptorGroup,
+                                    frAtmIwfAtmVclTableAugmentGroup,
+                                    frAtmIwfNotificationsGroup }
+
+                 --
+                 -- Exceptions for each object type implemented for a
+                 -- CNM view of the FR/ATM Interworking MIB
+                 --
+                 OBJECT      frAtmIwfConnAdminStatus
+                 MIN-ACCESS  read-only
+
+
+                 DESCRIPTION
+                     "Write access is not REQUIRED."
+
+                 OBJECT      frAtmIwfConnDeToClpMappingMode
+                 SYNTAX      INTEGER { mode1(1) }
+                 MIN-ACCESS  read-only
+                 DESCRIPTION
+                     "Support for Mode 1 is REQUIRED.  Other modes are
+                     OPTIONAL.  Write access is NOT REQUIRED."
+
+                 OBJECT      frAtmIwfConnClpToDeMappingMode
+                 SYNTAX      INTEGER { mode1(1) }
+                 MIN-ACCESS  read-only
+                 DESCRIPTION
+                     "Support for Mode 1 is REQUIRED.  Other modes are
+                     OPTIONAL.  Write access is NOT REQUIRED."
+
+                 OBJECT      frAtmIwfConnCongestionMappingMode
+                 SYNTAX      INTEGER { mode1(1) }
+                 MIN-ACCESS  read-only
+                 DESCRIPTION
+                     "Support for Mode 1 is REQUIRED.  Other modes are
+                     OPTIONAL.  Write access is NOT REQUIRED."
+
+                 OBJECT      frAtmIwfConnEncapsulationMappingMode
+                 SYNTAX      INTEGER { transparentMode(1) }
+                 MIN-ACCESS  read-only
+                 DESCRIPTION
+                     "Support for Transparent Mode is REQUIRED.
+                     Translation Mode is OPTIONAL.  Write access is not
+                     required."
+
+                 OBJECT      frAtmIwfConnEncapsulationMappings
+                 SYNTAX      BITS { none(0) }
+                 MIN-ACCESS  read-only
+                 DESCRIPTION
+                     "The IWF may provide one, some or none of the
+                     encapsulation translations defined in section
+                     5.3.1 of FRF.8 [17]. Write access is not
+                     required."
+
+                 OBJECT      frAtmIwfConnFragAndReassEnabled
+                 SYNTAX      INTEGER { disabled(2) }
+                 MIN-ACCESS  read-only
+                 DESCRIPTION
+                     "Support for Fragmentation and Reassembly is NOT
+                     REQUIRED.  Write access is not required."
+
+
+
+                 OBJECT      frAtmIwfConnArpTranslationEnabled
+                 SYNTAX      INTEGER { disabled(2) }
+                 MIN-ACCESS  read-only
+                 DESCRIPTION
+                     "Support for ARP Translation is not required.
+                     Write access is not required."
+
+                 OBJECT      frAtmIwfConnRowStatus
+                 MIN-ACCESS  read-only
+                 DESCRIPTION
+                     "Write access is not required."
+
+             ::= { frAtmIwfCompliances 2 }
+
+         --
+         -- Units of Conformance
+         --
+
+         --
+         -- Basic FR/ATM IWF PVC Connection Group
+         --
+         frAtmIwfBasicGroup    OBJECT-GROUP
+             OBJECTS { frAtmIwfConnIndexNext,
+                       frAtmIwfConnAdminStatus,
+                       frAtmIwfConnAtm2FrOperStatus,
+                       frAtmIwfConnAtm2FrLastChange,
+                       frAtmIwfConnFr2AtmOperStatus,
+                       frAtmIwfConnFr2AtmLastChange,
+                       frAtmIwfConnectionDescriptor,
+                       frAtmIwfConnFailedFrameTranslate,
+                       frAtmIwfConnOverSizedFrames,
+                       frAtmIwfConnFailedAal5PduTranslate,
+                       frAtmIwfConnOverSizedSDUs,
+                       frAtmIwfConnCrcErrors,
+                       frAtmIwfConnSarTimeOuts,
+                       frAtmIwfConnRowStatus }
+             STATUS  current
+             DESCRIPTION
+                     "The collection of basic objects for configuration
+                     and control of FR/ATM interworking connections."
+             ::= { frAtmIwfGroups 1 }
+
+         --
+         -- FR/ATM IWF PVC Connection Descriptor Group
+         --
+
+         frAtmIwfConnectionDescriptorGroup    OBJECT-GROUP
+             OBJECTS {
+
+
+                 frAtmIwfConnectionDescriptorIndexNext,
+                 frAtmIwfConnDeToClpMappingMode,
+                 frAtmIwfConnClpToDeMappingMode,
+                 frAtmIwfConnCongestionMappingMode,
+                 frAtmIwfConnEncapsulationMappingMode,
+                 frAtmIwfConnEncapsulationMappings,
+                 frAtmIwfConnFragAndReassEnabled,
+                 frAtmIwfConnArpTranslationEnabled,
+                 frAtmIwfConnDescriptorRowStatus
+                 }
+             STATUS  current
+             DESCRIPTION
+                     "The collection of basic objects for specification
+                     of FR/ATM interworking connection descriptors."
+             ::= { frAtmIwfGroups 2 }
+
+         --
+         -- ATM MIB VCL Endpoint Table Augmentation Group
+         --
+
+         frAtmIwfAtmVclTableAugmentGroup    OBJECT-GROUP
+             OBJECTS {
+                 frAtmIwfVclCrossConnectIdentifier
+                 }
+             STATUS  current
+             DESCRIPTION
+                     "The ATM MIB VCL Endpoint Table AUGMENT object
+                     contained in the FR/ATM PVC Service Interworking
+                     MIB."
+             ::= { frAtmIwfGroups 3 }
+
+         --
+         -- Notification Group
+         --
+
+         frAtmIwfNotificationsGroup NOTIFICATION-GROUP
+             NOTIFICATIONS { frAtmIwfConnStatusChange }
+             STATUS  current
+             DESCRIPTION
+                     "The notification for FR/ATM interworking status
+                     change."
+             ::= { frAtmIwfGroups 4 }
+         END

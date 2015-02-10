@@ -1,0 +1,144 @@
+IANA-PWE3-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, mib-2
+       FROM SNMPv2-SMI -- [RFC2578]
+
+    TEXTUAL-CONVENTION
+       FROM SNMPv2-TC; -- [RFC2579]
+
+ianaPwe3MIB  MODULE-IDENTITY
+    LAST-UPDATED "200906110000Z"  -- 11 June 2009 00:00:00 GMT
+    ORGANIZATION "IANA"
+    CONTACT-INFO
+         "Internet Assigned Numbers Authority
+         Internet Corporation for Assigned Names and Numbers
+         4676 Admiralty Way, Suite 330
+         Marina del Rey, CA 90292-6601
+
+         Phone: +1 310 823 9358
+         EMail: iana@iana.org"
+    DESCRIPTION
+        "This MIB module defines the IANAPwTypeTC and
+        IANAPwPsnTypeTC textual conventions for use in PWE3
+        MIB modules.
+
+        Any additions or changes to the contents of this MIB
+        module require either publication of an RFC, Designated
+        Expert Review as defined in RFC 5226, Guidelines for
+        Writing an IANA Considerations Section in RFCs, and should
+        be based on the procedures defined in [RFC4446].  The
+        Designated Expert will be selected by the IESG Area
+        Director(s) of the internet Area.
+
+        Copyright (c) 2009 IETF Trust and the persons identified as
+        authors of the code.  All rights reserved.
+
+        Redistribution and use in source and binary forms, with or
+        without modification, are permitted provided that the
+
+
+
+        following conditions are met:
+
+        - Redistributions of source code must retain the above
+          copyright notice, this list of conditions and the
+          following disclaimer.
+
+        - Redistributions in binary form must reproduce the above
+          copyright notice, this list of conditions and the
+          following disclaimer in the documentation and/or other
+          materials provided with the distribution.
+
+        - Neither the name of Internet Society, IETF or IETF Trust,
+          nor the names of specific contributors, may be used to
+          endorse or promote products derived from this software
+          without specific prior written permission.
+
+        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+        CONTRIBUTORS 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+        INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+        MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+        DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+        CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+        INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+        (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+        GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+        BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+        LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+        (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+        OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+        POSSIBILITY OF SUCH DAMAGE. "
+
+    REVISION     "200906110000Z"  -- 11 June 2009 00:00:00 GMT
+    DESCRIPTION  "Original version, published as part of RFC 5601."
+    ::= { mib-2 174 }
+
+IANAPwTypeTC ::= TEXTUAL-CONVENTION
+   STATUS     current
+   DESCRIPTION
+      "Indicates the PW type (i.e., the carried service). "
+ SYNTAX   INTEGER {
+    other(0),
+    frameRelayDlciMartiniMode(1),
+    atmAal5SduVcc(2),
+    atmTransparent(3),
+    ethernetTagged(4),
+    ethernet(5),
+    hdlc(6),
+    ppp(7),
+
+
+
+    cem(8),  -- Historic type
+    atmCellNto1Vcc(9),
+    atmCellNto1Vpc(10),
+    ipLayer2Transport(11),
+    atmCell1to1Vcc(12),
+    atmCell1to1Vpc(13),
+    atmAal5PduVcc(14),
+    frameRelayPortMode(15),
+    cep(16),
+    e1Satop(17),
+    t1Satop(18),
+    e3Satop(19),
+    t3Satop(20),
+    basicCesPsn(21),
+    basicTdmIp(22),
+    tdmCasCesPsn(23),
+    tdmCasTdmIp(24),
+    frDlci(25),
+    wildcard (32767)
+     }
+
+IANAPwPsnTypeTC ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION
+      "Identifies the PSN type that the PW will use over the
+       network."
+   SYNTAX   INTEGER {
+      mpls        (1),
+      l2tp        (2),
+      udpOverIp   (3),
+      mplsOverIp  (4),
+      mplsOverGre (5),
+      other       (6)
+      }
+
+IANAPwCapabilities ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION
+      "This TC describes a collection of capabilities related to
+       a specific PW.
+       Values may be added in the future based on new capabilities
+       introduced in IETF documents.
+      "
+  SYNTAX   BITS {
+    pwStatusIndication (0), -- Applicable only if maintenance
+                            -- protocol is in use.
+    pwVCCV             (1)
+  }
+
+
+
+END

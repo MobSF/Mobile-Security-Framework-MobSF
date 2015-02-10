@@ -1,0 +1,530 @@
+ETHER-CHIPSET-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-IDENTITY, mib-2
+            FROM SNMPv2-SMI
+        dot3
+            FROM EtherLike-MIB;
+
+    etherChipsetMIB MODULE-IDENTITY
+        LAST-UPDATED "9908240400Z"  -- August 24, 199
+        ORGANIZATION "IETF 802.3 Hub MIB Working Group"
+        CONTACT-INFO
+            "WG E-mail: hubmib@hprnd.rose.hp.com
+          To subscribe: hubmib-request@hprnd.rose.hp.com
+
+                 Chair: Dan Romascanu
+                Postal: Lucent Technologies
+                        Atidum Technology Park, Bldg. 3
+                        Tel Aviv 61131
+                        Israel
+                   Tel: +972 3 645 8414
+                E-mail: dromasca@lucent.com
+
+               Editor: John Flick
+               Postal: Hewlett-Packard Company
+                       8000 Foothills Blvd. M/S 5556
+                       Roseville, CA 95747-5556
+                       USA
+                  Tel: +1 916 785 4018
+                  Fax: +1 916 785 3583
+               E-mail: johnf@rose.hp.com"
+
+        DESCRIPTION "This MIB module contains registered values for
+                    use by the dot3StatsEtherChipSet object in
+                    the EtherLike-MIB.  This object is used to
+                    identify the MAC hardware used to communicate
+                    on an interface.
+
+                    Note that the dot3StatsEtherChipSet object
+                    has been deprecated.  The primary purpose of
+                    this module is to capture historic assignments
+                    made by the various IETF working groups that
+                    have been responsible for maintaining the
+                    EtherLike-MIB.  Implementations which support
+                    the dot3StatsEtherChipSet object for backwards
+                    compatability may continue to use these values.
+                    For those chipsets not represented in this
+                    module, registration is required in other
+                    documentation, e.g., assignment within that
+                    part of the registration tree delegated to
+                    individual enterprises (see RFC 1155 and RFC
+                    1902)."
+
+        REVISION    "9908240400Z"  -- August 24, 1999
+        DESCRIPTION "Initial version of this module created by
+                    splitting the chipset registration information
+                    out from the EtherLike-MIB.
+                    Version published as RFC 2666."
+        ::= { mib-2 70 }
+
+    dot3ChipSets          OBJECT IDENTIFIER ::= { dot3 8 }
+
+    dot3ChipSetAMD        OBJECT IDENTIFIER ::= { dot3ChipSets 1 }
+
+    dot3ChipSetAMD7990 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Advanced
+                    Micro Devices Am7990 Local Area Network
+                    Controller for Ethernet (LANCE)."
+        ::= { dot3ChipSetAMD 1 }
+
+    dot3ChipSetAMD79900 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Advanced
+                    Micro Devices Am79900 chip."
+        ::= { dot3ChipSetAMD 2 }
+
+    dot3ChipSetAMD79C940 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Advanced
+                    Micro Devices Am79C940 Media Access Controller
+                    for Ethernet (MACE)."
+        ::= { dot3ChipSetAMD 3 }
+
+    dot3ChipSetAMD79C90 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Advanced
+                    Micro Devices Am79C90 CMOS Local Area Network
+                    Controller for Ethernet (C-LANCE)."
+        ::= { dot3ChipSetAMD 4 }
+
+    dot3ChipSetAMD79C960 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Advanced
+                    Micro Devices Am79C960 PCnet-ISA Single Chip
+                    Ethernet Controller for ISA."
+        ::= { dot3ChipSetAMD 5 }
+
+    dot3ChipSetAMD79C961 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Advanced
+                    Micro Devices Am79C961 PCnet-ISA+ Single Chip
+                    Plug & Play Full-Duplex Ethernet Controller
+                    for ISA."
+        ::= { dot3ChipSetAMD 6 }
+
+    dot3ChipSetAMD79C961A OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Advanced
+                    Micro Devices Am79C961A PCnet-ISA II Single Chip
+                    Plug & Play Full-Duplex Ethernet Controller
+                    for ISA."
+        ::= { dot3ChipSetAMD 7 }
+
+    dot3ChipSetAMD79C965 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Advanced
+                    Micro Devices Am79C965 PCnet-32 Single Chip
+                    Ethernet Controller for PCI."
+        ::= { dot3ChipSetAMD 8 }
+
+    dot3ChipSetAMD79C970 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Advanced
+                    Micro Devices Am79C970 PCnet PCI Single Chip
+                    Ethernet Controller for PCI Local Bus."
+        ::= { dot3ChipSetAMD 9 }
+
+    dot3ChipSetAMD79C970A OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Advanced
+                    Micro Devices AM79C970A PCnet PCI II Single Chip
+                    Full-Duplex Ethernet Controller for PCI Local
+                    Bus."
+        ::= { dot3ChipSetAMD 10 }
+
+    dot3ChipSetAMD79C971 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Advanced
+                    Micro Devices Am79C971 PCnet-FAST Single Chip
+                    Full-Duplex 10/100 Mbps Ethernet Controller for
+                    PCI Local Bus."
+        ::= { dot3ChipSetAMD 11 }
+
+    dot3ChipSetAMD79C972 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Advanced
+                    Micro Devices Am79C972 PCnet-FAST+ Enhanced
+                    10/100 Mbps PCI Ethernet Controller with OnNow
+                    Support."
+        ::= { dot3ChipSetAMD 12 }
+
+    dot3ChipSetIntel      OBJECT IDENTIFIER ::= { dot3ChipSets 2 }
+
+    dot3ChipSetIntel82586 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Intel
+                    82586 IEEE 802.3 Ethernet LAN Coprocessor."
+        ::= { dot3ChipSetIntel 1 }
+
+    dot3ChipSetIntel82596 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Intel
+                    82596 High-Performance 32-Bit Local Area Network
+                    Coprocessor."
+        ::= { dot3ChipSetIntel 2 }
+
+    dot3ChipSetIntel82595 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Intel
+                    82595 High Integration Ethernet Controller."
+        ::= { dot3ChipSetIntel 3 }
+
+    dot3ChipSetIntel82557 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Intel
+                    82557 Fast Ethernet PCI Bus Lan Controller."
+        ::= { dot3ChipSetIntel 4 }
+
+    dot3ChipSetIntel82558 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Intel
+                    82558 Fast Ethernet PCI Bus LAN Controller with
+                    Integrated PHY."
+        ::= { dot3ChipSetIntel 5 }
+
+    dot3ChipSetSeeq       OBJECT IDENTIFIER ::= { dot3ChipSets 3 }
+
+    dot3ChipSetSeeq8003 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the SEEQ
+                    8003 chip set."
+        ::= { dot3ChipSetSeeq 1 }
+
+    dot3ChipSetSeeq80C03 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the SEEQ
+                    80C03 Full-Duplex CMOS Ethernet Data Link
+                    Controller (MAC)."
+        ::= { dot3ChipSetSeeq 2 }
+
+    dot3ChipSetSeeq84C30 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the SEEQ
+                    4-Port 84C30 Full-Duplex CMOS Ethernet 10
+                    MBit/Sec Data Link Controller (MAC)."
+        ::= { dot3ChipSetSeeq 3 }
+
+    dot3ChipSetSeeq8431 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the SEEQ
+                    4-Port 8431 Full-Duplex CMOS Ethernet 10
+                    MBit/Sec Data Link Controller (MAC)."
+        ::= { dot3ChipSetSeeq 4 }
+
+    dot3ChipSetSeeq80C300 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the SEEQ
+                    80C300 Full-Duplex CMOS Ethernet 10/100
+                    Mbit/Sec Data Link Controller (MAC)."
+        ::= { dot3ChipSetSeeq 5 }
+
+    dot3ChipSetSeeq84C300 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the SEEQ
+                    4-Port 84C300 Fast Ethernet Controller (MAC)."
+        ::= { dot3ChipSetSeeq 6 }
+
+    dot3ChipSetSeeq84301 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the SEEQ
+                    4-Port 84301 Fast Ethernet Controller (MAC)."
+        ::= { dot3ChipSetSeeq 7 }
+
+    dot3ChipSetSeeq84302 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the SEEQ
+                    4-Port 84302 Fast Ethernet Controller (MAC)."
+        ::= { dot3ChipSetSeeq 8 }
+
+    dot3ChipSetSeeq8100 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the SEEQ
+                    8100 Gigabit Ethernet Controller (MAC & PCS)."
+        ::= { dot3ChipSetSeeq 9 }
+
+    dot3ChipSetNational   OBJECT IDENTIFIER ::= { dot3ChipSets 4 }
+
+    dot3ChipSetNational8390 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the National
+                    Semiconductor DP8390 Network Interface
+                    Controller."
+        ::= { dot3ChipSetNational 1 }
+
+    dot3ChipSetNationalSonic OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the National
+                    Semiconductor DP83932 Systems-Oriented Network
+                    Interface Controller (SONIC)."
+        ::= { dot3ChipSetNational 2 }
+
+    dot3ChipSetNational83901 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the National
+                    Semiconductor DP83901 Serial Network Interface
+                    Controller (SNIC)."
+        ::= { dot3ChipSetNational 3 }
+
+    dot3ChipSetNational83902 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the National
+                    Semiconductor DP83902 Serial Network Interface
+                    Controller for Twisted Pair (ST-NIC)."
+        ::= { dot3ChipSetNational 4 }
+
+    dot3ChipSetNational83905 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the National
+                    Semiconductor DP83905 AT Local Area Network
+                    Twisted-Pair Interface (AT/LANTIC)."
+        ::= { dot3ChipSetNational 5 }
+
+    dot3ChipSetNational83907 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the National
+                    Semiconductor DP83907 AT Twisted-Pair Enhanced
+                    Coaxial Network Interface Controller
+                    (AT/LANTIC II)."
+        ::= { dot3ChipSetNational 6 }
+
+    dot3ChipSetNational83916 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the National
+                    Semiconductor DP83916 Systems-Oriented Network
+                    Interface Controller (SONIC-16)."
+        ::= { dot3ChipSetNational 7 }
+
+    dot3ChipSetNational83934 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the National
+                    Semiconductor DP83934 Systems-Oriented Network
+                    Interface Controller with Twisted Pair Interface
+                    (SONIC-T)."
+        ::= { dot3ChipSetNational 8 }
+
+    dot3ChipSetNational83936 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the National
+                    Semiconductor DP83936AVUL Full-Duplex Systems-
+                    Oriented Network Interface Controller with
+                    Twisted Pair Interface (SONIC-T)."
+        ::= { dot3ChipSetNational 9 }
+
+    dot3ChipSetFujitsu    OBJECT IDENTIFIER ::= { dot3ChipSets 5 }
+
+    dot3ChipSetFujitsu86950 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Fujitsu
+                    86950 chip."
+        ::= { dot3ChipSetFujitsu 1 }
+
+    dot3ChipSetFujitsu86960 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Fujitsu
+                    MB86960 Network Interface Controller with
+                    Encoder/Decoder (NICE)."
+        ::= { dot3ChipSetFujitsu 2 }
+
+    dot3ChipSetFujitsu86964 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Fujitsu
+                    MB86964 Ethernet Controller with 10BASE-T
+                    Tranceiver."
+        ::= { dot3ChipSetFujitsu 3 }
+
+    dot3ChipSetFujitsu86965A OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Fujitsu
+                    MB86965A EtherCoupler Single-Chip Ethernet
+                    Controller."
+        ::= { dot3ChipSetFujitsu 4 }
+
+    dot3ChipSetFujitsu86965B OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Fujitsu
+                    MB86965B EtherCoupler Single-Chip Ethernet
+                    Controller (supports full-duplex)."
+        ::= { dot3ChipSetFujitsu 5 }
+
+    dot3ChipSetDigital    OBJECT IDENTIFIER ::= { dot3ChipSets 6 }
+
+    dot3ChipSetDigitalDC21040 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Digital
+                    Semiconductor DC21040 chip."
+        ::= { dot3ChipSetDigital 1 }
+
+    dot3ChipSetDigital21041 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Digital
+                    Semiconductor 21041 PCI Ethernet LAN
+                    Controller."
+        ::= { dot3ChipSetDigital 2 }
+
+    dot3ChipSetDigital21140 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Digital
+                    Semiconductor 21140 PCI Fast Ethernet LAN
+                    Controller."
+        ::= { dot3ChipSetDigital 3 }
+
+    dot3ChipSetDigital21143 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Digital
+                    Semiconductor 21143 PCI/CardBus 10/100-Mb/s
+                    Ethernet LAN Controller."
+        ::= { dot3ChipSetDigital 4 }
+
+    dot3ChipSetDigital21340 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Digital
+                    Semiconductor 21340 10/100-MB/s managed buffered
+                    port switch."
+        ::= { dot3ChipSetDigital 5 }
+
+    dot3ChipSetDigital21440 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Digital
+                    Semiconductor 21440 Multiport 10/100Mbps
+                    Ethernet Controller."
+        ::= { dot3ChipSetDigital 6 }
+
+    dot3ChipSetDigital21540 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Digital
+                    Semiconductor 21540 PCI/CardBus Ethernet LAN
+                    Controller with Modem Interface."
+        ::= { dot3ChipSetDigital 7 }
+
+    dot3ChipSetTI         OBJECT IDENTIFIER ::= { dot3ChipSets 7 }
+
+    dot3ChipSetTIE100 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Texas
+                    Instruments TNETE100 ThunderLAN PCI Fast
+                    Ethernet Controller."
+        ::= { dot3ChipSetTI 1 }
+
+    dot3ChipSetTIE110 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Texas
+                    Instruments TNETE110 ThunderLAN PCI 10BASE-T
+                    Ethernet Adapter."
+        ::= { dot3ChipSetTI 2 }
+
+    dot3ChipSetTIX3100 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Texas
+                    Instruments TNETX3100 Desktop ThunderSWITCH
+                    8/2."
+        ::= { dot3ChipSetTI 3 }
+
+    dot3ChipSetTIX3150 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Texas
+                    Instruments TNETX3150 ThunderSWITCH 12/3."
+        ::= { dot3ChipSetTI 4 }
+
+    dot3ChipSetTIX3270 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Texas
+                    Instruments TNETX3270 ThunderSWITCH 24/3."
+        ::= { dot3ChipSetTI 5 }
+
+    dot3ChipSetToshiba    OBJECT IDENTIFIER ::= { dot3ChipSets 8 }
+
+    dot3ChipSetToshibaTC35815F OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Toshiba
+                    TC35815F PCI-Based 100/10Mbps Ethernet
+                    Controller."
+        ::= { dot3ChipSetToshiba 1 }
+
+    dot3ChipSetLucent     OBJECT IDENTIFIER ::= { dot3ChipSets 9 }
+
+    dot3ChipSetLucentATT1MX10 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Lucent
+                    Technologies ATT1MX10 (Spinnaker) Quad MAC and
+                    Tranceiver for Ethernet Frame Switching."
+           ::= { dot3ChipSetLucent 1 }
+
+    dot3ChipSetLucentLUC3M08 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Lucent
+                    Technologies LUC3M08 Eight Ethernet MACs for
+                    10/100 Mbits/s Frame Switching."
+        ::= { dot3ChipSetLucent 2 }
+
+    dot3ChipSetGalileo    OBJECT IDENTIFIER ::= { dot3ChipSets 10 }
+
+    dot3ChipSetGalileoGT48001 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Galileo
+                    Technology GT-48001A Switched Ethernet
+                    Controller."
+        ::= { dot3ChipSetGalileo 1 }
+
+    dot3ChipSetGalileoGT48002 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Galileo
+                    Technology GT-48002A Switched Fast Ethernet
+                    Controller."
+        ::= { dot3ChipSetGalileo 2 }
+
+    dot3ChipSetGalileoGT48004 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Galileo
+                    Technology GT-48004A Four Port Fast Ethernet
+                    Switch for Multiport 10/100BASE-X Systems."
+        ::= { dot3ChipSetGalileo 3 }
+
+    dot3ChipSetGalileoGT48207 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Galileo
+                    Technology GT-48207 Low-Cost 10 Port Switched
+                    Ethernet Controller for 10+10/100BASE-X."
+        ::= { dot3ChipSetGalileo 4 }
+
+    dot3ChipSetGalileoGT48208 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Galileo
+                    Technology GT-48208 Advanced 10 Port Switched
+                    Ethernet Controller for 10+10/100BASE-X."
+        ::= { dot3ChipSetGalileo 5 }
+
+    dot3ChipSetGalileoGT48212 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Galileo
+                    Technology GT-48212 Advanced 14 Port Switched
+                    Ethernet Controller for 10+10/100BASE-X."
+        ::= { dot3ChipSetGalileo 6 }
+
+    dot3ChipSetJato       OBJECT IDENTIFIER ::= { dot3ChipSets 11 }
+
+    dot3ChipSetJatoJT1001 OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the Jato
+                    Technologies JT1001 GigEMAC Server
+                    10/100/1000Mbps Ethernet Controller with PCI
+                    interface."
+        ::= { dot3ChipSetJato 1 }
+
+    dot3ChipSetXaQti      OBJECT IDENTIFIER ::= { dot3ChipSets 12 }
+
+    dot3ChipSetXaQtiXQ11800FP OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the XaQTI
+                    XQ11800FP XMAC II Gigabit Ethernet Media Access
+                    Controller."
+        ::= { dot3ChipSetXaQti 1 }
+
+    dot3ChipSetXaQtiXQ18110FP OBJECT-IDENTITY
+        STATUS      current
+        DESCRIPTION "The authoritative identifier for the XaQTI
+                    XQ18110FP GigaPower Protocol Accelerator."
+        ::= { dot3ChipSetXaQti 2 }
+
+END

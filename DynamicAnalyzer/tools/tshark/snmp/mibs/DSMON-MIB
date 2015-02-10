@@ -1,0 +1,4715 @@
+DSMON-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, Integer32,
+        Counter32, Gauge32
+                FROM SNMPv2-SMI
+        MODULE-COMPLIANCE, OBJECT-GROUP
+                FROM SNMPv2-CONF
+        RowStatus, TimeStamp, TEXTUAL-CONVENTION, TruthValue
+                FROM SNMPv2-TC
+        OwnerString, rmon
+                FROM RMON-MIB
+        protocolDirLocalIndex, LastCreateTime,
+        DataSource, ZeroBasedCounter32, TimeFilter
+                FROM RMON2-MIB
+        CounterBasedGauge64, ZeroBasedCounter64
+                FROM HCNUM-TC
+        SnmpAdminString
+                FROM SNMP-FRAMEWORK-MIB
+        Dscp
+                FROM DIFFSERV-DSCP-TC;
+
+dsmonMIB MODULE-IDENTITY
+    LAST-UPDATED    "200205310000Z"
+    ORGANIZATION    "IETF RMONMIB Working Group"
+    CONTACT-INFO
+            "        Andy Bierman
+                     Cisco Systems, Inc.
+                     RMONMIB WG Chair and DSMON MIB Editor
+
+             Postal: 170 West Tasman Drive
+                     San Jose, CA USA 95134
+                Tel: +1 408 527-3711
+             E-mail: abierman@cisco.com
+
+             Send comments to <rmonmib@ietf.org>
+             Mailing list subscription info:
+                 http://www.ietf.org/mailman/listinfo/rmonmib "
+    DESCRIPTION
+            "This module defines Remote Monitoring MIB extensions for
+            Differentiated Services enabled networks.
+
+             RMON DIFFSERV DSCP statistics
+              * Per Counter Aggregation Group
+              * Per Protocol Per Counter Aggregation Group
+              * Per Counter Aggregation Group Per Host
+
+
+
+              * Per Counter Aggregation Group Per Host-Pair
+
+            In order to maintain the RMON 'look-and-feel' and semantic
+            consistency, some of the text from the RMON-2 and HC-RMON
+            MIBs by Steve Waldbusser has been adapted for use in this
+            MIB."
+    REVISION        "200205310000Z"
+    DESCRIPTION
+            "Initial version of the DSMON MIB module.  This version
+            published as RFC 3287."
+    ::= { rmon 26 }
+
+
+dsmonObjects       OBJECT IDENTIFIER ::= { dsmonMIB 1 }
+dsmonNotifications OBJECT IDENTIFIER ::= { dsmonMIB 2 }
+dsmonConformance   OBJECT IDENTIFIER ::= { dsmonMIB 3 }
+
+dsmonAggObjects    OBJECT IDENTIFIER ::= { dsmonObjects 1 }
+dsmonStatsObjects  OBJECT IDENTIFIER ::= { dsmonObjects 2 }
+dsmonPdistObjects  OBJECT IDENTIFIER ::= { dsmonObjects 3 }
+dsmonHostObjects   OBJECT IDENTIFIER ::= { dsmonObjects 4 }
+dsmonCapsObjects   OBJECT IDENTIFIER ::= { dsmonObjects 5 }
+dsmonMatrixObjects OBJECT IDENTIFIER ::= { dsmonObjects 6 }
+
+--
+-- Textual Convention to define a
+-- DSMON Counter Aggregation Group Index
+--
+
+DsmonCounterAggGroupIndex ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+            "This TC describes a data type which identifies a DSMON
+            counter aggregation group, which is an arbitrary grouping of
+            conceptual counters, for monitoring purposes only.  The
+            range for this data type begins with zero (instead of
+            one), to allow for a direct mapping between counter
+            indexing schemes that start at zero (e.g. DSCP values in
+            packets) and counter aggregation group values."
+    SYNTAX Integer32 (0..2147483647)
+
+--
+-- Textual Convention to define a
+-- DSMON Counter Aggregation Profile Index
+--
+
+DsmonCounterAggProfileIndex ::= TEXTUAL-CONVENTION
+    STATUS current
+
+
+
+    DESCRIPTION
+            "This TC describes a data type which identifies a DSMON
+            counter aggregation profile, which is a set of counter
+            aggregation group assignments for each of the 64 DSCP
+            values, for a particular statistical collection."
+    SYNTAX Integer32 (1..2147483647)
+
+
+-- ***********************************************************
+-- *                                                         *
+-- *           D S M O N    C A P A B I L I T I E S          *
+-- *                                                         *
+-- ***********************************************************
+
+dsmonCapabilities OBJECT-TYPE
+    SYNTAX      BITS  {
+                       dsmonCounterAggControl(0),
+                       dsmonStats(1),
+                       dsmonStatsOvfl(2),
+                       dsmonStatsHC(3),
+                       dsmonPdist(4),
+                       dsmonPdistOvfl(5),
+                       dsmonPdistHC(6),
+                       dsmonHost(7),
+                       dsmonHostOvfl(8),
+                       dsmonHostHC(9),
+                       dsmonCaps(10),
+                       dsmonMatrix(11),
+                       dsmonMatrixOvfl(12),
+                       dsmonMatrixHC(13)
+                      }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This object provides an indication of the DSMON groups
+            supported by the agent.  If a bit is set, then the agent
+            implements all of the objects in the DSMON object group,
+            where bit 'n' represents the MIB group identified by the
+            OBJECT IDENTIFIER value { dsmonGroups n+1 }."
+    ::= { dsmonCapsObjects 1 }
+
+
+-- ***********************************************************
+-- *                                                         *
+-- *   A G G R E G A T I O N   C O N T R O L   G R O U P S   *
+-- *                                                         *
+-- ***********************************************************
+
+
+
+
+dsmonMaxAggGroups OBJECT-TYPE
+    SYNTAX      Integer32 (2..64)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The maximum number of counter aggregation groups that this
+            agent can support.  The agent will allow this number of
+            distinct groups to be configured in the
+            dsmonAggProfileTable, numbered from '0' to
+            'dsmonMaxAggGroups - 1', for each counter aggregation
+            profile entry supported by the agent.
+
+            The agent MUST NOT lower this value during system operation,
+            and SHOULD set this object to an appropriate value during
+            system initialization."
+    ::= { dsmonAggObjects 1 }
+
+dsmonAggControlLocked OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Controls the setup of counter aggregation groups for this
+            agent.
+
+            If this object contains the value 'true', then write access
+            to the objects in the dsmonAggControlTable (except the
+            dsmonAggControlOwner object), dsmonAggProfileTable, and
+            dsmonAggGroupTable is not permitted, and data collection is
+            possible.  This object only controls write access to these
+            MIB objects.  The DSMON data collection control tables
+            (e.g., dsmonHostCtlTable) can be configured at any time,
+            regardless of the value of this object.
+
+            If this object contains the value 'false', write access to
+            the objects in the dsmonAggControlTable,
+            dsmonAggProfileTable, and dsmonAggGroupTable is permitted,
+            and data collection is not possible.  In addition, all
+            objects in all DSMON data tables (e.g., dsmonStatsTable)
+            shall be deleted.
+
+            An agent is not required to process SNMP Set Requests for
+            this object in conjunction with other objects from this MIB.
+            This is intended to simplify the processing of Set Requests
+            for tables such as the dsmonAggProfileTable, by eliminating
+            the possibility that a single Set PDU will contain multiple
+            varbinds which are in conflict, such as a PDU which both
+            modifies the dsmonAggProfileTable and locks the
+
+
+
+            dsmonAggProfileTable at the same time.
+
+            Note that the agent is not required to validate the entire
+            counter aggregation configuration when an attempt is made to
+            transition an instance of this object from 'true' to
+            'false'.  That validation is done if and when a DSMON data
+            collection is activated.
+
+            An agent is required to reactivate any suspended data
+            collections when this object transitions to 'true', Each
+            active data control entry (e.g., dsmonStatsControlEntry),
+            will be validated with respect to the new counter
+            aggregation configuration.  If the counter aggregation
+            profile referenced in the data collection is valid, then
+            that collection will be restarted.  Otherwise, the RowStatus
+            object (e.g., dsmonStatsControlStatus) will be set to
+            'notReady' for that collection control entry."
+    ::= { dsmonAggObjects 2 }
+
+dsmonAggControlChanges OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This object counts the number of times the value of the
+            dsmonAggControlLocked object has changed.  A management
+            station can use this object to detect if counters in the
+            DSMON data tables (e.g., dsmonStatsEntry) have been deleted
+            and recreated between polls.
+
+            This object shall be incremented by one each time the
+            dsmonAggControlLocked object changes from 'false' to 'true',
+            or from 'true' to 'false'."
+    ::= { dsmonAggObjects 3 }
+
+dsmonAggControlLastChangeTime OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This object identifies the value of sysUpTime at the moment
+            the dsmonAggControlLocked object was last modified.  A
+            management station can use this object to detect if counters
+            in the DSMON data tables (e.g., dsmonStatsEntry) have been
+            deleted and recreated between polls.
+
+            This object shall be updated with the current value of
+            sysUpTime, if the dsmonAggControlLocked object changes from
+
+
+
+            'false' to 'true', or from 'true' to 'false'.
+
+            Upon system initialization, this object shall contain the
+            value zero."
+    ::= { dsmonAggObjects 4 }
+
+
+--
+-- Counter Aggregation Control Table
+--
+
+dsmonAggControlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonAggControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "This table provides an overall description and control
+            point for all dsmonAggProfileEntries with the same
+            dsmonAggControlIndex value.
+
+            A management application SHOULD create a counter aggregation
+            profile by first creating and activating an entry in this
+            table.  This will cause the agent to create a set of 64
+            dsmonAggProfileEntries on behalf of this control entry.  An
+            application can then set the individual counter aggregation
+            group assignments for each of the 64 DSCP values,
+
+            This table MUST NOT be modified if the dsmonAggControlLocked
+            object is equal to 'true'.
+
+            Note that an agent MAY choose to limit the actual number of
+            entries which may be created in this table, and
+            (independently) the number of counter aggregation profiles
+            which may be applied to a particular data source.  In this
+            case, the agent SHOULD return an error-status of
+            'resourceUnavailable(13)', as per section 4.2.5 of the
+            'Protocol Operations for SNMPv2' specification [RFC1905].
+
+            The agent SHOULD support non-volatile configuration of this
+            table, and upon system initialization, the table SHOULD be
+            initialized with the saved values.  Otherwise, each
+            potential counter aggregation group description string
+            SHOULD contain the empty string."
+    ::= { dsmonAggObjects 5 }
+
+dsmonAggControlEntry OBJECT-TYPE
+    SYNTAX      DsmonAggControlEntry
+    MAX-ACCESS  not-accessible
+
+
+
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the dsmonAggControlTable."
+    INDEX { dsmonAggControlIndex }
+    ::= { dsmonAggControlTable 1 }
+
+DsmonAggControlEntry ::= SEQUENCE {
+    dsmonAggControlIndex         DsmonCounterAggProfileIndex,
+    dsmonAggControlDescr         SnmpAdminString,
+    dsmonAggControlOwner         OwnerString,
+    dsmonAggControlStatus        RowStatus
+}
+
+dsmonAggControlIndex OBJECT-TYPE
+    SYNTAX      DsmonCounterAggProfileIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An arbitrary integer index value used to identify the
+            counter aggregation profile specified by this control
+            entry."
+    ::= { dsmonAggControlEntry 1 }
+
+dsmonAggControlDescr OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..64))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "An administratively assigned description of the counter
+            aggregation profile identified by this entry.
+
+            Upon first creation of an instance of this object, the agent
+            SHOULD set this object to the empty string.  If the agent
+            supports non-volatile storage, then this object SHOULD be
+            re-initialized with its stored value after a system reboot.
+
+            This object MUST NOT be modified if the associated
+            dsmonAggControlStatus object is equal to 'active', or the
+            dsmonAggControlLocked object is equal to 'true'."
+    ::= { dsmonAggControlEntry 2 }
+
+dsmonAggControlOwner OBJECT-TYPE
+    SYNTAX     OwnerString
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The entity that configured this entry and is therefore
+            using the resources assigned to it."
+
+
+
+    ::= { dsmonAggControlEntry 3 }
+
+dsmonAggControlStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The status of this row.
+
+            An entry MUST NOT exist in the active state unless all
+            objects in the entry have an appropriate value.
+
+            Upon setting this object to active(1), the agent will create
+            a complete set of 64 associated entries in the
+            dsmonAggProfileTable.
+
+            If this object is not equal to active(1), all associated
+            entries in the dsmonAggProfileTable shall be deleted.
+
+            This object MUST NOT be modified if the
+            dsmonAggControlLocked object is equal to 'true'."
+    ::= { dsmonAggControlEntry 4 }
+
+--
+-- Counter Aggregation Profile Table
+--
+
+dsmonAggProfileTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonAggProfileEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Controls the setup of counter aggregation profiles for this
+            agent.  For each such profile, every DSCP value MUST be
+            configured into exactly one counter aggregation group.
+
+            This table MUST NOT be modified if the dsmonAggControlLocked
+            object is equal to 'true'.
+
+            The agent will create a set of 64 entries in this table
+            (with the same dsmonAggControlIndex value) when the
+            associated dsmonAggControlEntry is activated.
+
+            If the agent supports non-volatile configuration of this
+            table, then upon system initialization, this table SHOULD be
+            initialized with the saved values."
+    ::= { dsmonAggObjects 6 }
+
+
+
+
+dsmonAggProfileEntry OBJECT-TYPE
+    SYNTAX      DsmonAggProfileEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the dsmonAggProfileTable.  The
+            dsmonAggControlIndex value in the index identifies the
+            dsmonAggControlEntry associated with each entry in this
+            table."
+    INDEX { dsmonAggControlIndex, dsmonAggProfileDSCP }
+    ::= { dsmonAggProfileTable 1 }
+
+DsmonAggProfileEntry ::= SEQUENCE {
+    dsmonAggProfileDSCP          Dscp,
+    dsmonAggGroupIndex           DsmonCounterAggGroupIndex
+}
+
+
+dsmonAggProfileDSCP OBJECT-TYPE
+    SYNTAX      Dscp
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The specific DSCP value for the DSCP counter which is
+            configured in a counter aggregation group by this entry."
+    ::= { dsmonAggProfileEntry 1 }
+
+dsmonAggGroupIndex OBJECT-TYPE
+    SYNTAX      DsmonCounterAggGroupIndex
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The counter aggregation group which contains this DSCP
+            value.  Upon creation of a new sub-tree (set of 64 entries
+            with the same dsmonAggControlIndex value) in this table, the
+            agent SHOULD initialize all related instances of this object
+            to the value zero.
+
+            This object MUST NOT be modified if the
+            dsmonAggControlLocked object is equal to 'true'."
+    DEFVAL { 0 }
+    ::= { dsmonAggProfileEntry 2 }
+
+
+--
+-- Counter Aggregation Group Table
+--
+
+
+
+
+dsmonAggGroupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonAggGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "This table provides a description of each counter
+            aggregation group configured on this system.  Note that the
+            semantics of a particular counter aggregation group are only
+            relevant within the scope of a particular counter
+            aggregation profile.
+
+            This table MUST NOT be modified if the dsmonAggControlLocked
+            object is equal to 'true'.
+
+            Note that an agent MAY choose to limit the actual number of
+            entries which may be created in this table, and
+            (independently) the number of counter aggregation profiles
+            which may be applied to a particular data source.  In this
+            case, the agent SHOULD return an error-status of
+            'resourceUnavailable(13)', as per section 4.2.5 of the
+            'Protocol Operations for SNMPv2' specification [RFC1905].
+
+            If the agent supports non-volatile configuration of this
+            table, then upon system initialization, this table SHOULD be
+            initialized with the saved values.  Otherwise, each
+            potential counter aggregation group description string
+            SHOULD contain the empty string.
+
+            An agent SHOULD allow entries to be created or modified in
+            this table, even if the specified dsmonAggControlIndex value
+            does not identify a valid dsmonAggControlEntry or a complete
+            set of valid dsmonAggProfileEntries, to reduce row creation
+            order dependencies."
+    ::= { dsmonAggObjects 7 }
+
+dsmonAggGroupEntry OBJECT-TYPE
+    SYNTAX      DsmonAggGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the dsmonAggGroupTable.  The
+            dsmonAggGroupIndex value in the INDEX identifies the counter
+            aggregation group associated with each entry.
+
+            The dsmonAggControlIndex in the index identifies the counter
+            aggregation profile associated with each entry, identified
+            by the dsmonAggControlEntry and dsmonAggProfileEntries with
+            the same index value.
+
+
+
+            The agent SHOULD support non-volatile configuration of this
+            table, and upon system initialization, the table SHOULD be
+            initialized with the saved values.
+
+            The dsmonAggGroupIndex in the index identifies the counter
+            aggregation group associated with each entry.  This object
+            SHOULD be indexed from zero to 'N', where 'N' is less than
+            the value of the dsmonMaxAggGroups for this agent."
+
+    INDEX { dsmonAggControlIndex, dsmonAggGroupIndex }
+    ::= { dsmonAggGroupTable 1 }
+DsmonAggGroupEntry ::= SEQUENCE {
+    dsmonAggGroupDescr         SnmpAdminString,
+    dsmonAggGroupStatus        RowStatus
+}
+
+dsmonAggGroupDescr OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..64))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "An administratively assigned description of the counter
+            aggregation group identified by this entry.
+
+            Upon first creation of an instance of this object, the agent
+            SHOULD set this object to the empty string.
+
+            This object MUST NOT be modified if the associated
+            dsmonAggGroupStatus object is equal to 'active', or the
+            dsmonAggControlLocked object is equal to 'true'."
+    ::= { dsmonAggGroupEntry 1 }
+
+dsmonAggGroupStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The status of this row.
+
+            An entry MUST NOT exist in the active state unless all
+            objects in the entry have an appropriate value.
+
+            This object MUST NOT be modified if the
+            dsmonAggControlLocked object is equal to 'true'."
+    ::= { dsmonAggGroupEntry 2 }
+
+
+
+
+
+
+-- *************************************************************
+-- *                                                           *
+-- *     P E R - D A T A S O U R C E   C O L L E C T I O N S   *
+-- *                                                           *
+-- *************************************************************
+
+--
+-- Per-DataSource Statistics Control Table
+--
+
+dsmonStatsControlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonStatsControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Controls the setup of per data source per counter
+            aggregation group distribution statistics.
+
+            Note that an agent MAY choose to limit the actual number of
+            entries which may be created in this table.  In this case,
+            the agent SHOULD return an error-status of
+            'resourceUnavailable(13)', as per section 4.2.5 of the
+            'Protocol Operations for SNMPv2' specification [RFC1905]."
+    ::= { dsmonStatsObjects 1 }
+
+dsmonStatsControlEntry OBJECT-TYPE
+    SYNTAX      DsmonStatsControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the dsmonStatsControlTable.
+
+            Entries are created and deleted from this table by
+            management action only, using the dsmonStatsControlStatus
+            RowStatus object.
+
+            The agent SHOULD support non-volatile configuration of this
+            table, and upon system initialization, the table SHOULD be
+            initialized with the saved values.
+
+            Activation of a control row in this table will cause an
+            associated dsmonStatsTable to be created and maintained by
+            the agent."
+    INDEX { dsmonStatsControlIndex }
+    ::= { dsmonStatsControlTable 1 }
+
+DsmonStatsControlEntry ::= SEQUENCE {
+    dsmonStatsControlIndex                Integer32,
+
+
+
+    dsmonStatsControlDataSource           DataSource,
+    dsmonStatsControlAggProfile           DsmonCounterAggProfileIndex,
+    dsmonStatsControlDroppedFrames        Counter32,
+    dsmonStatsControlCreateTime           LastCreateTime,
+    dsmonStatsControlOwner                OwnerString,
+    dsmonStatsControlStatus               RowStatus
+}
+
+dsmonStatsControlIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An arbitrary and unique index for this
+            dsmonStatsControlEntry."
+    ::= { dsmonStatsControlEntry 1 }
+
+dsmonStatsControlDataSource OBJECT-TYPE
+    SYNTAX      DataSource
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The data source of this per protocol per counter
+            aggregation group distribution.
+
+            Note that only packets that contain a network protocol
+            encapsulation which contains a DS field [RFC2474] will be
+            counted in this table.
+
+            This object MUST NOT be modified if the associated
+            dsmonStatsControlStatus object is equal to active(1)."
+    ::= { dsmonStatsControlEntry 2 }
+
+dsmonStatsControlAggProfile OBJECT-TYPE
+    SYNTAX      DsmonCounterAggProfileIndex
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The dsmonAggControlIndex value identifying the counter
+            aggregation profile which should be used on behalf of this
+            dsmonStatsControlEntry.
+
+            The associated dsmonAggControlEntry and
+            dsmonAggProfileEntries, identified by the same
+            dsmonAggControlIndex index value, MUST be active in order
+            for this entry to remain active.  It is possible for the
+            counter aggregation configuration to change from a valid to
+            invalid state for this dsmonStats collection.  In this case,
+
+
+
+            the associated dsmonStatsControlStatus object will be
+            changed to the 'notReady' state, and data collection will
+            not occur on behalf of this control entry.
+
+            Note that an agent MAY choose to limit the actual number of
+            counter aggregation profiles which may be applied to a
+            particular data source.
+
+            This object MUST NOT be modified if the associated
+            dsmonStatsControlStatus object is equal to active(1)."
+    ::= { dsmonStatsControlEntry 3 }
+
+dsmonStatsControlDroppedFrames OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "frames"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of frames which were received by the probe
+            and therefore not accounted for in the *StatsDropEvents, but
+            for which the probe chose not to count for this entry for
+            whatever reason.  Most often, this event occurs when the
+            probe is out of some resources and decides to shed load from
+            this collection.
+
+            This count does not include packets that were not counted
+            because they had MAC-layer errors.
+
+            Note that, unlike the dropEvents counter, this number is the
+            exact number of frames dropped."
+    ::= { dsmonStatsControlEntry 4 }
+
+dsmonStatsControlCreateTime OBJECT-TYPE
+    SYNTAX     LastCreateTime
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime when this control entry was last
+            activated.  This can be used by the management station to
+            detect if the table has been deleted and recreated between
+            polls."
+    ::= { dsmonStatsControlEntry 5 }
+
+dsmonStatsControlOwner OBJECT-TYPE
+    SYNTAX      OwnerString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+
+
+
+            "The entity that configured this entry and is therefore
+            using the resources assigned to it."
+    ::= { dsmonStatsControlEntry 6 }
+
+dsmonStatsControlStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The status of this row.
+
+            An entry MUST NOT exist in the active state unless all
+            objects in the entry have an appropriate value.
+
+            If this object is not equal to active(1), all associated
+            entries in the dsmonStatsTable shall be deleted."
+    ::= { dsmonStatsControlEntry 7 }
+
+--
+-- Per-DataSource Statistics Table
+--
+
+dsmonStatsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of information on counter aggregation group usage
+            for each monitored data source.
+
+            The following table defines per counter aggregation group
+            statistics for full and/or half-duplex links as well as high
+            capacity links.
+
+            For half-duplex links, or full-duplex-capable links
+            operating in half-duplex mode, the dsmonStatsIn* objects
+            shall be used and the dsmonStatsOut* objects will not
+            increment.
+
+            For full-duplex links, the dsmonStatsOut* objects will be
+            present.  Whenever possible, the probe SHOULD count packets
+            moving away from the closest terminating equipment as output
+            packets.  Failing that, the probe SHOULD count packets
+            moving away from the DTE as output packets.
+
+            If the dsmonAggControlLocked object is equal to 'false',
+            then all entries in this table will be deleted and the agent
+            will not process packets on behalf of any
+
+
+
+            dsmonStatsControlEntry."
+    ::= { dsmonStatsObjects 2 }
+
+dsmonStatsEntry OBJECT-TYPE
+    SYNTAX      DsmonStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of information on Differentiated Services DSCP
+            usage, containing inbound and outbound packet and octet
+            counters for each counter aggregation group configured for
+            collection.
+
+            The dsmonStatsControlIndex value in the index identifies the
+            dsmonStatsControlEntry on whose behalf this entry was
+            created.
+
+            The dsmonAggGroupIndex value in the index is determined by
+            examining the DSCP value in each monitored packet, and the
+            dsmonAggProfileTable entry for that DSCP value.
+
+            Note that only packets that contain a network protocol
+            encapsulation which contains a DS field [RFC2474] will be
+            counted in this table.
+
+            An example of the indexing of this entry is
+            dsmonStatsOutPkts.1.16"
+     INDEX { dsmonStatsControlIndex, dsmonAggGroupIndex }
+    ::= { dsmonStatsTable 1 }
+
+DsmonStatsEntry ::= SEQUENCE {
+    dsmonStatsInPkts            ZeroBasedCounter32,
+    dsmonStatsInOctets          ZeroBasedCounter32,
+    dsmonStatsInOvflPkts        ZeroBasedCounter32,
+    dsmonStatsInOvflOctets      ZeroBasedCounter32,
+    dsmonStatsInHCPkts          ZeroBasedCounter64,
+    dsmonStatsInHCOctets        ZeroBasedCounter64,
+    dsmonStatsOutPkts           ZeroBasedCounter32,
+    dsmonStatsOutOctets         ZeroBasedCounter32,
+    dsmonStatsOutOvflPkts       ZeroBasedCounter32,
+    dsmonStatsOutOvflOctets     ZeroBasedCounter32,
+    dsmonStatsOutHCPkts         ZeroBasedCounter64,
+    dsmonStatsOutHCOctets       ZeroBasedCounter64
+}
+
+dsmonStatsInPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "packets"
+
+
+
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of packets using one of the DSCP values in the
+            indicated counter aggregation group, received on a half-
+            duplex link or on the inbound connection of a full-duplex
+            link."
+    ::= { dsmonStatsEntry 1 }
+
+dsmonStatsInOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of octets in packets, using one of the DSCP
+            values in the indicated counter aggregation group, received
+            on a half-duplex link or on the inbound connection of a
+            full-duplex link."
+    ::= { dsmonStatsEntry 2 }
+
+dsmonStatsInOvflPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonStatsInPkts counter
+            has overflowed.  Note that this object will only be
+            instantiated if the associated dsmonStatsInHCPkts object is
+            also instantiated for a particular dataSource."
+    ::= { dsmonStatsEntry 3 }
+
+dsmonStatsInOvflOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonStatsInOctets
+            counter has overflowed.  Note that this object will only be
+            instantiated if the associated dsmonStatsInHCOctets object
+            is also instantiated for a particular dataSource."
+    ::= { dsmonStatsEntry 4 }
+
+dsmonStatsInHCPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+
+
+
+    DESCRIPTION
+            "The 64-bit version of the dsmonStatsInPkts object.
+
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonStatsEntry 5 }
+
+dsmonStatsInHCOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The 64-bit version of the dsmonStatsInOctets object.
+
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonStatsEntry 6 }
+
+dsmonStatsOutPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of packets using one of the DSCP values in the
+            indicated counter aggregation group, received on a full-
+            duplex link in the direction of the network."
+    ::= { dsmonStatsEntry 7 }
+
+dsmonStatsOutOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of octets in packets, using one of the DSCP
+            values in the indicated counter aggregation group, received
+            on a full-duplex link in the direction of the network."
+    ::= { dsmonStatsEntry 8 }
+
+dsmonStatsOutOvflPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+
+
+
+            "The number of times the associated dsmonStatsOutPkts
+            counter has overflowed.  Note that this object will only be
+            instantiated if the associated dsmonStatsOutHCPkts object is
+            also instantiated for a particular dataSource."
+    ::= { dsmonStatsEntry 9 }
+
+dsmonStatsOutOvflOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonStatsOutOctets
+            counter has overflowed.  Note that this object will only be
+            instantiated if the associated dsmonStatsOutHCOctets object
+            is also instantiated for a particular dataSource."
+    ::= { dsmonStatsEntry 10 }
+
+dsmonStatsOutHCPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The 64-bit version of the dsmonStatsOutPkts object.
+
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonStatsEntry 11 }
+
+dsmonStatsOutHCOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The 64-bit version of the dsmonStatsOutOctets object.
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonStatsEntry 12 }
+
+
+-- ***********************************************************
+-- *                                                         *
+-- *     P E R - P R O T O C O L    C O L L E C T I O N S    *
+-- *                                                         *
+-- ***********************************************************
+
+
+
+--
+-- DSCP Per-Protocol Statistics Control Table
+--
+
+dsmonPdistCtlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonPdistCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Controls the setup of per application per counter
+            aggregation group distribution statistics.
+
+            Note that an agent MAY choose to limit the actual number of
+            entries which may be created in this table.  In this case,
+            the agent SHOULD return an error-status of
+            'resourceUnavailable(13)', as per section 4.2.5 of the
+            'Protocol Operations for SNMPv2' specification [RFC1905]."
+    ::= { dsmonPdistObjects 1 }
+
+dsmonPdistCtlEntry OBJECT-TYPE
+    SYNTAX      DsmonPdistCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the dsmonPdistCtlTable.
+
+            Entries are created and deleted from this table by
+            management action only, using the dsmonPdistCtlStatus
+            RowStatus object.
+
+            The agent SHOULD support non-volatile configuration of this
+            table, and upon system initialization, the table SHOULD be
+            initialized with the saved values.
+
+            Activation of a control row in this table will cause an
+            associated dsmonPdistStatsTable to be created and maintained
+            by the agent."
+    INDEX { dsmonPdistCtlIndex }
+    ::= { dsmonPdistCtlTable 1 }
+
+DsmonPdistCtlEntry ::= SEQUENCE {
+    dsmonPdistCtlIndex                Integer32,
+    dsmonPdistCtlDataSource           DataSource,
+    dsmonPdistCtlAggProfile           DsmonCounterAggProfileIndex,
+    dsmonPdistCtlMaxDesiredEntries    Integer32,
+    dsmonPdistCtlDroppedFrames        Counter32,
+    dsmonPdistCtlInserts              Counter32,
+    dsmonPdistCtlDeletes              Counter32,
+
+
+
+    dsmonPdistCtlCreateTime           LastCreateTime,
+    dsmonPdistCtlOwner                OwnerString,
+    dsmonPdistCtlStatus               RowStatus
+}
+
+dsmonPdistCtlIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An arbitrary and unique index for this dsmonPdistCtlEntry."
+    ::= { dsmonPdistCtlEntry 1 }
+
+dsmonPdistCtlDataSource OBJECT-TYPE
+    SYNTAX      DataSource
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The source of data for the this per protocol counter
+            aggregation group distribution.
+
+            This object MUST NOT be modified if the associated
+            dsmonPdistCtlStatus object is equal to active(1)."
+    ::= { dsmonPdistCtlEntry 2 }
+
+dsmonPdistCtlAggProfile OBJECT-TYPE
+    SYNTAX      DsmonCounterAggProfileIndex
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The dsmonAggControlIndex value identifying the counter
+            aggregation profile which should be used on behalf of this
+            dsmonPdistCtlEntry.
+
+            The associated dsmonAggControlEntry and
+            dsmonAggProfileEntries, identified by the same
+            dsmonAggControlIndex index value, MUST be active in order
+            for this entry to remain active.  It is possible for the
+            counter aggregation configuration to change from a valid to
+            invalid state for this dsmonPdist collection.  In this case,
+            the associated dsmonPdistCtlStatus object will be changed to
+            the 'notReady' state, and data collection will not occur on
+            behalf of this control entry.
+
+            Note that an agent MAY choose to limit the actual number of
+            counter aggregation profiles which may be applied to a
+            particular data source.
+
+
+
+
+            This object MUST NOT be modified if the associated
+            dsmonPdistCtlStatus object is equal to active(1)."
+    ::= { dsmonPdistCtlEntry 3 }
+
+dsmonPdistCtlMaxDesiredEntries OBJECT-TYPE
+    SYNTAX      Integer32 (-1 | 1..2147483647)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The maximum number of entries that are desired in the
+            dsmonPdistStatsTable on behalf of this control entry.  The
+            probe will not create more than this number of associated
+            entries in the table, but MAY choose to create fewer entries
+            in this table for any reason including the lack of
+            resources.
+
+            If this value is set to -1, the probe MAY create any number
+            of entries in this table.
+
+            This object MUST NOT be modified if the associated
+            dsmonPdistCtlStatus object is equal to active(1)."
+    ::= { dsmonPdistCtlEntry 4 }
+
+dsmonPdistCtlDroppedFrames OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "frames"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of frames which were received by the probe
+            and therefore not accounted for in the *StatsDropEvents, but
+            for which the probe chose not to count for this entry for
+            whatever reason.  Most often, this event occurs when the
+            probe is out of some resources and decides to shed load from
+            this collection.
+
+            This count does not include packets that were not counted
+            because they had MAC-layer errors.
+
+            Note that, unlike the dropEvents counter, this number is the
+            exact number of frames dropped."
+    ::= { dsmonPdistCtlEntry 5 }
+
+dsmonPdistCtlInserts OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "table entries"
+    MAX-ACCESS read-only
+    STATUS     current
+
+
+
+    DESCRIPTION
+            "The number of times a dsmonPdist entry has been inserted
+            into the dsmonPdistTable.  If an entry is inserted, then
+            deleted, and then inserted, this counter will be incremented
+            by 2.
+
+            To allow for efficient implementation strategies, agents MAY
+            delay updating this object for short periods of time.  For
+            example, an implementation strategy may allow internal data
+            structures to differ from those visible via SNMP for short
+            periods of time.  This counter may reflect the internal data
+            structures for those short periods of time.
+
+            Note that the table size can be determined by subtracting
+            dsmonPdistCtlDeletes from dsmonPdistCtlInserts."
+    ::= { dsmonPdistCtlEntry 6 }
+
+dsmonPdistCtlDeletes OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "table entries"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of times a dsmonPdist entry has been deleted
+            from the dsmonPdist table (for any reason).  If an entry is
+            deleted, then inserted, and then deleted, this counter will
+            be incremented by 2.
+
+            To allow for efficient implementation strategies, agents MAY
+            delay updating this object for short periods of time.  For
+            example, an implementation strategy may allow internal data
+            structures to differ from those visible via SNMP for short
+            periods of time.  This counter may reflect the internal data
+            structures for those short periods of time.
+
+            Note that the table size can be determined by subtracting
+            dsmonPdistCtlDeletes from dsmonPdistCtlInserts."
+    ::= { dsmonPdistCtlEntry 7 }
+
+dsmonPdistCtlCreateTime OBJECT-TYPE
+    SYNTAX     LastCreateTime
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime when this control entry was last
+            activated.  This can be used by the management station to
+            detect if the table has been deleted and recreated between
+            polls."
+
+
+
+    ::= { dsmonPdistCtlEntry 8 }
+
+dsmonPdistCtlOwner OBJECT-TYPE
+    SYNTAX      OwnerString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The entity that configured this entry and is therefore
+            using the resources assigned to it."
+    ::= { dsmonPdistCtlEntry 9 }
+
+dsmonPdistCtlStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The status of this row.
+
+            An entry MUST NOT exist in the active state unless all
+            objects in the entry have an appropriate value.
+
+            If this object is not equal to active(1), all associated
+            entries in the dsmonPdistStatsTable shall be deleted."
+    ::= { dsmonPdistCtlEntry 10 }
+
+--
+-- Per-Protocol Statistics Table
+--
+
+dsmonPdistStatsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonPdistStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of information on a per protocol per counter
+            aggregation group usage.
+
+            If the dsmonAggControlLocked object is equal to 'false',
+            then all entries in this table will be deleted and the agent
+            will not process packets on behalf of any
+            dsmonPdistCtlEntry."
+    ::= { dsmonPdistObjects 2 }
+
+dsmonPdistStatsEntry OBJECT-TYPE
+    SYNTAX      DsmonPdistStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+
+
+
+            "A list of information on Differentiated Services DSCP
+            usage, containing packet and octet counters for each counter
+            aggregation group configured for collection, and each
+            protocol (as identified by the protocolDirLocalIndex for the
+            protocol) identified in each monitored packet.
+
+            The dsmonPdistCtlIndex value in the index identifies the
+            dsmonPdistCtlEntry on whose behalf this entry was created.
+
+            Note that only packets that contain a network protocol
+            encapsulation which contains a DS field [RFC2474] will be
+            counted in this table.
+
+            The dsmonAggGroupIndex value in the index is determined by
+            examining the DSCP value in each monitored packet, and the
+            dsmonAggProfileTable entry for that value.
+
+            The protocolDirLocalIndex in the index identifies the
+            protocolDirEntry for the protocol encapsulation of each
+            monitored packet.  The agent will include only application
+            layer protocols in the associated dsmonPdistStatsTable.  Any
+            'terminal' protocol is considered to be an application
+            protocol.
+
+            An example of the indexing of this entry is
+            dsmonPdistStatsPkts.9.29943.0.42."
+     INDEX { dsmonPdistCtlIndex,
+             dsmonPdistTimeMark,
+             dsmonAggGroupIndex,
+             protocolDirLocalIndex }
+    ::= { dsmonPdistStatsTable 1 }
+
+DsmonPdistStatsEntry ::= SEQUENCE {
+    dsmonPdistTimeMark             TimeFilter,
+    dsmonPdistStatsPkts            ZeroBasedCounter32,
+    dsmonPdistStatsOctets          ZeroBasedCounter32,
+    dsmonPdistStatsOvflPkts        ZeroBasedCounter32,
+    dsmonPdistStatsOvflOctets      ZeroBasedCounter32,
+    dsmonPdistStatsHCPkts          ZeroBasedCounter64,
+    dsmonPdistStatsHCOctets        ZeroBasedCounter64,
+    dsmonPdistStatsCreateTime      LastCreateTime
+}
+
+dsmonPdistTimeMark OBJECT-TYPE
+    SYNTAX      TimeFilter
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+
+
+
+            "The Time Filter index for this table.  This object may be
+            used by a management station to retrieve only rows which
+            have been created or modified since a particular time.  Note
+            that the current value for a row are always returned and the
+            TimeFilter is not a historical data archiving mechanism.
+            Refer to RFC 2021 [RFC2021] for a detailed description of
+            TimeFilter operation."
+    ::= { dsmonPdistStatsEntry 1 }
+
+dsmonPdistStatsPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of packets, using one of the DSCP values in the
+            indicated counter aggregation group, for the protocol
+            identified by the associated protocolDirLocalIndex value."
+    ::= { dsmonPdistStatsEntry 2 }
+
+dsmonPdistStatsOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of octets in packets, using one of the DSCP
+            values in the indicated counter aggregation group, for the
+            protocol identified by the associated protocolDirLocalIndex
+            value.
+
+            Note that this object doesn't count just those octets in the
+            particular protocol frames, but includes the entire packet
+            that contained the protocol."
+    ::= { dsmonPdistStatsEntry 3 }
+
+dsmonPdistStatsOvflPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonPdistStatsPkts
+            counter has overflowed.  Note that this object will only be
+            instantiated if the associated dsmonPdistStatsHCPkts object
+            is also instantiated for a particular dataSource."
+    ::= { dsmonPdistStatsEntry 4 }
+
+dsmonPdistStatsOvflOctets OBJECT-TYPE
+
+
+
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonPdistStatsOctets
+            counter has overflowed.  Note that this object will only be
+            instantiated if the associated dsmonPdistStatsHCOctets
+            object is also instantiated for a particular dataSource."
+    ::= { dsmonPdistStatsEntry 5 }
+
+dsmonPdistStatsHCPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The 64-bit version of the dsmonPdistStatsPkts object.
+
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonPdistStatsEntry 6 }
+
+dsmonPdistStatsHCOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The 64-bit version of the dsmonPdistStatsOctets object.
+
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonPdistStatsEntry 7 }
+
+dsmonPdistStatsCreateTime OBJECT-TYPE
+    SYNTAX     LastCreateTime
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime when this dsmonPdistStats entry was
+            last instantiated by the agent.  This can be used by the
+            management station to detect if the entry has been deleted
+            and recreated between polls."
+    ::= { dsmonPdistStatsEntry 8 }
+
+
+
+
+
+--
+-- Per-Protocol Statistics TopN Control Table
+--
+
+dsmonPdistTopNCtlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonPdistTopNCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A set of parameters that control the creation of a report
+            of the top N dsmonPdist entries according to a particular
+            metric.
+
+            Note that an agent MAY choose to limit the actual number of
+            entries which may be created in this table.  In this case,
+            the agent SHOULD return an error-status of
+            'resourceUnavailable(13)', as per section 4.2.5 of the
+            'Protocol Operations for SNMPv2' specification [RFC1905]."
+    ::= { dsmonPdistObjects 3 }
+
+dsmonPdistTopNCtlEntry OBJECT-TYPE
+    SYNTAX      DsmonPdistTopNCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the dsmonPdistTopNCtlTable.
+
+            Entries are created and deleted from this table by
+            management action only, using the dsmonPdistTopNCtlStatus
+            RowStatus object.
+
+            The agent SHOULD support non-volatile configuration of this
+            table, and upon system initialization, the table SHOULD be
+            initialized with the saved values.
+
+            Activation of a control row in this table will cause an
+            associated dsmonPdistTopNTable to be created and maintained
+            by the agent."
+    INDEX { dsmonPdistTopNCtlIndex }
+    ::= { dsmonPdistTopNCtlTable 1 }
+
+DsmonPdistTopNCtlEntry ::= SEQUENCE {
+    dsmonPdistTopNCtlIndex            Integer32,
+    dsmonPdistTopNCtlPdistIndex       Integer32,
+    dsmonPdistTopNCtlRateBase         INTEGER,
+    dsmonPdistTopNCtlTimeRemaining    Integer32,
+    dsmonPdistTopNCtlGeneratedReprts  Counter32,
+    dsmonPdistTopNCtlDuration         Integer32,
+
+
+
+    dsmonPdistTopNCtlRequestedSize    Integer32,
+    dsmonPdistTopNCtlGrantedSize      Integer32,
+    dsmonPdistTopNCtlStartTime        TimeStamp,
+    dsmonPdistTopNCtlOwner            OwnerString,
+    dsmonPdistTopNCtlStatus           RowStatus
+}
+
+dsmonPdistTopNCtlIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An index that uniquely identifies an entry in the
+            dsmonPdistTopNCtlTable, with the same dsmonPdistTopNCtlIndex
+            value as this object.  Each entry in this table defines one
+            Top N report prepared on behalf of the dsmonPdistStatsEntry
+            collection with the same dsmonPdistCtlIndex as this object."
+    ::= { dsmonPdistTopNCtlEntry 1 }
+
+dsmonPdistTopNCtlPdistIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..65535)
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The dsmonPdistTable for which a top N report will be
+            prepared on behalf of this entry.  The dsmonPdistTable is
+            identified by the value of the dsmonPdistCtlIndex for that
+            table - that value is used here to identify the particular
+            table.
+
+            This object MUST NOT be modified if the associated
+            dsmonPdistTopNCtlStatus object is equal to active(1)."
+    ::= { dsmonPdistTopNCtlEntry 2 }
+
+dsmonPdistTopNCtlRateBase OBJECT-TYPE
+    SYNTAX     INTEGER {
+                  dsmonPdistTopNPkts(1),
+                  dsmonPdistTopNOctets(2),
+                  dsmonPdistTopNHCPkts(3),
+                  dsmonPdistTopNHCOctets(4)
+               }
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The variable for each dsmonPdist that the
+            dsmonPdistTopNRate and dsmonPdistTopNHCRate variables are
+            based upon.  Each dsmonPdistTopN report generated on behalf
+            of this control entry will be ranked in descending order,
+
+
+
+            based on the associated dsmonPdistStatsTable counter,
+            identified by this object.
+
+            The following table identifies the dsmonPdistTable counter
+            associated with each enumeration:
+
+            Enumeration              RateBase MIB Object
+            -----------              -------------------
+            dsmonPdistTopNPkts          dsmonPdistStatsPkts
+            dsmonPdistTopNOctets        dsmonPdistStatsOctets
+            dsmonPdistTopNHCPkts        dsmonPdistStatsHCPkts
+            dsmonPdistTopNHCOctets      dsmonPdistStatsHCOctets
+
+            Note that the dsmonPdistTopNHCPkts and
+            dsmonPdistTopNHCOctets enumerations are only available if
+            the agent supports High Capacity monitoring.
+
+            This object MUST NOT be modified if the associated
+            dsmonPdistTopNCtlStatus object is equal to active(1)."
+    ::= { dsmonPdistTopNCtlEntry 3 }
+
+dsmonPdistTopNCtlTimeRemaining OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "seconds"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The number of seconds left in the report currently being
+            collected.  When this object is modified by the management
+            station, a new collection is started, possibly aborting a
+            currently running report.  The new value is used as the
+            requested duration of this report, and is immediately loaded
+            into the associated dsmonPdistTopNCtlDuration object.
+
+            When the report finishes, the probe will automatically start
+            another collection with the same initial value of
+            dsmonPdistTopNCtlTimeRemaining.  Thus the management station
+            may simply read the resulting reports repeatedly, checking
+            the startTime and duration each time to ensure that a report
+            was not missed or that the report parameters were not
+            changed.
+
+            While the value of this object is non-zero, it decrements by
+            one per second until it reaches zero.  At the time that this
+            object decrements to zero, the report is made accessible in
+            the dsmonPdistTopNTable, overwriting any report that may be
+            there.
+
+
+
+
+            When this object is modified by the management station, any
+            associated entries in the dsmonPdistTopNTable shall be
+            deleted."
+    DEFVAL { 1800 }
+    ::= { dsmonPdistTopNCtlEntry 4 }
+
+dsmonPdistTopNCtlGeneratedReprts OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "reports"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of reports that have been generated by this
+            entry."
+    ::= { dsmonPdistTopNCtlEntry 5 }
+
+dsmonPdistTopNCtlDuration OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "seconds"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of seconds that this report has collected during
+            the last sampling interval.
+
+            When the associated dsmonPdistTopNCtlTimeRemaining object is
+            set, this object shall be set by the probe to the same value
+            and shall not be modified until the next time the
+            dsmonPdistTopNCtlTimeRemaining is set.
+
+            This value shall be zero if no reports have been requested
+            for this dsmonPdistTopNCtlEntry."
+    ::= { dsmonPdistTopNCtlEntry 6 }
+
+dsmonPdistTopNCtlRequestedSize OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "table entries"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The maximum number of dsmonPdist entries requested for this
+            report.
+
+            When this object is created or modified, the probe SHOULD
+            set dsmonPdistTopNCtlGrantedSize as closely to this object
+            as is possible for the particular probe implementation and
+            available resources."
+    DEFVAL { 150 }
+
+
+
+    ::= { dsmonPdistTopNCtlEntry 7 }
+
+dsmonPdistTopNCtlGrantedSize OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "table entries"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The maximum number of dsmonPdist entries in this report.
+
+            When the associated dsmonPdistTopNCtlRequestedSize object is
+            created or modified, the probe SHOULD set this object as
+            closely to the requested value as is possible for the
+            particular implementation and available resources.  The
+            probe MUST NOT lower this value except as a result of a
+            set to the associated dsmonPdistTopNCtlRequestedSize
+            object.
+
+            Protocol entries with the highest value of
+            dsmonPdistTopNRate or dsmonPdistTopNHCRate (depending on the
+            value of the associated dsmonPdistTopNCtlRateBase object)
+            shall be placed in this table in decreasing order of this
+            rate until there is no more room or until there are no more
+            dsmonPdist entries."
+    ::= { dsmonPdistTopNCtlEntry 8 }
+
+dsmonPdistTopNCtlStartTime OBJECT-TYPE
+    SYNTAX     TimeStamp
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime when this top N report was last
+            started.  In other words, this is the time that the
+            associated dsmonPdistTopNCtlTimeRemaining object was
+            modified to start the requested report or the time the
+            report was last automatically (re)started.
+
+            This object may be used by the management station to
+            determine if a report was missed or not."
+    ::= { dsmonPdistTopNCtlEntry 9 }
+
+dsmonPdistTopNCtlOwner OBJECT-TYPE
+    SYNTAX     OwnerString
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The entity that configured this entry and is therefore
+            using the resources assigned to it."
+
+
+
+    ::= { dsmonPdistTopNCtlEntry 10 }
+
+dsmonPdistTopNCtlStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The status of this dsmonPdistTopNCtlEntry.
+
+            An entry MUST NOT exist in the active state unless all
+            objects in the entry have an appropriate value.
+
+            If this object is not equal to active(1), all associated
+            entries in the dsmonPdistTopNTable shall be deleted by the
+            agent."
+    ::= { dsmonPdistTopNCtlEntry 11 }
+
+--
+-- dsmonPdist TopN Table
+--
+
+dsmonPdistTopNTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF DsmonPdistTopNEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A set of statistics for those protocol distribution entries
+            that have counted the highest number of octets or packets.
+
+            If the dsmonAggControlLocked object is equal to 'false',
+            then all entries in this table SHALL be deleted, and the
+            agent will not process TopN reports on behalf of any
+            dsmonPdistTopNCtlEntry.
+
+            When the dsmonAggControlLocked object is set to 'true', then
+            particular reports SHOULD be restarted from the beginning,
+            on behalf of all active rows in the dsmonPdistTopNCtlTable.
+
+            Note that dsmonPdist entries which did not increment at all
+            during the report interval SHOULD NOT be included in
+            dsmonPdistTopN reports."
+    ::= { dsmonPdistObjects 4 }
+
+dsmonPdistTopNEntry OBJECT-TYPE
+    SYNTAX     DsmonPdistTopNEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+
+
+
+            "A conceptual row in the dsmonPdistTopNTable.
+
+            The dsmonPdistTopNCtlIndex value in the index identifies the
+            dsmonPdistTopNCtlEntry on whose behalf this entry was
+            created.  Entries in this table are ordered from 1 to 'N',
+            where lower numbers represent higher values of the rate base
+            object, over the report interval."
+    INDEX { dsmonPdistTopNCtlIndex, dsmonPdistTopNIndex }
+    ::= { dsmonPdistTopNTable 1 }
+
+DsmonPdistTopNEntry ::= SEQUENCE {
+    dsmonPdistTopNIndex                      Integer32,
+    dsmonPdistTopNPDLocalIndex               Integer32,
+    dsmonPdistTopNAggGroup                   DsmonCounterAggGroupIndex,
+    dsmonPdistTopNRate                       Gauge32,
+    dsmonPdistTopNRateOvfl                   Gauge32,
+    dsmonPdistTopNHCRate                     CounterBasedGauge64
+}
+
+dsmonPdistTopNIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An index that uniquely identifies an entry in the
+            dsmonPdistTopNTable among those in the same report.  This
+            index is between 1 and N, where N is the number of entries
+            in this report.  Note that 'N' may change over time, and may
+            also be less than the dsmonPdistTopNCtlGrantedSize value
+            associated with this entry."
+    ::= { dsmonPdistTopNEntry 1 }
+
+dsmonPdistTopNPDLocalIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..2147483647)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The protocolDirLocalIndex value which identifies the
+            protocol associated with this entry.
+
+            If the protocolDirEntry associated with the
+            protocolDirLocalIndex with the same value as this object is
+            de-activated or deleted, then the agent MUST delete this
+            dsmonPdistTopN entry."
+    ::= { dsmonPdistTopNEntry 2 }
+
+dsmonPdistTopNAggGroup OBJECT-TYPE
+    SYNTAX      DsmonCounterAggGroupIndex
+
+
+
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The DSCP counter aggregation group index value associated
+            with protocol identified in this entry.  This object
+            identifies the dsmonAggGroupEntry with the same
+            dsmonAggControlIndex value as the associated
+            dsmonPdistCtlAggProfile object and the same
+            dsmonAggGroupIndex value as this object."
+    ::= { dsmonPdistTopNEntry 3 }
+
+dsmonPdistTopNRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The amount of change in the selected variable during this
+            sampling interval.  The selected variable is this protocol's
+            instance of the object selected by
+            dsmonPdistTopNCtlRateBase.
+
+            If the associated dsmonPdistTopNCtlRateBase is equal to
+            'dsmonPdistTopNHCPkts' or 'dsmonPdistTopNHCOctets', then
+            this object will contain the the least significant 32 bits
+            of the associated dsmonPdistTopNHCRate object."
+    ::= { dsmonPdistTopNEntry 4 }
+
+dsmonPdistTopNRateOvfl OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     deprecated
+    DESCRIPTION
+            "The most significant 32 bits of the associated
+            dsmonPdistTopNHCRate object.
+
+            If the associated dsmonPdistTopNCtlRateBase is equal to
+            'dsmonPdistTopNHCPkts' or 'dsmonPdistTopNHCOctets', then
+            this object will contain the upper 32 bits of the associated
+            dsmonPdistTopNHCRate object.
+
+            If the associated dsmonPdistTopNCtlRateBase is equal to
+            'dsmonPdistTopNPkts' or 'dsmonPdistTopNOctets', then this
+            object will contain the value zero.
+
+            The agent MAY choose not to instantiate this object if High
+            Capacity monitoring is not supported."
+    ::= { dsmonPdistTopNEntry 5 }
+
+
+
+
+dsmonPdistTopNHCRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The amount of change in the selected variable during this
+            sampling interval.  The selected variable is this protocol's
+            instance of the object selected by
+            dsmonPdistTopNCtlRateBase.
+
+            If the associated dsmonPdistTopNCtlRateBase is equal to
+            'dsmonPdistTopNPkts' or 'dsmonPdistTopNOctets', then this
+            object will contain the value zero, and the associated
+            dsmonPdistTopNRate object will contain the change in the
+            selected variable during the sampling interval.
+
+            The agent MAY choose not to instantiate this object if High
+            Capacity monitoring is not supported."
+    ::= { dsmonPdistTopNEntry 6 }
+
+
+-- ***********************************************************
+-- *                                                         *
+-- *      P E R  -  H O S T       C O L L E C T I O N S      *
+-- *                                                         *
+-- ***********************************************************
+
+
+--
+-- NL Host Statistics Control Table
+--
+
+dsmonHostCtlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonHostCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Controls setup of per counter aggregation group, per
+            network layer host distribution statistics.
+
+            Note that an agent MAY choose to limit the actual number of
+            entries which may be created in this table.  In this case,
+            the agent SHOULD return an error-status of
+            'resourceUnavailable(13)', as per section 4.2.5 of the
+            'Protocol Operations for SNMPv2' specification [RFC1905]."
+    ::= { dsmonHostObjects 1 }
+
+dsmonHostCtlEntry OBJECT-TYPE
+
+
+
+    SYNTAX      DsmonHostCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the dsmonHostCtlTable.
+
+            Entries are created and deleted from this table by
+            management action only, using the dsmonHostCtlStatus
+            RowStatus object.
+
+            The agent SHOULD support non-volatile configuration of this
+            table, and upon system initialization, the table SHOULD be
+            initialized with the saved values.
+
+            Activation of a control row in this table will cause an
+            associated dsmonHostTable to be created and maintained by
+            the agent."
+    INDEX { dsmonHostCtlIndex }
+    ::= { dsmonHostCtlTable 1 }
+
+DsmonHostCtlEntry ::= SEQUENCE {
+    dsmonHostCtlIndex                Integer32,
+    dsmonHostCtlDataSource           DataSource,
+    dsmonHostCtlAggProfile           DsmonCounterAggProfileIndex,
+    dsmonHostCtlMaxDesiredEntries    Integer32,
+    dsmonHostCtlIPv4PrefixLen        Integer32,
+    dsmonHostCtlIPv6PrefixLen        Integer32,
+    dsmonHostCtlDroppedFrames        Counter32,
+    dsmonHostCtlInserts              Counter32,
+    dsmonHostCtlDeletes              Counter32,
+    dsmonHostCtlCreateTime           LastCreateTime,
+    dsmonHostCtlOwner                OwnerString,
+    dsmonHostCtlStatus               RowStatus
+}
+
+dsmonHostCtlIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An arbitrary and unique index for this dsmonHostCtlEntry."
+    ::= { dsmonHostCtlEntry 1 }
+
+dsmonHostCtlDataSource OBJECT-TYPE
+    SYNTAX      DataSource
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+
+
+
+            "The source of data for the associated dsmonHostTable.
+
+            Note that only packets that contain a network protocol
+            encapsulation which contains a DS field [RFC2474] will be
+            counted in this table.
+
+            This object MUST NOT be modified if the associated
+            dsmonHostCtlStatus object is equal to active(1)."
+    ::= { dsmonHostCtlEntry 2 }
+
+dsmonHostCtlAggProfile OBJECT-TYPE
+    SYNTAX      DsmonCounterAggProfileIndex
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The dsmonAggControlIndex value identifying the counter
+            aggregation profile which should be used on behalf of this
+            dsmonHostCtlEntry.
+
+            The associated dsmonAggControlEntry and
+            dsmonAggProfileEntries, identified by the same
+            dsmonAggControlIndex index value, MUST be active in order
+            for this entry to remain active.  It is possible for the
+            counter aggregation configuration to change from a valid to
+            invalid state for this dsmonHost collection.  In this case,
+            the associated dsmonHostCtlStatus object will be changed to
+            the 'notReady' state, and data collection will not occur on
+            behalf of this control entry.
+
+            Note that an agent MAY choose to limit the actual number of
+            counter aggregation profiles which may be applied to a
+            particular data source.
+
+            This object MUST NOT be modified if the associated
+            dsmonHostCtlStatus object is equal to active(1)."
+    ::= { dsmonHostCtlEntry 3 }
+
+dsmonHostCtlMaxDesiredEntries OBJECT-TYPE
+    SYNTAX      Integer32 (-1 | 1..2147483647)
+    UNITS       "table entries"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The maximum number of entries that are desired in the
+            dsmonHostTable on behalf of this control entry.  The probe
+            will not create more than this number of associated entries
+            in the table, but MAY choose to create fewer entries in this
+            table for any reason including the lack of resources.
+
+
+
+            If this value is set to -1, the probe MAY create any number
+            of entries in this table.
+
+            This object MUST NOT be modified if the associated
+            dsmonHostCtlStatus object is equal to active(1)."
+    ::= { dsmonHostCtlEntry 4 }
+
+dsmonHostCtlIPv4PrefixLen OBJECT-TYPE
+    SYNTAX      Integer32 (8..32)
+    UNITS       "bits"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The number of 'leftmost' contiguous bits in the host
+            address field for encapsulations of IPv4, that should be
+            maintained in this collection.  This object controls how the
+            dsmonHostAddress object is derived for packets which contain
+            an encapsulation of IPv4.
+
+            If this object has a value less than 32, then 'm' rightmost
+            bits, where 'm' is equal to '32 -
+            dsmonHostCtlIPv4PrefixLen', will be cleared to zero for
+            counting purposes only.  The 'leftmost' bit is the most
+            significant bit of the first network-byte-order octet of the
+            address.
+
+            If this object is equal to 32, then no bits are cleared in
+            each dsmonHostAddress field.
+
+            This object MUST NOT be modified if the associated
+            dsmonHostCtlStatus object is equal to active(1)."
+    DEFVAL { 32 }
+    ::= { dsmonHostCtlEntry 5 }
+
+dsmonHostCtlIPv6PrefixLen OBJECT-TYPE
+    SYNTAX      Integer32 (8..128)
+    UNITS       "bits"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The number of 'leftmost' contiguous bits in the host
+            address field for encapsulations of IPv6, that should be
+            maintained in this collection.  This object controls how the
+            dsmonHostAddress object is derived for packets which contain
+            an encapsulation of IPv6.
+
+            If this object has a value less than 128, then 'm' rightmost
+            bits, where 'm' is equal to '128 -
+
+
+
+            dsmonHostCtlIPv6PrefixLen', will be cleared to zero for
+            counting purposes only.  The 'leftmost' bit is the most
+            significant bit of the first network-byte-order octet of the
+            address.
+
+            If this object is equal to 128, then no bits are cleared in
+            each dsmonHostAddress field.
+
+            This object MUST NOT be modified if the associated
+            dsmonHostCtlStatus object is equal to active(1)."
+    DEFVAL { 128 }
+    ::= { dsmonHostCtlEntry 6 }
+
+dsmonHostCtlDroppedFrames OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "frames"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of frames which were received by the probe
+            and therefore not accounted for in the *StatsDropEvents, but
+            for which the probe chose not to count for the associated
+            dsmonHost entries for whatever reason.  Most often, this
+            event occurs when the probe is out of some resources and
+            decides to shed load from this collection.
+
+            This count does not include packets that were not counted
+            because they had MAC-layer errors.
+
+            Note that if the dsmonHostTable is inactive because no
+            appropriate protocols are enabled in the protocol directory,
+            this value SHOULD be 0.
+
+            Note that, unlike the dropEvents counter, this number is the
+            exact number of frames dropped."
+    ::= { dsmonHostCtlEntry 7 }
+
+dsmonHostCtlInserts OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "table entries"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of times a dsmonHost entry has been inserted
+            into the dsmonHost table.  If an entry is inserted, then
+            deleted, and then inserted, this counter will be incremented
+            by 2.
+
+
+
+
+            To allow for efficient implementation strategies, agents MAY
+            delay updating this object for short periods of time.  For
+            example, an implementation strategy may allow internal data
+            structures to differ from those visible via SNMP for short
+            periods of time.  This counter may reflect the internal data
+            structures for those short periods of time.
+
+            Note that the table size can be determined by subtracting
+            dsmonHostCtlDeletes from dsmonHostCtlInserts."
+    ::= { dsmonHostCtlEntry 8 }
+
+dsmonHostCtlDeletes OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "table entries"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of times a dsmonHost entry has been deleted from
+            the dsmonHost table (for any reason).  If an entry is
+            deleted, then inserted, and then deleted, this counter will
+            be incremented by 2.
+
+            To allow for efficient implementation strategies, agents MAY
+            delay updating this object for short periods of time.  For
+            example, an implementation strategy may allow internal data
+            structures to differ from those visible via SNMP for short
+            periods of time.  This counter may reflect the internal data
+            structures for those short periods of time.
+
+            Note that the table size can be determined by subtracting
+            dsmonHostCtlDeletes from dsmonHostCtlInserts."
+    ::= { dsmonHostCtlEntry 9 }
+
+dsmonHostCtlCreateTime OBJECT-TYPE
+    SYNTAX     LastCreateTime
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime when this control entry was last
+            activated.  This can be used by the management station to
+            detect if the table has been deleted and recreated between
+            polls."
+    ::= { dsmonHostCtlEntry 10 }
+
+dsmonHostCtlOwner OBJECT-TYPE
+    SYNTAX      OwnerString
+    MAX-ACCESS  read-create
+    STATUS      current
+
+
+
+    DESCRIPTION
+            "The entity that configured this entry and is therefore
+            using the resources assigned to it."
+    ::= { dsmonHostCtlEntry 11 }
+
+dsmonHostCtlStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The status of this dsmonHostCtlEntry.
+
+            An entry MUST NOT exist in the active state unless all
+            objects in the entry have an appropriate value.
+
+            If this object is not equal to active(1), all associated
+            entries in the dsmonHostTable shall be deleted."
+    ::= { dsmonHostCtlEntry 12 }
+
+--
+-- NL Host Statistics Table
+--
+
+dsmonHostTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonHostEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A collection of statistics for particular network protocols
+            which contain a DS field, and that has been discovered on a
+            particular dataSource.
+
+            The probe will add to this table all appropriate network
+            protocols, for each network address seen as the source or
+            destination address in all packets with no MAC errors, and
+            will increment octet and packet counts in the table for all
+            packets with no MAC errors.
+
+            If the dsmonAggControlLocked object is equal to 'false',
+            then all entries in this table will be deleted, and the
+            agent will not process packets on behalf of any
+            dsmonHostCtlEntry."
+    ::= { dsmonHostObjects 2 }
+
+dsmonHostEntry OBJECT-TYPE
+    SYNTAX      DsmonHostEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+
+
+
+    DESCRIPTION
+            "A list of information on Differentiated Services DSCP
+            usage, containing packet and octet counters for each counter
+            aggregation group index configured for collection per host
+            address, as identified in the dsmonAggProfileTable.
+
+            The dsmonHostCtlIndex value in the index identifies the
+            dsmonHostCtlEntry on whose behalf this entry was created.
+
+            The protocolDirLocalIndex value in the index identifies the
+            specific network layer protocol encapsulation associated
+            with each entry, and the network protocol type of the
+            dsmonHostAddress object.  It MUST identify a
+            protocolDirEntry which contains a DS field (e.g., IPv4 or
+            IPv6).  Note that if a protocol encapsulation with multiple
+            network layers is specified, then associated entries in this
+            table refer to the innermost network protocol layer host
+            address.
+
+            The dsmonAggGroupIndex value in the index is determined by
+            examining the DSCP value in each monitored packet, and the
+            dsmonAggProfileTable entry configured for that value.
+
+            An example of the indexing of this entry is
+            dsmonHostOutPkts.1.27273.3.200.4.171.69.120.0"
+    INDEX { dsmonHostCtlIndex,
+            dsmonHostTimeMark,
+            dsmonAggGroupIndex,
+            protocolDirLocalIndex,
+            dsmonHostAddress }
+    ::= { dsmonHostTable 1 }
+
+DsmonHostEntry ::= SEQUENCE {
+    dsmonHostTimeMark              TimeFilter,
+    dsmonHostAddress               OCTET STRING,
+    dsmonHostInPkts                ZeroBasedCounter32,
+    dsmonHostInOctets              ZeroBasedCounter32,
+    dsmonHostInOvflPkts            ZeroBasedCounter32,
+    dsmonHostInOvflOctets          ZeroBasedCounter32,
+    dsmonHostInHCPkts              ZeroBasedCounter64,
+    dsmonHostInHCOctets            ZeroBasedCounter64,
+    dsmonHostOutPkts               ZeroBasedCounter32,
+    dsmonHostOutOctets             ZeroBasedCounter32,
+    dsmonHostOutOvflPkts           ZeroBasedCounter32,
+    dsmonHostOutOvflOctets         ZeroBasedCounter32,
+    dsmonHostOutHCPkts             ZeroBasedCounter64,
+    dsmonHostOutHCOctets           ZeroBasedCounter64,
+    dsmonHostCreateTime            LastCreateTime
+
+
+
+}
+
+dsmonHostTimeMark OBJECT-TYPE
+    SYNTAX      TimeFilter
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The Time Filter index for this table.  This object may be
+            used by a management station to retrieve only rows which
+            have been created or modified since a particular time.  Note
+            that the current value for a row are always returned and the
+            TimeFilter is not a historical data archiving mechanism.
+            Refer to RFC 2021 [RFC2021] for a detailed description of
+            TimeFilter operation."
+    ::= { dsmonHostEntry 1 }
+
+dsmonHostAddress OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..110))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The network address for this dsmonHostEntry.
+
+            This object is encoded according to the protocol type
+            indicated by the protocolDirLocalIndex value in the index.
+
+            In addition, this object may have some 'rightmost' bits
+            cleared to zero for counting purposes, as indicated by the
+            associated dsmonHostCtlIPv4PrefixLen or
+            dsmonHostCtlIPv6PrefixLen objects."
+    ::= { dsmonHostEntry 2 }
+
+dsmonHostInPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of packets without errors, using one of the DSCP
+            values in the indicated counter aggregation group, and
+            transmitted to this address, since this entry was added to
+            the dsmonHostTable.  Note that this is the number of link-
+            layer packets, so if a single network-layer packet is
+            fragmented into several link-layer frames, this counter is
+            incremented several times."
+    ::= { dsmonHostEntry 3 }
+
+dsmonHostInOctets OBJECT-TYPE
+
+
+
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of octets in all packets, transmitted to this
+            address and using one of the DSCP values in the indicated
+            counter aggregation group, since this entry was added to the
+            dsmonHostTable (excluding framing bits but including FCS
+            octets), excluding those octets in packets that contained
+            errors.
+
+            Note this doesn't count just those octets in the particular
+            protocol frames, but includes the entire packet that
+            contained the protocol."
+    ::= { dsmonHostEntry 4 }
+
+dsmonHostInOvflPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonHostInPkts counter
+            has overflowed.  Note that this object will only be
+            instantiated if the associated dsmonHostInHCPkts object is
+            also instantiated for a particular dataSource."
+    ::= { dsmonHostEntry 5 }
+
+dsmonHostInOvflOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonHostInOctets
+            counter has overflowed.  Note that this object will only be
+            instantiated if the associated dsmonHostInHCOctets object is
+            also instantiated for a particular dataSource."
+    ::= { dsmonHostEntry 6 }
+
+dsmonHostInHCPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The 64-bit version of the dsmonHostInPkts object.
+
+            Note that this object will only be instantiated if the RMON
+
+
+
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonHostEntry 7 }
+
+dsmonHostInHCOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The 64-bit version of the dsmonHostInOctets object.
+
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonHostEntry 8 }
+
+dsmonHostOutPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of packets without errors, using one of the DSCP
+            values in the indicated counter aggregation group, and
+            transmitted by this address, since this entry was added to
+            the dsmonHostTable.  Note that this is the number of link-
+            layer packets, so if a single network-layer packet is
+            fragmented into several link-layer frames, this counter is
+            incremented several times."
+    ::= { dsmonHostEntry 9 }
+
+dsmonHostOutOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of octets, transmitted by this address and using
+            one of the DSCP values in the identified counter aggregation
+            group, since this entry was added to the dsmonHostTable
+            (excluding framing bits but including FCS octets), excluding
+            those octets in packets that contained errors.
+
+            Note this doesn't count just those octets in the particular
+            protocol frames, but includes the entire packet that
+            contained the protocol."
+    ::= { dsmonHostEntry 10 }
+
+
+
+dsmonHostOutOvflPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonHostOutPkts counter
+            has overflowed.  Note that this object will only be
+            instantiated if the associated dsmonHostOutHCPkts object is
+            also instantiated for a particular dataSource."
+    ::= { dsmonHostEntry 11 }
+
+dsmonHostOutOvflOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonHostOutOctets
+            counter has overflowed.  Note that this object will only be
+            instantiated if the associated dsmonHostOutHCOctets object
+            is also instantiated for a particular dataSource."
+    ::= { dsmonHostEntry 12 }
+
+dsmonHostOutHCPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The 64-bit version of the dsmonHostOutPkts object.
+
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonHostEntry 13 }
+
+dsmonHostOutHCOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The 64-bit version of the dsmonHostOutOctets object.
+
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonHostEntry 14 }
+
+
+
+
+dsmonHostCreateTime OBJECT-TYPE
+    SYNTAX     LastCreateTime
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime when this dsmonHost entry was last
+            instantiated by the agent.  This can be used by the
+            management station to ensure that the entry has not been
+            deleted and recreated between polls."
+    ::= { dsmonHostEntry 15 }
+
+
+--
+-- Per-Protocol Per-Host NL Statistics TopN Control Table
+--
+
+dsmonHostTopNCtlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonHostTopNCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A set of parameters that control the creation of a report
+            of the top N dsmonHost entries according to a selected
+            metric.
+
+            Note that an agent MAY choose to limit the actual number of
+            entries which may be created in this table.  In this case,
+            the agent SHOULD return an error-status of
+            'resourceUnavailable(13)', as per section 4.2.5 of the
+            'Protocol Operations for SNMPv2' specification [RFC1905]."
+    ::= { dsmonHostObjects 3 }
+
+dsmonHostTopNCtlEntry OBJECT-TYPE
+    SYNTAX      DsmonHostTopNCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the dsmonHostTopNCtlTable.
+
+            Entries are created and deleted from this table by
+            management action only, using the dsmonHostTopNCtlStatus
+            RowStatus object.
+
+            The agent SHOULD support non-volatile configuration of this
+            table, and upon system initialization, the table SHOULD be
+            initialized with the saved values.
+
+            Activation of a control row in this table will cause an
+
+
+
+            associated dsmonHostTopNTable to be created and maintained
+            by the agent."
+    INDEX { dsmonHostTopNCtlIndex }
+    ::= { dsmonHostTopNCtlTable 1 }
+
+DsmonHostTopNCtlEntry ::= SEQUENCE {
+    dsmonHostTopNCtlIndex            Integer32,
+    dsmonHostTopNCtlHostIndex        Integer32,
+    dsmonHostTopNCtlRateBase         INTEGER,
+    dsmonHostTopNCtlTimeRemaining    Integer32,
+    dsmonHostTopNCtlGeneratedReports Counter32,
+    dsmonHostTopNCtlDuration         Integer32,
+    dsmonHostTopNCtlRequestedSize    Integer32,
+    dsmonHostTopNCtlGrantedSize      Integer32,
+    dsmonHostTopNCtlStartTime        TimeStamp,
+    dsmonHostTopNCtlOwner            OwnerString,
+    dsmonHostTopNCtlStatus           RowStatus
+}
+
+dsmonHostTopNCtlIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An index that uniquely identifies an entry in the
+            dsmonHostTopNCtlTable.  Each such entry defines one Top N
+            report prepared for one RMON dataSource."
+    ::= { dsmonHostTopNCtlEntry 1 }
+
+dsmonHostTopNCtlHostIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..65535)
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The dsmonHostTable for which a top N report will be
+            prepared on behalf of this entry.  The dsmonHostTable is
+            identified by the value of the dsmonHostCtlIndex for that
+            table - that value is used here to identify the particular
+            table.
+
+            This object MUST NOT be modified if the associated
+            dsmonHostTopNCtlStatus object is equal to active(1)."
+    ::= { dsmonHostTopNCtlEntry 2 }
+
+dsmonHostTopNCtlRateBase OBJECT-TYPE
+    SYNTAX     INTEGER {
+                  dsmonHostTopNInPkts(1),
+                  dsmonHostTopNInOctets(2),
+
+
+
+                  dsmonHostTopNOutPkts(3),
+                  dsmonHostTopNOutOctets(4),
+                  dsmonHostTopNTotalPkts(5),
+                  dsmonHostTopNTotalOctets(6),
+                  dsmonHostTopNInHCPkts(7),
+                  dsmonHostTopNInHCOctets(8),
+                  dsmonHostTopNOutHCPkts(9),
+                  dsmonHostTopNOutHCOctets(10),
+                  dsmonHostTopNTotalHCPkts(11),
+                  dsmonHostTopNTotalHCOctets(12)
+               }
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The variable(s) for each dsmonHost that the
+            dsmonHostTopNRate and dsmonHostTopNHCRate variables are
+            based upon.  Each dsmonHostTopN report generated on behalf
+            of this control entry will be ranked in descending order,
+            based on the associated dsmonHostTable counter(s),
+            identified by this object.
+
+            The following table identifies the dsmonHostTable counters
+            associated with each enumeration:
+
+            Enumeration              RateBase MIB Objects
+            -----------              --------------------
+            dsmonHostTopNInPkts         dsmonHostInPkts
+            dsmonHostTopNInOctets       dsmonHostInOctets
+            dsmonHostTopNOutPkts        dsmonHostOutPkts
+            dsmonHostTopNOutOctets      dsmonHostOutOctets
+            dsmonHostTopNTotalPkts      dsmonHostInPkts +
+                                          dsmonHostOutPkts
+            dsmonHostTopNTotalOctets    dsmonHostInOctets +
+                                          dsmonHostOutOctets
+            dsmonHostTopNInHCPkts       dsmonHostInHCPkts
+            dsmonHostTopNInHCOctets     dsmonHostInHCOctets
+            dsmonHostTopNOutHCPkts      dsmonHostOutHCPkts
+            dsmonHostTopNOutHCOctets    dsmonHostOutHCPkts
+            dsmonHostTopNTotalHCPkts    dsmonHostInHCPkts +
+                                          dsmonHostOutHCPkts
+            dsmonHostTopNTotalHCOctets  dsmonHostInHCOctets +
+                                          dsmonHostOutHCOctets
+
+            The following enumerations are only available if the agent
+            supports High Capacity monitoring:
+
+            dsmonHostTopNInHCPkts
+            dsmonHostTopNInHCOctets
+
+
+
+            dsmonHostTopNOutHCPkts
+            dsmonHostTopNOutHCOctets
+            dsmonHostTopNTotalHCPkts
+            dsmonHostTopNTotalHCOctets
+
+            It is an implementation-specific matter whether an agent can
+            detect an overflow condition resulting from the addition of
+            two counter delta values for the following enumerations:
+
+            dsmonHostTopNTotalPkts
+            dsmonHostTopNTotalOctets
+            dsmonHostTopNTotalHCPkts
+            dsmonHostTopNTotalHCOctets
+
+            In the event such an overflow condition can be detected by
+            the agent, the associated dsmonHostTopNRate,
+            dsmonHostTopNRateOvfl, and/or dsmonHostTopNHCRate objects
+            should be set to their maximum value.
+
+            This object MUST NOT be modified if the associated
+            dsmonHostTopNCtlStatus object is equal to active(1)."
+    ::= { dsmonHostTopNCtlEntry 3 }
+
+dsmonHostTopNCtlTimeRemaining OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "seconds"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The number of seconds left in the report currently being
+            collected.  When this object is modified by the management
+            station, a new collection is started, possibly aborting a
+            currently running report.  The new value is used as the
+            requested duration of this report, and is immediately loaded
+            into the associated dsmonHostTopNCtlDuration object.
+
+            When the report finishes, the probe will automatically start
+            another collection with the same initial value of
+            dsmonHostTopNCtlTimeRemaining.  Thus the management station
+            may simply read the resulting reports repeatedly, checking
+            the startTime and duration each time to ensure that a report
+            was not missed or that the report parameters were not
+            changed.
+
+            While the value of this object is non-zero, it decrements by
+            one per second until it reaches zero.  At the time that this
+            object decrements to zero, the report is made accessible in
+            the dsmonHostTopNTable, overwriting any report that may be
+
+
+
+            there.
+
+            When this object is modified by the management station, any
+            associated entries in the dsmonHostTopNTable shall be
+            deleted."
+    DEFVAL { 1800 }
+    ::= { dsmonHostTopNCtlEntry 4 }
+
+dsmonHostTopNCtlGeneratedReports OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "reports"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of reports that have been generated by this
+            entry."
+    ::= { dsmonHostTopNCtlEntry 5 }
+
+dsmonHostTopNCtlDuration OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "seconds"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of seconds that this report has collected during
+            the last sampling interval.
+
+            When the associated dsmonHostTopNCtlTimeRemaining object is
+            set, this object shall be set by the probe to the same value
+            and shall not be modified until the next time the
+            dsmonHostTopNCtlTimeRemaining is set.
+
+            This value shall be zero if no reports have been requested
+            for this dsmonHostTopNCtlEntry."
+    ::= { dsmonHostTopNCtlEntry 6 }
+
+dsmonHostTopNCtlRequestedSize OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "table entries"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The maximum number of dsmonHost entries requested for this
+            report.
+
+            When this object is created or modified, the probe SHOULD
+            set dsmonHostTopNCtlGrantedSize as closely to this object as
+            is possible for the particular probe implementation and
+
+
+
+            available resources."
+    DEFVAL { 150 }
+    ::= { dsmonHostTopNCtlEntry 7 }
+
+dsmonHostTopNCtlGrantedSize OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "table entries"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The maximum number of dsmonHost entries in this report.
+
+            When the associated dsmonHostTopNCtlRequestedSize object is
+            created or modified, the probe SHOULD set this object as
+            closely to the requested value as is possible for the
+            particular implementation and available resources.  The
+            probe MUST NOT lower this value except as a result of a
+            set to the associated dsmonHostTopNCtlRequestedSize
+            object.
+
+            Protocol entries with the highest value of dsmonHostTopNRate
+            or dsmonHostTopNHCRate (depending on the value of the
+            associated dsmonHostTopNCtlRateBase object) shall be placed
+            in this table in decreasing order of this rate until there
+            is no more room or until there are no more dsmonHost
+            entries."
+    ::= { dsmonHostTopNCtlEntry 8 }
+
+dsmonHostTopNCtlStartTime OBJECT-TYPE
+    SYNTAX     TimeStamp
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime when this top N report was last
+            started.  In other words, this is the time that the
+            associated dsmonHostTopNCtlTimeRemaining object was modified
+            to start the requested report or the time the report was
+            last automatically (re)started.
+
+            This object may be used by the management station to
+            determine if a report was missed or not."
+    ::= { dsmonHostTopNCtlEntry 9 }
+
+dsmonHostTopNCtlOwner OBJECT-TYPE
+    SYNTAX     OwnerString
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+
+
+
+            "The entity that configured this entry and is therefore
+            using the resources assigned to it."
+    ::= { dsmonHostTopNCtlEntry 10 }
+
+dsmonHostTopNCtlStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The status of this dsmonHostTopNCtlEntry.
+
+            An entry MUST NOT exist in the active state unless all
+            objects in the entry have an appropriate value.
+
+            If this object is not equal to active(1), all associated
+            entries in the dsmonHostTopNTable shall be deleted by the
+            agent."
+    ::= { dsmonHostTopNCtlEntry 11 }
+
+--
+-- dsmonHost TopN Table
+--
+
+dsmonHostTopNTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF DsmonHostTopNEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A set of statistics for those dsmonHost entries that have
+            counted the highest number of octets or packets.
+
+            If the dsmonAggControlLocked object is equal to 'false',
+            then all entries in this table SHALL be deleted, and the
+            agent will not process TopN reports on behalf of any
+            dsmonHostTopNCtlEntry.
+
+            When the dsmonAggControlLocked object is set to 'true', then
+            particular reports SHOULD be restarted from the beginning,
+            on behalf of all active rows in the dsmonHostTopNCtlTable.
+
+            Note that dsmonHost entries which did not increment at all
+            during the report interval SHOULD NOT be included in
+            dsmonHostTopN reports."
+    ::= { dsmonHostObjects 4 }
+
+dsmonHostTopNEntry OBJECT-TYPE
+    SYNTAX     DsmonHostTopNEntry
+    MAX-ACCESS not-accessible
+
+
+
+    STATUS     current
+    DESCRIPTION
+            "A conceptual row in the dsmonHostTopNTable.
+
+            The dsmonHostTopNCtlIndex value in the index identifies the
+            dsmonHostTopNCtlEntry on whose behalf this entry was
+            created.
+
+            Entries in this table are ordered from 1 to 'N', where lower
+            numbers represent higher values of the rate base object,
+            over the report interval."
+    INDEX { dsmonHostTopNCtlIndex, dsmonHostTopNIndex }
+    ::= { dsmonHostTopNTable 1 }
+
+DsmonHostTopNEntry ::= SEQUENCE {
+    dsmonHostTopNIndex                Integer32,
+    dsmonHostTopNPDLocalIndex         Integer32,
+    dsmonHostTopNAddress              OCTET STRING,
+    dsmonHostTopNAggGroup             DsmonCounterAggGroupIndex,
+    dsmonHostTopNRate                 Gauge32,
+    dsmonHostTopNRateOvfl             Gauge32,
+    dsmonHostTopNHCRate               CounterBasedGauge64
+  }
+
+dsmonHostTopNIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An index that uniquely identifies an entry in the
+            dsmonHostTopNTable among those in the same report.  This
+            index is between 1 and N, where N is the number of entries
+            in this report."
+    ::= { dsmonHostTopNEntry 1 }
+
+dsmonHostTopNPDLocalIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..2147483647)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The protocolDirLocalIndex value which identifies the
+            protocol associated with the dsmonHostTopNAddress object in
+            this entry.
+
+            If the protocolDirEntry associated with the
+            protocolDirLocalIndex with the same value as this object is
+            de-activated or deleted, then the agent MUST delete this
+            dsmonHostTopN entry."
+
+
+
+    ::= { dsmonHostTopNEntry 2 }
+
+dsmonHostTopNAddress OBJECT-TYPE
+    SYNTAX     OCTET STRING
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The dsmonHostAddress value for the network host identified
+            in this entry.  The associated dsmonHostTopNPDLocalIndex
+            object identifies the network protocol type and the encoding
+            rules for this object."
+    ::= { dsmonHostTopNEntry 3 }
+
+dsmonHostTopNAggGroup OBJECT-TYPE
+    SYNTAX      DsmonCounterAggGroupIndex
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The counter aggregation group index value associated with
+            host identified in this entry.  This object identifies the
+            dsmonAggGroupEntry with the same dsmonAggControlIndex value
+            as the associated dsmonHostCtlAggProfile object and the same
+            dsmonAggGroupIndex value as this object."
+    ::= { dsmonHostTopNEntry 4 }
+
+dsmonHostTopNRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The amount of change in the selected variable during this
+            sampling interval.  The selected variable is this host's
+            instance of the object selected by dsmonHostTopNCtlRateBase.
+
+            If the associated dsmonHostTopNCtlRateBase indicates a High
+            Capacity monitoring enumeration, (e.g.
+            'dsmonHostTopNInHCPkts'), then this object will contain the
+            the least significant 32 bits of the associated
+            dsmonHostTopNHCRate object."
+    ::= { dsmonHostTopNEntry 5 }
+
+dsmonHostTopNRateOvfl OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     deprecated
+    DESCRIPTION
+            "The most significant 32 bits of the associated
+            dsmonHostTopNHCRate object.
+
+
+
+            If the associated dsmonHostTopNCtlRateBase is equal to any
+            of the High Capacity monitoring enumerations (e.g.
+            'dsmonHostTopNInHCPkts'), then this object will contain the
+            upper 32 bits of the associated dsmonHostTopNHCRate object.
+
+            If the associated dsmonHostTopNCtlRateBase is not equal to
+            any of High Capacity monitoring enumerations, then this
+            object will contain the value zero.
+
+            The agent MAY choose not to instantiate this object if High
+            Capacity monitoring is not supported."
+    ::= { dsmonHostTopNEntry 6 }
+
+dsmonHostTopNHCRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The amount of change in the selected variable during this
+            sampling interval.  The selected variable is this host's
+            instance of the object selected by dsmonHostTopNCtlRateBase.
+
+            If the associated dsmonHostTopNCtlRateBase is not equal to
+            any of the High Capacity monitoring enumerations (e.g.,
+            'dsmonHostTopNInPkts'), then this object will contain the
+            value zero, and the associated dsmonHostTopNRate object will
+            contain the change in the selected variable during the
+            sampling interval.
+
+            The agent MAY choose not to instantiate this object if High
+            Capacity monitoring is not supported."
+    ::= { dsmonHostTopNEntry 7 }
+
+
+-- **************************************************************
+-- *                                                            *
+-- *   P E R  -  C O N V E R S I O N    C O L L E C T I O N S   *
+-- *                                                            *
+-- **************************************************************
+
+--
+-- AL Matrix Statistics Control Table
+--
+
+dsmonMatrixCtlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonMatrixCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+
+
+
+    DESCRIPTION
+            "Controls setup of per counter aggregation group, per host-
+            pair, application protocol distribution statistics.
+
+            Note that an agent MAY choose to limit the actual number of
+            entries which may be created in this table.  In this case,
+            the agent SHOULD return an error-status of
+            'resourceUnavailable(13)', as per section 4.2.5 of the
+            'Protocol Operations for SNMPv2' specification [RFC1905]."
+    ::= { dsmonMatrixObjects 1 }
+
+dsmonMatrixCtlEntry OBJECT-TYPE
+    SYNTAX      DsmonMatrixCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the dsmonMatrixCtlTable.
+
+            Entries are created and deleted from this table by
+            management action only, using the dsmonMatrixCtlStatus
+            RowStatus object.
+
+            The agent SHOULD support non-volatile configuration of this
+            table, and upon system initialization, the table SHOULD be
+            initialized with the saved values.
+
+            Activation of a control row in this table will cause an
+            associated dsmonMatrixSDTable and dsmonMatrixDSTable to be
+            created and maintained by the agent."
+    INDEX { dsmonMatrixCtlIndex }
+    ::= { dsmonMatrixCtlTable 1 }
+
+DsmonMatrixCtlEntry ::= SEQUENCE {
+    dsmonMatrixCtlIndex                Integer32,
+    dsmonMatrixCtlDataSource           DataSource,
+    dsmonMatrixCtlAggProfile           DsmonCounterAggProfileIndex,
+    dsmonMatrixCtlMaxDesiredEntries    Integer32,
+    dsmonMatrixCtlDroppedFrames        Counter32,
+    dsmonMatrixCtlInserts              Counter32,
+    dsmonMatrixCtlDeletes              Counter32,
+    dsmonMatrixCtlCreateTime           LastCreateTime,
+    dsmonMatrixCtlOwner                OwnerString,
+    dsmonMatrixCtlStatus               RowStatus
+}
+
+dsmonMatrixCtlIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+
+
+
+    STATUS      current
+    DESCRIPTION
+            "An arbitrary and unique index for this
+            dsmonMatrixCtlEntry."
+    ::= { dsmonMatrixCtlEntry 1 }
+
+dsmonMatrixCtlDataSource OBJECT-TYPE
+    SYNTAX      DataSource
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The source of data for the associated dsmonMatrixSDTable
+            and dsmonMatrixDSTable.
+
+            Note that only packets that contain a network protocol
+            encapsulation which contains a DS field [RFC2474] will be
+            counted in this table.
+
+            This object MUST NOT be modified if the associated
+            dsmonMatrixCtlStatus object is equal to active(1)."
+    ::= { dsmonMatrixCtlEntry 2 }
+
+dsmonMatrixCtlAggProfile OBJECT-TYPE
+    SYNTAX      DsmonCounterAggProfileIndex
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The dsmonAggControlIndex value identifying the counter
+            aggregation profile which should be used on behalf of this
+            dsmonMatrixCtlEntry.
+
+            The associated dsmonAggControlEntry and
+            dsmonAggProfileEntries, identified by the same
+            dsmonAggControlIndex index value, MUST be active in order
+            for this entry to remain active.  It is possible for the
+            counter aggregation configuration to change from a valid to
+            invalid state for this dsmonMatrix collection.  In this
+            case, the associated dsmonMatrixCtlStatus object will be
+            changed to the 'notReady' state, and data collection will
+            not occur on behalf of this control entry.
+
+            Note that an agent MAY choose to limit the actual number of
+            counter aggregation profiles which may be applied to a
+            particular data source.
+
+            This object MUST NOT be modified if the associated
+            dsmonMatrixCtlStatus object is equal to active(1)."
+    ::= { dsmonMatrixCtlEntry 3 }
+
+
+
+dsmonMatrixCtlMaxDesiredEntries OBJECT-TYPE
+    SYNTAX      Integer32 (-1 | 1..2147483647)
+    UNITS       "table entries"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The maximum number of entries that are desired in the
+            dsmonMatrix tables on behalf of this control entry.  The
+            probe will not create more than this number of associated
+            entries in these tables, but may choose to create fewer
+            entries in this table for any reason including the lack of
+            resources.
+
+            If this value is set to -1, the probe may create any number
+            of entries in this table.
+
+            This object MUST NOT be modified if the associated
+            dsmonMatrixCtlStatus object is equal to active(1)."
+    ::= { dsmonMatrixCtlEntry 4 }
+
+dsmonMatrixCtlDroppedFrames OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "frames"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of frames which were received by the probe
+            and therefore not accounted for in the *StatsDropEvents, but
+            for which the probe chose not to count for the associated
+            dsmonMatrixSD and dsmonMatrixDS entries for whatever reason.
+            Most often, this event occurs when the probe is out of some
+            resources and decides to shed load from this collection.
+
+            This count does not include packets that were not counted
+            because they had MAC-layer errors.
+
+            Note that if the dsmonMatrix tables are inactive because no
+            appropriate protocols are enabled in the protocol directory,
+            this value SHOULD be 0.
+
+            Note that, unlike the dropEvents counter, this number is the
+            exact number of frames dropped."
+    ::= { dsmonMatrixCtlEntry 5 }
+
+dsmonMatrixCtlInserts OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "table entries"
+    MAX-ACCESS read-only
+
+
+
+    STATUS     current
+    DESCRIPTION
+            "The number of times a dsmonMatrix entry has been inserted
+            into the dsmonMatrix tables.  If an entry is inserted, then
+            deleted, and then inserted, this counter will be incremented
+            by 2.  The addition of a conversation into both the
+            dsmonMatrixSDTable and dsmonMatrixDSTable shall be counted
+            as two insertions (even though every addition into one table
+            must be accompanied by an insertion into the other).
+
+            To allow for efficient implementation strategies, agents may
+            delay updating this object for short periods of time.  For
+            example, an implementation strategy may allow internal data
+            structures to differ from those visible via SNMP for short
+            periods of time.  This counter may reflect the internal data
+            structures for those short periods of time.  Note that the
+            sum of the dsmonMatrixSDTable and dsmonMatrixDSTable sizes
+            can be determined by subtracting dsmonMatrixCtlDeletes from
+            dsmonMatrixCtlInserts."
+    ::= { dsmonMatrixCtlEntry 6 }
+
+dsmonMatrixCtlDeletes OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "table entries"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of times a dsmonMatrix entry has been deleted
+            from the dsmonMatrix tables (for any reason).  If an entry
+            is deleted, then inserted, and then deleted, this counter
+            will be incremented by 2.  The deletion of a conversation
+            from both the dsmonMatrixSDTable and dsmonMatrixDSTable
+            shall be counted as two deletions (even though every
+            deletion from one table must be accompanied by a deletion
+            from the other).
+
+            To allow for efficient implementation strategies, agents MAY
+            delay updating this object for short periods of time.  For
+            example, an implementation strategy may allow internal data
+            structures to differ from those visible via SNMP for short
+            periods of time.  This counter may reflect the internal data
+            structures for those short periods of time.
+
+            Note that the sum of the dsmonMatrixSDTable and
+            dsmonMatrixDSTable sizes can be determined by subtracting
+            dsmonMatrixCtlDeletes from dsmonMatrixCtlInserts."
+    ::= { dsmonMatrixCtlEntry 7 }
+
+
+
+
+dsmonMatrixCtlCreateTime OBJECT-TYPE
+    SYNTAX     LastCreateTime
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime when this control entry was last
+            activated.  This can be used by the management station to
+            detect if the table has been deleted and recreated between
+            polls."
+    ::= { dsmonMatrixCtlEntry 8 }
+
+dsmonMatrixCtlOwner OBJECT-TYPE
+    SYNTAX      OwnerString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The entity that configured this entry and is therefore
+            using the resources assigned to it."
+    ::= { dsmonMatrixCtlEntry 9 }
+
+dsmonMatrixCtlStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The status of this dsmonMatrixCtlEntry.
+
+            An entry MUST NOT exist in the active state unless all
+            objects in the entry have an appropriate value.
+
+            If this object is not equal to active(1), all associated
+            entries in the dsmonMatrixSDTable and dsmonMatrixDSTable
+            shall be deleted."
+    ::= { dsmonMatrixCtlEntry 10 }
+
+--
+-- AL Matrix SD Statistics Table
+--
+
+dsmonMatrixSDTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonMatrixSDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of application traffic matrix entries which collect
+            statistics for conversations of a particular application
+            protocol between two network-level addresses.  This table is
+            indexed first by the source address and then by the
+
+
+
+            destination address to make it convenient to collect all
+            statistics from a particular address.
+
+            The probe will add to this table all pairs of addresses for
+            all protocols seen in all packets with no MAC errors, and
+            will increment octet and packet counts in the table for all
+            packets with no MAC errors."
+    ::= { dsmonMatrixObjects 2 }
+
+dsmonMatrixSDEntry OBJECT-TYPE
+    SYNTAX      DsmonMatrixSDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the dsmonMatrixSDTable.
+
+            The dsmonMatrixCtlIndex value in the index identifies the
+            dsmonMatrixCtlEntry on whose behalf this entry was created.
+
+            The dsmonAggGroupIndex value in the index is determined by
+            examining the DSCP value in each monitored packet, and the
+            dsmonAggProfileTable entry configured for that value."
+    INDEX { dsmonMatrixCtlIndex,
+            dsmonMatrixTimeMark,
+            dsmonAggGroupIndex,
+            dsmonMatrixNLIndex,
+            dsmonMatrixSourceAddress,
+            dsmonMatrixDestAddress,
+            dsmonMatrixALIndex
+           }
+    ::= { dsmonMatrixSDTable 1 }
+
+DsmonMatrixSDEntry ::= SEQUENCE {
+    dsmonMatrixTimeMark                 TimeFilter,
+    dsmonMatrixNLIndex                  Integer32,
+    dsmonMatrixSourceAddress            OCTET STRING,
+    dsmonMatrixDestAddress              OCTET STRING,
+    dsmonMatrixALIndex                  Integer32,
+    dsmonMatrixSDPkts                   ZeroBasedCounter32,
+    dsmonMatrixSDOvflPkts               ZeroBasedCounter32,
+    dsmonMatrixSDHCPkts                 ZeroBasedCounter64,
+    dsmonMatrixSDOctets                 ZeroBasedCounter32,
+    dsmonMatrixSDOvflOctets             ZeroBasedCounter32,
+    dsmonMatrixSDHCOctets               ZeroBasedCounter64,
+    dsmonMatrixSDCreateTime             LastCreateTime
+}
+
+dsmonMatrixTimeMark OBJECT-TYPE
+
+
+
+    SYNTAX      TimeFilter
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The Time Filter index for this table.  This object may be
+            used by a management station to retrieve only rows which
+            have been created or modified since a particular time.  Note
+            that the current value for a row are always returned and the
+            TimeFilter is not a historical data archiving mechanism.
+            Refer to RFC 2021 [RFC2021] for a detailed description of
+            TimeFilter operation."
+    ::= { dsmonMatrixSDEntry 1 }
+
+dsmonMatrixNLIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The protocolDirLocalIndex value of a protocolDirEntry
+            representing the specific network layer protocol
+            encapsulation associated with each entry, and the network
+            protocol type of the dsmonMatrixSourceAddress and
+            dsmonMatrixDestAddress objects."
+    ::= { dsmonMatrixSDEntry 2 }
+
+dsmonMatrixSourceAddress OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..54))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The network source address for this dsmonMatrix entry.
+
+            This is represented as an octet string with specific
+            semantics and length as identified by the dsmonMatrixNLIndex
+            component of the index.
+
+            For example, if the dsmonMatrixNLIndex indicates an
+            encapsulation of IPv4, this object is encoded as a length
+            octet of 4, followed by the 4 octets of the IPv4 address, in
+            network byte order."
+    ::= { dsmonMatrixSDEntry 3 }
+
+dsmonMatrixDestAddress OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..54))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The network destination address for this dsmonMatrix entry.
+
+
+
+            This is represented as an octet string with specific
+            semantics and length as identified by the dsmonMatrixNLIndex
+            component of the index.
+
+            For example, if the dsmonMatrixNLIndex indicates an
+            encapsulation of IPv4, this object is encoded as a length
+            octet of 4, followed by the 4 octets of the IPv4 address, in
+            network byte order."
+    ::= { dsmonMatrixSDEntry 4 }
+
+dsmonMatrixALIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The protocolDirLocalIndex value of the protocolDirEntry
+            representing the specific application layer protocol
+            associated with each entry.
+
+            It MUST identify an protocolDirEntry which is a direct or
+            indirect descendant of the protocolDirEntry identified by
+            the associated dsmonMatrixNLIndex object."
+    ::= { dsmonMatrixSDEntry 5 }
+
+dsmonMatrixSDPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of packets of this protocol type (indicated by
+            the associated dsmonMatrixALIndex object) without errors
+            transmitted from the source address to the destination
+            address since this entry was added to the
+            dsmonMatrixSDTable.  Note that this is the number of link-
+            layer packets, so if a single network-layer packet is
+            fragmented into several link-layer frames, this counter is
+            incremented several times."
+    ::= { dsmonMatrixSDEntry 6 }
+
+dsmonMatrixSDOvflPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonMatrixSDPkts
+            counter has overflowed, since this entry was added to the
+            dsmonMatrixSDTable."
+
+
+
+    ::= { dsmonMatrixSDEntry 7 }
+
+dsmonMatrixSDHCPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The 64-bit version of the dsmonMatrixSDPkts object.
+
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonMatrixSDEntry 8 }
+
+dsmonMatrixSDOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of octets in packets of this protocol type
+            transmitted from the source address to the destination
+            address since this entry was added to the dsmonMatrixSDTable
+            (excluding framing bits but including FCS octets), excluding
+            those octets in packets that contained errors.
+
+            Note this doesn't count just those octets in the particular
+            protocol frames, but includes the entire packet that
+            contained the protocol."
+    ::= { dsmonMatrixSDEntry 9 }
+
+dsmonMatrixSDOvflOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonMatrixSDOctets
+            counter has overflowed, since this entry was added to the
+            dsmonMatrixSDTable."
+    ::= { dsmonMatrixSDEntry 10 }
+
+dsmonMatrixSDHCOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+
+
+
+            "The 64-bit version of the dsmonMatrixSDPkts object.
+
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonMatrixSDEntry 11 }
+
+dsmonMatrixSDCreateTime OBJECT-TYPE
+    SYNTAX     LastCreateTime
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime when this entry was last activated.
+            This can be used by the management station to ensure that
+            the entry has not been deleted and recreated between polls."
+    ::= { dsmonMatrixSDEntry 12 }
+
+
+--
+-- AL Matrix DS Statistics Table
+--
+
+dsmonMatrixDSTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonMatrixDSEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of application traffic matrix entries which collect
+            statistics for conversations of a particular application
+            protocol between two network-level addresses.  This table is
+            indexed first by the destination address and then by the
+            source address to make it convenient to collect all
+            statistics from a particular address.
+
+            The probe will add to this table all pairs of addresses for
+            all protocols seen in all packets with no MAC errors, and
+            will increment octet and packet counts in the table for all
+            packets with no MAC errors."
+    ::= { dsmonMatrixObjects 3 }
+
+dsmonMatrixDSEntry OBJECT-TYPE
+    SYNTAX      DsmonMatrixDSEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the dsmonMatrixDSTable.  Note that this
+            table is conceptually a re-ordered version of the
+            dsmonMatrixSDTable.  Therefore, all of the index values from
+
+
+
+            that table are used by reference, and their semantics are
+            exactly as described in the dsmonMatrixSDTable.
+
+            The dsmonMatrixCtlIndex value in the index identifies the
+            dsmonMatrixCtlEntry on whose behalf this entry was created.
+
+            The dsmonMatrixTimeMark value in the index identifies the
+            Time Filter index for this table.
+
+            The dsmonAggGroupIndex value in the index is determined by
+            examining the DSCP value in each monitored packet, and the
+            dsmonAggProfileTable entry configured for that value.
+
+            The dsmonMatrixNLIndex value in the index identifies the
+            protocolDirLocalIndex value of a protocolDirEntry
+            representing the specific network layer protocol
+            encapsulation associated with each entry, and the network
+            protocol type of the dsmonMatrixSourceAddress and
+            dsmonMatrixDestAddress objects.
+
+            The dsmonMatrixDestAddress value in the index identifies the
+            network destination address for this dsmonMatrix entry.
+
+            The dsmonMatrixSourceAddress value in the index identifies
+            the network source address for this dsmonMatrix entry.
+
+            The dsmonMatrixALIndex value in the index identifies the
+            protocolDirLocalIndex value of the protocolDirEntry
+            representing the specific application layer protocol
+            associated with each entry."
+    INDEX { dsmonMatrixCtlIndex,
+            dsmonMatrixTimeMark,
+            dsmonAggGroupIndex,
+            dsmonMatrixNLIndex,
+            dsmonMatrixDestAddress,
+            dsmonMatrixSourceAddress,
+            dsmonMatrixALIndex
+           }
+    ::= { dsmonMatrixDSTable 1 }
+
+DsmonMatrixDSEntry ::= SEQUENCE {
+    dsmonMatrixDSPkts                   ZeroBasedCounter32,
+    dsmonMatrixDSOvflPkts               ZeroBasedCounter32,
+    dsmonMatrixDSHCPkts                 ZeroBasedCounter64,
+    dsmonMatrixDSOctets                 ZeroBasedCounter32,
+    dsmonMatrixDSOvflOctets             ZeroBasedCounter32,
+    dsmonMatrixDSHCOctets               ZeroBasedCounter64,
+    dsmonMatrixDSCreateTime             LastCreateTime
+
+
+
+}
+
+dsmonMatrixDSPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of packets of this protocol type (indicated by
+            the associated dsmonMatrixALIndex object) without errors
+            transmitted from the source address to the destination
+            address since this entry was added to the
+            dsmonMatrixDSTable.  Note that this is the number of link-
+            layer packets, so if a single network-layer packet is
+            fragmented into several link-layer frames, this counter is
+            incremented several times."
+    ::= { dsmonMatrixDSEntry 1 }
+
+dsmonMatrixDSOvflPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonMatrixDSPkts
+            counter has overflowed, since this entry was added to the
+            dsmonMatrixDSTable."
+    ::= { dsmonMatrixDSEntry 2 }
+
+dsmonMatrixDSHCPkts OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The 64-bit version of the dsmonMatrixDSPkts object.
+
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonMatrixDSEntry 3 }
+
+dsmonMatrixDSOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of octets in packets of this protocol type
+
+
+
+            transmitted from the source address to the destination
+            address since this entry was added to the dsmonMatrixDSTable
+            (excluding framing bits but including FCS octets), excluding
+            those octets in packets that contained errors.
+
+            Note this doesn't count just those octets in the particular
+            protocol frames, but includes the entire packet that
+            contained the protocol."
+    ::= { dsmonMatrixDSEntry 4 }
+
+dsmonMatrixDSOvflOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter32
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+            "The number of times the associated dsmonMatrixDSOctets
+            counter has overflowed, since this entry was added to the
+            dsmonMatrixDSTable."
+    ::= { dsmonMatrixDSEntry 5 }
+
+dsmonMatrixDSHCOctets OBJECT-TYPE
+    SYNTAX      ZeroBasedCounter64
+    UNITS       "octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The 64-bit version of the dsmonMatrixDSPkts object.
+
+            Note that this object will only be instantiated if the RMON
+            agent supports High Capacity monitoring for a particular
+            dataSource."
+    ::= { dsmonMatrixDSEntry 6 }
+
+dsmonMatrixDSCreateTime OBJECT-TYPE
+    SYNTAX     LastCreateTime
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime when this entry was last activated.
+            This can be used by the management station to ensure that
+            the entry has not been deleted and recreated between polls."
+    ::= { dsmonMatrixDSEntry 7 }
+
+
+--
+-- Per-Protocol Per-Matrix Statistics TopN Control Table
+--
+
+
+
+
+dsmonMatrixTopNCtlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DsmonMatrixTopNCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A set of parameters that control the creation of a report
+            of the top N dsmonMatrix entries according to a selected
+            metric.
+
+            Note that an agent MAY choose to limit the actual number of
+            entries which may be created in this table.  In this case,
+            the agent SHOULD return an error-status of
+            'resourceUnavailable(13)', as per section 4.2.5 of the
+            'Protocol Operations for SNMPv2' specification [RFC1905]."
+    ::= { dsmonMatrixObjects 4 }
+
+dsmonMatrixTopNCtlEntry OBJECT-TYPE
+    SYNTAX      DsmonMatrixTopNCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the dsmonMatrixTopNCtlTable.
+
+            Entries are created and deleted from this table by
+            management action only, using the dsmonMatrixTopNCtlStatus
+            RowStatus object.
+
+            The agent SHOULD support non-volatile configuration of this
+            table, and upon system initialization, the table SHOULD be
+            initialized with the saved values.
+
+            Activation of a control row in this table will cause an
+            associated dsmonMatrixTopNTable to be created and maintained
+            by the agent."
+    INDEX { dsmonMatrixTopNCtlIndex }
+    ::= { dsmonMatrixTopNCtlTable 1 }
+
+DsmonMatrixTopNCtlEntry ::= SEQUENCE {
+    dsmonMatrixTopNCtlIndex            Integer32,
+    dsmonMatrixTopNCtlMatrixIndex      Integer32,
+    dsmonMatrixTopNCtlRateBase         INTEGER,
+    dsmonMatrixTopNCtlTimeRemaining    Integer32,
+    dsmonMatrixTopNCtlGeneratedRpts    Counter32,
+    dsmonMatrixTopNCtlDuration         Integer32,
+    dsmonMatrixTopNCtlRequestedSize    Integer32,
+    dsmonMatrixTopNCtlGrantedSize      Integer32,
+    dsmonMatrixTopNCtlStartTime        TimeStamp,
+    dsmonMatrixTopNCtlOwner            OwnerString,
+
+
+
+    dsmonMatrixTopNCtlStatus           RowStatus
+}
+
+dsmonMatrixTopNCtlIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An index that uniquely identifies an entry in the
+            dsmonMatrixTopNCtlTable.  Each such entry defines one Top N
+            report prepared for one RMON dataSource."
+    ::= { dsmonMatrixTopNCtlEntry 1 }
+
+dsmonMatrixTopNCtlMatrixIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..65535)
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The dsmonMatrixSDTable for which a top N report will be
+            prepared on behalf of this entry.  The dsmonMatrixSDTable is
+            identified by the same value of the dsmonMatrixCtlIndex
+            object.
+
+            This object MUST NOT be modified if the associated
+            dsmonMatrixTopNCtlStatus object is equal to active(1)."
+    ::= { dsmonMatrixTopNCtlEntry 2 }
+
+dsmonMatrixTopNCtlRateBase OBJECT-TYPE
+    SYNTAX     INTEGER {
+                  dsmonMatrixTopNPkts(1),
+                  dsmonMatrixTopNOctets(2),
+                  dsmonMatrixTopNHCPkts(3),
+                  dsmonMatrixTopNHCOctets(4)
+               }
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The variable for each dsmonMatrixSD entry that the
+            dsmonMatrixTopNRate and dsmonMatrixTopNHCRate variables are
+            based upon.  Each dsmonMatrixTopN report generated on behalf
+            of this control entry will be ranked in descending order,
+            based on the associated dsmonMatrixSDTable counter,
+            identified by this object.
+
+            The following table identifies the dsmonMatrixSDTable
+            counters associated with each enumeration:
+
+            Enumeration                 RateBase MIB Objects
+
+
+
+            -----------                 --------------------
+            dsmonMatrixTopNPkts         dsmonMatrixSDPkts
+            dsmonMatrixTopNOctets       dsmonMatrixSDOctets
+            dsmonMatrixTopNHCPkts       dsmonMatrixSDHCPkts
+            dsmonMatrixTopNHCOctets     dsmonMatrixSDHCOctets
+
+            The following enumerations are only available if the agent
+            supports High Capacity monitoring:
+
+            dsmonMatrixTopNHCPkts
+            dsmonMatrixTopNHCOctets
+
+            This object MUST NOT be modified if the associated
+            dsmonMatrixTopNCtlStatus object is equal to active(1)."
+    ::= { dsmonMatrixTopNCtlEntry 3 }
+
+dsmonMatrixTopNCtlTimeRemaining OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "seconds"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The number of seconds left in the report currently being
+            collected.  When this object is modified by the management
+            station, a new collection is started, possibly aborting a
+            currently running report.  The new value is used as the
+            requested duration of this report, and is immediately loaded
+            into the associated dsmonMatrixTopNCtlDuration object.
+
+            When the report finishes, the probe will automatically start
+            another collection with the same initial value of
+            dsmonMatrixTopNCtlTimeRemaining.  Thus the management
+            station may simply read the resulting reports repeatedly,
+            checking the startTime and duration each time to ensure that
+            a report was not missed or that the report parameters were
+            not changed.
+
+            While the value of this object is non-zero, it decrements by
+            one per second until it reaches zero.  At the time that this
+            object decrements to zero, the report is made accessible in
+            the dsmonMatrixTopNTable, overwriting any report that may be
+            there.
+
+            When this object is modified by the management station, any
+            associated entries in the dsmonMatrixTopNTable shall be
+            deleted."
+    DEFVAL { 1800 }
+    ::= { dsmonMatrixTopNCtlEntry 4 }
+
+
+
+dsmonMatrixTopNCtlGeneratedRpts OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "reports"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of reports that have been generated by this
+            entry."
+    ::= { dsmonMatrixTopNCtlEntry 5 }
+
+dsmonMatrixTopNCtlDuration OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "seconds"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of seconds that this report has collected during
+            the last sampling interval.
+
+            When the associated dsmonMatrixTopNCtlTimeRemaining object
+            is set, this object shall be set by the probe to the same
+            value and shall not be modified until the next time the
+            dsmonMatrixTopNCtlTimeRemaining is set.
+
+            This value shall be zero if no reports have been requested
+            for this dsmonMatrixTopNCtlEntry."
+    ::= { dsmonMatrixTopNCtlEntry 6 }
+
+dsmonMatrixTopNCtlRequestedSize OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "table entries"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The maximum number of dsmonMatrix entries requested for
+            this report.
+
+            When this object is created or modified, the probe SHOULD
+            set dsmonMatrixTopNCtlGrantedSize as closely to this object
+            as is possible for the particular probe implementation and
+            available resources."
+    DEFVAL { 150 }
+    ::= { dsmonMatrixTopNCtlEntry 7 }
+
+dsmonMatrixTopNCtlGrantedSize OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "table entries"
+    MAX-ACCESS read-only
+
+
+
+    STATUS     current
+    DESCRIPTION
+            "The maximum number of dsmonMatrix entries in this report.
+
+            When the associated dsmonMatrixTopNCtlRequestedSize object
+            is created or modified, the probe SHOULD set this object as
+            closely to the requested value as is possible for the
+            particular implementation and available resources.  The
+            probe MUST NOT lower this value except as a result of a
+            set to the associated dsmonMatrixTopNCtlRequestedSize
+            object.
+
+            Protocol entries with the highest value of
+            dsmonMatrixTopNRate or dsmonMatrixTopNHCRate (depending on
+            the value of the associated dsmonMatrixTopNCtlRateBase
+            object) shall be placed in this table in decreasing order of
+            this rate until there is no more room or until there are no
+            more dsmonMatrix entries."
+    ::= { dsmonMatrixTopNCtlEntry 8 }
+
+dsmonMatrixTopNCtlStartTime OBJECT-TYPE
+    SYNTAX     TimeStamp
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime when this top N report was last
+            started.  In other words, this is the time that the
+            associated dsmonMatrixTopNCtlTimeRemaining object was
+            modified to start the requested report or the time the
+            report was last automatically (re)started.
+
+            This object may be used by the management station to
+            determine if a report was missed or not."
+    ::= { dsmonMatrixTopNCtlEntry 9 }
+
+dsmonMatrixTopNCtlOwner OBJECT-TYPE
+    SYNTAX     OwnerString
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The entity that configured this entry and is therefore
+            using the resources assigned to it."
+    ::= { dsmonMatrixTopNCtlEntry 10 }
+
+dsmonMatrixTopNCtlStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+
+
+
+    DESCRIPTION
+            "The status of this dsmonMatrixTopNCtlEntry.
+
+            An entry MUST NOT exist in the active state unless all
+            objects in the entry have an appropriate value.
+
+            If this object is not equal to active(1), all associated
+            entries in the dsmonMatrixTopNTable shall be deleted by the
+            agent."
+    ::= { dsmonMatrixTopNCtlEntry 11 }
+
+--
+-- dsmonMatrix TopN Table
+--
+
+dsmonMatrixTopNTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF DsmonMatrixTopNEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A set of statistics for those dsmonMatrix entries that have
+            counted the highest number of octets or packets.
+
+            If the dsmonAggControlLocked object is equal to 'false',
+            then all entries in this table SHALL be deleted, and the
+            agent will not process TopN reports on behalf of any
+            dsmonMatrixTopNCtlEntry.
+
+            When the dsmonAggControlLocked object is set to 'true', then
+            particular reports SHOULD be restarted from the beginning,
+            on behalf of all active rows in the dsmonMatrixTopNCtlTable.
+
+            Note that dsmonMatrix entries which did not increment at all
+            during the report interval SHOULD NOT be included in
+            dsmonMatrixTopN reports."
+    ::= { dsmonMatrixObjects 5 }
+
+dsmonMatrixTopNEntry OBJECT-TYPE
+    SYNTAX     DsmonMatrixTopNEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A conceptual row in the dsmonMatrixTopNTable.
+
+            The dsmonMatrixTopNCtlIndex value in the index identifies
+            the dsmonMatrixTopNCtlEntry on whose behalf this entry was
+            created.
+
+
+
+
+            Entries in this table are ordered from 1 to 'N', where lower
+            numbers represent higher values of the rate base object,
+            over the report interval."
+    INDEX { dsmonMatrixTopNCtlIndex, dsmonMatrixTopNIndex }
+    ::= { dsmonMatrixTopNTable 1 }
+
+DsmonMatrixTopNEntry ::= SEQUENCE {
+    dsmonMatrixTopNIndex                Integer32,
+    dsmonMatrixTopNAggGroup             DsmonCounterAggGroupIndex,
+    dsmonMatrixTopNNLIndex              Integer32,
+    dsmonMatrixTopNSourceAddress        OCTET STRING,
+    dsmonMatrixTopNDestAddress          OCTET STRING,
+    dsmonMatrixTopNALIndex              Integer32,
+    dsmonMatrixTopNPktRate              Gauge32,
+    dsmonMatrixTopNPktRateOvfl          Gauge32,
+    dsmonMatrixTopNHCPktRate            CounterBasedGauge64,
+    dsmonMatrixTopNRevPktRate           Gauge32,
+    dsmonMatrixTopNRevPktRateOvfl       Gauge32,
+    dsmonMatrixTopNHCRevPktRate         CounterBasedGauge64,
+    dsmonMatrixTopNOctetRate            Gauge32,
+    dsmonMatrixTopNOctetRateOvfl        Gauge32,
+    dsmonMatrixTopNHCOctetRate          CounterBasedGauge64,
+    dsmonMatrixTopNRevOctetRate         Gauge32,
+    dsmonMatrixTopNRevOctetRateOvfl     Gauge32,
+    dsmonMatrixTopNHCRevOctetRate       CounterBasedGauge64
+  }
+
+dsmonMatrixTopNIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An index that uniquely identifies an entry in the
+            dsmonMatrixTopNTable among those in the same report.  This
+            index is between 1 and N, where N is the number of entries
+            in this report."
+    ::= { dsmonMatrixTopNEntry 1 }
+
+dsmonMatrixTopNAggGroup OBJECT-TYPE
+    SYNTAX      DsmonCounterAggGroupIndex
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The counter aggregation group index value associated with
+            host identified in this entry.  This object identifies the
+            dsmonAggGroupEntry with the same dsmonAggControlIndex value
+            as the associated dsmonMatrixCtlAggProfile object and the
+            same dsmonAggGroupIndex value as this object."
+
+
+
+    ::= { dsmonMatrixTopNEntry 2 }
+
+dsmonMatrixTopNNLIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..2147483647)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The protocolDirLocalIndex value which identifies the
+            protocol associated with the dsmonMatrixTopNSourceAddress
+            and dsmonMatrixTopNDestAddress objects in this entry.
+
+            If the protocolDirEntry associated with the
+            protocolDirLocalIndex with the same value as this object is
+            de-activated or deleted, then the agent MUST delete this
+            dsmonMatrixTopN entry."
+    ::= { dsmonMatrixTopNEntry 3 }
+
+dsmonMatrixTopNSourceAddress OBJECT-TYPE
+    SYNTAX     OCTET STRING
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The dsmonMatrixSDSourceAddress value for the source network
+            host identified in this entry.  The associated
+            dsmonMatrixTopNNLIndex object identifies the network
+            protocol type and the encoding rules for this object."
+    ::= { dsmonMatrixTopNEntry 4 }
+
+dsmonMatrixTopNDestAddress OBJECT-TYPE
+    SYNTAX     OCTET STRING
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The dsmonMatrixSDDestAddress value for the destination
+            network host identified in this entry.  The associated
+            dsmonMatrixTopNNLIndex object identifies the network
+            protocol type and the encoding rules for this object."
+    ::= { dsmonMatrixTopNEntry 5 }
+
+dsmonMatrixTopNALIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..2147483647)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The protocolDirLocalIndex value which identifies the
+            application protocol associated with this entry.
+
+            If the protocolDirEntry associated with the
+
+
+
+            protocolDirLocalIndex with the same value as this object is
+            de-activated or deleted, then the agent MUST delete this
+            dsmonMatrixTopN entry."
+    ::= { dsmonMatrixTopNEntry 6 }
+
+dsmonMatrixTopNPktRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of packets seen of this protocol from the source
+            host to the destination host during this sampling interval,
+            counted using the rules for counting the dsmonMatrixSDPkts
+            object.
+
+            If the value of dsmonMatrixTopNCtlRateBase is
+            dsmonMatrixTopNPkts, this variable will be used to sort this
+            report.
+
+            If the value of the dsmonMatrixTopNCtlRateBase is
+            dsmonMatrixTopNHCPkts or dsmonMatrixTopNHCOctets, then this
+            object will contain the the least significant 32 bits of the
+            associated dsmonMatrixTopNHCPktRate object."
+    ::= { dsmonMatrixTopNEntry 7 }
+
+dsmonMatrixTopNPktRateOvfl OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     deprecated
+    DESCRIPTION
+            "The most significant 32 bits of the associated
+            dsmonMatrixTopNHCPktRate object.
+
+            If the associated dsmonMatrixTopNCtlRateBase is equal to
+            dsmonMatrixTopNHCPkts or dsmonMatrixTopNHCOctets, then this
+            object will contain the most significant 32 bits of the
+            associated dsmonMatrixTopNHCPktRate object, otherwise this
+            object will contain the value zero.
+
+            The agent MAY choose not to instantiate this object if High
+            Capacity monitoring is not supported."
+    ::= { dsmonMatrixTopNEntry 8 }
+
+dsmonMatrixTopNHCPktRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+
+
+
+            "The number of packets seen of this protocol from the source
+            host to the destination host during this sampling interval,
+            counted using the rules for counting the dsmonMatrixSDHCPkts
+            object.
+
+            If the value of dsmonMatrixTopNCtlRateBase is
+            dsmonMatrixTopNHCPkts, this variable will be used to sort
+            this report.
+
+            The agent MAY choose not to instantiate this object if High
+            Capacity monitoring is not supported."
+    ::= { dsmonMatrixTopNEntry 9 }
+
+dsmonMatrixTopNRevPktRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of packets seen of this protocol from the
+            destination host to the source host during this sampling
+            interval, counted using the rules for counting the
+            dsmonMatrixDSPkts object  (note that the corresponding
+            dsmonMatrixSDPkts object selected is the one whose source
+            address is equal to dsmonMatrixTopNDestAddress and whose
+            destination address is equal to
+            dsmonMatrixTopNSourceAddress.)"
+    ::= { dsmonMatrixTopNEntry 10 }
+
+dsmonMatrixTopNRevPktRateOvfl OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     deprecated
+    DESCRIPTION
+            "The most significant 32 bits of the associated
+            dsmonMatrixTopNHCRevPktRate object.
+
+            If the associated dsmonMatrixTopNCtlRateBase is equal to
+            dsmonMatrixTopNHCPkts or dsmonMatrixTopNHCOCtets, then this
+            object will contain the most significant 32 bits of the
+            associated dsmonMatrixTopNHCRevPktRate object, otherwise
+            this object will contain the value zero.
+
+            The agent MAY choose not to instantiate this object if High
+            Capacity monitoring is not supported."
+    ::= { dsmonMatrixTopNEntry 11 }
+
+dsmonMatrixTopNHCRevPktRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+
+
+
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of packets seen of this protocol from the
+            destination host to the source host during this sampling
+            interval, counted using the rules for counting the
+            dsmonMatrixDSHCPkts object  (note that the corresponding
+            dsmonMatrixSDHCPkts object selected is the one whose source
+            address is equal to dsmonMatrixTopNDestAddress and whose
+            destination address is equal to
+            dsmonMatrixTopNSourceAddress.)
+
+            The agent MAY choose not to instantiate this object if High
+            Capacity monitoring is not supported."
+    ::= { dsmonMatrixTopNEntry 12 }
+
+dsmonMatrixTopNOctetRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets seen of this protocol from the source
+            host to the destination host during this sampling interval,
+            counted using the rules for counting the dsmonMatrixSDOctets
+            object.
+
+            If the value of dsmonMatrixTopNCtlRateBase is
+            dsmonMatrixTopNOctets, this variable will be used to sort
+            this report.
+
+            If the value of the dsmonMatrixTopNCtlRateBase is
+            dsmonMatrixTopNHCPkts or dsmonMatrixTopNHCOctets, then this
+            object will contain the the least significant 32 bits of the
+            associated dsmonMatrixTopNHCPktRate object."
+    ::= { dsmonMatrixTopNEntry 13 }
+
+dsmonMatrixTopNOctetRateOvfl OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     deprecated
+    DESCRIPTION
+            "The most significant 32 bits of the associated
+            dsmonMatrixTopNHCOctetRate object.
+
+            If the associated dsmonMatrixTopNCtlRateBase is equal to
+            dsmonMatrixTopNHCPkts or dsmonMatrixTopNHCOctets, then this
+            object will contain the most significant 32 bits of the
+            associated dsmonMatrixTopNHCOctetRate object, otherwise this
+
+
+
+            object will contain the value zero.
+
+            The agent MAY choose not to instantiate this object if High
+            Capacity monitoring is not supported."
+    ::= { dsmonMatrixTopNEntry 14 }
+
+dsmonMatrixTopNHCOctetRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets seen of this protocol from the source
+            host to the destination host during this sampling interval,
+            counted using the rules for counting the
+            dsmonMatrixSDHCOctets object.
+
+            If the value of dsmonMatrixTopNCtlRateBase is
+            dsmonMatrixTopNHCOctets, this variable will be used to sort
+            this report.
+
+            The agent MAY choose not to instantiate this object if High
+            Capacity monitoring is not supported."
+    ::= { dsmonMatrixTopNEntry 15 }
+
+dsmonMatrixTopNRevOctetRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets seen of this protocol from the
+            destination host to the source host during this sampling
+            interval, counted using the rules for counting the
+            dsmonMatrixDSOctets object  (note that the corresponding
+            dsmonMatrixSDOctets object selected is the one whose source
+            address is equal to dsmonMatrixTopNDestAddress and whose
+            destination address is equal to
+            dsmonMatrixTopNSourceAddress.)"
+    ::= { dsmonMatrixTopNEntry 16 }
+
+dsmonMatrixTopNRevOctetRateOvfl OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     deprecated
+    DESCRIPTION
+            "The most significant 32 bits of the associated
+            dsmonMatrixTopNHCRevOctetRate object.
+
+            If the associated dsmonMatrixTopNCtlRateBase is equal to
+
+
+
+            dsmonMatrixTopNHCPkts or dsmonMatrixTopNHCOCtets, then this
+            object will contain the most significant 32 bits of the
+            associated dsmonMatrixTopNHCRevPktRate object, otherwise
+            this object will contain the value zero.
+
+            The agent MAY choose not to instantiate this object if High
+            Capacity monitoring is not supported."
+    ::= { dsmonMatrixTopNEntry 17 }
+
+dsmonMatrixTopNHCRevOctetRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets seen of this protocol from the
+            destination host to the source host during this sampling
+            interval, counted using the rules for counting the
+            dsmonMatrixDSHCOctets object  (note that the corresponding
+            dsmonMatrixSDHCOctets object selected is the one whose
+            source address is equal to dsmonMatrixTopNDestAddress and
+            whose destination address is equal to
+            dsmonMatrixTopNSourceAddress.)
+
+            The agent MAY choose not to instantiate this object if High
+            Capacity monitoring is not supported."
+    ::= { dsmonMatrixTopNEntry 18 }
+
+--
+-- Conformance Section
+--
+
+dsmonCompliances OBJECT IDENTIFIER ::= { dsmonConformance 1 }
+dsmonGroups      OBJECT IDENTIFIER ::= { dsmonConformance 2 }
+
+--
+-- Compliance for agents that do not support HC or Counter64
+--
+
+dsmonCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "Describes the requirements for conformance to the
+            Differentiated Services Monitoring MIB."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+                           dsmonCounterAggControlGroup,
+                           dsmonStatsGroup,
+                           dsmonCapsGroup
+
+
+
+                         }
+
+        GROUP   dsmonStatsHCGroup
+        DESCRIPTION
+            "The dsmonStatsHCGroup is mandatory for systems which
+            implement High Capacity monitoring."
+
+        GROUP   dsmonPdistGroup
+        DESCRIPTION
+            "The dsmonPdistGroup is mandatory for systems which
+            implement RMON-2 protocolDirTable based protocol
+            distribution monitoring."
+
+        GROUP  dsmonPdistHCGroup
+        DESCRIPTION
+            "The dsmonPdistHCGroup is mandatory for systems which
+            implement RMON-2 protocolDirTable based protocol
+            distribution monitoring on high capacity interfaces."
+
+        GROUP  dsmonHostGroup
+        DESCRIPTION
+            "The dsmonHostGroup is mandatory for systems which implement
+            RMON-2 nlHostTable based network protocol monitoring."
+
+        GROUP  dsmonHostHCGroup
+        DESCRIPTION
+            "The dsmonHostHCGroup is mandatory for systems which
+            implement RMON-2 nlHostTable based network protocol
+            monitoring, on high capacity interfaces."
+
+        GROUP  dsmonMatrixGroup
+        DESCRIPTION
+            "The dsmonMatrixGroup is mandatory for systems which
+            implement RMON-2 alMatrix based application protocol
+            monitoring."
+
+        GROUP  dsmonMatrixHCGroup
+        DESCRIPTION
+            "The dsmonMatrixHCGroup is mandatory for systems which
+            implement RMON-2 alMatrix based application protocol
+            monitoring, on high capacity interfaces."
+
+    ::= { dsmonCompliances 1 }
+
+--
+-- Compliance for agents that support HC and Counter64
+--
+
+
+
+
+dsmonHCCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "Describes the requirements for conformance to the
+            Differentiated Services Monitoring MIB for agents which also
+            support High Capacity monitoring and the Counter64 data
+            type."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+                           dsmonCounterAggControlGroup,
+                           dsmonStatsGroup,
+                           dsmonStatsHCGroup,
+                           dsmonCapsGroup
+                         }
+
+        GROUP   dsmonPdistGroup
+        DESCRIPTION
+            "The dsmonPdistGroup is mandatory for systems which
+            implement RMON-2 protocolDirTable based protocol
+            distribution monitoring."
+
+        GROUP  dsmonPdistHCGroup
+        DESCRIPTION
+            "The dsmonPdistHCGroup is mandatory for systems which
+            implement RMON-2 protocolDirTable based protocol
+            distribution monitoring."
+
+        GROUP  dsmonHostGroup
+        DESCRIPTION
+            "The dsmonHostGroup is mandatory for systems which implement
+            RMON-2 nlHostTable based network protocol monitoring."
+
+        GROUP  dsmonHostHCGroup
+        DESCRIPTION
+            "The dsmonHostHCGroup is mandatory for systems which
+            implement RMON-2 nlHostTable based network protocol
+            monitoring."
+
+        GROUP  dsmonMatrixGroup
+        DESCRIPTION
+            "The dsmonMatrixGroup is mandatory for systems which
+            implement RMON-2 alMatrix based application protocol
+            monitoring."
+
+        GROUP  dsmonMatrixHCGroup
+        DESCRIPTION
+            "The dsmonMatrixHCGroup is mandatory for systems which
+            implement RMON-2 alMatrix based application protocol
+
+
+
+            monitoring."
+
+    ::= { dsmonCompliances 2 }
+
+--
+-- Compliance for agents that support HC, but not Counter64
+--
+
+dsmonHCNoC64Compliance MODULE-COMPLIANCE
+    STATUS  deprecated
+    DESCRIPTION
+            "Describes the requirements for conformance to the
+            Differentiated Services Monitoring MIB for an agent which
+            supports high capacity monitoring, but does not support the
+            Counter64 data type (e.g., only supports the SNMPv1
+            protocol)."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+                           dsmonCounterAggControlGroup,
+                           dsmonStatsGroup,
+                           dsmonStatsOvflGroup,
+                           dsmonCapsGroup
+                         }
+
+        GROUP   dsmonStatsHCGroup
+        DESCRIPTION
+            "Implementation of the dsmonStatsHCGroup is not required.
+            High Capacity monitoring."
+
+        GROUP   dsmonPdistGroup
+        DESCRIPTION
+            "The dsmonPdistGroup is mandatory for systems which
+            implement RMON-2 protocolDirTable based protocol
+            distribution monitoring."
+
+        GROUP   dsmonPdistOvflGroup
+        DESCRIPTION
+            "The dsmonPdistGroup is mandatory for systems which
+            implement RMON-2 protocolDirTable based protocol
+            distribution monitoring."
+
+        GROUP  dsmonPdistHCGroup
+        DESCRIPTION
+            "Implementation of the dsmonPdistHCGroup is not required."
+
+        GROUP  dsmonHostGroup
+        DESCRIPTION
+            "The dsmonHostGroup is mandatory for systems which implement
+
+
+
+            RMON-2 nlHostTable based network protocol monitoring."
+
+        GROUP  dsmonHostOvflGroup
+        DESCRIPTION
+            "The dsmonHostGroup is mandatory for systems which implement
+            RMON-2 nlHostTable based network protocol monitoring."
+
+        GROUP  dsmonHostHCGroup
+        DESCRIPTION
+            "Implementation of the dsmonHostHCGroup is not required."
+
+        GROUP  dsmonMatrixGroup
+        DESCRIPTION
+            "The dsmonMatrixGroup is mandatory for systems which
+            implement RMON-2 alMatrix based application protocol
+            monitoring."
+
+        GROUP  dsmonMatrixOvflGroup
+        DESCRIPTION
+            "The dsmonMatrixGroup is mandatory for systems which
+            implement RMON-2 alMatrix based application protocol
+            monitoring."
+
+        GROUP  dsmonMatrixHCGroup
+        DESCRIPTION
+            "Implementation of the dsmonMatrixHCGroup is not required."
+
+    ::= { dsmonCompliances 3 }
+
+
+
+-- Object Groups
+
+dsmonCounterAggControlGroup OBJECT-GROUP
+    OBJECTS {
+             dsmonMaxAggGroups,
+             dsmonAggControlLocked,
+             dsmonAggControlChanges,
+             dsmonAggControlLastChangeTime,
+             dsmonAggControlDescr,
+             dsmonAggControlOwner,
+             dsmonAggControlStatus,
+             dsmonAggGroupIndex,
+             dsmonAggGroupDescr,
+             dsmonAggGroupStatus
+    }
+    STATUS  current
+    DESCRIPTION
+
+
+
+            "A collection of objects used to configure and manage
+            counter aggregation groups for DSMON collection purposes."
+    ::= { dsmonGroups 1 }
+
+dsmonStatsGroup OBJECT-GROUP
+    OBJECTS {
+             dsmonStatsControlDataSource,
+             dsmonStatsControlAggProfile,
+             dsmonStatsControlDroppedFrames,
+             dsmonStatsControlCreateTime,
+             dsmonStatsControlOwner,
+             dsmonStatsControlStatus,
+             dsmonStatsInPkts,
+             dsmonStatsInOctets,
+             dsmonStatsOutPkts,
+             dsmonStatsOutOctets
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing per DSCP statistics."
+    ::= { dsmonGroups 2 }
+
+dsmonStatsOvflGroup OBJECT-GROUP
+    OBJECTS {
+            dsmonStatsInOvflPkts,
+            dsmonStatsInOvflOctets,
+            dsmonStatsOutOvflPkts,
+            dsmonStatsOutOvflOctets
+    }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing per-DSCP overflow
+            counters for systems with high capacity data sources, but
+            without support for the Counter64 data type."
+    ::= { dsmonGroups 3 }
+
+dsmonStatsHCGroup OBJECT-GROUP
+    OBJECTS {
+            dsmonStatsInHCPkts,
+            dsmonStatsInHCOctets,
+            dsmonStatsOutHCPkts,
+            dsmonStatsOutHCOctets
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing per DSCP statistics for
+            high capacity data sources."
+    ::= { dsmonGroups 4 }
+
+
+
+dsmonPdistGroup OBJECT-GROUP
+    OBJECTS {
+            dsmonPdistCtlDataSource,
+            dsmonPdistCtlAggProfile,
+            dsmonPdistCtlMaxDesiredEntries,
+            dsmonPdistCtlDroppedFrames,
+            dsmonPdistCtlInserts,
+            dsmonPdistCtlDeletes,
+            dsmonPdistCtlCreateTime,
+            dsmonPdistCtlOwner,
+            dsmonPdistCtlStatus,
+            dsmonPdistStatsPkts,
+            dsmonPdistStatsOctets,
+            dsmonPdistStatsCreateTime,
+            dsmonPdistTopNCtlPdistIndex,
+            dsmonPdistTopNCtlRateBase,
+            dsmonPdistTopNCtlTimeRemaining,
+            dsmonPdistTopNCtlGeneratedReprts,
+            dsmonPdistTopNCtlDuration,
+            dsmonPdistTopNCtlRequestedSize,
+            dsmonPdistTopNCtlGrantedSize,
+            dsmonPdistTopNCtlStartTime,
+            dsmonPdistTopNCtlOwner,
+            dsmonPdistTopNCtlStatus,
+            dsmonPdistTopNPDLocalIndex,
+            dsmonPdistTopNAggGroup,
+            dsmonPdistTopNRate
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing per protocol DSCP
+            monitoring extensions to the RMON-2 MIB."
+    ::= { dsmonGroups 5 }
+
+dsmonPdistOvflGroup OBJECT-GROUP
+    OBJECTS {
+            dsmonPdistStatsOvflPkts,
+            dsmonPdistStatsOvflOctets,
+            dsmonPdistTopNRateOvfl
+    }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing per-protocol DSCP
+            overflow counters for systems with high capacity data
+            sources, but without support for the Counter64 data type."
+    ::= { dsmonGroups 6 }
+
+dsmonPdistHCGroup OBJECT-GROUP
+
+
+
+    OBJECTS {
+            dsmonPdistStatsHCPkts,
+            dsmonPdistStatsHCOctets,
+            dsmonPdistTopNHCRate
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing per protocol DSCP
+            monitoring extensions to the RMON-2 MIB for High Capacity
+            networks."
+    ::= { dsmonGroups 7 }
+
+dsmonHostGroup OBJECT-GROUP
+    OBJECTS {
+            dsmonHostCtlDataSource,
+            dsmonHostCtlAggProfile,
+            dsmonHostCtlMaxDesiredEntries,
+            dsmonHostCtlIPv4PrefixLen,
+            dsmonHostCtlIPv6PrefixLen,
+            dsmonHostCtlDroppedFrames,
+            dsmonHostCtlInserts,
+            dsmonHostCtlDeletes,
+            dsmonHostCtlCreateTime,
+            dsmonHostCtlOwner,
+            dsmonHostCtlStatus,
+            dsmonHostInPkts,
+            dsmonHostInOctets,
+            dsmonHostOutPkts,
+            dsmonHostOutOctets,
+            dsmonHostCreateTime,
+            dsmonHostTopNCtlHostIndex,
+            dsmonHostTopNCtlRateBase,
+            dsmonHostTopNCtlTimeRemaining,
+            dsmonHostTopNCtlGeneratedReports,
+            dsmonHostTopNCtlDuration,
+            dsmonHostTopNCtlRequestedSize,
+            dsmonHostTopNCtlGrantedSize,
+            dsmonHostTopNCtlStartTime,
+            dsmonHostTopNCtlOwner,
+            dsmonHostTopNCtlStatus,
+            dsmonHostTopNPDLocalIndex,
+            dsmonHostTopNAddress,
+            dsmonHostTopNAggGroup,
+            dsmonHostTopNRate
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing per Host monitoring
+
+
+
+            functions."
+    ::= { dsmonGroups 8 }
+
+dsmonHostOvflGroup OBJECT-GROUP
+    OBJECTS {
+            dsmonHostInOvflPkts,
+            dsmonHostInOvflOctets,
+            dsmonHostOutOvflPkts,
+            dsmonHostOutOvflOctets,
+            dsmonHostTopNRateOvfl
+    }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing per host DSCP overflow
+            counters for systems with high capacity data sources, but
+            without support for the Counter64 data type."
+    ::= { dsmonGroups 9 }
+
+dsmonHostHCGroup OBJECT-GROUP
+    OBJECTS {
+            dsmonHostInHCPkts,
+            dsmonHostInHCOctets,
+            dsmonHostOutHCPkts,
+            dsmonHostOutHCOctets,
+            dsmonHostTopNHCRate
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing per Host monitoring
+            functions for High Capacity networks."
+    ::= { dsmonGroups 10 }
+
+dsmonCapsGroup OBJECT-GROUP
+    OBJECTS {
+            dsmonCapabilities
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing an indication of the
+            DSMON monitoring functions supported by the agent."
+    ::= { dsmonGroups 11 }
+
+dsmonMatrixGroup OBJECT-GROUP
+    OBJECTS {
+            dsmonMatrixCtlDataSource,
+            dsmonMatrixCtlAggProfile,
+            dsmonMatrixCtlMaxDesiredEntries,
+            dsmonMatrixCtlDroppedFrames,
+
+
+
+            dsmonMatrixCtlInserts,
+            dsmonMatrixCtlDeletes,
+            dsmonMatrixCtlCreateTime,
+            dsmonMatrixCtlOwner,
+            dsmonMatrixCtlStatus,
+            dsmonMatrixSDPkts,
+            dsmonMatrixSDOctets,
+            dsmonMatrixSDCreateTime,
+            dsmonMatrixDSPkts,
+            dsmonMatrixDSOctets,
+            dsmonMatrixDSCreateTime,
+            dsmonMatrixTopNCtlMatrixIndex,
+            dsmonMatrixTopNCtlRateBase,
+            dsmonMatrixTopNCtlTimeRemaining,
+            dsmonMatrixTopNCtlGeneratedRpts,
+            dsmonMatrixTopNCtlDuration,
+            dsmonMatrixTopNCtlRequestedSize,
+            dsmonMatrixTopNCtlGrantedSize,
+            dsmonMatrixTopNCtlStartTime,
+            dsmonMatrixTopNCtlOwner,
+            dsmonMatrixTopNCtlStatus,
+            dsmonMatrixTopNAggGroup,
+            dsmonMatrixTopNNLIndex,
+            dsmonMatrixTopNSourceAddress,
+            dsmonMatrixTopNDestAddress,
+            dsmonMatrixTopNALIndex,
+            dsmonMatrixTopNPktRate,
+            dsmonMatrixTopNRevPktRate,
+            dsmonMatrixTopNOctetRate,
+            dsmonMatrixTopNRevOctetRate
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing per conversation
+            monitoring functions."
+    ::= { dsmonGroups 12 }
+
+dsmonMatrixOvflGroup OBJECT-GROUP
+    OBJECTS {
+            dsmonMatrixSDOvflPkts,
+            dsmonMatrixSDOvflOctets,
+            dsmonMatrixDSOvflPkts,
+            dsmonMatrixDSOvflOctets,
+            dsmonMatrixTopNPktRateOvfl,
+            dsmonMatrixTopNRevPktRateOvfl,
+            dsmonMatrixTopNOctetRateOvfl,
+            dsmonMatrixTopNRevOctetRateOvfl
+    }
+
+
+
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing per conversation
+            monitoring functions for systems with high capacity data
+            sources, but without support for the Counter64 data type."
+    ::= { dsmonGroups 13 }
+
+dsmonMatrixHCGroup OBJECT-GROUP
+    OBJECTS {
+            dsmonMatrixSDHCPkts,
+            dsmonMatrixSDHCOctets,
+            dsmonMatrixDSHCPkts,
+            dsmonMatrixDSHCOctets,
+            dsmonMatrixTopNHCPktRate,
+            dsmonMatrixTopNHCRevPktRate,
+            dsmonMatrixTopNHCOctetRate,
+            dsmonMatrixTopNHCRevOctetRate
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing per conversation
+            monitoring functions for High Capacity networks."
+    ::= { dsmonGroups 14 }
+
+END

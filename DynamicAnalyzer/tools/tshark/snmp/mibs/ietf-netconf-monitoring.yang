@@ -1,0 +1,559 @@
+module ietf-netconf-monitoring {
+
+  namespace "urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring";
+  prefix "ncm";
+
+  import ietf-yang-types { prefix yang; }
+  import ietf-inet-types { prefix inet; }
+
+  organization
+    "IETF NETCONF (Network Configuration) Working Group";
+
+  contact
+    "WG Web:   <http://tools.ietf.org/wg/netconf/>
+     WG List:  <mailto:netconf@ietf.org>
+
+     WG Chair: Mehmet Ersue
+               <mailto:mehmet.ersue@nsn.com>
+
+     WG Chair: Bert Wijnen
+               <mailto:bertietf@bwijnen.net>
+
+     Editor:   Mark Scott
+               <mailto:mark.scott@ericsson.com>
+
+     Editor:   Martin Bjorklund
+               <mailto:mbj@tail-f.com>";
+
+  description
+    "NETCONF Monitoring Module.
+     All elements in this module are read-only.
+
+     Copyright (c) 2010 IETF Trust and the persons identified as
+     authors of the code. All rights reserved.
+
+     Redistribution and use in source and binary forms, with or
+     without modification, is permitted pursuant to, and subject
+     to the license terms contained in, the Simplified BSD
+     License set forth in Section 4.c of the IETF Trust's
+     Legal Provisions Relating to IETF Documents
+     (http://trustee.ietf.org/license-info).
+
+     This version of this YANG module is part of RFC 6022; see
+     the RFC itself for full legal notices.";
+
+  revision 2010-10-04 {
+    description
+      "Initial revision.";
+    reference
+      "RFC 6022: YANG Module for NETCONF Monitoring";
+  }
+
+  typedef netconf-datastore-type {
+    type enumeration {
+      enum running;
+      enum candidate;
+      enum startup;
+    }
+    description
+      "Enumeration of possible NETCONF datastore types.";
+    reference
+      "RFC 4741: NETCONF Configuration Protocol";
+  }
+
+  identity transport {
+    description
+      "Base identity for NETCONF transport types.";
+  }
+
+  identity netconf-ssh {
+    base transport;
+    description
+      "NETCONF over Secure Shell (SSH).";
+    reference
+      "RFC 4742: Using the NETCONF Configuration Protocol
+                 over Secure SHell (SSH)";
+  }
+
+  identity netconf-soap-over-beep {
+    base transport;
+    description
+      "NETCONF over Simple Object Access Protocol (SOAP) over
+       Blocks Extensible Exchange Protocol (BEEP).";
+    reference
+      "RFC 4743: Using NETCONF over the Simple Object
+                 Access Protocol (SOAP)";
+  }
+
+  identity netconf-soap-over-https {
+    base transport;
+    description
+      "NETCONF over Simple Object Access Protocol (SOAP)
+      over Hypertext Transfer Protocol Secure (HTTPS).";
+    reference
+      "RFC 4743: Using NETCONF over the Simple Object
+                 Access Protocol (SOAP)";
+  }
+
+  identity netconf-beep {
+    base transport;
+    description
+      "NETCONF over Blocks Extensible Exchange Protocol (BEEP).";
+    reference
+      "RFC 4744: Using the NETCONF Protocol over the
+                 Blocks Extensible Exchange Protocol (BEEP)";
+  }
+
+  identity netconf-tls {
+    base transport;
+    description
+      "NETCONF over Transport Layer Security (TLS).";
+    reference
+      "RFC 5539: NETCONF over Transport Layer Security (TLS)";
+  }
+
+  identity schema-format {
+    description
+      "Base identity for data model schema languages.";
+  }
+
+  identity xsd {
+    base schema-format;
+    description
+      "W3C XML Schema Definition.";
+    reference
+      "W3C REC REC-xmlschema-1-20041028:
+         XML Schema Part 1: Structures";
+  }
+
+  identity yang {
+    base schema-format;
+    description
+      "The YANG data modeling language for NETCONF.";
+    reference
+      "RFC 6020:  YANG - A Data Modeling Language for the
+                  Network Configuration Protocol (NETCONF)";
+  }
+
+  identity yin {
+    base schema-format;
+    description
+      "The YIN syntax for YANG.";
+    reference
+      "RFC 6020:  YANG - A Data Modeling Language for the
+                  Network Configuration Protocol (NETCONF)";
+  }
+
+  identity rng {
+    base schema-format;
+    description
+      "Regular Language for XML Next Generation (RELAX NG).";
+    reference
+      "ISO/IEC 19757-2:2008: RELAX NG";
+  }
+
+  identity rnc {
+    base schema-format;
+    description
+      "Relax NG Compact Syntax";
+    reference
+      "ISO/IEC 19757-2:2008: RELAX NG";
+  }
+
+  grouping common-counters {
+    description
+      "Counters that exist both per session, and also globally,
+       accumulated from all sessions.";
+
+    leaf in-rpcs {
+      type yang:zero-based-counter32;
+      description
+        "Number of correct <rpc> messages received.";
+    }
+    leaf in-bad-rpcs {
+      type yang:zero-based-counter32;
+      description
+        "Number of messages received when an <rpc> message was expected,
+         that were not correct <rpc> messages.  This includes XML parse
+         errors and errors on the rpc layer.";
+    }
+    leaf out-rpc-errors {
+      type yang:zero-based-counter32;
+      description
+        "Number of <rpc-reply> messages sent that contained an
+         <rpc-error> element.";
+    }
+    leaf out-notifications {
+      type yang:zero-based-counter32;
+      description
+        "Number of <notification> messages sent.";
+    }
+  }
+
+  container netconf-state {
+    config false;
+    description
+      "The netconf-state container is the root of the monitoring
+       data model.";
+
+    container capabilities {
+      description
+        "Contains the list of NETCONF capabilities supported by the
+         server.";
+
+      leaf-list capability {
+        type inet:uri;
+        description
+          "List of NETCONF capabilities supported by the server.";
+      }
+    }
+
+    container datastores {
+      description
+        "Contains the list of NETCONF configuration datastores.";
+
+      list datastore {
+        key name;
+        description
+          "List of NETCONF configuration datastores supported by
+           the NETCONF server and related information.";
+
+        leaf name {
+          type netconf-datastore-type;
+          description
+            "Name of the datastore associated with this list entry.";
+        }
+        container locks {
+          presence
+            "This container is present only if the datastore
+             is locked.";
+          description
+            "The NETCONF <lock> and <partial-lock> operations allow
+             a client to lock specific resources in a datastore.  The
+             NETCONF server will prevent changes to the locked
+             resources by all sessions except the one that acquired
+             the lock(s).
+
+             Monitoring information is provided for each datastore
+             entry including details such as the session that acquired
+             the lock, the type of lock (global or partial) and the
+             list of locked resources.  Multiple locks per datastore
+             are supported.";
+
+          grouping lock-info {
+            description
+              "Lock related parameters, common to both global and
+               partial locks.";
+
+            leaf locked-by-session {
+              type uint32;
+              mandatory true;
+              description
+                "The session ID of the session that has locked
+                 this resource.  Both a global lock and a partial
+                 lock MUST contain the NETCONF session-id.
+
+                 If the lock is held by a session that is not managed
+                 by the NETCONF server (e.g., a CLI session), a session
+                 id of 0 (zero) is reported.";
+              reference
+                "RFC 4741: NETCONF Configuration Protocol";
+            }
+            leaf locked-time {
+              type yang:date-and-time;
+              mandatory true;
+              description
+                "The date and time of when the resource was
+                 locked.";
+            }
+          }
+
+          choice lock-type {
+            description
+              "Indicates if a global lock or a set of partial locks
+               are set.";
+
+            container global-lock {
+              description
+                "Present if the global lock is set.";
+              uses lock-info;
+            }
+
+            list partial-lock {
+              key lock-id;
+              description
+                "List of partial locks.";
+              reference
+                "RFC 5717: Partial Lock Remote Procedure Call (RPC) for
+                           NETCONF";
+
+              leaf lock-id {
+                type uint32;
+                description
+                  "This is the lock id returned in the <partial-lock>
+                   response.";
+              }
+              uses lock-info;
+              leaf-list select {
+                type yang:xpath1.0;
+                min-elements 1;
+                description
+                  "The xpath expression that was used to request
+                   the lock.  The select expression indicates the
+                   original intended scope of the lock.";
+              }
+              leaf-list locked-node {
+                type instance-identifier;
+                description
+                  "The list of instance-identifiers (i.e., the
+                   locked nodes).
+
+                   The scope of the partial lock is defined by the list
+                   of locked nodes.";
+              }
+            }
+          }
+        }
+      }
+    }
+
+    container schemas {
+      description
+        "Contains the list of data model schemas supported by the
+         server.";
+
+      list schema {
+        key "identifier version format";
+
+        description
+          "List of data model schemas supported by the server.";
+
+        leaf identifier {
+          type string;
+          description
+            "Identifier to uniquely reference the schema.  The
+             identifier is used in the <get-schema> operation and may
+             be used for other purposes such as file retrieval.
+
+             For modeling languages that support or require a data
+             model name (e.g., YANG module name) the identifier MUST
+             match that name.  For YANG data models, the identifier is
+             the name of the module or submodule.  In other cases, an
+             identifier such as a filename MAY be used instead.";
+        }
+        leaf version {
+          type string;
+          description
+            "Version of the schema supported.  Multiple versions MAY be
+             supported simultaneously by a NETCONF server.  Each
+             version MUST be reported individually in the schema list,
+             i.e., with same identifier, possibly different location,
+             but different version.
+
+             For YANG data models, version is the value of the most
+             recent YANG 'revision' statement in the module or
+             submodule, or the empty string if no 'revision' statement
+             is present.";
+        }
+        leaf format {
+          type identityref {
+            base schema-format;
+          }
+          description
+            "The data modeling language the schema is written
+             in (currently xsd, yang, yin, rng, or rnc).
+
+             For YANG data models, 'yang' format MUST be supported and
+             'yin' format MAY also be provided.";
+        }
+        leaf namespace {
+          type inet:uri;
+          mandatory true;
+          description
+            "The XML namespace defined by the data model.
+
+             For YANG data models, this is the module's namespace.
+             If the list entry describes a submodule, this field
+             contains the namespace of the module to which the
+             submodule belongs.";
+        }
+        leaf-list location {
+          type union {
+            type enumeration {
+              enum "NETCONF";
+            }
+            type inet:uri;
+          }
+          description
+            "One or more locations from which the schema can be
+             retrieved.  This list SHOULD contain at least one
+             entry per schema.
+
+             A schema entry may be located on a remote file system
+             (e.g., reference to file system for ftp retrieval) or
+             retrieved directly from a server supporting the
+             <get-schema> operation (denoted by the value 'NETCONF').";
+        }
+      }
+    }
+
+    container sessions {
+      description
+        "The sessions container includes session-specific data for
+         NETCONF management sessions.  The session list MUST include
+         all currently active NETCONF sessions.";
+
+      list session {
+        key session-id;
+        description
+          "All NETCONF sessions managed by the NETCONF server
+           MUST be reported in this list.";
+
+        leaf session-id {
+          type uint32 {
+            range "1..max";
+          }
+          description
+            "Unique identifier for the session.  This value is the
+             NETCONF session identifier, as defined in RFC 4741.";
+          reference
+            "RFC 4741: NETCONF Configuration Protocol";
+        }
+        leaf transport {
+          type identityref {
+            base transport;
+          }
+          mandatory true;
+          description
+            "Identifies the transport for each session, e.g.,
+            'netconf-ssh', 'netconf-soap', etc.";
+        }
+        leaf username  {
+          type string;
+          mandatory true;
+          description
+            "The username is the client identity that was authenticated
+            by the NETCONF transport protocol.  The algorithm used to
+            derive the username is NETCONF transport protocol specific
+            and in addition specific to the authentication mechanism
+            used by the NETCONF transport protocol.";
+        }
+        leaf source-host {
+          type inet:host;
+          description
+            "Host identifier of the NETCONF client.  The value
+             returned is implementation specific (e.g., hostname,
+             IPv4 address, IPv6 address)";
+        }
+        leaf login-time {
+          type yang:date-and-time;
+          mandatory true;
+          description
+            "Time at the server at which the session was established.";
+        }
+        uses common-counters {
+          description
+            "Per-session counters.  Zero based with following reset
+             behaviour:
+               - at start of a session
+               - when max value is reached";
+        }
+      }
+    }
+
+    container statistics {
+      description
+        "Statistical data pertaining to the NETCONF server.";
+
+      leaf netconf-start-time {
+        type yang:date-and-time;
+        description
+          "Date and time at which the management subsystem was
+           started.";
+      }
+      leaf in-bad-hellos {
+        type yang:zero-based-counter32;
+        description
+          "Number of sessions silently dropped because an
+          invalid <hello> message was received.  This includes <hello>
+          messages with a 'session-id' attribute, bad namespace, and
+          bad capability declarations.";
+      }
+      leaf in-sessions {
+        type yang:zero-based-counter32;
+        description
+          "Number of sessions started.  This counter is incremented
+           when a <hello> message with a <session-id> is sent.
+
+          'in-sessions' - 'in-bad-hellos' =
+              'number of correctly started netconf sessions'";
+      }
+      leaf dropped-sessions {
+        type yang:zero-based-counter32;
+        description
+          "Number of sessions that were abnormally terminated, e.g.,
+           due to idle timeout or transport close.  This counter is not
+           incremented when a session is properly closed by a
+           <close-session> operation, or killed by a <kill-session>
+           operation.";
+      }
+      uses common-counters {
+        description
+          "Global counters, accumulated from all sessions.
+           Zero based with following reset behaviour:
+             - re-initialization of NETCONF server
+             - when max value is reached";
+      }
+    }
+  }
+
+  rpc get-schema {
+    description
+      "This operation is used to retrieve a schema from the
+       NETCONF server.
+
+       Positive Response:
+         The NETCONF server returns the requested schema.
+
+       Negative Response:
+         If requested schema does not exist, the <error-tag> is
+         'invalid-value'.
+
+         If more than one schema matches the requested parameters, the
+         <error-tag> is 'operation-failed', and <error-app-tag> is
+         'data-not-unique'.";
+
+    input {
+      leaf identifier {
+        type string;
+        mandatory true;
+        description
+          "Identifier for the schema list entry.";
+      }
+      leaf version {
+        type string;
+        description
+          "Version of the schema requested.  If this parameter is not
+           present, and more than one version of the schema exists on
+           the server, a 'data-not-unique' error is returned, as
+           described above.";
+      }
+      leaf format {
+        type identityref {
+          base schema-format;
+        }
+        description
+           "The data modeling language of the schema.  If this
+            parameter is not present, and more than one formats of
+            the schema exists on the server, a 'data-not-unique' error
+            is returned, as described above.";
+      }
+    }
+    output {
+        anyxml data {
+          description
+            "Contains the schema content.";
+      }
+    }
+  }
+}

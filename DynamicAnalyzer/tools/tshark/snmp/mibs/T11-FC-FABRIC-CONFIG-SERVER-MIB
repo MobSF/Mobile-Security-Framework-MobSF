@@ -1,0 +1,1822 @@
+T11-FC-FABRIC-CONFIG-SERVER-MIB  DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    NOTIFICATION-TYPE, mib-2, Counter32, Unsigned32
+                  FROM SNMPv2-SMI                  -- [RFC2578]
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+                  FROM SNMPv2-CONF                 -- [RFC2580]
+    TEXTUAL-CONVENTION, TruthValue, TimeStamp
+                  FROM SNMPv2-TC                   -- [RFC2579]
+    SnmpAdminString
+                  FROM SNMP-FRAMEWORK-MIB          -- [RFC3411]
+    URLString
+                  FROM NETWORK-SERVICES-MIB        -- [RFC2788]
+
+    FcPortType, FcNameIdOrZero, FcDomainIdOrZero,
+    fcmInstanceIndex, fcmSwitchIndex, FcAddressIdOrZero
+                  FROM FC-MGMT-MIB                 -- [RFC4044]
+    T11NsGs4RejectReasonCode
+                  FROM T11-FC-NAME-SERVER-MIB      -- [RFC4438]
+    T11FabricIndex
+                  FROM T11-TC-MIB                  -- [RFC4439]
+    t11FamLocalSwitchWwn
+                  FROM T11-FC-FABRIC-ADDR-MGR-MIB; -- [RFC4439]
+
+
+t11FcFabricConfigServerMIB   MODULE-IDENTITY
+    LAST-UPDATED  "200706270000Z"
+    ORGANIZATION  "For the initial versions, T11.
+                   For later versions, the IETF's IMSS Working Group."
+    CONTACT-INFO
+             "     Claudio DeSanti
+                   Cisco Systems, Inc.
+                   170 West Tasman Drive
+                   San Jose, CA 95134 USA
+                   EMail: cds@cisco.com
+
+                   Keith McCloghrie
+                   Cisco Systems, Inc.
+                   170 West Tasman Drive
+                   San Jose, CA 95134 USA
+                   EMail: kzm@cisco.com"
+    DESCRIPTION
+            "The MIB module for the management of a Fabric
+            Configuration Server (FCS) in a Fibre Channel (FC)
+            network.  An FCS is defined by the FC-GS-5 standard.  This
+
+
+
+            MIB provides the capabilities to trigger a discovery of
+            the configuration of one or more Fabrics, to retrieve the
+            results of such a discovery, as well as to control and
+            monitor the operation of an FCS.  The discovered
+            configuration contains information about:
+
+               - Interconnect Elements (IEs), i.e., switches, hubs,
+                 bridges, etc.,
+               - Ports on IEs, and
+               - Platforms that consist of one or more FC nodes.
+
+           Copyright (C) The IETF Trust (2007).  This version of
+           this MIB module is part of RFC 4935;  see the RFC itself for
+           full legal notices."
+    REVISION    "200706270000Z"
+    DESCRIPTION
+           "Initial version of this MIB module, published as RFC 4935."
+    ::= { mib-2 162 }
+
+t11FcsMIBObjects       OBJECT IDENTIFIER
+                                    ::= { t11FcFabricConfigServerMIB 1 }
+t11FcsMIBConformance   OBJECT IDENTIFIER
+                                    ::= { t11FcFabricConfigServerMIB 2 }
+t11FcsNotifications    OBJECT IDENTIFIER
+                                    ::= { t11FcFabricConfigServerMIB 0 }
+
+t11FcsDiscovery        OBJECT IDENTIFIER ::= { t11FcsMIBObjects 1 }
+t11FcsDiscoveredConfig OBJECT IDENTIFIER ::= { t11FcsMIBObjects 2 }
+t11FcsStats            OBJECT IDENTIFIER ::= { t11FcsMIBObjects 3 }
+t11FcsNotificationInfo OBJECT IDENTIFIER ::= { t11FcsMIBObjects 4 }
+
+--
+-- Textual Conventions
+--
+
+T11FcListIndex ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT  "d"
+    STATUS  current
+    DESCRIPTION
+            "An index that identifies a list of elements.
+            All elements that belong to the same list have the
+            same index value.  This syntax is used for objects
+            which identify a list in the INDEX clause of a table
+            of elements of that type of list."
+    SYNTAX  Unsigned32 (1..4294967295)
+
+T11FcListIndexPointerOrZero ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT  "d"
+
+
+
+    STATUS  current
+    DESCRIPTION
+            "Objects with this syntax point to a list of elements
+            contained in a table, by holding the same value as the
+            object with syntax T11FcListIndex defined in the table's
+            INDEX clause, or, zero to indicate an empty list.
+            Note that such a table could have one row per list, or
+            it could have one row per element of a list.
+
+            The definition of an object with this syntax must
+            identify the table(s) into which it points."
+    SYNTAX  Unsigned32 -- the default range of (0..4294967295)
+
+T11FcIeType ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+            "The type of Interconnect Element (IE):
+
+                     unknown(1)  - an unknown IE.
+                     other(2)    - some other type of IE.
+                     switch(3)   - the IE is a switch.
+                     hub(4)      - the IE is a hub.
+                     bridge(5)   - the IE is a bridge."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, Table 96."
+    SYNTAX  INTEGER {
+                unknown(1),
+                other(2),
+                switch(3),
+                hub(4),
+                bridge(5)
+            }
+
+T11FcPortState  ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+            "The state of a port:
+
+                     unknown(1)  - unknown state.
+                     other(2)    - some other state.
+                     online(3)   - port is in online state.
+                     offline(4)  - port is in offline state.
+                     testing(5)  - port is in testing state.
+                     fault(6)    - port is faulty."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, Table 106."
+
+
+
+    SYNTAX  INTEGER {
+                unknown(1),
+                other(2),
+                online(3),
+                offline(4),
+                testing(5),
+                fault(6)
+            }
+
+T11FcPortTxType ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+            "The technology of the port transceiver:
+
+               unknown(1)         - unknown (includes the 'null' type)
+               other(2)           - some other technology
+               shortwave850nm(3)  - Short wave laser - SN (850 nm)
+               longwave1550nm(4)  - Long wave laser - LL (1550 nm)
+               longwave1310nm(5)  - Long wave laser cost
+                                    reduced - LC (1310 nm)
+               electrical(6)      - Electrical - EL.
+               tenGbaseSr850(7)   - 10GBASE-SR 850nm laser
+               tenGbaseLr1310(8)  - 10GBASE-LR 1310nm laser
+               tenGbaseEr1550(9)  - 10GBASE-ER 1550nm laser
+               tenGbaseLx1300(10) - 10GBASE-LX4 WWDM 1300nm laser
+               tenGbaseSw850(11)  - 10GBASE-SW 850nm laser
+               tenGbaseLw1310(12) - 10GBASE-LW 1310nm laser
+               tenGbaseEw1550(13) - 10GBASE-EW 1550nm laser
+            "
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, Table 101."
+    SYNTAX  INTEGER {
+                unknown(1),
+                other(2),
+                shortwave850nm(3),
+                longwave1550nm(4),
+                longwave1310nm(5),
+                electrical(6),
+                tenGbaseSr850(7),
+                tenGbaseLr1310(8),
+                tenGbaseEr1550(9),
+                tenGbaseLx1300(10),
+                tenGbaseSw850(11),
+                tenGbaseLw1310(12),
+                tenGbaseEw1550(13)
+            }
+
+
+
+
+T11FcsRejectReasonExplanation ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+            "The reject reason code explanation:
+
+                  noAdditionalExplanation(1)
+                       - no additional explanation.
+                  invNameIdForIEOrPort(2)
+                       - the format of IE or port name is invalid.
+                  ieListNotAvailable(3)
+                       - IE list is not available.
+                  ieTypeNotAvailable(4)
+                       - IE type is not available.
+                  domainIdNotAvailable(5)
+                       - Domain ID is not available.
+                  mgmtIdNotAvailable(6)
+                       - mgmt ID is not available.
+                  fabNameNotAvailable(7)
+                       - Fabric_Name is not available.
+                  ielogNameNotAvailable(8)
+                       - IE logical name is not available.
+                  mgmtAddrListNotAvailable(9)
+                       - mgmt address list is not available.
+                  ieInfoListNotAvailable(10)
+                       - IE info list is not available.
+                  portListNotAvailable(11)
+                       - port list is not available.
+                  portTypeNotAvailable(12)
+                       - port type is not available.
+                  phyPortNumNotAvailable(13)
+                       - physical port number is not available.
+                  attPortNameListNotAvailable(14)
+                       - attached port name list is not available.
+                  portStateNotAvailable(15)
+                       - port state is not available.
+                  unableToRegIELogName(16)
+                       - not able to register IE logical name.
+                  platformNameNoExist(17)
+                       - platform name does not exist.
+                  platformNameAlreadyExists(18)
+                       - platform name already exists.
+                  platformNodeNameNoExists(19)
+                       - platform node name does not exist.
+                  platformNodeNameAlreadyExists(20)
+                       - platform node name already exists.
+                  resourceUnavailable(21)
+                       - resource unavailable.
+                  noEntriesInLunMap(22)
+
+
+
+                       - zero entries in OS LUN Map.
+                  invalidDeviceNameLength(23)
+                       - invalid OS device name length.
+                  multipleAttributes(24)
+                       - multiple attributes of same type in
+                         platform attribute block.
+                  invalidAttribBlockLength(25)
+                       - invalid platform attribute block length.
+                  attributesMissing(26)
+                       - required platform attributes not present."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, Table 124."
+    SYNTAX  INTEGER {
+                noAdditionalExplanation(1),
+                invNameIdForIEOrPort(2),
+                ieListNotAvailable(3),
+                ieTypeNotAvailable(4),
+                domainIdNotAvailable(5),
+                mgmtIdNotAvailable(6),
+                fabNameNotAvailable(7),
+                ielogNameNotAvailable(8),
+                mgmtAddrListNotAvailable(9),
+                ieInfoListNotAvailable(10),
+                portListNotAvailable(11),
+                portTypeNotAvailable(12),
+                phyPortNumNotAvailable(13),
+                attPortNameListNotAvailable(14),
+                portStateNotAvailable(15),
+                unableToRegIELogName(16),
+                platformNameNoExist(17),
+                platformNameAlreadyExists(18),
+                platformNodeNameNoExists(19),
+                platformNodeNameAlreadyExists(20),
+                resourceUnavailable(21),
+                noEntriesInLunMap(22),
+                invalidDeviceNameLength(23),
+                multipleAttributes(24),
+                invalidAttribBlockLength(25),
+                attributesMissing(26)
+            }
+
+--
+-- Objects for Fabric Discovery
+--
+
+t11FcsFabricDiscoveryTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FcsFabricDiscoveryEntry
+
+
+
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "This table contains control information for discovery
+            of Fabric configuration by switches.
+
+            Values written to objects in this table are not
+            retained over agent reboots."
+    ::= { t11FcsDiscovery 1 }
+
+t11FcsFabricDiscoveryEntry OBJECT-TYPE
+    SYNTAX       T11FcsFabricDiscoveryEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Control information for discovery by the switch
+            identified by fcmInstanceIndex and fcmSwitchIndex."
+    INDEX   { fcmInstanceIndex, fcmSwitchIndex }
+    ::= { t11FcsFabricDiscoveryTable 1 }
+
+T11FcsFabricDiscoveryEntry ::= SEQUENCE {
+    t11FcsFabricDiscoveryRangeLow   T11FabricIndex,
+    t11FcsFabricDiscoveryRangeHigh  T11FabricIndex,
+    t11FcsFabricDiscoveryStart      INTEGER,
+    t11FcsFabricDiscoveryTimeOut    Unsigned32
+}
+
+t11FcsFabricDiscoveryRangeLow  OBJECT-TYPE
+    SYNTAX       T11FabricIndex
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+            "The discovery by a particular switch operates
+            within all existing Fabrics that have a Fabric
+            Index within a specific inclusive range.  This
+            object specifies the minimum Fabric Index value
+            within that range.  This value just represents
+            the lower end of the range and does not necessarily
+            represent any existing Fabric."
+    ::= { t11FcsFabricDiscoveryEntry 1 }
+
+t11FcsFabricDiscoveryRangeHigh  OBJECT-TYPE
+    SYNTAX       T11FabricIndex
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+            "The discovery by a particular switch operates
+            within all existing Fabrics that have a Fabric
+
+
+
+            Index within a specific inclusive range.  This
+            object specifies the maximum Fabric Index value
+            within that range.  This value just represents the
+            higher end of the range and does not necessarily
+            represent any existing Fabric."
+    ::= { t11FcsFabricDiscoveryEntry 2 }
+
+t11FcsFabricDiscoveryStart  OBJECT-TYPE
+    SYNTAX       INTEGER {
+                     start(1),
+                     noOp(2)
+                 }
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+            "This object provides the capability to trigger the start
+            of a discovery by a Fabric Configuration Server.  If this
+            object is set to 'start', then the discovery is started on
+            those Fabrics that have their Fabric Index value in the
+            range specified by t11FcsFabricDiscoveryRangeLow and
+            t11FcsFabricDiscoveryRangeHigh.  It is recommended that
+            whenever an instance of this object is set to 'start',
+            that the desired range be specified at the same time by
+            setting the corresponding instances of
+            t11FcsFabricDiscoveryRangeLow and
+            t11FcsFabricDiscoveryRangeHigh.
+
+            Setting this object to 'start' will be rejected if a
+            discovery is already/still in progress on any Fabrics in
+            the specified range.
+
+            No action is taken if this object is set to 'noOp'.
+            The value of this object when read is always 'noOp'."
+    ::= { t11FcsFabricDiscoveryEntry 3 }
+
+t11FcsFabricDiscoveryTimeOut OBJECT-TYPE
+    SYNTAX       Unsigned32 (300..86400)
+    UNITS        "Seconds"
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+            "The minimum interval of time for which the discovered
+            Fabric information is cached by a Fabric Configuration
+            Server."
+    DEFVAL { 900 }
+    ::= { t11FcsFabricDiscoveryEntry 4 }
+
+--
+
+
+
+-- Discovery State table
+--
+
+t11FcsDiscoveryStateTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FcsDiscoveryStateEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "This table contains the status of discovery of
+            locally known Fabrics."
+    ::= { t11FcsDiscovery 2 }
+
+t11FcsDiscoveryStateEntry OBJECT-TYPE
+    SYNTAX       T11FcsDiscoveryStateEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "The discovery status for a particular Fabric on the
+            switch identified by fcmInstanceIndex and fcmSwitchIndex."
+    INDEX   { fcmInstanceIndex, fcmSwitchIndex, t11FcsFabricIndex }
+    ::= { t11FcsDiscoveryStateTable 1 }
+
+T11FcsDiscoveryStateEntry ::= SEQUENCE {
+    t11FcsFabricIndex              T11FabricIndex,
+    t11FcsDiscoveryStatus          INTEGER,
+    t11FcsDiscoveryCompleteTime    TimeStamp
+}
+
+t11FcsFabricIndex OBJECT-TYPE
+    SYNTAX       T11FabricIndex
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "A unique index value that uniquely identifies a
+            particular Fabric.
+
+            In a Fabric conformant to FC-SW-4, multiple Virtual Fabrics
+            can operate within one (or more) physical infrastructures,
+            and this index value is used to uniquely identify a
+            particular (physical or virtual) Fabric within a physical
+            infrastructure.
+
+            In a Fabric conformant to versions earlier than FC-SW-4,
+            only a single Fabric could operate within a physical
+            infrastructure, and thus, the value of this Fabric Index
+            was defined to always be 1."
+    ::= { t11FcsDiscoveryStateEntry 1 }
+
+
+
+
+t11FcsDiscoveryStatus  OBJECT-TYPE
+    SYNTAX       INTEGER {
+                     inProgress(1),
+                     completed(2),
+                     localOnly(3)
+                 }
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+            "The status of the discovery for the particular Fabric.
+
+            Initially when the switch comes up, all instances of this
+            object have the value: 'localOnly', and the database
+            contains only local information, i.e., no information
+            discovered via the Fabric Configuration Server protocol
+            specified in FC-GS-5.
+
+            If t11FcsFabricDiscoveryStart is set to 'start' for a
+            range of Fabrics that includes this Fabric, then the
+            value of this object transitions to 'inProgress'.  When
+            the discovery completes, this object transitions to
+            'completed', and the data is cached for the minimum
+            interval of time specified by
+            t11FcsFabricDiscoveryTimeOut.  After this interval has
+            been exceeded, the data may be lost, in which case, the
+            value of this object changes to 'localOnly'.
+
+            This object cannot be set via SNMP to any value other
+            than 'localOnly'.  If this object is set (via SNMP) to
+            'localOnly', the cached data for the Fabric is discarded
+            immediately, and if a discovery initiated from this
+            switch was in progress for this Fabric, then that
+            discovery is aborted."
+    ::= { t11FcsDiscoveryStateEntry 2 }
+
+t11FcsDiscoveryCompleteTime  OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "This object contains the value of sysUpTime at which
+            discovery was most recently completed or aborted on this
+            Fabric.  This object contains the value of zero before
+            the first discovery on this Fabric."
+    ::= { t11FcsDiscoveryStateEntry 3 }
+
+
+
+
+
+
+--
+--      The Database of Fabric Configuration Information
+
+--
+-- Interconnect Element table
+--
+
+t11FcsIeTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FcsIeEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "A table of Interconnect Elements.  Interconnect
+            Elements (IEs) are switches, hubs, bridges etc.
+
+            By default, the Fabric Configuration Server will
+            maintain detailed information pertaining only to
+            local resources.  As far as discovered topology is
+            concerned, only the IE name, type, and Domain ID
+            information will be maintained.  If a discovery
+            cycle is triggered on a set of Fabrics, this table
+            along with the Port and Platform tables will be
+            populated with the discovered information.  The
+            discovered data will be retained in this table for
+            at least t11FcsFabricDiscoveryTimeOut seconds after
+            the completion of its discovery or until the
+            discovered data is invalidated."
+    ::= { t11FcsDiscoveredConfig 1 }
+
+t11FcsIeEntry OBJECT-TYPE
+    SYNTAX       T11FcsIeEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Information about an Interconnect Element that was
+            discovered on a Fabric (identified by t11FcsFabricIndex),
+            by a switch (identified by fcmInstanceIndex and
+            fcmSwitchIndex)."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.2."
+    INDEX   { fcmInstanceIndex, fcmSwitchIndex, t11FcsFabricIndex,
+              t11FcsIeName }
+    ::= { t11FcsIeTable 1 }
+
+T11FcsIeEntry ::= SEQUENCE {
+    t11FcsIeName                FcNameIdOrZero,
+    t11FcsIeType                T11FcIeType,
+
+
+
+    t11FcsIeDomainId            FcDomainIdOrZero,
+    t11FcsIeMgmtId              FcAddressIdOrZero,
+    t11FcsIeFabricName          FcNameIdOrZero,
+    t11FcsIeLogicalName         OCTET STRING,
+    t11FcsIeMgmtAddrListIndex   T11FcListIndexPointerOrZero,
+    t11FcsIeInfoList            OCTET STRING
+}
+
+t11FcsIeName  OBJECT-TYPE
+    SYNTAX       FcNameIdOrZero (SIZE(8 | 16))
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "The WWN of an Interconnect Element.  This object
+            uniquely identifies an Interconnect Element on a
+            Fabric.  If the IE is a switch, then this object
+            is the Switch_Name (WWN) of the switch."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.2.1."
+    ::= { t11FcsIeEntry 1 }
+
+t11FcsIeType  OBJECT-TYPE
+    SYNTAX       T11FcIeType
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The type of this Interconnect Element."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.2.2"
+    ::= { t11FcsIeEntry 2 }
+
+t11FcsIeDomainId  OBJECT-TYPE
+    SYNTAX       FcDomainIdOrZero
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The Domain ID of this Interconnect Element."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.2.3."
+    ::= { t11FcsIeEntry 3 }
+
+t11FcsIeMgmtId  OBJECT-TYPE
+    SYNTAX       FcAddressIdOrZero
+    MAX-ACCESS   read-only
+    STATUS       current
+
+
+
+    DESCRIPTION
+            "The management identifier of this Interconnect Element.
+            If the Interconnect Element is a switch, this object will
+            be the Domain Controller identifier of the switch.  When
+            the value of the identifier is unknown, this object
+            contains the all-zeros value: x'00 00 00'."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.2.4."
+    DEFVAL { '000000'h }
+    ::= { t11FcsIeEntry 4 }
+
+t11FcsIeFabricName  OBJECT-TYPE
+    SYNTAX       FcNameIdOrZero (SIZE(8 | 16))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The Fabric_Name (WWN) of this Interconnect Element.
+            When the Fabric_Name is unknown, this object contains
+            the all-zeros value: x'00 00 00 00 00 00 00 00'."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.2.5."
+    DEFVAL { '0000000000000000'h }
+    ::= { t11FcsIeEntry 5 }
+
+t11FcsIeLogicalName  OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE (0..255))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The logical name of this Interconnect Element.
+            When the logical name is unknown, this object contains
+            the zero-length string."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.2.6."
+    ::= { t11FcsIeEntry 6 }
+
+t11FcsIeMgmtAddrListIndex  OBJECT-TYPE
+    SYNTAX       T11FcListIndexPointerOrZero
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The management address list for this Interconnect Element.
+            This object points to an entry in the
+            t11FcsMgmtAddrListTable."
+    REFERENCE
+
+
+
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.2.7."
+    ::= { t11FcsIeEntry 7 }
+
+t11FcsIeInfoList  OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE (0..252))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The information list for this Interconnect Element.
+
+            The value of this object is formatted as specified in
+            FC-GS-5, i.e., it has the following substrings in order:
+            vendor name, model name/number, and release code/level,
+            followed by zero or more substrings of vendor-specific
+            information.  Each substring is terminated with a byte
+            containing a null value (x'00')."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.2.8"
+    ::= { t11FcsIeEntry 8 }
+
+--
+-- Management Address List table
+--
+
+t11FcsMgmtAddrListTable  OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FcsMgmtAddrListEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "This table contains the set of management address lists
+            that are currently referenced by any instance of the
+            t11FcsIeMgmtAddrListIndex or
+            t11FcsPlatformMgmtAddrListIndex objects."
+    ::= { t11FcsDiscoveredConfig 2 }
+
+t11FcsMgmtAddrListEntry  OBJECT-TYPE
+    SYNTAX       T11FcsMgmtAddrListEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Information about one management address in a
+            management address list, which is known to a
+            switch (identified by fcmInstanceIndex and
+            fcmSwitchIndex)."
+    INDEX   { fcmInstanceIndex, fcmSwitchIndex,
+              t11FcsMgmtAddrListIndex, t11FcsMgmtAddrIndex }
+
+
+
+    ::= { t11FcsMgmtAddrListTable 1 }
+
+T11FcsMgmtAddrListEntry ::= SEQUENCE {
+    t11FcsMgmtAddrListIndex        T11FcListIndex,
+    t11FcsMgmtAddrIndex            Unsigned32,
+    t11FcsMgmtAddr                 URLString
+}
+
+t11FcsMgmtAddrListIndex  OBJECT-TYPE
+    SYNTAX       T11FcListIndex
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "The index value of the management address list."
+    ::= { t11FcsMgmtAddrListEntry 1 }
+
+t11FcsMgmtAddrIndex OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4294967295)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "An integer value to distinguish different
+            management addresses in the same list."
+    ::= { t11FcsMgmtAddrListEntry 2 }
+
+t11FcsMgmtAddr  OBJECT-TYPE
+    SYNTAX       URLString
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The management address of this entry.
+
+            The format of this object is a Uniform Resource
+            Locator (URL), e.g., for SNMP, see RFC 4088."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.2.7"
+    ::= { t11FcsMgmtAddrListEntry 3 }
+
+--
+-- Ports
+--
+
+t11FcsPortTable  OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FcsPortEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+
+
+
+            "This table contains information about the ports of IEs."
+    ::= { t11FcsDiscoveredConfig 4 }
+
+t11FcsPortEntry  OBJECT-TYPE
+    SYNTAX       T11FcsPortEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Information about a particular port of an Interconnect
+            Element (identified by t11FcsIeName).  The port is
+            connected to a Fabric (identified by t11FcsFabricIndex)
+            and known to a switch (identified by fcmInstanceIndex
+            and fcmSwitchIndex)."
+    INDEX   { fcmInstanceIndex, fcmSwitchIndex, t11FcsFabricIndex,
+              t11FcsIeName, t11FcsPortName }
+    ::= { t11FcsPortTable 1 }
+
+T11FcsPortEntry ::= SEQUENCE {
+    t11FcsPortName                    FcNameIdOrZero,
+    t11FcsPortType                    FcPortType,
+    t11FcsPortTxType                  T11FcPortTxType,
+    t11FcsPortModuleType              Unsigned32,
+    t11FcsPortPhyPortNum              Unsigned32,
+    t11FcsPortAttachPortNameIndex     T11FcListIndexPointerOrZero,
+    t11FcsPortState                   T11FcPortState,
+    t11FcsPortSpeedCapab              OCTET STRING,
+    t11FcsPortOperSpeed               OCTET STRING,
+    t11FcsPortZoningEnfStatus         OCTET STRING
+}
+
+t11FcsPortName  OBJECT-TYPE
+    SYNTAX       FcNameIdOrZero (SIZE(8 | 16))
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "The Port_Name (WWN) of the port for which this row
+            contains information."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.3.1."
+    ::= { t11FcsPortEntry 1 }
+
+t11FcsPortType  OBJECT-TYPE
+    SYNTAX       FcPortType
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The Port Type of this port."
+
+
+
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.3.2."
+    ::= { t11FcsPortEntry 2 }
+
+t11FcsPortTxType  OBJECT-TYPE
+    SYNTAX       T11FcPortTxType
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The Port TX Type of this port."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.3.3."
+    ::= { t11FcsPortEntry 3 }
+
+t11FcsPortModuleType  OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..255)
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The port module type of this port."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.3.4."
+    ::= { t11FcsPortEntry 4 }
+
+t11FcsPortPhyPortNum  OBJECT-TYPE
+    SYNTAX       Unsigned32 -- the default range of (0..4294967295)
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The physical number for this port.  FC-GS-5 says that
+            the contents of this field, which are carried in a field
+            with a size of 4 bytes, are not to be restricted due to
+            vendor-specific methods for numbering physical ports."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.3.5."
+    ::= { t11FcsPortEntry 5 }
+
+t11FcsPortAttachPortNameIndex  OBJECT-TYPE
+    SYNTAX       T11FcListIndexPointerOrZero
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The attached port name list for this port.  This object
+            points to an entry in the t11FcsAttachPortNameListTable."
+
+
+
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.3.6."
+    ::= { t11FcsPortEntry 6 }
+
+t11FcsPortState  OBJECT-TYPE
+    SYNTAX       T11FcPortState
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The state of this port."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.3.7."
+    ::= { t11FcsPortEntry 7 }
+
+t11FcsPortSpeedCapab  OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE (2))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The port speed capabilities of this port.  The two octets
+            of the value are formatted as described in FC-GS-5."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.3.8."
+    ::= { t11FcsPortEntry 8 }
+
+t11FcsPortOperSpeed  OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE (2))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The operating speed of this port.  The two octets
+            of the value are formatted as described in FC-GS-5."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.3.9."
+    ::= { t11FcsPortEntry 9 }
+
+t11FcsPortZoningEnfStatus  OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE (12))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The zoning enforcement status of this port.  The 12
+            octets of the value are formatted as described in FC-GS-5."
+    REFERENCE
+
+
+
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.3.10."
+    ::= { t11FcsPortEntry 10 }
+
+--
+-- Attached Port List table
+--
+
+t11FcsAttachPortNameListTable  OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FcsAttachPortNameListEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "This table contains all the lists of attach port
+            names."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.3.6"
+    ::= { t11FcsDiscoveredConfig 5 }
+
+t11FcsAttachPortNameListEntry  OBJECT-TYPE
+    SYNTAX       T11FcsAttachPortNameListEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Information about the name of a particular attached port,
+            which is known to a switch (identified by fcmInstanceIndex
+            and fcmSwitchIndex)."
+    INDEX   { fcmInstanceIndex,  fcmSwitchIndex,
+              t11FcsAttachPortNameListIndex, t11FcsAttachPortName }
+    ::= { t11FcsAttachPortNameListTable 1 }
+
+T11FcsAttachPortNameListEntry ::= SEQUENCE {
+    t11FcsAttachPortNameListIndex        T11FcListIndex,
+    t11FcsAttachPortName                 OCTET STRING
+}
+
+t11FcsAttachPortNameListIndex  OBJECT-TYPE
+    SYNTAX       T11FcListIndex
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "The index value of the attach port name list."
+    ::= { t11FcsAttachPortNameListEntry 1 }
+
+t11FcsAttachPortName  OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE (12))
+    MAX-ACCESS   read-only
+
+
+
+    STATUS       current
+    DESCRIPTION
+            "The attached port name.  Zero or more of these names
+            may be associated with a port object.
+            The first 8 bytes of this object contain the WWN of
+            the port followed by 2 reserved bytes.  Following
+            this is one byte of Port flags and one byte of
+            Port type, as described in FC-GS-5."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.3.6"
+    ::= { t11FcsAttachPortNameListEntry 2 }
+
+--
+-- Platforms
+--
+
+t11FcsPlatformTable  OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FcsPlatformEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "This table contains information on platforms.
+
+            By default, this table only contains local (e.g., for a
+            local switch) information.  If a discovery is triggered,
+            this table will also contain information gathered by the
+            discovery process.  The discovered information is retained
+            in this table for at least t11FcsFabricDiscoveryTimeOut
+            seconds after the completion of its discovery or until
+            the discovered cache is invalidated."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4"
+    ::= { t11FcsDiscoveredConfig 6 }
+
+t11FcsPlatformEntry  OBJECT-TYPE
+    SYNTAX       T11FcsPlatformEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Information about a particular platform, which is
+            known to a switch (identified by fcmInstanceIndex and
+            fcmSwitchIndex).
+
+            A platform can contain multiple nodes.  Information on
+            nodes is contained in the t11FcsNodeNameListTable.  The
+            t11FcsPlatformNodeNameListIndex object in this table
+
+
+
+            points to the list of nodes contained in this platform.
+            Similarly, the t11FcsPlatformMgmtAddrListIndex object in
+            this table points to the list of management addresses
+            associated with this platform."
+    INDEX   { fcmInstanceIndex, fcmSwitchIndex,
+              t11FcsFabricIndex, t11FcsPlatformIndex }
+    ::= { t11FcsPlatformTable 1 }
+
+T11FcsPlatformEntry ::= SEQUENCE {
+    t11FcsPlatformIndex              Unsigned32,
+    t11FcsPlatformName               OCTET STRING,
+    t11FcsPlatformType               OCTET STRING,
+    t11FcsPlatformNodeNameListIndex  T11FcListIndexPointerOrZero,
+    t11FcsPlatformMgmtAddrListIndex  T11FcListIndexPointerOrZero,
+    t11FcsPlatformVendorId           SnmpAdminString,
+    t11FcsPlatformProductId          SnmpAdminString,
+    t11FcsPlatformProductRevLevel    SnmpAdminString,
+    t11FcsPlatformDescription        SnmpAdminString,
+    t11FcsPlatformLabel              SnmpAdminString,
+    t11FcsPlatformLocation           SnmpAdminString,
+    t11FcsPlatformSystemID           SnmpAdminString,
+    t11FcsPlatformSysMgmtAddr        T11FcListIndexPointerOrZero,
+    t11FcsPlatformClusterId          SnmpAdminString,
+    t11FcsPlatformClusterMgmtAddr    T11FcListIndexPointerOrZero,
+    t11FcsPlatformFC4Types           OCTET STRING
+}
+
+t11FcsPlatformIndex OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4294967295)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "An integer value to distinguish one platform from
+            other platforms in the same Fabric."
+    ::= { t11FcsPlatformEntry 1 }
+
+t11FcsPlatformName  OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE (1..255))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The name of this platform.  The last byte of the value
+            indicates the format of the name (even if the name itself
+            is the zero-length string) as specified in FC-GS-5."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.2"
+    ::= { t11FcsPlatformEntry 2 }
+
+
+
+t11FcsPlatformType  OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE (4))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The type(s) of this platform, encoded in 4 bytes as
+            specified in FC-GS-5."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.3"
+    ::= { t11FcsPlatformEntry 3 }
+
+t11FcsPlatformNodeNameListIndex  OBJECT-TYPE
+    SYNTAX       T11FcListIndexPointerOrZero
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The list of nodes for this platform.  This object points
+            to an entry in the t11FcsNodeNameListTable."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.6"
+    ::= { t11FcsPlatformEntry 4 }
+
+t11FcsPlatformMgmtAddrListIndex  OBJECT-TYPE
+    SYNTAX       T11FcListIndexPointerOrZero
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The list of management addresses for this platform.  This
+            object points to an entry in the t11FcsMgmtAddrListTable."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.7"
+    ::= { t11FcsPlatformEntry 5 }
+
+t11FcsPlatformVendorId  OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE (0 | 12))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The identifier of the vendor of this platform, in the
+            format specified in FC-GS-5."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.5"
+    ::= { t11FcsPlatformEntry 6 }
+
+
+
+
+t11FcsPlatformProductId  OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE (0 | 20))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The vendor's product and/or model identifier for this
+            platform, in the format specified in FC-GS-5."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.5"
+    ::= { t11FcsPlatformEntry 7 }
+
+t11FcsPlatformProductRevLevel  OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE (0 | 4..32))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The product revision level for this platform, in the
+            format specified in FC-GS-5."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.5"
+    ::= { t11FcsPlatformEntry 8 }
+
+t11FcsPlatformDescription  OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE (0 | 4..128))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The description of this platform, in the
+            format specified in FC-GS-5.  This value should
+            include the full name and version identification of the
+            platform's hardware type and software operating system."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.10"
+    ::= { t11FcsPlatformEntry 9 }
+
+t11FcsPlatformLabel  OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE (0 | 4..64))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "An administratively assigned symbolic name for the
+            platform, in the format specified in FC-GS-5."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.11"
+
+
+
+    ::= { t11FcsPlatformEntry 10 }
+
+t11FcsPlatformLocation  OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE (0 | 4..128))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The physical location of the platform, in the format
+            specified in FC-GS-5 (e.g., 'telephone closet, 3rd floor')."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.12"
+    ::= { t11FcsPlatformEntry 11 }
+
+t11FcsPlatformSystemID  OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE (0 | 4..64))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "An identifier for a hosting system that this platform is
+            associated with.  This identifier is used to associate
+            platforms of logical types (e.g., logical partitions) with
+            a physical system."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.5"
+    ::= { t11FcsPlatformEntry 12 }
+
+t11FcsPlatformSysMgmtAddr  OBJECT-TYPE
+    SYNTAX       T11FcListIndexPointerOrZero
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "A list of management addresses for the platform."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, sections 6.2.3.4.5 and 6.2.3.2.7."
+    ::= { t11FcsPlatformEntry 13 }
+
+t11FcsPlatformClusterId  OBJECT-TYPE
+    SYNTAX       SnmpAdminString (SIZE (0 | 4..64))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "An identifier for a cluster that this platform is
+             associated with, where a cluster is a set of independent
+             platforms that are managed together to provide increased
+             performance capabilities, failover, etc."
+
+
+
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.5"
+    ::= { t11FcsPlatformEntry 14 }
+
+t11FcsPlatformClusterMgmtAddr  OBJECT-TYPE
+    SYNTAX       T11FcListIndexPointerOrZero
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "A list of management addresses for the cluster identified
+            in the corresponding instance of t11FcsPlatformClusterId."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, sections 6.2.3.4.5 and 6.2.3.2.7."
+    ::= { t11FcsPlatformEntry 15 }
+
+t11FcsPlatformFC4Types  OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE (0 | 32))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The FC-4 types supported by this platform, formatted as
+            a bit mask as specified in FC-GS-5.  If this object
+            contains the zero-length string, the types are unknown."
+    REFERENCE
+            "ANSI INCITS 427-2007, Fibre Channel - Generic Services 5,
+            FC-GS-5, section 6.2.3.4.5"
+    ::= { t11FcsPlatformEntry 16 }
+
+--
+-- Node Name List table
+--
+
+t11FcsNodeNameListTable  OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FcsNodeNameListEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "This table contains all the lists of nodes."
+    ::= { t11FcsDiscoveredConfig 7 }
+
+t11FcsNodeNameListEntry  OBJECT-TYPE
+    SYNTAX       T11FcsNodeNameListEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Information about a node, which is known to a
+
+
+
+            switch (identified by fcmInstanceIndex and
+            fcmSwitchIndex)."
+    INDEX   { fcmInstanceIndex,  fcmSwitchIndex,
+              t11FcsNodeNameListIndex, t11FcsNodeName }
+    ::= { t11FcsNodeNameListTable 1 }
+
+T11FcsNodeNameListEntry ::= SEQUENCE {
+    t11FcsNodeNameListIndex       T11FcListIndex,
+    t11FcsNodeName                FcNameIdOrZero
+}
+
+t11FcsNodeNameListIndex  OBJECT-TYPE
+    SYNTAX       T11FcListIndex
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "The index value of the node name list."
+    ::= { t11FcsNodeNameListEntry 1 }
+
+t11FcsNodeName  OBJECT-TYPE
+    SYNTAX       FcNameIdOrZero (SIZE(8 | 16))
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The name of this node."
+    ::= { t11FcsNodeNameListEntry 2 }
+
+--
+-- Statistics
+--
+
+t11FcsStatsTable  OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FcsStatsEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "This table contains all the statistics related
+            to the Fabric Configuration Server."
+    ::= { t11FcsStats 1 }
+
+t11FcsStatsEntry  OBJECT-TYPE
+    SYNTAX       T11FcsStatsEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "A set of statistics for a particular Fabric (identified
+            by t11FcsFabricIndex) on a switch (identified by
+            fcmInstanceIndex and fcmSwitchIndex)."
+
+
+
+    INDEX   { fcmInstanceIndex, fcmSwitchIndex, t11FcsFabricIndex }
+    ::= { t11FcsStatsTable 1 }
+
+T11FcsStatsEntry ::= SEQUENCE {
+    t11FcsInGetReqs                Counter32,
+    t11FcsOutGetReqs               Counter32,
+    t11FcsInRegReqs                Counter32,
+    t11FcsOutRegReqs               Counter32,
+    t11FcsInDeregReqs              Counter32,
+    t11FcsOutDeregReqs             Counter32,
+    t11FcsRejects                  Counter32
+}
+
+t11FcsInGetReqs  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Get Requests received by the Fabric
+            Configuration Server on this Fabric.
+
+            This counter has no discontinuities other than
+            those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcsStatsEntry 1 }
+
+
+t11FcsOutGetReqs  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Get Requests sent by the Fabric
+            Configuration Server on this Fabric to other
+            servers in the Fabric.
+
+            This counter has no discontinuities other than
+            those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcsStatsEntry 2 }
+
+
+t11FcsInRegReqs  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Registration Requests received by the
+            Fabric Configuration Server on this Fabric.
+
+
+
+
+            This counter has no discontinuities other than
+            those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcsStatsEntry 3 }
+
+t11FcsOutRegReqs  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Registration Requests sent by the
+            Fabric Configuration Server on this Fabric.
+
+            This counter has no discontinuities other than
+            those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcsStatsEntry 4 }
+
+
+t11FcsInDeregReqs  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Deregistration Requests received by
+            the Fabric Configuration Server on this Fabric.
+
+            This counter has no discontinuities other than
+            those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcsStatsEntry 5 }
+
+t11FcsOutDeregReqs  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The number of Deregistration Requests sent by
+            the Fabric Configuration Server on this Fabric.
+
+            This counter has no discontinuities other than
+            those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcsStatsEntry 6 }
+
+t11FcsRejects  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The total number of requests rejected by the Fabric
+            Configuration Server on this Fabric.
+
+
+
+            This counter has no discontinuities other than
+            those that all Counter32s have when sysUpTime=0."
+    ::= { t11FcsStatsEntry 7 }
+
+--
+-- Notification Control Table
+--
+
+t11FcsNotifyControlTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FcsNotifyControlEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "A table of control information for notifications
+            generated due to Fabric Configuration Server events.
+
+            Values written to objects in this table should be
+            persistent/retained over agent reboots."
+    ::= { t11FcsNotificationInfo 1 }
+
+t11FcsNotifyControlEntry OBJECT-TYPE
+    SYNTAX       T11FcsNotifyControlEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Each entry contains notification control information
+            for a Fabric Configuration Server on a particular Fabric
+            (identified by t11FcsFabricIndex) on a particular
+            switch (identified by fcmInstanceIndex and
+            fcmSwitchIndex)."
+    INDEX   { fcmInstanceIndex, fcmSwitchIndex,
+              t11FcsFabricIndex }
+    ::= { t11FcsNotifyControlTable 1 }
+
+T11FcsNotifyControlEntry ::= SEQUENCE {
+     t11FcsReqRejectNotifyEnable        TruthValue,
+     t11FcsDiscoveryCompNotifyEnable    TruthValue,
+     t11FcsMgmtAddrChangeNotifyEnable   TruthValue,
+     t11FcsRejectCtCommandString        OCTET STRING,
+     t11FcsRejectRequestSource          FcNameIdOrZero,
+     t11FcsRejectReasonCode             T11NsGs4RejectReasonCode,
+     t11FcsRejectReasonCodeExp          T11FcsRejectReasonExplanation,
+     t11FcsRejectReasonVendorCode       OCTET STRING
+}
+
+t11FcsReqRejectNotifyEnable OBJECT-TYPE
+    SYNTAX        TruthValue
+    MAX-ACCESS    read-write
+
+
+
+    STATUS        current
+    DESCRIPTION
+            "This object specifies if the Fabric Configuration
+            Server should generate 't11FcsRqRejectNotification'
+            notifications.
+
+            If the value of this object is 'true', then the
+            notification is issued.  If the value of this object
+            is 'false', then the notification is not issued."
+    DEFVAL { false }
+    ::= { t11FcsNotifyControlEntry 1 }
+
+t11FcsDiscoveryCompNotifyEnable OBJECT-TYPE
+    SYNTAX        TruthValue
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+            "This object specifies if the Fabric Configuration
+            Server should generate 't11FcsDiscoveryCompleteNotify'
+            notifications.
+
+            If the value of this object is 'true', then the
+            notification is issued.  If the value of this object
+            is 'false', then the notification is not issued."
+    DEFVAL { false }
+    ::= { t11FcsNotifyControlEntry 2 }
+
+t11FcsMgmtAddrChangeNotifyEnable OBJECT-TYPE
+    SYNTAX        TruthValue
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+            "This object specifies if the Fabric Configuration
+            Server should generate 't11FcsMgmtAddrChangeNotify'
+            notifications.
+
+            If the value of this object is 'true', then the
+            notification is issued.  If the value of this object
+            is 'false', then the notification is not issued."
+    DEFVAL { false }
+    ::= { t11FcsNotifyControlEntry 3 }
+
+t11FcsRejectCtCommandString OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE (0..255))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+            "The binary content of the Fabric Configuration Server
+
+
+
+            request, formatted as an octet string (in network byte
+            order) containing the Common Transport Information Unit
+            (CT_IU), as described in Table 2 of FC-GS-5 (including
+            the preamble), which was most recently rejected by the
+            Fabric Configuration Server for this Fabric.
+
+            This object contains the zero-length string if and when the
+            CT-IU's content is unavailable.
+
+            When the length of this object is 255 octets, it contains
+            the first 255 octets of the CT-IU (in network byte order)."
+    ::= { t11FcsNotifyControlEntry 4 }
+
+t11FcsRejectRequestSource OBJECT-TYPE
+    SYNTAX       FcNameIdOrZero
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "The WWN that was the source of the CT_IU contained in
+            the corresponding instance of t11FcsRejectCtCommandString."
+    ::= { t11FcsNotifyControlEntry 5 }
+
+t11FcsRejectReasonCode OBJECT-TYPE
+    SYNTAX        T11NsGs4RejectReasonCode
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+            "This object contains the reason code corresponding
+            to the latest Fabric Configuration Server request
+            rejected by the local system."
+    ::= { t11FcsNotifyControlEntry 6 }
+
+t11FcsRejectReasonCodeExp OBJECT-TYPE
+    SYNTAX        T11FcsRejectReasonExplanation
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+            "When the corresponding instance of
+            t11FcsRejectReasonCode has the value: 'unable to
+            perform command request', this object contains the
+            corresponding reason code explanation."
+    ::= { t11FcsNotifyControlEntry 7 }
+
+t11FcsRejectReasonVendorCode OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE(1))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+
+
+
+            "A registration reject vendor-specific code.  This
+            object contains the vendor-specific code of the most
+            recently rejected Fabric Configuration Server
+            Registration request for the particular port on
+            the particular Fabric."
+    ::= { t11FcsNotifyControlEntry 8 }
+--
+-- Notifications
+--
+
+t11FcsRqRejectNotification NOTIFICATION-TYPE
+    OBJECTS { t11FamLocalSwitchWwn,
+              t11FcsRejectReasonCode,
+              t11FcsRejectReasonCodeExp,
+              t11FcsRejectReasonVendorCode }
+    STATUS  current
+    DESCRIPTION
+            "This notification is generated whenever the Fabric
+            Configuration Server on a switch (indicated by the
+            value of t11FamLocalSwitchWwn) rejects a Fabric
+            Configuration Server request.
+
+            The Fabric Configuration Server should update the
+            t11FcsRejectReasonCode, t11FcsRejectReasonCodeExp
+            and t11FcsRejectReasonVendorCode objects with the
+            corresponding reason code, explanation and vendor
+            specific code before sending the notification."
+    ::= { t11FcsNotifications 1 }
+
+t11FcsDiscoveryCompleteNotify NOTIFICATION-TYPE
+    OBJECTS {t11FcsFabricDiscoveryRangeLow}
+    STATUS  current
+    DESCRIPTION
+            "This notification is generated by the Fabric
+            Configuration Server on the completion of the
+            discovery of Fabrics in the range that has
+            t11FcsFabricDiscoveryRangeLow at its low end."
+    ::= { t11FcsNotifications 2 }
+
+t11FcsMgmtAddrChangeNotify NOTIFICATION-TYPE
+    OBJECTS { t11FcsMgmtAddrChangeFabricIndex,
+              t11FcsMgmtAddrChangeIeName }
+    STATUS  current
+    DESCRIPTION
+            "This notification is generated by the Fabric
+            Configuration Server whenever the management
+            address of an IE changes, i.e., whenever an
+            entry in the t11FcsMgmtAddrListTable changes."
+
+
+
+    ::= { t11FcsNotifications 3 }
+
+t11FcsMgmtAddrChangeFabricIndex OBJECT-TYPE
+    SYNTAX        T11FabricIndex
+    MAX-ACCESS    accessible-for-notify
+    STATUS        current
+    DESCRIPTION
+            "The index value that identifies the Fabric on which
+            a management address change has been detected."
+    ::= { t11FcsNotificationInfo 2 }
+
+t11FcsMgmtAddrChangeIeName OBJECT-TYPE
+    SYNTAX        FcNameIdOrZero
+    MAX-ACCESS    accessible-for-notify
+    STATUS        current
+    DESCRIPTION
+            "The IE for which a management address change has been
+            detected."
+    ::= { t11FcsNotificationInfo 3 }
+
+
+-- Conformance
+
+t11FcsMIBCompliances OBJECT IDENTIFIER ::= { t11FcsMIBConformance 1 }
+t11FcsMIBGroups      OBJECT IDENTIFIER ::= { t11FcsMIBConformance 2 }
+
+t11FcsMIBCompliance MODULE-COMPLIANCE
+    STATUS        current
+    DESCRIPTION
+            "The compliance statement for entities that
+            implement the Fabric Configuration Server."
+    MODULE MANDATORY-GROUPS { t11FcsDiscoveredConfigGroup,
+                              t11FcsDiscoveryStatusGroup,
+                              t11FcsNotificationInfoGroup,
+                              t11FcsNotificationGroup }
+
+    GROUP   t11FcsDiscoveryControlGroup
+    DESCRIPTION
+            "This group is mandatory only for those systems that
+            allow discovery of configuration by Fabric Configuration
+            Servers to be controlled via a MIB."
+
+    GROUP   t11FcsStatisticsGroup
+    DESCRIPTION
+            "These counters, containing Fabric Configuration
+            Server statistics, are mandatory only for those systems
+            that count such events."
+
+
+
+
+    OBJECT   t11FcsDiscoveryStatus
+    WRITE-SYNTAX INTEGER { localOnly(3) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+            "Write access is not required.
+             However, if write access is supported, then the only
+             writable value is 'localOnly'."
+
+    OBJECT   t11FcsReqRejectNotifyEnable
+    MIN-ACCESS   read-only
+    DESCRIPTION
+            "Write access is not required."
+
+    OBJECT   t11FcsDiscoveryCompNotifyEnable
+    MIN-ACCESS   read-only
+    DESCRIPTION
+            "Write access is not required."
+
+    OBJECT   t11FcsMgmtAddrChangeNotifyEnable
+    MIN-ACCESS   read-only
+    DESCRIPTION
+            "Write access is not required."
+
+    ::= { t11FcsMIBCompliances 1 }
+
+
+-- Units of Conformance
+
+t11FcsDiscoveryControlGroup OBJECT-GROUP
+    OBJECTS { t11FcsFabricDiscoveryRangeLow,
+              t11FcsFabricDiscoveryRangeHigh,
+              t11FcsFabricDiscoveryStart,
+              t11FcsFabricDiscoveryTimeOut }
+    STATUS   current
+    DESCRIPTION
+            "A collection of objects for requesting a Fabric
+            Configuration Server to discover the configuration
+            of one or more Fabrics."
+    ::= { t11FcsMIBGroups 1 }
+
+t11FcsDiscoveryStatusGroup OBJECT-GROUP
+    OBJECTS { t11FcsDiscoveryStatus,
+              t11FcsDiscoveryCompleteTime }
+    STATUS   current
+    DESCRIPTION
+            "A collection of objects with which to monitor the
+            status of discovery (of Fabric configurations) by
+            Fabric Configuration Servers."
+
+
+
+    ::= { t11FcsMIBGroups 2 }
+
+t11FcsDiscoveredConfigGroup OBJECT-GROUP
+    OBJECTS {
+              t11FcsIeType,
+              t11FcsIeDomainId,
+              t11FcsIeMgmtId,
+              t11FcsIeFabricName,
+              t11FcsIeLogicalName,
+              t11FcsIeMgmtAddrListIndex,
+              t11FcsIeInfoList,
+              t11FcsMgmtAddr,
+              t11FcsPortType,
+              t11FcsPortTxType,
+              t11FcsPortModuleType,
+              t11FcsPortPhyPortNum,
+              t11FcsPortAttachPortNameIndex,
+              t11FcsPortState,
+              t11FcsPortSpeedCapab,
+              t11FcsPortOperSpeed,
+              t11FcsPortZoningEnfStatus,
+              t11FcsAttachPortName,
+              t11FcsPlatformName,
+              t11FcsPlatformType,
+              t11FcsPlatformNodeNameListIndex,
+              t11FcsPlatformMgmtAddrListIndex,
+              t11FcsPlatformVendorId,
+              t11FcsPlatformProductId,
+              t11FcsPlatformProductRevLevel,
+              t11FcsPlatformDescription,
+              t11FcsPlatformLabel,
+              t11FcsPlatformLocation,
+              t11FcsPlatformSystemID,
+              t11FcsPlatformSysMgmtAddr,
+              t11FcsPlatformClusterId,
+              t11FcsPlatformClusterMgmtAddr,
+              t11FcsPlatformFC4Types,
+              t11FcsNodeName }
+    STATUS   current
+    DESCRIPTION
+            "A collection of objects to contain the Fabric configuration
+            information discovered by Fabric Configuration Servers."
+    ::= { t11FcsMIBGroups 3 }
+
+t11FcsStatisticsGroup OBJECT-GROUP
+    OBJECTS { t11FcsInGetReqs,
+              t11FcsOutGetReqs,
+              t11FcsInRegReqs,
+
+
+
+              t11FcsOutRegReqs,
+              t11FcsInDeregReqs,
+              t11FcsOutDeregReqs,
+              t11FcsRejects }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects for Fabric Configuration Server
+            statistics information."
+    ::= { t11FcsMIBGroups 4 }
+
+t11FcsNotificationInfoGroup OBJECT-GROUP
+    OBJECTS { t11FcsReqRejectNotifyEnable,
+              t11FcsDiscoveryCompNotifyEnable,
+              t11FcsMgmtAddrChangeNotifyEnable,
+              t11FcsRejectCtCommandString,
+              t11FcsRejectRequestSource,
+              t11FcsRejectReasonCode,
+              t11FcsRejectReasonCodeExp,
+              t11FcsRejectReasonVendorCode,
+              t11FcsMgmtAddrChangeFabricIndex,
+              t11FcsMgmtAddrChangeIeName }
+    STATUS  current
+    DESCRIPTION
+            "A collection of notification control and notification
+            information objects for monitoring Fabric
+            Configuration Servers."
+    ::= { t11FcsMIBGroups 5 }
+
+t11FcsNotificationGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { t11FcsRqRejectNotification,
+                    t11FcsDiscoveryCompleteNotify,
+                    t11FcsMgmtAddrChangeNotify }
+    STATUS  current
+    DESCRIPTION
+            "A collection of notifications for monitoring Fabric
+            Configuration Servers."
+    ::= { t11FcsMIBGroups 6 }
+
+END

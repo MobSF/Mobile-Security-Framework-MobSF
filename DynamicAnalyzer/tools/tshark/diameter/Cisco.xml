@@ -1,0 +1,1482 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+
+	<application id="16777238" name="3GPP Gx" uri="http://www.ietf.org/internet-drafts/draft-ietf-aaa-diameter-cc-06.txt">
+
+    <!--Flow-Description-->
+    <avp name="Flow-Description" code="507" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="must">
+      <type type-name="IPFilterRule"/>
+
+    </avp>
+
+    <!--Cisco-Charging-Rule-Definition-->
+
+		<avp name="Cisco-Charging-Rule-Definition" code="131072" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<grouped>
+				<gavp name="Charging-Rule-Name"/>
+				<gavp name="Service-Name"/>
+				<gavp name="Rating-Group"/>
+				<gavp name="Cisco-Flow-Description"/>
+				<gavp name="Cisco-Flow-Status"/>
+				<gavp name="QoS-Information"/>
+				<gavp name="Online"/>
+				<gavp name="Offline"/>
+				<gavp name="Precedence"/>
+				<gavp name="AF-Charging-Identifier"/>
+				<gavp name="Charging-Rule-Event-Trigger"/>
+				<gavp name="Redirect-Server"/>
+			</grouped>
+		</avp>
+
+	<!--Content-Definition-->
+		
+		<avp name="Content-Definition" code="131073" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<grouped>
+				<gavp name="Content-Name"/>
+				<gavp name="Cisco-Flow-Description"/>
+				<gavp name="Content-Scope"/>
+				<gavp name="Content-Idle-Timer"/>
+				<gavp name="Nexthop"/>
+				<gavp name="Nexthop-Reverse"/>
+				<gavp name="L7-Parse-Protocol-Type"/>
+				<gavp name="L7-Parse-Length"/>
+				<gavp name="Billing-Policy-Name"/>
+				<gavp name="Replicate-Session"/>
+				<gavp name="Intermediate-CDR-Threshold"/>
+				<gavp name="CDR-Generation-Delay"/>
+				<gavp name="Content-Pending-Timer"/>
+				<gavp name="Operation-Status"/>
+				<gavp name="Subscriber-IP-Source"/>
+				<gavp name="Flow-Status-Policy-Mismatch"/>
+				<gavp name="Relative-URL"/>
+  			<gavp name="Control-URL"/>
+				<gavp name="Domain-Group-Name"/>
+				<gavp name="Mining"/>
+				<gavp name="Nexthop-Media"/>
+				<gavp name="Nexthop-Override"/>
+                <gavp name="Accel"/>
+			</grouped>
+		</avp>
+
+
+		
+	<!--Billing-Policy-Definition-->
+		
+		<avp name="Billing-Policy-Definition" code="131074" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<grouped>
+				<gavp name="Billing-Policy-Name"/>
+				<gavp name="Policy-Map-Name"/>
+				<gavp name="Accounting"/>
+				<gavp name="Class-Map-Name"/>
+				<gavp name="Header-Group-Name"/>
+			</grouped>
+		</avp>
+
+	<!--Policy-Map-Definition-->
+		
+		<avp name="Policy-Map-Definition" code="131075" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<grouped>
+				<gavp name="Policy-Map-Name"/>
+				<gavp name="Policy-Map-Type"/>
+				<gavp name="Policy-Map-Replace"/>
+				<gavp name="Policy-Map-Match-Remove"/>
+				<gavp name="Policy-Map-Match-Install"/>
+			</grouped>
+		</avp>
+		
+
+	<!--Service-Definition-->
+		
+		<avp name="Service-Definition" code="131076" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<grouped>
+				<gavp name="Service-Name"/>
+				<gavp name="Online-Billing-Basis"/>
+				<gavp name="Dual-Billing-Basis"/>
+				<gavp name="Service-Reporting-Level"/>
+				<gavp name="Service-CDR-Threshold"/>
+				<gavp name="Service Activation"/>
+				<gavp name="Advice-Of-Charge"/>
+				<gavp name="Service-Class"/>
+				<gavp name="Service-Idle-Time"/>
+				<gavp name="Owner-Id"/>
+				<gavp name="Owner-Name"/>
+				<gavp name="Online-Passthrough-Quota"/>
+				<gavp name="Dual-Passthrough-Quota"/>
+				<gavp name="Online-Reauthorization-Threshold"/>
+				<gavp name="Dual-Reauthorization-Threshold"/>
+				<gavp name="Online-Reauthorization-Timeout"/>
+				<gavp name="Refund-Policy"/>
+				<gavp name="Meter-Exclude"/>
+				<gavp name="Meter-Include-Imap"/>
+				<gavp name="Metering-Granularity"/>
+				<gavp name="Verify"/>
+				<gavp name="Quota-Consumption-Time"/>
+				<gavp name="Service-Rating-Group"/>
+				<gavp name="Cisco-QoS-Profile-Uplink"/>
+				<gavp name="Cisco-QoS-Profile-Downlink"/>
+				<gavp name="Header-Group-Name"/>
+				<gavp name="Content-Policy-Map"/>
+			</grouped>
+		</avp>
+
+
+		
+	<!--Content-Policy-Map-->
+		
+		<avp name="Content-Policy-Map" code="131077" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<grouped>
+				<gavp name="Content-Name"/>
+				<gavp name="Billing-Policy-Name"/>
+				<gavp name="Weight"/>
+			</grouped>
+		</avp>
+
+		
+	<!--Service-Info-->
+		
+		<avp name="Service-Info" code="131078" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<grouped>
+				<gavp name="Service-Name"/>
+				<gavp name="Online"/>
+				<gavp name="Virtual-Online"/>
+			</grouped>
+		</avp>
+
+		
+	<!--Billing-Plan-Definition-->
+		
+		<avp name="Billing-Plan-Definition" code="131079" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<grouped>
+				<gavp name="Billing-plan-Name"/>
+				<gavp name="Online"/>
+				<gavp name="Offline"/>
+				<gavp name="Virtual-Online"/>
+				<gavp name="User-Idle-Timer"/>
+				<gavp name="User-Idle-Pod"/>
+				<gavp name="User-Default"/>
+				<gavp name="Cisco-QoS-Profile-Uplink"/>
+				<gavp name="Cisco-QoS-Profile-Downlink"/>
+				<gavp name="Service-Info"/>
+			</grouped>
+		</avp>
+
+    <!--Volume-Threshold-->
+
+    <avp name="Volume-Threshold" code="131080" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+      <type type-name="Unsigned32"/>
+    </avp>
+
+    <!--Time-Threshold-->
+
+    <avp name="Time-Threshold" code="131081" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+      <type type-name="Unsigned32"/>
+    </avp>
+
+    <!--Content-Idle-Timer-->
+		
+		<avp name="Content-Idle-Timer" code="131082" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+	
+	<!--Nexthop-Uplink-->
+		
+		<avp name="Nexthop-Uplink" code="131083" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<type type-name="IPAddress"/>
+		</avp>
+	<!--Nexthop-Downlink-->
+		
+		<avp name="Nexthop-Downlink" code="131084" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<type type-name="IPAddress"/>
+		</avp>
+
+	<!--L7-Parse-Protocol-Type-->	
+		
+		<avp name="L7-Parse-Protocol-Type" code="131085" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="HTTP" code="0"/>
+				<enum name="IMAP" code="1"/>
+				<enum name="OTHER" code="2"/>
+				<enum name="POP3" code="3"/>
+				<enum name="RTSP" code="4"/>
+				<enum name="SMTP" code="5"/>
+				<enum name="WAP-CONNECTION-ORIENTED" code="6"/>
+				<enum name="WAP-CONNECTION-LESS" code="7"/>
+				<enum name="SIP" code="8"/>
+				<enum name="FTP" code="9"/>
+				<enum name="NBAR" code="10"/>
+				<enum name="DNS" code="11"/>
+				<enum name="HTTP-INSERT" code="12"/>
+		</avp>		
+	<!--Service-Status-->
+		
+		<avp name="Service-Status" code="131086" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<grouped>
+				<gavp name="Service-Name"/>
+				<gavp name="Cisco-Flow-Status"/>
+				<gavp name="Service-Rating-Group"/>
+				<gavp name="Service-QoS"/>
+				<gavp name="Redirect-Server"/>
+				<gavp name="Service-Group-Name"/>
+			</grouped>
+		</avp>
+	<!--Service-Name-->	
+		<avp name="Service-Name" code="131087" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>
+		
+		</avp>
+	<!--Biling-Policy-Name-->
+			<avp name="Biling-Policy-Name" code="131088" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>
+		
+		</avp>
+	<!--Policy-Map-Name-->
+			<avp name="Policy-Map-Name" code="131089" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>
+		
+		</avp>
+	<!--Policy-Map-Match-->
+		
+		<avp name="Policy-Map-Match" code="131090" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<grouped>
+				<gavp name="Match-String"/>
+				<gavp name="Attribute-String"/>
+			</grouped>
+		</avp>
+	<!--Match-String-->	
+		<avp name="Match-String" code="131091" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+		<type type-name="UTF8String"/>
+		
+		</avp>
+	<!--Attribute-String-->	
+		<avp name="Attribute-String" code="131092" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+		<type type-name="UTF8String"/>
+		
+		</avp>
+	<!--Online-Billing-Basis-->	
+		
+		<avp name="Online-Billing-Basis" code="131093" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="EVENT" code="1"/>
+				<enum name="IP_BYTE" code="2"/>
+				<enum name="TCP_BYTE" code="3"/>
+				<enum name="DURATION" code="4"/>
+				<enum name="DURATION-CONNECT" code="5"/>
+				<enum name="DURATION-TRANSACTION" code="6"/>
+		</avp>			
+	<!--Service-Activation-->	
+		
+		<avp name="Service-Activation" code="131094" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="USER_PROFILE" code="0"/>
+				<enum name="AUTOMATIC" code="1"/>
+		</avp>			
+	<!--CDR-Volume-Threshold-->	
+		
+		<avp name="CDR-Volume-Threshold" code="131095" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+			
+		</avp>			
+	<!--CDR-Time-Threshold-->	
+		
+		<avp name="CDR-Time-Threshold" code="131096" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+			
+		</avp>			
+	<!--Advice-Of-Charge-->
+		
+		<avp name="Advice-Of-Charge" code="131097" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<grouped>
+				<gavp name="Append-URL"/>
+				<gavp name="Confirm-Token"/>
+			</grouped>
+		</avp>
+	<!--Append-URL-->	
+		
+		<avp name="Append-URL" code="131098" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DISABLE_APPEND_URL" code="0"/>
+				<enum name="ENABLE_APPEND_URL" code="1"/>
+		</avp>			
+	
+	<!--Confirm-Token-->
+			<avp name="Confirm-Token" code="131099" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>
+		
+		</avp>
+	<!--Service-Class-->	
+		
+		<avp name="Service-Class" code="131100" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+			
+		</avp>	
+	<!--Service-Idle-Time-->	
+		
+		<avp name="Service-Idle-Time" code="131101" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+			
+		</avp>
+	<!--Owner-Id-->
+			<avp name="Owner-Id" code="131102" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>
+		
+		</avp>		
+	<!--Owner-Name-->
+			<avp name="Owner-Name" code="131103" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>
+		
+		</avp>
+	<!--Online-Passthrough-Quota-->	
+		
+		<avp name="Online-Passthrough-Quota" code="131104" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+			
+		</avp>
+	<!--Online-Reauthorization-Threshold-->	
+		
+		<avp name="Online-Reauthorization-Threshold" code="131105" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+			
+		</avp>
+	<!--Online-Reauthorization-Timeout-->	
+		
+		<avp name="Online-Reauthorization-Timeout" code="131106" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Initial-Timeout"/>
+				<gavp name="Maximum-Timeout"/>
+			</grouped>
+		</avp>
+	<!--Initial-Timeout-->	
+		
+		<avp name="Initial-Timeout" code="131107" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+			
+		</avp>
+	<!--Maximum-Timeout-->	
+		
+		<avp name="Maximum-Timeout" code="131108" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+			
+		</avp>
+	<!--Refund-policy-->
+			<avp name="Refund-policy" code="131109" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>
+		
+		</avp>
+	<!--Meter-Exclude-->	
+		
+		<avp name="Meter-Exclude" code="131110" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="MMS_WAP" code="0"/>
+				<enum name="RTSP_PAUSE" code="1"/>
+				<enum name="SERVICE_IDLE" code="2"/>
+				<enum name="NETWORK_INIT_SIP" code="3"/>
+		</avp>	
+	<!--Meter-Include-Imap-->	
+		
+		<avp name="Meter-Include-Imap" code="131111" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="BODY_AND_HEADER" code="0"/>
+				<enum name="BODY_ONLY" code="1"/>
+				<enum name="BODY_AND_OTHER" code="2"/>
+		</avp>
+	<!--Metering-Granularity-->	
+		
+		<avp name="Metering-Granularity" code="131112" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Meter-Increment"/>
+				<gavp name="Meter-Initial"/>
+				<gavp name="Meter-Minimum"/>
+			</grouped>
+		</avp>	
+	<!--Meter-Increment-->	
+		
+		<avp name="Meter-Increment" code="131113" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+	<!--Meter-Initial-->	
+		
+		<avp name="Meter-Initial" code="131114" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+	<!--Meter-Minimum-->	
+		
+		<avp name="Meter-Minimum" code="131115" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+	<!--Verify-->
+		
+		<avp name="Verify" code="131116" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<grouped>
+				<gavp name="Confirm-Token"/>
+			</grouped>
+		</avp>
+	
+	<!--Confirm-Token-->
+			<avp name="Confirm-Token" code="131117" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>		
+		</avp>	
+	
+	<!--Weight-->	
+		
+		<avp name="Weight" code="131118" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+	<!--User-Idle-Timer-->	
+		
+		<avp name="User-Idle-Timer" code="131119" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+	<!--Policy-Preload-Req-Type-->	
+		
+		<avp name="Policy-Preload-Req-Type" code="131120" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="POLICY_PRELOAD_REQ" code="0"/>
+				<enum name="POLICY_PRELOAD_RESP" code="1"/>
+				<enum name="POLICY_PRELOAD_PUSH" code="2"/>
+				<enum name="POLICY_PRELOAD_PUSH_ACK" code="3"/>
+		</avp>	
+	<!--Policy-Preload-Object-Type-->	
+		
+		<avp name="Policy-Preload-Object-Type" code="131121" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="POLICY_MAP" code="0"/>
+				<enum name="BILLING_POLICY" code="1"/>
+				<enum name="CONTENT" code="2"/>
+				<enum name="SERVICE" code="3"/>
+				<enum name="BILLING_PLAN" code="4"/>
+				<enum name="DOMAIN_GROUP" code="5"/>
+				<enum name="HEADER_INSERT" code="6"/>
+				<enum name="HEADER_GROUP" code="7"/>
+				<enum name="QOS_PROFILE" code="8"/>
+		</avp>	
+	<!--Policy-Preload-Status-->	
+		
+		<avp name="Policy-Preload-Status" code="131122" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="INITIATE" code="0"/>
+				<enum name="COMPLETE" code="1"/>
+		</avp>	
+	<!--Charging-Rule-Trigger-Type-->	
+		
+		<avp name="Charging-Rule-Trigger-Type" code="131123" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="NO_CHARGING_RULE_EVENT_TRIGGERS" code="0"/>
+				<enum name="VOLUME_THRESHOLD" code="1"/>
+				<enum name="TIME_THRESHOLD" code="2"/>
+				<enum name="SVC_FLOW_DETECTION" code="3"/>
+				<enum name="CHARGING_RULE_REMOVE" code="4"/>
+		</avp>
+	<!--Charging-Rule-Event-->	
+		
+		<avp name="Charging-Rule-Event" code="131124" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Charging-Rule-Name"/>
+				<gavp name="Charging-Rule-Trigger-Type"/>
+				<gavp name="Volume-Usage"/>
+				<gavp name="Time-Usage"/>
+				<gavp name="Cisco-Report-Usage"/>
+			</grouped>
+		</avp>
+	<!--Service-Reporting-Level-->	
+		
+		<avp name="Service-Reporting-Level" code="131125" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="TRANSACTION" code="0"/>
+				<enum name="SERVICE" code="1"/>
+		</avp>	
+	<!--Accounting-->	
+		
+		<avp name="Accounting" code="131126" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Accounting-Customer-String"/>
+
+			</grouped>
+		</avp>
+	<!--Accounting-Customer-String-->
+			<avp name="Accounting-Customer-String" code="131127" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>
+		
+		</avp>	
+	<!--L7-Parse-Length-->	
+		
+		<avp name="L7-Parse-Length" code="131128" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>	
+	<!--Service-CDR-Threshold-->	
+		
+		<avp name="Service-CDR-Threshold" code="131129" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="CDR-Volume-Threshold"/>
+				<gavp name="CDR-Time-Threshold"/>
+				
+			</grouped>
+		</avp>
+	<!--Intermediate-CDR-Threshold-->	
+		
+		<avp name="Intermediate-CDR-Threshold" code="131130" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="CDR-Volume-Threshold"/>
+				<gavp name="CDR-Time-Threshold"/>
+				
+			</grouped>
+		</avp>
+	<!--CDR-Generation-Delay-->	
+		
+		<avp name="CDR-Generation-Delay" code="131131" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+	<!--Replicate-Session-->	
+		
+		<avp name="Replicate-Session" code="131132" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Replicate-Session-Delay"/>
+				
+			</grouped>
+		</avp>
+	<!--Replicate-Session-Delay-->	
+		
+		<avp name="Replicate-Session-Delay" code="131133" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+	<!--Content-Pending-Timer-->	
+		
+		<avp name="Content-Pending-Timer" code="131134" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+	<!--Operation-Status-->	
+		
+		<avp name="Operation-Status" code="131135" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="OUT_OF_SERVICE" code="0"/>
+				<enum name="IN_SERVICE" code="1"/>
+		</avp>	
+	
+	<!--Subscriber-IP-Source-->	
+		
+		<avp name="Subscriber-IP-Source" code="131136" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DEFAULT" code="0"/>
+				<enum name="HTTP_X_FORWARDED_FOR" code="1"/>
+		</avp>
+	<!--Nexthop-->	
+		
+		<avp name="Nexthop" code="131137" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="IPAddress"/>
+		</avp>
+	<!--Nexthop-Reverse-->	
+		
+		<avp name="Nexthop-Reverse" code="131138" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="IPAddress"/>
+		</avp>
+		
+	<!--Charging-Rule-Event-Trigger-->	
+		
+		<avp name="Charging-Rule-Event-Trigger" code="131139" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Charging-Rule-Trigger-Type"/>
+				<gavp name="Volume-Threshold"/>
+				<gavp name="Time-Threshold"/>
+        <gavp name="Cisco-Report-Usage"/>
+        <gavp name="Volume-Threshold-64"/>
+			</grouped>
+		</avp>	
+	<!--Billing-Plan-Name-->
+			<avp name="Billing-Plan-Name" code="131140" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>
+		
+		</avp>	
+	
+	<!--Content-Flow-Description-->	
+		
+		<avp name="Content-Flow-Description" code="131141" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Content-Flow-Filter"/>
+				<gavp name="VRF-Name"/>
+				<gavp name="VLAN-Id"/>
+
+			</grouped>
+		</avp>		
+	<!--Content-Flow-Filter-->	
+		
+		<avp name="Content-Flow-Filter" code="131142" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Client-Group-Id"/>
+				<gavp name="Destination-IP-Address"/>
+				<gavp name="Destination-Mask"/>
+				<gavp name="Protocol-ID"/>
+				<gavp name="Start-of-Port-Range"/>
+				<gavp name="End-of-Port-Range"/>
+			
+			</grouped>
+		</avp>		
+	
+	<!--Client-Group-Id-->	
+		
+		<avp name="Client-Group-Id" code="131143" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="ACL-Number"/>
+				<gavp name="ACL-Name"/>
+
+			</grouped>
+		</avp>			
+	<!--ACL-Number-->	
+		
+		<avp name="ACL-Number" code="131144" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+		
+	<!--ACL-Name-->
+			<avp name="ACL-Name" code="131145" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>
+		
+		</avp>		
+	<!--Destination-IP-Address-->	
+		
+		<avp name="Destination-IP-Address" code="131146" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="IPAddress"/>
+		</avp>
+	<!--Destination-Mask-->	
+		
+		<avp name="Destination-Mask" code="131147" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="IPAddress"/>
+		</avp>
+	<!--Protocol-ID-->	
+		
+		<avp name="Protocol-ID" code="131148" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+	<!--Start-of-Port-Range-->	
+		
+		<avp name="Start-of-Port-Range" code="131149" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+	<!--End-of-Port-Range-->	
+		
+		<avp name="End-of-Port-Range" code="131150" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+
+    <!--Content-Name-->
+    <avp name="Content-Name" code="131151" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+      <type type-name="OctetString"/>
+
+    </avp>
+
+    <!--Failed-Preload-Object-->	
+		
+		<avp name="Failed-Preload-Object" code="131152" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Policy-Preload-Object-Type"/>
+				<gavp name="Failed-Preload-Obj-Name"/>
+			</grouped>
+		</avp>		
+	<!--VRF-Name-->	
+		
+		<avp name="VRF-Name" code="131153" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="OctetString"/>
+		</avp>
+		
+	<!--VLAN-Id-->
+			<avp name="VLAN-Id" code="131154" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="Unsigned32"/>
+		
+		</avp>		
+	<!--Volume-Usage-->
+			<avp name="Volume-Usage" code="131155" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="Unsigned64"/>
+		
+		</avp>		
+	<!--Time-Usage-->	
+		
+		<avp name="Time-Usage" code="131156" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Duration"/>
+				<gavp name="First-Packet-Timestanp"/>
+				<gavp name="Last-Packet-Timestanp"/>
+			
+			</grouped>
+		</avp>	
+	
+	<!--Duration-->
+			<avp name="Duration" code="131157" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="Unsigned32"/>
+		
+		</avp>	
+	<!--First-Packet-Timestanp-->
+			<avp name="First-Packet-Timestanp" code="131158" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="Unsigned32"/>
+		
+		</avp>
+	<!--Last-Packet-Timestanp-->
+			<avp name="Last-Packet-Timestanp" code="131159" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="Unsigned32"/>
+		
+		</avp>
+
+    <!--Cisco-Flow-Description-->
+
+    <avp name="Cisco-Flow-Description" code="131160" vendor-id="Cisco" mandatory="must" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+      <grouped>
+        <gavp name="Flow-Description"/>
+        <gavp name="Content-Name"/>
+        <gavp name="Precedence"/>
+        <gavp name="Flow-Information"/>
+      </grouped>
+    </avp>
+
+    <!--Terminate-Bearer-->	
+		
+		<avp name="Terminate-Bearer" code="131161" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Bearer-Identifier"/>	
+
+			</grouped>
+		</avp>
+
+    <!--Service-Rating-Group-->
+
+    <avp name="Service-Rating-Group" code="131162" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+      <type type-name="Unsigned32"/>
+    </avp>
+
+
+    <!--Content-Scope-->	
+		
+		<avp name="Content-Scope" code="131163" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="GLOBAL" code="0"/>
+				<enum name="USER" code="1"/>
+			</avp>
+	<!--Flow-Status-Policy-Mismatch-->	
+		
+		<avp name="Flow-Status-Policy-Mismatch" code="131164" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="FORWARD" code="0"/>
+				<enum name="BLOCK" code="1"/>
+			</avp>
+	<!--Policy-Map-Type-->	
+		
+		<avp name="Policy-Map-Type" code="131165" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="URL_MAP" code="0"/>
+				<enum name="HEADER_MAP" code="1"/>
+				<enum name="METHOD_MAP" code="2"/>
+				<enum name="ATTRIBUTE_MAP" code="3"/>
+			</avp>
+
+	<!--Policy-Map-Match-Install-->	
+		
+		<avp name="Policy-Map-Match-Install" code="131166" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Policy-Map-Match"/>	
+
+			</grouped>
+		</avp>	
+	<!--Policy-Map-Match-Remove-->	
+		
+		<avp name="Policy-Map-Match-Remove" code="131167" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Policy-Map-Match"/>	
+
+			</grouped>
+		</avp>	
+	<!--Policy-Map-Replace-->	
+		
+		<avp name="Policy-Map-Replace" code="131168" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DISABLED" code="0"/>
+				<enum name="ENABLED" code="1"/>
+			</avp>
+	<!--Cisco-Flow-Status-->	
+		
+		<avp name="Cisco-Flow-Status" code="131169" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="FORWARD" code="0"/>
+				<enum name="BLOCK" code="1"/>
+				<enum name="REDIRECT" code="2"/>
+			</avp>	
+	<!--Service-QoS-->	
+		
+		<avp name="Service-QoS" code="131170" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="QoS-Rate-Limit-UL"/>
+				<gavp name="QoS-Rate-Limit-DL"/>
+			
+			</grouped>
+		</avp>		
+	<!--QoS-Rate-Limit-UL-->	
+		
+		<avp name="QoS-Rate-Limit-UL" code="131171" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="QoS-Rate-Limit"/>	
+
+			</grouped>
+		</avp>
+	<!--QoS-Rate-Limit-DL-->	
+		
+		<avp name="QoS-Rate-Limit-DL" code="131172" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="QoS-Rate-Limit"/>	
+
+			</grouped>
+		</avp>
+	<!--QoS-Rate-Limit-->	
+		
+		<avp name="QoS-Rate-Limit" code="131173" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Max-Bandwidth"/>
+				<gavp name="Max-Burst-Size"/>
+				<gavp name="Rate-Limit-Conform-Action"/>
+				<gavp name="Rate-Limit-Exceed-Action"/>
+			
+			</grouped>
+		</avp>
+	<!--Max-Bandwidth-->
+			<avp name="Max-Bandwidth" code="131174" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="Unsigned32"/>
+		
+		</avp>	
+	<!--Rate-Limit-Conform-Action-->	
+		
+		<avp name="Rate-Limit-Conform-Action" code="131175" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Rate-Limit-Action"/>
+				<gavp name="DSCP"/>
+			
+			</grouped>
+		</avp>	
+	<!--Rate-Limit-Exceed-Action-->	
+		
+		<avp name="Rate-Limit-Exceed-Action" code="131176" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Rate-Limit-Action"/>
+				<gavp name="DSCP"/>
+			
+			</grouped>
+		</avp>	
+	<!--Rate-Limit-Action-->	
+		
+		<avp name="Rate-Limit-Action" code="131177" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="FORWARD" code="0"/>
+				<enum name="DROP" code="1"/>
+				<enum name="MARK_DSCP" code="2"/>
+				
+			</avp>
+	<!--DSCP-->
+			<avp name="DSCP" code="131178" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="Unsigned32"/>
+		
+		</avp>	
+	<!--Policy-Map-Install-->	
+		
+		<avp name="Policy-Map-Install" code="131179" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Policy-Map-Definition"/>	
+
+			</grouped>
+		</avp>	
+	<!--Policy-Map-Remove-->	
+		
+		<avp name="Policy-Map-Remove" code="131180" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Policy-Map-Name"/>	
+
+			</grouped>
+		</avp>
+	<!--Billing-Policy-Install-->	
+		
+		<avp name="Billing-Policy-Install" code="131181" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Billing-Policy-Definition"/>	
+
+			</grouped>
+		</avp>	
+	<!--Billing-Policy-Remove-->	
+		
+		<avp name="Billing-Policy-Remove" code="131182" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Billing-Policy-Name"/>	
+
+			</grouped>
+		</avp>	
+	<!--Content-Install-->	
+		
+		<avp name="Content-Install" code="131183" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Content-Definition"/>	
+
+			</grouped>
+		</avp>	
+	<!--Content-Remove-->	
+		
+		<avp name="Content-Remove" code="131184" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Content-Name"/>	
+
+			</grouped>
+		</avp>	
+	<!--Service-Install-->	
+		
+		<avp name="Service-Install" code="131185" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Service-Definition"/>	
+
+			</grouped>
+		</avp>	
+	<!--Service-Remove-->	
+		
+		<avp name="Service-Remove" code="131186" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Service-Name"/>	
+
+			</grouped>
+		</avp>	
+	<!--Billing-Plan-Install-->	
+		
+		<avp name="Billing-Plan-Install" code="131187" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Billing-Plan-Definition"/>	
+
+
+			</grouped>
+		</avp>	
+	<!--Billing-Plan-Remove-->	
+		
+		<avp name="Billing-Plan-Remove" code="131188" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Billing-Plan-Name"/>	
+
+			</grouped>
+		</avp>	
+	<!--Policy-Preload-Error-Code-->	
+		
+		<avp name="Policy-Preload-Error-Code" code="131189" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="INCONSISTENT_PRELOAD_DATA" code="0"/>
+				<enum name="MANDATORY_AVP_MISSING" code="1"/>
+				<enum name="FAILURE_TO_ENFORCE" code="2"/>
+				<enum name="WRONG_ORDER" code="3"/>
+				<enum name="CONFLICT_WITH_STATIC_CONFIG" code="4"/>
+				
+		</avp>	
+	<!--Max-Burst-Size-->
+		<avp name="Max-Burst-Size" code="131190" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="Unsigned32"/>
+		
+		</avp>	
+    <!--Failed-Preload-Obj-Name-->
+		<avp name="Failed-Preload-Obj-Name" code="131191" vendor-id="Cisco" mandatory="must" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Policy-Preload-Error-Code"/>
+				<gavp name="Policy-Map-Name"/>
+				<gavp name="Billing-Policy-Name"/>
+				<gavp name="Content-Name"/>
+				<gavp name="Service-Name"/>
+				<gavp name="Billing-Plan-Name"/>
+			</grouped>
+		</avp>		
+    <!--Cisco-Event-Trigger-Type-->
+		<avp name="Cisco-Event-Trigger-Type" code="131192" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="NO_Cisco_TRIGGERS" code="0"/>
+				<enum name="TCP_SYN_DETECTION" code="1"/>
+				<enum name="VOLUME_THRESHOLD" code="2"/>
+				<enum name="TIME_THRESHOLD" code="3"/>
+				<enum name="USER_AGENT_DETECTION" code="4"/>
+        <enum name="Volume-Threshold-64" code="5"/>
+		</avp>	
+    <!--Cisco-Event-Trigger-->       
+    <avp name="Cisco-Event-Trigger" code="131193" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Cisco-Event-Trigger-Type"/>
+				<gavp name="Volume-Threshold"/>
+				<gavp name="Time-Threshold"/>
+				<gavp name="Cisco-Report-Usage"/>
+        <gavp name="Volume-Threshold-64"/>
+			</grouped>
+		</avp>
+    <!--TCP-SYN-->	
+		<avp name="TCP-SYN" code="131194" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>
+
+		</avp>
+    <!--Cisco-Event-->
+    <avp name="Cisco-Event" code="131195" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Cisco-Event-Trigger-Type"/>
+        <gavp name="TCP-SYN"/>
+				<gavp name="Volume-Usage"/>
+				<gavp name="Time-Usage"/>
+        <gavp name="Cisco-Report-Usage"/>
+        <gavp name="User-Agent"/>
+			</grouped>
+		</avp>
+	<!--Interleaved-->
+		<avp name="Interleaved" code="131196" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DISABLED" code="0"/>
+				<enum name="ENABLED" code="1"/>
+				
+		</avp>
+	<!--Control-URL-->	
+		<avp name="Control-URL" code="131197" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Interleaved"/>	
+
+			</grouped>
+		</avp>
+	<!--Relative-URL-->
+		<avp name="Relative-URL" code="131198" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DISABLED" code="0"/>
+				<enum name="ENABLED" code="1"/>
+				
+		</avp>
+	<!--Mining-->
+		<avp name="Mining" code="131199" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DISABLED" code="0"/>
+				<enum name="ENABLED" code="1"/>
+				
+		</avp>
+	<!--User-Default-->
+		<avp name="User-Default" code="131200" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DISABLED" code="0"/>
+				<enum name="ENABLED" code="1"/>
+				
+		</avp>
+	<!--Priority-->
+		<avp name="Priority" code="131201" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       		<type type-name="Unsigned32"/>
+		
+		</avp>
+	<!--Domain-Group-Name-->	
+		<avp name="Domain-Group-Name" code="131202" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="OctetString"/>
+
+		</avp>
+	<!--Domain-Group-Definition-->	
+		<avp name="Domain-Group-Definition" code="131203" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Domain-Group-Name"/>	
+				<gavp name="Priority"/>
+				<gavp name="Match-String"/>
+
+			</grouped>
+		</avp>
+	<!--Domain-Group-Install-->	
+		<avp name="Domain-Group-Install" code="131204" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Domain-Group-Definition"/>	
+
+			</grouped>
+		</avp>
+	<!--Domain-Group-Remove-->	
+		<avp name="Domain-Group-Remove" code="131205" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Domain-Group-Name"/>	
+
+			</grouped>
+		</avp>
+	<!--Domain-Group-Activation-->
+		<avp name="Domain-Group-Activation" code="131206" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DISABLED" code="0"/>
+				<enum name="ENABLED" code="1"/>
+				
+		</avp>
+	<!--Dual-Billing-Basis-->
+		<avp name="Dual-Billing-Basis" code="131207" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="EVENT" code="1"/>
+				<enum name="IP_BYTE" code="2"/>
+				<enum name="TCP_BYTE" code="3"/>
+				<enum name="DURATION" code="4"/>
+				<enum name="DURATION-CONNECT" code="5"/>
+				<enum name="DURATION-TRANSACTION" code="6"/>	
+
+		</avp>
+	<!--Dual-Passthrough-Quota-->
+		<avp name="Dual-Passthrough-Quota" code="131208" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       		<type type-name="Unsigned32"/>
+		
+		</avp>
+	<!--Dual-Reauthorization-Threshold-->
+		<avp name="Dual-Reauthorization-Threshold" code="131209" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       		<type type-name="Unsigned32"/>
+		
+		</avp>
+	<!--Virtual-Online-->
+		<avp name="Virtual-Online" code="131210" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DISABLED" code="0"/>
+				<enum name="ENABLED" code="1"/>
+				
+		</avp>
+	<!--Nexthop-Media-->	
+		<avp name="Nexthop-Media" code="131211" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="IPAddress"/>
+
+		</avp>
+	<!--Nexthop-Override-->
+		<avp name="Nexthop-Override" code="131212" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DISABLED" code="0"/>
+				<enum name="ENABLED" code="1"/>
+				
+		</avp>
+	<!--Quota-Consumption-Time-->
+		<avp name="Quota-Consumption-Time" code="131213" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       		<type type-name="Unsigned32"/>
+		
+		</avp>
+	<!--Class-Map-Name-->	
+		<avp name="Class-Map-Name" code="131214" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<type type-name="UTF8String"/>
+		
+		</avp>
+	<!--Header-Group-Name-->	
+		<avp name="Header-Group-Name" code="131215" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<type type-name="UTF8String"/>
+		
+		</avp>
+	<!--Header-Group-Definition-->	
+		<avp name="Header-Group-Definition" code="131216" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Header-Group-Name"/>
+				<gavp name="Header-Insert-Name"/>
+
+			</grouped>
+		</avp>
+	<!--Header-Group-Install-->	
+		<avp name="Header-Group-Install" code="131217" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Header-Group-Definition"/>
+
+			</grouped>
+		</avp>
+	<!--Header-Group-Remove-->	
+		<avp name="Header-Group-Remove" code="131218" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Header-Group-Name"/>
+
+			</grouped>
+		</avp>
+	<!--Header-Insert-Name-->	
+		<avp name="Header-Insert-Name" code="131219" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<type type-name="UTF8String"/>
+		
+		</avp>
+	<!--Header-Field-Name-->	
+		<avp name="Header-Field-Name" code="131220" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<type type-name="UTF8String"/>
+		
+		</avp>
+	<!--Header-Class-Name-->	
+		<avp name="Header-Class-Name" code="131221" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<type type-name="UTF8String"/>
+		
+		</avp>
+	<!--Header-Class-Mode-->
+		<avp name="Header-Class-Mode" code="131222" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="EXCLUDE" code="0"/>
+				<enum name="INCLUDE" code="1"/>
+				
+		</avp>
+	<!--Header-Class-->	
+		<avp name="Header-Class" code="131223" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Header-Class-Name"/>
+				<gavp name="Header-Class-Mode"/>
+
+			</grouped>
+		</avp>
+	<!--Radius-Attribute-Type-->
+		<avp name="Radius-Attribute-Type" code="131224" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       		<type type-name="Unsigned32"/>
+		
+		</avp>
+	<!--Radius-Vsa-Vendor-Id-->
+		<avp name="Radius-Vsa-Vendor-Id" code="131225" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       		<type type-name="Unsigned32"/>
+		
+		</avp>
+	<!--Radius-Vsa-Subattribute-Type-->
+		<avp name="Radius-Vsa-Subattribute-Type" code="131226" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       		<type type-name="Unsigned32"/>
+		
+		</avp>
+	<!--Header-Item-Radius-->	
+		<avp name="Header-Item-Radius" code="131227" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Radius-Attribute-Type"/>
+				<gavp name="Radius-Vsa-Vendor-Id"/>
+				<gavp name="Radius-Vsa-Subattribute-Type"/>
+
+			</grouped>
+		</avp>
+	<!--Header-Item-->
+		<avp name="Header-Item" code="131228" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="TIMESTAMP" code="0"/>
+				<enum name="QUOTA_SERVER " code="1"/>
+				
+		</avp>
+	<!--Header-Item-String-->	
+		<avp name="Header-Item-String" code="131229" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<type type-name="UTF8String"/>
+		
+		</avp>
+	<!--Header-Items-Encrypted-->	
+		<avp name="Header-Items-Encrypted" code="131230" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Header-Item"/>
+				<gavp name="Header-Item-String"/>
+				<gavp name="Header-Item-Radius"/>
+
+			</grouped>
+		</avp>
+	<!--Header-Insert-Definition-->	
+		<avp name="Header-Insert-Definition" code="131231" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Header-Insert-Name"/>
+				<gavp name="Header-Field-Name"/>
+				<gavp name="Header-Class"/>
+				<gavp name="Header-Items-Encrypted"/>
+				<gavp name="Header-Item-String"/>
+				<gavp name="Header-Item-Radius"/>
+				<gavp name="Header-Item"/>
+
+			</grouped>
+		</avp>
+	<!--Header-Insert-Install-->	
+		<avp name="Header-Insert-Install" code="131232" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Header-Insert-Definition"/>
+
+			</grouped>
+		</avp>
+	<!--Header-Insert-Remove-->	
+		<avp name="Header-Insert-Remove" code="131233" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Header-Insert-Name"/>
+
+			</grouped>
+		</avp>
+	<!--User-Idle-Pod-->
+		<avp name="User-Idle-Pod" code="131234" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DISABLED" code="0"/>
+				<enum name="ENABLED" code="1"/>
+				
+		</avp>
+	<!--Domain-Group-Clear-->
+		<avp name="Domain-Group-Clear" code="131235" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DISABLED" code="0"/>
+				<enum name="ENABLED" code="1"/>
+				
+		</avp>
+	<!--Cisco-QoS-Profile-Name-->	
+		<avp name="Cisco-QoS-Profile-Name" code="131236" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+			<type type-name="UTF8String"/>
+		
+		</avp>
+	<!--Cisco-QoS-Profile-->	
+		<avp name="Cisco-QoS-Profile" code="131237" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Cisco-QoS-Profile-Name"/>
+				<gavp name="QoS-Rate-Limit"/>
+
+			</grouped>
+		</avp>
+	<!--Cisco-QoS-Profile-Install-->	
+		<avp name="Cisco-QoS-Profile-Install" code="131238" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Cisco-QoS-Profile"/>
+
+			</grouped>
+		</avp>
+	<!--Cisco-QoS-Profile-Remove-->	
+		<avp name="Cisco-QoS-Profile-Remove" code="131239" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Cisco-QoS-Profile"/>
+
+			</grouped>
+		</avp>
+	<!--Cisco-QoS-Profile-Uplink-->	
+		<avp name="Cisco-QoS-Profile-Uplink" code="131240" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Cisco-QoS-Profile-Name"/>
+
+			</grouped>
+		</avp>
+	<!--Cisco-QoS-Profile-Downlink-->	
+		<avp name="Cisco-QoS-Profile-Downlink" code="131241" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Cisco-QoS-Profile-Name"/>
+
+			</grouped>
+		</avp>
+    <!--Header-Item-Encryption-->	
+		<avp name="Header-Item-Encryption" code="131242" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="UNENCRYPTED" code="0"/>
+				<enum name="ENCRYPTED" code="1"/>
+		</avp>
+    <!--Service-Group-Name-->
+		<avp name="Service-Group-Name" code="131243" vendor-id="Cisco" mandatory="mustnot" may-encrypt="yes" protected="mustnot" vendor-bit="must">
+	       	        <type type-name="OctetString"/>
+		</avp>
+    <!--Service-Group-Definition-->	
+		<avp name="Service-Group-Definition" code="131244" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Service-Group-Name"/>
+				<gavp name="Cisco-Event-Trigger"/>
+				<gavp name="Cisco-QoS"/>
+				<gavp name="Cisco-Flow-Status"/>
+				<gavp name="Redirect-Server"/>
+			</grouped>
+		</avp>
+    <!--Service-Group-Install-->	
+		<avp name="Service-Group-Install" code="131245" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Service-Group-Definition"/>
+			</grouped>
+		</avp>
+    <!--Service-Group-Remove-->	
+		<avp name="Service-Group-Remove" code="131246" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Service-Group-Name"/>
+			</grouped>
+		</avp>
+    <!--Service-Group-Event-->	
+		<avp name="Service-Group-Event" code="131247" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Service-Group-Name"/>
+                                <gavp name="Cisco-Event"/>
+			</grouped>
+		</avp>
+    <!--Cisco-Report-Usage-->	
+		<avp name="Cisco-Report-Usage" code="131248" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Event-Trigger"/>
+			</grouped>
+		</avp>
+    <!--Accel-->	
+		<avp name="Accel" code="131249" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="DISABLE" code="0"/>
+				<enum name="ENABLE" code="1"/>
+        </avp>
+
+
+    <!--********************** START Cisco GX R6 AVPS *****************-->
+    <!--Cisco-Answer-User-Usage-->
+		<avp name="Cisco-Answer-User-Usage" code="131250" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Cisco-Request-Usage-Type"/>
+				<gavp name="Volume-Usage"/>
+				<gavp name="Time-Usage"/>
+			</grouped>
+		</avp>
+    <!--Cisco-Request-Usage-Type-->
+		<avp name="Cisco-Request-Usage-Type" code="131251" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+				<enum name="NO_USAGE" code="0"/>		
+				<enum name="VOL_USAGE" code="1"/>
+				<enum name="TIME_USAGE" code="2"/>
+		</avp>
+    <!--Cisco-Request-Charging-Rule-Usage-->
+		<avp name="Cisco-Request-Charging-Rule-Usage" code="131252" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Charging-Rule-Name"/>
+				<gavp name="Cisco-Request-Usage-Type"/>
+			</grouped>
+		</avp>
+    <!--Cisco-Request-Service-Group-Usage-->
+		<avp name="Cisco-Request-Service-Group-Usage" code="131253" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Service-Group-Name"/>
+				<gavp name="Cisco-Request-Usage-Type"/>
+			</grouped>
+		</avp>
+    <!--Cisco-Answer-Charging-Rule-Usage-->
+		<avp name="Cisco-Answer-Charging-Rule-Usage" code="131254" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Charging-Rule-Name"/>
+				<gavp name="Cisco-Request-Usage-Type"/>
+				<gavp name="Volume-Usage"/>
+				<gavp name="Time-Usage"/>
+			</grouped>
+		</avp>
+    <!--Cisco-Answer-Service-Group-Usage-->
+		<avp name="Cisco-Answer-Service-Group-Usage" code="131255" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<grouped>
+				<gavp name="Service-Group-Name"/>
+				<gavp name="Cisco-Request-Usage-Type"/>
+				<gavp name="Volume-Usage"/>
+				<gavp name="Time-Usage"/>
+			</grouped>
+		</avp>
+    <!--User-Agent-->
+		<avp name="User-Agent" code="131256" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="OctetString"/>
+		</avp>
+    <!--Service-Life-Time-->
+		<avp name="Service-Life-Time" code="131257" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned32"/>
+		</avp>
+    <!--Volume-Threshold-64-->
+ 		<avp name="Volume-Threshold-64" code="131258" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+			<type type-name="Unsigned64"/>
+		</avp>
+    <!--Delegated-IP-Install-->
+    <avp name="Delegated-IP-Install" code="131259" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+      <grouped>
+        <gavp name="Delegated-IPv4-Definition"/>
+        <gavp name="Delegated-IPv6-Definition"/>
+      </grouped>
+    </avp>
+    <!--Delegated-IPv4-Definition-->
+    <avp name="Delegated-IPv4-Definition" code="131260" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+      <grouped>
+        <gavp name="Framed-IP-Address"/>
+        <gavp name="Framed-IP-Netmask"/>
+        <gavp name="Aggr-Prefix-Len"/>
+      </grouped>
+    </avp>
+    <!--Delegated-IPv6-Definition-->
+    <avp name="Delegated-IPv6-Definition" code="131261" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+      <grouped>
+        <gavp name="Delegated-IPv6-Prefix"/>
+        <gavp name="Aggr-Prefix-Len"/>
+      </grouped>
+    </avp>
+    <!--Aggr-Prefix-Len-->
+    <avp name="Aggr-Prefix-Len" code="131262" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+      <type type-name="Unsigned32"/>
+    </avp>
+    <!--Service-Identifier-Lo-->
+    <avp name="Service-Identifier-Lo" code="131263" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+      <type type-name="Unsigned32"/>
+    </avp>
+    <!--Service-Identifier-Hi-->
+    <avp name="Service-Identifier-Hi" code="131264" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+      <type type-name="Unsigned32"/>
+    </avp>
+    <!--Service-Identifier-Range-->
+    <avp name="Service-Identifier-Range" code="131265" vendor-id="Cisco" mandatory="mustnot" protected="mustnot" may-encrypt="yes" vendor-bit="must">
+      <grouped>
+        <gavp name="Service-Identifier-Lo"/>
+        <gavp name="Service-Identifier-Hi"/>
+      </grouped>
+    </avp>
+
+    <!-- ********************** END GX AVPS ***************** -->      
+	</application>
+
+

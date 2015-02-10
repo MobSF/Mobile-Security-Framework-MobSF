@@ -1,0 +1,127 @@
+TUBS-IBR-PING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, Unsigned32
+        FROM SNMPv2-SMI
+    ibr
+        FROM TUBS-SMI;
+
+pingMIB MODULE-IDENTITY
+    LAST-UPDATED "200007070000Z"
+    ORGANIZATION "TU Braunschweig"
+    CONTACT-INFO
+        "Frank Strauss
+         TU Braunschweig
+         Bueltenweg 74/75
+         38106 Braunschweig
+         Germany
+
+         Tel: +49 531 391 3266
+         Fax: +49 531 391 5936
+         E-mail: strauss@ibr.cs.tu-bs.de"
+    DESCRIPTION
+        "Experimental MIB module for JAX code generator tests."
+    REVISION     "200007070000Z"
+    DESCRIPTION
+        "Added scalar group and notification."
+    REVISION     "200003300000Z"
+    DESCRIPTION
+        "The initial revision of this module."
+    ::= { ibr 8 }
+
+
+pingNotifications OBJECT IDENTIFIER ::= { pingMIB 0 }
+
+pingObjects OBJECT IDENTIFIER ::= { pingMIB 1 }
+
+-- Object definitions.
+
+pingTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of ping destinations and their round trip times."
+    ::= { pingObjects 1 }
+
+pingEntry OBJECT-TYPE
+    SYNTAX      PingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An entry containing a ping destinations and its
+             round trip time."
+    INDEX   { pingIndex }
+    ::= { pingTable 1 }
+
+PingEntry ::=
+    SEQUENCE {
+        pingIndex               Unsigned32,
+        pingAddress             IpAddress,
+        pingRtt                 Unsigned32
+    }
+
+pingIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A unique value identifying the ping entry."
+    ::= { pingEntry 1 }
+
+pingAddress OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The destination IP address for the ping entry.
+             Writing to an instance of this object with an
+             unused pingIndex creates a new pingTable entry."
+    ::= { pingEntry 2 }
+
+pingRtt OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The measured round trip time for the ping entry.
+             The value zero denotes a ping target that did
+             not respond (yet)."
+    ::= { pingEntry 3 }
+
+
+pingStatistics OBJECT IDENTIFIER ::= { pingObjects 2 }
+
+pingTimeout OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION 
+            "Maximum time to wait for a response."
+    ::= { pingStatistics 1 }
+
+pingAvgRtt OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The average round trip time for all ping entries."
+    ::= { pingStatistics 2 }
+
+-- Notification definitions.
+ 
+pingNoResponse NOTIFICATION-TYPE
+    OBJECTS     { pingRtt, pingTimeout }
+    STATUS      current
+    DESCRIPTION
+            "This notification is generated whenever a ping
+             target did not reply within the current timeout.
+             The pingAddress objects contains the target address
+             and the pingTimeout objects contains the timeout
+             value in milli seconds."
+    ::= { pingNotifications 1 }
+
+END

@@ -1,0 +1,76 @@
+module IRTF-NMRG-SMING-EXTENSIONS {
+
+//
+// $RCSfile: IRTF-NMRG-SMING-EXTENSIONS.sming,v $
+// $Revision: 813 $
+// $Author: strauss $
+// $Date: 2000-02-13 17:08:34 -0500 (Sun, 13 Feb 2000) $
+//
+
+    organization    "IRTF Network Management Research Group (NMRG),
+                     Network Management Group, TU Braunschweig";
+
+    contact         "        Frank Strauss
+
+                     Postal: TU Braunschweig
+                             Bueltenweg 74/75
+                             38106 Braunschweig
+                             Germany
+
+                      Phone: +49 531 391-3266
+                      EMail: strauss@ibr.cs.tu-bs.de";
+
+    description     "Core extension definitions for SMIng.";
+
+    revision {
+        date        "2000-02-13";
+        description "SMIng grammar dropped module identity objects.";
+    };
+
+    revision {
+        date        "1999-05-07";
+        description "Initial Revision.";
+    };
+
+    extension agentcaps {
+        status      current;
+        description     
+              "The agentcaps extension statement is used to describe
+               an agent's deviation from the compliance statements
+               of the modules it implements. It is designed to be
+               compatible with the SMIv2 AGENT-CAPABILITIES macro.
+
+               The agentcaps extension statement should only be used
+               in the statement body of a module that does not
+               contain any other type or node definitions that do not
+               correspond to an agent implementation.";
+        reference     
+              "RFC 2580, Section 6 describes the SMIv2
+               compatible AGENT-CAPABILITIES macro.";
+        abnf
+              "agentcapsStatement = 'agentcaps' sep lcIdentifier
+                                    optsep '{' stmtsep
+                                      oidStatement stmtsep
+                                      releaseStatement stmtsep
+                                      *1(statusStatement stmtsep)
+                                      descriptionStatement stmtsep
+                                      *1(referenceStatement stmtsep)
+                                      *(includesStatement stmtsep)
+                                    '}' optsep ';'
+  
+               includesStatement  = 'includes' sep qlcIdentifier
+                                    optsep '{' stmtsep
+                                      *(variationStatement stmtsep)
+                                    '}' optsep ';'
+  
+               variationStatement = 'variation' sep qlcIdentifier 
+                                    optsep '{' stmtsep
+                                      typeStatement stmtsep
+                                      writetypeStatement stmtsep
+                                      accessStatement stmtsep
+                                      createStatement stmtsep
+                                    '}' optsep ';'             
+               ";
+    };
+
+};

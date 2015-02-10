@@ -1,0 +1,1276 @@
+WWW-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, mib-2,
+    Counter32, Counter64, Integer32, Unsigned32, TimeTicks
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, DisplayString, DateAndTime, TimeInterval
+        FROM SNMPv2-TC
+
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF
+
+    Utf8String
+        FROM SYSAPPL-MIB;
+
+wwwMIB MODULE-IDENTITY
+    LAST-UPDATED "9902251400Z"
+    ORGANIZATION "IETF Application MIB Working Group"
+    CONTACT-INFO
+        "        Harrie Hazewinkel
+
+         Postal: Joint Research Centre of the E.C.
+                 via Fermi - Ispra 21020 (VA)
+                 Italy
+
+            Tel: +39+(0)332 786322
+            Fax: +39+(0)332 785641
+         E-mail: harrie.hazewinkel@jrc.it
+
+                 Carl W. Kalbfleisch
+
+         Postal: Verio, Inc.
+                 1950 Stemmons Freeway
+                 Suite 2006
+                 Dallas, TX 75207
+                 US
+
+            Tel: +1 214 290-8653
+            Fax: +1 214 744-0742
+         E-mail: cwk@verio.net
+
+                 Juergen Schoenwaelder
+
+         Postal: TU Braunschweig
+                 Bueltenweg 74/75
+                 38106 Braunschweig
+                 Germany
+
+            Tel: +49 531 391-3683
+            Fax: +49 531 489-5936
+         E-mail: schoenw@ibr.cs.tu-bs.de"
+    DESCRIPTION
+        "This WWW service MIB module is applicable to services
+         realized by a family of 'Document Transfer Protocols'
+         (DTP). Examples of DTPs are HTTP and FTP."
+
+       -- revision history
+
+       REVISION    "9902251400Z"
+       DESCRIPTION "Initial version, published as RFC2594."
+
+       ::= { mib-2 65 }
+
+--
+--  Object Identifier Assignments
+--
+
+wwwMIBObjects     OBJECT IDENTIFIER ::= { wwwMIB 1 }
+wwwMIBConformance OBJECT IDENTIFIER ::= { wwwMIB 2 }
+
+--
+-- Textual Conventions
+--
+
+WwwRequestType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The WwwRequestType defines the textual identification of
+         request types used by a document transfer protocol. For
+         the proper values for a given DTP, refer to the protocol
+         mappings for that DTP."
+    SYNTAX      OCTET STRING (SIZE (1..40))
+
+WwwResponseType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The WwwResponseType defines the different response values
+         used by document transfer protocols. For the proper values
+         for a given DTP, refer to the protocol mappings for that
+         DTP."
+    SYNTAX      Integer32 (0..2147483647)
+
+WwwOperStatus ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The operational status of a WWW service. 'down' indicates
+         that the service is not available. 'running' indicates
+         that the service is operational and available. 'halted'
+         indicates that the service is operational but not
+         available. 'congested' indicates that the service is
+         operational but no additional inbound associations can be
+         accommodated. 'restarting' indicates that the service is
+         currently unavailable but is in the process of restarting
+         and will be available soon."
+    SYNTAX      INTEGER {
+                    down(1),
+                    running(2),
+                    halted(3),
+                    congested(4),
+                    restarting(5)
+                }
+
+WwwDocName ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "255a"
+    STATUS      current
+    DESCRIPTION
+        "The server relative name of a document. If the URL were
+         http://www.x.org/standards/search/search.cgi?string=test
+         then the value of this textual convention would resolve
+         to '/standards/search/search.cgi'. This textual convention
+         uses the character set for URIs as defined in RFC 2396
+         section 2."
+    SYNTAX      OCTET STRING (SIZE (0..255))
+
+
+-- The WWW Service Information Group
+--
+-- The WWW service information group contains information about
+-- the WWW services known by the SNMP agent.
+
+wwwService OBJECT IDENTIFIER ::= { wwwMIBObjects 1 }
+
+wwwServiceTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwwServiceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table of the WWW services known by the SNMP agent."
+    ::= { wwwService 1 }
+
+wwwServiceEntry OBJECT-TYPE
+    SYNTAX      WwwServiceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Details about a particular WWW service."
+    INDEX       { wwwServiceIndex }
+    ::= { wwwServiceTable 1 }
+
+WwwServiceEntry ::= SEQUENCE {
+    wwwServiceIndex             Unsigned32,
+    wwwServiceDescription       Utf8String,
+    wwwServiceContact           Utf8String,
+    wwwServiceProtocol          OBJECT IDENTIFIER,
+    wwwServiceName              DisplayString,
+    wwwServiceType              INTEGER,
+    wwwServiceStartTime         DateAndTime,
+    wwwServiceOperStatus        WwwOperStatus,
+    wwwServiceLastChange        DateAndTime
+}
+
+wwwServiceIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An integer used to uniquely identify a WWW service. The
+         value must be the same as the corresponding value of the
+         applSrvIndex defined in the Application Management MIB
+         (APPLICATION-MIB) if the applSrvIndex object is available.
+         It might be necessary to manually configure sub-agents in
+         order to meet this requirement."
+    ::= { wwwServiceEntry 1 }
+
+wwwServiceDescription OBJECT-TYPE
+    SYNTAX      Utf8String
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Textual description of the WWW service. This shall include
+         at least the vendor and version number of the application
+         realizing the WWW service. In a minimal case, this might
+         be the Product Token (see RFC 2068) for the application."
+    ::= { wwwServiceEntry 2 }
+
+wwwServiceContact OBJECT-TYPE
+    SYNTAX      Utf8String
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The textual identification of the contact person for this
+         service, together with information on how to contact this
+         person. For instance, this might be a string containing an
+         email address, e.g. '<webmaster@domain.name>'."
+    ::= { wwwServiceEntry 3 }
+
+wwwServiceProtocol OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "An identification of the primary protocol in use by this
+         service. For Internet applications, the IANA maintains
+         a registry of the OIDs which correspond to well-known
+         application protocols.  If the application protocol is not
+         listed in the registry, an OID value of the form
+         {applTCPProtoID port} or {applUDPProtoID port} are used for
+         TCP-based and UDP-based protocols, respectively. In either
+         case 'port' corresponds to the primary port number being
+         used by the protocol."
+    REFERENCE
+        "The OID values applTCPProtoID and applUDPProtoID are
+         defined in the NETWORK-SERVICES-MIB (RFC 2248)."
+    ::= { wwwServiceEntry 4 }
+
+wwwServiceName OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The fully qualified domain name by which this service is
+         known. This object must contain the virtual host name if
+         the service is realized for a virtual host."
+    ::= { wwwServiceEntry 5 }
+
+wwwServiceType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    wwwOther(1),
+                    wwwServer(2),
+                    wwwClient(3),
+                    wwwProxy(4),
+                    wwwCachingProxy(5)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The application type using or realizing this WWW service."
+    ::= { wwwServiceEntry 6 }
+
+wwwServiceStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when this WWW service was last started.
+         The value SHALL be '0000000000000000'H if the last start
+         time of this WWW service is not known."
+    ::= { wwwServiceEntry 7 }
+
+wwwServiceOperStatus OBJECT-TYPE
+    SYNTAX      WwwOperStatus
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Indicates the operational status of the WWW service."
+    ::= { wwwServiceEntry 8 }
+
+wwwServiceLastChange OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when this WWW service entered its current
+         operational state. The value SHALL be '0000000000000000'H if
+         the time of the last state change is not known."
+    ::= { wwwServiceEntry 9 }
+
+
+-- The WWW Protocol Statistics Group
+--
+-- The WWW protocol statistics group contains statistics about
+-- the DTP requests and responses sent or received.
+
+wwwProtocolStatistics OBJECT IDENTIFIER ::= { wwwMIBObjects 2 }
+
+wwwSummaryTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwwSummaryEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table providing overview statistics for the
+         WWW services on this system."
+    ::= { wwwProtocolStatistics 1 }
+
+wwwSummaryEntry OBJECT-TYPE
+    SYNTAX      WwwSummaryEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Overview statistics for an individual service."
+    INDEX       { wwwServiceIndex }
+    ::= { wwwSummaryTable 1 }
+
+WwwSummaryEntry ::= SEQUENCE {
+    wwwSummaryInRequests        Counter32,
+    wwwSummaryOutRequests       Counter32,
+    wwwSummaryInResponses       Counter32,
+    wwwSummaryOutResponses      Counter32,
+    wwwSummaryInBytes           Counter64,
+    wwwSummaryInLowBytes        Counter32,
+    wwwSummaryOutBytes          Counter64,
+    wwwSummaryOutLowBytes       Counter32
+}
+
+wwwSummaryInRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of requests successfully received."
+    ::= { wwwSummaryEntry 1 }
+
+wwwSummaryOutRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of requests generated."
+    ::= { wwwSummaryEntry 2 }
+
+wwwSummaryInResponses OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of responses successfully received."
+    ::= { wwwSummaryEntry 3 }
+
+wwwSummaryOutResponses OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of responses generated."
+    ::= { wwwSummaryEntry 4 }
+
+wwwSummaryInBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of content bytes received."
+    ::= { wwwSummaryEntry 5 }
+
+wwwSummaryInLowBytes OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The lowest thirty-two bits of wwwSummaryInBytes."
+    ::= { wwwSummaryEntry 6 }
+
+wwwSummaryOutBytes OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of content bytes transmitted."
+    ::= { wwwSummaryEntry 7 }
+
+wwwSummaryOutLowBytes OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The lowest thirty-two bits of wwwSummaryOutBytes."
+    ::= { wwwSummaryEntry 8 }
+
+-- The WWW request tables contain detailed information about
+-- requests send or received by WWW services.
+
+wwwRequestInTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwwRequestInEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table providing detailed statistics for requests
+         received by WWW services on this system."
+    ::= { wwwProtocolStatistics 2 }
+
+wwwRequestInEntry OBJECT-TYPE
+    SYNTAX      WwwRequestInEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Request statistics for an individual service."
+    INDEX       { wwwServiceIndex, wwwRequestInIndex }
+    ::= { wwwRequestInTable 1 }
+
+WwwRequestInEntry ::= SEQUENCE {
+    wwwRequestInIndex           WwwRequestType,
+    wwwRequestInRequests        Counter32,
+    wwwRequestInBytes           Counter32,
+    wwwRequestInLastTime        DateAndTime
+}
+
+wwwRequestInIndex OBJECT-TYPE
+    SYNTAX      WwwRequestType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The particular request type the statistics apply to."
+    ::= { wwwRequestInEntry 1 }
+
+wwwRequestInRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of requests of this type received by this
+         WWW service."
+    ::= { wwwRequestInEntry 2 }
+
+wwwRequestInBytes OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of content bytes per request type received
+         by this WWW service."
+    ::= { wwwRequestInEntry 3 }
+
+wwwRequestInLastTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when the last byte of the last complete
+         request of this type was received by this WWW service. The
+         value SHALL be '0000000000000000'H if no request of this
+         type has been received yet."
+    ::= { wwwRequestInEntry 4 }
+
+wwwRequestOutTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwwRequestOutEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table providing detailed statistics for requests
+         generated by the services on this system."
+    ::= { wwwProtocolStatistics 3 }
+
+wwwRequestOutEntry OBJECT-TYPE
+    SYNTAX      WwwRequestOutEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Request statistics for an individual service."
+    INDEX       { wwwServiceIndex, wwwRequestOutIndex }
+    ::= { wwwRequestOutTable 1 }
+
+WwwRequestOutEntry ::= SEQUENCE {
+    wwwRequestOutIndex          WwwRequestType,
+    wwwRequestOutRequests       Counter32,
+    wwwRequestOutBytes          Counter32,
+    wwwRequestOutLastTime       DateAndTime
+}
+
+wwwRequestOutIndex OBJECT-TYPE
+    SYNTAX      WwwRequestType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The particular request type the statistics apply to."
+    ::= { wwwRequestOutEntry 1 }
+
+wwwRequestOutRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of requests of this type generated by this
+         WWW service."
+    ::= { wwwRequestOutEntry 2 }
+
+wwwRequestOutBytes OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of content bytes per requests type generated
+         by this WWW service."
+    ::= { wwwRequestOutEntry 3 }
+
+wwwRequestOutLastTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when the first byte of the last request
+         of this type was send by this WWW service. The value SHALL
+         be '0000000000000000'H if no request of this type has been
+         send yet."
+    ::= { wwwRequestOutEntry 4 }
+
+-- The WWW response tables contain detailed information about
+-- responses sent or received by WWW services.
+
+wwwResponseInTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwwResponseInEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table providing detailed statistics for responses
+         received by WWW services on this system."
+    ::= { wwwProtocolStatistics 4 }
+
+wwwResponseInEntry OBJECT-TYPE
+    SYNTAX      WwwResponseInEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Response statistics for an individual service."
+    INDEX       { wwwServiceIndex, wwwResponseInIndex }
+    ::= { wwwResponseInTable 1 }
+
+WwwResponseInEntry ::= SEQUENCE {
+    wwwResponseInIndex          WwwResponseType,
+    wwwResponseInResponses      Counter32,
+    wwwResponseInBytes          Counter32,
+    wwwResponseInLastTime       DateAndTime
+}
+
+wwwResponseInIndex OBJECT-TYPE
+    SYNTAX      WwwResponseType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The particular response type the statistics apply to."
+    ::= { wwwResponseInEntry 1 }
+
+wwwResponseInResponses OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of responses of this type received by this
+         WWW service."
+    ::= { wwwResponseInEntry 2 }
+
+wwwResponseInBytes OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of content bytes per response type received
+         by this WWW service."
+    ::= { wwwResponseInEntry 3 }
+
+wwwResponseInLastTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when the last byte of the last complete
+         response of this type was received by this WWW service. The
+         value SHALL be '0000000000000000'H if no response of this
+         type has been received yet."
+    ::= { wwwResponseInEntry 4 }
+
+wwwResponseOutTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwwResponseOutEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table providing detailed statistics for responses
+         generated by services on this system."
+    ::= { wwwProtocolStatistics 5 }
+
+wwwResponseOutEntry OBJECT-TYPE
+    SYNTAX      WwwResponseOutEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Response statistics for an individual service."
+    INDEX       { wwwServiceIndex, wwwResponseOutIndex }
+    ::= { wwwResponseOutTable 1 }
+
+WwwResponseOutEntry ::= SEQUENCE {
+    wwwResponseOutIndex         WwwResponseType,
+    wwwResponseOutResponses     Counter32,
+    wwwResponseOutBytes         Counter32,
+    wwwResponseOutLastTime      DateAndTime
+}
+
+wwwResponseOutIndex OBJECT-TYPE
+    SYNTAX      WwwResponseType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The particular response type the statistics apply to."
+    ::= { wwwResponseOutEntry 1 }
+
+wwwResponseOutResponses OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of responses of this type generated by this
+         WWW service."
+    ::= { wwwResponseOutEntry 2 }
+
+wwwResponseOutBytes OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of content bytes per response type generated
+         by this WWW service."
+    ::= { wwwResponseOutEntry 3 }
+
+wwwResponseOutLastTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when the first byte of the last response of
+         this type was sent by this WWW service. The value SHALL be
+         '0000000000000000'H if response of this type has been send
+         yet."
+    ::= { wwwResponseOutEntry 4 }
+
+
+-- The WWW Document Statistics Group
+--
+-- The WWW document statistics group contains statistics about
+-- document read attempts.
+
+wwwDocumentStatistics OBJECT IDENTIFIER ::= { wwwMIBObjects 3 }
+
+wwwDocCtrlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwwDocCtrlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table which controls how the MIB implementation
+         collects and maintains document statistics."
+    ::= { wwwDocumentStatistics 1 }
+
+wwwDocCtrlEntry OBJECT-TYPE
+    SYNTAX      WwwDocCtrlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry used to configure the wwwDocLastNTable,
+         the wwwDocBucketTable, the wwwDocAccessTopNTable,
+         and the wwwDocBytesTopNTable."
+    INDEX       { wwwServiceIndex }
+    ::= { wwwDocCtrlTable 1 }
+
+WwwDocCtrlEntry ::= SEQUENCE {
+    wwwDocCtrlLastNSize           Unsigned32,
+    wwwDocCtrlLastNLock           TimeTicks,
+    wwwDocCtrlBuckets             Unsigned32,
+    wwwDocCtrlBucketTimeInterval  TimeInterval,
+    wwwDocCtrlTopNSize            Unsigned32
+}
+
+wwwDocCtrlLastNSize OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of entries in the wwwDocLastNTable."
+    DEFVAL { 25 }
+    ::= { wwwDocCtrlEntry 1 }
+
+wwwDocCtrlLastNLock OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object allows a manager to lock the wwwDocLastNTable
+         in order to retrieve the wwwDocLastNTable in a consistent
+         state. The agent is expected to take a snapshot of the
+         wwwDocLastNTable when it is locked and to continue updating
+         the real wwwDocLastNTable table so that recent information is
+         available as soon as the wwwDocLastNTable is unlocked again.
+
+         Setting this object to a value greater than 0 will lock
+         the table. The timer ticks backwards until it reaches 0.
+         The table unlocks automatically once the timer reaches 0
+         and the timer stops ticking.
+
+         A manager can increase the timer to request more time to
+         read the table. However, any attempt to decrease the timer
+         will fail with an inconsistentValue error. This rule ensures
+         that multiple managers can simultaneously lock and retrieve
+         the wwwDocLastNTable. Note that managers must cooperate in
+         using wwwDocCtrlLastNLock. In particular, a manager MUST not
+         keep the wwwDocLastNTable locked when it is not necessary to
+         finish a retrieval operation."
+    ::= { wwwDocCtrlEntry 2 }
+
+wwwDocCtrlBuckets OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of buckets maintained by the agent
+         before the oldest bucket is deleted. The buckets are
+         used to populate the wwwDocAccessTopNTable and the
+         wwwDocBytesTopNTable. The time interval captured in
+         each bucket can be configured by setting the
+         wwwDocCtrlBucketTimeInterval object."
+    DEFVAL { 4 }        -- 4 buckets times 15 minutes = 1 hour
+    ::= { wwwDocCtrlEntry 3 }
+
+wwwDocCtrlBucketTimeInterval OBJECT-TYPE
+    SYNTAX      TimeInterval
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The time interval after which a new bucket is created.
+         Changing this object has no effect on existing buckets."
+    DEFVAL { 90000 }    -- 15 minutes (resolution .01 s)
+    ::= { wwwDocCtrlEntry 4 }
+
+wwwDocCtrlTopNSize OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of entries shown in the
+         wwwDocAccessTopNTable and the wwwDocBytesTopNTable.
+         Changing this object has no effect on existing buckets."
+    DEFVAL { 25 }
+    ::= { wwwDocCtrlEntry 5 }
+
+
+wwwDocLastNTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwwDocLastNEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table which logs the last N access attempts."
+    ::= { wwwDocumentStatistics 2 }
+
+wwwDocLastNEntry OBJECT-TYPE
+    SYNTAX      WwwDocLastNEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry which describes a recent access attempt."
+    INDEX       { wwwServiceIndex, wwwDocLastNIndex }
+    ::= { wwwDocLastNTable 1 }
+
+WwwDocLastNEntry ::= SEQUENCE {
+    wwwDocLastNIndex            Unsigned32,
+    wwwDocLastNName             WwwDocName,
+    wwwDocLastNTimeStamp        DateAndTime,
+    wwwDocLastNRequestType      WwwRequestType,
+    wwwDocLastNResponseType     WwwResponseType,
+    wwwDocLastNStatusMsg        Utf8String,
+    wwwDocLastNBytes            Unsigned32
+}
+
+wwwDocLastNIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An arbitrary monotonically increasing integer number used
+         for indexing the wwwDocLastNTable. The first document
+         accessed appears in the table with this index value equal
+         to one. Each subsequent document is indexed with the next
+         sequential index value. The Nth document accessed will be
+         indexed by N. This table presents a sliding window of the
+         last wwwDocCtrlLastNSize documents accessed. Thus, entries
+         in this table will be indexed by N-wwwDocCtrlLastNSize
+         thru N if N > wwwDocCtrlLastNSize and 1 thru N if
+         N <= wwwDocCtrlLastNSize.
+
+         The wwwDocCtrlLastNLock attribute can be used to lock
+         this table to allow the manager to read its contents."
+    ::= { wwwDocLastNEntry 1 }
+
+wwwDocLastNName OBJECT-TYPE
+    SYNTAX      WwwDocName
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the document for which access was attempted."
+    ::= { wwwDocLastNEntry 2 }
+
+wwwDocLastNTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time of the last attempt to access this
+         document."
+    ::= { wwwDocLastNEntry 3 }
+
+wwwDocLastNRequestType OBJECT-TYPE
+    SYNTAX      WwwRequestType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The protocol request type which was received by the
+         server when this document access was attempted."
+    ::= { wwwDocLastNEntry 4 }
+
+wwwDocLastNResponseType OBJECT-TYPE
+    SYNTAX      WwwResponseType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The protocol response type which was sent to the client
+         as a result of this attempt to access a document. This
+         object contains the type of the primary response if
+         there were multiple responses to a single request."
+    ::= { wwwDocLastNEntry 5 }
+
+wwwDocLastNStatusMsg OBJECT-TYPE
+    SYNTAX      Utf8String
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object contains a human readable description of the
+         reason why the wwwDocLastNResponseType was returned to the
+         client. This object defines the implementation-specific
+         reason if the value of wwwDocLastNResponseType indicates
+         an error. For example, this object can indicate that the
+         requested document could not be transferred due to a
+         timeout condition or the document could not be transferred
+         because a 'soft link' pointing to the document could not be
+         resolved."
+    ::= { wwwDocLastNEntry 6 }
+
+wwwDocLastNBytes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of content bytes that were returned as a
+         result of this attempt to access a document."
+    ::= { wwwDocLastNEntry 7 }
+
+
+wwwDocBucketTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwwDocBucketEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table provides administrative summary information for
+         the buckets maintained per WWW service."
+    ::= { wwwDocumentStatistics 3 }
+
+wwwDocBucketEntry OBJECT-TYPE
+    SYNTAX      WwwDocBucketEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry which describes the parameters associated with a
+         particular bucket."
+    INDEX       { wwwServiceIndex, wwwDocBucketIndex }
+    ::= { wwwDocBucketTable 1 }
+
+WwwDocBucketEntry ::= SEQUENCE {
+    wwwDocBucketIndex           Unsigned32,
+    wwwDocBucketTimeStamp       DateAndTime,
+    wwwDocBucketAccesses        Unsigned32,
+    wwwDocBucketDocuments       Unsigned32,
+    wwwDocBucketBytes           Unsigned32
+}
+
+wwwDocBucketIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An arbitrary monotonically increasing integer number
+         used for indexing the wwwDocBucketTable. The index number
+         wraps to 1 whenever the maximum value is reached."
+    ::= { wwwDocBucketEntry 1 }
+
+wwwDocBucketTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when the bucket was made available."
+    ::= { wwwDocBucketEntry 2 }
+
+wwwDocBucketAccesses OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of access attempts for any document
+         provided by this WWW service during the time interval
+         over which this bucket was created."
+    ::= { wwwDocBucketEntry 3 }
+
+wwwDocBucketDocuments OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of different documents for which access
+         was attempted this this WWW service during the time interval
+         over which this bucket was created."
+    ::= { wwwDocBucketEntry 4 }
+
+wwwDocBucketBytes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of content bytes which were transferred
+         from this WWW service during the time interval over which
+         this bucket was created."
+    ::= { wwwDocBucketEntry 5 }
+
+
+wwwDocAccessTopNTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwwDocAccessTopNEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table of the most frequently accessed documents in a
+         given bucket. This table is sorted by the column
+         wwwDocAccessTopNAccesses. Entries having the same number
+         of accesses are secondarily sorted by wwwDocAccessTopNBytes.
+         Entries with the same number of accesses and the same
+         number of bytes will have an arbitrary order."
+    ::= { wwwDocumentStatistics 4 }
+
+wwwDocAccessTopNEntry OBJECT-TYPE
+    SYNTAX      WwwDocAccessTopNEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in the top N table sorted by document accesses."
+    INDEX       { wwwServiceIndex, wwwDocBucketIndex,
+                  wwwDocAccessTopNIndex }
+    ::= { wwwDocAccessTopNTable 1 }
+
+WwwDocAccessTopNEntry ::= SEQUENCE {
+    wwwDocAccessTopNIndex             Unsigned32,
+    wwwDocAccessTopNName              WwwDocName,
+    wwwDocAccessTopNAccesses          Unsigned32,
+    wwwDocAccessTopNBytes             Unsigned32,
+    wwwDocAccessTopNLastResponseType  WwwResponseType
+}
+
+wwwDocAccessTopNIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An arbitrary monotonically increasing integer number
+         used for indexing the wwwDocAccessTopNTable. The index is
+         inversely correlated to the sorting order of the table. The
+         document with the highest access count will get the index
+         value 1."
+    ::= { wwwDocAccessTopNEntry 1 }
+
+wwwDocAccessTopNName OBJECT-TYPE
+    SYNTAX      WwwDocName
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the document for which access was attempted."
+    ::= { wwwDocAccessTopNEntry 2 }
+
+wwwDocAccessTopNAccesses OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of access attempts for this document."
+    ::= { wwwDocAccessTopNEntry 3 }
+
+wwwDocAccessTopNBytes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of content bytes that were transmitted
+         as a result of attempts to access this document."
+    ::= { wwwDocAccessTopNEntry 4 }
+
+wwwDocAccessTopNLastResponseType OBJECT-TYPE
+    SYNTAX      WwwResponseType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The protocol response type which was sent to the client
+         as a result of the last attempt to access this document.
+         This object contains the type of the primary response if
+         there were multiple responses to a single request."
+    ::= { wwwDocAccessTopNEntry 5 }
+
+
+wwwDocBytesTopNTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwwDocBytesTopNEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table of the documents which caused most network
+         traffic in a given bucket. This table is sorted by the
+         column wwwDocBytesTopNBytes. Entries having the same number
+         bytes are secondarily sorted by wwwDocBytesTopNAccesses.
+         Entries with the same number of accesses and the same
+         number of bytes will have an arbitrary order."
+    ::= { wwwDocumentStatistics 5 }
+
+wwwDocBytesTopNEntry OBJECT-TYPE
+    SYNTAX      WwwDocBytesTopNEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in the top N table sorted by network traffic."
+    INDEX       { wwwServiceIndex, wwwDocBucketIndex,
+                  wwwDocBytesTopNIndex }
+    ::= { wwwDocBytesTopNTable 1 }
+
+WwwDocBytesTopNEntry ::= SEQUENCE {
+    wwwDocBytesTopNIndex             Unsigned32,
+    wwwDocBytesTopNName              WwwDocName,
+    wwwDocBytesTopNAccesses          Unsigned32,
+    wwwDocBytesTopNBytes             Unsigned32,
+    wwwDocBytesTopNLastResponseType  WwwResponseType
+}
+
+wwwDocBytesTopNIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An arbitrary monotonically increasing integer number
+         used for indexing the wwwDocBytesTopNTable. The index is
+         inversely correlated to the sorting order of the table. The
+         document with the highest byte count will get the index
+         value 1."
+    ::= { wwwDocBytesTopNEntry 1 }
+
+wwwDocBytesTopNName OBJECT-TYPE
+    SYNTAX      WwwDocName
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the document for which access was attempted."
+    ::= { wwwDocBytesTopNEntry 2 }
+
+wwwDocBytesTopNAccesses OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of access attempts for this document."
+    ::= { wwwDocBytesTopNEntry 3 }
+
+wwwDocBytesTopNBytes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of content bytes that were transmitted
+         as a result of attempts to access this document."
+    ::= { wwwDocBytesTopNEntry 4 }
+
+wwwDocBytesTopNLastResponseType OBJECT-TYPE
+    SYNTAX      WwwResponseType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The protocol response type which was sent to the client
+         as a result of the last attempt to access this document.
+         This object contains the type of the primary response if
+         there were multiple responses to a single request."
+    ::= { wwwDocBytesTopNEntry 5 }
+
+--
+-- Conformance Definitions
+--
+
+wwwMIBCompliances OBJECT IDENTIFIER ::= { wwwMIBConformance 1 }
+wwwMIBGroups      OBJECT IDENTIFIER ::= { wwwMIBConformance 2 }
+
+wwwMinimalCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for SNMP agents which implement
+         the minimal subset of the WWW-MIB. Implementors might
+         choose this subset for high-performance server where
+         full compliance might be to expensive."
+    MODULE  -- this module
+    MANDATORY-GROUPS {
+        wwwServiceGroup,
+        wwwSummaryGroup
+    }
+    OBJECT wwwSummaryOutRequests
+    DESCRIPTION
+        "Instances of wwwSummaryOutRequests do not exist on pure
+         WWW server implementations."
+    OBJECT wwwSummaryInResponses
+    DESCRIPTION
+        "Instances of wwwSummaryOutRequests do not exist on pure
+         WWW server implementations."
+    OBJECT wwwSummaryInRequests
+    DESCRIPTION
+        "Instances of wwwSummaryInRequests do not exist on pure
+         WWW client implementations."
+    OBJECT wwwSummaryOutResponses
+    DESCRIPTION
+        "Instances of wwwSummaryOutResponses do not exist on pure
+         WWW client implementations."
+    ::= { wwwMIBCompliances 1 }
+
+wwwFullCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for SNMP agents which implement
+         the full WWW-MIB."
+    MODULE  -- this module
+    MANDATORY-GROUPS {
+        wwwServiceGroup,
+        wwwSummaryGroup
+    }
+    GROUP  wwwRequestInGroup
+    DESCRIPTION
+        "The wwwRequestInGroup is mandatory only for WWW server
+         or proxy server implementations."
+    GROUP wwwResponseOutGroup
+    DESCRIPTION
+        "The wwwResponseOutGroup is mandatory only for WWW server
+         or proxy server implementations."
+    GROUP wwwRequestOutGroup
+    DESCRIPTION
+        "The wwwRequestOutGroup is mandatory only for WWW client
+         or proxy server implementations."
+    GROUP wwwResponseInGroup
+    DESCRIPTION
+        "The wwwRequestOutGroup is mandatory only for WWW client
+         or proxy server implementations."
+    GROUP wwwDocumentGroup
+    DESCRIPTION
+        "The wwwDocumentGroup is mandatory only for WWW server
+         or proxy server implementations."
+    OBJECT wwwSummaryOutRequests
+    DESCRIPTION
+        "Instances of wwwSummaryOutRequests do not exist on pure
+         WWW server implementations."
+    OBJECT wwwSummaryInResponses
+    DESCRIPTION
+        "Instances of wwwSummaryOutRequests do not exist on pure
+         WWW server implementations."
+    OBJECT wwwSummaryInRequests
+    DESCRIPTION
+        "Instances of wwwSummaryInRequests do not exist on pure
+         WWW client implementations."
+    OBJECT wwwSummaryOutResponses
+    DESCRIPTION
+        "Instances of wwwSummaryOutResponses do not exist on pure
+         WWW client implementations."
+    ::= { wwwMIBCompliances 2 }
+
+wwwServiceGroup OBJECT-GROUP
+    OBJECTS {
+        wwwServiceDescription,
+        wwwServiceContact,
+        wwwServiceProtocol,
+        wwwServiceName,
+        wwwServiceType,
+        wwwServiceStartTime,
+        wwwServiceOperStatus,
+        wwwServiceLastChange
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+         the WWW services known by the SNMP agent."
+    ::= { wwwMIBGroups 1 }
+
+wwwSummaryGroup OBJECT-GROUP
+    OBJECTS {
+        wwwSummaryInRequests,
+        wwwSummaryOutRequests,
+        wwwSummaryInResponses,
+        wwwSummaryOutResponses,
+        wwwSummaryInBytes,
+        wwwSummaryInLowBytes,
+        wwwSummaryOutBytes,
+        wwwSummaryOutLowBytes
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing summary statistics
+         about requests and responses generated and received
+         by a WWW service."
+    ::= { wwwMIBGroups 2 }
+
+wwwRequestInGroup OBJECT-GROUP
+    OBJECTS {
+        wwwRequestInRequests,
+        wwwRequestInBytes,
+        wwwRequestInLastTime
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing detailed statistics
+         about requests received by a WWW service."
+    ::= { wwwMIBGroups 3 }
+
+wwwRequestOutGroup OBJECT-GROUP
+    OBJECTS {
+        wwwRequestOutRequests,
+        wwwRequestOutBytes,
+        wwwRequestOutLastTime
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing detailed statistics
+         about requests generated by a WWW service."
+    ::= { wwwMIBGroups 4 }
+
+wwwResponseInGroup OBJECT-GROUP
+    OBJECTS {
+        wwwResponseInResponses,
+        wwwResponseInBytes,
+        wwwResponseInLastTime
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing detailed statistics
+         about responses received by a WWW service."
+    ::= { wwwMIBGroups 5 }
+
+wwwResponseOutGroup OBJECT-GROUP
+    OBJECTS {
+        wwwResponseOutResponses,
+        wwwResponseOutBytes,
+        wwwResponseOutLastTime
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing detailed statistics
+         about responses generated by a WWW service."
+    ::= { wwwMIBGroups 6 }
+
+wwwDocumentGroup OBJECT-GROUP
+    OBJECTS {
+        wwwDocCtrlLastNSize,
+        wwwDocCtrlLastNLock,
+        wwwDocCtrlBuckets,
+        wwwDocCtrlBucketTimeInterval,
+        wwwDocCtrlTopNSize,
+        wwwDocLastNName,
+        wwwDocLastNTimeStamp,
+        wwwDocLastNRequestType,
+        wwwDocLastNResponseType,
+        wwwDocLastNStatusMsg,
+        wwwDocLastNBytes,
+        wwwDocBucketTimeStamp,
+        wwwDocBucketAccesses,
+        wwwDocBucketDocuments,
+        wwwDocBucketBytes,
+        wwwDocAccessTopNName,
+        wwwDocAccessTopNAccesses,
+        wwwDocAccessTopNBytes,
+        wwwDocAccessTopNLastResponseType,
+        wwwDocBytesTopNName,
+        wwwDocBytesTopNAccesses,
+        wwwDocBytesTopNBytes,
+        wwwDocBytesTopNLastResponseType
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of objects providing information about
+         accesses to documents."
+    ::= { wwwMIBGroups 7 }
+
+END

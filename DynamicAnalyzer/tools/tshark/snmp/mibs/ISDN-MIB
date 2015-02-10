@@ -1,0 +1,1249 @@
+ISDN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        NOTIFICATION-TYPE,
+        OBJECT-TYPE,
+        Counter32,
+        Gauge32,
+        Integer32
+                FROM SNMPv2-SMI
+        DisplayString,
+        TruthValue,
+        TimeStamp,
+        RowStatus,
+        TestAndIncr,
+        TEXTUAL-CONVENTION
+                 FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP,
+        NOTIFICATION-GROUP
+                FROM SNMPv2-CONF
+        ifIndex,
+        InterfaceIndex
+                FROM IF-MIB
+        IANAifType
+                FROM IANAifType-MIB
+        transmission
+                FROM RFC1213-MIB;
+
+isdnMib MODULE-IDENTITY
+        LAST-UPDATED    "9609231642Z" -- Sep 23, 1996
+        ORGANIZATION    "IETF ISDN MIB Working Group"
+        CONTACT-INFO
+            "        Guenter Roeck
+             Postal: cisco Systems
+                     170 West Tasman Drive
+                     San Jose, CA 95134
+                     U.S.A.
+             Phone:  +1 408 527 3143
+             E-mail: groeck@cisco.com"
+        DESCRIPTION
+            "The MIB module to describe the
+             management of ISDN interfaces."
+        ::= { transmission 20 }
+
+-- The ISDN hardware interface (BRI or PRI) is represented
+
+-- by a media specific ifEntry.
+--
+-- For basic rate lines, the media specifics for the physical interface
+-- is defined in the physical interface group of the ISDN MIB.
+-- The ifType for physical basic rate interfaces is isdns(75)
+-- or isdnu(76), whichever is appropriate.
+--
+-- For primary rate, the media specifics are defined in the Trunk
+-- MIB and the ifType has a value of ds1(18).
+
+-- Each signaling channel is represented by an entry
+-- in the isdnSignalingTable.
+-- The signaling channel has an ifType value of isdn(63).
+-- Each B channel is also represented as an entry
+-- in the ifTable. The B channels have an ifType value
+-- of ds0(81).
+-- This model is used while defining objects and tables
+-- for management.
+-- The ISDN MIB allows sub-layers. For example, the data transfer
+-- over a B channel may take place with PPP encapsulation. While the
+-- ISDN MIB describes the D and B channels, a media specific MIB
+-- for PPP can be used on a layered basis. This is as per
+-- the interfaces MIB.
+
+-- Textual conventions
+
+IsdnSignalingProtocol ::= TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+            "This data type is used as the syntax of the
+             isdnSignalingProtocol object in the
+             definition of ISDN-MIB's isdnSignalingTable.
+
+             The definition of this textual convention with the
+             addition of newly assigned values is published
+             periodically by the IANA, in either the Assigned
+             Numbers RFC, or some derivative of it specific to
+             Internet Network Management number assignments.  (The
+             latest arrangements can be obtained by contacting the
+             IANA.)
+
+             Requests for new values should be made to IANA via
+             email (iana@iana.org)."
+        SYNTAX      INTEGER {
+             other(1),          -- none of the following
+             dss1(2),           -- ITU DSS1 (formerly CCITT) Q.931
+             etsi(3),           -- Europe / ETSI ETS300-102
+                                -- plus supplementary services
+
+                                -- (ETSI 300-xxx)
+                                -- note that NET3, NET5 define
+                                -- test procedures for ETS300-102
+                                -- and have been replaced by
+                                -- I-CTR 3 and I-CTR 4.
+             dass2(4),          -- U.K.   / DASS2 (PRI)
+             ess4(5),           -- U.S.A. / AT&T 4ESS
+             ess5(6),           -- U.S.A. / AT&T 5ESS
+             dms100(7),         -- U.S.A. / Northern Telecom DMS100
+             dms250(8),         -- U.S.A. / Northern Telecom DMS250
+             ni1(9),            -- U.S.A. / National ISDN 1 (BRI)
+             ni2(10),           -- U.S.A. / National ISDN 2 (BRI, PRI)
+             ni3(11),           -- U.S.A. / next one
+             vn2(12),           -- France / VN2
+             vn3(13),           -- France / VN3
+             vn4(14),           -- France / VN4 (ETSI with changes)
+             vn6(15),           -- France / VN6 (ETSI with changes)
+                                -- delta document CSE P 10-21 A
+                                -- test document  CSE P 10-20 A
+             kdd(16),           -- Japan  / KDD
+             ins64(17),         -- Japan  / NTT INS64
+             ins1500(18),       -- Japan  / NTT INS1500
+             itr6(19),          -- Germany/ 1TR6 (BRI, PRI)
+             cornet(20),        -- Germany/ Siemens HiCom CORNET
+             ts013(21),         -- Australia / TS013
+                                -- (formerly TPH 1962, BRI)
+             ts014(22),         -- Australia / TS014
+                                -- (formerly TPH 1856, PRI)
+             qsig(23),          -- Q.SIG
+             swissnet2(24),     -- SwissNet-2
+             swissnet3(25)      -- SwissNet-3
+        }
+
+-- Isdn Mib objects definitions
+
+isdnMibObjects OBJECT IDENTIFIER ::= { isdnMib 1 }
+
+-- ISDN physical interface group
+
+-- This group describes physical basic rate interfaces.
+
+isdnBasicRateGroup      OBJECT IDENTIFIER ::= { isdnMibObjects 1 }
+
+isdnBasicRateTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF IsdnBasicRateEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Table containing configuration and operational
+             parameters for all physical Basic Rate
+             interfaces on this managed device."
+        ::= { isdnBasicRateGroup 1 }
+
+isdnBasicRateEntry OBJECT-TYPE
+        SYNTAX      IsdnBasicRateEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry in the ISDN Basic Rate Table."
+        INDEX { ifIndex }
+        ::= { isdnBasicRateTable 1 }
+
+IsdnBasicRateEntry ::= SEQUENCE {
+            isdnBasicRateIfType         INTEGER,
+            isdnBasicRateLineTopology   INTEGER,
+            isdnBasicRateIfMode         INTEGER,
+            isdnBasicRateSignalMode     INTEGER
+        }
+
+isdnBasicRateIfType OBJECT-TYPE
+        SYNTAX      INTEGER {
+            isdns(75),
+            isdnu(76)
+        }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The physical interface type. For 'S/T' interfaces,
+             also called 'Four-wire Basic Access Interface',
+             the value of this object is isdns(75).
+             For 'U' interfaces, also called 'Two-wire Basic
+             Access Interface', the value of this object is
+             isdnu(76)."
+        ::= { isdnBasicRateEntry 1 }
+
+isdnBasicRateLineTopology OBJECT-TYPE
+        SYNTAX      INTEGER {
+            pointToPoint(1),
+            pointToMultipoint(2)
+        }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The line topology to be used for this interface.
+             Note that setting isdnBasicRateIfType to isdns(75)
+             does not necessarily mean a line topology of
+             point-to-multipoint."
+        ::= { isdnBasicRateEntry 2 }
+
+isdnBasicRateIfMode OBJECT-TYPE
+        SYNTAX      INTEGER {
+            te(1),
+            nt(2)
+        }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The physical interface mode. For TE mode, the value
+             of this object is te(1). For NT mode, the value
+             of this object is nt(2)."
+        ::= { isdnBasicRateEntry 3 }
+
+isdnBasicRateSignalMode OBJECT-TYPE
+        SYNTAX      INTEGER {
+            active(1),
+            inactive(2)
+        }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The signaling channel operational mode for this interface.
+             If active(1) there is a signaling channel on this
+             interface. If inactive(2) a signaling channel is
+             not available."
+        ::= { isdnBasicRateEntry 4 }
+
+-- The B channel (bearer channel) group
+
+-- Note that disconnects can explicitely be handled using the
+-- ifStack table. If a connection is to be disconnected,
+-- the according ifStack entry has to be removed.
+-- More specifically, the ifStackTable entry which binds the high-layer
+-- ifTable entry (and related dialCtlNbrCfgTable entry) to the
+-- B channel ifTable entry (and related isdnBearerTable entry)
+-- during an active call has to be removed.
+
+isdnBearerGroup OBJECT IDENTIFIER ::= { isdnMibObjects 2 }
+
+isdnBearerTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF IsdnBearerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table defines port specific operational, statistics
+             and active call data for ISDN B channels. Each entry
+             in this table describes one B (bearer) channel."
+        ::= { isdnBearerGroup 1 }
+
+isdnBearerEntry OBJECT-TYPE
+        SYNTAX      IsdnBearerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Operational and statistics information relating to
+             one port. A port is a single B channel."
+        INDEX { ifIndex }
+        ::= { isdnBearerTable 1 }
+
+IsdnBearerEntry ::=
+        SEQUENCE {
+            isdnBearerChannelType           INTEGER,
+            isdnBearerOperStatus            INTEGER,
+            isdnBearerChannelNumber         INTEGER,
+            isdnBearerPeerAddress           DisplayString,
+            isdnBearerPeerSubAddress        DisplayString,
+            isdnBearerCallOrigin            INTEGER,
+            isdnBearerInfoType              INTEGER,
+            isdnBearerMultirate             TruthValue,
+            isdnBearerCallSetupTime         TimeStamp,
+            isdnBearerCallConnectTime       TimeStamp,
+            isdnBearerChargedUnits          Gauge32
+        }
+
+isdnBearerChannelType           OBJECT-TYPE
+        SYNTAX INTEGER {
+            dialup(1),
+            leased(2)
+        }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The B channel type. If the B channel is connected
+             to a dialup line, this object has a value of
+             dialup(1). In this case, it is controlled by
+             an associated signaling channel. If the B channel
+             is connected to a leased line, this object has
+             a value of leased(2). For leased line B channels, there
+             is no signaling channel control available."
+        ::= { isdnBearerEntry 1 }
+
+isdnBearerOperStatus            OBJECT-TYPE
+        SYNTAX INTEGER {
+            idle(1),
+            connecting(2),
+            connected(3),
+            active(4)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The current call control state for this port.
+             idle(1):       The B channel is idle.
+                            No call or call attempt is going on.
+             connecting(2): A connection attempt (outgoing call)
+                            is being made on this interface.
+             connected(3):  An incoming call is in the process
+                            of validation.
+             active(4):     A call is active on this interface."
+        ::= { isdnBearerEntry 2 }
+
+isdnBearerChannelNumber         OBJECT-TYPE
+        SYNTAX INTEGER (1..30)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The identifier being used by a signaling protocol
+             to identify this B channel, also referred to as
+             B channel number. If the Agent also supports the DS0 MIB,
+             the values of isdnBearerChannelNumber and dsx0Ds0Number
+             must be identical for a given B channel."
+        ::= { isdnBearerEntry 3 }
+
+isdnBearerPeerAddress           OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+            "The ISDN address the current or last call is or was
+             connected to.
+
+             In some cases, the format of this information can not
+             be predicted, since it largely depends on the type
+             of switch or PBX the device is connected to. Therefore,
+             the detailed format of this information is not
+             specified and is implementation dependent.
+
+             If possible, the agent should supply this information
+             using the E.164 format. In this case, the number must
+             start with '+'. Otherwise, IA5 number digits must be used.
+             If the peer ISDN address is not available,
+             this object has a length of zero."
+        REFERENCE
+            "ITU-T E.164, Q.931 chapter 4.5.10"
+        ::= { isdnBearerEntry 4 }
+
+isdnBearerPeerSubAddress        OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+            "The ISDN subaddress the current or last call is or was
+             connected to.
+
+             The subaddress is an user supplied string of up to 20
+             IA5 characters and is transmitted transparently through
+             the network.
+
+             If the peer subaddress is not available, this object
+             has a length of zero."
+        REFERENCE
+             "ITU-T I.330, Q.931 chapter 4.5.11"
+        ::= { isdnBearerEntry 5 }
+
+isdnBearerCallOrigin            OBJECT-TYPE
+          SYNTAX   INTEGER {
+            unknown(1),
+            originate(2),
+            answer(3),
+            callback(4)
+        }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+            "The call origin for the current or last call. If since
+             system startup there was no call on this interface,
+             this object has a value of unknown(1)."
+        ::= { isdnBearerEntry 6 }
+
+isdnBearerInfoType              OBJECT-TYPE
+        SYNTAX      INTEGER {
+            unknown(1),
+            speech(2),
+            unrestrictedDigital(3),       -- as defined in Q.931
+            unrestrictedDigital56(4),     -- with 56k rate adaption
+            restrictedDigital(5),
+            audio31(6),                   -- 3.1 kHz audio
+            audio7(7),                    -- 7 kHz audio
+            video(8),
+            packetSwitched(9)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The Information Transfer Capability for the current
+             or last call.
+
+             speech(2) refers to a non-data connection, whereas
+             audio31(6) and audio7(7) refer to data mode connections.
+
+             Note that Q.931, chapter 4.5.5, originally defined
+             audio7(7) as '7 kHz audio' and now defines it as
+             'Unrestricted digital information with tones/
+             announcements'.
+
+             If since system startup there has been no call on this
+             interface, this object has a value of unknown(1)."
+        REFERENCE
+            "Q.931 [8], chapter 4.5.5, octet 3 of bearer capability
+             information element, combined with the User Rate
+             (as defined in octets 5 and 5a to 5d), if rate adaption
+             is being used."
+        ::= { isdnBearerEntry 7 }
+
+isdnBearerMultirate             OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This flag indicates if the current or last call used
+             multirate. The actual information transfer rate,
+             in detail specified in octet 4.1 (rate multiplier),
+             is the sum of all B channel ifSpeed values for
+             the hyperchannel.
+
+             If since system startup there was no call on this
+             interface, this object has a value of false(2)."
+        REFERENCE
+            "Q.931 [8], chapter 4.5.5."
+        ::= { isdnBearerEntry 8 }
+
+isdnBearerCallSetupTime         OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The value of sysUpTime when the ISDN setup message for
+             the current or last call was sent or received. If since
+             system startup there has been no call on this interface,
+             this object has a value of zero."
+        ::= { isdnBearerEntry 9 }
+
+isdnBearerCallConnectTime       OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The value of sysUpTime when the ISDN connect message for
+             the current or last call was sent or received. If since
+             system startup there has been no call on this interface,
+             this object has a value of zero."
+        ::= { isdnBearerEntry 10 }
+
+isdnBearerChargedUnits          OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of charged units for the current or last
+             connection. For incoming calls or if charging information
+             is not supplied by the switch, the value of this object
+             is zero."
+        ::= { isdnBearerEntry 11 }
+
+-- ISDN signaling group
+
+isdnSignalingGroup OBJECT IDENTIFIER ::= { isdnMibObjects 3 }
+
+-- signaling channel configuration table
+-- There is one entry in this table for each Terminal Endpoint
+-- (link layer connection to the switch).
+-- Usually, there is one endpoint per D channel. In some
+-- cases, however, there can be multiple endpoints.
+-- Thus, entries in this table can be created and deleted.
+-- This also means the creation of an associated ifEntry.
+--
+-- D channel backup and NFAS trunks are handled using the
+-- ifStack table.
+-- In case of D channel backup, there are multiple
+-- Data Link Layer (LAPD) interfaces. Only one interface is
+-- active; all others are dormant(5).
+-- In case of NFAS trunks, one lower interface is the
+-- LAPD interface, while the other lower interfaces are physical
+-- interfaces.
+
+-- If directory number and calling address differ from each other
+-- or multiple directory numbers are being used,
+-- the isdnDirectoryTable has to be used to enter such
+-- directory numbers.
+
+isdnSignalingGetIndex OBJECT-TYPE
+        SYNTAX      TestAndIncr
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The recommended procedure for selecting a new index for
+             isdnSignalingTable row creation is to GET the value of
+             this object, and then to SET the object with the same
+             value. If the SET operation succeeds, the manager can use
+             this value as an index to create a new row in this table."
+        REFERENCE
+            "RFC1903, TestAndIncr textual convention."
+        ::= { isdnSignalingGroup 1 }
+
+isdnSignalingTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF IsdnSignalingEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "ISDN signaling table containing configuration and
+             operational parameters for all ISDN signaling
+             channels on this managed device."
+        ::= { isdnSignalingGroup 2 }
+
+isdnSignalingEntry OBJECT-TYPE
+        SYNTAX      IsdnSignalingEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry in the ISDN Signaling Table. To create a new
+             entry, only isdnSignalingProtocol needs to be specified
+             before isdnSignalingStatus can become active(1)."
+        INDEX { isdnSignalingIndex }
+        ::= { isdnSignalingTable 1 }
+
+IsdnSignalingEntry ::= SEQUENCE {
+            isdnSignalingIndex          INTEGER,
+            isdnSignalingIfIndex        InterfaceIndex,
+            isdnSignalingProtocol       IsdnSignalingProtocol,
+            isdnSignalingCallingAddress DisplayString,
+            isdnSignalingSubAddress     DisplayString,
+            isdnSignalingBchannelCount  Integer32,
+            isdnSignalingInfoTrapEnable INTEGER,
+            isdnSignalingStatus         RowStatus
+        }
+
+isdnSignalingIndex OBJECT-TYPE
+        SYNTAX      INTEGER (1..2147483647)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The index value which uniquely identifies an entry
+             in the isdnSignalingTable."
+        ::= { isdnSignalingEntry 1 }
+
+isdnSignalingIfIndex OBJECT-TYPE
+        SYNTAX      InterfaceIndex
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The ifIndex value of the interface associated with this
+             signaling channel."
+        ::= { isdnSignalingEntry 2 }
+
+isdnSignalingProtocol OBJECT-TYPE
+        SYNTAX      IsdnSignalingProtocol
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The particular protocol type supported by the
+             switch providing access to the ISDN network
+             to which this signaling channel is connected."
+        ::= { isdnSignalingEntry 3 }
+
+isdnSignalingCallingAddress OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The ISDN Address to be assigned to this signaling
+             channel. More specifically, this is the 'Calling Address
+             information element' as being passed to the switch
+             in outgoing call setup messages.
+
+             It can be an EAZ (1TR6), a calling number (DSS1, ETSI)
+             or any other number necessary to identify a signaling
+             interface. If there is no such number defined or required,
+             this is a zero length string. It is represented in
+             DisplayString form.
+
+             Incoming calls can also be identified by this number.
+             If the Directory Number, i.e. the Called Number in
+             incoming calls, is different to this number, the
+             isdnDirectoryTable has to be used to specify all
+             possible Directory Numbers.
+
+             The format of this information largely depends on the type
+             of switch or PBX the device is connected to. Therefore,
+             the detailed format of this information is not
+             specified and is implementation dependent.
+
+             If possible, the agent should implement this information
+             using the E.164 number format. In this case, the number
+             must start with '+'. Otherwise, IA5 number digits must
+             be used."
+        REFERENCE
+            "ITU-T E.164, Q.931 chapter 4.5.10"
+        DEFVAL { "" }
+        ::= { isdnSignalingEntry 4 }
+
+isdnSignalingSubAddress OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Supplementary information to the ISDN address assigned
+             to this signaling channel. Usually, this is the
+             subaddress as defined in Q.931.
+             If there is no such number defined or required, this is
+             a zero length string.
+             The subaddress is used for incoming calls as well as
+             for outgoing calls.
+             The subaddress is an user supplied string of up to 20
+             IA5 characters and is transmitted transparently through
+             the network."
+        REFERENCE
+            "ITU-T I.330, Q.931 chapter 4.5.11"
+        DEFVAL { "" }
+        ::= { isdnSignalingEntry 5 }
+
+isdnSignalingBchannelCount OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The total number of B channels (bearer channels)
+             managed by this signaling channel. The default value
+             of this object depends on the physical interface type
+             and is either 2 for Basic Rate interfaces or
+             24 (30) for Primary Rate interfaces."
+        ::= { isdnSignalingEntry 6 }
+
+isdnSignalingInfoTrapEnable    OBJECT-TYPE
+        SYNTAX      INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Indicates whether isdnMibCallInformation traps
+             should be generated for calls on this signaling
+             channel."
+        DEFVAL      { disabled }
+        ::= { isdnSignalingEntry 7 }
+
+isdnSignalingStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "This object is used to create and delete rows in the
+             isdnSignalingTable."
+        ::= { isdnSignalingEntry 8 }
+
+-- Signaling channel statistics table
+-- There is one entry for each signaling connection
+-- in this table.
+-- Note that the ifEntry also has some statistics information.
+
+isdnSignalingStatsTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF IsdnSignalingStatsEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "ISDN signaling table containing statistics
+             information for all ISDN signaling channels
+             on this managed device.
+             Only statistical information which is not already being
+             counted in the ifTable is being defined in this table."
+        ::= { isdnSignalingGroup 3 }
+
+isdnSignalingStatsEntry OBJECT-TYPE
+        SYNTAX      IsdnSignalingStatsEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry in the ISDN Signaling statistics Table."
+        AUGMENTS { isdnSignalingEntry }
+        ::= { isdnSignalingStatsTable 1 }
+
+IsdnSignalingStatsEntry ::= SEQUENCE {
+            isdnSigStatsInCalls         Counter32,
+            isdnSigStatsInConnected     Counter32,
+            isdnSigStatsOutCalls        Counter32,
+            isdnSigStatsOutConnected    Counter32,
+            isdnSigStatsChargedUnits    Counter32
+        }
+
+isdnSigStatsInCalls OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of incoming calls on this interface."
+        ::= { isdnSignalingStatsEntry 1 }
+
+isdnSigStatsInConnected OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of incoming calls on this interface
+             which were actually connected."
+        ::= { isdnSignalingStatsEntry 2 }
+
+isdnSigStatsOutCalls OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of outgoing calls on this interface."
+        ::= { isdnSignalingStatsEntry 3 }
+
+isdnSigStatsOutConnected OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of outgoing calls on this interface
+             which were actually connected."
+        ::= { isdnSignalingStatsEntry 4 }
+
+isdnSigStatsChargedUnits OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of charging units on this interface since
+             system startup.
+             Only the charging units applying to the local interface,
+             i.e. for originated calls or for calls with 'Reverse
+             charging' being active, are counted here."
+        ::= { isdnSignalingStatsEntry 5 }
+
+--
+-- The LAPD table
+
+isdnLapdTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF IsdnLapdEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Table containing configuration and statistics
+             information for all LAPD (D channel Data Link)
+             interfaces on this managed device.
+             Only statistical information which is not already being
+             counted in the ifTable is being defined in this table."
+        ::= { isdnSignalingGroup 4 }
+
+isdnLapdEntry OBJECT-TYPE
+        SYNTAX      IsdnLapdEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry in the LAPD Table."
+        INDEX { ifIndex }
+        ::= { isdnLapdTable 1 }
+
+IsdnLapdEntry ::= SEQUENCE {
+            isdnLapdPrimaryChannel  TruthValue,
+            isdnLapdOperStatus      INTEGER,
+            isdnLapdPeerSabme       Counter32,
+            isdnLapdRecvdFrmr       Counter32
+        }
+
+isdnLapdPrimaryChannel OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "If set to true(1), this D channel is the designated
+             primary D channel if D channel backup is active.
+             There must be exactly one primary D channel
+             configured. If D channel backup is not used, this
+             object has a value of true(1)."
+        REFERENCE
+            "Q.931 [8], Annex F, D channel backup procedures."
+        ::= { isdnLapdEntry 1 }
+
+isdnLapdOperStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+            inactive(1),
+            l1Active(2),
+            l2Active(3)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The operational status of this interface:
+
+             inactive  all layers are inactive
+             l1Active  layer 1 is activated,
+                       layer 2 datalink not established
+             l2Active  layer 1 is activated,
+                       layer 2 datalink established."
+        ::= { isdnLapdEntry 2 }
+
+isdnLapdPeerSabme OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of peer SABME frames received on this
+             interface. This is the number of peer-initiated
+             new connections on this interface."
+        ::= { isdnLapdEntry 3 }
+
+isdnLapdRecvdFrmr OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of LAPD FRMR response frames received.
+             This is the number of framing errors on this
+             interface."
+        ::= { isdnLapdEntry 4 }
+
+--
+-- Optional groups follow here.
+
+-- The Terminal Endpoint group and table
+
+-- This table is required only if TEI values or SPID numbers
+-- have to be entered.
+-- The ifIndex values for this table are identical to those of
+-- the isdnSignalingChannel table.
+
+isdnEndpointGroup OBJECT IDENTIFIER ::= { isdnMibObjects 4 }
+
+isdnEndpointGetIndex OBJECT-TYPE
+        SYNTAX      TestAndIncr
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The recommended procedure for selecting a new index for
+             isdnEndpointTable row creation is to GET the value of
+             this object, and then to SET the object with the same
+             value. If the SET operation succeeds, the manager can use
+             this value as an index to create a new row in this table."
+        REFERENCE
+            "RFC1903, TestAndIncr textual convention."
+        ::= { isdnEndpointGroup 1 }
+
+isdnEndpointTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF IsdnEndpointEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Table containing configuration for Terminal
+             Endpoints."
+        ::= { isdnEndpointGroup 2 }
+
+isdnEndpointEntry OBJECT-TYPE
+        SYNTAX      IsdnEndpointEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry in the Terminal Endpoint Table. The value
+             of isdnEndpointIfType must be supplied for a row
+             in this table to become active."
+        INDEX { isdnEndpointIndex }
+        ::= { isdnEndpointTable 1 }
+
+IsdnEndpointEntry ::= SEQUENCE {
+            isdnEndpointIndex       INTEGER,
+            isdnEndpointIfIndex     InterfaceIndex,
+            isdnEndpointIfType      IANAifType,
+            isdnEndpointTeiType     INTEGER,
+            isdnEndpointTeiValue    INTEGER,
+            isdnEndpointSpid        DisplayString,
+            isdnEndpointStatus      RowStatus
+        }
+
+isdnEndpointIndex OBJECT-TYPE
+        SYNTAX      INTEGER (1..2147483647)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The index value which uniquely identifies an entry
+             in the isdnEndpointTable."
+        ::= { isdnEndpointEntry 1 }
+
+isdnEndpointIfIndex OBJECT-TYPE
+        SYNTAX      InterfaceIndex
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The ifIndex value of the interface associated with this
+             Terminal Endpoint."
+        ::= { isdnEndpointEntry 2 }
+
+isdnEndpointIfType OBJECT-TYPE
+        SYNTAX      IANAifType
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The interface type for this Terminal Endpoint.
+             Interface types of x25ple(40) and isdn(63) are allowed.
+             The interface type is identical to the value of
+             ifType in the associated ifEntry."
+        ::= { isdnEndpointEntry 3 }
+
+isdnEndpointTeiType OBJECT-TYPE
+        SYNTAX      INTEGER {
+            dynamic(1),
+            static(2)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The type of TEI (Terminal Endpoint Identifier)
+             used for this Terminal Endpoint. In case of dynamic(1),
+             the TEI value is selected by the switch. In
+             case of static(2), a valid TEI value has to be
+             entered in the isdnEndpointTeiValue object.
+             The default value for this object depends on the
+             interface type as well as the Terminal Endpoint type.
+             On Primary Rate interfaces the default value is
+             static(2). On Basic Rate interfaces the default value
+             is dynamic(1) for isdn(63) Terminal Endpoints and
+             static(2) for x25ple(40) Terminal Endpoints."
+        ::= { isdnEndpointEntry 4 }
+
+isdnEndpointTeiValue OBJECT-TYPE
+        SYNTAX      INTEGER ( 0..255 )
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The TEI (Terminal Endpoint Identifier) value
+             for this Terminal Endpoint. If isdnEndpointTeiType
+             is set to static(2), valid numbers are 0..63,
+             while otherwise the value is set internally.
+             The default value of this object is 0 for static
+             TEI assignment.
+             The default value for dynamic TEI assignment is also
+             0 as long as no TEI has been assigned. After TEI
+             assignment, the assigned TEI value is returned."
+        ::= { isdnEndpointEntry 5 }
+
+isdnEndpointSpid OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The Service profile IDentifier (SPID) information
+             for this Terminal Endpoint.
+
+             The SPID is composed of 9-20 numeric characters.
+
+             This information has to be defined in addition to
+             the local number for some switch protocol types,
+             e.g. Bellcore NI-1 and NI-2.
+
+             If this object is not required, it is a
+             zero length string."
+        REFERENCE
+            "Bellcore SR-NWT-001953, Generic Guidelines for ISDN
+             Terminal Equipment on Basic Access Interfaces,
+             Chapter 8.5.1."
+        DEFVAL { "" }
+        ::= { isdnEndpointEntry 6 }
+
+isdnEndpointStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "This object is used to create and delete rows in the
+             isdnEndpointTable."
+        ::= { isdnEndpointEntry 7 }
+
+--
+-- The Directory Number group
+--
+
+isdnDirectoryGroup OBJECT IDENTIFIER ::= { isdnMibObjects 5 }
+
+isdnDirectoryTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF IsdnDirectoryEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Table containing Directory Numbers."
+        ::= { isdnDirectoryGroup 1 }
+
+isdnDirectoryEntry OBJECT-TYPE
+        SYNTAX      IsdnDirectoryEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry in the Directory Number Table. All objects
+             in an entry must be set for a new row to become active."
+        INDEX { isdnDirectoryIndex }
+        ::= { isdnDirectoryTable 1 }
+
+IsdnDirectoryEntry ::= SEQUENCE {
+            isdnDirectoryIndex      INTEGER,
+            isdnDirectoryNumber     DisplayString,
+            isdnDirectorySigIndex   INTEGER,
+            isdnDirectoryStatus     RowStatus
+        }
+
+isdnDirectoryIndex OBJECT-TYPE
+        SYNTAX      INTEGER ( 1..'7fffffff'h )
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The index value which uniquely identifies an entry
+             in the isdnDirectoryTable."
+        ::= { isdnDirectoryEntry 1 }
+
+isdnDirectoryNumber OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "A Directory Number. Directory Numbers are used
+             to identify incoming calls on the signaling
+             channel given in isdnDirectorySigIndex.
+
+             The format of this information largely depends on the type
+             of switch or PBX the device is connected to. Therefore,
+             the detailed format of this information is not
+             specified and is implementation dependent.
+
+             If possible, the agent should implement this information
+             using the E.164 number format. In this case, the number
+             must start with '+'. Otherwise, IA5 number digits must
+             be used."
+        REFERENCE
+            "ITU-T E.164, Q.931 chapter 4.5.10"
+        ::= { isdnDirectoryEntry 2 }
+
+isdnDirectorySigIndex OBJECT-TYPE
+        SYNTAX      INTEGER (1..2147483647)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "An index pointing to an ISDN signaling channel.
+             Incoming calls are accepted on this
+             signaling channel if the isdnDirectoryNumber is
+             presented as Called Number in the SETUP message."
+        ::= { isdnDirectoryEntry 3 }
+
+isdnDirectoryStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "This object is used to create and delete rows in the
+             isdnDirectoryTable."
+        ::= { isdnDirectoryEntry 4 }
+
+-- Traps
+
+isdnMibTrapPrefix OBJECT IDENTIFIER ::= { isdnMib 2 }
+isdnMibTraps OBJECT IDENTIFIER ::= { isdnMibTrapPrefix 0 }
+
+isdnMibCallInformation NOTIFICATION-TYPE
+        OBJECTS {
+            ifIndex,                    -- isdnBearerTable ifIndex
+            isdnBearerOperStatus,
+            isdnBearerPeerAddress,
+            isdnBearerPeerSubAddress,
+            isdnBearerCallSetupTime,
+            isdnBearerInfoType,
+            isdnBearerCallOrigin
+        }
+        STATUS      current
+        DESCRIPTION
+            "This trap/inform is sent to the manager under the
+             following condidions:
+             - on incoming calls for each call which is rejected for
+               policy reasons (e.g. unknown neighbor or access
+               violation)
+             - on outgoing calls whenever a call attempt is determined
+               to have ultimately failed. In the event that call retry
+               is active, then this will be after all retry attempts
+               have failed.
+             - whenever a call connects. In this case, the object
+               isdnBearerCallConnectTime should be included in the
+               trap.
+
+             Only one such trap is sent in between successful or
+             unsuccessful call attempts from or to a single neighbor;
+             subsequent call attempts result in no trap.
+
+             If the Dial Control MIB objects dialCtlNbrCfgId and
+             dialCtlNbrCfgIndex are known by the entity generating
+             this trap, both objects should be included in the trap
+             as well. The receipt of this trap with no dial neighbor
+             information indicates that the manager must poll the
+             callHistoryTable of the Dial Control MIB to see what
+             changed."
+        ::= { isdnMibTraps 1 }
+
+--
+-- conformance information
+--
+
+isdnMibConformance OBJECT IDENTIFIER ::= { isdnMib 2 }
+isdnMibCompliances OBJECT IDENTIFIER ::= { isdnMibConformance 1 }
+isdnMibGroups      OBJECT IDENTIFIER ::= { isdnMibConformance 2 }
+
+-- compliance statements
+
+isdnMibCompliance MODULE-COMPLIANCE
+        STATUS      current
+        DESCRIPTION
+            "The compliance statement for entities which implement
+             the ISDN MIB."
+        MODULE       -- this module
+
+-- unconditionally mandatory groups
+        MANDATORY-GROUPS {
+            isdnMibSignalingGroup,
+            isdnMibBearerGroup,
+            isdnMibNotificationsGroup
+        }
+
+-- conditionally mandatory group
+        GROUP       isdnMibBasicRateGroup
+        DESCRIPTION
+            "The isdnMibBasicRateGroup is mandatory for entities
+             supporting ISDN Basic Rate interfaces."
+
+-- optional groups
+        GROUP       isdnMibEndpointGroup
+        DESCRIPTION
+            "Implementation of this group is optional for all systems
+             that attach to ISDN interfaces."
+
+        GROUP       isdnMibDirectoryGroup
+        DESCRIPTION
+            "Implementation of this group is optional for all systems
+             that attach to ISDN interfaces."
+
+        OBJECT      isdnBasicRateIfType
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      isdnBasicRateLineTopology
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      isdnBasicRateIfMode
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      isdnBasicRateSignalMode
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+        ::= { isdnMibCompliances 1 }
+
+-- units of conformance
+
+isdnMibBasicRateGroup OBJECT-GROUP
+        OBJECTS {
+            isdnBasicRateIfType,
+            isdnBasicRateLineTopology,
+            isdnBasicRateIfMode,
+            isdnBasicRateSignalMode
+        }
+        STATUS      current
+        DESCRIPTION
+            "A collection of objects required for ISDN Basic Rate
+             physical interface configuration and statistics."
+        ::= { isdnMibGroups 1 }
+
+isdnMibBearerGroup OBJECT-GROUP
+        OBJECTS {
+            isdnBearerChannelType,
+            isdnBearerOperStatus,
+            isdnBearerChannelNumber,
+            isdnBearerPeerAddress,
+            isdnBearerPeerSubAddress,
+            isdnBearerCallOrigin,
+            isdnBearerInfoType,
+            isdnBearerMultirate,
+            isdnBearerCallSetupTime,
+            isdnBearerCallConnectTime,
+            isdnBearerChargedUnits
+        }
+        STATUS      current
+        DESCRIPTION
+            "A collection of objects required for ISDN Bearer channel
+             control and statistics."
+        ::= { isdnMibGroups 2 }
+
+isdnMibSignalingGroup OBJECT-GROUP
+        OBJECTS {
+            isdnSignalingGetIndex,
+            isdnSignalingIfIndex,
+            isdnSignalingProtocol,
+            isdnSignalingCallingAddress,
+            isdnSignalingSubAddress,
+            isdnSignalingBchannelCount,
+            isdnSignalingInfoTrapEnable,
+            isdnSignalingStatus,
+            isdnSigStatsInCalls,
+            isdnSigStatsInConnected,
+            isdnSigStatsOutCalls,
+            isdnSigStatsOutConnected,
+            isdnSigStatsChargedUnits,
+            isdnLapdPrimaryChannel,
+            isdnLapdOperStatus,
+            isdnLapdPeerSabme,
+            isdnLapdRecvdFrmr
+        }
+        STATUS      current
+        DESCRIPTION
+            "A collection of objects required for ISDN D channel
+             configuration and statistics."
+        ::= { isdnMibGroups 3 }
+
+isdnMibEndpointGroup OBJECT-GROUP
+        OBJECTS {
+            isdnEndpointGetIndex,
+            isdnEndpointIfIndex,
+            isdnEndpointIfType,
+            isdnEndpointTeiType,
+            isdnEndpointTeiValue,
+            isdnEndpointSpid,
+            isdnEndpointStatus
+        }
+        STATUS      current
+        DESCRIPTION
+            "A collection of objects describing Terminal Endpoints."
+        ::= { isdnMibGroups 4 }
+
+isdnMibDirectoryGroup OBJECT-GROUP
+        OBJECTS {
+            isdnDirectoryNumber,
+            isdnDirectorySigIndex,
+            isdnDirectoryStatus
+        }
+        STATUS      current
+        DESCRIPTION
+            "A collection of objects describing directory numbers."
+        ::= { isdnMibGroups 5 }
+
+isdnMibNotificationsGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { isdnMibCallInformation }
+    STATUS        current
+    DESCRIPTION
+            "The notifications which a ISDN MIB entity is
+             required to implement."
+    ::= { isdnMibGroups 6 }
+END

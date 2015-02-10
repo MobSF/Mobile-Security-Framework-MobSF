@@ -1,0 +1,666 @@
+APPN-DLUR-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        DisplayString, TruthValue
+                FROM SNMPv2-TC
+
+        OBJECT-TYPE, MODULE-IDENTITY, Unsigned32
+                FROM SNMPv2-SMI
+
+        MODULE-COMPLIANCE, OBJECT-GROUP
+                FROM SNMPv2-CONF
+
+        snanauMIB
+                FROM SNA-NAU-MIB
+
+        SnaControlPointName
+                FROM APPN-MIB;
+
+dlurMIB MODULE-IDENTITY
+        LAST-UPDATED  "9705101500Z"
+        ORGANIZATION  "IETF SNA NAU MIB WG / AIW APPN/HPR MIBs SIG"
+        CONTACT-INFO
+
+                "
+                        Bob Clouston
+                        Cisco Systems
+                        7025 Kit Creek Road
+                        P.O. Box 14987
+                        Research Triangle Park, NC 27709, USA
+                        Tel:    1 919 472 2333
+                        E-mail: clouston@cisco.com
+
+                        Bob Moore
+                        IBM Corporation
+                        800 Park Offices Drive
+                        RHJA/664
+                        P.O. Box 12195
+                        Research Triangle Park, NC 27709, USA
+                        Tel:    1 919 254 4436
+                        E-mail: remoore@ralvm6.vnet.ibm.com
+                "
+      DESCRIPTION
+                "This is the MIB module for objects used to manage
+                network devices with DLUR capabilities.  This MIB
+                contains information that is useful for managing an APPN
+                product that implements a DLUR (Dependent Logical Unit
+                Requester).  The DLUR product has a client/server
+                relationship with an APPN product that implements a DLUS
+                (Dependent Logical Unit Server)."
+
+::= { snanauMIB 5 }
+-- snanauMIB ::= { mib-2 34 }
+
+-- *********************************************************************
+-- Textual Convention
+-- *********************************************************************
+-- SnaControlPointName is imported from the APPN MIB
+
+-- *********************************************************************
+  dlurObjects OBJECT IDENTIFIER ::= { dlurMIB 1 }
+-- *********************************************************************
+
+
+dlurNodeInfo OBJECT IDENTIFIER ::= { dlurObjects 1 }
+-- *********************************************************************
+-- DLUR Capabilities of the node
+--
+--  This group represents the capabilities and options of the DLUR
+--  implementation.
+-- *********************************************************************
+dlurNodeCapabilities OBJECT IDENTIFIER ::= { dlurNodeInfo 1 }
+
+dlurNodeCpName OBJECT-TYPE
+      SYNTAX SnaControlPointName
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Administratively assigned network name for the APPN node where
+          this DLUR implementation resides.  If this object has the same
+          value as the appnNodeCpName object in the APPN MIB, then the
+          two objects are referring to the same APPN node."
+
+      ::= { dlurNodeCapabilities 1 }
+
+dlurReleaseLevel OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (2))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The DLUR release level of this implementation.  This is the
+          value that is encoded in the DLUR/DLUS Capabilites (CV 51).
+          To insure consistent display, this one-byte value is encoded
+          here as two displayable characters that are equivalent to a
+          hexadecimal display.  For example, if the one-byte value as
+          encoded in CV51 is X'01', this object will contain the
+          displayable string '01'."
+
+      ::= { dlurNodeCapabilities 2 }
+
+dlurAnsSupport OBJECT-TYPE
+      SYNTAX INTEGER {
+                     continueOrStop(1),
+                     stopOnly(2)
+                     }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Automatic Network Shutdown (ANS) capability of this node.
+
+              -  'continueOrStop' indicates that the DLUR implementation
+                 supports either ANS value (continue or stop) as
+                 specified by the DLUS on ACTPU for each PU.
+
+              -  'stopOnly' indicates that the DLUR implementation only
+                 supports the ANS value of stop.
+
+           ANS = continue means that the DLUR node will keep LU-LU
+           sessions active even if SSCP-PU and SSCP-LU control sessions
+           are interrupted.
+
+           ANS = stop means that LU-LU sessions will be interrupted when
+           the SSCP-PU and SSCP-LU sessions are interrupted."
+
+      ::= { dlurNodeCapabilities 3 }
+
+dlurMultiSubnetSupport OBJECT-TYPE
+      SYNTAX TruthValue
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Indication of whether this DLUR implementation can support
+          CPSVRMGR sessions that cross NetId boundaries."
+
+      ::= { dlurNodeCapabilities 4 }
+
+dlurDefaultDefPrimDlusName OBJECT-TYPE
+      SYNTAX SnaControlPointName
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The SNA name of the defined default primary DLUS for all of
+          the PUs served by this DLUR.  This can be overridden for a
+          particular PU by a defined primary DLUS for that PU,
+          represented by the dlurPuDefPrimDlusName object."
+
+      ::= { dlurNodeCapabilities 5 }
+
+dlurNetworkNameForwardingSupport OBJECT-TYPE
+      SYNTAX TruthValue
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Indication of whether this DLUR implementation supports
+          forwarding of Network Name control vectors on ACTPUs and
+          ACTLUs to DLUR-served PUs and their associated LUs.
+
+          This object corresponds to byte 9. bit 3 of cv51."
+
+      ::= { dlurNodeCapabilities 6 }
+
+dlurNondisDlusDlurSessDeactSup OBJECT-TYPE
+      SYNTAX TruthValue
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Indication of whether this DLUR implementation supports
+          nondisruptive deactivation of its DLUR-DLUS sessions.
+          Upon receiving from a DLUS an UNBIND for the CPSVRMGR pipe
+          with sense data X'08A0 000B', a DLUR that supports this
+          option immediately begins attempting to activate a CPSVRMGR
+          pipe with a DLUS other than the one that sent the UNBIND.
+
+          This object corresponds to byte 9. bit 4 of cv51."
+
+      ::= { dlurNodeCapabilities 7 }
+
+-- *********************************************************************
+-- DLUR default defined backup DLUS table
+-- *********************************************************************
+
+dlurDefaultDefBackupDlusTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF DlurDefaultDefBackupDlusEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "This table contains an ordered list of defined backup DLUSs
+          for all of the PUs served by this DLUR.  These can be
+          overridden for a particular PU by a list of defined backup
+          DLUSs for that PU, represented by the
+          dlurPuDefBackupDlusNameTable.  Entries in this table are
+          ordered from most preferred default backup DLUS to least
+          preferred."
+
+      ::= { dlurNodeInfo 2 }
+
+dlurDefaultDefBackupDlusEntry OBJECT-TYPE
+      SYNTAX DlurDefaultDefBackupDlusEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "This table is indexed by an integer-valued index, which
+          orders the entries from most preferred default backup DLUS
+          to least preferred."
+
+      INDEX { dlurDefaultDefBackupDlusIndex }
+
+      ::= { dlurDefaultDefBackupDlusTable 1 }
+
+DlurDefaultDefBackupDlusEntry ::= SEQUENCE {
+      dlurDefaultDefBackupDlusIndex      Unsigned32,
+      dlurDefaultDefBackupDlusName       SnaControlPointName
+                     }
+
+dlurDefaultDefBackupDlusIndex OBJECT-TYPE
+      SYNTAX Unsigned32 (1..4294967295)
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Index for this table.  The index values start at 1,
+          which identifies the most preferred default backup DLUS."
+
+      ::= { dlurDefaultDefBackupDlusEntry 1 }
+
+dlurDefaultDefBackupDlusName OBJECT-TYPE
+      SYNTAX SnaControlPointName
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Fully qualified name of a default backup DLUS for PUs served
+          by this DLUR."
+
+      ::= { dlurDefaultDefBackupDlusEntry 2 }
+
+-- *********************************************************************
+-- PU Information
+--
+--  The following table carries information about the PUs that this APPN
+--  node is supporting via DLUR.
+
+-- *********************************************************************
+dlurPuInfo OBJECT IDENTIFIER ::= { dlurObjects 2 }
+
+dlurPuTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF DlurPuEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Information about the PUs supported by this DLUR."
+
+      ::= { dlurPuInfo 1 }
+
+dlurPuEntry OBJECT-TYPE
+      SYNTAX DlurPuEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Entry in a table of PU information, indexed by PU name."
+
+      INDEX { dlurPuName  }
+
+      ::= { dlurPuTable 1 }
+
+DlurPuEntry ::= SEQUENCE {
+      dlurPuName                  DisplayString,
+      dlurPuSscpSuppliedName      DisplayString,
+      dlurPuStatus                INTEGER,
+      dlurPuAnsSupport            INTEGER,
+      dlurPuLocation              INTEGER,
+      dlurPuLsName                DisplayString,
+      dlurPuDlusSessnStatus       INTEGER,
+      dlurPuActiveDlusName        DisplayString,
+      dlurPuDefPrimDlusName       DisplayString
+                     }
+
+dlurPuName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (1..17))
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Locally administered name of the PU."
+
+      ::= { dlurPuEntry 1 }
+
+
+dlurPuSscpSuppliedName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (0..17))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The SNA name of the PU.  This value is supplied to a PU by the
+          SSCP that activated it.  If a value has not been supplied, a
+          zero-length string is returned."
+
+      ::= { dlurPuEntry 2 }
+
+dlurPuStatus OBJECT-TYPE
+      SYNTAX INTEGER {
+                      reset(1),
+                      pendReqActpuRsp(2),
+                      pendActpu(3),
+                      pendActpuRsp(4),
+                      active(5),
+                      pendLinkact(6),
+                      pendDactpuRsp(7),
+                      pendInop(8),
+                      pendInopActpu(9)
+                     }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Status of the DLUR-supported PU.  The following values are
+          defined:
+
+             reset(1)           -  reset
+             pendReqActpuRsp(2) -  pending a response from the DLUS
+                                   to a Request ACTPU
+             pendActpu(3)       -  pending an ACTPU from the DLUS
+             pendActpuRsp(4)    -  pending an ACTPU response from the PU
+             active(5)          -  active
+             pendLinkact(6)     -  pending activation of the link to a
+                                   downstream PU
+             pendDactpuRsp(7)   -  pending a DACTPU response from the PU
+             pendInop(8)        -  the CPSVRMGR pipe became inoperative
+                                   while the DLUR was pending an ACTPU
+                                   response from the PU
+             pendInopActpu(9)   -  when the DLUR was in the pendInop
+                                   state, a CPSVRMGR pipe became active
+                                   and a new ACTPU was received over it,
+                                   before a response to the previous
+                                   ACTPU was received from the PU."
+
+      ::= { dlurPuEntry 3 }
+
+dlurPuAnsSupport OBJECT-TYPE
+      SYNTAX INTEGER {
+                     continue(1),
+                     stop(2)
+                     }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The Automatic Network Shutdown (ANS) support configured for
+          this PU.  This value (as configured by the network
+          administrator) is sent by DLUS with ACTPU for each PU.
+
+              -  'continue' means that the DLUR node will attempt to keep
+                 LU-LU sessions active even if SSCP-PU and SSCP-LU
+                 control sessions are interrupted.
+
+              -  'stop' means that LU-LU sessions will be interrupted
+                 when the SSCP-PU and SSCP-LU sessions are interrupted."
+
+      ::= { dlurPuEntry 4 }
+
+dlurPuLocation OBJECT-TYPE
+      SYNTAX INTEGER {
+                      internal(1),
+                      downstream(2) }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Location of the DLUR-support PU:
+              internal(1)   - internal to the APPN node itself (no link)
+              downstream(2) - downstream of the APPN node (connected via
+                              a link)."
+
+      ::= { dlurPuEntry 5 }
+
+dlurPuLsName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (0..10))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Administratively assigned name of the link station through
+          which a downstream PU is connected to this DLUR.  A zero-length
+          string is returned for internal PUs.  If this object has the
+          same value as the appnLsName object in the APPN MIB, then the
+          two are identifying the same link station."
+
+      ::= { dlurPuEntry 6 }
+
+dlurPuDlusSessnStatus OBJECT-TYPE
+      SYNTAX INTEGER {
+                      reset(1),
+                      pendingActive(2),
+                      active(3),
+                      pendingInactive(4)
+                     }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Status of the control session to the DLUS identified in
+          dlurPuActiveDlusName.  This is a combination of the separate
+          states for the contention-winner and contention-loser sessions:
+
+          reset(1)           - none of the cases below
+          pendingActive(2)   - either contention-winner session or
+                               contention-loser session is pending active
+          active(3)          - contention-winner and contention-loser
+                               sessions are both active
+          pendingInactive(4) - either contention-winner session or
+                               contention-loser session is pending
+                               inactive - this test is made AFTER the
+                               'pendingActive' test.
+
+          The following matrix provides a different representation of
+          how the values of this object are related to the individual
+          states of the contention-winner and contention-loser sessions:
+
+               Conwinner
+               | pA | pI | A | X = !(pA | pI | A)
+          C ++++++++++++++++++++++++++++++++++
+          o pA | 2  |  2 | 2 | 2
+          n ++++++++++++++++++++++++++++++++++
+          l pI | 2  |  4 | 4 | 4
+          o ++++++++++++++++++++++++++++++++++
+          s A  | 2  |  4 | 3 | 1
+          e ++++++++++++++++++++++++++++++++++
+          r X  | 2  |  4 | 1 | 1
+            ++++++++++++++++++++++++++++++++++
+          "
+
+      ::= { dlurPuEntry 7 }
+
+dlurPuActiveDlusName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (0..17))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The SNA name of the active DLUS for this PU.  If its length
+          is not zero, this name follows the SnaControlPointName textual
+          convention.  A zero-length string indicates that the PU does
+          not currently have an active DLUS."
+
+      ::= { dlurPuEntry 8 }
+
+dlurPuDefPrimDlusName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (0..17))
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "The SNA name of the defined primary DLUS for this PU, if one
+          has been defined.  If present, this name follows the
+          SnaControlPointName textual convention.  A zero-length string
+          indicates that no primary DLUS has been defined for this PU, in
+          which case the global default represented by the
+          dlurDefaultDefPrimDlusName object is used."
+
+      ::= { dlurPuEntry 9 }
+
+-- *****************************************
+-- Defined backup DLUS table for a PU
+-- *****************************************
+
+dlurPuDefBackupDlusTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF DlurPuDefBackupDlusEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "This table contains an ordered list of defined backup DLUSs
+          for those PUs served by this DLUR that have their own defined
+          backup DLUSs.  PUs that have no entries in this table use the
+          global default backup DLUSs for the DLUR, represented by the
+          dlurDefaultDefBackupDlusNameTable.  Entries in this table are
+          ordered from most preferred backup DLUS to least preferred for
+          each PU."
+
+      ::= { dlurPuInfo 2 }
+
+dlurPuDefBackupDlusEntry OBJECT-TYPE
+      SYNTAX DlurPuDefBackupDlusEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "This table is indexed by PU name and by an integer-valued
+          index, which orders the entries from most preferred backup DLUS
+          for the PU to least preferred."
+
+      INDEX { dlurPuDefBackupDlusPuName,
+              dlurPuDefBackupDlusIndex }
+
+      ::= { dlurPuDefBackupDlusTable 1 }
+
+DlurPuDefBackupDlusEntry ::= SEQUENCE {
+      dlurPuDefBackupDlusPuName          DisplayString,
+      dlurPuDefBackupDlusIndex           Unsigned32,
+      dlurPuDefBackupDlusName            SnaControlPointName
+                     }
+
+dlurPuDefBackupDlusPuName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (1..17))
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Locally administered name of the PU.  If this object has the
+          same value as the dlurPuName object, then the two are
+          identifying the same PU."
+
+      ::= { dlurPuDefBackupDlusEntry 1 }
+
+dlurPuDefBackupDlusIndex OBJECT-TYPE
+      SYNTAX Unsigned32 (1..4294967295)
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Secondary index for this table.  The index values start at 1,
+          which identifies the most preferred backup DLUS for the PU."
+
+      ::= { dlurPuDefBackupDlusEntry 2 }
+
+dlurPuDefBackupDlusName OBJECT-TYPE
+      SYNTAX SnaControlPointName
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Fully qualified name of a backup DLUS for this PU."
+
+      ::= { dlurPuDefBackupDlusEntry 3 }
+
+-- *********************************************************************
+--               DLUS Control Sessions (CPSVRMGR Pipes)
+--
+--  This table contains information about DLUS control sessions, also
+--  known as CPSVRMGR pipes.  Although DLUR uses a pair of CPSVRMGR
+--  sessions for communication, for the purpose of status, information
+--  about these two sessions is combined to yield a single status for the
+--  requester/server connection.
+
+-- *********************************************************************
+
+dlurDlusInfo OBJECT IDENTIFIER ::= { dlurObjects 3 }
+
+dlurDlusTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF DlurDlusEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+           "Information about DLUS control sessions."
+
+      ::= { dlurDlusInfo 1}
+
+dlurDlusEntry OBJECT-TYPE
+      SYNTAX DlurDlusEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+           "This entry is indexed by the name of the DLUS."
+
+      INDEX { dlurDlusName }
+
+      ::= { dlurDlusTable 1 }
+
+DlurDlusEntry ::= SEQUENCE {
+      dlurDlusName          SnaControlPointName,
+      dlurDlusSessnStatus   INTEGER
+                     }
+
+dlurDlusName OBJECT-TYPE
+      SYNTAX SnaControlPointName
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "The SNA name of a DLUS with which this DLUR currently has a
+          CPSVRMGR pipe established."
+
+      ::= { dlurDlusEntry 1 }
+
+dlurDlusSessnStatus OBJECT-TYPE
+      SYNTAX INTEGER {
+                      reset(1),
+                      pendingActive(2),
+                      active(3),
+                      pendingInactive(4)
+                     }
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+          "Status of the CPSVRMGR pipe between the DLUR and this DLUS.
+          This is a combination of the separate states for the
+          contention-winner and contention-loser sessions:
+
+          reset(1)           - none of the cases below
+          pendingActive(2)   - either contention-winner session or
+                               contention-loser session is pending active
+          active(3)          - contention-winner and contention-loser
+                               sessions are both active
+          pendingInactive(4) - either contention-winner session or
+                               contention-loser session is pending
+                               inactive - this test is made AFTER the
+                               'pendingActive' test.
+
+          The following matrix provides a different representation of
+          how the values of this object are related to the individual
+          states of the contention-winner and contention-loser sessions:
+
+               Conwinner
+               | pA | pI | A | X = !(pA | pI | A)
+          C ++++++++++++++++++++++++++++++++++
+          o pA | 2  |  2 | 2 | 2
+          n ++++++++++++++++++++++++++++++++++
+          l pI | 2  |  4 | 4 | 4
+          o ++++++++++++++++++++++++++++++++++
+          s A  | 2  |  4 | 3 | 1
+          e ++++++++++++++++++++++++++++++++++
+          r X  | 2  |  4 | 1 | 1
+            ++++++++++++++++++++++++++++++++++
+          "
+
+      ::= { dlurDlusEntry 2 }
+
+-- ***************************************************************
+-- Conformance information
+-- ***************************************************************
+
+dlurConformance       OBJECT IDENTIFIER ::= { dlurMIB 2 }
+
+dlurCompliances       OBJECT IDENTIFIER ::= { dlurConformance 1 }
+dlurGroups            OBJECT IDENTIFIER ::= { dlurConformance 2 }
+
+-- Compliance statements
+
+dlurCompliance MODULE-COMPLIANCE
+      STATUS current
+      DESCRIPTION
+          "The compliance statement for the SNMPv2 entities which
+          implement the DLUR MIB."
+
+      MODULE -- this module
+
+--    Unconditionally mandatory groups
+      MANDATORY-GROUPS  { dlurConfGroup }
+
+      ::= { dlurCompliances 1 }
+
+-- Units of conformance
+dlurConfGroup OBJECT-GROUP
+      OBJECTS {
+               dlurNodeCpName,
+               dlurReleaseLevel,
+               dlurAnsSupport,
+               dlurMultiSubnetSupport,
+               dlurNetworkNameForwardingSupport,
+               dlurNondisDlusDlurSessDeactSup,
+               dlurDefaultDefPrimDlusName,
+               dlurDefaultDefBackupDlusName,
+               dlurPuSscpSuppliedName,
+               dlurPuStatus,
+               dlurPuAnsSupport,
+               dlurPuLocation,
+               dlurPuLsName,
+               dlurPuDlusSessnStatus,
+               dlurPuActiveDlusName,
+               dlurPuDefPrimDlusName,
+               dlurPuDefBackupDlusName,
+               dlurDlusSessnStatus
+              }
+      STATUS current
+      DESCRIPTION
+          "A collection of objects providing information on an
+          implementation of APPN DLUR."
+
+      ::= { dlurGroups 1 }
+
+-- end of conformance statement
+
+END

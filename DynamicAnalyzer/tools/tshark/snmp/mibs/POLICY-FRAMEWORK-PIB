@@ -1,0 +1,263 @@
+POLICY-FRAMEWORK-PIB PIB-DEFINITIONS ::= BEGIN
+
+IMPORTS
+    ibrpib 
+            FROM TUBS-SMI
+    Unsigned32, MODULE-IDENTITY, OBJECT-TYPE,
+    TEXTUAL-CONVENTION
+            FROM COPS-PR-SPPI
+    InstanceId
+            FROM COPS-PR-SPPI-TC
+    SnmpAdminString
+            FROM SNMP-FRAMEWORK-MIB;
+
+policyFrameworkPib  MODULE-IDENTITY
+    SUBJECT-CATEGORIES { all } -- to be done
+    LAST-UPDATED "9906241800Z"
+    ORGANIZATION "IETF RAP WG"
+    CONTACT-INFO "
+                  Michael Fine
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA  95134-1706 USA
+                  Phone: +1 408 527 8218
+                  Email: mfine@cisco.com
+
+                  Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive,
+                  San Jose, CA 95134-1706 USA
+                  Phone: +1 408 526 5260
+                  Email: kzm@cisco.com
+
+                  John Seligson
+                  Nortel Networks, Inc.
+                  4401 Great America Parkway
+                  Santa Clara, CA 95054 USA
+                  Phone: +1 408 495 2992
+                  Email: jseligso@nortelnetworks.com"
+
+    DESCRIPTION
+            "A PIB module containing the base set of policy
+             rule classes that are required for support of
+             all policies."
+
+    ::= { ibrpib 15 }
+
+policyBasePibClasses
+             OBJECT IDENTIFIER ::= { policyFrameworkPib 1 }
+
+--
+-- Textual Conventions
+--
+
+--
+-- Interface Role
+--
+
+Role ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "A display string but where the characters '+', ' ' (space),
+        NULL, LF, CR, BELL, BS, HT (tab) VT and FF are illegal."
+
+    SYNTAX OCTET STRING (SIZE (0..31))
+
+--
+-- Interface Role Combination
+--
+
+RoleCombination ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "A Display string consisting of a set of roles concatenated
+        with a '+' character where the roles are in lexicographic
+        order from minimum to maximum."
+
+    SYNTAX OCTET STRING (SIZE (0..255))
+
+--
+-- Device Configuration Group
+--
+
+-- This group contains device configuration information.  This
+-- configuration is either set by management or reflects the physical
+-- configuration of the device.  This configuration is generally
+-- reported to the PDP (i.e., the policy server) when configuration
+-- is performed by the policy server so that the PDP can determine
+-- what policies to download to the PEP (i.e., the device). Class
+-- instances may also be downloaded by a network manager prior to
+-- static configuration.
+--
+
+policyDeviceConfig OBJECT IDENTIFIER ::= { policyBasePibClasses 1 }
+
+--
+-- PRC Support Table
+--
+
+policyPrcSupportTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF PolicyPrcSupportEntry
+    PIB-ACCESS  notify
+    STATUS         current
+    DESCRIPTION
+        "Each instance of this class specifies a PRC that the device
+        supports and a bit string to indicate the attributes of the
+        class that are supported.  These PRIs are sent to the PDP to
+        indicate to the PDP which PRCs, and which attributes of these
+
+
+        PRCs, the device supports. This table can also be downloaded
+        by a network manager when static configuration is used.
+
+        All install and install-notify PRCs supported by the device
+        must be represented in this table."
+
+    ::= { policyDeviceConfig 1 }
+
+policyPrcSupportEntry OBJECT-TYPE
+    SYNTAX         PolicyPrcSupportEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of the policyPrcSupport class that identifies a
+        specific policy class and associated attributes as supported
+        by the device."
+
+    PIB-INDEX { policyPrcSupportId }
+    ::= { policyPrcSupportTable 1 }
+
+PolicyPrcSupportEntry ::= SEQUENCE {
+        policyPrcSupportId             InstanceId,
+        policyPrcSupportSupportedPrc   OBJECT IDENTIFIER,
+        policyPrcSupportSupportedAttrs OCTET STRING
+}
+
+policyPrcSupportId OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "An arbitrary integer index that uniquely identifies an
+        instance of the policyPrcSupport class."
+
+    ::= { policyPrcSupportEntry 1 }
+
+policyPrcSupportSupportedPrc OBJECT-TYPE
+    SYNTAX         OBJECT IDENTIFIER
+    STATUS         current
+    DESCRIPTION
+        "The object identifier of a supported PRC. There may not
+        be more than one instance of the policyPrcSupport class with
+        the same value of policyPrcSupportSupportedPrc."
+
+    ::= { policyPrcSupportEntry 2 }
+
+policyPrcSupportSupportedAttrs OBJECT-TYPE
+
+
+    SYNTAX         OCTET STRING
+    STATUS         current
+    DESCRIPTION
+        "A bit string representing the supported attributes of the
+        class that is identified by the policyPrcSupportSupportedPrc
+        object.
+
+        Each bit of this bit mask corresponds to a class attribute,
+        with the most significant bit of the i-th octet of this octet
+        string corresponding to the (8*i - 7)-th attribute, and the
+        least significant bit of the i-th octet corresponding to the
+        (8*i)-th class attribute. Each bit of this bit mask specifies
+        whether or not the corresponding class attribute is currently
+        supported, with a '1' indicating support and a '0' indicating
+        no support. If the value of this bit mask is N bits long and
+        there are more than N class attributes then the bit mask is
+        logically extended with 0's to the required length."
+
+    ::= { policyPrcSupportEntry 3 }
+
+--
+-- PIB Incarnation Table
+--
+
+policyDevicePibIncarnationTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF PolicyDevicePibIncarnationEntry
+    PIB-ACCESS  install-notify
+    STATUS         current
+    DESCRIPTION
+        "This class contains a single policy rule instance that
+        identifies the current incarnation of the PIB and the PDP
+        or network manager that installed this incarnation.  The
+        instance of this class is reported to the PDP at client
+        connect time so that the PDP can (attempt to) ascertain the
+        current state of the PIB. A network manager may use the
+        instance to determine the state of the device with regard
+        to existing NMS interactions."
+
+    ::= { policyDeviceConfig 2 }
+
+policyDevicePibIncarnationEntry OBJECT-TYPE
+    SYNTAX         PolicyDevicePibIncarnationEntry
+    STATUS         current
+    DESCRIPTION
+        "An instance of the policyDevicePibIncarnation class. Only
+
+
+        one instance of this policy class is ever instantiated."
+
+    PIB-INDEX { policyDevicePibIncarnationPrid }
+    ::= { policyDevicePibIncarnationTable 1 }
+
+PolicyDevicePibIncarnationEntry ::= SEQUENCE {
+        policyDevicePibIncarnationPrid    InstanceId,
+        policyDevicePibIncarnationName    SnmpAdminString,
+        policyDevicePibIncarnationId      OCTET STRING,
+        policyDevicePibIncarnationTtl     Unsigned32
+}
+
+policyDevicePibIncarnationPrid OBJECT-TYPE
+    SYNTAX         InstanceId
+    STATUS         current
+    DESCRIPTION
+        "An index to uniquely identify an instance of this
+        policy class."
+
+    ::= { policyDevicePibIncarnationEntry 1 }
+
+policyDevicePibIncarnationName OBJECT-TYPE
+    SYNTAX         SnmpAdminString
+    STATUS         current
+    DESCRIPTION
+        "The name of the entity that installed the current
+        incarnation of the PIB into the device. The name may
+        reference a PDP when dynamic configuration is being
+        used or a network manager when static configuration
+        is being used. By default, it is the zero length
+        string."
+
+    ::= { policyDevicePibIncarnationEntry 2 }
+
+policyDevicePibIncarnationId OBJECT-TYPE
+    SYNTAX         OCTET STRING
+    STATUS         current
+    DESCRIPTION
+        "An ID to identify the current incarnation.  It has meaning
+        to the PDP/manager that installed the PIB and perhaps its
+        standby PDPs/managers. By default, it is the zero-length
+        string."
+
+    ::= { policyDevicePibIncarnationEntry 3 }
+
+
+policyDevicePibIncarnationTtl OBJECT-TYPE
+    SYNTAX         Unsigned32
+    STATUS         current
+    DESCRIPTION
+        "The number of seconds after a client close or TCP timeout
+        for which the PEP continues to enforce the policy in the PIB.
+        After this interval, the PIB is considered expired and the
+        device no longer enforces the policy installed in the PIB.
+        Policy enforcement timing only applies to policies that have
+        been installed dynamically (e.g., by a PDP via COPS)."
+
+    ::= { policyDevicePibIncarnationEntry 4 }
+
+END

@@ -1,0 +1,730 @@
+ETHER-WIS DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Gauge32, transmission
+        FROM SNMPv2-SMI
+    ifIndex
+        FROM IF-MIB
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF
+    sonetMediumStuff2, sonetSectionStuff2,
+    sonetLineStuff2, sonetFarEndLineStuff2,
+    sonetPathStuff2, sonetFarEndPathStuff2,
+    sonetMediumType, sonetMediumLineCoding,
+    sonetMediumLineType, sonetMediumCircuitIdentifier,
+    sonetMediumLoopbackConfig, sonetSESthresholdSet,
+    sonetPathCurrentWidth
+        FROM SONET-MIB;
+
+etherWisMIB MODULE-IDENTITY
+    LAST-UPDATED "200309190000Z"  -- September 19, 2003
+        ORGANIZATION "IETF Ethernet Interfaces and Hub MIB
+                     Working Group"
+        CONTACT-INFO
+           "WG charter:
+              http://www.ietf.org/html.charters/hubmib-charter.html
+
+            Mailing Lists:
+              General Discussion: hubmib@ietf.org
+              To Subscribe: hubmib-request@ietf.org
+              In Body: subscribe your_email_address
+
+             Chair: Dan Romascanu
+            Postal: Avaya Inc.
+                    Atidim Technology Park, Bldg. 3
+                    Tel Aviv 61131
+                    Israel
+               Tel: +972 3 645 8414
+            E-mail: dromasca@avaya.com
+
+            Editor: C. M. Heard
+            Postal: 600 Rainbow Dr. #141
+                    Mountain View, CA 94041-2542
+                    USA
+               Tel: +1 650-964-8391
+            E-mail: heard@pobox.com"
+
+
+
+    DESCRIPTION
+      "The objects in this MIB module are used in conjunction
+      with objects in the SONET-MIB and the MAU-MIB to manage
+      the Ethernet WAN Interface Sublayer (WIS).
+
+      The following reference is used throughout this MIB module:
+
+      [IEEE 802.3 Std] refers to:
+         IEEE Std 802.3, 2000 Edition: 'IEEE Standard for
+         Information technology - Telecommunications and
+         information exchange between systems - Local and
+         metropolitan area networks - Specific requirements -
+         Part 3: Carrier sense multiple access with collision
+         detection (CSMA/CD) access method and physical layer
+         specifications', as amended by IEEE Std 802.3ae-2002,
+         'IEEE Standard for Carrier Sense Multiple Access with
+         Collision Detection (CSMA/CD) Access Method and
+         Physical Layer Specifications - Media Access Control
+         (MAC) Parameters, Physical Layer and Management
+         Parameters for 10 Gb/s Operation', 30 August 2002.
+
+      Of particular interest are Clause 50, 'WAN Interface
+      Sublayer (WIS), type 10GBASE-W', Clause 30, '10Mb/s,
+      100Mb/s, 1000Mb/s, and 10Gb/s MAC Control, and Link
+      Aggregation Management', and Clause 45, 'Management
+      Data Input/Output (MDIO) Interface'.
+
+      Copyright (C) The Internet Society (2003).  This version
+      of this MIB module is part of RFC 3637;  see the RFC
+      itself for full legal notices."
+
+    REVISION    "200309190000Z"  -- September 19, 2003
+    DESCRIPTION "Initial version, published as RFC 3637."
+
+    ::= { transmission 134 }
+
+-- The main sections of the module
+
+etherWisObjects     OBJECT IDENTIFIER ::= { etherWisMIB 1 }
+
+etherWisObjectsPath OBJECT IDENTIFIER ::= { etherWisMIB 2 }
+
+etherWisConformance OBJECT IDENTIFIER ::= { etherWisMIB 3 }
+
+
+
+
+
+
+
+
+-- groups in the Ethernet WIS MIB module
+
+etherWisDevice      OBJECT IDENTIFIER ::= { etherWisObjects 1 }
+
+etherWisSection     OBJECT IDENTIFIER ::= { etherWisObjects 2 }
+
+etherWisPath        OBJECT IDENTIFIER ::= { etherWisObjectsPath 1 }
+
+etherWisFarEndPath  OBJECT IDENTIFIER ::= { etherWisObjectsPath 2 }
+
+
+-- The Device group
+
+-- These objects provide WIS extensions to
+-- the SONET-MIB Medium Group.
+
+etherWisDeviceTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF EtherWisDeviceEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "The table for Ethernet WIS devices"
+     ::= { etherWisDevice 1 }
+
+etherWisDeviceEntry OBJECT-TYPE
+    SYNTAX  EtherWisDeviceEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "An entry in the Ethernet WIS device table.  For each
+       instance of this object there MUST be a corresponding
+       instance of sonetMediumEntry."
+    INDEX  { ifIndex }
+     ::= { etherWisDeviceTable 1 }
+
+EtherWisDeviceEntry ::=
+    SEQUENCE {
+        etherWisDeviceTxTestPatternMode     INTEGER,
+        etherWisDeviceRxTestPatternMode     INTEGER,
+        etherWisDeviceRxTestPatternErrors   Gauge32
+        }
+
+
+
+
+
+
+
+
+
+
+etherWisDeviceTxTestPatternMode OBJECT-TYPE
+    SYNTAX  INTEGER {
+                none(1),
+                squareWave(2),
+                prbs31(3),
+                mixedFrequency(4)
+            }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+       "This variable controls the transmit test pattern mode.
+       The value none(1) puts the the WIS transmit path into
+       the normal operating mode.  The value squareWave(2) puts
+       the WIS transmit path into the square wave test pattern
+       mode described in [IEEE 802.3 Std.] subclause 50.3.8.1.
+       The value prbs31(3) puts the WIS transmit path into the
+       PRBS31 test pattern mode described in [IEEE 802.3 Std.]
+       subclause 50.3.8.2.  The value mixedFrequency(4) puts the
+       WIS transmit path into the mixed frequency test pattern
+       mode described in [IEEE 802.3 Std.] subclause 50.3.8.3.
+       Any attempt to set this object to a value other than
+       none(1) when the corresponding instance of ifAdminStatus
+       has the value up(1) MUST be rejected with the error
+       inconsistentValue, and any attempt to set the corresponding
+       instance of ifAdminStatus to the value up(1) when an
+       instance of this object has a value other than none(1)
+       MUST be rejected with the error inconsistentValue."
+    REFERENCE
+       "[IEEE 802.3 Std.], 50.3.8, WIS test pattern generator and
+       checker, 45.2.2.6, 10G WIS control 2 register (2.7), and
+       45.2.2.7.2, PRBS31 pattern testing ability (2.8.1)."
+     ::= { etherWisDeviceEntry 1 }
+
+etherWisDeviceRxTestPatternMode OBJECT-TYPE
+    SYNTAX  INTEGER {
+                none(1),
+                prbs31(3),
+                mixedFrequency(4)
+            }
+    MAX-ACCESS  read-write
+    STATUS  current
+
+
+
+
+
+
+
+
+
+
+    DESCRIPTION
+       "This variable controls the receive test pattern mode.
+       The value none(1) puts the the WIS receive path into the
+       normal operating mode.  The value prbs31(3) puts the WIS
+       receive path into the PRBS31 test pattern mode described
+       in [IEEE 802.3 Std.] subclause 50.3.8.2.  The value
+       mixedFrequency(4) puts the WIS receive path into the mixed
+       frequency test pattern mode described in [IEEE 802.3 Std.]
+       subclause 50.3.8.3.  Any attempt to set this object to a
+       value other than none(1) when the corresponding instance
+       of ifAdminStatus has the value up(1) MUST be rejected with
+       the error inconsistentValue, and any attempt to set the
+       corresponding instance of ifAdminStatus to the value up(1)
+       when an instance of this object has a value other than
+       none(1) MUST be rejected with the error inconsistentValue."
+    REFERENCE
+       "[IEEE 802.3 Std.], 50.3.8, WIS test pattern generator and
+       checker, 45.2.2.6, 10G WIS control 2 register (2.7), and
+       45.2.2.7.2, PRBS31 pattern testing ability (2.8.1)."
+     ::= { etherWisDeviceEntry 2 }
+
+etherWisDeviceRxTestPatternErrors OBJECT-TYPE
+    SYNTAX  Gauge32 ( 0..65535 )
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+       "This object counts the number of errors detected when the
+       WIS receive path is operating in the PRBS31 test pattern
+       mode.  It is reset to zero when the WIS receive path
+       initially enters that mode, and it increments each time
+       the PRBS pattern checker detects an error as described in
+       [IEEE 802.3 Std.] subclause 50.3.8.2 unless its value is
+       65535, in which case it remains unchanged.  This object is
+       writeable so that it may be reset upon explicit request
+       of a command generator application while the WIS receive
+       path continues to operate in PRBS31 test pattern mode."
+    REFERENCE
+       "[IEEE 802.3 Std.], 50.3.8, WIS test pattern generator and
+       checker, 45.2.2.7.2, PRBS31 pattern testing ability
+       (2.8.1), and 45.2.2.8, 10G WIS test pattern error counter
+       register (2.9)."
+     ::= { etherWisDeviceEntry 3 }
+
+
+
+
+
+
+
+
+
+-- The Section group
+
+-- These objects provide WIS extensions to
+-- the SONET-MIB Section Group.
+
+etherWisSectionCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF EtherWisSectionCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "The table for the current state of Ethernet WIS sections."
+     ::= { etherWisSection 1 }
+
+etherWisSectionCurrentEntry OBJECT-TYPE
+    SYNTAX  EtherWisSectionCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "An entry in the etherWisSectionCurrentTable.  For each
+       instance of this object there MUST be a corresponding
+       instance of sonetSectionCurrentEntry."
+    INDEX  { ifIndex }
+     ::= { etherWisSectionCurrentTable 1 }
+
+EtherWisSectionCurrentEntry ::=
+    SEQUENCE {
+        etherWisSectionCurrentJ0Transmitted OCTET STRING,
+        etherWisSectionCurrentJ0Received    OCTET STRING
+        }
+
+etherWisSectionCurrentJ0Transmitted OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE (16))
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+       "This is the 16-octet section trace message that
+       is transmitted in the J0 byte.  The value SHOULD
+       be '89'h followed by fifteen octets of '00'h
+       (or some cyclic shift thereof) when the section
+       trace function is not used, and the implementation
+       SHOULD use that value (or a cyclic shift thereof)
+       as a default if no other value has been set."
+    REFERENCE
+       "[IEEE 802.3 Std.], 30.8.1.1.8, aJ0ValueTX."
+     ::= { etherWisSectionCurrentEntry 1 }
+
+
+
+
+
+
+etherWisSectionCurrentJ0Received OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE (16))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This is the 16-octet section trace message that
+       was most recently received in the J0 byte."
+    REFERENCE
+       "[IEEE 802.3 Std.], 30.8.1.1.9, aJ0ValueRX."
+     ::= { etherWisSectionCurrentEntry 2 }
+
+
+-- The Path group
+
+-- These objects provide WIS extensions to
+-- the SONET-MIB Path Group.
+
+etherWisPathCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF EtherWisPathCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "The table for the current state of Ethernet WIS paths."
+     ::= { etherWisPath 1 }
+
+etherWisPathCurrentEntry OBJECT-TYPE
+    SYNTAX  EtherWisPathCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "An entry in the etherWisPathCurrentTable.  For each
+       instance of this object there MUST be a corresponding
+       instance of sonetPathCurrentEntry."
+    INDEX  { ifIndex }
+     ::= { etherWisPathCurrentTable 1 }
+
+EtherWisPathCurrentEntry ::=
+    SEQUENCE {
+        etherWisPathCurrentStatus           BITS,
+        etherWisPathCurrentJ1Transmitted    OCTET STRING,
+        etherWisPathCurrentJ1Received       OCTET STRING
+        }
+
+
+
+
+
+
+
+
+
+etherWisPathCurrentStatus OBJECT-TYPE
+    SYNTAX  BITS {
+                etherWisPathLOP(0),
+                etherWisPathAIS(1),
+                etherWisPathPLM(2),
+                etherWisPathLCD(3)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This variable indicates the current status of the
+       path payload with a bit map that can indicate multiple
+       defects at once.  The bit positions are assigned as
+       follows:
+
+       etherWisPathLOP(0)
+          This bit is set to indicate that an
+          LOP-P (Loss of Pointer - Path) defect
+          is being experienced.  Note:  when this
+          bit is set, sonetPathSTSLOP MUST be set
+          in the corresponding instance of
+          sonetPathCurrentStatus.
+
+       etherWisPathAIS(1)
+          This bit is set to indicate that an
+          AIS-P (Alarm Indication Signal - Path)
+          defect is being experienced.  Note:  when
+          this bit is set, sonetPathSTSAIS MUST be
+          set in the corresponding instance of
+          sonetPathCurrentStatus.
+
+       etherWisPathPLM(1)
+          This bit is set to indicate that a
+          PLM-P (Payload Label Mismatch - Path)
+          defect is being experienced.  Note:  when
+          this bit is set, sonetPathSignalLabelMismatch
+          MUST be set in the corresponding instance of
+          sonetPathCurrentStatus.
+
+
+
+
+
+
+
+
+
+
+
+
+
+       etherWisPathLCD(3)
+          This bit is set to indicate that an
+          LCD-P (Loss of Codegroup Delination - Path)
+          defect is being experienced.  Since this
+          defect is detected by the PCS and not by
+          the path layer itself, there is no
+          corresponding bit in sonetPathCurrentStatus."
+    REFERENCE
+       "[IEEE 802.3 Std.], 30.8.1.1.18, aPathStatus."
+     ::= { etherWisPathCurrentEntry 1 }
+
+etherWisPathCurrentJ1Transmitted OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE (16))
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+       "This is the 16-octet path trace message that
+       is transmitted in the J1 byte.  The value SHOULD
+       be '89'h followed by fifteen octets of '00'h
+       (or some cyclic shift thereof) when the path
+       trace function is not used, and the implementation
+       SHOULD use that value (or a cyclic shift thereof)
+       as a default if no other value has been set."
+    REFERENCE
+       "[IEEE 802.3 Std.], 30.8.1.1.23, aJ1ValueTX."
+     ::= { etherWisPathCurrentEntry 2 }
+
+etherWisPathCurrentJ1Received OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE (16))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This is the 16-octet path trace message that
+       was most recently received in the J1 byte."
+    REFERENCE
+       "[IEEE 802.3 Std.], 30.8.1.1.24, aJ1ValueRX."
+     ::= { etherWisPathCurrentEntry 3 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- The Far End Path group
+
+-- These objects provide WIS extensions to
+-- the SONET-MIB Far End Path Group.
+
+etherWisFarEndPathCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF EtherWisFarEndPathCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "The table for the current far-end state of Ethernet WIS
+       paths."
+     ::= { etherWisFarEndPath 1 }
+
+etherWisFarEndPathCurrentEntry OBJECT-TYPE
+    SYNTAX  EtherWisFarEndPathCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "An entry in the etherWisFarEndPathCurrentTable.  For each
+       instance of this object there MUST be a corresponding
+       instance of sonetFarEndPathCurrentEntry."
+    INDEX  { ifIndex }
+     ::= { etherWisFarEndPathCurrentTable 1 }
+
+EtherWisFarEndPathCurrentEntry ::=
+    SEQUENCE {
+        etherWisFarEndPathCurrentStatus     BITS
+        }
+
+etherWisFarEndPathCurrentStatus OBJECT-TYPE
+    SYNTAX  BITS {
+                etherWisFarEndPayloadDefect(0),
+                etherWisFarEndServerDefect(1)
+            }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This variable indicates the current status at the
+       far end of the path using a bit map that can indicate
+       multiple defects at once.  The bit positions are
+       assigned as follows:
+
+       etherWisFarEndPayloadDefect(0)
+          A far end payload defect (i.e., far end
+          PLM-P or LCD-P) is currently being signaled
+          in G1 bits 5-7.
+
+
+
+
+       etherWisFarEndServerDefect(1)
+          A far end server defect (i.e., far end
+          LOP-P or AIS-P) is currently being signaled
+          in G1 bits 5-7.  Note:  when this bit is set,
+          sonetPathSTSRDI MUST be set in the corresponding
+          instance of sonetPathCurrentStatus."
+    REFERENCE
+       "[IEEE 802.3 Std.], 30.8.1.1.25, aFarEndPathStatus."
+     ::= { etherWisFarEndPathCurrentEntry 1 }
+
+
+--
+--     Conformance Statements
+--
+
+etherWisGroups      OBJECT IDENTIFIER ::= { etherWisConformance 1 }
+
+etherWisCompliances OBJECT IDENTIFIER ::= { etherWisConformance 2 }
+
+--     Object Groups
+
+etherWisDeviceGroupBasic OBJECT-GROUP
+    OBJECTS {
+        etherWisDeviceTxTestPatternMode,
+        etherWisDeviceRxTestPatternMode
+        }
+    STATUS  current
+    DESCRIPTION
+       "A collection of objects that support test
+       features required of all WIS devices."
+     ::= { etherWisGroups 1 }
+
+etherWisDeviceGroupExtra OBJECT-GROUP
+    OBJECTS {
+        etherWisDeviceRxTestPatternErrors
+        }
+    STATUS  current
+    DESCRIPTION
+       "A collection of objects that support
+       optional WIS device test features."
+     ::= { etherWisGroups 2 }
+
+
+
+
+
+
+
+
+
+
+etherWisSectionGroup OBJECT-GROUP
+    OBJECTS {
+        etherWisSectionCurrentJ0Transmitted,
+        etherWisSectionCurrentJ0Received
+        }
+    STATUS  current
+    DESCRIPTION
+       "A collection of objects that provide
+       required information about a WIS section."
+     ::= { etherWisGroups 3 }
+
+etherWisPathGroup OBJECT-GROUP
+    OBJECTS {
+        etherWisPathCurrentStatus,
+        etherWisPathCurrentJ1Transmitted,
+        etherWisPathCurrentJ1Received
+        }
+    STATUS  current
+    DESCRIPTION
+       "A collection of objects that provide
+       required information about a WIS path."
+     ::= { etherWisGroups 4 }
+
+etherWisFarEndPathGroup OBJECT-GROUP
+    OBJECTS {
+        etherWisFarEndPathCurrentStatus
+        }
+    STATUS  current
+    DESCRIPTION
+       "A collection of objects that provide required
+       information about the far end of a WIS path."
+     ::= { etherWisGroups 5 }
+
+--     Compliance Statements
+
+etherWisCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+       "The compliance statement for interfaces that include
+       the Ethernet WIS.  Compliance with the following
+       external compliance statements is prerequisite:
+
+       MIB Module             Compliance Statement
+       ----------             --------------------
+       IF-MIB                 ifCompliance3
+       IF-INVERTED-STACK-MIB  ifInvCompliance
+       EtherLike-MIB          dot3Compliance2
+       MAU-MIB                mauModIfCompl3"
+
+
+
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+            etherWisDeviceGroupBasic,
+            etherWisSectionGroup,
+            etherWisPathGroup,
+            etherWisFarEndPathGroup
+            }
+
+        OBJECT       etherWisDeviceTxTestPatternMode
+        SYNTAX       INTEGER {
+            none(1),
+            squareWave(2),
+            mixedFrequency(4)
+            }
+        DESCRIPTION
+            "Support for values other than none(1),
+            squareWave(2), and mixedFrequency(4)
+            is not required."
+
+        OBJECT       etherWisDeviceRxTestPatternMode
+        SYNTAX       INTEGER {
+            none(1),
+            mixedFrequency(4)
+            }
+        DESCRIPTION
+            "Support for values other than none(1)
+            and mixedFrequency(4) is not required."
+
+        GROUP        etherWisDeviceGroupExtra
+        DESCRIPTION
+            "Implementation of this group, along with support for
+            the value prbs31(3) for etherWisDeviceTxTestPatternMode
+            and etherWisDeviceRxTestPatternMode, is necessary if the
+            optional PRBS31 test pattern mode is to be supported."
+
+        OBJECT       etherWisDeviceRxTestPatternErrors
+        WRITE-SYNTAX Gauge32 ( 0 )
+        DESCRIPTION
+            "An implementation is not required to
+            allow values other than zero to be
+            written to this object."
+
+
+
+
+
+
+
+
+
+
+    MODULE SONET-MIB
+        MANDATORY-GROUPS {
+            sonetMediumStuff2,
+            sonetSectionStuff2,
+            sonetLineStuff2,
+            sonetFarEndLineStuff2,
+            sonetPathStuff2,
+            sonetFarEndPathStuff2
+            }
+
+        OBJECT       sonetMediumType
+        SYNTAX       INTEGER {
+            sonet(1)
+            }
+        MIN-ACCESS   read-only
+        DESCRIPTION
+            "Write access is not required, nor is support
+            for any value other than sonet(1)."
+
+        OBJECT       sonetMediumLineCoding
+        SYNTAX       INTEGER {
+            sonetMediumNRZ(4)
+            }
+        MIN-ACCESS   read-only
+        DESCRIPTION
+            "Write access is not required, nor is support
+            for any value other than sonetMediumNRZ(4)."
+
+        OBJECT       sonetMediumLineType
+        MIN-ACCESS   read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT       sonetMediumCircuitIdentifier
+        MIN-ACCESS   read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT       sonetMediumLoopbackConfig
+        SYNTAX       BITS {
+            sonetNoLoop(0),
+            sonetFacilityLoop(1)
+            }
+        MIN-ACCESS   read-only
+        DESCRIPTION
+            "Write access is not required, nor is support for values
+            other than sonetNoLoop(0) and sonetFacilityLoop(1)."
+
+
+
+
+        OBJECT       sonetSESthresholdSet
+        MIN-ACCESS   read-only
+        DESCRIPTION
+            "Write access is not required, and only one
+            of the enumerated values need be supported."
+
+        OBJECT       sonetPathCurrentWidth
+        SYNTAX       INTEGER {
+            sts192cSTM64(6)
+            }
+        MIN-ACCESS   read-only
+        DESCRIPTION
+            "Write access is not required, nor is support
+            for any value other than sts192cSTM64(6)."
+
+     ::= { etherWisCompliances 1 }
+
+END

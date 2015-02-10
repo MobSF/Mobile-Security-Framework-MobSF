@@ -1,0 +1,67 @@
+
+IANA-MALLOC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, mib-2           FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION               FROM SNMPv2-TC;
+
+ianaMallocMIB MODULE-IDENTITY
+    LAST-UPDATED "200301271200Z" -- January 27, 2003
+    ORGANIZATION "IANA"
+    CONTACT-INFO
+            " Internet Assigned Numbers Authority
+              Internet Corporation for Assigned Names and Numbers
+              4676 Admiralty Way, Suite 330
+              Marina del Rey, CA 90292-6601
+
+              Phone: +1 310 823 9358
+              EMail: iana&iana.org"
+    DESCRIPTION
+            "This MIB module defines the IANAscopeSource and
+            IANAmallocRangeSource textual conventions for use in MIBs
+            which need to identify ways of learning multicast scope and
+            range information.
+
+            Any additions or changes to the contents of this MIB module
+            require either publication of an RFC, or Designated Expert
+            Review as defined in the Guidelines for Writing IANA
+            Considerations Section document.  The Designated Expert will
+            be selected by the IESG Area Director(s) of the Transport
+            Area."
+
+    -- revision log
+
+    REVISION     "200301271200Z" -- January 27, 2003
+    DESCRIPTION
+            "Initial version."
+    ::= { mib-2 102 } 
+
+IANAscopeSource ::= TEXTUAL-CONVENTION
+   STATUS  current
+   DESCRIPTION
+            "The source of multicast scope information."
+   SYNTAX  INTEGER {
+              other(1),  -- none of the following
+              manual(2), -- statically configured
+              local(3),  -- automatically added by the system,
+                         -- such as a Source-Specific Multicast
+                         -- scope
+              mzap(4),   -- MZAP
+              madcap(5)  -- MADCAP
+           }
+
+IANAmallocRangeSource ::= TEXTUAL-CONVENTION
+   STATUS  current
+   DESCRIPTION
+            "The source of multicast address allocation range
+            information."
+   SYNTAX  INTEGER {
+              other(1),  -- none of the following
+              manual(2), -- statically configured
+              local(3)   -- automatically added by the system,
+                         -- such as a Source-Specific Multicast
+                         -- range
+           }
+
+END
+

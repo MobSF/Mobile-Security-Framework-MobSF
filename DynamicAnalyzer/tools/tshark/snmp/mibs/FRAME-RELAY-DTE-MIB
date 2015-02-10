@@ -1,0 +1,1039 @@
+FRAME-RELAY-DTE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+            MODULE-IDENTITY, OBJECT-TYPE, Counter32,
+            Integer32, NOTIFICATION-TYPE            FROM SNMPv2-SMI
+            TEXTUAL-CONVENTION, RowStatus, TimeStamp FROM SNMPv2-TC
+            MODULE-COMPLIANCE, OBJECT-GROUP,
+            NOTIFICATION-GROUP                     FROM SNMPv2-CONF
+            transmission                           FROM RFC1213-MIB
+            InterfaceIndex                           FROM IF-MIB;
+
+--  Frame Relay DTE MIB
+
+frameRelayDTE MODULE-IDENTITY
+    LAST-UPDATED "9705010229Z" -- Thu May  1 02:29:46 PDT 1997
+    ORGANIZATION "IETF IPLPDN Working Group"
+    CONTACT-INFO
+       "       Caralyn Brown
+       Postal: Cadia Networks, Inc.
+               1 Corporate Drive
+               Andover, Massachusetts  01810
+       Tel:    +1 508 689 2400 x133
+       E-Mail: cbrown@cadia.com
+
+               Fred Baker
+       Postal: Cisco Systems
+               519 Lado Drive
+               Santa Barbara, California 93111
+       Tel:    +1 408 526 425
+       E-Mail: fred@cisco.com"
+    DESCRIPTION
+       "The MIB module to describe the use of a Frame Relay
+       interface by a DTE."
+    REVISION "9705010229Z" -- Thu May  1 02:29:46 PDT 1997
+    DESCRIPTION
+       "Converted from SMIv1 to SMIv2. (Thus, indices are
+       read-only rather than being not-accessible.) Added
+       objects and made clarifications based on implementation
+       experience."
+
+    REVISION "9204010000Z"
+    DESCRIPTION
+       "Published as RFC 1315, the initial version of this MIB
+       module."
+    ::= { transmission 32 }
+
+--
+--      the range of a Data Link Connection Identifier
+--
+DLCI ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+       "The range of DLCI values.  Note that this varies by
+       interface configuration; normally, interfaces may use
+       0..1023, but may be configured to use ranges as large
+       as 0..2^23."
+    SYNTAX      Integer32(0..8388607)
+
+
+
+--
+
+--  Data Link Connection Management Interface
+
+--      The variables that configure the DLC Management Interface.
+
+frDlcmiTable OBJECT-TYPE
+    SYNTAX   SEQUENCE OF FrDlcmiEntry
+    MAX-ACCESS   not-accessible
+    STATUS   current
+    DESCRIPTION
+       "The Parameters for the Data Link Connection Management
+       Interface for the frame relay service on this
+       interface."
+    REFERENCE
+       "American National Standard T1.617-1991, Annex D"
+    ::= { frameRelayDTE 1 }
+
+frDlcmiEntry OBJECT-TYPE
+    SYNTAX   FrDlcmiEntry
+    MAX-ACCESS   not-accessible
+    STATUS   current
+    DESCRIPTION
+       "The Parameters for a particular Data Link Connection
+       Management Interface."
+    INDEX { frDlcmiIfIndex }
+    ::= { frDlcmiTable 1 }
+
+FrDlcmiEntry ::=
+    SEQUENCE {
+        frDlcmiIfIndex                  InterfaceIndex,
+        frDlcmiState                    INTEGER,
+        frDlcmiAddress                  INTEGER,
+        frDlcmiAddressLen               INTEGER,
+        frDlcmiPollingInterval          Integer32,
+        frDlcmiFullEnquiryInterval      Integer32,
+        frDlcmiErrorThreshold           Integer32,
+        frDlcmiMonitoredEvents          Integer32,
+        frDlcmiMaxSupportedVCs          DLCI,
+        frDlcmiMulticast                INTEGER,
+        frDlcmiStatus                   INTEGER,
+        frDlcmiRowStatus                RowStatus
+}
+
+
+frDlcmiIfIndex OBJECT-TYPE
+
+    SYNTAX   InterfaceIndex
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "The ifIndex value of the corresponding ifEntry."
+    ::= { frDlcmiEntry 1 }
+
+
+frDlcmiState OBJECT-TYPE
+    SYNTAX INTEGER      {
+        noLmiConfigured (1),
+        lmiRev1         (2),
+        ansiT1617D      (3),  -- ANSI T1.617 Annex D
+        ansiT1617B      (4),  -- ANSI T1.617 Annex B
+        itut933A        (5),  -- CCITT Q933 Annex A
+        ansiT1617D1994  (6)   -- ANSI T1.617a-1994 Annex D
+    }
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "This variable states which Data Link Connection
+       Management scheme is active (and by implication, what
+       DLCI it uses) on the Frame Relay interface."
+    REFERENCE
+       "American National Standard T1.617-1991, American
+       National Standard T1.617a-1994, ITU-T Recommendation
+       Q.933 (03/93)."
+
+    ::= { frDlcmiEntry 2 }
+
+frDlcmiAddress OBJECT-TYPE
+    SYNTAX      INTEGER {
+                q921           (1),  -- 13 bit DLCI
+                q922March90    (2),  -- 11 bit DLCI
+                q922November90 (3),  -- 10 bit DLCI
+                q922           (4)   -- Final Standard
+    }
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+       "This variable states which address format is in use on
+       the Frame Relay interface."
+    ::= { frDlcmiEntry 3 }
+
+
+frDlcmiAddressLen OBJECT-TYPE
+    SYNTAX  INTEGER     {
+            twoOctets (2),
+            threeOctets (3),
+            fourOctets (4)
+    }
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+       "This variable states the address length in octets.  In
+       the case of Q922 format, the length indicates the
+       entire length of the address including the control
+       portion."
+    ::= { frDlcmiEntry 4 }
+
+
+frDlcmiPollingInterval OBJECT-TYPE
+    SYNTAX   Integer32 (5..30)
+    UNITS    "seconds"
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "This is the number of seconds between successive
+       status enquiry messages."
+    REFERENCE
+       "American National Standard T1.617-1991, Section D.7
+       Timer T391."
+    DEFVAL { 10 }
+    ::= { frDlcmiEntry 5 }
+
+frDlcmiFullEnquiryInterval OBJECT-TYPE
+    SYNTAX   Integer32 (1..255)
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "Number of status enquiry intervals that pass before
+       issuance of a full status enquiry message."
+    REFERENCE
+       "American National Standard T1.617-1991, Section D.7
+       Counter N391."
+    DEFVAL { 6 }
+    ::= { frDlcmiEntry 6 }
+
+
+frDlcmiErrorThreshold OBJECT-TYPE
+    SYNTAX   Integer32 (1..10)
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "This is the maximum number of unanswered Status
+       Enquiries the equipment shall accept before declaring
+       the interface down."
+    REFERENCE
+       "American National Standard T1.617-1991, Section D.5.1
+       Counter N392."
+    DEFVAL { 3 }
+    ::= { frDlcmiEntry 7 }
+
+
+frDlcmiMonitoredEvents OBJECT-TYPE
+    SYNTAX   Integer32 (1..10)
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "This is the number of status polling intervals over
+       which the error threshold is counted.  For example, if
+       within 'MonitoredEvents' number of events the station
+       receives 'ErrorThreshold' number of errors, the
+       interface is marked as down."
+    REFERENCE
+       "American National Standard T1.617-1991, Section D.5.2
+       Counter N393."
+    DEFVAL { 4 }
+    ::= { frDlcmiEntry 8 }
+
+frDlcmiMaxSupportedVCs OBJECT-TYPE
+    SYNTAX   DLCI
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "The maximum number of Virtual Circuits allowed for
+       this interface.  Usually dictated by the Frame Relay
+       network.
+
+       In response to a SET, if a value less than zero or
+       higher than the agent's maximal capability is
+       configured, the agent should respond badValue"
+    ::= { frDlcmiEntry 9 }
+
+
+frDlcmiMulticast OBJECT-TYPE
+    SYNTAX   INTEGER    {
+                nonBroadcast (1),
+                broadcast (2)
+                }
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "This indicates whether the Frame Relay interface is
+       using a multicast service."
+    ::= { frDlcmiEntry 10 }
+
+
+
+frDlcmiStatus OBJECT-TYPE
+    SYNTAX   INTEGER    {
+                running      (1),    -- init complete, system running
+                fault        (2),    -- error threshold exceeded
+                initializing (3)     -- system start up
+                }
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "This indicates the status of the Frame Relay interface
+       as determined by the performance of the dlcmi.  If no
+       dlcmi is running, the Frame Relay interface will stay
+       in the running state indefinitely."
+    ::= { frDlcmiEntry 11 }
+
+frDlcmiRowStatus OBJECT-TYPE
+    SYNTAX   RowStatus
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "SNMP Version 2 Row Status Variable.  Writable objects
+       in the table may be written in any RowStatus state."
+    ::= { frDlcmiEntry 12 }
+
+
+--
+-- A Frame Relay service is a multiplexing service.  Data
+-- Link Connection Identifiers enumerate virtual circuits
+-- (permanent or dynamic) which are layered onto the underlying
+-- circuit, represented by ifEntry.  Therefore, each of the entries
+-- in the Standard MIB's Interface Table with an IfType of
+-- Frame Relay represents a Q.922 interface.  Zero or more
+-- virtual circuits are layered onto this interface and provide
+-- interconnection with various remote destinations.
+-- Each such virtual circuit is represented by an entry in the
+-- circuit table.  The management virtual circuit (i.e. DLCI 0)
+-- is a virtual circuit by this definition and will be represented
+-- with an entry in the circuit table.
+
+--   Circuit Table
+
+-- The table describing the use of the DLCIs attached to
+-- each Frame Relay Interface.
+
+frCircuitTable OBJECT-TYPE
+    SYNTAX   SEQUENCE OF FrCircuitEntry
+    MAX-ACCESS   not-accessible
+    STATUS   current
+    DESCRIPTION
+       "A table containing information about specific Data
+       Link Connections (DLC) or virtual circuits."
+    ::= { frameRelayDTE 2 }
+
+frCircuitEntry OBJECT-TYPE
+    SYNTAX   FrCircuitEntry
+    MAX-ACCESS   not-accessible
+    STATUS   current
+    DESCRIPTION
+       "The information regarding a single Data Link
+       Connection.  Discontinuities in the counters contained
+       in this table are indicated by the value in
+       frCircuitCreationTime."
+    INDEX { frCircuitIfIndex, frCircuitDlci }
+    ::= { frCircuitTable 1 }
+
+
+FrCircuitEntry ::=
+    SEQUENCE {
+        frCircuitIfIndex                InterfaceIndex,
+        frCircuitDlci                   DLCI,
+        frCircuitState                  INTEGER,
+        frCircuitReceivedFECNs          Counter32,
+        frCircuitReceivedBECNs          Counter32,
+        frCircuitSentFrames             Counter32,
+        frCircuitSentOctets             Counter32,
+        frCircuitReceivedFrames         Counter32,
+        frCircuitReceivedOctets         Counter32,
+        frCircuitCreationTime           TimeStamp,
+        frCircuitLastTimeChange         TimeStamp,
+        frCircuitCommittedBurst         Integer32,
+        frCircuitExcessBurst            Integer32,
+        frCircuitThroughput             Integer32,
+        frCircuitMulticast              INTEGER,
+        frCircuitType                   INTEGER,
+        frCircuitDiscards               Counter32,
+        frCircuitReceivedDEs            Counter32,
+        frCircuitSentDEs                Counter32,
+        frCircuitLogicalIfIndex         InterfaceIndex,
+        frCircuitRowStatus              RowStatus
+}
+
+
+frCircuitIfIndex OBJECT-TYPE
+    SYNTAX   InterfaceIndex
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "The ifIndex Value of the ifEntry this virtual circuit
+       is layered onto."
+    ::= { frCircuitEntry 1 }
+
+frCircuitDlci OBJECT-TYPE
+    SYNTAX   DLCI
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "The Data Link Connection Identifier for this virtual
+       circuit."
+    REFERENCE
+       "American National Standard T1.618-1991, Section 3.3.6"
+    ::= { frCircuitEntry 2 }
+
+
+frCircuitState OBJECT-TYPE
+    SYNTAX   INTEGER    {
+
+                invalid (1),
+                active (2),
+                inactive (3)
+             }
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "Indicates whether the particular virtual circuit is
+       operational.  In the absence of a Data Link Connection
+       Management Interface, virtual circuit entries (rows)
+       may be created by setting virtual circuit state to
+       'active', or deleted by changing Circuit state to
+       'invalid'.
+
+       Whether or not the row actually disappears is left to
+       the implementation, so this object may actually read as
+       'invalid' for some arbitrary length of time.  It is
+       also legal to set the state of a virtual circuit to
+       'inactive' to temporarily disable a given circuit.
+
+       The use of 'invalid' is deprecated in this SNMP Version
+       2 MIB, in favor of frCircuitRowStatus."
+    DEFVAL { active }
+    ::= { frCircuitEntry 3 }
+
+frCircuitReceivedFECNs OBJECT-TYPE
+    SYNTAX   Counter32
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "Number of frames received from the network indicating
+       forward congestion since the virtual circuit was
+       created.  This occurs when the remote DTE sets the FECN
+       flag, or when a switch in the network enqueues the
+       frame to a trunk whose transmission queue is
+       congested."
+    REFERENCE
+       "American National Standard T1.618-1991, Section 3.3.3"
+    ::= { frCircuitEntry 4 }
+
+
+frCircuitReceivedBECNs OBJECT-TYPE
+    SYNTAX   Counter32
+    MAX-ACCESS   read-only
+
+
+    STATUS   current
+    DESCRIPTION
+       "Number of frames received from the network indicating
+       backward congestion since the virtual circuit was
+       created.  This occurs when the remote DTE sets the BECN
+       flag, or when a switch in the network receives the
+       frame from a trunk whose transmission queue is
+       congested."
+    REFERENCE
+       "American National Standard T1.618-1991, Section 3.3.4"
+    ::= { frCircuitEntry 5 }
+
+
+frCircuitSentFrames OBJECT-TYPE
+    SYNTAX   Counter32
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "The number of frames sent from this virtual circuit
+       since it was created."
+    ::= { frCircuitEntry 6 }
+
+
+frCircuitSentOctets OBJECT-TYPE
+    SYNTAX   Counter32
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "The number of octets sent from this virtual circuit
+       since it was created.  Octets counted are the full
+       frame relay header and the payload, but do not include
+       the flag characters or CRC."
+    ::= { frCircuitEntry 7 }
+
+
+frCircuitReceivedFrames OBJECT-TYPE
+    SYNTAX   Counter32
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "Number of frames received over this virtual circuit
+       since it was created."
+    ::= { frCircuitEntry 8 }
+
+
+frCircuitReceivedOctets OBJECT-TYPE
+    SYNTAX   Counter32
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "Number of octets received over this virtual circuit
+       since it was created.  Octets counted include the full
+       frame relay header, but do not include the flag
+       characters or the CRC."
+    ::= { frCircuitEntry 9 }
+
+
+frCircuitCreationTime OBJECT-TYPE
+    SYNTAX   TimeStamp
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "The value of sysUpTime when the virtual circuit was
+       created, whether by the Data Link Connection Management
+       Interface or by a SetRequest."
+    ::= { frCircuitEntry 10 }
+
+frCircuitLastTimeChange OBJECT-TYPE
+    SYNTAX   TimeStamp
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "The value of sysUpTime when last there was a change in
+       the virtual circuit state"
+    ::= { frCircuitEntry 11 }
+
+
+frCircuitCommittedBurst OBJECT-TYPE
+    SYNTAX   Integer32(0..2147483647)
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "This variable indicates the maximum amount of data, in
+       bits, that the network agrees to transfer under normal
+       conditions, during the measurement interval."
+    REFERENCE
+       "American National Standard T1.617-1991, Section
+       6.5.19"
+    DEFVAL   { 0 }  -- the default indicates no commitment
+    ::= { frCircuitEntry 12 }
+
+
+frCircuitExcessBurst OBJECT-TYPE
+    SYNTAX   Integer32(0..2147483647)
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "This variable indicates the maximum amount of
+       uncommitted data bits that the network will attempt to
+       deliver over the measurement interval.
+
+       By default, if not configured when creating the entry,
+       the Excess Information Burst Size is set to the value
+       of ifSpeed."
+    REFERENCE
+       "American National Standard T1.617-1991, Section
+       6.5.19"
+    ::= { frCircuitEntry 13 }
+
+
+frCircuitThroughput OBJECT-TYPE
+    SYNTAX   Integer32(0..2147483647)
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "Throughput is the average number of 'Frame Relay
+       Information Field' bits transferred per second across a
+       user network interface in one direction, measured over
+       the measurement interval.
+
+       If the configured committed burst rate and throughput
+       are both non-zero, the measurement interval, T, is
+           T=frCircuitCommittedBurst/frCircuitThroughput.
+
+       If the configured committed burst rate and throughput
+       are both zero, the measurement interval, T, is
+                  T=frCircuitExcessBurst/ifSpeed."
+    REFERENCE
+       "American National Standard T1.617-1991, Section
+       6.5.19"
+    DEFVAL {0}  -- the default value of Throughput is
+                -- "no commitment".
+    ::= { frCircuitEntry 14 }
+
+
+frCircuitMulticast OBJECT-TYPE
+    SYNTAX   INTEGER    {
+                unicast   (1),
+                oneWay    (2),
+                twoWay    (3),
+                nWay      (4)
+                }
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "This indicates whether this VC is used as a unicast VC
+       (i.e. not multicast) or the type of multicast service
+       subscribed to"
+    REFERENCE
+       "Frame Relay PVC Multicast Service and Protocol
+       Description Implementation: FRF.7 Frame Relay Forum
+       Technical Committe October 21, 1994"
+         DEFVAL {unicast}
+                     -- the default value of frCircuitMulticast is
+                     -- "unicast" (not a multicast VC).
+         ::= { frCircuitEntry 15 }
+
+
+frCircuitType OBJECT-TYPE
+    SYNTAX   INTEGER    {
+                static  (1),
+                dynamic (2)
+             }
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "Indication of whether the VC was manually created
+       (static), or dynamically created (dynamic) via the data
+       link control management interface."
+    ::= { frCircuitEntry 16 }
+
+
+frCircuitDiscards OBJECT-TYPE
+    SYNTAX   Counter32
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "The number of inbound frames dropped because of format
+       errors, or because the VC is inactive."
+    ::= { frCircuitEntry 17 }
+
+
+frCircuitReceivedDEs OBJECT-TYPE
+    SYNTAX   Counter32
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "Number of frames received from the network indicating
+       that they were eligible for discard since the virtual
+       circuit was created.  This occurs when the remote DTE
+       sets the DE flag, or when in remote DTE's switch
+       detects that the frame was received as Excess Burst
+       data."
+    REFERENCE
+       "American National Standard T1.618-1991, Section 3.3.4"
+    ::= { frCircuitEntry 18 }
+
+
+frCircuitSentDEs OBJECT-TYPE
+    SYNTAX   Counter32
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "Number of frames sent to the network indicating that
+       they were eligible for discard since the virtual
+       circuit was created.   This occurs when the local DTE
+       sets the DE flag, indicating that during Network
+       congestion situations those frames should be discarded
+       in preference of other frames sent without the DE bit
+       set."
+    REFERENCE
+       "American National  Standard  T1.618-1991, Section
+       3.3.4"
+   ::= { frCircuitEntry 19 }
+
+frCircuitLogicalIfIndex OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+       "Normally the same value as frDlcmiIfIndex, but
+       different when an implementation associates a virtual
+       ifEntry with a DLC or set of DLCs in order to associate
+       higher layer objects such as the ipAddrEntry with a
+       subset of the virtual circuits on a Frame Relay
+       interface. The type of such ifEntries is defined by the
+       higher layer object; for example, if PPP/Frame Relay is
+       implemented, the ifType of this ifEntry would be PPP.
+       If it is not so defined, as would be the case with an
+       ipAddrEntry, it should be of type Other."
+   ::= { frCircuitEntry 20 }
+
+frCircuitRowStatus OBJECT-TYPE
+    SYNTAX   RowStatus
+    MAX-ACCESS   read-create
+    STATUS   current
+    DESCRIPTION
+       "This object is used to create a new row or modify or
+       destroy an existing row in the manner described in the
+       definition of the RowStatus textual convention.
+       Writable objects in the table may be written in any
+       RowStatus state."
+    ::= { frCircuitEntry 21 }
+
+
+--
+--  Error Table
+
+-- The table describing errors encountered on each Frame
+-- Relay Interface.
+
+frErrTable OBJECT-TYPE
+    SYNTAX   SEQUENCE OF FrErrEntry
+    MAX-ACCESS   not-accessible
+    STATUS   current
+    DESCRIPTION
+       "A table containing information about Errors on the
+       Frame Relay interface.  Discontinuities in the counters
+       contained in this table are the same as apply to the
+       ifEntry associated with the Interface."
+    ::= { frameRelayDTE 3 }
+
+frErrEntry OBJECT-TYPE
+    SYNTAX   FrErrEntry
+    MAX-ACCESS   not-accessible
+    STATUS   current
+    DESCRIPTION
+       "The error information for a single frame relay
+       interface."
+    INDEX { frErrIfIndex }
+    ::= { frErrTable 1 }
+
+
+FrErrEntry ::=
+    SEQUENCE {
+        frErrIfIndex            InterfaceIndex,
+        frErrType               INTEGER,
+        frErrData               OCTET STRING,
+        frErrTime               TimeStamp,
+        frErrFaults             Counter32,
+        frErrFaultTime          TimeStamp
+}
+
+
+frErrIfIndex OBJECT-TYPE
+    SYNTAX   InterfaceIndex
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "The ifIndex Value of the corresponding ifEntry."
+    ::= { frErrEntry 1 }
+
+
+    frErrType OBJECT-TYPE
+        SYNTAX   INTEGER    {
+                    unknownError(1),
+                    receiveShort(2),
+                    receiveLong(3),
+                    illegalAddress(4),
+                    unknownAddress(5),
+                    dlcmiProtoErr(6),
+                    dlcmiUnknownIE(7),
+                    dlcmiSequenceErr(8),
+                    dlcmiUnknownRpt(9),
+                    noErrorSinceReset(10)
+                 }
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+"The type of error that was last seen  on  this interface:
+
+receiveShort: frame was not long enough to allow
+        demultiplexing - the address field was incomplete,
+        or for virtual circuits using Multiprotocol over
+        Frame Relay, the protocol identifier was missing
+        or incomplete.
+
+receiveLong: frame exceeded maximum length configured for this
+             interface.
+
+illegalAddress: address field did not match configured format.
+
+unknownAddress: frame received on a virtual circuit which was not
+                active or administratively disabled.
+
+dlcmiProtoErr: unspecified error occurred when attempting to
+               interpret link maintenance frame.
+
+dlcmiUnknownIE: link maintenance frame contained an Information
+                Element type which is not valid for the
+                configured link maintenance protocol.
+
+dlcmiSequenceErr: link maintenance frame contained a sequence
+                  number other than the expected value.
+
+dlcmiUnknownRpt: link maintenance frame contained a Report Type
+                 Information Element whose value was not valid
+                 for the configured link maintenance protocol.
+
+noErrorSinceReset: no errors have been detected since the last
+                   cold start or warm start."
+    ::= { frErrEntry 2 }
+
+
+frErrData OBJECT-TYPE
+    SYNTAX   OCTET STRING (SIZE(1..1600))
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "An octet string containing as much of the error packet
+       as possible.  As a minimum, it must contain the Q.922
+       Address or as much as was delivered.  It is desirable
+       to include all header and demultiplexing information."
+    ::= { frErrEntry 3 }
+
+frErrTime OBJECT-TYPE
+    SYNTAX   TimeStamp
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "The value of sysUpTime at which the error was
+       detected."
+    ::= { frErrEntry 4 }
+
+
+frErrFaults OBJECT-TYPE
+    SYNTAX   Counter32
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "The number of times the interface has gone down since
+       it was initialized."
+    ::= { frErrEntry 5 }
+
+
+frErrFaultTime OBJECT-TYPE
+    SYNTAX   TimeStamp
+    MAX-ACCESS   read-only
+    STATUS   current
+    DESCRIPTION
+       "The value of sysUpTime at the time when the interface
+       was taken down due to excessive errors.  Excessive
+       errors is defined as the time when a DLCMI exceeds the
+       frDlcmiErrorThreshold number of errors within
+       frDlcmiMonitoredEvents. See FrDlcmiEntry for further
+       details."
+    ::= { frErrEntry 6 }
+
+
+--
+
+-- Frame Relay Trap Control
+
+frameRelayTrapControl OBJECT IDENTIFIER ::= { frameRelayDTE 4 }
+
+-- the following highly unusual OID is as it is for compatibility
+-- with RFC 1315, the SNMP V1 predecessor of this document.
+frameRelayTraps OBJECT IDENTIFIER ::= { frameRelayDTE 0 }
+
+frTrapState OBJECT-TYPE
+    SYNTAX  INTEGER     { enabled(1), disabled(2) }
+    MAX-ACCESS   read-write
+    STATUS   current
+    DESCRIPTION
+       "This variable indicates whether the system produces
+       the frDLCIStatusChange trap."
+    DEFVAL { disabled }
+    ::= { frameRelayTrapControl 1 }
+
+frTrapMaxRate OBJECT-TYPE
+    SYNTAX  Integer32 (0..3600000)
+    MAX-ACCESS   read-write
+    STATUS   current
+    DESCRIPTION
+       "This variable indicates the number of milliseconds
+       that must elapse between trap emissions.  If events
+       occur more rapidly, the impementation may simply fail
+       to trap, or may queue traps until an appropriate time."
+    DEFVAL { 0 }        -- no minimum elapsed period is specified
+    ::= { frameRelayTrapControl 2 }
+
+
+
+--  Data Link Connection Management Interface Related Traps
+
+frDLCIStatusChange NOTIFICATION-TYPE
+    OBJECTS  { frCircuitState }
+    STATUS      current
+
+
+    DESCRIPTION
+       "This trap indicates that the indicated Virtual Circuit
+       has changed state.  It has either been created or
+       invalidated, or has toggled between the active and
+       inactive states.  If, however, the reason for the state
+       change is due to the DLCMI going down, per-DLCI traps
+       should not be generated."
+::= { frameRelayTraps 1 }
+-- conformance information
+
+frConformance OBJECT IDENTIFIER ::= { frameRelayDTE 6 }
+
+frGroups      OBJECT IDENTIFIER ::= { frConformance 1 }
+frCompliances OBJECT IDENTIFIER ::= { frConformance 2 }
+
+-- compliance statements
+
+frCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+       "The compliance statement "
+    MODULE  -- this module
+    MANDATORY-GROUPS { frPortGroup, frCircuitGroup }
+
+    GROUP       frErrGroup
+    DESCRIPTION
+       "This optional group is used for debugging Frame Relay
+       Systems."
+
+    GROUP       frTrapGroup
+    DESCRIPTION
+       "This optional group is used for the management of
+       asynchronous notifications by Frame Relay Systems."
+
+    GROUP       frNotificationGroup
+    DESCRIPTION
+       "This optional group defines the asynchronous
+       notifications generated by Frame Relay Systems."
+
+    OBJECT      frDlcmiRowStatus
+    MIN-ACCESS  read-only
+    DESCRIPTION
+       "Row creation is not required for the frDlcmiTable."
+
+    OBJECT      frCircuitRowStatus
+
+    MIN-ACCESS  read-only
+    DESCRIPTION
+       "Row creation is not required for the frCircuitTable."
+
+    ::= { frCompliances 1 }
+
+frCompliance0 MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+       "The compliance statement for objects and the trap
+       defined in RFC 1315."
+    MODULE  -- this module
+    MANDATORY-GROUPS { frPortGroup0, frCircuitGroup0 }
+
+    GROUP       frErrGroup0
+    DESCRIPTION
+       "This optional group is used for debugging Frame Relay
+       Systems."
+    GROUP       frTrapGroup0
+    DESCRIPTION
+       "This optional group is used for the management of
+       asynchronous notifications by Frame Relay Systems."
+
+    GROUP       frNotificationGroup
+    DESCRIPTION
+       "This optional group defines the asynchronous
+       notifications generated by Frame Relay Systems."
+
+    ::= { frCompliances 2 }
+
+-- units of conformance
+
+frPortGroup    OBJECT-GROUP
+    OBJECTS {
+              frDlcmiIfIndex, frDlcmiState, frDlcmiAddress,
+              frDlcmiAddressLen, frDlcmiPollingInterval,
+              frDlcmiFullEnquiryInterval, frDlcmiErrorThreshold,
+              frDlcmiMonitoredEvents, frDlcmiMaxSupportedVCs,
+              frDlcmiMulticast, frDlcmiStatus, frDlcmiRowStatus
+           }
+    STATUS  current
+    DESCRIPTION
+       "The objects necessary to control the Link Management
+       Interface for a Frame Relay Interface as well as
+       maintain the error statistics on this interface."
+    ::= { frGroups 1 }
+
+frCircuitGroup    OBJECT-GROUP
+    OBJECTS {
+              frCircuitIfIndex, frCircuitDlci, frCircuitState,
+              frCircuitReceivedFECNs, frCircuitReceivedBECNs,
+              frCircuitSentFrames, frCircuitSentOctets,
+              frCircuitReceivedFrames, frCircuitReceivedOctets,
+              frCircuitCreationTime, frCircuitLastTimeChange,
+              frCircuitCommittedBurst, frCircuitExcessBurst,
+              frCircuitThroughput, frCircuitMulticast,
+              frCircuitType, frCircuitDiscards,
+              frCircuitReceivedDEs, frCircuitSentDEs,
+              frCircuitLogicalIfIndex, frCircuitRowStatus
+            }
+    STATUS  current
+    DESCRIPTION
+       "The objects necessary to control the Virtual Circuits
+       layered onto a Frame Relay Interface."
+    ::= { frGroups 2 }
+
+frTrapGroup    OBJECT-GROUP
+    OBJECTS { frTrapState, frTrapMaxRate }
+    STATUS  current
+    DESCRIPTION
+       "The objects necessary to control a Frame Relay
+       Interface's notification messages."
+    ::= { frGroups 3 }
+
+frErrGroup    OBJECT-GROUP
+    OBJECTS {
+              frErrIfIndex, frErrType, frErrData, frErrTime,
+              frErrFaults, frErrFaultTime
+           }
+    STATUS  current
+    DESCRIPTION
+       "Objects designed to assist in debugging Frame Relay
+       Interfaces."
+    ::= { frGroups 4 }
+
+frNotificationGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { frDLCIStatusChange }
+    STATUS  current
+    DESCRIPTION
+       "Traps which may be used to enhance event driven
+       management of the interface."
+    ::= { frGroups 5 }
+
+frPortGroup0    OBJECT-GROUP
+    OBJECTS {
+              frDlcmiIfIndex, frDlcmiState, frDlcmiAddress,
+              frDlcmiAddressLen, frDlcmiPollingInterval,
+              frDlcmiFullEnquiryInterval, frDlcmiErrorThreshold,
+              frDlcmiMonitoredEvents, frDlcmiMaxSupportedVCs,
+              frDlcmiMulticast
+           }
+    STATUS  current
+    DESCRIPTION
+       "The objects necessary to control the Link Management
+       Interface for a Frame Relay Interface as well as
+       maintain the error statistics on this interface from
+       RFC 1315."
+    ::= { frGroups 6 }
+
+frCircuitGroup0    OBJECT-GROUP
+    OBJECTS {
+              frCircuitIfIndex, frCircuitDlci, frCircuitState,
+              frCircuitReceivedFECNs, frCircuitReceivedBECNs,
+              frCircuitSentFrames, frCircuitSentOctets,
+              frCircuitReceivedFrames, frCircuitReceivedOctets,
+              frCircuitCreationTime, frCircuitLastTimeChange,
+              frCircuitCommittedBurst, frCircuitExcessBurst,
+              frCircuitThroughput
+            }
+    STATUS  current
+    DESCRIPTION
+       "The objects necessary to control the Virtual Circuits
+       layered onto a Frame Relay Interface from RFC 1315."
+    ::= { frGroups 7 }
+
+frErrGroup0    OBJECT-GROUP
+    OBJECTS {
+              frErrIfIndex, frErrType, frErrData, frErrTime
+           }
+    STATUS  current
+    DESCRIPTION
+       "Objects designed to assist in debugging Frame Relay
+       Interfaces from RFC 1315."
+    ::= { frGroups 8 }
+
+
+frTrapGroup0    OBJECT-GROUP
+    OBJECTS { frTrapState }
+    STATUS  current
+    DESCRIPTION
+       "The objects necessary to control a Frame Relay
+       Interface's notification messages from RFC 1315."
+    ::= { frGroups 9 }
+
+END

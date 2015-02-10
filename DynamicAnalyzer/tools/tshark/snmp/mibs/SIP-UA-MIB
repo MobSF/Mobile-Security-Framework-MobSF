@@ -1,0 +1,209 @@
+SIP-UA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Unsigned32,
+    mib-2
+          FROM SNMPv2-SMI             -- RFC 2578
+
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+          FROM SNMPv2-CONF            -- RFC 2580
+
+    applIndex
+          FROM NETWORK-SERVICES-MIB   -- RFC 2788
+
+    InetAddressType,
+    InetAddress
+          FROM INET-ADDRESS-MIB       -- RFC 4001
+
+    SipTCEntityRole
+          FROM SIP-TC-MIB;            -- RFC 4780
+
+sipUAMIB MODULE-IDENTITY
+    LAST-UPDATED   "200704200000Z"
+    ORGANIZATION   "IETF Session Initiation Protocol Working Group"
+    CONTACT-INFO
+             "SIP WG email: sip@ietf.org
+
+              Co-editor  Kevin Lingle
+
+
+
+                         Cisco Systems, Inc.
+              postal:    7025 Kit Creek Road
+                         P.O. Box 14987
+                         Research Triangle Park, NC 27709
+                         USA
+              email:     klingle@cisco.com
+              phone:     +1 919 476 2029
+
+              Co-editor  Joon Maeng
+              email:     jmaeng@austin.rr.com
+
+              Co-editor  Jean-Francois Mule
+                         CableLabs
+              postal:    858 Coal Creek Circle
+                         Louisville, CO 80027
+                         USA
+              email:     jf.mule@cablelabs.com
+              phone:     +1 303 661 9100
+
+              Co-editor  Dave Walker
+              email:     drwalker@rogers.com"
+    DESCRIPTION
+       "Session Initiation Protocol (SIP) User Agent (UA) MIB module.
+
+        SIP is an application-layer signaling protocol for creating,
+        modifying, and terminating multimedia sessions with one or more
+        participants.  These sessions include Internet multimedia
+        conferences and Internet telephone calls.  SIP is defined in
+        RFC 3261 (June 2002).
+
+        A User Agent is an application that contains both a User Agent
+        Client (UAC) and a User Agent Server (UAS).  A UAC is an
+        application that initiates a SIP request.  A UAS is an
+        application that contacts the user when a SIP request is
+        received and that returns a response on behalf of the user.
+        The response accepts, rejects, or redirects the request.
+
+        Copyright (C) The IETF Trust (2007).  This version of
+        this MIB module is part of RFC 4780; see the RFC itself for
+        full legal notices."
+    REVISION        "200704200000Z"
+    DESCRIPTION
+       "Initial version of the IETF SIP-UA-MIB module.  This version
+        published as part of RFC 4780."
+     ::= { mib-2 150 }
+
+-- Top-Level Components of this MIB.
+sipUAMIBObjects        OBJECT IDENTIFIER ::= { sipUAMIB 1 }
+
+
+
+sipUAMIBConformance    OBJECT IDENTIFIER ::= { sipUAMIB 2 }
+
+--
+-- This MIB contains objects related to SIP User Agents.
+--
+sipUACfgServer         OBJECT IDENTIFIER ::= { sipUAMIBObjects 1 }
+
+--
+-- SIP Server Configuration
+--
+sipUACfgServerTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SipUACfgServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This table contains SIP server configuration objects applicable
+        to each SIP user agent in this system."
+    ::= { sipUACfgServer 1 }
+
+sipUACfgServerEntry OBJECT-TYPE
+    SYNTAX      SipUACfgServerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "A row of server configuration.
+
+        Each row represents those objects for a particular SIP user
+        agent present in this system.  applIndex is used to uniquely
+        identify these instances of SIP user agents and correlate
+        them through the common framework of the NETWORK-SERVICES-MIB
+        (RFC 2788).  The same value of applIndex used in the
+        corresponding SIP-COMMON-MIB is used here."
+    INDEX { applIndex, sipUACfgServerIndex }
+    ::= { sipUACfgServerTable 1 }
+
+SipUACfgServerEntry ::= SEQUENCE {
+        sipUACfgServerIndex       Unsigned32,
+        sipUACfgServerAddressType InetAddressType,
+        sipUACfgServerAddress     InetAddress,
+        sipUACfgServerRole        SipTCEntityRole
+    }
+
+sipUACfgServerIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "A unique identifier of a server address when multiple addresses
+
+
+        are configured by the SIP entity.  If one address isn't
+        reachable, then another can be tried."
+    ::= { sipUACfgServerEntry 1 }
+
+sipUACfgServerAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object reflects the type of address contained in the
+        associated instance of sipUACfgServerAddress."
+    REFERENCE
+       "INET-ADDRESS-MIB (RFC 4001)"
+    ::= { sipUACfgServerEntry 2 }
+
+sipUACfgServerAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object reflects the address of a SIP server this user
+        agent will use to proxy/redirect calls.  The type of this
+        address is determined by the value of the
+        sipUACfgServerAddressType object."
+    REFERENCE "INET-ADDRESS-MIB (RFC 4001)"
+    ::= { sipUACfgServerEntry 3 }
+
+sipUACfgServerRole OBJECT-TYPE
+    SYNTAX      SipTCEntityRole
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object reflects the function of the SIP server this user
+        agent should communicate with: registrar, proxy (outbound
+        proxy), etc."
+    ::= { sipUACfgServerEntry 4 }
+
+--
+-- Conformance
+--
+sipUAMIBCompliances OBJECT IDENTIFIER ::= { sipUAMIBConformance 1 }
+sipUAMIBGroups      OBJECT IDENTIFIER ::= { sipUAMIBConformance 2 }
+
+--
+-- Compliance Statements
+--
+sipUACompliance MODULE-COMPLIANCE
+    STATUS      current
+
+
+
+    DESCRIPTION
+       "The compliance statement for SIP entities that implement the
+        SIP-UA-MIB module."
+    MODULE -- this module
+        MANDATORY-GROUPS { sipUAConfigGroup }
+
+    ::= { sipUAMIBCompliances 1 }
+
+--
+-- Units of Conformance
+--
+sipUAConfigGroup OBJECT-GROUP
+    OBJECTS {
+            sipUACfgServerAddressType,
+            sipUACfgServerAddress,
+            sipUACfgServerRole
+    }
+    STATUS  current
+    DESCRIPTION
+       "A collection of objects providing information about the
+        configuration of SIP User Agents."
+    ::= { sipUAMIBGroups 1 }
+
+END

@@ -1,0 +1,42 @@
+# -*- text -*-
+#
+#	Obsolete names for backwards compatibility with older users files.
+#	Move the $INCLUDE in the main dictionary file to the end if you want
+#	these names to be used in the "details" logfile.
+#
+#	$Id$
+#
+ATTRIBUTE	Password				2	string	encrypt=1
+ATTRIBUTE	Client-Id				4	ipaddr
+ATTRIBUTE	Client-Port-Id				5	integer
+ATTRIBUTE	User-Service-Type			6	integer
+ATTRIBUTE	Framed-Address				8	ipaddr
+ATTRIBUTE	Framed-Netmask				9	ipaddr
+ATTRIBUTE	Framed-Filter-Id			11	string
+ATTRIBUTE	Login-Host				14	ipaddr
+ATTRIBUTE	Login-Port				16	integer
+ATTRIBUTE	Old-Password				17	string
+ATTRIBUTE	Port-Message				18	string
+ATTRIBUTE	Dialback-No				19	string
+ATTRIBUTE	Dialback-Name				20	string
+ATTRIBUTE	Challenge-State				24	string
+VALUE	Framed-Compression		Van-Jacobsen-TCP-IP	1
+VALUE	Framed-Compression		VJ-TCP-IP		1
+VALUE	Service-Type			Shell-User		6
+VALUE	Auth-Type			Unix			1
+VALUE	Service-Type			Dialback-Login-User	3
+VALUE	Service-Type			Dialback-Framed-User	4
+VALUE	Service-Type			Dialout-Framed-User	5
+
+#
+#	For compatibility with MERIT users files.
+#
+ATTRIBUTE	Login-Callback-Number			19	string
+ATTRIBUTE	Framed-Callback-Id			20	string
+ATTRIBUTE	Client-Port-DNIS			30	string
+ATTRIBUTE	Caller-ID				31	string
+VALUE	Service-Type			Login			1
+VALUE	Service-Type			Framed			2
+VALUE	Service-Type			Callback-Login		3
+VALUE	Service-Type			Callback-Framed		4
+VALUE	Service-Type			Exec-User		7

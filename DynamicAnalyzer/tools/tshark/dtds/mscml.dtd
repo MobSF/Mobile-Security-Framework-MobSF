@@ -1,0 +1,280 @@
+<? wireshark:protocol 
+   proto_name="mscml" 
+   media="application/mediaservercontrol+xml" 
+   description="Media Server Control Markup Language - draft 07"
+   hierarchy="yes" ?>
+<!--
+$Id:$
+-->
+
+<!--
+    DTD for MSCML - draft 07
+		http://ietfreport.isoc.org/all-ids/draft-vandyke-mscml-07.txt
+		See this for current limitations: 
+		http://wireshark.org/lists/ethereal-dev/200605/msg02351.html
+		
+		(c)Copyright 2006 Hewlett-Packard Development Company, LP.
+		   Contact: olivier.jacques@hp.com
+-->
+
+<!ELEMENT MediaServerControl (request | response | notification) >
+<!-- <!ATTLIST MediaServerControl version <!ATTLIST > #REQUIRED > -->
+<!ATTLIST MediaServerControl version CDATA #REQUIRED >
+<!ELEMENT request (configure_conference | configure_leg | play | playcollect | playrecord | managecontent | faxplay | faxrecord | stop)>
+<!ELEMENT configure_conference (subscribe?)>
+<!ATTLIST configure_conference
+	id CDATA #IMPLIED
+	reservedtalkers NMTOKEN #IMPLIED
+        <!-- there should be | 1 | 0 in addition but Wireshark doesn't like it -->
+	reserveconfmedia (yes | no | true | false) "yes"
+>
+<!ELEMENT configure_leg (inputgain?, outputgain?, configure_team?, subscribe?)>
+<!ATTLIST configure_leg
+	id CDATA #IMPLIED
+	type (talker | listener) #IMPLIED
+	mixmode (full | mute | preferred | parked | private) #IMPLIED
+	dtmfclamp (yes | no | true | false) #IMPLIED
+	toneclamp (yes | no | true | false) #IMPLIED
+>
+<!ELEMENT play (prompt?)>
+<!ATTLIST play
+	id CDATA #IMPLIED
+	prompturl CDATA #IMPLIED
+	offset CDATA #IMPLIED
+	promptencoding CDATA #IMPLIED
+>
+<!ELEMENT playcollect (prompt?, pattern?)>
+<!ATTLIST playcollect
+	id CDATA #IMPLIED
+	prompturl CDATA #IMPLIED
+	offset CDATA #IMPLIED
+	barge (yes | no | true | false) "yes"
+	promptencoding CDATA #IMPLIED
+	cleardigits (yes | no | true | false) "no"
+	maxdigits CDATA #IMPLIED
+	firstdigittimer CDATA "5000ms"
+	interdigittimer CDATA "2000ms"
+	extradigittimer CDATA "1000ms"
+	interdigitcriticaltimer CDATA #IMPLIED
+	skipinterval CDATA "6s"
+	ffkey CDATA #IMPLIED
+	rwkey CDATA #IMPLIED
+	returnkey CDATA "#"
+	escapekey CDATA "*"
+	maskdigits (yes | no | true | false) "no"
+>
+<!ELEMENT playrecord (prompt?)>
+<!ATTLIST playrecord
+	id CDATA #IMPLIED
+	prompturl CDATA #IMPLIED
+	promptencoding CDATA #IMPLIED
+	offset CDATA "0"
+	barge (yes | no | true | false) "yes"
+	cleardigits (yes | no | true | false) "no"
+	escapekey CDATA "*"
+	recurl CDATA #REQUIRED
+	mode (append | overwrite) "overwrite"
+	recencoding CDATA #IMPLIED
+	initsilence CDATA #IMPLIED
+	endsilence CDATA #IMPLIED
+	duration CDATA #IMPLIED
+	beep (yes | no | true | false) "yes"
+	recstopmask CDATA "01234567890*#"
+>
+<!ELEMENT managecontent EMPTY>
+<!ATTLIST managecontent
+	id CDATA #IMPLIED
+	fetchtimeout CDATA "10000"
+	mimetype CDATA #IMPLIED
+	name CDATA #IMPLIED
+	httpmethod (put | post) #IMPLIED
+	action (move | delete) #IMPLIED
+	dest CDATA #IMPLIED
+	src CDATA #REQUIRED
+>
+<!ELEMENT faxplay (prompt?)>
+<!ATTLIST faxplay
+	id CDATA #IMPLIED
+	lclid CDATA #IMPLIED
+	prompturl CDATA #IMPLIED
+	recurl CDATA #IMPLIED
+	rmtid CDATA #IMPLIED
+>
+<!ELEMENT faxrecord (prompt?)>
+<!ATTLIST faxrecord
+	id CDATA #IMPLIED
+	lclid CDATA #IMPLIED
+	prompturl CDATA #IMPLIED
+	recurl CDATA #IMPLIED
+	rmtid CDATA #IMPLIED
+>
+<!ELEMENT stop EMPTY>
+<!ATTLIST stop
+	id CDATA #IMPLIED
+>
+<!ELEMENT response (error_info?, team?)>
+<!ATTLIST response
+	request (configure_conference | configure_leg | play | playcollect | playrecord | managecontent | faxplay | faxrecord | stop) #REQUIRED
+	id CDATA #IMPLIED
+	code CDATA #REQUIRED
+	text CDATA #REQUIRED
+	reason CDATA #IMPLIED
+	reclength CDATA #IMPLIED
+	recduration CDATA #IMPLIED
+	digits CDATA #IMPLIED
+	name CDATA #IMPLIED
+	playduration CDATA #IMPLIED
+	playoffset CDATA #IMPLIED
+	faxcode CDATA #IMPLIED
+	pages_sent CDATA #IMPLIED
+	pages_recv CDATA #IMPLIED
+>
+<!ELEMENT notification (conference | keypress | signal)>
+<!ELEMENT conference (activetalkers?)>
+<!ATTLIST conference
+	uniqueid CDATA #REQUIRED
+	numtalkers CDATA #REQUIRED
+>
+<!ELEMENT keypress (status)>
+<!ATTLIST keypress
+	digit CDATA #REQUIRED
+	length (standard | long) #REQUIRED
+	method (standard | long | double) #REQUIRED
+	interdigittime CDATA #REQUIRED
+        <!-- FIXME: Added for events in leg_eventsubscriptionType -->
+        report (standard | long | both | none) #REQUIRED
+        maskdigits (yes | no | true | false) "no"
+        <!-- /FIXME -->
+>
+<!ELEMENT signal EMPTY>
+<!-- FIXME: added because signal can be of type CDATA and nmtoken -->
+<!ATTLIST signal
+	type CDATA #FIXED "busy"
+	report (yes | no | true | false) #REQUIRED
+>
+<!ELEMENT prompt (audio | variable)+>
+<!ATTLIST prompt
+	locale CDATA #IMPLIED
+	baseurl CDATA #IMPLIED
+	stoponerror (yes | no | true | false) "no"
+	gain CDATA "0"
+	gaindelta CDATA "0"
+	rate CDATA "0"
+	ratedelta CDATA "0"
+	repeat CDATA "1"
+	duration CDATA "infinite"
+	offset CDATA "0"
+	delay CDATA "0"
+>
+<!ELEMENT subscribe (events)>
+<!ELEMENT inputgain (auto | fixed)>
+<!ELEMENT outputgain (auto | fixed)>
+<!ELEMENT configure_team (teammate*)>
+<!ATTLIST configure_team
+	id CDATA #IMPLIED
+	action (add | delete | query | set) #REQUIRED
+>
+<!ELEMENT teammate EMPTY>
+<!ATTLIST teammate
+	id CDATA #REQUIRED
+>
+<!ELEMENT pattern (regex+ | mgcpdigitmap | megacodigitmap)>
+<!ELEMENT regex EMPTY>
+<!ATTLIST regex
+	value CDATA #REQUIRED
+	name CDATA #IMPLIED
+>
+<!ELEMENT mgcpdigitmap EMPTY>
+<!ATTLIST mgcpdigitmap
+	value CDATA #REQUIRED
+	name CDATA #IMPLIED
+>
+<!ELEMENT megacodigitmap EMPTY>
+<!ATTLIST megacodigitmap
+	value CDATA #REQUIRED
+	name CDATA #IMPLIED
+>
+<!ELEMENT error_info EMPTY>
+<!ATTLIST error_info
+	code CDATA #REQUIRED
+	text CDATA #REQUIRED
+	context CDATA #REQUIRED
+>
+<!ELEMENT team (teammate*)>
+<!ATTLIST team
+	id CDATA #REQUIRED
+	numteam NMTOKEN #REQUIRED
+>
+<!-- two events elements are possible (conference_eventsubscriptionType, leg_eventsubscriptionType)
+     Let's take the union
+     It should be:
+<!ELEMENT events (activetalkers)>
+<!ELEMENT activetalkers EMPTY>
+<!ATTLIST activetalkers
+	interval CDATA "60s"
+>
+<!ELEMENT events (keypress?, signal*)>
+<!ELEMENT keypress EMPTY>
+<!ATTLIST keypress
+	report (standard | long | both | none) #REQUIRED
+	maskdigits (yes | no | true | false) "no"
+>
+-->
+<!ELEMENT events (activetalkers*, keypress*, signal*)>
+<!-- FIXME: two different activetalkers defined 
+<!ELEMENT activetalkers EMPTY>
+<!ATTLIST activetalkers
+        report (yes | no | true | false) #REQUIRED
+        interval CDATA "60s"
+>
+-->
+
+<!--
+<!ELEMENT signal EMPTY>
+<!ATTLIST signal
+	type NMTOKEN #REQUIRED
+	report (yes | no | true | false) #REQUIRED
+>
+-->
+<!ELEMENT activetalkers (talker*)?>
+<!ATTLIST activetalkers
+        report (yes | no | true | false) #IMPLIED
+        interval CDATA "60s"
+>
+<!ELEMENT talker EMPTY>
+<!ATTLIST talker
+	callid CDATA #REQUIRED
+>
+<!ELEMENT status EMPTY>
+<!ATTLIST status
+	command (idle | play | collect | record) #REQUIRED
+	duration CDATA #REQUIRED
+>
+<!ELEMENT audio EMPTY>
+<!ATTLIST audio
+	url CDATA #REQUIRED
+	encoding CDATA #IMPLIED
+	gain CDATA "0"
+	gaindelta CDATA "0"
+	rate CDATA "0"
+	ratedelta CDATA "0"
+>
+<!ELEMENT variable EMPTY>
+<!ATTLIST variable
+	type (dat | dig | dur | mth | mny | num | sil | str | tme | wkd) #REQUIRED
+        <!-- FIXME: USD creates an error -> is it because of all capital? -->
+	<!-- subtype (mdy | dmy | ymd | ndn | t12 | t24 | USD | gen | ndn | crd | ord) #IMPLIED -->
+	subtype (mdy | dmy | ymd | ndn | usd | t12 | t24 | gen | ndn | crd | ord) #IMPLIED
+	value CDATA #REQUIRED
+>
+<!ELEMENT auto EMPTY>
+<!ATTLIST auto
+	startlevel CDATA #IMPLIED
+	targetlevel CDATA #IMPLIED
+	silencethreshold CDATA #IMPLIED
+>
+<!ELEMENT fixed EMPTY>
+<!ATTLIST fixed
+	level CDATA #IMPLIED
+>
+

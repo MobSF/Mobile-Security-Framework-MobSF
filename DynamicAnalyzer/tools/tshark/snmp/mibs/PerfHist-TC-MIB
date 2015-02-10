@@ -1,0 +1,191 @@
+PerfHist-TC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   MODULE-IDENTITY,
+   Gauge32, mib-2
+       FROM SNMPv2-SMI
+   TEXTUAL-CONVENTION
+       FROM SNMPv2-TC;
+
+perfHistTCMIB MODULE-IDENTITY
+     LAST-UPDATED "200308130000Z"
+     ORGANIZATION "IETF AToM MIB WG"
+     CONTACT-INFO
+        "WG charter:
+           http://www.ietf.org/html.charters/atommib-charter.html
+
+         Mailing Lists:
+           General Discussion: atommib@research.telcordia.com
+           To Subscribe: atommib-request@research.telcordia.com
+
+         Editor:  Kaj Tesink
+         Postal:  Telcordia Technologies
+                  331 Newman Springs Road
+                  Red Bank, NJ 07701
+                  USA
+         Tel:     +1 732 758 5254
+         E-mail:  kaj@research.telcordia.com"
+
+     DESCRIPTION
+      "This MIB Module provides Textual Conventions
+       to be used by systems supporting 15 minute
+       based performance history counts.
+
+       Copyright (C) The Internet Society (2003).
+       This version of this MIB module is part of
+       RFC 3593;  see the RFC itself for full
+       legal notices."
+     REVISION      "200308130000Z"
+     DESCRIPTION
+      "Contact information and references updated.
+       No technical changes have been applied.
+       Published as RFC 3593."
+     REVISION      "199811071100Z"
+     DESCRIPTION
+      "The RFC 2493 version of this MIB module."
+     ::= { mib-2 58 }
+
+
+
+-- The Textual Conventions defined below are organized
+-- alphabetically
+
+-- Use of these TCs assumes the following:
+-- 0  The agent supports 15 minute based history
+--    counters.
+-- 0  The agent is capable of keeping a history of n
+--    intervals of 15 minute performance data.  The
+--    value of n is defined by the specific MIB
+--    module but shall be 0 < n =< 96.
+-- 0  The agent may optionally support performance
+--    data aggregating the history intervals.
+-- 0  The agent will keep separate tables for the
+--    current interval, the history intervals, and
+--    the total aggregates.
+-- 0  The agent will keep the following objects.
+--    If performance data is kept for multiple instances
+--    of a measured entity, then
+--    these objects are applied to each instance of
+--    the measured entity (e.g., interfaces).
+--
+-- xyzTimeElapsed OBJECT-TYPE
+--       SYNTAX  INTEGER (0..899)
+--       MAX-ACCESS  read-only
+--       STATUS  current
+--       DESCRIPTION
+--       "The number of seconds that have elapsed since
+--       the beginning of the current measurement period.
+--       If, for some reason, such as an adjustment in the
+--       system's time-of-day clock, the current interval
+--       exceeds the maximum value, the agent will return
+--       the maximum value."
+--       ::= { xxx }
+
+-- xyzValidIntervals OBJECT-TYPE
+--       SYNTAX  INTEGER (0..<n>)
+--       MAX-ACCESS  read-only
+--       STATUS  current
+--       DESCRIPTION
+--       "The number of previous near end intervals
+--       for which data was collected.
+--          [ The overall constraint on <n> is 1 =< n =< 96; ]
+--          [ Define any additional constraints on <n> here. ]
+--       The value will be <n> unless the measurement was
+--       (re-)started within the last (<n>*15) minutes, in which
+--       case the value will be the number of complete 15
+--       minute intervals for which the agent has at least
+--       some data.  In certain cases (e.g., in the case
+
+
+
+--       where the agent is a proxy) it is possible that some
+--       intervals are unavailable.  In this case, this
+--       interval is the maximum interval number for
+--       which data is available."
+--       ::= { xxx }
+
+-- xyzInvalidIntervals OBJECT-TYPE
+--     SYNTAX  INTEGER (0..<n>)
+--     MAX-ACCESS  read-only
+--     STATUS  current
+--     DESCRIPTION
+--       "The number of intervals in the range from
+--        0 to xyzValidIntervals for which no
+--        data is available.  This object will typically
+--        be zero except in cases where the data for some
+--        intervals are not available (e.g., in proxy
+--        situations)."
+--       ::= { xxx }
+
+PerfCurrentCount ::= TEXTUAL-CONVENTION
+      STATUS  current
+      DESCRIPTION
+         "A counter associated with a
+          performance measurement in a current 15
+          minute measurement interval.  The value
+          of this counter starts from zero and is
+          increased when associated events occur,
+          until the end of the 15 minute interval.
+          At that time the value of the counter is
+          stored in the first 15 minute history
+          interval, and the CurrentCount is
+          restarted at zero.  In the
+          case where the agent has no valid data
+          available for the current interval the
+          corresponding object instance is not
+          available and upon a retrieval request
+          a corresponding error message shall be
+          returned to indicate that this instance
+          does not exist (for example, a noSuchName
+          error for SNMPv1 and a noSuchInstance for
+          SNMPv2 GET operation)."
+       SYNTAX  Gauge32
+
+
+
+
+
+
+
+
+
+PerfIntervalCount ::= TEXTUAL-CONVENTION
+      STATUS  current
+      DESCRIPTION
+         "A counter associated with a
+          performance measurement in a previous
+          15 minute measurement interval.  In the
+          case where the agent has no valid data
+          available for a particular interval the
+          corresponding object instance is not
+          available and upon a retrieval request
+          a corresponding error message shall be
+          returned to indicate that this instance
+          does not exist (for example, a noSuchName
+          error for SNMPv1 and a noSuchInstance for
+          SNMPv2 GET operation).
+          In a system supporting
+          a history of n intervals with
+          IntervalCount(1) and IntervalCount(n) the
+          most and least recent intervals
+          respectively, the following applies at
+          the end of a 15 minute interval:
+          - discard the value of IntervalCount(n)
+          - the value of IntervalCount(i) becomes that
+            of IntervalCount(i-1) for n >= i > 1
+          - the value of IntervalCount(1) becomes that
+            of CurrentCount
+          - the TotalCount, if supported, is adjusted."
+       SYNTAX  Gauge32
+
+PerfTotalCount ::= TEXTUAL-CONVENTION
+      STATUS  current
+      DESCRIPTION
+         "A counter associated with a
+          performance measurements aggregating the
+          previous valid 15 minute measurement
+          intervals.  (Intervals for which no valid
+          data was available are not counted)"
+       SYNTAX  Gauge32
+
+END

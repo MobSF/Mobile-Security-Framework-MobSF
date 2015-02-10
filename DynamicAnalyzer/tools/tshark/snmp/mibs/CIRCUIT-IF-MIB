@@ -1,0 +1,383 @@
+CIRCUIT-IF-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    mib-2, Gauge32                          FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, RowStatus,
+    TimeStamp, RowPointer, StorageType      FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP         FROM SNMPv2-CONF
+    ifIndex, InterfaceIndex                 FROM IF-MIB;
+
+    circuitIfMIB MODULE-IDENTITY
+        LAST-UPDATED "200201030000Z" -- January 3, 2002
+        ORGANIZATION "IETF Frame Relay Service MIB Working Group"
+        CONTACT-INFO
+
+
+          "IETF Frame Relay Service MIB (frnetmib) Working Group
+
+           WG Charter:    http://www.ietf.org/html.charters/
+                                 frnetmib-charter.html
+           WG-email:      frnetmib@sunroof.eng.sun.com
+           Subscribe:     frnetmib-request@sunroof.eng.sun.com
+           Email Archive: ftp://ftp.ietf.org/ietf-mail-archive/frnetmib
+
+           Chair:      Andy Malis
+                       Vivace Networks
+           Email:      Andy.Malis@vivacenetworks.com
+
+           WG editor:  Robert Steinberger
+                       Paradyne Networks and
+                       Fujitsu Network Communications
+           Email:      robert.steinberger@fnc.fujitsu.com
+
+           Co-author:  Orly Nicklass
+                       RAD Data Communications Ltd.
+           EMail:      Orly_n@rad.co.il"
+        DESCRIPTION
+            "The MIB module to allow insertion of selected circuit into
+             the ifTable."
+        REVISION "200201030000Z" -- January 3, 2002
+        DESCRIPTION
+            "Initial version, published as RFC 3201"
+        ::= { mib-2 94 }
+
+    -- Textual Conventions
+
+    CiFlowDirection ::= TEXTUAL-CONVENTION
+        STATUS  current
+        DESCRIPTION
+            "The direction of data flow thru a circuit.
+
+                transmit(1) - Only transmitted data
+                receive(2)  - Only received data
+                both(3)     - Both transmitted and received data."
+        SYNTAX  INTEGER {
+                  transmit(1),
+                  receive(2),
+                  both(3)
+                }
+
+    ciObjects      OBJECT IDENTIFIER ::= { circuitIfMIB 1 }
+    ciCapabilities OBJECT IDENTIFIER ::= { circuitIfMIB 2 }
+    ciConformance  OBJECT IDENTIFIER ::= { circuitIfMIB 3 }
+
+
+
+    -- The Circuit Interface Circuit Table
+    --
+    -- This table is used to define and display the circuits that
+    -- are added to the ifTable.  It maps circuits to their respective
+    -- ifIndex values.
+
+    ciCircuitTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF CiCircuitEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The Circuit Interface Circuit Table."
+        ::= { ciObjects 1 }
+
+    ciCircuitEntry OBJECT-TYPE
+        SYNTAX      CiCircuitEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry in the Circuit Interface Circuit Table."
+        INDEX    { ciCircuitObject, ciCircuitFlow }
+        ::= { ciCircuitTable 1 }
+
+    CiCircuitEntry ::=
+        SEQUENCE {
+            --
+            -- Index Control Variables
+            --
+            ciCircuitObject      RowPointer,
+            ciCircuitFlow        CiFlowDirection,
+            ciCircuitStatus      RowStatus,
+            --
+            -- Data variables
+            --
+            ciCircuitIfIndex     InterfaceIndex,
+            ciCircuitCreateTime  TimeStamp,
+            --
+            -- Data Persistence
+            --
+            ciCircuitStorageType StorageType
+        }
+
+    ciCircuitObject OBJECT-TYPE
+        SYNTAX      RowPointer
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This value contains the RowPointer that uniquely
+
+
+             describes the circuit that is to be added to this table.
+             Any RowPointer that will force the size of OBJECT
+             IDENTIFIER of the row to grow beyond the legal limit
+             MUST be rejected.
+
+             The purpose of this object is to point a network manager
+             to the table in which the circuit was created as well as
+             define the circuit on which the interface is defined.
+
+             Valid tables for this object include the frCircuitTable
+             from the Frame Relay DTE MIB(FRAME-RELAY-DTE-MIB), the
+             frPVCEndptTable from the Frame Relay Service MIB
+             (FRNETSERV-MIB), and the aal5VccTable from the ATM MIB
+             (ATM MIB).  However, including circuits from other MIB
+             tables IS NOT prohibited."
+        ::= { ciCircuitEntry 1 }
+
+    ciCircuitFlow OBJECT-TYPE
+        SYNTAX      CiFlowDirection
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The direction of data flow through the circuit for which
+             the virtual interface is defined.  The following define
+             the information that the virtual interface will report.
+
+                transmit(1) - Only transmitted frames
+                receive(2)  - Only received frames
+                both(3)     - Both transmitted and received frames.
+
+             It is recommended that the ifDescr of the circuit
+             interfaces that are not both(3) SHOULD have text warning
+             the operators that the particular interface represents
+             only half the traffic on the circuit."
+        ::= { ciCircuitEntry 2 }
+
+    ciCircuitStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The status of the current row.  This object is
+             used to add, delete, and disable rows in this
+             table.  When the status changes to active(1), a row
+             will also be added to the interface map table below
+             and a row will be added to the ifTable.  These rows
+             SHOULD not be removed until the status is changed
+             from active(1).  The value of ifIndex for the row that
+
+
+             is added to the ifTable is determined by the agent
+             and MUST follow the rules of the ifTable.  The value
+             of ifType for that interface will be frDlciEndPt(193)
+             for a frame relay circuit, atmVciEndPt(194) for an
+             ATM circuit, or another ifType defining the circuit
+             type for any other circuit.
+
+             When this object is set to destroy(6), the associated
+             row in the interface map table will be removed and the
+             ifIndex will be removed from the ifTable.  Removing
+             the ifIndex MAY initiate a chain of events that causes
+             changes to other tables as well.
+
+             The rows added to this table MUST have a valid object
+             identifier for ciCircuitObject.  This means that the
+             referenced object must exist and it must be in a table
+             that supports circuits.
+
+             The object referenced by ciCircuitObject MUST exist
+             prior to transitioning a row to active(1).  If at any
+             point the object referenced by ciCircuitObject does not
+             exist or the row containing it is not in the active(1)
+             state, the status SHOULD either age out the row or
+             report notReady(3).  The effects transitioning from
+             active(1) to notReady(3) are the same as those caused
+             by setting the status to destroy(6).
+
+             Each row in this table relies on information from other
+             MIB modules.  The rules persistence of data SHOULD follow
+             the same rules as those of the underlying MIB module.
+             For example, if the circuit defined by ciCircuitObject
+             would normally be stored in non-volatile memory, then
+             the row SHOULD also be non-volatile."
+        ::= { ciCircuitEntry 3 }
+
+    ciCircuitIfIndex OBJECT-TYPE
+        SYNTAX      InterfaceIndex
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The ifIndex that the agent assigns to this row."
+        ::= { ciCircuitEntry 4 }
+
+    ciCircuitCreateTime OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+
+
+            "This object returns the value of sysUpTime at the time
+             the value of ciCircuitStatus last transitioned to
+             active(1).  If ciCircuitStatus has never been active(1),
+             this object SHOULD return 0."
+        ::= { ciCircuitEntry 5 }
+
+    ciCircuitStorageType OBJECT-TYPE
+        SYNTAX      StorageType
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The storage type used for this row."
+    ::= { ciCircuitEntry 6 }
+
+    -- The Circuit Interface Map Table
+    --
+    -- This table maps the ifIndex values that are assigned to
+    -- rows in the circuit table back to the objects that define
+    -- the circuits.
+
+    ciIfMapTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF CiIfMapEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The Circuit Interface Map Table."
+        ::= { ciObjects 2 }
+
+    ciIfMapEntry OBJECT-TYPE
+        SYNTAX      CiIfMapEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry in the Circuit Interface Map Table."
+        INDEX    { ifIndex }
+        ::= { ciIfMapTable 1 }
+
+    CiIfMapEntry ::=
+        SEQUENCE {
+            --
+            -- Mapped Object Variables
+            --
+            ciIfMapObject      RowPointer,
+            ciIfMapFlow        CiFlowDirection
+        }
+
+    ciIfMapObject OBJECT-TYPE
+        SYNTAX      RowPointer
+
+
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This value contains the value of RowPointer that
+             corresponds to the current ifIndex."
+        ::= { ciIfMapEntry 1 }
+
+    ciIfMapFlow   OBJECT-TYPE
+        SYNTAX      CiFlowDirection
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The value contains the value of ciCircuitFlow that
+             corresponds to the current ifIndex."
+        ::= { ciIfMapEntry 2 }
+
+    -- Change tracking metrics
+
+    ciIfLastChange OBJECT-TYPE
+        SYNTAX       TimeStamp
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The value of sysUpTime at the most recent change to
+             ciCircuitStatus for any row in ciCircuitTable."
+        ::= { ciObjects 3 }
+
+    ciIfNumActive      OBJECT-TYPE
+        SYNTAX         Gauge32
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The number of active rows in ciCircuitTable."
+        ::= { ciObjects 4 }
+
+    -- Conformance Information
+
+    ciMIBGroups      OBJECT IDENTIFIER ::= { ciConformance 1 }
+    ciMIBCompliances OBJECT IDENTIFIER ::= { ciConformance 2 }
+
+    --
+    -- Compliance Statements
+    --
+
+    ciCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+            "The compliance statement for SNMP entities
+
+
+             which support of the Circuit Interfaces MIB module.
+             This group defines the minimum level of support
+             required for compliance."
+        MODULE -- this module
+            MANDATORY-GROUPS { ciCircuitGroup,
+                               ciIfMapGroup,
+                               ciStatsGroup }
+
+            OBJECT      ciCircuitStatus
+            SYNTAX      INTEGER { active(1) } -- subset of RowStatus
+            MIN-ACCESS  read-only
+            DESCRIPTION
+               "Row creation can be done outside of the scope of
+                the SNMP protocol.  If this object is implemented with
+                max-access of read-only, then the only value that MUST
+                be returned is active(1)."
+
+            OBJECT      ciCircuitStorageType
+            MIN-ACCESS  read-only
+            DESCRIPTION
+               "It is legal to support ciCircuitStorageType as read-
+                only as long as the value reported in consistent
+                with the actual storage mechanism employed within the
+                agent."
+
+    ::= { ciMIBCompliances 1 }
+
+    --
+    -- Units of Conformance
+    --
+    ciCircuitGroup  OBJECT-GROUP
+       OBJECTS {
+            ciCircuitStatus,
+            ciCircuitIfIndex,
+            ciCircuitCreateTime,
+            ciCircuitStorageType
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of required objects providing
+            information from the circuit table."
+       ::= { ciMIBGroups 1 }
+
+    ciIfMapGroup OBJECT-GROUP
+       OBJECTS {
+            ciIfMapObject,
+            ciIfMapFlow
+       }
+
+
+       STATUS  current
+       DESCRIPTION
+           "A collection of required objects providing
+            information from the interface map table."
+       ::= { ciMIBGroups 2 }
+
+    ciStatsGroup OBJECT-GROUP
+       OBJECTS {
+            ciIfLastChange,
+            ciIfNumActive
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of statistical metrics used to help manage
+            the ciCircuitTable."
+       ::= { ciMIBGroups 3 }
+END

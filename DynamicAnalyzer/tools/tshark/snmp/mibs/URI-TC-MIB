@@ -1,0 +1,139 @@
+URI-TC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, mib-2             FROM SNMPv2-SMI      -- [RFC2578]
+    TEXTUAL-CONVENTION                 FROM SNMPv2-TC;      -- [RFC2579]
+
+uriTcMIB MODULE-IDENTITY
+    LAST-UPDATED "200709100000Z" -- 10 September 2007
+    ORGANIZATION "IETF Operations and Management (OPS) Area"
+    CONTACT-INFO "EMail: ops-area@ietf.org
+                  Home page: http://www.ops.ietf.org/"
+    DESCRIPTION
+            "This MIB module defines textual conventions for
+            representing URIs, as defined by RFC 3986 STD 66."
+    REVISION     "200709100000Z" -- 10 September 2007
+    DESCRIPTION
+           "Initial revision, published as RFC 5017.
+
+            Copyright (C) The IETF Trust (2007).  This version of this
+            MIB module is part of RFC 5017; see the RFC itself for full
+
+
+
+            legal notices."
+    ::= { mib-2 164 }
+
+Uri ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "1a"
+   STATUS      current
+   DESCRIPTION
+            "A Uniform Resource Identifier (URI) as defined by STD 66.
+
+            Objects using this TEXTUAL-CONVENTION MUST be in US-ASCII
+            encoding, and MUST be normalized as described by RFC 3986
+            Sections 6.2.1, 6.2.2.1, and 6.2.2.2.  All unnecessary
+            percent-encoding is removed, and all case-insensitive
+            characters are set to lowercase except for hexadecimal
+            digits, which are normalized to uppercase as described in
+            Section 6.2.2.1.
+
+            The purpose of this normalization is to help provide unique
+            URIs.  Note that this normalization is not sufficient to
+            provide uniqueness.  Two URIs that are textually distinct
+            after this normalization may still be equivalent.
+
+            Objects using this TEXTUAL-CONVENTION MAY restrict the
+            schemes that they permit.  For example, 'data:' and 'urn:'
+            schemes might not be appropriate.
+
+            A zero-length URI is not a valid URI.  This can be used to
+            express 'URI absent' where required, for example when used
+            as an index field.
+
+            Where this TEXTUAL-CONVENTION is used for an index field,
+            it MUST be subtyped to restrict its length.  There is an
+            absolute limit of 128 subids for an OID, and it is not
+            efficient to have OIDs whose length approaches this
+            limit."
+   REFERENCE "RFC 3986 STD 66 and RFC 3305"
+   SYNTAX      OCTET STRING
+
+Uri255 ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "255a"
+   STATUS      current
+   DESCRIPTION
+            "A Uniform Resource Identifier (URI) as defined by STD 66.
+
+            Objects using this TEXTUAL-CONVENTION MUST be in US-ASCII
+            encoding, and MUST be normalized as described by RFC 3986
+            Sections 6.2.1, 6.2.2.1, and 6.2.2.2.  All unnecessary
+            percent-encoding is removed, and all case-insensitive
+
+
+
+            characters are set to lowercase except for hexadecimal
+            digits, which are normalized to uppercase as described in
+            Section 6.2.2.1.
+
+            The purpose of this normalization is to help provide unique
+            URIs.  Note that this normalization is not sufficient to
+            provide uniqueness.  Two URIs that are textually distinct
+            after this normalization may still be equivalent.
+
+            Objects using this TEXTUAL-CONVENTION MAY restrict the
+            schemes that they permit.  For example, 'data:' and 'urn:'
+            schemes might not be appropriate.
+
+            A zero-length URI is not a valid URI.  This can be used to
+            express 'URI absent' where required, for example when used
+            as an index field.
+
+            STD 66 URIs are of unlimited length.  Objects using this
+            TEXTUAL-CONVENTION impose a length limit on the URIs that
+            they can represent.  Where no length restriction is
+            required, objects SHOULD use the 'Uri' TEXTUAL-CONVENTION
+            instead.  Objects used as indices SHOULD subtype the 'Uri'
+            TEXTUAL-CONVENTION."
+   REFERENCE "RFC 3986 STD 66 and RFC 3305"
+   SYNTAX      OCTET STRING (SIZE (0..255))
+
+Uri1024 ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "1024a"
+   STATUS      current
+   DESCRIPTION
+            "A Uniform Resource Identifier (URI) as defined by STD 66.
+
+            Objects using this TEXTUAL-CONVENTION MUST be in US-ASCII
+            encoding, and MUST be normalized as described by RFC 3986
+            Sections 6.2.1, 6.2.2.1, and 6.2.2.2.  All unnecessary
+            percent-encoding is removed, and all case-insensitive
+            characters are set to lowercase except for hexadecimal
+            digits, which are normalized to uppercase as described in
+            Section 6.2.2.1.
+
+            The purpose of this normalization is to help provide unique
+            URIs.  Note that this normalization is not sufficient to
+            provide uniqueness.  Two URIs that are textually distinct
+            after this normalization may still be equivalent.
+
+            Objects using this TEXTUAL-CONVENTION MAY restrict the
+            schemes that they permit.  For example, 'data:' and 'urn:'
+            schemes might not be appropriate.
+
+
+
+            A zero-length URI is not a valid URI.  This can be used to
+            express 'URI absent' where required, for example when used
+            as an index field.
+
+            STD 66 URIs are of unlimited length.  Objects using this
+            TEXTUAL-CONVENTION impose a length limit on the URIs that
+            they can represent.  Where no length restriction is
+            required, objects SHOULD use the 'Uri' TEXTUAL-CONVENTION
+            instead.  Objects used as indices SHOULD subtype the 'Uri'
+            TEXTUAL-CONVENTION."
+   REFERENCE "RFC 3986 STD 66 and RFC 3305"
+   SYNTAX      OCTET STRING (SIZE (0..1024))
+
+END

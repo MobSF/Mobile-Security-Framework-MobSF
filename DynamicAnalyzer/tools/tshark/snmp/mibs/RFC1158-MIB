@@ -1,0 +1,1493 @@
+RFC1158-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        mgmt, OBJECT-TYPE, NetworkAddress, IpAddress,
+        Counter, Gauge, TimeTicks
+            FROM RFC1155-SMI;
+
+DisplayString ::=
+            OCTET STRING
+
+mib-2      OBJECT IDENTIFIER ::= { mgmt 1 }    -- MIB-II
+           -- (same prefix as MIB-I)
+
+system     OBJECT IDENTIFIER ::= { mib-2 1 }
+interfaces OBJECT IDENTIFIER ::= { mib-2 2 }
+at         OBJECT IDENTIFIER ::= { mib-2 3 }
+ip         OBJECT IDENTIFIER ::= { mib-2 4 }
+icmp       OBJECT IDENTIFIER ::= { mib-2 5 }
+tcp        OBJECT IDENTIFIER ::= { mib-2 6 }
+udp        OBJECT IDENTIFIER ::= { mib-2 7 }
+egp        OBJECT IDENTIFIER ::= { mib-2 8 }
+-- cmot    OBJECT IDENTIFIER ::= { mib-2 9 }
+transmission OBJECT IDENTIFIER ::= { mib-2 10 }
+snmp       OBJECT IDENTIFIER ::= { mib-2 11 }
+
+
+-- object types
+
+-- the System group
+
+sysDescr OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (0..255))
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { system 1 }
+
+sysObjectID OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { system 2 }
+
+sysUpTime OBJECT-TYPE
+        SYNTAX  TimeTicks
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { system 3 }
+
+sysContact OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (0..255))
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { system 4 }
+
+sysName OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (0..255))
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { system 5 }
+
+sysLocation OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (0..255))
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { system 6 }
+
+sysServices OBJECT-TYPE
+        SYNTAX  INTEGER (0..127)
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { system 7 }
+
+
+-- the Interfaces group
+
+ifNumber OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { interfaces 1 }
+
+-- the Interfaces table
+
+ifTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF IfEntry
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { interfaces 2 }
+
+ifEntry OBJECT-TYPE
+        SYNTAX  IfEntry
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifTable 1 }
+
+IfEntry ::= SEQUENCE {
+    ifIndex
+        INTEGER,
+    ifDescr
+        DisplayString,
+    ifType
+        INTEGER,
+    ifMtu
+        INTEGER,
+    ifSpeed
+        Gauge,
+    ifPhysAddress
+        OCTET STRING,
+    ifAdminStatus
+        INTEGER,
+    ifOperStatus
+        INTEGER,
+    ifLastChange
+        TimeTicks,
+    ifInOctets
+        Counter,
+    ifInUcastPkts
+        Counter,
+    ifInNUcastPkts
+        Counter,
+    ifInDiscards
+        Counter,
+    ifInErrors
+        Counter,
+    ifInUnknownProtos
+        Counter,
+    ifOutOctets
+        Counter,
+    ifOutUcastPkts
+        Counter,
+    ifOutNUcastPkts
+        Counter,
+    ifOutDiscards
+        Counter,
+    ifOutErrors
+        Counter,
+    ifOutQLen
+        Gauge,
+    ifSpecific
+        OBJECT IDENTIFIER
+}
+
+ifIndex OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 1 }
+
+ifDescr OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (0..255))
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 2 }
+
+ifType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    other(1),             -- none of the
+                                          -- following
+                    regular1822(2),
+                    hdh1822(3),
+                    ddn-x25(4),
+                    rfc877-x25(5),
+                    ethernet-csmacd(6),
+                    iso88023-csmacd(7),
+                    iso88024-tokenBus(8),
+                    iso88025-tokenRing(9),
+                    iso88026-man(10),
+                    starLan(11),
+                    proteon-10Mbit(12),
+                    proteon-80Mbit(13),
+                    hyperchannel(14),
+                    fddi(15),
+                    lapb(16),
+                    sdlc(17),
+                    t1-carrier(18),
+                    cept(19),        -- european
+                                     --equivalent of T-1
+                    basicISDN(20),
+                    primaryISDN(21),
+                                          -- proprietary
+                                          -- serial
+                    propPointToPointSerial(22),
+                    terminalServer-asyncPort(23),
+                    softwareLoopback(24),
+                    eon(25),              -- CLNP over IP
+                    ethernet-3Mbit(26),
+                    nsip(27),             -- XNS over IP
+                    slip(28)              -- generic SLIP
+            }
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 3 }
+
+ifMtu OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 4 }
+
+ifSpeed OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 5 }
+
+ifPhysAddress OBJECT-TYPE
+        SYNTAX  OCTET STRING
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 6 }
+
+ifAdminStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    up(1),     -- ready to pass packets
+                    down(2),
+                    testing(3) -- in some test mode
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ifEntry 7 }
+
+ifOperStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    up(1),     -- ready to pass packets
+                    down(2),
+                    testing(3) -- in some test mode
+                }
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 8 }
+
+ifLastChange OBJECT-TYPE
+        SYNTAX  TimeTicks
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 9 }
+
+ifInOctets OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 10 }
+
+ifInUcastPkts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { ifEntry 11 }
+
+ifInNUcastPkts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 12 }
+
+ifInDiscards OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 13 }
+
+ifInErrors OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 14 }
+
+ifInUnknownProtos OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 15 }
+
+ifOutOctets OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 16 }
+
+ifOutUcastPkts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 17 }
+
+ifOutNUcastPkts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 18 }
+
+ifOutDiscards OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 19 }
+
+ifOutErrors OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 20 }
+
+ifOutQLen OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 21 }
+
+ifSpecific OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ifEntry 22 }
+
+nullSpecific OBJECT IDENTIFIER ::= { 0 0 }
+
+-- the Address Translation group (deprecated)
+
+atTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF AtEntry
+        ACCESS  read-write
+        STATUS  deprecated
+        ::= { at 1 }
+
+atEntry OBJECT-TYPE
+        SYNTAX  AtEntry
+        ACCESS  read-write
+        STATUS  deprecated
+        ::= { atTable 1 }
+
+AtEntry ::= SEQUENCE {
+    atIfIndex
+        INTEGER,
+    atPhysAddress
+        OCTET STRING,
+    atNetAddress
+        NetworkAddress
+}
+
+atIfIndex OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  deprecated
+        ::= { atEntry 1 }
+
+atPhysAddress OBJECT-TYPE
+        SYNTAX  OCTET STRING
+        ACCESS  read-write
+        STATUS  deprecated
+        ::= { atEntry 2 }
+
+atNetAddress OBJECT-TYPE
+        SYNTAX  NetworkAddress
+        ACCESS  read-write
+        STATUS  deprecated
+        ::= { atEntry 3 }
+
+
+-- the IP group
+
+ipForwarding OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    gateway(1), -- entity forwards
+                                -- datagrams
+                    host(2)     -- entity does NOT
+                                -- forward datagrams
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ip 1 }
+
+ipDefaultTTL OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ip 2 }
+
+ipInReceives OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 3 }
+
+ipInHdrErrors OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 4 }
+
+ipInAddrErrors OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 5 }
+
+ipForwDatagrams OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 6 }
+
+ipInUnknownProtos OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 7 }
+
+ipInDiscards OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 8 }
+
+ipInDelivers OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 9 }
+
+ipOutRequests OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 10 }
+
+ipOutDiscards OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 11 }
+
+ipOutNoRoutes OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 12 }
+
+ipReasmTimeout OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 13 }
+
+ipReasmReqds OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 14 }
+
+ipReasmOKs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 15 }
+
+ipReasmFails OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 16 }
+
+ipFragOKs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 17 }
+
+ipFragFails OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 18 }
+
+ipFragCreates OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 19 }
+
+-- the IP Interface table
+
+ipAddrTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF IpAddrEntry
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ip 20 }
+
+ipAddrEntry OBJECT-TYPE
+        SYNTAX  IpAddrEntry
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ipAddrTable 1 }
+
+IpAddrEntry ::= SEQUENCE {
+    ipAdEntAddr
+        IpAddress,
+    ipAdEntIfIndex
+        INTEGER,
+    ipAdEntNetMask
+        IpAddress,
+    ipAdEntBcastAddr
+        INTEGER,
+    ipAdEntReasmMaxSize
+        INTEGER (0..65535)
+}
+
+ipAdEntAddr OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { ipAddrEntry 1 }
+
+ipAdEntIfIndex OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { ipAddrEntry 2 }
+
+ipAdEntNetMask OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { ipAddrEntry 3 }
+
+ipAdEntBcastAddr OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ipAddrEntry 4 }
+
+ipAdEntReasmMaxSize OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ipAddrEntry 5 }
+
+-- the IP Routing table
+
+ipRoutingTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF IpRouteEntry
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ip 21 }
+
+ipRouteEntry OBJECT-TYPE
+        SYNTAX  IpRouteEntry
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipRoutingTable 1 }
+
+IpRouteEntry ::= SEQUENCE {
+    ipRouteDest
+        IpAddress,
+    ipRouteIfIndex
+        INTEGER,
+    ipRouteMetric1
+        INTEGER,
+    ipRouteMetric2
+        INTEGER,
+    ipRouteMetric3
+        INTEGER,
+    ipRouteMetric4
+        INTEGER,
+    ipRouteNextHop
+        IpAddress,
+    ipRouteType
+        INTEGER,
+    ipRouteProto
+        INTEGER,
+    ipRouteAge
+        INTEGER,
+    ipRouteMask
+        IpAddress
+}
+
+ipRouteDest OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipRouteEntry 1 }
+
+ipRouteIfIndex  OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipRouteEntry 2 }
+
+ipRouteMetric1 OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipRouteEntry 3 }
+
+ipRouteMetric2 OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipRouteEntry 4 }
+
+ipRouteMetric3 OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipRouteEntry 5 }
+
+ipRouteMetric4 OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipRouteEntry 6 }
+
+ipRouteNextHop OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipRouteEntry 7 }
+
+ipRouteType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    other(1),    -- none of the following
+
+                    invalid(2),  -- an invalidated route
+
+                                 -- route to directly
+                    direct(3),   -- connected
+                                 -- (sub-)network
+
+                                 -- route to a non-local
+                    remote(4)    -- host/network/
+                                 -- sub-network
+            }
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipRouteEntry 8 }
+
+ipRouteProto OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    other(1),    -- none of the following
+
+                                 -- non-protocol
+                                 -- information
+
+                                 --   e.g., manually
+                    local(2),    --   configured entries
+
+                                 -- set via a network
+                    netmgmt(3),  --   management protocol
+
+                                 -- obtained via ICMP,
+                    icmp(4),     --   e.g., Redirect
+
+                                 -- the following are
+                                 -- gateway routing
+                                 -- protocols
+                    egp(5),
+                    ggp(6),
+                    hello(7),
+                    rip(8),
+                    is-is(9),
+                    es-is(10),
+                    ciscoIgrp(11),
+                    bbnSpfIgp(12),
+                    ospf(13),
+                    bgp(14)
+            }
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { ipRouteEntry 9 }
+
+ipRouteAge OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipRouteEntry 10 }
+
+ipRouteMask OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipRouteEntry 11 }
+
+-- the IP Address Translation tables
+
+ipNetToMediaTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF IpNetToMediaEntry
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ip 22 }
+
+ipNetToMediaEntry OBJECT-TYPE
+        SYNTAX  IpNetToMediaEntry
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipNetToMediaTable 1 }
+
+IpNetToMediaEntry ::= SEQUENCE {
+    ipNetToMediaIfIndex
+        INTEGER,
+    ipNetToMediaPhysAddress
+        OCTET STRING,
+    ipNetToMediaNetAddress
+        IpAddress,
+    ipNetToMediaType
+        INTEGER
+}
+
+ipNetToMediaIfIndex OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipNetToMediaEntry 1 }
+
+ipNetToMediaPhysAddress OBJECT-TYPE
+        SYNTAX  OCTET STRING
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipNetToMediaEntry 2 }
+
+ipNetToMediaNetAddress OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipNetToMediaEntry 3 }
+
+ipNetToMediaType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    other(1),   -- none of the following
+
+                    invalid(2), -- an invalidated mapping
+                    dynamic(3), -- connected (sub-)network
+
+                    static(4)
+            }
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { ipNetToMediaEntry 4 }
+
+-- the ICMP group
+
+icmpInMsgs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 1 }
+
+icmpInErrors OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 2 }
+
+icmpInDestUnreachs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 3 }
+
+icmpInTimeExcds OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 4 }
+
+icmpInParmProbs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 5 }
+
+icmpInSrcQuenchs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 6 }
+
+icmpInRedirects OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 7 }
+
+icmpInEchos OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 8 }
+
+icmpInEchoReps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 9 }
+
+icmpInTimestamps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 10 }
+
+icmpInTimestampReps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 11 }
+
+icmpInAddrMasks OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 12 }
+
+icmpInAddrMaskReps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 13 }
+
+icmpOutMsgs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 14 }
+
+icmpOutErrors OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 15 }
+
+icmpOutDestUnreachs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 16 }
+
+icmpOutTimeExcds OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 17 }
+
+icmpOutParmProbs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 18 }
+
+icmpOutSrcQuenchs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 19 }
+
+icmpOutRedirects OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 20 }
+
+icmpOutEchos OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 21 }
+
+icmpOutEchoReps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 22 }
+
+icmpOutTimestamps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 23 }
+
+icmpOutTimestampReps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 24 }
+
+icmpOutAddrMasks OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 25 }
+
+icmpOutAddrMaskReps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { icmp 26 }
+
+
+-- the TCP group
+
+tcpRtoAlgorithm OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    other(1),    -- none of the following
+                    constant(2), -- a constant rto
+                    rsre(3),     -- MIL-STD-1778,
+                                 -- Appendix B
+                    vanj(4)      -- Van Jacobson's
+                                 -- algorithm
+                }
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 1 }
+
+tcpRtoMin OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 2 }
+
+tcpRtoMax OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 3 }
+
+tcpMaxConn OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 4 }
+
+tcpActiveOpens OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 5 }
+
+tcpPassiveOpens OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 6 }
+
+tcpAttemptFails OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 7 }
+
+tcpEstabResets OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 8 }
+
+tcpCurrEstab OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 9 }
+
+tcpInSegs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 10 }
+
+tcpOutSegs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 11 }
+
+tcpRetransSegs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 12 }
+
+-- the TCP connections table
+
+tcpConnTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF TcpConnEntry
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 13 }
+
+tcpConnEntry OBJECT-TYPE
+        SYNTAX  TcpConnEntry
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcpConnTable 1 }
+
+TcpConnEntry ::= SEQUENCE {
+    tcpConnState
+        INTEGER,
+    tcpConnLocalAddress
+        IpAddress,
+    tcpConnLocalPort
+        INTEGER (0..65535),
+    tcpConnRemAddress
+        IpAddress,
+    tcpConnRemPort
+        INTEGER (0..65535)
+}
+
+tcpConnState OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    closed(1),
+                    listen(2),
+                    synSent(3),
+                    synReceived(4),
+                    established(5),
+                    finWait1(6),
+                    finWait2(7),
+                    closeWait(8),
+                    lastAck(9),
+                    closing(10),
+                    timeWait(11)
+                }
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcpConnEntry 1 }
+
+tcpConnLocalAddress OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcpConnEntry 2 }
+
+tcpConnLocalPort OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcpConnEntry 3 }
+
+tcpConnRemAddress OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcpConnEntry 4 }
+
+tcpConnRemPort OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcpConnEntry 5 }
+
+-- additional TCP variables
+
+tcpInErrs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 14 }
+
+tcpOutRsts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { tcp 15 }
+
+
+-- the UDP group
+
+udpInDatagrams OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { udp 1 }
+
+udpNoPorts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { udp 2 }
+
+udpInErrors OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { udp 3 }
+
+udpOutDatagrams OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { udp 4 }
+
+-- the UDP listener table
+
+udpTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF UdpEntry
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { udp 5 }
+
+udpEntry OBJECT-TYPE
+        SYNTAX  UdpEntry
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { udpTable 1 }
+
+UdpEntry ::= SEQUENCE {
+    udpLocalAddress
+        IpAddress,
+    udpLocalPort
+        INTEGER (0..65535)
+}
+
+udpLocalAddress OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { udpEntry 1 }
+
+udpLocalPort OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { udpEntry 2 }
+
+-- the EGP group
+
+egpInMsgs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egp 1 }
+
+egpInErrors OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egp 2 }
+
+egpOutMsgs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egp 3 }
+
+egpOutErrors OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egp 4 }
+
+-- the EGP Neighbor table
+
+egpNeighTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF EgpNeighEntry
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egp 5 }
+
+egpNeighEntry OBJECT-TYPE
+        SYNTAX  EgpNeighEntry
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighTable 1 }
+
+EgpNeighEntry ::= SEQUENCE {
+    egpNeighState
+        INTEGER,
+    egpNeighAddr
+        IpAddress,
+    egpNeighAs
+        INTEGER,
+    egpNeighInMsgs
+        Counter,
+    egpNeighInErrs
+        Counter,
+    egpNeighOutMsgs
+        Counter,
+    egpNeighOutErrs
+        Counter,
+    egpNeighInErrMsgs
+        Counter,
+    egpNeighOutErrMsgs
+        Counter,
+    egpNeighStateUps
+        Counter,
+    egpNeighStateDowns
+        Counter,
+    egpNeighIntervalHello
+        INTEGER,
+    egpNeighIntervalPoll
+        INTEGER,
+    egpNeighMode
+        INTEGER,
+    egpNeighEventTrigger
+        INTEGER
+}
+
+egpNeighState OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    idle(1),
+                    acquisition(2),
+                    down(3),
+                    up(4),
+                    cease(5)
+                }
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 1 }
+
+egpNeighAddr OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 2 }
+
+egpNeighAs OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 3 }
+
+egpNeighInMsgs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 4 }
+
+egpNeighInErrs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 5 }
+
+egpNeighOutMsgs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 6 }
+
+egpNeighOutErrs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 7 }
+
+egpNeighInErrMsgs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 8 }
+
+egpNeighOutErrMsgs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 9 }
+
+egpNeighStateUps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 10 }
+
+egpNeighStateDowns OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 11 }
+
+egpNeighIntervalHello OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 12 }
+
+egpNeighIntervalPoll OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 13 }
+
+egpNeighMode OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    active(1),
+                    passive(2)
+                }
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egpNeighEntry 14 }
+
+egpNeighEventTrigger OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    start(1),
+                    stop(2)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        ::= { egpNeighEntry 15 }
+
+-- additional EGP variables
+
+egpAs OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-only
+        STATUS  mandatory
+        ::= { egp 6 }
+
+
+-- the Transmission group (empty at present)
+
+-- the SNMP group
+
+snmpInPkts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 1 }
+
+snmpOutPkts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 2 }
+
+snmpInBadVersions OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 3 }
+
+snmpInBadCommunityNames OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 4 }
+
+snmpInBadCommunityUses OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 5 }
+
+snmpInASNParseErrs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 6 }
+
+snmpInBadTypes OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 7 }
+
+snmpInTooBigs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 8 }
+
+snmpInNoSuchNames OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 9 }
+
+snmpInBadValues OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 10 }
+
+snmpInReadOnlys OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 11 }
+
+snmpInGenErrs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 12 }
+
+snmpInTotalReqVars OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 13 }
+
+snmpInTotalSetVars OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 14 }
+
+snmpInGetRequests OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 15 }
+
+snmpInGetNexts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 16 }
+
+snmpInSetRequests OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 17 }
+
+snmpInGetResponses OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 18 }
+
+snmpInTraps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 19 }
+
+snmpOutTooBigs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 20 }
+
+snmpOutNoSuchNames OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 21 }
+
+snmpOutBadValues OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 22 }
+
+snmpOutReadOnlys OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 23 }
+
+snmpOutGenErrs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 24 }
+
+snmpOutGetRequests OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 25 }
+
+snmpOutGetNexts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 26 }
+
+snmpOutSetRequests OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 27 }
+
+snmpOutGetResponses OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 28 }
+
+snmpOutTraps OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        ::=  { snmp 29 }
+
+snmpEnableAuthTraps OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    enabled(1),
+                    disabled(2)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        ::=  { snmp 30 }
+
+END

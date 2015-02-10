@@ -1,0 +1,515 @@
+T11-FC-FABRIC-LOCK-MIB  DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    mib-2                              FROM SNMPv2-SMI   -- [RFC2578]
+    RowStatus                          FROM SNMPv2-TC    -- [RFC2579]
+    MODULE-COMPLIANCE, OBJECT-GROUP    FROM SNMPv2-CONF  -- [RFC2580]
+    InetAddressType, InetAddress       FROM
+                                       INET-ADDRESS-MIB  -- [RFC4001]
+    fcmInstanceIndex, fcmSwitchIndex   FROM FC-MGMT-MIB  -- [RFC4044]
+    T11NsGs4RejectReasonCode           FROM
+                                 T11-FC-NAME-SERVER-MIB  -- [RFC4438]
+    T11FabricIndex                     FROM T11-TC-MIB;  -- [RFC4439]
+
+t11FabricLockMIB  MODULE-IDENTITY
+    LAST-UPDATED  "200706270000Z"
+    ORGANIZATION  "For the initial versions, T11.
+                   For later versions, the IETF's IMSS Working Group."
+    CONTACT-INFO
+           "      Claudio DeSanti
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA 95134 USA
+                  EMail: cds@cisco.com
+
+                  Keith McCloghrie
+
+
+
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA 95134 USA
+                  EMail: kzm@cisco.com"
+
+    DESCRIPTION
+           "The MIB module for the management of locks on a Fibre
+           Channel Fabric.  A Fibre Channel Fabric lock is used to
+           ensure serialized access to some types of management data
+           related to a Fabric, e.g., the Fabric's Zoning Database.
+
+           Some (managing) applications generate Fabric locks by
+           initiating server sessions.  Server sessions are
+           defined generically in FC-GS-5 to represent a collection of
+           one or more requests to the session's server, e.g., to the
+           Zone Server.  Such a session is started by a Server Session
+           Begin (SSB) request, and terminated by a Server Session End
+           (SSE) request.  The switch receiving the SSB is called the
+           'managing' switch.  Some applications require the
+           'managing' switch to lock the Fabric for the particular
+           application, e.g., for Enhanced Zoning, before it can
+           respond successfully to the SSB.  On receipt of the
+           subsequent SSE, the lock is released.  For this usage, the
+           managing switch sends an Acquire Change Authorization (ACA)
+           request to other switches to lock the Fabric.
+
+           For some other applications, a managing switch locks the
+           Fabric using an Enhanced Acquire Change Authorization (EACA)
+           request, which identifies the application on whose behalf
+           the Fabric is being locked with an Application_ID.
+
+           Fabric locks can also be requested more directly, e.g.,
+           through the use of this MIB.  In these situations, the term
+           'managing' switch is used to indicate the switch that
+           receives such a request and executes it by issuing either
+           ACA or EACA requests to other switches in the Fabric.
+
+           This MIB module defines information about the 'managing'
+           switch for currently-active Fabric locks.
+
+           Copyright (C) The IETF Trust (2007).  This version
+           of this MIB module is part of RFC 4936;  see the RFC
+           itself for full legal notices."
+    REVISION  "200706270000Z"
+    DESCRIPTION
+           "Initial version of this MIB module, published as RFC 4936."
+    ::= { mib-2 159 }
+
+
+
+
+t11FLockMIBObjects       OBJECT IDENTIFIER ::= { t11FabricLockMIB 1 }
+t11FLockMIBConformance   OBJECT IDENTIFIER ::= { t11FabricLockMIB 2 }
+t11FLockMIBNotifications OBJECT IDENTIFIER ::= { t11FabricLockMIB 0 }
+t11FLockConfiguration    OBJECT IDENTIFIER ::= { t11FLockMIBObjects 1 }
+
+--
+-- The table of Managing Switches and their Fabric Locks
+--
+
+t11FLockTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF T11FLockEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+           "A table containing information about the 'managing'
+           switch of each current Fabric lock, e.g., for the
+           types of Servers defined in FC-GS-5.
+
+           Each entry in this table represents either:
+
+           1) a current Fabric lock,
+           2) an in-progress attempt, requested via SNMP, to set up
+              a lock, or
+           3) a failed attempt, requested via SNMP, to set up a lock.
+
+           If an entry is created via t11FLockRowStatus, but the
+           attempt to obtain the lock fails, then the entry continues
+           to exist until it is deleted via t11FLockRowStatus, or
+           it is overwritten by the lock being established via
+           a means other than SNMP.  However, rows created via
+           t11FLockRowStatus are not retained over restarts."
+    REFERENCE
+           "Fibre Channel - Generic Services-5 (FC-GS-5),
+           ANSI INCITS 427-2007, sections 4.9.5 and 6.4.10.2."
+    ::= { t11FLockConfiguration 1 }
+
+t11FLockEntry OBJECT-TYPE
+    SYNTAX       T11FLockEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+           "Each entry contains information specific to a current
+           Fabric lock set up by a particular 'managing' switch on a
+           particular Fabric.  The 'managing switch' is identified by
+           values of fcmInstanceIndex and fcmSwitchIndex.
+
+           Server sessions for several different types of servers
+           are defined in FC-GS-5.  The behavior of a server with
+
+
+
+           respect to commands received within a server session is
+           specified for each type of server.  For some types,
+           parameter changes can only be made within the context of a
+           session, and the setting up of a session requires that the
+           Fabric be locked.  A Fabric is locked by one switch, called
+           the 'managing' switch, sending Acquire Change Authorization
+           (ACA) requests to all other switches in the Fabric.
+
+           For other applications, a Fabric lock is established by the
+           'managing' switch sending Enhanced Acquire Change
+           Authorization (EACA) requests to other switches in the
+           Fabric.  Each EACA request includes an Application_ID
+           value to identify the application requesting the lock.
+
+           For the benefit of this MIB module, a distinct value of
+           Application_ID has also been assigned/reserved (see
+           ANSI INCITS T11/06-679v0, titled 'FC-SW-5 Letter to
+           T11.5') as a means of distinguishing locks established via
+           Acquire Change Authorization (ACA) requests.  This
+           additional assignment allows an Application_ID to be used to
+           uniquely identify any active lock amongst all those
+           established by either an EACA or an ACA.
+
+           Whenever a Fabric is locked, by the sending of either an ACA
+           or an EACA, a row gets created in the representation of this
+           table for the 'managing' switch.
+
+           In order to process SNMP SetRequests that make parameter
+           changes for the relevant types of servers (e.g., to the
+           Zoning Database), the SNMP agent must get serialized access
+           to the Fabric (for the relevant type of management data),
+           i.e., the Fabric must be locked by creating an entry in
+           this table via an SNMP SetRequest.  Creating an entry in
+           this table via an SNMP SetRequest causes an ACA or an EACA
+           to be sent to all other switches in the Fabric.  The value
+           of t11FLockApplicationID for such an entry determines
+           whether an ACA or an EACA is sent.
+
+           If an entry in this table is created by an SNMP SetRequest,
+           the value of the t11FLockInitiatorType object in that entry
+           will normally be 'snmp'.  A row for which the value of
+           t11FLockInitiatorType is not 'snmp' cannot be modified
+           via SNMP.  In particular, it cannot be deleted via
+           t11FLockRowStatus.  Note that it's possible for a row to be
+           created by an SNMP SetRequest, but for the setup of the lock
+           to fail, and immediately thereafter be replaced by a lock
+           successfully set up by some other means; in such a case, the
+           value of t11FLockInitiatorType would change as and when the
+
+
+
+           lock was set up by the other means, and so the row could
+           not thereafter be deleted via t11FLockRowStatus.
+
+           FC-GS-5 mentions various error situations in which a
+           Fabric lock is released so as to avoid a deadlock.  In
+           such situations, the agent removes the corresponding row
+           in this table as and when the lock is released.  This can
+           happen for all values of t11FLockInitiatorType."
+    REFERENCE
+           "Fibre Channel - Generic Services-5 (FC-GS-5),
+           ANSI INCITS 427-2007, sections 4.9.5.5 and 6.4.7.1.
+
+           Fibre Channel - Switch Fabric-4 (FC-SW-4),
+           ANSI INCITS 418-2006, sections 6.1.17, 10.6.6, and 13.2,
+           and table 116.
+
+           'FC-SW-5 Letter to T11.5' ANSI INCITS T11/06-679v0,
+           http://www.t11.org/ftp/t11/pub/fc/sw-5/06-679v0.pdf,
+           21 September 2006."
+    INDEX   { fcmInstanceIndex, fcmSwitchIndex, t11FLockFabricIndex,
+              t11FLockApplicationID }
+    ::= { t11FLockTable 1 }
+
+T11FLockEntry ::= SEQUENCE {
+    t11FLockFabricIndex             T11FabricIndex,
+    t11FLockApplicationID           OCTET STRING,
+    t11FLockInitiatorType           INTEGER,
+    t11FLockInitiator               OCTET STRING,
+    t11FLockInitiatorIpAddrType     InetAddressType,
+    t11FLockInitiatorIpAddr         InetAddress,
+    t11FLockStatus                  INTEGER,
+    t11FLockRejectReasonCode        T11NsGs4RejectReasonCode,
+    t11FLockRejectReasonCodeExp     OCTET STRING,
+    t11FLockRejectReasonVendorCode  OCTET STRING,
+    t11FLockRowStatus               RowStatus
+}
+
+t11FLockFabricIndex OBJECT-TYPE
+    SYNTAX       T11FabricIndex
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+           "A unique index value that uniquely identifies a
+           particular Fabric.
+
+           In a Fabric conformant to FC-SW-4, multiple Virtual Fabrics
+           can operate within one (or more) physical infrastructures,
+           and this index value is used to uniquely identify a
+
+
+
+           particular (physical or virtual) Fabric within a physical
+           infrastructure.
+
+           In a Fabric conformant to versions earlier than FC-SW-4,
+           only a single Fabric could operate within a physical
+           infrastructure, and thus, the value of this Fabric Index
+           was defined to always be 1."
+    ::= { t11FLockEntry 1 }
+
+t11FLockApplicationID OBJECT-TYPE
+    SYNTAX       OCTET STRING (SIZE (1))
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+           "The Application_ID value that identifies the type of
+           application for which the Fabric is locked.
+
+           A lock established via Acquire Change Authorization (ACA)
+           does not, strictly speaking, have an Application_ID value.
+           However, the value 'FF'h (255 decimal) has been reserved
+           by T11 to be used as the value of this MIB object as and
+           when a lock is established by an ACA.  This value was
+           initially documented in a letter from the FC-SW-5 Editor
+           to T11.5, which was approved by the T11 and T11.5 plenary
+           meetings on October 5, 2006."
+    REFERENCE
+           "Fibre Channel - Switch Fabric-4 (FC-SW-4),
+           ANSI INCITS 418-2006, April 2006, Table 116.
+
+           'FC-SW-5 Letter to T11.5' ANSI INCITS T11/06-679v0,
+           http://www.t11.org/ftp/t11/pub/fc/sw-5/06-679v0.pdf,
+           21 September 2006."
+    ::= { t11FLockEntry 2 }
+
+t11FLockInitiatorType OBJECT-TYPE
+    SYNTAX        INTEGER {
+                      other(1),
+                      ssb(2),
+                      cli(3),
+                      snmp(4)
+                  }
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "This object specifies what type of initiator generated
+           the request that caused this lock to be established:
+
+               other     - none of the following.
+
+
+
+               ssb       - this lock was established due to the
+                           receipt of an SSB, e.g., from a GS-5
+                           client.
+               cli       - this lock was established in order
+                           to process a Command Line Interface
+                           (CLI) command.
+               snmp      - this lock was established as a result
+                           of an SNMP SetRequest.
+           "
+    ::= { t11FLockEntry 3 }
+
+t11FLockInitiator OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE(0..64))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+           "This object specifies the initiator whose request
+           caused this lock to be established.
+
+           If the value of the corresponding instance
+           of t11FLockInitiatorType is 'ssb', this
+           object will contain the FC_ID of the client
+           that issued the Server Session Begin (SSB)
+           that required the lock to be established.
+
+           If the value of the corresponding instance
+           of t11FLockInitiatorType object is 'cli', this
+           object will contain the user name of the CLI
+           (Command Line Interface) user on whose behalf
+           the lock was established.
+
+           If the value of the corresponding instance of
+           t11FLockInitiatorType is 'snmp', this object
+           will contain the SNMP securityName used by the
+           SNMPv3 message containing the SetRequest that
+           created this row.  (If the row was created via
+           SNMPv1 or SNMPv2c, then the appropriate value of
+           the snmpCommunitySecurityName is used.)"
+    REFERENCE
+           "Fibre Channel - Generic Services-5 (FC-GS-5),
+           ANSI INCITS 427-2007, section 4.9.5.2.
+
+           SNMP securityName is defined in RFC 3411, 'An
+           Architecture for Describing Simple Network
+           Management Protocol (SNMP) Management Frameworks'.
+
+           snmpCommunitySecurityName is defined in RFC 3584,
+           'Coexistence between Version 1, Version 2, and
+
+
+
+           Version 3 of the Internet-standard Network
+           Management Framework.'"
+    ::= { t11FLockEntry 4 }
+
+t11FLockInitiatorIpAddrType OBJECT-TYPE
+    SYNTAX          InetAddressType
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+           "This object specifies the type of IP address contained
+           in the corresponding instance of t11FLockInitiatorIpAddr.
+           If the IP address of the location of the initiator is
+           unknown or not applicable, this object has the value:
+           'unknown'."
+    ::= { t11FLockEntry 5 }
+
+t11FLockInitiatorIpAddr OBJECT-TYPE
+    SYNTAX          InetAddress
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+           "This object specifies the IP address of the location
+           of the initiator that established this lock via a
+           request of the type given by the corresponding instance
+           of t11FLockInitiatorType.  In cases where the
+           corresponding instance of t11FLockInitiatorIpAddrType has
+           the value: 'unknown', the value of this object is the
+           zero-length string."
+    ::= { t11FLockEntry 6 }
+
+t11FLockStatus OBJECT-TYPE
+    SYNTAX        INTEGER {
+                      active(1),
+                      settingUp(2),
+                      rejectFailure(3),
+                      otherFailure(4)
+                  }
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "This object gives the current status of the lock:
+
+              'active'        -- the lock is currently established.
+              'settingUp'     -- the 'managing' switch is currently
+                                 attempting to set up the lock, e.g.,
+                                 it is waiting to receive Accepts
+                                 for ACAs from every switch in the
+                                 Fabric.
+
+
+
+              'rejectFailure' -- the 'managing' switch's attempt to
+                                 set up the lock was rejected with
+                                 the reason codes given by:
+                                    t11FLockRejectReasonCode,
+                                    t11FLockRejectReasonCodeExp and
+                                    t11FLockRejectReasonVendorCode.
+              'otherFailure'  -- the 'managing' switch's attempt
+                                 to set up the lock failed (but no
+                                 reason codes are available).
+
+           For values of t11FLockInitiatorType other than 'snmp',
+           a row is only required to be instantiated in this table
+           when the value of this object is 'active'.
+
+           If the value of the corresponding instance of
+           t11FLockInitiatorType is 'snmp', the initial value of this
+           object when the row is first created is 'settingUp'.  As
+           and when the setup succeeds, the value transitions to
+           'active'.  If the setup fails, the value transitions to
+           either 'rejectFailure' or 'otherFailure'.  Note that such a
+           failure value is overwritten on the next attempt to obtain
+           the lock, which could be immediately after the failure,
+           e.g., by a GS-5 client.
+
+           When the value of this object is 'rejectFailure', the
+           rejection's reason codes are given by the corresponding
+           values of t11FLockRejectReasonCode,
+           t11FLockRejectReasonCodeExp and
+           t11FLockRejectReasonVendorCode."
+    ::= { t11FLockEntry 7 }
+
+t11FLockRejectReasonCode OBJECT-TYPE
+    SYNTAX        T11NsGs4RejectReasonCode
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "When the value of the corresponding instance of
+           t11FLockStatus is 'rejectFailure', this object contains
+           the rejection's reason code."
+    REFERENCE
+           "Fibre Channel - Generic Services-5 (FC-GS-5),
+           ANSI INCITS 427-2007, section 4.4.4 and table 10."
+    ::= { t11FLockEntry 8 }
+
+t11FLockRejectReasonCodeExp OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE(0 | 1))
+    MAX-ACCESS    read-only
+    STATUS        current
+
+
+
+    DESCRIPTION
+           "When the value of the corresponding instance of
+           t11FLockStatus is 'rejectFailure', this object contains
+           the rejection's reason code explanation."
+    REFERENCE
+           "Fibre Channel - Generic Services-5 (FC-GS-5),
+           ANSI INCITS 427-2007, sections 4.4.4 and 6.4.9,
+           tables 10 and 252."
+    ::= { t11FLockEntry 9 }
+
+t11FLockRejectReasonVendorCode OBJECT-TYPE
+    SYNTAX        OCTET STRING (SIZE(0 | 1))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+           "When the value of the corresponding instance of
+           t11FLockStatus is 'rejectFailure', this object contains
+           the rejection's vendor-specific code."
+    REFERENCE
+           "Fibre Channel - Generic Services-5 (FC-GS-5),
+           ANSI INCITS 427-2007, section 4.4.4."
+    ::= { t11FLockEntry 10 }
+
+t11FLockRowStatus OBJECT-TYPE
+    SYNTAX        RowStatus
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+           "The status of this conceptual row.
+
+           A row in this table can be modified or deleted via
+           this object only when the row's value of
+           t11FLockInitiatorType is 'snmp'."
+    ::= { t11FLockEntry 11 }
+
+-- Conformance
+
+t11FLockMIBCompliances
+                     OBJECT IDENTIFIER ::= { t11FLockMIBConformance 1 }
+t11FLockMIBGroups    OBJECT IDENTIFIER ::= { t11FLockMIBConformance 2 }
+
+t11FLockMIBCompliance MODULE-COMPLIANCE
+    STATUS       current
+    DESCRIPTION
+           "The compliance statement for entities that support
+           Fabric locks in support of GS-5 Server applications."
+    MODULE MANDATORY-GROUPS { t11FLockActiveGroup }
+
+
+
+
+    OBJECT       t11FLockRowStatus
+    MIN-ACCESS   read-only
+    DESCRIPTION
+           "Write access is not required."
+
+    ::= { t11FLockMIBCompliances 1 }
+
+-- Units of Conformance
+
+t11FLockActiveGroup OBJECT-GROUP
+    OBJECTS  { t11FLockInitiatorType,
+               t11FLockInitiator,
+               t11FLockInitiatorIpAddrType,
+               t11FLockInitiatorIpAddr,
+               t11FLockStatus,
+               t11FLockRejectReasonCode,
+               t11FLockRejectReasonCodeExp,
+               t11FLockRejectReasonVendorCode,
+               t11FLockRowStatus
+             }
+    STATUS   current
+    DESCRIPTION
+           "A collection of objects containing information
+           about current Fabric locks."
+    ::= { t11FLockMIBGroups 1 }
+
+END

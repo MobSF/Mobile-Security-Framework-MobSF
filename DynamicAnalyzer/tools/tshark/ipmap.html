@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Wireshark: IP Location Map</title>
+    <style type="text/css">
+    body {
+      font-family: Arial, Helvetica, sans-serif; font-size: 13px;
+      line-height: 17px;
+    }
+    </style>
+    <script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js"></script>
+    <script type="text/javascript" src="http://openstreetmap.org/openlayers/OpenStreetMap.js"></script>
+
+    <script type="text/javascript">
+        <!--
+        var map, layer;
+        var selectControl, selectedFeature;
+
+        function onPopupClose(event) {
+            selectControl.unselect(this.feature);
+        }
+
+        function EndpointSelected(event) {
+            var feature = event.feature;
+            popup = new OpenLayers.Popup.FramedCloud("endpoint",
+                feature.geometry.getBounds().getCenterLonLat(),
+                new OpenLayers.Size(25,25),
+                "<h3>"+ feature.attributes.title + "</h3>" +
+                feature.attributes.description,
+                null, true, onPopupClose);
+            feature.popup = popup;
+            popup.feature = feature;
+            map.addPopup(popup);
+        }
+
+        function EndpointUnselected(event) {
+            var feature = event.feature;
+            if (feature.popup) {
+                popup.feature = null;
+                map.removePopup(feature.popup);
+                feature.popup.destroy();
+                feature.popup = null;
+            }
+        }
+
+        function init() {
+            var endpoints = {
+                "type": "FeatureCollection",
+                "features": [ // Start endpoint list - MUST match hostlist_table.c
+                ]
+            };
+            map = new OpenLayers.Map('map', {
+                controls: [
+                    new OpenLayers.Control.PanZoomBar(),
+                    new OpenLayers.Control.ZoomBox(),
+                    new OpenLayers.Control.ScaleLine(),
+                    new OpenLayers.Control.MousePosition(),
+                    new OpenLayers.Control.Navigation(),
+                    new OpenLayers.Control.Attribution()
+                    ]
+                //projection: new OpenLayers.Projection("EPSG:900913"),
+                //displayProjection: new OpenLayers.Projection("EPSG:4326"),
+                //maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34, 20037508.34, 20037508.34),
+                //numZoomLevels: 18,
+                //maxResolution: 156543,
+                //units: "m"
+            });
+            layer = new OpenLayers.Layer.WMS("OpenLayers WMS",
+                    "http://vmap0.tiles.osgeo.org/wms/vmap0",
+                    {layers: 'basic'},
+                    {wrapDateLine: true} );
+            map.addLayer(layer);
+            //map.addLayer(new OpenLayers.Layer.OSM.Mapnik("Mapnik"));
+            //map.addLayer(new OpenLayers.Layer.Text("IP Locations", {
+            //    location: map_file, projection: new OpenLayers.Projection("EPSG:4326")} ) );
+            //
+            //map.setCenter(new OpenLayers.LonLat(lon, lat), zoom);
+
+            var geojson_format = new OpenLayers.Format.GeoJSON();
+            var vector_layer = new OpenLayers.Layer.Vector("IP Endpoints");
+            map.addLayer(vector_layer);
+            vector_layer.addFeatures(geojson_format.read(endpoints));
+
+            if (endpoints.features.length < 1) {
+                document.getElementById("statusmsg").innerHTML = "No endpoints to map";
+            } else {
+                map.zoomToExtent(vector_layer.getDataExtent());
+            }
+
+            selectControl = new OpenLayers.Control.SelectFeature(vector_layer);
+            map.addControl(selectControl);
+            selectControl.activate();
+
+            vector_layer.events.on({
+                'featureselected': EndpointSelected,
+                'featureunselected': EndpointUnselected
+            });
+        }
+        // -->
+    </script>
+  </head>
+  <body onload="init()">
+    <div id="statusmsg" style="float: right; z-index: 9999;"></div>
+    <div id="map" style="z-index: 0;"></div>
+  </body>
+</html>

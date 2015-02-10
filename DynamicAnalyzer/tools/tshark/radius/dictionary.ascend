@@ -1,0 +1,1322 @@
+# -*- text -*-
+##############################################################################
+#
+#	Ascend dictionary.
+#
+#	$Id$
+#
+##############################################################################
+
+#
+#	For 16-bit Ascend VSA's, see dictionary.lucent.  Those VSA's
+#	are in the Lucent namespace, and belong in that file, rather
+#	than here.
+#
+#
+#  The Ascend-Data-Filter and Ascend-Call-Filter are case insensitive
+#  strings, with the following format:
+#
+#  IP FILTERS:
+#
+#	ip dir action [ dstip n.n.n.n/nn ] [ srcip n.n.n.n/nn ]
+#	    [ proto [ dstport cmp value ] [ srcport cmd value ] [ est ] ]
+#
+# Fields in [...] are optional.
+#	where:
+#
+#	ip:		Keyword to designate an IP filter. Actually this
+#			has been determined by parseFilter.
+#
+#	dir:		Filter direction. "IN" or "OUT"
+#
+#	action:		Filter action. "FORWARD" or "DROP"
+#
+#	dstip:		Keyword for destination IP address.
+#			n.n.n.n = IP address. /nn - netmask.
+#
+#	srcip:		Keyword for source IP address.
+#			n.n.n.n = IP address. /nn - netmask.
+#
+#	proto:		Optional protocol field. Either a name or
+#			number. Known names are in FilterProtoName[].
+#
+#	dstport:	Keyword for destination port. Only valid with tcp
+#			or udp. 'cmp' are in FilterPortType[]. 'value' can be
+#			a name or number.
+#
+#	srcport:	Keyword for source port. Only valid with tcp
+#			or udp. 'cmp' are in FilterPortType[]. 'value' can be
+#			a name or number.
+#
+#	est:		Keyword for TCP established. Valid only for tcp.
+#
+#  IPX FILTERS
+#
+#  ipx dir action [ srcipxnet nnnn srcipxnode mmmmm [srcipxsoc cmd value ]]
+#                 [ dstipxnet nnnn dstipxnode mmmmm [dstipxsoc cmd value ]]
+#
+# Fields in [...] are optional.
+#	where:
+#
+#	ipx:		Keyword to designate an IPX filter. Actually this
+#			has been determined by parseFilter.
+#
+#	dir:		Filter direction. "IN" or "OUT"
+#
+#	action:		Filter action. "FORWARD" or "DROP"
+#
+#	srcipxnet:      Keyword for source IPX address.
+#			nnnn = IPX Node address.
+#
+#	srcipxnode:     Keyword for source IPX Node address.
+#                  	mmmmm = IPX Node Address, could be FFFFFF.
+#                  	A vlid ipx node number should accompany ipx net number.
+#
+#	srcipxsoc:      Keyword for source IPX socket address.
+#
+#	cmd:            One of ">" or "<" or "=" or "!=".
+#			(without the quotes)
+#
+# 	value:          Socket value to be compared against, in hex.
+#
+#	dstipxnet:	Keyword for destination IPX address.
+#			nnnn = IPX Node address.
+#
+#	dstipxnode:	Keyword for destination IPX Node address.
+#  			mmmmm = IPX Node Address, could be FFFFFF.
+#			A vlid ipx node number should accompany ipx net number.
+#
+#	dstipxsoc:	Keyword for destination IPX socket address.
+#
+#	cmd:		One of ">" or "<" or "=" or "!=".
+#			(without the quotes)
+#
+#	value:		Socket value to be compared against, in hex.
+#
+#  GENERIC FILTERS
+#
+#	generic dir action offset mask value [== or != ] [more]
+#
+# Fields in [...] are optional.
+#	where:
+#
+# 	generic:	Keyword to indicate a generic filter. This
+#			has been determined by parseFilter.
+#
+#	dir:		Filter direction. "IN" or "OUT"
+#
+#	action:		Filter action. "FORWARD" or "DROP"
+#
+#	offset:		A Number. Specifies an offset into a frame
+#			to start comparing.
+#
+#	mask:		A hexadecimal mask of bits to compare.
+#
+#	value:		A value to compare with the masked data.
+#
+#	compNeq:	Defines type of comparison. ( "==" or "!=")
+#			Default is "==".
+#
+#	more:		Optional keyword MORE, to represent the attachment
+#			to the next entry.
+
+VENDOR		Ascend				529
+
+#
+#  Ascend vendor-specific attributes.
+#
+BEGIN-VENDOR	Ascend
+ATTRIBUTE	Ascend-Max-Shared-Users			2	integer
+ATTRIBUTE	Ascend-UU-Info				7	string
+ATTRIBUTE	Ascend-CIR-Timer			9	integer
+ATTRIBUTE	Ascend-FR-08-Mode			10	integer
+ATTRIBUTE	Ascend-Destination-Nas-Port		11	integer
+ATTRIBUTE	Ascend-FR-SVC-Addr			12	string
+ATTRIBUTE	Ascend-NAS-Port-Format			13	integer
+ATTRIBUTE	Ascend-ATM-Fault-Management		14	integer
+ATTRIBUTE	Ascend-ATM-Loopback-Cell-Loss		15	integer
+ATTRIBUTE	Ascend-Ckt-Type				16	integer
+ATTRIBUTE	Ascend-SVC-Enabled			17	integer
+ATTRIBUTE	Ascend-Session-Type			18	integer
+ATTRIBUTE	Ascend-H323-Gatekeeper			19	ipaddr
+ATTRIBUTE	Ascend-Global-Call-Id			20	string
+ATTRIBUTE	Ascend-H323-Conference-Id		21	integer
+ATTRIBUTE	Ascend-H323-Fegw-Address		22	ipaddr
+ATTRIBUTE	Ascend-H323-Dialed-Time			23	integer
+ATTRIBUTE	Ascend-Dialed-Number			24	string
+ATTRIBUTE	Ascend-Inter-Arrival-Jitter		25	integer
+ATTRIBUTE	Ascend-Dropped-Octets			26	integer
+ATTRIBUTE	Ascend-Dropped-Packets			27	integer
+ATTRIBUTE	Ascend-Auth-Delay			28	integer
+ATTRIBUTE	Ascend-X25-Pad-X3-Profile		29	integer
+ATTRIBUTE	Ascend-X25-Pad-X3-Parameters		30	string
+ATTRIBUTE	Ascend-Tunnel-VRouter-Name		31	string
+ATTRIBUTE	Ascend-X25-Reverse-Charging		32	integer
+ATTRIBUTE	Ascend-X25-Nui-Prompt			33	string
+ATTRIBUTE	Ascend-X25-Nui-Password-Prompt		34	string
+ATTRIBUTE	Ascend-X25-Cug				35	string
+ATTRIBUTE	Ascend-X25-Pad-Alias-1			36	string
+ATTRIBUTE	Ascend-X25-Pad-Alias-2			37	string
+ATTRIBUTE	Ascend-X25-Pad-Alias-3			38	string
+ATTRIBUTE	Ascend-X25-X121-Address			39	string
+ATTRIBUTE	Ascend-X25-Nui				40	string
+ATTRIBUTE	Ascend-X25-Rpoa				41	string
+ATTRIBUTE	Ascend-X25-Pad-Prompt			42	string
+ATTRIBUTE	Ascend-X25-Pad-Banner			43	string
+ATTRIBUTE	Ascend-X25-Profile-Name			44	string
+ATTRIBUTE	Ascend-Recv-Name			45	string
+ATTRIBUTE	Ascend-Bi-Directional-Auth		46	integer
+ATTRIBUTE	Ascend-MTU				47	integer
+ATTRIBUTE	Ascend-Call-Direction			48	integer
+ATTRIBUTE	Ascend-Service-Type			49	integer
+ATTRIBUTE	Ascend-Filter-Required			50	integer
+ATTRIBUTE	Ascend-Traffic-Shaper			51	integer
+ATTRIBUTE	Ascend-Access-Intercept-LEA		52	string
+ATTRIBUTE	Ascend-Access-Intercept-Log		53	string
+ATTRIBUTE	Ascend-Private-Route-Table-ID		54	string
+ATTRIBUTE	Ascend-Private-Route-Required		55	integer
+ATTRIBUTE	Ascend-Cache-Refresh			56	integer
+ATTRIBUTE	Ascend-Cache-Time			57	integer
+ATTRIBUTE	Ascend-Egress-Enabled			58	integer
+ATTRIBUTE	Ascend-QOS-Upstream			59	string
+ATTRIBUTE	Ascend-QOS-Downstream			60	string
+ATTRIBUTE	Ascend-ATM-Connect-Vpi			61	integer
+ATTRIBUTE	Ascend-ATM-Connect-Vci			62	integer
+ATTRIBUTE	Ascend-ATM-Connect-Group		63	integer
+ATTRIBUTE	Ascend-ATM-Group			64	integer
+ATTRIBUTE	Ascend-IPX-Header-Compression		65	integer
+ATTRIBUTE	Ascend-Calling-Id-Type-Of-Num		66	integer
+ATTRIBUTE	Ascend-Calling-Id-Number-Plan		67	integer
+ATTRIBUTE	Ascend-Calling-Id-Presentatn		68	integer
+ATTRIBUTE	Ascend-Calling-Id-Screening		69	integer
+ATTRIBUTE	Ascend-BIR-Enable			70	integer
+ATTRIBUTE	Ascend-BIR-Proxy			71	integer
+ATTRIBUTE	Ascend-BIR-Bridge-Group			72	integer
+ATTRIBUTE	Ascend-IPSEC-Profile			73	string
+ATTRIBUTE	Ascend-PPPoE-Enable			74	integer
+ATTRIBUTE	Ascend-Bridge-Non-PPPoE			75	integer
+ATTRIBUTE	Ascend-ATM-Direct			76	integer
+ATTRIBUTE	Ascend-ATM-Direct-Profile		77	string
+ATTRIBUTE	Ascend-Client-Primary-WINS		78	ipaddr
+ATTRIBUTE	Ascend-Client-Secondary-WINS		79	ipaddr
+ATTRIBUTE	Ascend-Client-Assign-WINS		80	integer
+ATTRIBUTE	Ascend-Auth-Type			81	integer
+ATTRIBUTE	Ascend-Port-Redir-Protocol		82	integer
+ATTRIBUTE	Ascend-Port-Redir-Portnum		83	integer
+ATTRIBUTE	Ascend-Port-Redir-Server		84	ipaddr
+ATTRIBUTE	Ascend-IP-Pool-Chaining			85	integer
+ATTRIBUTE	Ascend-Owner-IP-Addr			86	ipaddr
+ATTRIBUTE	Ascend-IP-TOS				87	integer
+ATTRIBUTE	Ascend-IP-TOS-Precedence		88	integer
+ATTRIBUTE	Ascend-IP-TOS-Apply-To			89	integer
+ATTRIBUTE	Ascend-Filter				90	string
+ATTRIBUTE	Ascend-Telnet-Profile			91	string
+ATTRIBUTE	Ascend-Dsl-Rate-Type			92	integer
+ATTRIBUTE	Ascend-Redirect-Number			93	string
+ATTRIBUTE	Ascend-ATM-Vpi				94	integer
+ATTRIBUTE	Ascend-ATM-Vci				95	integer
+ATTRIBUTE	Ascend-Source-IP-Check			96	integer
+ATTRIBUTE	Ascend-Dsl-Rate-Mode			97	integer
+ATTRIBUTE	Ascend-Dsl-Upstream-Limit		98	integer
+ATTRIBUTE	Ascend-Dsl-Downstream-Limit		99	integer
+ATTRIBUTE	Ascend-Dsl-CIR-Recv-Limit		100	integer
+ATTRIBUTE	Ascend-Dsl-CIR-Xmit-Limit		101	integer
+ATTRIBUTE	Ascend-VRouter-Name			102	string
+ATTRIBUTE	Ascend-Source-Auth			103	string
+ATTRIBUTE	Ascend-Private-Route			104	string
+ATTRIBUTE	Ascend-Numbering-Plan-ID		105	integer
+ATTRIBUTE	Ascend-FR-Link-Status-DLCI		106	integer
+ATTRIBUTE	Ascend-Calling-Subaddress		107	string
+ATTRIBUTE	Ascend-Callback-Delay			108	integer
+ATTRIBUTE	Ascend-Endpoint-Disc			109	string
+ATTRIBUTE	Ascend-Remote-FW			110	string
+ATTRIBUTE	Ascend-Multicast-GLeave-Delay		111	integer
+ATTRIBUTE	Ascend-CBCP-Enable			112	integer
+ATTRIBUTE	Ascend-CBCP-Mode			113	integer
+ATTRIBUTE	Ascend-CBCP-Delay			114	integer
+ATTRIBUTE	Ascend-CBCP-Trunk-Group			115	integer
+ATTRIBUTE	Ascend-Appletalk-Route			116	string
+ATTRIBUTE	Ascend-Appletalk-Peer-Mode		117	integer
+ATTRIBUTE	Ascend-Route-Appletalk			118	integer
+ATTRIBUTE	Ascend-FCP-Parameter			119	string
+ATTRIBUTE	Ascend-Modem-PortNo			120	integer
+ATTRIBUTE	Ascend-Modem-SlotNo			121	integer
+ATTRIBUTE	Ascend-Modem-ShelfNo			122	integer
+ATTRIBUTE	Ascend-Call-Attempt-Limit		123	integer
+ATTRIBUTE	Ascend-Call-Block-Duration		124	integer
+ATTRIBUTE	Ascend-Maximum-Call-Duration		125	integer
+ATTRIBUTE	Ascend-Temporary-Rtes			126	integer
+ATTRIBUTE	Ascend-Tunneling-Protocol		127	integer
+ATTRIBUTE	Ascend-Shared-Profile-Enable		128	integer
+ATTRIBUTE	Ascend-Primary-Home-Agent		129	string
+ATTRIBUTE	Ascend-Secondary-Home-Agent		130	string
+ATTRIBUTE	Ascend-Dialout-Allowed			131	integer
+ATTRIBUTE	Ascend-Client-Gateway			132	ipaddr
+ATTRIBUTE	Ascend-BACP-Enable			133	integer
+ATTRIBUTE	Ascend-DHCP-Maximum-Leases		134	integer
+ATTRIBUTE	Ascend-Client-Primary-DNS		135	ipaddr
+ATTRIBUTE	Ascend-Client-Secondary-DNS		136	ipaddr
+ATTRIBUTE	Ascend-Client-Assign-DNS		137	integer
+ATTRIBUTE	Ascend-User-Acct-Type			138	integer
+ATTRIBUTE	Ascend-User-Acct-Host			139	ipaddr
+ATTRIBUTE	Ascend-User-Acct-Port			140	integer
+ATTRIBUTE	Ascend-User-Acct-Key			141	string
+ATTRIBUTE	Ascend-User-Acct-Base			142	integer
+ATTRIBUTE	Ascend-User-Acct-Time			143	integer
+ATTRIBUTE	Ascend-Assign-IP-Client			144	ipaddr
+ATTRIBUTE	Ascend-Assign-IP-Server			145	ipaddr
+ATTRIBUTE	Ascend-Assign-IP-Global-Pool		146	string
+ATTRIBUTE	Ascend-DHCP-Reply			147	integer
+ATTRIBUTE	Ascend-DHCP-Pool-Number			148	integer
+ATTRIBUTE	Ascend-Expect-Callback			149	integer
+ATTRIBUTE	Ascend-Event-Type			150	integer
+ATTRIBUTE	Ascend-Session-Svr-Key			151	string
+ATTRIBUTE	Ascend-Multicast-Rate-Limit		152	integer
+ATTRIBUTE	Ascend-IF-Netmask			153	ipaddr
+ATTRIBUTE	Ascend-Remote-Addr			154	ipaddr
+ATTRIBUTE	Ascend-Multicast-Client			155	integer
+ATTRIBUTE	Ascend-FR-Circuit-Name			156	string
+ATTRIBUTE	Ascend-FR-LinkUp			157	integer
+ATTRIBUTE	Ascend-FR-Nailed-Grp			158	integer
+ATTRIBUTE	Ascend-FR-Type				159	integer
+ATTRIBUTE	Ascend-FR-Link-Mgt			160	integer
+ATTRIBUTE	Ascend-FR-N391				161	integer
+ATTRIBUTE	Ascend-FR-DCE-N392			162	integer
+ATTRIBUTE	Ascend-FR-DTE-N392			163	integer
+ATTRIBUTE	Ascend-FR-DCE-N393			164	integer
+ATTRIBUTE	Ascend-FR-DTE-N393			165	integer
+ATTRIBUTE	Ascend-FR-T391				166	integer
+ATTRIBUTE	Ascend-FR-T392				167	integer
+ATTRIBUTE	Ascend-Bridge-Address			168	string
+ATTRIBUTE	Ascend-TS-Idle-Limit			169	integer
+ATTRIBUTE	Ascend-TS-Idle-Mode			170	integer
+ATTRIBUTE	Ascend-DBA-Monitor			171	integer
+ATTRIBUTE	Ascend-Base-Channel-Count		172	integer
+ATTRIBUTE	Ascend-Minimum-Channels			173	integer
+ATTRIBUTE	Ascend-IPX-Route			174	string
+ATTRIBUTE	Ascend-FT1-Caller			175	integer
+ATTRIBUTE	Ascend-Backup				176	string
+ATTRIBUTE	Ascend-Call-Type			177	integer
+ATTRIBUTE	Ascend-Group				178	string
+ATTRIBUTE	Ascend-FR-DLCI				179	integer
+ATTRIBUTE	Ascend-FR-Profile-Name			180	string
+ATTRIBUTE	Ascend-Ara-PW				181	string
+ATTRIBUTE	Ascend-IPX-Node-Addr			182	string
+ATTRIBUTE	Ascend-Home-Agent-IP-Addr		183	ipaddr
+ATTRIBUTE	Ascend-Home-Agent-Password		184	string
+ATTRIBUTE	Ascend-Home-Network-Name		185	string
+ATTRIBUTE	Ascend-Home-Agent-UDP-Port		186	integer
+ATTRIBUTE	Ascend-Multilink-ID			187	integer
+ATTRIBUTE	Ascend-Num-In-Multilink			188	integer
+ATTRIBUTE	Ascend-First-Dest			189	ipaddr
+ATTRIBUTE	Ascend-Pre-Input-Octets			190	integer
+ATTRIBUTE	Ascend-Pre-Output-Octets		191	integer
+ATTRIBUTE	Ascend-Pre-Input-Packets		192	integer
+ATTRIBUTE	Ascend-Pre-Output-Packets		193	integer
+ATTRIBUTE	Ascend-Maximum-Time			194	integer
+ATTRIBUTE	Ascend-Disconnect-Cause			195	integer
+ATTRIBUTE	Ascend-Connect-Progress			196	integer
+ATTRIBUTE	Ascend-Data-Rate			197	integer
+ATTRIBUTE	Ascend-PreSession-Time			198	integer
+ATTRIBUTE	Ascend-Token-Idle			199	integer
+ATTRIBUTE	Ascend-Token-Immediate			200	integer
+ATTRIBUTE	Ascend-Require-Auth			201	integer
+ATTRIBUTE	Ascend-Number-Sessions			202	string
+ATTRIBUTE	Ascend-Authen-Alias			203	string
+ATTRIBUTE	Ascend-Token-Expiry			204	integer
+ATTRIBUTE	Ascend-Menu-Selector			205	string
+ATTRIBUTE	Ascend-Menu-Item			206	string
+ATTRIBUTE	Ascend-PW-Warntime			207	integer
+ATTRIBUTE	Ascend-PW-Lifetime			208	integer
+ATTRIBUTE	Ascend-IP-Direct			209	ipaddr
+ATTRIBUTE	Ascend-PPP-VJ-Slot-Comp			210	integer
+ATTRIBUTE	Ascend-PPP-VJ-1172			211	integer
+ATTRIBUTE	Ascend-PPP-Async-Map			212	integer
+ATTRIBUTE	Ascend-Third-Prompt			213	string
+ATTRIBUTE	Ascend-Send-Secret			214	string	encrypt=3
+ATTRIBUTE	Ascend-Receive-Secret			215	string	encrypt=3
+ATTRIBUTE	Ascend-IPX-Peer-Mode			216	integer
+ATTRIBUTE	Ascend-IP-Pool-Definition		217	string
+ATTRIBUTE	Ascend-Assign-IP-Pool			218	integer
+ATTRIBUTE	Ascend-FR-Direct			219	integer
+ATTRIBUTE	Ascend-FR-Direct-Profile		220	string
+ATTRIBUTE	Ascend-FR-Direct-DLCI			221	integer
+ATTRIBUTE	Ascend-Handle-IPX			222	integer
+ATTRIBUTE	Ascend-Netware-timeout			223	integer
+ATTRIBUTE	Ascend-IPX-Alias			224	integer
+ATTRIBUTE	Ascend-Metric				225	integer
+ATTRIBUTE	Ascend-PRI-Number-Type			226	integer
+ATTRIBUTE	Ascend-Dial-Number			227	string
+ATTRIBUTE	Ascend-Route-IP				228	integer
+ATTRIBUTE	Ascend-Route-IPX			229	integer
+ATTRIBUTE	Ascend-Bridge				230	integer
+ATTRIBUTE	Ascend-Send-Auth			231	integer
+ATTRIBUTE	Ascend-Send-Passwd			232	string
+ATTRIBUTE	Ascend-Link-Compression			233	integer
+ATTRIBUTE	Ascend-Target-Util			234	integer
+ATTRIBUTE	Ascend-Maximum-Channels			235	integer
+ATTRIBUTE	Ascend-Inc-Channel-Count		236	integer
+ATTRIBUTE	Ascend-Dec-Channel-Count		237	integer
+ATTRIBUTE	Ascend-Seconds-Of-History		238	integer
+ATTRIBUTE	Ascend-History-Weigh-Type		239	integer
+ATTRIBUTE	Ascend-Add-Seconds			240	integer
+ATTRIBUTE	Ascend-Remove-Seconds			241	integer
+ATTRIBUTE	Ascend-Data-Filter			242	abinary
+ATTRIBUTE	Ascend-Call-Filter			243	abinary
+ATTRIBUTE	Ascend-Idle-Limit			244	integer
+ATTRIBUTE	Ascend-Preempt-Limit			245	integer
+ATTRIBUTE	Ascend-Callback				246	integer
+ATTRIBUTE	Ascend-Data-Svc				247	integer
+ATTRIBUTE	Ascend-Force-56				248	integer
+ATTRIBUTE	Ascend-Billing-Number			249	string
+ATTRIBUTE	Ascend-Call-By-Call			250	integer
+ATTRIBUTE	Ascend-Transit-Number			251	string
+ATTRIBUTE	Ascend-Host-Info			252	string
+ATTRIBUTE	Ascend-PPP-Address			253	ipaddr
+ATTRIBUTE	Ascend-MPP-Idle-Percent			254	integer
+ATTRIBUTE	Ascend-Xmit-Rate			255	integer
+
+# Ascend protocols
+VALUE	Service-Type			Dialout-Framed-User	5
+VALUE	Framed-Protocol			Ascend-ARA		255
+VALUE	Framed-Protocol			Ascend-MPP		256
+VALUE	Framed-Protocol			Ascend-EURAW		257
+VALUE	Framed-Protocol			Ascend-EUUI		258
+VALUE	Framed-Protocol			Ascend-X25		259
+VALUE	Framed-Protocol			Ascend-COMB		260
+VALUE	Framed-Protocol			Ascend-FR		261
+VALUE	Framed-Protocol			Ascend-MP		262
+VALUE	Framed-Protocol			Ascend-FR-CIR		263
+
+#
+#	Ascend specific extensions
+#	Used by ASCEND MAX/Pipeline products (see above)
+#
+
+VALUE	Ascend-Source-IP-Check		Source-IP-Check-No	0
+VALUE	Ascend-Source-IP-Check		Source-IP-Check-Yes	1
+VALUE	Ascend-CBCP-Enable		CBCP-Not-Enabled	0
+VALUE	Ascend-CBCP-Enable		CBCP-Enabled		1
+VALUE	Ascend-CBCP-Mode		CBCP-No-Callback	1
+VALUE	Ascend-CBCP-Mode		CBCP-User-Callback	2
+VALUE	Ascend-CBCP-Mode		CBCP-Profile-Callback	3
+VALUE	Ascend-CBCP-Mode		CBCP-Any-Or-No		7
+VALUE	Ascend-CBCP-Mode		CBCP-Off		8
+VALUE	Ascend-FR-Direct		FR-Direct-No		0
+VALUE	Ascend-FR-Direct		FR-Direct-Yes		1
+VALUE	Ascend-Handle-IPX		Handle-IPX-None		0
+VALUE	Ascend-Handle-IPX		Handle-IPX-Client	1
+VALUE	Ascend-Handle-IPX		Handle-IPX-Server	2
+VALUE	Ascend-IPX-Peer-Mode		IPX-Peer-Router		0
+VALUE	Ascend-IPX-Peer-Mode		IPX-Peer-Dialin		1
+VALUE	Ascend-Call-Type		Switched		0
+VALUE	Ascend-Call-Type		Nailed			1
+VALUE	Ascend-Call-Type		Nailed/Mpp		2
+VALUE	Ascend-Call-Type		Perm/Switched		3
+VALUE	Ascend-Call-Type		AO/DI			6
+VALUE	Ascend-Call-Type		MegaMax			7
+VALUE	Ascend-FT1-Caller		FT1-No			0
+VALUE	Ascend-FT1-Caller		FT1-Yes			1
+VALUE	Ascend-PRI-Number-Type		Unknown-Number		0
+VALUE	Ascend-PRI-Number-Type		Intl-Number		1
+VALUE	Ascend-PRI-Number-Type		National-Number		2
+VALUE	Ascend-PRI-Number-Type		Net-Specific-Number	3
+VALUE	Ascend-PRI-Number-Type		Local-Number		4
+VALUE	Ascend-PRI-Number-Type		Abbrev-Number		5
+
+VALUE	Ascend-Route-IP			Route-IP-No		0
+VALUE	Ascend-Route-IP			Route-IP-Yes		1
+VALUE	Ascend-Route-IPX		Route-IPX-No		0
+VALUE	Ascend-Route-IPX		Route-IPX-Yes		1
+VALUE	Ascend-Bridge			Bridge-No		0
+VALUE	Ascend-Bridge			Bridge-Yes		1
+VALUE	Ascend-TS-Idle-Mode		TS-Idle-None		0
+VALUE	Ascend-TS-Idle-Mode		TS-Idle-Input		1
+VALUE	Ascend-TS-Idle-Mode		TS-Idle-Input-Output	2
+
+VALUE	Ascend-Send-Auth		Send-Auth-None		0
+VALUE	Ascend-Send-Auth		Send-Auth-PAP		1
+VALUE	Ascend-Send-Auth		Send-Auth-CHAP		2
+VALUE	Ascend-Send-Auth		Send-Auth-MS-CHAP	3
+
+VALUE	Ascend-Link-Compression		Link-Comp-None		0
+VALUE	Ascend-Link-Compression		Link-Comp-Stac		1
+VALUE	Ascend-Link-Compression		Link-Comp-Stac-Draft-9	2
+VALUE	Ascend-Link-Compression		Link-Comp-MS-Stac	3
+VALUE	Ascend-History-Weigh-Type	History-Constant	0
+VALUE	Ascend-History-Weigh-Type	History-Linear		1
+VALUE	Ascend-History-Weigh-Type	History-Quadratic	2
+VALUE	Ascend-Callback			Callback-No		0
+VALUE	Ascend-Callback			Callback-Yes		1
+VALUE	Ascend-Expect-Callback		Expect-Callback-No	0
+VALUE	Ascend-Expect-Callback		Expect-Callback-Yes	1
+VALUE	Ascend-Data-Svc			Switched-Voice-Bearer	0
+VALUE	Ascend-Data-Svc			Nailed-56KR		1
+VALUE	Ascend-Data-Svc			Nailed-64K		2
+VALUE	Ascend-Data-Svc			Switched-64KR		3
+VALUE	Ascend-Data-Svc			Switched-56K		4
+VALUE	Ascend-Data-Svc			Switched-384KR		5
+VALUE	Ascend-Data-Svc			Switched-384K		6
+VALUE	Ascend-Data-Svc			Switched-1536K		7
+VALUE	Ascend-Data-Svc			Switched-1536KR		8
+VALUE	Ascend-Data-Svc			Switched-128K		9
+VALUE	Ascend-Data-Svc			Switched-192K		10
+VALUE	Ascend-Data-Svc			Switched-256K		11
+VALUE	Ascend-Data-Svc			Switched-320K		12
+VALUE	Ascend-Data-Svc			Switched-384K-MR	13
+VALUE	Ascend-Data-Svc			Switched-448K		14
+VALUE	Ascend-Data-Svc			Switched-512K		15
+VALUE	Ascend-Data-Svc			Switched-576K		16
+VALUE	Ascend-Data-Svc			Switched-640K		17
+VALUE	Ascend-Data-Svc			Switched-704K		18
+VALUE	Ascend-Data-Svc			Switched-768K		19
+VALUE	Ascend-Data-Svc			Switched-832K		20
+VALUE	Ascend-Data-Svc			Switched-896K		21
+VALUE	Ascend-Data-Svc			Switched-960K		22
+VALUE	Ascend-Data-Svc			Switched-1024K		23
+VALUE	Ascend-Data-Svc			Switched-1088K		24
+VALUE	Ascend-Data-Svc			Switched-1152K		25
+VALUE	Ascend-Data-Svc			Switched-1216K		26
+VALUE	Ascend-Data-Svc			Switched-1280K		27
+VALUE	Ascend-Data-Svc			Switched-1344K		28
+VALUE	Ascend-Data-Svc			Switched-1408K		29
+VALUE	Ascend-Data-Svc			Switched-1472K		30
+VALUE	Ascend-Data-Svc			Switched-1600K		31
+VALUE	Ascend-Data-Svc			Switched-1664K		32
+VALUE	Ascend-Data-Svc			Switched-1728K		33
+VALUE	Ascend-Data-Svc			Switched-1792K		34
+VALUE	Ascend-Data-Svc			Switched-1856K		35
+VALUE	Ascend-Data-Svc			Switched-1920K		36
+VALUE	Ascend-Data-Svc			Switched-inherited	37
+VALUE	Ascend-Data-Svc			Switched-restricted-bearer-x30 38
+VALUE	Ascend-Data-Svc			Switched-clear-bearer-v110 39
+VALUE	Ascend-Data-Svc			Switched-restricted-64-x30 40
+VALUE	Ascend-Data-Svc			Switched-clear-56-v110	41
+VALUE	Ascend-Data-Svc			Switched-modem		42
+VALUE	Ascend-Data-Svc			Switched-atmodem	43
+VALUE	Ascend-Data-Svc			Switched-V110-24-56	45
+VALUE	Ascend-Data-Svc			Switched-V110-48-56	46
+VALUE	Ascend-Data-Svc			Switched-V110-96-56	47
+VALUE	Ascend-Data-Svc			Switched-V110-192-56	48
+VALUE	Ascend-Data-Svc			Switched-V110-384-56	49
+VALUE	Ascend-Data-Svc			Switched-V110-24-56R	50
+VALUE	Ascend-Data-Svc			Switched-V110-48-56R	51
+VALUE	Ascend-Data-Svc			Switched-V110-96-56R	52
+VALUE	Ascend-Data-Svc			Switched-V110-192-56R	53
+VALUE	Ascend-Data-Svc			Switched-V110-384-56R	54
+VALUE	Ascend-Data-Svc			Switched-V110-24-64	55
+VALUE	Ascend-Data-Svc			Switched-V110-48-64	56
+VALUE	Ascend-Data-Svc			Switched-V110-96-64	57
+VALUE	Ascend-Data-Svc			Switched-V110-192-64	58
+VALUE	Ascend-Data-Svc			Switched-V110-384-64	59
+VALUE	Ascend-Data-Svc			Switched-V110-24-64R	60
+VALUE	Ascend-Data-Svc			Switched-V110-48-64R	61
+VALUE	Ascend-Data-Svc			Switched-V110-96-64R	62
+VALUE	Ascend-Data-Svc			Switched-V110-384-64R	64
+VALUE	Ascend-Data-Svc			Switched-V110-192-64R	63
+
+VALUE	Ascend-Data-Svc			Switched-Pots		68
+VALUE	Ascend-Data-Svc			Switched-ATM		69
+VALUE	Ascend-Data-Svc			Switched-FR		70
+
+VALUE	Ascend-Force-56			Force-56-No		0
+VALUE	Ascend-Force-56			Force-56-Yes		1
+VALUE	Ascend-PW-Lifetime		Lifetime-In-Days	0
+VALUE	Ascend-PW-Warntime		Days-Of-Warning		0
+VALUE	Ascend-PPP-VJ-1172		PPP-VJ-1172		1
+VALUE	Ascend-PPP-VJ-Slot-Comp		VJ-Slot-Comp-No		1
+VALUE	Ascend-Require-Auth		Not-Require-Auth	0
+VALUE	Ascend-Require-Auth		Require-Auth		1
+VALUE	Ascend-Token-Immediate		Tok-Imm-No		0
+VALUE	Ascend-Token-Immediate		Tok-Imm-Yes		1
+VALUE	Ascend-DBA-Monitor		DBA-Transmit		0
+VALUE	Ascend-DBA-Monitor		DBA-Transmit-Recv	1
+VALUE	Ascend-DBA-Monitor		DBA-None		2
+VALUE	Ascend-FR-Type			Ascend-FR-DTE		0
+VALUE	Ascend-FR-Type			Ascend-FR-DCE		1
+VALUE	Ascend-FR-Type			Ascend-FR-NNI		2
+VALUE	Ascend-FR-Link-Mgt		Ascend-FR-No-Link-Mgt	0
+VALUE	Ascend-FR-Link-Mgt		Ascend-FR-T1-617D	1
+VALUE	Ascend-FR-Link-Mgt		Ascend-FR-Q-933A	2
+VALUE	Ascend-FR-LinkUp		Ascend-LinkUp-Default	0
+VALUE	Ascend-FR-LinkUp		Ascend-LinkUp-AlwaysUp	1
+VALUE	Ascend-Multicast-Client		Multicast-No		0
+VALUE	Ascend-Multicast-Client		Multicast-Yes		1
+VALUE	Ascend-User-Acct-Type		Ascend-User-Acct-None	0
+VALUE	Ascend-User-Acct-Type		Ascend-User-Acct-User	1
+VALUE	Ascend-User-Acct-Type		Ascend-User-Acct-User-Default 2
+VALUE	Ascend-User-Acct-Base		Base-10			0
+VALUE	Ascend-User-Acct-Base		Base-16			1
+VALUE	Ascend-DHCP-Reply		DHCP-Reply-No		0
+VALUE	Ascend-DHCP-Reply		DHCP-Reply-Yes		1
+VALUE	Ascend-Client-Assign-DNS	DNS-Assign-No		0
+VALUE	Ascend-Client-Assign-DNS	DNS-Assign-Yes		1
+VALUE	Ascend-Event-Type		Ascend-ColdStart	1
+VALUE	Ascend-Event-Type		Ascend-Session-Event	2
+VALUE	Ascend-BACP-Enable		BACP-No			0
+VALUE	Ascend-BACP-Enable		BACP-Yes		1
+
+VALUE	Ascend-Dialout-Allowed		Dialout-Not-Allowed	0
+VALUE	Ascend-Dialout-Allowed		Dialout-Allowed		1
+
+VALUE	Ascend-Shared-Profile-Enable	Shared-Profile-No	0
+VALUE	Ascend-Shared-Profile-Enable	Shared-Profile-Yes	1
+
+VALUE	Ascend-Temporary-Rtes		Temp-Rtes-No		0
+VALUE	Ascend-Temporary-Rtes		Temp-Rtes-Yes		1
+
+# Ascend Disconnect Cause Values
+
+VALUE	Ascend-Disconnect-Cause		No-Reason		0
+VALUE	Ascend-Disconnect-Cause		Not-Applicable		1
+VALUE	Ascend-Disconnect-Cause		Unknown			2
+VALUE	Ascend-Disconnect-Cause		Call-Disconnected	3
+VALUE	Ascend-Disconnect-Cause		CLID-Authentication-Failed 4
+VALUE	Ascend-Disconnect-Cause		CLID-RADIUS-Timeout	5
+
+VALUE	Ascend-Disconnect-Cause		Modem-No-DCD		10
+VALUE	Ascend-Disconnect-Cause		DCD-Detected-Then-Inactive 11
+VALUE	Ascend-Disconnect-Cause		Modem-Invalid-Result-Codes 12
+
+VALUE	Ascend-Disconnect-Cause		TermSrv-User-Quit	20
+VALUE	Ascend-Disconnect-Cause		TermSrv-Idle-Timeout	21
+VALUE	Ascend-Disconnect-Cause		TermSrv-Exit-Telnet	22
+VALUE	Ascend-Disconnect-Cause		TermSrv-No-IPaddr	23
+VALUE	Ascend-Disconnect-Cause		TermSrv-Exit-Raw-TCP	24
+VALUE	Ascend-Disconnect-Cause		TermSrv-Exit-Login-Failed 25
+VALUE	Ascend-Disconnect-Cause		TermSrv-Exit-Raw-TCP-Disabled 26
+VALUE	Ascend-Disconnect-Cause		TermSrv-CTRL-C-In-Login	27
+VALUE	Ascend-Disconnect-Cause		TermSrv-Destroyed	28
+VALUE	Ascend-Disconnect-Cause		TermSrv-User-Closed-VCon 29
+
+VALUE	Ascend-Disconnect-Cause		TermSrv-VCon-Destroyed	30
+VALUE	Ascend-Disconnect-Cause		TermSrv-Exit-Rlogin	31
+VALUE	Ascend-Disconnect-Cause		TermSrv-Bad-Rlogin-Option 32
+VALUE	Ascend-Disconnect-Cause		TermSrv-Not-Enough-Resources 33
+
+VALUE	Ascend-Disconnect-Cause		MPP-No-NULL-Msg-Timeout	35
+
+VALUE	Ascend-Disconnect-Cause		PPP-LCP-Timeout		40
+VALUE	Ascend-Disconnect-Cause		PPP-LCP-Negotion-Failed	41
+VALUE	Ascend-Disconnect-Cause		PPP-PAP-Auth-Failed	42
+VALUE	Ascend-Disconnect-Cause		PPP-CHAP-Auth-Failed	43
+VALUE	Ascend-Disconnect-Cause		PPP-Rmt-Auth-Failed	44
+VALUE	Ascend-Disconnect-Cause		PPP-Rcv-Terminate-Req	45
+VALUE	Ascend-Disconnect-Cause		PPP-Rcv-Close-Event	46
+VALUE	Ascend-Disconnect-Cause		PPP-No-NCPs-Open	47
+VALUE	Ascend-Disconnect-Cause		PPP-MP-Bundle-Unknown	48
+VALUE	Ascend-Disconnect-Cause		PPP-LCP-Close-MP-Add-Fail 49
+
+VALUE	Ascend-Disconnect-Cause		Session-Table-Full	50
+VALUE	Ascend-Disconnect-Cause		Out-Of-Resources	51
+VALUE	Ascend-Disconnect-Cause		Invalid-IP-Address	52
+VALUE	Ascend-Disconnect-Cause		Hostname-Resolution-Failed 53
+VALUE	Ascend-Disconnect-Cause		Bad-Or-Missing-Port-Number 54
+
+VALUE	Ascend-Disconnect-Cause		Host-Reset		60
+VALUE	Ascend-Disconnect-Cause		Connection-Refused	61
+VALUE	Ascend-Disconnect-Cause		Connection-Timeout	62
+VALUE	Ascend-Disconnect-Cause		Connection-Closed	63
+VALUE	Ascend-Disconnect-Cause		Network-Unreachable	64
+VALUE	Ascend-Disconnect-Cause		Host-Unreachable	65
+VALUE	Ascend-Disconnect-Cause		Network-Unreachable-Admin 66
+VALUE	Ascend-Disconnect-Cause		Host-Unreachable-Admin	67
+VALUE	Ascend-Disconnect-Cause		Port-Unreachable	68
+
+VALUE	Ascend-Disconnect-Cause		Session-Timeout		100
+VALUE	Ascend-Disconnect-Cause		Invalid-Incoming-User	101
+VALUE	Ascend-Disconnect-Cause		Disconnect-Due-To-Callback 102
+
+VALUE	Ascend-Disconnect-Cause		Proto-Disabled-Or-Unsupported 120
+
+VALUE	Ascend-Disconnect-Cause		Disconnect-Req-By-RADIUS 150
+VALUE	Ascend-Disconnect-Cause		Disconnect-Req-By-Local-Admin 151
+
+VALUE	Ascend-Disconnect-Cause		V110-Timeout-Sync-Retry-Exceed 160
+
+VALUE	Ascend-Disconnect-Cause		PPP-Auth-Timeout-Exceeded 170
+VALUE	Ascend-Disconnect-Cause		User-Executed-Do-Hangup	180
+VALUE	Ascend-Disconnect-Cause		Remote-End-Hung-Up	185
+VALUE	Ascend-Disconnect-Cause		Resource-Has-Been-Quiesced 190
+VALUE	Ascend-Disconnect-Cause		Max-Call-Duration-Reached 195
+
+# ascend connect progress codes
+VALUE	Ascend-Connect-Progress		No-Progress		0
+VALUE	Ascend-Connect-Progress		Call-Up			10
+VALUE	Ascend-Connect-Progress		Modem-Up		30
+VALUE	Ascend-Connect-Progress		Modem-Awaiting-DCD	31
+VALUE	Ascend-Connect-Progress		Modem-Awaiting-Codes	32
+VALUE	Ascend-Connect-Progress		TermSrv-Started		40
+VALUE	Ascend-Connect-Progress		TermSrv-Raw-TCP-Started	41
+VALUE	Ascend-Connect-Progress		TermSrv-Telnet-Started	42
+VALUE	Ascend-Connect-Progress		TermSrv-Raw-TCP-Connected 43
+VALUE	Ascend-Connect-Progress		TermSrv-Telnet-Connected 44
+VALUE	Ascend-Connect-Progress		TermSrv-Rlogin-Started	45
+VALUE	Ascend-Connect-Progress		TermSrv-Rlogin-Connected 46
+VALUE	Ascend-Connect-Progress		Modem-Outdial-Call-Up	50
+VALUE	Ascend-Connect-Progress		LAN-Session-Up		60
+VALUE	Ascend-Connect-Progress		LCP-Opening		61
+VALUE	Ascend-Connect-Progress		CCP-Opening		62
+VALUE	Ascend-Connect-Progress		IPNCP-Opening		63
+VALUE	Ascend-Connect-Progress		BNCP-Opening		64
+VALUE	Ascend-Connect-Progress		LCP-Opened		65
+VALUE	Ascend-Connect-Progress		CCP-Opened		66
+VALUE	Ascend-Connect-Progress		IPNCP-Opened		67
+VALUE	Ascend-Connect-Progress		BNCP-Opened		68
+VALUE	Ascend-Connect-Progress		LCP-State-Initial	69
+VALUE	Ascend-Connect-Progress		LCP-State-Starting	70
+VALUE	Ascend-Connect-Progress		LCP-State-Closed	71
+VALUE	Ascend-Connect-Progress		LCP-State-Stopped	72
+VALUE	Ascend-Connect-Progress		LCP-State-Closing	73
+VALUE	Ascend-Connect-Progress		LCP-State-Stopping	74
+VALUE	Ascend-Connect-Progress		LCP-State-Request-Sent	75
+VALUE	Ascend-Connect-Progress		LCP-State-Ack-Received	76
+VALUE	Ascend-Connect-Progress		LCP-State-Ack-Sent	77
+VALUE	Ascend-Connect-Progress		IPXNCP-Opened		80
+VALUE	Ascend-Connect-Progress		ATNCP-Opened		81
+VALUE	Ascend-Connect-Progress		BACP-Opening		82
+VALUE	Ascend-Connect-Progress		BACP-Opened		83
+VALUE	Ascend-Connect-Progress		V110-Up			90
+VALUE	Ascend-Connect-Progress		V110-State-Opened	91
+VALUE	Ascend-Connect-Progress		V110-State-Carrier	92
+VALUE	Ascend-Connect-Progress		V110-State-Reset	93
+VALUE	Ascend-Connect-Progress		V110-State-Closed	94
+VALUE	Ascend-ATM-Direct		ATM-Direct-No		0
+VALUE	Ascend-ATM-Direct		ATM-Direct-Yes		1
+VALUE	Ascend-ATM-Fault-Management	VC-End-To-End-Loopback	2
+VALUE	Ascend-ATM-Fault-Management	VC-No-Loopback		0
+VALUE	Ascend-ATM-Fault-Management	VC-Segment-Loopback	1
+VALUE	Ascend-Appletalk-Peer-Mode	Appletalk-Peer-Dialin	1
+VALUE	Ascend-Appletalk-Peer-Mode	Appletalk-Peer-Router	0
+VALUE	Ascend-Auth-Type		Auth-Any		2
+VALUE	Ascend-Auth-Type		Auth-CHAP		4
+VALUE	Ascend-Auth-Type		Auth-Default		1
+VALUE	Ascend-Auth-Type		Auth-MS-CHAP		5
+VALUE	Ascend-Auth-Type		Auth-None		0
+VALUE	Ascend-Auth-Type		Auth-PAP		3
+VALUE	Ascend-BIR-Enable		BIR-Enable-No		0
+VALUE	Ascend-BIR-Enable		BIR-Enable-Yes		1
+VALUE	Ascend-BIR-Proxy		BIR-Proxy-No		0
+VALUE	Ascend-BIR-Proxy		BIR-Proxy-Yes		1
+VALUE	Ascend-Bi-Directional-Auth	Bi-Directional-Auth-Allowed 1
+VALUE	Ascend-Bi-Directional-Auth	Bi-Directional-Auth-None 0
+VALUE	Ascend-Bi-Directional-Auth	Bi-Directional-Auth-Required 2
+VALUE	Ascend-Bridge-Non-PPPoE		Bridge-Non-PPPoE-No	0
+VALUE	Ascend-Bridge-Non-PPPoE		Bridge-Non-PPPoE-Yes	1
+VALUE	Ascend-Cache-Refresh		Refresh-No		0
+VALUE	Ascend-Cache-Refresh		Refresh-Yes		1
+VALUE	Ascend-Call-Direction		Ascend-Call-Direction-Incoming 0
+VALUE	Ascend-Call-Direction		Ascend-Call-Direction-Outgoing 1
+VALUE	Ascend-Calling-Id-Number-Plan	Data			3
+VALUE	Ascend-Calling-Id-Number-Plan	ISDN-Telephony		1
+VALUE	Ascend-Calling-Id-Number-Plan	National		8
+VALUE	Ascend-Calling-Id-Number-Plan	Private			9
+VALUE	Ascend-Calling-Id-Number-Plan	Telex			4
+VALUE	Ascend-Calling-Id-Number-Plan	Unknown			0
+VALUE	Ascend-Calling-Id-Presentatn	Allowed			0
+VALUE	Ascend-Calling-Id-Presentatn	Number-Not-Available	2
+VALUE	Ascend-Calling-Id-Presentatn	Restricted		1
+VALUE	Ascend-Calling-Id-Screening	Network-Provided	3
+VALUE	Ascend-Calling-Id-Screening	User-Not-Screened	0
+VALUE	Ascend-Calling-Id-Screening	User-Provided-Failed	2
+VALUE	Ascend-Calling-Id-Screening	User-Provided-Passed	1
+VALUE	Ascend-Calling-Id-Type-Of-Num	Abbreviated-Number	6
+VALUE	Ascend-Calling-Id-Type-Of-Num	International-Number	1
+VALUE	Ascend-Calling-Id-Type-Of-Num	National-Number		2
+VALUE	Ascend-Calling-Id-Type-Of-Num	Network-Specific	3
+VALUE	Ascend-Calling-Id-Type-Of-Num	Subscriber-Number	4
+VALUE	Ascend-Calling-Id-Type-Of-Num	Unknown			0
+VALUE	Ascend-Ckt-Type			Ascend-PVC		0
+VALUE	Ascend-Ckt-Type			Ascend-SVC		1
+VALUE	Ascend-Client-Assign-WINS	WINS-Assign-No		0
+VALUE	Ascend-Client-Assign-WINS	WINS-Assign-Yes		1
+
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-1280000	10
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-1600000	9
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-1920000	8
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-2240000	7
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-2560000	6
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-2688000	5
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-3200000	4
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-4480000	3
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-5120000	2
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-6272000	1
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-640000	12
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-7168000	0
+VALUE	Ascend-Dsl-Downstream-Limit	adslcap-dn-960000	11
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-128000	121
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-1280000	114
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-1600000	113
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-1920000	112
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-2240000	111
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-256000	120
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-2560000	110
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-2688000	109
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-3200000	108
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-384000	119
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-4480000	107
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-512000	118
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-5120000	106
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-6272000	105
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-640000	117
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-7168000	104
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-768000	116
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-8000000	103
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-8960000	102
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-9504000	101
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-960000	115
+VALUE	Ascend-Dsl-Downstream-Limit	adsldmt-dn-auto		100
+VALUE	Ascend-Dsl-Rate-Mode		Rate-Mode-AutoBaud	1
+VALUE	Ascend-Dsl-Rate-Mode		Rate-Mode-Single	2
+VALUE	Ascend-Dsl-Rate-Type		Rate-Type-AdslCap	2
+VALUE	Ascend-Dsl-Rate-Type		Rate-Type-AdslDmt	4
+VALUE	Ascend-Dsl-Rate-Type		Rate-Type-AdslDmtCell	3
+VALUE	Ascend-Dsl-Rate-Type		Rate-Type-Disabled	0
+VALUE	Ascend-Dsl-Rate-Type		Rate-Type-Sdsl		1
+VALUE	Ascend-Dsl-Upstream-Limit	adsldmt-up-896000	153
+VALUE	Ascend-Dsl-Upstream-Limit	adslcap-up-1088000	50
+VALUE	Ascend-Dsl-Upstream-Limit	adslcap-up-272000	56
+VALUE	Ascend-Dsl-Upstream-Limit	adslcap-up-408000	55
+VALUE	Ascend-Dsl-Upstream-Limit	adslcap-up-544000	54
+VALUE	Ascend-Dsl-Upstream-Limit	adslcap-up-680000	53
+VALUE	Ascend-Dsl-Upstream-Limit	adslcap-up-816000	52
+VALUE	Ascend-Dsl-Upstream-Limit	adslcap-up-952000	51
+VALUE	Ascend-Dsl-Upstream-Limit	adsldmt-up-1088000	151
+VALUE	Ascend-Dsl-Upstream-Limit	adsldmt-up-128000	160
+VALUE	Ascend-Dsl-Upstream-Limit	adsldmt-up-256000	159
+VALUE	Ascend-Dsl-Upstream-Limit	adsldmt-up-384000	158
+VALUE	Ascend-Dsl-Upstream-Limit	adsldmt-up-512000	157
+VALUE	Ascend-Dsl-Upstream-Limit	adsldmt-up-640000	156
+VALUE	Ascend-Dsl-Upstream-Limit	adsldmt-up-768000	155
+VALUE	Ascend-Dsl-Upstream-Limit	adsldmt-up-800000	154
+VALUE	Ascend-Dsl-Upstream-Limit	adsldmt-up-928000	152
+VALUE	Ascend-Dsl-Upstream-Limit	adsldmt-up-auto		150
+VALUE	Ascend-Dsl-Upstream-Limit	sdsl-1168000		5
+VALUE	Ascend-Dsl-Upstream-Limit	sdsl-144000		0
+VALUE	Ascend-Dsl-Upstream-Limit	sdsl-1552000		6
+VALUE	Ascend-Dsl-Upstream-Limit	sdsl-2320000		7
+VALUE	Ascend-Dsl-Upstream-Limit	sdsl-272000		1
+VALUE	Ascend-Dsl-Upstream-Limit	sdsl-400000		2
+VALUE	Ascend-Dsl-Upstream-Limit	sdsl-528000		3
+VALUE	Ascend-Dsl-Upstream-Limit	sdsl-784000		4
+VALUE	Ascend-FR-Link-Status-DLCI	Ascend-FR-LMI-Dlci-0	0
+VALUE	Ascend-FR-Link-Status-DLCI	Ascend-FR-LMI-Dlci-1023	1023
+VALUE	Ascend-Filter-Required		Required-No		0
+VALUE	Ascend-Filter-Required		Required-Yes		1
+VALUE	Ascend-IP-Pool-Chaining		IP-Pool-Chaining-No	0
+VALUE	Ascend-IP-Pool-Chaining		IP-Pool-Chaining-Yes	1
+VALUE	Ascend-IP-TOS			IP-TOS-Cost		2
+VALUE	Ascend-IP-TOS			IP-TOS-Disabled		1
+VALUE	Ascend-IP-TOS			IP-TOS-Latency		16
+VALUE	Ascend-IP-TOS			IP-TOS-Normal		0
+VALUE	Ascend-IP-TOS			IP-TOS-Reliability	4
+VALUE	Ascend-IP-TOS			IP-TOS-Throughput	8
+VALUE	Ascend-IP-TOS-Apply-To		IP-TOS-Apply-To-Both	3072
+VALUE	Ascend-IP-TOS-Apply-To		IP-TOS-Apply-To-Incoming 1024
+VALUE	Ascend-IP-TOS-Apply-To		IP-TOS-Apply-To-Outgoing 2048
+VALUE	Ascend-IP-TOS-Precedence	IP-TOS-Precedence-Pri-Five 160
+VALUE	Ascend-IP-TOS-Precedence	IP-TOS-Precedence-Pri-Four 128
+VALUE	Ascend-IP-TOS-Precedence	IP-TOS-Precedence-Pri-Normal 0
+VALUE	Ascend-IP-TOS-Precedence	IP-TOS-Precedence-Pri-One 32
+VALUE	Ascend-IP-TOS-Precedence	IP-TOS-Precedence-Pri-Seven 224
+VALUE	Ascend-IP-TOS-Precedence	IP-TOS-Precedence-Pri-Six 192
+VALUE	Ascend-IP-TOS-Precedence	IP-TOS-Precedence-Pri-Three 96
+VALUE	Ascend-IP-TOS-Precedence	IP-TOS-Precedence-Pri-Two 64
+VALUE	Ascend-IPX-Header-Compression	IPX-Header-Compression-No 0
+VALUE	Ascend-IPX-Header-Compression	IPX-Header-Compression-Yes 1
+VALUE	Ascend-NAS-Port-Format		1_2_2			3
+VALUE	Ascend-NAS-Port-Format		2_4_5_5			2
+VALUE	Ascend-NAS-Port-Format		2_4_6_4			1
+VALUE	Ascend-NAS-Port-Format		Unknown			0
+VALUE	Ascend-Numbering-Plan-ID	ISDN-Numbering-Plan	1
+VALUE	Ascend-Numbering-Plan-ID	Private-Numbering-Plan	9
+VALUE	Ascend-Numbering-Plan-ID	Unknown-Numbering-Plan	0
+VALUE	Ascend-PPPoE-Enable		PPPoE-No		0
+VALUE	Ascend-PPPoE-Enable		PPPoE-Yes		1
+VALUE	Ascend-Port-Redir-Protocol	Ascend-Proto-TCP	6
+VALUE	Ascend-Port-Redir-Protocol	Ascend-Proto-UDP	17
+VALUE	Ascend-Private-Route-Required	Required-No		0
+VALUE	Ascend-Private-Route-Required	Required-Yes		1
+VALUE	Ascend-Route-Appletalk		Route-Appletalk-No	0
+VALUE	Ascend-Route-Appletalk		Route-Appletalk-Yes	1
+VALUE	Ascend-SVC-Enabled		Ascend-SVC-Enabled-No	0
+VALUE	Ascend-SVC-Enabled		Ascend-SVC-Enabled-Yes	1
+
+VALUE	Ascend-Service-Type		Ascend-Service-Type-ATM	20
+VALUE	Ascend-Service-Type		Ascend-Service-Type-Combinet 7
+VALUE	Ascend-Service-Type		Ascend-Service-Type-EuRaw 9
+VALUE	Ascend-Service-Type		Ascend-Service-Type-EuUi 10
+VALUE	Ascend-Service-Type		Ascend-Service-Type-FR	8
+VALUE	Ascend-Service-Type		Ascend-Service-Type-HdlcNrm 21
+VALUE	Ascend-Service-Type		Ascend-Service-Type-IpFax 19
+VALUE	Ascend-Service-Type		Ascend-Service-Type-MP	15
+VALUE	Ascend-Service-Type		Ascend-Service-Type-MPP	5
+VALUE	Ascend-Service-Type		Ascend-Service-Type-NetToNet 25
+VALUE	Ascend-Service-Type		Ascend-Service-Type-None 1
+VALUE	Ascend-Service-Type		Ascend-Service-Type-NotUsed 0
+VALUE	Ascend-Service-Type		Ascend-Service-Type-Other 2
+VALUE	Ascend-Service-Type		Ascend-Service-Type-PPP	3
+VALUE	Ascend-Service-Type		Ascend-Service-Type-PseuTunPPP 18
+VALUE	Ascend-Service-Type		Ascend-Service-Type-RawTcp 13
+VALUE	Ascend-Service-Type		Ascend-Service-Type-Slip 4
+VALUE	Ascend-Service-Type		Ascend-Service-Type-Telnet 11
+VALUE	Ascend-Service-Type		Ascend-Service-Type-TelnetBin 12
+VALUE	Ascend-Service-Type		Ascend-Service-Type-TermServer 14
+VALUE	Ascend-Service-Type		Ascend-Service-Type-VirtualConn 16
+VALUE	Ascend-Service-Type		Ascend-Service-Type-Visa2 23
+VALUE	Ascend-Service-Type		Ascend-Service-Type-VoIp 22
+VALUE	Ascend-Service-Type		Ascend-Service-Type-X25	6
+VALUE	Ascend-Service-Type		Ascend-Service-Type-X25DChan 17
+VALUE	Ascend-Session-Type		Ascend-Session-G711-Alaw 3
+VALUE	Ascend-Session-Type		Ascend-Session-G711-Ulaw 2
+VALUE	Ascend-Session-Type		Ascend-Session-G723	4
+VALUE	Ascend-Session-Type		Ascend-Session-G723-64KPS 6
+VALUE	Ascend-Session-Type		Ascend-Session-G728	7
+VALUE	Ascend-Session-Type		Ascend-Session-G729	5
+VALUE	Ascend-Session-Type		Ascend-Session-RT24	8
+VALUE	Ascend-Session-Type		Ascend-Session-Unknown	1
+VALUE	Ascend-Session-Type		Ascend-Session-Unused	0
+
+VALUE	Ascend-Tunneling-Protocol	ATMP-Tunnel		0
+VALUE	Ascend-Tunneling-Protocol	VTP-Tunnel		1
+
+VALUE	Ascend-X25-Pad-X3-Profile	CC_SSP			4
+VALUE	Ascend-X25-Pad-X3-Profile	CC_TSP			5
+VALUE	Ascend-X25-Pad-X3-Profile	CRT			0
+VALUE	Ascend-X25-Pad-X3-Profile	CUSTOM			11
+VALUE	Ascend-X25-Pad-X3-Profile	DEFAULT			2
+VALUE	Ascend-X25-Pad-X3-Profile	HARDCOPY		6
+VALUE	Ascend-X25-Pad-X3-Profile	HDX			7
+VALUE	Ascend-X25-Pad-X3-Profile	INFONET			1
+VALUE	Ascend-X25-Pad-X3-Profile	NULL			10
+VALUE	Ascend-X25-Pad-X3-Profile	POS			9
+VALUE	Ascend-X25-Pad-X3-Profile	SCEN			3
+VALUE	Ascend-X25-Pad-X3-Profile	SHARK			8
+VALUE	Ascend-X25-Reverse-Charging	Reverse-Charging-No	0
+VALUE	Ascend-X25-Reverse-Charging	Reverse-Charging-Yes	1
+END-VENDOR Ascend
+
+# Uncomment these attributes if you need them (2010-12-01)
+# They collide with IANA registered VSA:s
+#	Ascend specific extensions
+#	Used by ASCEND MAX/Pipeline products
+#
+#	This next block is renamed because they share the same
+#	names as the vendor-specific attributes, BUT they occur
+#	in the lower (1-255) RADIUS attribute space.
+#
+#	Older Ascend software will send these, rather than the
+#	vendor specific attributes.
+#
+#ATTRIBUTE	X-Ascend-FCP-Parameter			119	string
+#ATTRIBUTE	X-Ascend-Modem-PortNo			120	integer
+#ATTRIBUTE	X-Ascend-Modem-SlotNo			121	integer
+#ATTRIBUTE	X-Ascend-Modem-ShelfNo			122	integer
+#ATTRIBUTE	X-Ascend-Call-Attempt-Limit		123	integer
+#ATTRIBUTE	X-Ascend-Call-Block-Duration		124	integer
+#ATTRIBUTE	X-Ascend-Maximum-Call-Duration		125	integer
+##  The following conflicts with dictionary.usr attribute Multi-Link-Flag [wireshark]
+#ATTRIBUTE	X-Ascend-Temporary-Rtes			126	integer
+#ATTRIBUTE	X-Ascend-Tunneling-Protocol		127	integer
+#ATTRIBUTE	X-Ascend-Shared-Profile-Enable		128	integer
+#ATTRIBUTE	X-Ascend-Primary-Home-Agent		129	string
+#ATTRIBUTE	X-Ascend-Secondary-Home-Agent		130	string
+#ATTRIBUTE	X-Ascend-Dialout-Allowed		131	integer
+#ATTRIBUTE	X-Ascend-Client-Gateway			132	ipaddr
+#ATTRIBUTE	X-Ascend-BACP-Enable			133	integer
+#ATTRIBUTE	X-Ascend-DHCP-Maximum-Leases		134	integer
+#ATTRIBUTE	X-Ascend-Client-Primary-DNS		135	ipaddr
+#ATTRIBUTE	X-Ascend-Client-Secondary-DNS		136	ipaddr
+#ATTRIBUTE	X-Ascend-Client-Assign-DNS		137	integer
+#ATTRIBUTE	X-Ascend-User-Acct-Type			138	integer
+#ATTRIBUTE	X-Ascend-User-Acct-Host			139	ipaddr
+#ATTRIBUTE	X-Ascend-User-Acct-Port			140	integer
+#ATTRIBUTE	X-Ascend-User-Acct-Key			141	string
+#ATTRIBUTE	X-Ascend-User-Acct-Base			142	integer
+#ATTRIBUTE	X-Ascend-User-Acct-Time			143	integer
+#ATTRIBUTE	X-Ascend-Assign-IP-Client		144	ipaddr
+#ATTRIBUTE	X-Ascend-Assign-IP-Server		145	ipaddr
+#ATTRIBUTE	X-Ascend-Assign-IP-Global-Pool		146	string
+#ATTRIBUTE	X-Ascend-DHCP-Reply			147	integer
+#ATTRIBUTE	X-Ascend-DHCP-Pool-Number		148	integer
+#ATTRIBUTE	X-Ascend-Expect-Callback		149	integer
+#ATTRIBUTE	X-Ascend-Event-Type			150	integer
+#ATTRIBUTE	X-Ascend-Session-Svr-Key		151	string
+#ATTRIBUTE	X-Ascend-Multicast-Rate-Limit		152	integer
+#ATTRIBUTE	X-Ascend-IF-Netmask			153	ipaddr
+#ATTRIBUTE	X-Ascend-Remote-Addr			154	ipaddr
+#ATTRIBUTE	X-Ascend-Multicast-Client		155	integer
+#ATTRIBUTE	X-Ascend-FR-Circuit-Name		156	string
+#ATTRIBUTE	X-Ascend-FR-LinkUp			157	integer
+#ATTRIBUTE	X-Ascend-FR-Nailed-Grp			158	integer
+#ATTRIBUTE	X-Ascend-FR-Type			159	integer
+#ATTRIBUTE	X-Ascend-FR-Link-Mgt			160	integer
+#ATTRIBUTE	X-Ascend-FR-N391			161	integer
+#ATTRIBUTE	X-Ascend-FR-DCE-N392			162	integer
+#ATTRIBUTE	X-Ascend-FR-DTE-N392			163	integer
+#ATTRIBUTE	X-Ascend-FR-DCE-N393			164	integer
+#ATTRIBUTE	X-Ascend-FR-DTE-N393			165	integer
+#ATTRIBUTE	X-Ascend-FR-T391			166	integer
+#ATTRIBUTE	X-Ascend-FR-T392			167	integer
+#ATTRIBUTE	X-Ascend-Bridge-Address			168	string
+#ATTRIBUTE	X-Ascend-TS-Idle-Limit			169	integer
+#ATTRIBUTE	X-Ascend-TS-Idle-Mode			170	integer
+#ATTRIBUTE	X-Ascend-DBA-Monitor			171	integer
+#ATTRIBUTE	X-Ascend-Base-Channel-Count		172	integer
+#ATTRIBUTE	X-Ascend-Minimum-Channels		173	integer
+#ATTRIBUTE	X-Ascend-IPX-Route			174	string
+#ATTRIBUTE	X-Ascend-FT1-Caller			175	integer
+#ATTRIBUTE	X-Ascend-Backup				176	string
+#ATTRIBUTE	X-Ascend-Call-Type			177	integer
+#ATTRIBUTE	X-Ascend-Group				178	string
+#ATTRIBUTE	X-Ascend-FR-DLCI			179	integer
+#ATTRIBUTE	X-Ascend-FR-Profile-Name		180	string
+#ATTRIBUTE	X-Ascend-Ara-PW				181	string
+#ATTRIBUTE	X-Ascend-IPX-Node-Addr			182	string
+#ATTRIBUTE	X-Ascend-Home-Agent-IP-Addr		183	ipaddr
+#ATTRIBUTE	X-Ascend-Home-Agent-Password		184	string
+#ATTRIBUTE	X-Ascend-Home-Network-Name		185	string
+#ATTRIBUTE	X-Ascend-Home-Agent-UDP-Port		186	integer
+#ATTRIBUTE	X-Ascend-Multilink-ID			187	integer
+#ATTRIBUTE	X-Ascend-Num-In-Multilink		188	integer
+#ATTRIBUTE	X-Ascend-First-Dest			189	ipaddr
+#ATTRIBUTE	X-Ascend-Pre-Input-Octets		190	integer
+#ATTRIBUTE	X-Ascend-Pre-Output-Octets		191	integer
+#ATTRIBUTE	X-Ascend-Pre-Input-Packets		192	integer
+#ATTRIBUTE	X-Ascend-Pre-Output-Packets		193	integer
+#ATTRIBUTE	X-Ascend-Maximum-Time			194	integer
+#ATTRIBUTE	X-Ascend-Disconnect-Cause		195	integer
+#ATTRIBUTE	X-Ascend-Connect-Progress		196	integer
+#ATTRIBUTE	X-Ascend-Data-Rate			197	integer
+#ATTRIBUTE	X-Ascend-PreSession-Time		198	integer
+#ATTRIBUTE	X-Ascend-Token-Idle			199	integer
+#ATTRIBUTE	X-Ascend-Token-Immediate		200	integer
+#ATTRIBUTE	X-Ascend-Require-Auth			201	integer
+#ATTRIBUTE	X-Ascend-Number-Sessions		202	string
+#ATTRIBUTE	X-Ascend-Authen-Alias			203	string
+#ATTRIBUTE	X-Ascend-Token-Expiry			204	integer
+#ATTRIBUTE	X-Ascend-Menu-Selector			205	string
+
+#
+#  These next two attributes conflict with the Digest attributes!
+#  and with dictionary.usr attribute Char-Noecho  ## [wireshark]
+#
+#ATTRIBUTE	X-Ascend-Menu-Item			206	string
+#ATTRIBUTE	X-Ascend-PW-Warntime			207	integer
+
+#ATTRIBUTE	X-Ascend-PW-Lifetime			208	integer
+#ATTRIBUTE	X-Ascend-IP-Direct			209	ipaddr
+#ATTRIBUTE	X-Ascend-PPP-VJ-Slot-Comp		210	integer
+#ATTRIBUTE	X-Ascend-PPP-VJ-1172			211	integer
+#ATTRIBUTE	X-Ascend-PPP-Async-Map			212	integer
+#ATTRIBUTE	X-Ascend-Third-Prompt			213	string
+#ATTRIBUTE	X-Ascend-Send-Secret			214	string encrypt=3
+#ATTRIBUTE	X-Ascend-Receive-Secret			215	string encrypt=3
+#ATTRIBUTE	X-Ascend-IPX-Peer-Mode			216	integer
+#ATTRIBUTE	X-Ascend-IP-Pool-Definition		217	string
+#ATTRIBUTE	X-Ascend-Assign-IP-Pool			218	integer
+#ATTRIBUTE	X-Ascend-FR-Direct			219	integer
+#ATTRIBUTE	X-Ascend-FR-Direct-Profile		220	string
+#ATTRIBUTE	X-Ascend-FR-Direct-DLCI			221	integer
+#ATTRIBUTE	X-Ascend-Handle-IPX			222	integer
+#ATTRIBUTE	X-Ascend-Netware-timeout		223	integer
+#ATTRIBUTE	X-Ascend-IPX-Alias			224	integer
+#ATTRIBUTE	X-Ascend-Metric				225	integer
+#ATTRIBUTE	X-Ascend-PRI-Number-Type		226	integer
+#ATTRIBUTE	X-Ascend-Dial-Number			227	string
+#ATTRIBUTE	X-Ascend-Route-IP			228	integer
+#ATTRIBUTE	X-Ascend-Route-IPX			229	integer
+#ATTRIBUTE	X-Ascend-Bridge				230	integer
+#ATTRIBUTE	X-Ascend-Send-Auth			231	integer
+#ATTRIBUTE	X-Ascend-Send-Passwd			232	string
+#ATTRIBUTE	X-Ascend-Link-Compression		233	integer
+#ATTRIBUTE	X-Ascend-Target-Util			234	integer
+#ATTRIBUTE	X-Ascend-Maximum-Channels		235	integer
+#ATTRIBUTE	X-Ascend-Inc-Channel-Count		236	integer
+#ATTRIBUTE	X-Ascend-Dec-Channel-Count		237	integer
+#ATTRIBUTE	X-Ascend-Seconds-Of-History		238	integer
+#ATTRIBUTE	X-Ascend-History-Weigh-Type		239	integer
+#ATTRIBUTE	X-Ascend-Add-Seconds			240	integer
+#ATTRIBUTE	X-Ascend-Remove-Seconds			241	integer
+#ATTRIBUTE	X-Ascend-Data-Filter			242	abinary
+#ATTRIBUTE	X-Ascend-Call-Filter			243	abinary
+#ATTRIBUTE	X-Ascend-Idle-Limit			244	integer
+#ATTRIBUTE	X-Ascend-Preempt-Limit			245	integer
+#ATTRIBUTE	X-Ascend-Callback			246	integer
+#ATTRIBUTE	X-Ascend-Data-Svc			247	integer
+#ATTRIBUTE	X-Ascend-Force-56			248	integer
+#ATTRIBUTE	X-Ascend-Billing-Number			249	string
+#ATTRIBUTE	X-Ascend-Call-By-Call			250	integer
+#ATTRIBUTE	X-Ascend-Transit-Number			251	string
+#ATTRIBUTE	X-Ascend-Host-Info			252	string
+#ATTRIBUTE	X-Ascend-PPP-Address			253	ipaddr
+#ATTRIBUTE	X-Ascend-MPP-Idle-Percent		254	integer
+#ATTRIBUTE	X-Ascend-Xmit-Rate			255	integer
+
+#
+#  VALUEs for X-Ascend-* attributes, copied verbatim from the
+#  VALUEs above, for the VSA versions of Ascend-*.
+#
+#  Do NOT edit the following VALUEs!  Instead, re-generate them via:
+#
+#  (for x in `egrep ^ATTRIBUTE dictionary.ascend | egrep 'X-Ascend-' | awk '{print $2}' | uniq`;do y=`echo $x | sed 's/X-//'`;egrep VALUE dictionary.ascend | egrep $y[^-] | sed "s/$y/X-$y/" ; done) > new-value
+#
+#
+#VALUE	X-Ascend-Temporary-Rtes		Temp-Rtes-No		0
+#VALUE	X-Ascend-Temporary-Rtes		Temp-Rtes-Yes		1
+#VALUE	X-Ascend-Tunneling-Protocol	ATMP-Tunnel		0
+#VALUE	X-Ascend-Tunneling-Protocol	VTP-Tunnel		1
+#VALUE	X-Ascend-Shared-Profile-Enable	Shared-Profile-No	0
+#VALUE	X-Ascend-Shared-Profile-Enable	Shared-Profile-Yes	1
+#VALUE	X-Ascend-Dialout-Allowed	Dialout-Not-Allowed	0
+#VALUE	X-Ascend-Dialout-Allowed	Dialout-Allowed		1
+#VALUE	X-Ascend-BACP-Enable		BACP-No			0
+#VALUE	X-Ascend-BACP-Enable		BACP-Yes		1
+#VALUE	X-Ascend-Client-Assign-DNS	DNS-Assign-No		0
+#VALUE	X-Ascend-Client-Assign-DNS	DNS-Assign-Yes		1
+#VALUE	X-Ascend-User-Acct-Type		Ascend-User-Acct-None	0
+#VALUE	X-Ascend-User-Acct-Type		Ascend-User-Acct-User	1
+#VALUE	X-Ascend-User-Acct-Type		Ascend-User-Acct-User-Default 2
+#VALUE	X-Ascend-User-Acct-Base		Base-10			0
+#VALUE	X-Ascend-User-Acct-Base		Base-16			1
+#VALUE	X-Ascend-DHCP-Reply		DHCP-Reply-No		0
+#VALUE	X-Ascend-DHCP-Reply		DHCP-Reply-Yes		1
+#VALUE	X-Ascend-Expect-Callback	Expect-Callback-No	0
+#VALUE	X-Ascend-Expect-Callback	Expect-Callback-Yes	1
+#VALUE	X-Ascend-Event-Type		Ascend-ColdStart	1
+#VALUE	X-Ascend-Event-Type		Ascend-Session-Event	2
+#VALUE	X-Ascend-Multicast-Client	Multicast-No		0
+#VALUE	X-Ascend-Multicast-Client	Multicast-Yes		1
+#VALUE	X-Ascend-FR-LinkUp		Ascend-LinkUp-Default	0
+#VALUE	X-Ascend-FR-LinkUp		Ascend-LinkUp-AlwaysUp	1
+#VALUE	X-Ascend-FR-Type		Ascend-FR-DTE		0
+#VALUE	X-Ascend-FR-Type		Ascend-FR-DCE		1
+#VALUE	X-Ascend-FR-Type		Ascend-FR-NNI		2
+#VALUE	X-Ascend-FR-Link-Mgt		Ascend-FR-No-Link-Mgt	0
+#VALUE	X-Ascend-FR-Link-Mgt		Ascend-FR-T1-617D	1
+#VALUE	X-Ascend-FR-Link-Mgt		Ascend-FR-Q-933A	2
+#VALUE	X-Ascend-TS-Idle-Mode		TS-Idle-None		0
+#VALUE	X-Ascend-TS-Idle-Mode		TS-Idle-Input		1
+#VALUE	X-Ascend-TS-Idle-Mode		TS-Idle-Input-Output	2
+#VALUE	X-Ascend-DBA-Monitor		DBA-Transmit		0
+#VALUE	X-Ascend-DBA-Monitor		DBA-Transmit-Recv	1
+#VALUE	X-Ascend-DBA-Monitor		DBA-None		2
+#VALUE	X-Ascend-FT1-Caller		FT1-No			0
+#VALUE	X-Ascend-FT1-Caller		FT1-Yes			1
+#VALUE	X-Ascend-Call-Type		Switched		0
+#VALUE	X-Ascend-Call-Type		Nailed			1
+#VALUE	X-Ascend-Call-Type		Nailed/Mpp		2
+#VALUE	X-Ascend-Call-Type		Perm/Switched		3
+#VALUE	X-Ascend-Call-Type		AO/DI			6
+#VALUE	X-Ascend-Call-Type		MegaMax			7
+#VALUE	X-Ascend-Disconnect-Cause	No-Reason		0
+#VALUE	X-Ascend-Disconnect-Cause	Not-Applicable		1
+#VALUE	X-Ascend-Disconnect-Cause	Unknown			2
+#VALUE	X-Ascend-Disconnect-Cause	Call-Disconnected	3
+#VALUE	X-Ascend-Disconnect-Cause	CLID-Authentication-Failed 4
+#VALUE	X-Ascend-Disconnect-Cause	CLID-RADIUS-Timeout	5
+#VALUE	X-Ascend-Disconnect-Cause	Modem-No-DCD		10
+#VALUE	X-Ascend-Disconnect-Cause	DCD-Detected-Then-Inactive 11
+#VALUE	X-Ascend-Disconnect-Cause	Modem-Invalid-Result-Codes 12
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-User-Quit	20
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-Idle-Timeout	21
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-Exit-Telnet	22
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-No-IPaddr	23
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-Exit-Raw-TCP	24
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-Exit-Login-Failed 25
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-Exit-Raw-TCP-Disabled 26
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-CTRL-C-In-Login	27
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-Destroyed	28
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-User-Closed-VCon 29
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-VCon-Destroyed	30
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-Exit-Rlogin	31
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-Bad-Rlogin-Option 32
+#VALUE	X-Ascend-Disconnect-Cause	TermSrv-Not-Enough-Resources 33
+#VALUE	X-Ascend-Disconnect-Cause	MPP-No-NULL-Msg-Timeout	35
+#VALUE	X-Ascend-Disconnect-Cause	PPP-LCP-Timeout		40
+#VALUE	X-Ascend-Disconnect-Cause	PPP-LCP-Negotion-Failed	41
+#VALUE	X-Ascend-Disconnect-Cause	PPP-PAP-Auth-Failed	42
+#VALUE	X-Ascend-Disconnect-Cause	PPP-CHAP-Auth-Failed	43
+#VALUE	X-Ascend-Disconnect-Cause	PPP-Rmt-Auth-Failed	44
+#VALUE	X-Ascend-Disconnect-Cause	PPP-Rcv-Terminate-Req	45
+#VALUE	X-Ascend-Disconnect-Cause	PPP-Rcv-Close-Event	46
+#VALUE	X-Ascend-Disconnect-Cause	PPP-No-NCPs-Open	47
+#VALUE	X-Ascend-Disconnect-Cause	PPP-MP-Bundle-Unknown	48
+#VALUE	X-Ascend-Disconnect-Cause	PPP-LCP-Close-MP-Add-Fail 49
+#VALUE	X-Ascend-Disconnect-Cause	Session-Table-Full	50
+#VALUE	X-Ascend-Disconnect-Cause	Out-Of-Resources	51
+#VALUE	X-Ascend-Disconnect-Cause	Invalid-IP-Address	52
+#VALUE	X-Ascend-Disconnect-Cause	Hostname-Resolution-Failed 53
+#VALUE	X-Ascend-Disconnect-Cause	Bad-Or-Missing-Port-Number 54
+#VALUE	X-Ascend-Disconnect-Cause	Host-Reset		60
+#VALUE	X-Ascend-Disconnect-Cause	Connection-Refused	61
+#VALUE	X-Ascend-Disconnect-Cause	Connection-Timeout	62
+#VALUE	X-Ascend-Disconnect-Cause	Connection-Closed	63
+#VALUE	X-Ascend-Disconnect-Cause	Network-Unreachable	64
+#VALUE	X-Ascend-Disconnect-Cause	Host-Unreachable	65
+#VALUE	X-Ascend-Disconnect-Cause	Network-Unreachable-Admin 66
+#VALUE	X-Ascend-Disconnect-Cause	Host-Unreachable-Admin	67
+#VALUE	X-Ascend-Disconnect-Cause	Port-Unreachable	68
+#VALUE	X-Ascend-Disconnect-Cause	Session-Timeout		100
+#VALUE	X-Ascend-Disconnect-Cause	Invalid-Incoming-User	101
+#VALUE	X-Ascend-Disconnect-Cause	Disconnect-Due-To-Callback 102
+#VALUE	X-Ascend-Disconnect-Cause	Proto-Disabled-Or-Unsupported 120
+#VALUE	X-Ascend-Disconnect-Cause	Disconnect-Req-By-RADIUS 150
+#VALUE	X-Ascend-Disconnect-Cause	Disconnect-Req-By-Local-Admin 151
+#VALUE	X-Ascend-Disconnect-Cause	V110-Timeout-Sync-Retry-Exceed 160
+#VALUE	X-Ascend-Disconnect-Cause	PPP-Auth-Timeout-Exceeded 170
+#VALUE	X-Ascend-Disconnect-Cause	User-Executed-Do-Hangup	180
+#VALUE	X-Ascend-Disconnect-Cause	Remote-End-Hung-Up	185
+#VALUE	X-Ascend-Disconnect-Cause	Resource-Has-Been-Quiesced 190
+#VALUE	X-Ascend-Disconnect-Cause	Max-Call-Duration-Reached 195
+#VALUE	X-Ascend-Connect-Progress	No-Progress		0
+#VALUE	X-Ascend-Connect-Progress	Call-Up			10
+#VALUE	X-Ascend-Connect-Progress	Modem-Up		30
+#VALUE	X-Ascend-Connect-Progress	Modem-Awaiting-DCD	31
+#VALUE	X-Ascend-Connect-Progress	Modem-Awaiting-Codes	32
+#VALUE	X-Ascend-Connect-Progress	TermSrv-Started		40
+#VALUE	X-Ascend-Connect-Progress	TermSrv-Raw-TCP-Started	41
+#VALUE	X-Ascend-Connect-Progress	TermSrv-Telnet-Started	42
+#VALUE	X-Ascend-Connect-Progress	TermSrv-Raw-TCP-Connected 43
+#VALUE	X-Ascend-Connect-Progress	TermSrv-Telnet-Connected 44
+#VALUE	X-Ascend-Connect-Progress	TermSrv-Rlogin-Started	45
+#VALUE	X-Ascend-Connect-Progress	TermSrv-Rlogin-Connected 46
+#VALUE	X-Ascend-Connect-Progress	Modem-Outdial-Call-Up	50
+#VALUE	X-Ascend-Connect-Progress	LAN-Session-Up		60
+#VALUE	X-Ascend-Connect-Progress	LCP-Opening		61
+#VALUE	X-Ascend-Connect-Progress	CCP-Opening		62
+#VALUE	X-Ascend-Connect-Progress	IPNCP-Opening		63
+#VALUE	X-Ascend-Connect-Progress	BNCP-Opening		64
+#VALUE	X-Ascend-Connect-Progress	LCP-Opened		65
+#VALUE	X-Ascend-Connect-Progress	CCP-Opened		66
+#VALUE	X-Ascend-Connect-Progress	IPNCP-Opened		67
+#VALUE	X-Ascend-Connect-Progress	BNCP-Opened		68
+#VALUE	X-Ascend-Connect-Progress	LCP-State-Initial	69
+#VALUE	X-Ascend-Connect-Progress	LCP-State-Starting	70
+#VALUE	X-Ascend-Connect-Progress	LCP-State-Closed	71
+#VALUE	X-Ascend-Connect-Progress	LCP-State-Stopped	72
+#VALUE	X-Ascend-Connect-Progress	LCP-State-Closing	73
+#VALUE	X-Ascend-Connect-Progress	LCP-State-Stopping	74
+#VALUE	X-Ascend-Connect-Progress	LCP-State-Request-Sent	75
+#VALUE	X-Ascend-Connect-Progress	LCP-State-Ack-Received	76
+#VALUE	X-Ascend-Connect-Progress	LCP-State-Ack-Sent	77
+#VALUE	X-Ascend-Connect-Progress	IPXNCP-Opened		80
+#VALUE	X-Ascend-Connect-Progress	ATNCP-Opened		81
+#VALUE	X-Ascend-Connect-Progress	BACP-Opening		82
+#VALUE	X-Ascend-Connect-Progress	BACP-Opened		83
+#VALUE	X-Ascend-Connect-Progress	V110-Up			90
+#VALUE	X-Ascend-Connect-Progress	V110-State-Opened	91
+#VALUE	X-Ascend-Connect-Progress	V110-State-Carrier	92
+#VALUE	X-Ascend-Connect-Progress	V110-State-Reset	93
+#VALUE	X-Ascend-Connect-Progress	V110-State-Closed	94
+#VALUE	X-Ascend-Token-Immediate	Tok-Imm-No		0
+#VALUE	X-Ascend-Token-Immediate	Tok-Imm-Yes		1
+#VALUE	X-Ascend-Require-Auth		Not-Require-Auth	0
+#VALUE	X-Ascend-Require-Auth		Require-Auth		1
+#VALUE	X-Ascend-PW-Warntime		Days-Of-Warning		0
+#VALUE	X-Ascend-PW-Lifetime		Lifetime-In-Days	0
+#VALUE	X-Ascend-PPP-VJ-Slot-Comp	VJ-Slot-Comp-No		1
+#VALUE	X-Ascend-PPP-VJ-1172		PPP-VJ-1172		1
+#VALUE	X-Ascend-IPX-Peer-Mode		IPX-Peer-Router		0
+#VALUE	X-Ascend-IPX-Peer-Mode		IPX-Peer-Dialin		1
+#VALUE	X-Ascend-FR-Direct		FR-Direct-No		0
+#VALUE	X-Ascend-FR-Direct		FR-Direct-Yes		1
+#VALUE	X-Ascend-Handle-IPX		Handle-IPX-None		0
+#VALUE	X-Ascend-Handle-IPX		Handle-IPX-Client	1
+#VALUE	X-Ascend-Handle-IPX		Handle-IPX-Server	2
+#VALUE	X-Ascend-PRI-Number-Type	Unknown-Number		0
+#VALUE	X-Ascend-PRI-Number-Type	Intl-Number		1
+#VALUE	X-Ascend-PRI-Number-Type	National-Number		2
+#VALUE	X-Ascend-PRI-Number-Type	Net-Specific-Number	3
+#VALUE	X-Ascend-PRI-Number-Type	Local-Number		4
+#VALUE	X-Ascend-PRI-Number-Type	Abbrev-Number		5
+#VALUE	X-Ascend-Route-IP		Route-IP-No		0
+#VALUE	X-Ascend-Route-IP		Route-IP-Yes		1
+#VALUE	X-Ascend-Route-IPX		Route-IPX-No		0
+#VALUE	X-Ascend-Route-IPX		Route-IPX-Yes		1
+#VALUE	X-Ascend-Route-IPX		Route-IPX-No		0
+#VALUE	X-Ascend-Route-IPX		Route-IPX-Yes		1
+#VALUE	X-Ascend-Bridge			Bridge-No		0
+#VALUE	X-Ascend-Bridge			Bridge-Yes		1
+#VALUE	X-Ascend-Send-Auth		Send-Auth-None		0
+#VALUE	X-Ascend-Send-Auth		Send-Auth-PAP		1
+#VALUE	X-Ascend-Send-Auth		Send-Auth-CHAP		2
+#VALUE	X-Ascend-Send-Auth		Send-Auth-MS-CHAP	3
+#VALUE	X-Ascend-Link-Compression	Link-Comp-None		0
+#VALUE	X-Ascend-Link-Compression	Link-Comp-Stac		1
+#VALUE	X-Ascend-Link-Compression	Link-Comp-Stac-Draft-9	2
+#VALUE	X-Ascend-Link-Compression	Link-Comp-MS-Stac	3
+#VALUE	X-Ascend-History-Weigh-Type	History-Constant	0
+#VALUE	X-Ascend-History-Weigh-Type	History-Linear		1
+#VALUE	X-Ascend-History-Weigh-Type	History-Quadratic	2
+#VALUE	X-Ascend-Callback		Callback-No		0
+#VALUE	X-Ascend-Callback		Callback-Yes		1
+#VALUE	X-Ascend-Data-Svc		Switched-Voice-Bearer	0
+#VALUE	X-Ascend-Data-Svc		Nailed-56KR		1
+#VALUE	X-Ascend-Data-Svc		Nailed-64K		2
+#VALUE	X-Ascend-Data-Svc		Switched-64KR		3
+#VALUE	X-Ascend-Data-Svc		Switched-56K		4
+#VALUE	X-Ascend-Data-Svc		Switched-384KR		5
+#VALUE	X-Ascend-Data-Svc		Switched-384K		6
+#VALUE	X-Ascend-Data-Svc		Switched-1536K		7
+#VALUE	X-Ascend-Data-Svc		Switched-1536KR		8
+#VALUE	X-Ascend-Data-Svc		Switched-128K		9
+#VALUE	X-Ascend-Data-Svc		Switched-192K		10
+#VALUE	X-Ascend-Data-Svc		Switched-256K		11
+#VALUE	X-Ascend-Data-Svc		Switched-320K		12
+#VALUE	X-Ascend-Data-Svc		Switched-384K-MR	13
+#VALUE	X-Ascend-Data-Svc		Switched-448K		14
+#VALUE	X-Ascend-Data-Svc		Switched-512K		15
+#VALUE	X-Ascend-Data-Svc		Switched-576K		16
+#VALUE	X-Ascend-Data-Svc		Switched-640K		17
+#VALUE	X-Ascend-Data-Svc		Switched-704K		18
+#VALUE	X-Ascend-Data-Svc		Switched-768K		19
+#VALUE	X-Ascend-Data-Svc		Switched-832K		20
+#VALUE	X-Ascend-Data-Svc		Switched-896K		21
+#VALUE	X-Ascend-Data-Svc		Switched-960K		22
+#VALUE	X-Ascend-Data-Svc		Switched-1024K		23
+#VALUE	X-Ascend-Data-Svc		Switched-1088K		24
+#VALUE	X-Ascend-Data-Svc		Switched-1152K		25
+#VALUE	X-Ascend-Data-Svc		Switched-1216K		26
+#VALUE	X-Ascend-Data-Svc		Switched-1280K		27
+#VALUE	X-Ascend-Data-Svc		Switched-1344K		28
+#VALUE	X-Ascend-Data-Svc		Switched-1408K		29
+#VALUE	X-Ascend-Data-Svc		Switched-1472K		30
+#VALUE	X-Ascend-Data-Svc		Switched-1600K		31
+#VALUE	X-Ascend-Data-Svc		Switched-1664K		32
+#VALUE	X-Ascend-Data-Svc		Switched-1728K		33
+#VALUE	X-Ascend-Data-Svc		Switched-1792K		34
+#VALUE	X-Ascend-Data-Svc		Switched-1856K		35
+#VALUE	X-Ascend-Data-Svc		Switched-1920K		36
+#VALUE	X-Ascend-Data-Svc		Switched-inherited	37
+#VALUE	X-Ascend-Data-Svc		Switched-restricted-bearer-x30 38
+#VALUE	X-Ascend-Data-Svc		Switched-clear-bearer-v110 39
+#VALUE	X-Ascend-Data-Svc		Switched-restricted-64-x30 40
+#VALUE	X-Ascend-Data-Svc		Switched-clear-56-v110	41
+#VALUE	X-Ascend-Data-Svc		Switched-modem		42
+#VALUE	X-Ascend-Data-Svc		Switched-atmodem	43
+#VALUE	X-Ascend-Data-Svc		Switched-V110-24-56	45
+#VALUE	X-Ascend-Data-Svc		Switched-V110-48-56	46
+#VALUE	X-Ascend-Data-Svc		Switched-V110-96-56	47
+#VALUE	X-Ascend-Data-Svc		Switched-V110-192-56	48
+#VALUE	X-Ascend-Data-Svc		Switched-V110-384-56	49
+#VALUE	X-Ascend-Data-Svc		Switched-V110-24-56R	50
+#VALUE	X-Ascend-Data-Svc		Switched-V110-48-56R	51
+#VALUE	X-Ascend-Data-Svc		Switched-V110-96-56R	52
+#VALUE	X-Ascend-Data-Svc		Switched-V110-192-56R	53
+#VALUE	X-Ascend-Data-Svc		Switched-V110-384-56R	54
+#VALUE	X-Ascend-Data-Svc		Switched-V110-24-64	55
+#VALUE	X-Ascend-Data-Svc		Switched-V110-48-64	56
+#VALUE	X-Ascend-Data-Svc		Switched-V110-96-64	57
+#VALUE	X-Ascend-Data-Svc		Switched-V110-192-64	58
+#VALUE	X-Ascend-Data-Svc		Switched-V110-384-64	59
+#VALUE	X-Ascend-Data-Svc		Switched-V110-24-64R	60
+#VALUE	X-Ascend-Data-Svc		Switched-V110-48-64R	61
+#VALUE	X-Ascend-Data-Svc		Switched-V110-96-64R	62
+#VALUE	X-Ascend-Data-Svc		Switched-V110-384-64R	64
+#VALUE	X-Ascend-Data-Svc		Switched-V110-192-64R	63
+#VALUE	X-Ascend-Data-Svc		Switched-Pots		68
+#VALUE	X-Ascend-Data-Svc		Switched-ATM		69
+#VALUE	X-Ascend-Data-Svc		Switched-FR		70
+#VALUE	X-Ascend-Force-56		Force-56-No		0
+#VALUE	X-Ascend-Force-56		Force-56-Yes		1

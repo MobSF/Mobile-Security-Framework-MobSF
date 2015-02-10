@@ -1,0 +1,25 @@
+# -*- text -*-
+##############################################################################
+#
+#	Zyxel attributes, of course in the RFC space...
+#
+#	This dictionary is NOT included by default, because it conflicts
+#	with other dictionaries!
+#
+#	http://www.zyxel.com/support/supportnote/p200/ap_note/isdn/radius.htm
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR Zyxel
+
+ATTRIBUTE	Zyxel-Callback-Option			192	integer
+ATTRIBUTE	Zyxel-Callback-Phone-Source		193	integer
+
+VALUE	Zyxel-Callback-Phone-Source	Preconfigured		0
+VALUE	Zyxel-Callback-Phone-Source	User			1
+
+VALUE	Zyxel-Callback-Option		None			0
+VALUE	Zyxel-Callback-Option		Optional		1
+VALUE	Zyxel-Callback-Option		Mandatory		2

@@ -1,0 +1,343 @@
+# -*- text -*-
+#
+#  dictionary.erx
+#
+#	Juniper's (was Unisphere's) broadband RAS
+#	From Terje Krogdahl <tekr@nextra.com>
+#
+# Version:	$Id$
+#
+
+# This dictionary applies to access services on Juniper JUNOS (M/MX)
+# based platforms as well as JUNOSe, although some of the attributes
+# have been given new names on JUNOS:
+#	http://www.juniper.net/techpubs/software/junos/junos112/radius-dictionary/unisphereDictionary_for_JUNOS_v11-2.dct
+#	http://www.juniper.net/techpubs/en_US/junos10.3/topics/reference/general/aaa-subscriber-access-radius-vsa.html
+#
+# In this file, we keep the ERX prefix and the JUNOSe attribute names
+# for backwards compatibility
+#
+# Juniper ERX dictionaries are available at:
+#	http://www.juniper.net/techpubs/software/erx/junose71/unisphere7-1.dct
+#	http://www.juniper.net/techpubs/software/erx/junose700/unisphere7-0.dct
+#	http://www.juniper.net/techpubs/software/erx/junose700/swconfig-broadband/html/radius-attributes.html
+#	http://www.juniper.net/techpubs/software/erx/junose52/unisphere5-2.dct
+#	http://www.juniper.net/techpubs/software/erx/erx50x/swconfig-broadband/html/radius-attributes.html
+# (The below are from when it was the Unisphere ERX)
+#	http://www.juniper.net/techpubs/software/erx/erx410/unisphere4-1.dct
+#	http://www.juniper.net/techpubs/software/erx/erx403/unisphere4-0.dct
+#	http://www.juniper.net/techpubs/software/erx/erx3xx/unisphere3-2.dct
+#	http://www.juniper.net/techpubs/software/erx/erx3xx/unisphere3-0.dct
+#
+#  As a note on ERX broken-ness, If you don't send a Framed-IP-Address
+#  in the Access-Accept packet, the ERX disconnects the user, and
+#  sends an Accounting-Request packet with Acct-Status-Type = Stop
+#
+#  It does NOT send a 'Start' packet, so this behaviour confuses the
+#  heck out of most admins, who do everything right, but have the ERX
+#  do stupid things.
+#
+#  The ERX supports Ascend "abinary" format.  See:
+#
+#	http://www.juniper.net/techpubs/software/erx/junose71/swconfig-policy/html/policy-mgmt-apply5.html
+#
+#  For this to work in FreeRADIUS, you will have to specify the attribute
+#  in hex, as in:
+#
+#	Ascend-Data-Filter = 0x010203...
+#
+
+VENDOR		ERX				4874
+
+BEGIN-VENDOR	ERX
+
+ATTRIBUTE	ERX-Virtual-Router-Name			1	string
+ATTRIBUTE	ERX-Address-Pool-Name			2	string
+ATTRIBUTE	ERX-Local-Loopback-Interface		3	string
+ATTRIBUTE	ERX-Primary-Dns				4	ipaddr
+ATTRIBUTE	ERX-Secondary-Dns			5	ipaddr
+ATTRIBUTE	ERX-Primary-Wins			6	ipaddr
+ATTRIBUTE	ERX-Secondary-Wins			7	ipaddr
+ATTRIBUTE	ERX-Tunnel-Virtual-Router		8	string
+ATTRIBUTE	ERX-Tunnel-Password			9	string
+ATTRIBUTE	ERX-Ingress-Policy-Name			10	string
+ATTRIBUTE	ERX-Egress-Policy-Name			11	string
+ATTRIBUTE	ERX-Ingress-Statistics			12	integer
+ATTRIBUTE	ERX-Egress-Statistics			13	integer
+ATTRIBUTE	ERX-Atm-Service-Category		14	integer
+ATTRIBUTE	ERX-Atm-PCR				15	integer
+ATTRIBUTE	ERX-Atm-SCR				16	integer
+ATTRIBUTE	ERX-Atm-MBS				17	integer
+ATTRIBUTE	ERX-Cli-Initial-Access-Level		18	string
+ATTRIBUTE	ERX-Cli-Allow-All-VR-Access		19	integer
+ATTRIBUTE	ERX-Alternate-Cli-Access-Level		20	string
+ATTRIBUTE	ERX-Alternate-Cli-Vrouter-Name		21	string
+ATTRIBUTE	ERX-Sa-Validate				22	integer
+ATTRIBUTE	ERX-Igmp-Enable				23	integer
+ATTRIBUTE	ERX-Pppoe-Description			24	string
+ATTRIBUTE	ERX-Redirect-VR-Name			25	string
+ATTRIBUTE	ERX-Qos-Profile-Name			26	string
+ATTRIBUTE	ERX-Pppoe-Max-Sessions			27	integer
+ATTRIBUTE	ERX-Pppoe-Url				28	string
+ATTRIBUTE	ERX-Qos-Profile-Interface-Type		29	integer
+ATTRIBUTE	ERX-Tunnel-Nas-Port-Method		30	integer
+ATTRIBUTE	ERX-Service-Bundle			31	string
+ATTRIBUTE	ERX-Tunnel-Tos				32	integer
+ATTRIBUTE	ERX-Tunnel-Maximum-Sessions		33	integer
+ATTRIBUTE	ERX-Framed-Ip-Route-Tag			34	string
+ATTRIBUTE	ERX-Dial-Out-Number			35	string
+ATTRIBUTE	ERX-PPP-Username			36	string
+ATTRIBUTE	ERX-PPP-Password			37	string
+ATTRIBUTE	ERX-PPP-Auth-Protocol			38	integer
+ATTRIBUTE	ERX-Minimum-BPS				39	integer
+ATTRIBUTE	ERX-Maximum-BPS				40	integer
+ATTRIBUTE	ERX-Bearer-Type				41	integer
+ATTRIBUTE	ERX-Input-Gigapkts			42	integer
+ATTRIBUTE	ERX-Output-Gigapkts			43	integer
+ATTRIBUTE	ERX-Tunnel-Interface-Id			44	string
+ATTRIBUTE	ERX-IpV6-Virtual-Router			45	string
+ATTRIBUTE	ERX-IpV6-Local-Interface		46	string
+ATTRIBUTE	ERX-Ipv6-Primary-Dns			47	ipv6addr
+ATTRIBUTE	ERX-Ipv6-Secondary-Dns			48	ipv6addr
+ATTRIBUTE	Sdx-Service-Name			49	string
+ATTRIBUTE	Sdx-Session-Volume-Quota		50	string
+ATTRIBUTE	Sdx-Tunnel-Disconnect-Cause-Info	51	string
+ATTRIBUTE	ERX-Radius-Client-Address		52	ipaddr
+ATTRIBUTE	ERX-Service-Description			53	string
+ATTRIBUTE	ERX-L2tp-Recv-Window-Size		54	integer
+ATTRIBUTE	ERX-Dhcp-Options			55	string
+ATTRIBUTE	ERX-Dhcp-Mac-Addr			56	string
+ATTRIBUTE	ERX-Dhcp-Gi-Address			57	ipaddr
+ATTRIBUTE	ERX-LI-Action				58	integer	encrypt=2
+ATTRIBUTE	ERX-Med-Dev-Handle			59	octets	encrypt=2
+ATTRIBUTE	ERX-Med-Ip-Address			60	ipaddr	encrypt=2
+ATTRIBUTE	ERX-Med-Port-Number			61	integer	encrypt=2
+ATTRIBUTE	ERX-MLPPP-Bundle-Name			62	string
+ATTRIBUTE	ERX-Interface-Desc			63	string
+ATTRIBUTE	ERX-Tunnel-Group			64	string
+ATTRIBUTE	ERX-Service-Activate			65	string	has_tag
+ATTRIBUTE	ERX-Service-Deactivate			66	string
+ATTRIBUTE	ERX-Service-Volume			67	integer	has_tag
+ATTRIBUTE	ERX-Service-Timeout			68	integer	has_tag
+ATTRIBUTE	ERX-Service-Statistics			69	integer	has_tag
+
+ATTRIBUTE	ERX-DF-Bit				70	integer
+
+ATTRIBUTE	ERX-IGMP-Access-Name			71	string
+ATTRIBUTE	ERX-IGMP-Access-Src-Name		72	string
+ATTRIBUTE	ERX-IGMP-OIF-Map-Name			73	string
+
+ATTRIBUTE	ERX-MLD-Access-Name			74	string
+ATTRIBUTE	ERX-MLD-Access-Src-Name			75	string
+ATTRIBUTE	ERX-MLD-OIF-Map-Name			76	string
+ATTRIBUTE	ERX-MLD-Version				77	integer
+ATTRIBUTE	ERX-IGMP-Version			78	integer
+ATTRIBUTE	ERX-IP-Mcast-Adm-Bw-Limit		79	integer
+ATTRIBUTE	ERX-IPv6-Mcast-Adm-Bw-Limit		80	integer
+ATTRIBUTE	ERX-Qos-Parameters			82	string
+ATTRIBUTE	ERX-Service-Session			83	string
+
+ATTRIBUTE	ERX-Mobile-IP-Algorithm			84	integer
+ATTRIBUTE	ERX-Mobile-IP-SPI			85	integer
+ATTRIBUTE	ERX-Mobile-IP-Key			86	string
+ATTRIBUTE	ERX-Mobile-IP-Replay			87	integer
+ATTRIBUTE	ERX-Mobile-IP-Access-Control		88	string
+ATTRIBUTE	ERX-Mobile-IP-Lifetime			89	integer
+
+ATTRIBUTE	ERX-L2TP-Resynch-Method			90	integer
+
+ATTRIBUTE	ERX-Tunnel-Switch-Profile		91	string
+
+ATTRIBUTE	ERX-L2c-Up-Stream-Data			92	string
+ATTRIBUTE	ERX-L2c-Down-Stream-Data		93	string
+
+ATTRIBUTE	ERX-Tunnel-Tx-Speed-Method		94	integer
+
+ATTRIBUTE	ERX-IGMP-Query-Interval			95	integer
+ATTRIBUTE	ERX-IGMP-Max-Resp-Time			96	integer
+ATTRIBUTE	ERX-IGMP-Immediate-Leave		97	integer
+ATTRIBUTE	ERX-MLD-Query-Interval			98	integer
+ATTRIBUTE	ERX-MLD-Max-Resp-Time			99	integer
+ATTRIBUTE	ERX-MLD-Immediate-Leave			100	integer
+ATTRIBUTE	ERX-IP-Block-Multicast			101	integer
+
+ATTRIBUTE	ERX-IGMP-Explicit-Tracking		102	integer
+ATTRIBUTE	ERX-IGMP-No-Tracking-V2-Grps		103	integer
+ATTRIBUTE	ERX-MLD-Explicit-Tracking		104	integer
+ATTRIBUTE	ERX-MLD-No-Tracking-V1-Grps		105	integer
+
+ATTRIBUTE	ERX-IPv6-Ingress-Policy-Name		106	string
+ATTRIBUTE	ERX-IPv6-Egress-Policy-Name		107	string
+ATTRIBUTE	ERX-CoS-Shaping-Pmt-Type		108	string
+ATTRIBUTE	ERX-DHCP-Guided-Relay-Server		109	ipaddr
+
+ATTRIBUTE	ERX-Acc-Loop-Cir-Id			110	string
+ATTRIBUTE	ERX-Acc-Aggr-Cir-Id-Bin			111	octets
+ATTRIBUTE	ERX-Acc-Aggr-Cir-Id-Asc			112	string
+ATTRIBUTE	ERX-Act-Data-Rate-Up			113	integer
+ATTRIBUTE	ERX-Act-Data-Rate-Dn			114	integer
+ATTRIBUTE	ERX-Min-Data-Rate-Up			115	integer
+ATTRIBUTE	ERX-Min-Data-Rate-Dn			116	integer
+ATTRIBUTE	ERX-Att-Data-Rate-Up			117	integer
+ATTRIBUTE	ERX-Att-Data-Rate-Dn			118	integer
+ATTRIBUTE	ERX-Max-Data-Rate-Up			119	integer
+ATTRIBUTE	ERX-Max-Data-Rate-Dn			120	integer
+ATTRIBUTE	ERX-Min-LP-Data-Rate-Up			121	integer
+ATTRIBUTE	ERX-Min-LP-Data-Rate-Dn			122	integer
+ATTRIBUTE	ERX-Max-Interlv-Delay-Up		123	integer
+ATTRIBUTE	ERX-Act-Interlv-Delay-Up		124	integer
+ATTRIBUTE	ERX-Max-Interlv-Delay-Dn		125	integer
+ATTRIBUTE	ERX-Act-Interlv-Delay-Dn		126	integer
+ATTRIBUTE	ERX-DSL-Line-State			127	integer
+ATTRIBUTE	ERX-DSL-Type				128	integer
+
+ATTRIBUTE	ERX-IPv6-NdRa-Prefix			129	ipv6prefix
+ATTRIBUTE	ERX-Qos-Set-Name			130	string
+
+ATTRIBUTE	ERX-Service-Acct-Interval		140	integer has_tag
+
+ATTRIBUTE	ERX-DownStream-Calc-Rate		141	integer
+ATTRIBUTE	ERX-UpStream-Calc-Rate			142	integer
+ATTRIBUTE	ERX-Max-Clients-Per-Interface		143	integer
+
+ATTRIBUTE	ERX-PPP-Monitor-Ingress-Only		144	integer
+
+ATTRIBUTE	ERX-CoS-Scheduler-Pmt-Type		146	string
+ATTRIBUTE	ERX-Backup-Address-Pool			147	string
+
+ATTRIBUTE	ERX-ICR-Partition-Id			150	string
+ATTRIBUTE	ERX-IPv6-Acct-Input-Octets		151	integer
+ATTRIBUTE	ERX-IPv6-Acct-Output-Octets		152	integer
+ATTRIBUTE	ERX-IPv6-Acct-Input-Packets		153	integer
+ATTRIBUTE	ERX-IPv6-Acct-Output-Packets		154	integer
+ATTRIBUTE	ERX-IPv6-Acct-Input-Gigawords		155	integer
+ATTRIBUTE	ERX-IPv6-Acct-Output-Gigawords		156	integer
+ATTRIBUTE	ERX-IPv6-NdRa-Pool-Name			157	string
+ATTRIBUTE	ERX-PppoE-Padn				158	string
+ATTRIBUTE	ERX-Dhcp-Option-82			159	octets
+ATTRIBUTE	ERX-Vlan-Map-Id				160	integer
+ATTRIBUTE	ERX-IPv6-Delegated-Pool-Name		161	string
+
+ATTRIBUTE	Juniper-Tx-Connect-Speed	162	integer
+ATTRIBUTE	Juniper-Rx-Connect-Speed	163 integer
+
+# ATTRIBUTE 164 - 173 RESERVED
+
+ATTRIBUTE	Unisphere-Client-Profile-Name	174 string
+ATTRIBUTE	Juniper-Redirect-GW-Address		175	ipaddr
+ATTRIBUTE	Juniper-APN-Name			176	string
+
+#
+#  Values	Attribute		Name			Number
+#
+VALUE	ERX-Ingress-Statistics		disable			0
+VALUE	ERX-Ingress-Statistics		enable			1
+
+VALUE	ERX-Egress-Statistics		disable			0
+VALUE	ERX-Egress-Statistics		enable			1
+
+VALUE	ERX-Atm-Service-Category	UBR			1
+VALUE	ERX-Atm-Service-Category	UBRPCR			2
+VALUE	ERX-Atm-Service-Category	nrtVBR			3
+VALUE	ERX-Atm-Service-Category	CBR			4
+
+VALUE	ERX-Cli-Allow-All-VR-Access	disable			0
+VALUE	ERX-Cli-Allow-All-VR-Access	enable			1
+
+VALUE	ERX-Sa-Validate			disable			0
+VALUE	ERX-Sa-Validate			enable			1
+
+VALUE	ERX-Igmp-Enable			disable			0
+VALUE	ERX-Igmp-Enable			enable			1
+
+VALUE	ERX-Qos-Profile-Interface-Type	IP			1
+VALUE	ERX-Qos-Profile-Interface-Type	ATM			2
+VALUE	ERX-Qos-Profile-Interface-Type	HDLC			3
+VALUE	ERX-Qos-Profile-Interface-Type	ETHERNET		4
+VALUE	ERX-Qos-Profile-Interface-Type	SERVER-PORT		5
+VALUE	ERX-Qos-Profile-Interface-Type	ATM-1483		6
+VALUE	ERX-Qos-Profile-Interface-Type	FRAME-RELAY		7
+VALUE	ERX-Qos-Profile-Interface-Type	MPLS-MINOR		8
+VALUE	ERX-Qos-Profile-Interface-Type	CBF			9
+VALUE	ERX-Qos-Profile-Interface-Type	IP-TUNNEL		10
+VALUE	ERX-Qos-Profile-Interface-Type	VLAN-SUB		11
+VALUE	ERX-Qos-Profile-Interface-Type	PPPOE-SUB		12
+
+VALUE	ERX-Tunnel-Nas-Port-Method	None			0
+VALUE	ERX-Tunnel-Nas-Port-Method	CISCO-CLID		1
+
+VALUE	ERX-PPP-Auth-Protocol		None			0
+VALUE	ERX-PPP-Auth-Protocol		PAP			1
+VALUE	ERX-PPP-Auth-Protocol		CHAP			2
+VALUE	ERX-PPP-Auth-Protocol		PAP-CHAP		3
+VALUE	ERX-PPP-Auth-Protocol		CHAP-PAP		4
+
+VALUE	ERX-Bearer-Type			None			0
+VALUE	ERX-Bearer-Type			Analog			1
+VALUE	ERX-Bearer-Type			Digital			2
+
+VALUE	ERX-LI-Action			off			0
+VALUE	ERX-LI-Action			on			1
+VALUE	ERX-LI-Action			noop			2
+
+VALUE	ERX-DF-Bit			dont-ignore-df-bit	0
+VALUE	ERX-DF-Bit			ignore-df-bit		1
+
+VALUE	ERX-MLD-Version			v1			1
+VALUE	ERX-MLD-Version			v2			2
+
+VALUE	ERX-IGMP-Version		v1			1
+VALUE	ERX-IGMP-Version		v2			2
+VALUE	ERX-IGMP-Version		v3			3
+
+VALUE	ERX-Service-Statistics		disabled		0
+VALUE	ERX-Service-Statistics		time			1
+VALUE	ERX-Service-Statistics		time-volume		2
+
+VALUE	ERX-L2TP-Resynch-Method		disable			0
+VALUE	ERX-L2TP-Resynch-Method		failover		1
+VALUE	ERX-L2TP-Resynch-Method		silent-failover		2
+VALUE	ERX-L2TP-Resynch-Method		failover-with-silent-backup	3
+
+VALUE	ERX-Tunnel-Tx-Speed-Method	static-layer2		1
+VALUE	ERX-Tunnel-Tx-Speed-Method	dynamic-layer2		2
+VALUE	ERX-Tunnel-Tx-Speed-Method	qos			3
+VALUE	ERX-Tunnel-Tx-Speed-Method	actual			4
+
+VALUE	ERX-IGMP-Immediate-Leave	disabled		0
+VALUE	ERX-IGMP-Immediate-Leave	enabled			1
+
+VALUE	ERX-MLD-Immediate-Leave		disabled		0
+VALUE	ERX-MLD-Immediate-Leave		enabled			1
+
+VALUE	ERX-IP-Block-Multicast		disabled		0
+VALUE	ERX-IP-Block-Multicast		enabled			1
+
+VALUE	ERX-IGMP-Explicit-Tracking	disabled		0
+VALUE	ERX-IGMP-Explicit-Tracking	enabled			1
+
+VALUE	ERX-IGMP-No-Tracking-V2-Grps	disabled		0
+VALUE	ERX-IGMP-No-Tracking-V2-Grps	enabled			1
+
+VALUE	ERX-MLD-Explicit-Tracking	disabled		0
+VALUE	ERX-MLD-Explicit-Tracking	enabled			1
+
+VALUE	ERX-MLD-No-Tracking-V1-Grps	disabled		0
+VALUE	ERX-MLD-No-Tracking-V1-Grps	enabled			1
+
+VALUE	ERX-DSL-Line-State		SHOWTIME		1
+VALUE	ERX-DSL-Line-State		IDLE			2
+VALUE	ERX-DSL-Line-State		SILENT			3
+
+VALUE	ERX-DSL-Type			ADSL1			1
+VALUE	ERX-DSL-Type			ADSL2			2
+VALUE	ERX-DSL-Type			ADSL2PLUS		3
+VALUE	ERX-DSL-Type			VDSL1			4
+VALUE	ERX-DSL-Type			VDSL2			5
+VALUE	ERX-DSL-Type			SDSL			6
+VALUE	ERX-DSL-Type			UNKNOWN			7
+
+VALUE	ERX-PPP-Monitor-Ingress-Only	disabled		0
+VALUE	ERX-PPP-Monitor-Ingress-Only	enabled			1
+
+END-VENDOR	ERX

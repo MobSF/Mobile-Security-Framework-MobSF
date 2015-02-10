@@ -1,0 +1,771 @@
+ACCOUNTING-CONTROL-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    mib-2, Integer32                              FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, RowStatus, TestAndIncr,
+    DisplayString, TruthValue                     FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+                                                  FROM SNMPv2-CONF
+    ifIndex                                       FROM IF-MIB;
+
+
+accountingControlMIB MODULE-IDENTITY
+    LAST-UPDATED "9809281000Z"
+    ORGANIZATION "IETF AToM MIB Working Group"
+    CONTACT-INFO "Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive,
+                  San Jose CA 95134-1706.
+                  Phone: +1 408 526 5260
+                  Email: kzm@cisco.com"
+    DESCRIPTION
+            "The MIB module for managing the collection and storage of
+            accounting information for connections in a connection-
+            oriented network such as ATM."
+    ::= { mib-2 60 }
+
+
+acctngMIBObjects       OBJECT IDENTIFIER ::= { accountingControlMIB 1 }
+
+acctngSelectionControl OBJECT IDENTIFIER ::= { acctngMIBObjects 1 }
+acctngFileControl      OBJECT IDENTIFIER ::= { acctngMIBObjects 2 }
+acctngInterfaceControl OBJECT IDENTIFIER ::= { acctngMIBObjects 3 }
+acctngTrapControl      OBJECT IDENTIFIER ::= { acctngMIBObjects 4 }
+
+-- Textual Conventions
+
+
+DataCollectionSubtree ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "The subtree component of a (subtree, list) tuple.  Such a
+            (subtree, list) tuple defines a set of objects and their
+            values to be collected as accounting data for a connection.
+            The subtree specifies a single OBJECT IDENTIFIER value such
+            that each object in the set is named by the subtree value
+            appended with a single additional sub-identifier."
+    SYNTAX       OBJECT IDENTIFIER
+
+DataCollectionList ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "The list component of a (subtree, list) tuple.  Such a
+            (subtree, list) tuple defines a set of objects and their
+            values to be collected as accounting data for a connection.
+            The subtree specifies a single OBJECT IDENTIFIER value such
+            that each object in the set is named by the subtree value
+            appended with a single additional sub-identifier.  The list
+            specifies a set of data items, where the presence of an item
+            in the list indicates that the item is (to be) present in
+            the data collected for a connection; the absence of an item
+            from the list indicates that the item is not (to be) present
+            in the data collected for a connection.  Each data item is
+            represented by an integer which when appended (as as
+            additional sub-identifier) to the OBJECT IDENTIFIER value of
+            the subtree identified by the tuple, is the name of an
+            object defining that data item (its description and its
+            syntax).
+
+            The list is specified as an OCTET STRING in which each data
+            item is represented by a single bit, where data items 1
+            through 8 are represented by the bits in the first octet,
+            data items 9 through 16 by the bits in the second octet,
+            etc.  In each octet, the lowest numbered data item is
+            represented by the most significant bit, and the highest
+            numbered data item by the least significant bit.  A data
+            item is present in the list when its bit is set, and absent
+            when its bit is reset.  If the length of an OCTET STRING
+            value is too short to represent one or more data items
+            defined in a subtree, then those data items are absent from
+            the set identified by the tuple of that subtree and that
+            OCTET STRING value."
+    SYNTAX       OCTET STRING (SIZE(0..8))
+
+FileIndex ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "An arbitrary integer value identifying a file into which
+            accounting data is being collected."
+    SYNTAX       Integer32 (1..65535)
+
+
+-- The Accounting Information Selection table
+
+acctngSelectionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AcctngSelectionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of accounting information selection entries.
+
+            Note that additions, modifications and deletions of entries
+            in this table can occur at any time, but such changes only
+            take effect on the next occasion when collection begins into
+            a new file.  Thus, between modification and the next 'swap',
+            the content of this table does not reflect the current
+            selection."
+    ::= { acctngSelectionControl 1 }
+
+acctngSelectionEntry OBJECT-TYPE
+    SYNTAX      AcctngSelectionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An entry identifying an (subtree, list) tuple used to
+            select a set of accounting information which is to be
+            collected."
+    INDEX   { acctngSelectionIndex }
+    ::= { acctngSelectionTable 1 }
+
+AcctngSelectionEntry ::=
+    SEQUENCE {
+        acctngSelectionIndex     Integer32,
+        acctngSelectionSubtree   DataCollectionSubtree,
+        acctngSelectionList      DataCollectionList,
+        acctngSelectionFile      FileIndex,
+        acctngSelectionType      BITS,
+        acctngSelectionRowStatus RowStatus
+    }
+
+acctngSelectionIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An arbitrary integer value which uniquely identifies a
+            tuple stored in this table.  This value is required to be
+            the permanent 'handle' for an entry in this table for as
+            long as that entry exists, including across restarts and
+            power outages."
+    ::= { acctngSelectionEntry 1 }
+
+acctngSelectionSubtree OBJECT-TYPE
+    SYNTAX      DataCollectionSubtree
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The combination of acctngSelectionSubtree and
+            acctngSelectionList specifies one (subtree, list) tuple
+            which is to be collected."
+    ::= { acctngSelectionEntry 2 }
+
+acctngSelectionList OBJECT-TYPE
+    SYNTAX      DataCollectionList
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The combination of acctngSelectionSubtree and
+            acctngSelectionList specifies one (subtree, list) tuple
+            which is to be collected."
+    ::= { acctngSelectionEntry 3 }
+
+acctngSelectionFile OBJECT-TYPE
+    SYNTAX      FileIndex
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "An indication of the file into which the accounting
+            information identified by this entry is to be stored.  If
+            there is no conceptual row in the acctngFileTable for which
+            the value of acctngFileIndex has the same value as this
+            object, then the information selected by this entry is not
+            collected."
+    ::= { acctngSelectionEntry 4 }
+
+acctngSelectionType OBJECT-TYPE
+    SYNTAX      BITS { svcIncoming(0),
+                       svcOutgoing(1),
+                       svpIncoming(2),
+                       svpOutgoing(3),
+                       pvc(4),
+                       pvp(5),
+                       spvcOriginator(6),
+                       spvcTarget(7),
+                       spvpOriginator(8),
+                       spvpTarget(9) }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "Indicates the types of connections for which the
+            information selected by this entry are to be collected."
+    DEFVAL      { { svcIncoming, svcOutgoing,
+                    svpIncoming, svpOutgoing } }
+    ::= { acctngSelectionEntry 5 }
+
+acctngSelectionRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The status of this conceptual row.  An agent may refuse to
+            create new conceptual rows and/or modify existing conceptual
+            rows, if such creation/modification would cause multiple
+            rows to have the same values of acctngSelectionSubtree and
+            acctngSelectionList.
+
+            A conceptual row can not have the status of 'active' until
+            values have been assigned to the acctngSelectionSubtree,
+            acctngSelectionList and acctngSelectionFile columnar objects
+            within that row.
+
+            An agent must not refuse to change the values of the
+            acctngSelectionSubtree, acctngSelectionList and
+            acctngSelectionFile columnar objects within a conceptual row
+            even while that row's status is 'active'.  Similarly, an
+            agent must not refuse to destroy an existing conceptual row
+            while the file referenced by that row's instance of
+            acctngSelectionFile is in active use, i.e., while the
+            corresponding instance of acctngFileRowStatus has the value
+            'active'.  However, such changes only take effect upon the
+            next occasion when collection begins into a new (version of
+            the) file."
+    ::= { acctngSelectionEntry 6 }
+
+-- The Accounting File table
+
+acctngFileTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AcctngFileEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of files into which accounting information is to be
+            stored."
+    ::= { acctngFileControl 1 }
+
+acctngFileEntry OBJECT-TYPE
+    SYNTAX      AcctngFileEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An entry identifying a file into which accounting
+            information is to be collected."
+    INDEX   { acctngFileIndex }
+    ::= { acctngFileTable 1 }
+
+AcctngFileEntry ::=
+    SEQUENCE {
+        acctngFileIndex                 FileIndex,
+        acctngFileName                  DisplayString,
+        acctngFileNameSuffix            DisplayString,
+        acctngFileDescription           DisplayString,
+        acctngFileCommand               INTEGER,
+        acctngFileMaximumSize           Integer32,
+        acctngFileCurrentSize           Integer32,
+        acctngFileFormat                INTEGER,
+        acctngFileCollectMode           BITS,
+        acctngFileCollectFailedAttempts BITS,
+        acctngFileInterval              Integer32,
+        acctngFileMinAge                Integer32,
+        acctngFileRowStatus             RowStatus
+    }
+
+acctngFileIndex OBJECT-TYPE
+    SYNTAX      FileIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A unique value identifying a file into which accounting
+            data is to be stored.  This value is required to be the
+            permanent 'handle' for an entry in this table for as long as
+            that entry exists, including across restarts and power
+            outages."
+    ::= { acctngFileEntry 1 }
+
+acctngFileName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The name of the file into which accounting data is to be
+            stored.  If files are named using suffixes, then the name of
+            the current file is the concatenation of acctngFileName and
+            acctngFileNameSuffix.
+
+            An agent will respond with an error (e.g., 'wrongValue') to
+            a management set operation which attempts to modify the
+            value of this object to the same value as already held by
+            another instance of acctngFileName.  An agent will also
+            respond with an error (e.g., 'wrongValue') if the new value
+            is invalid for use as a file name on the local file system
+            (e.g., many file systems do not support white space embedded
+            in file names).
+
+            The value of this object can not be modified while the
+            corresponding instance of acctngFileRowStatus is 'active'."
+    ::= { acctngFileEntry 2 }
+
+acctngFileNameSuffix OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(0..8))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The suffix, if any, of the name of a file into which
+            accounting data is currently being stored.  If suffixes are
+            not used, then the value of this object is the zero-length
+            string.  Note that if a separator, such as a period, is used
+            in appending the suffix to the file name, then that
+            separator appears as the first character of this value."
+    ::= { acctngFileEntry 3 }
+
+acctngFileDescription OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The textual description of the accounting data which will
+            be stored (on the next occasion) when header information is
+            stored in the file.  The value of this object may be
+            modified at any time."
+    DEFVAL      { "" }
+    ::= { acctngFileEntry 4 }
+
+acctngFileCommand OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    -- the following two values are states:
+                    -- they may be read but not written
+                    idle(1),
+                    cmdInProgress(2),
+                    -- the following two values are actions:
+                    -- they may be written, but are never read
+                    swapToNewFile(3),
+                    collectNow(4)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "A control object for the collection of accounting data.
+            When read the value is either 'idle' or 'cmdInProgress'.
+            Writing a value is only allowed when the current value is
+            'idle'.  When a value is successfully written, the value
+            changes to 'cmdInProgress' until completion of the action,
+            at which time the value reverts to 'idle'.  Actions are
+            invoked by writing the following values:
+
+               'swapToNewFile' - the collection of data into the current
+                      file is terminated, and collection continues into
+                      a new (version of the) file.
+
+               'collectNow' - the agent creates and stores a connection
+                      record into the current file for each active
+                      connection having a type matching
+                      acctngSelectionType and an age greater than
+                      acctngFileMinAge."
+    DEFVAL      { idle }
+    ::= { acctngFileEntry 5 }
+
+acctngFileMaximumSize OBJECT-TYPE
+    SYNTAX      Integer32 (100..2147483647)
+    UNITS       "bytes"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The maximum size of the file (including header
+            information).  When the file of collected data reaches this
+            size, either the agent automatically swaps to a new version
+            (i.e., a new value acctngFileNameSuffix) of the file, or new
+            records are discarded.  Since a file must contain an
+            integral number of connection records, the actual maximum
+            size of the file may be just less OR Just greater than the
+            value of this object.
+
+            The value of this object can not be modified while the
+            corresponding instance of acctngFileRowStatus is 'active'.
+            The largest value of the maximum file size in some agents
+            will be less than 2147483647 bytes."
+    DEFVAL      { 5000000 }
+    ::= { acctngFileEntry 6 }
+
+acctngFileCurrentSize OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    UNITS       "bytes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The current size of the file into which data is currently
+            being collected, including header information."
+    ::= { acctngFileEntry 7 }
+
+acctngFileFormat OBJECT-TYPE
+    SYNTAX      INTEGER { other(1), ber(2) }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "An indication of the format in which the accounting data is
+            to be stored in the file.  If the value is modified, the new
+            value takes effect after the next 'swap' to a new file.  The
+            value ber(2) indicates the standard format."
+    DEFVAL      { ber }
+    ::= { acctngFileEntry 8 }
+
+acctngFileCollectMode OBJECT-TYPE
+    SYNTAX      BITS { onRelease(0), periodically(1) }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "An indication of when accounting data is to be written into
+            this file.  Note that in addition to the occasions indicated
+            by the value of this object, an agent always writes
+            information on appropriate connections to the file when the
+            corresponding instance of acctngFileCommand is set to
+            'collectNow'.
+
+              - 'onRelease' - whenever a connection (or possibly,
+                      connection attempt) is terminated, either through
+                      a Release message or through management removal,
+                      information on that connection is written.
+
+              - 'periodically' - information on appropriate connections
+                      is written on the expiry of a periodic timer,
+
+            This value may be modified at any time."
+    DEFVAL      { { onRelease } }
+    ::= { acctngFileEntry 9 }
+
+acctngFileCollectFailedAttempts OBJECT-TYPE
+    SYNTAX      BITS { soft(0), regular(1) }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "An indication of whether connection data is to be collected
+            for failed connection attempts when the value of the
+            corresponding instance of acctngFileCollectMode includes
+            'onRelease'.  The individual values have the following
+            meaning:
+
+              'soft' - indicates that connection data is to be collected
+            for failed Soft PVCs/PVPs which originate or terminate at
+            the relevant interface.
+
+              'regular' - indicates that connection data is to be
+            collected for failed SVCs, including Soft PVCs/PVPs not
+            originating or terminating at the relevant interface.
+
+            This value may be modified at any time."
+    DEFVAL      { { soft, regular } }
+    ::= { acctngFileEntry 10 }
+
+acctngFileInterval OBJECT-TYPE
+    SYNTAX      Integer32 (60..86400)
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The number of seconds between the periodic collections of
+            accounting data when the value of the corresponding instance
+            of acctngFileCollectMode includes 'periodically'.  Some
+            agents may impose restrictions on the range of this
+            interval.  This value may be modified at any time."
+    DEFVAL     { 3600 }
+    ::= { acctngFileEntry 11 }
+
+acctngFileMinAge OBJECT-TYPE
+    SYNTAX      Integer32 (60..86400)
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The minimum age of a connection, as used to determine the
+            set of connections for which data is to be collected at the
+            periodic intervals and/or when acctngFileCommand is set to
+            'collectNow'.  The age of a connection is the elapsed time
+            since it was last installed.
+
+            When the periodic interval expires for a file or when
+            acctngFileCommand is set to 'collectNow', accounting data is
+            collected and stored in the file for each connection having
+            a type matching acctngSelectionType and whose age at that
+            time is greater than the value of acctngFileMinAge
+            associated with the file.  This value may be modified at any
+            time."
+    DEFVAL     { 3600 }
+    ::= { acctngFileEntry 12 }
+
+acctngFileRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The status of this conceptual row.
+
+            This object can not be set to 'active' until a value has
+            been assigned to the corresponding instance of
+            acctngFileName.  Collection of data into the file does not
+            begin until this object has the value 'active' and one or
+            more (active) instances of acctngSelectionFile refer to it.
+            If this value is modified after a collection has begun,
+            collection into this file terminates and a new (or new
+            version of the) file is immediately made ready for future
+            collection (as if acctngFileCommand had been set to
+            'swapToNewFile'), but collection into the new (or new
+            version of the) file does not begin until the value is
+            subsequently set back to active."
+    ::= { acctngFileEntry 13 }
+
+-- Overall Control
+
+acctngAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER { enabled(1), disabled(2) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "A control object to indicate the administratively desired
+            state of the collection of accounting records across all
+            interfaces.
+
+            Modifying the value of acctngAdminStatus to 'disabled' does
+            not remove or change the current configuration as
+            represented by the active rows in the acctngSelectionTable,
+            acctngFileTable and acctngInterfaceTable tables."
+    ::= { acctngInterfaceControl 1 }
+
+acctngOperStatus OBJECT-TYPE
+    SYNTAX      INTEGER { enabled(1), disabled(2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "A status object to indicate the operational state of the
+            collection of accounting records across all interfaces.
+
+            When the value of acctngAdminStatus is modified to be
+            'enabled', the value of this object will change to 'enabled'
+            providing it is possible to begin collecting accounting
+            records.
+
+            When the value of acctngAdminStatus is modified to be
+            'disabled', the value of this object will change to
+            'disabled' as soon as the collection of accounting records
+            has terminated."
+    ::= { acctngInterfaceControl 2 }
+
+acctngProtection OBJECT-TYPE
+    SYNTAX      TestAndIncr
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "A control object to protect against duplication of control
+            commands.  Over some transport/network protocols, it is
+            possible for SNMP messages to get duplicated.  Such
+            duplication, if it occurred at just the wrong time could
+            cause serious disruption to the collection and retrieval of
+            accounting data, e.g., if a SNMP message setting
+            acctngFileCommand to 'swapToNewFile' were to be duplicated,
+            a whole file of accounting data could be lost.
+
+            To protect against such duplication, a management
+            application should retrieve the value of this object, and
+            include in the Set operation needing protection, a variable
+            binding which sets this object to the retrieved value."
+    ::= { acctngInterfaceControl 3 }
+
+acctngAgentMode OBJECT-TYPE
+    SYNTAX      INTEGER { swapOnCommand(1), swapOnFull(2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "An indication of the behaviour mode of the agent when a
+            file becomes full:
+
+               'swapOnCommand' - the agent does not automatically swap
+                      to a new file; rather, it discards newly collected
+                      data until a management application subsequently
+                      instructs it to swap to a new file.
+
+               'swapOnFull' - the agent terminates collection into the
+                      current file as and when that file becomes full."
+    ::= { acctngInterfaceControl 4 }
+
+
+--  Per-interface control table
+
+acctngInterfaceTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AcctngInterfaceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table controlling the collection of accounting data on
+            specific interfaces of the switch."
+    ::= { acctngInterfaceControl 5 }
+
+acctngInterfaceEntry OBJECT-TYPE
+    SYNTAX      AcctngInterfaceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An entry which controls whether accounting data is to be
+            collected on an interface.  The types of interfaces which
+            are represented in this table is implementation-specific."
+    INDEX   { ifIndex }
+    ::= { acctngInterfaceTable 1 }
+
+AcctngInterfaceEntry ::=
+    SEQUENCE {
+        acctngInterfaceEnable     TruthValue
+    }
+
+acctngInterfaceEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Indicates whether the collection of accounting data is
+            enabled on this interface."
+    ::= { acctngInterfaceEntry 1 }
+
+-- Objects for controlling the use of Notifications
+
+acctngControlTrapThreshold OBJECT-TYPE
+    SYNTAX      INTEGER (0..99)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "A percentage of the maximum file size at which a 'nearly-
+            full' trap is generated.  The value of 0 indicates that no
+            'nearly-full' trap is to be generated."
+    ::= { acctngTrapControl 1 }
+
+acctngControlTrapEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "An indication of whether the acctngFileNearlyFull and
+            acctngFileFull traps are enabled."
+    ::= { acctngTrapControl 2 }
+
+-- notifications
+
+acctngNotifications OBJECT IDENTIFIER ::= { accountingControlMIB 2 }
+
+acctngNotifyPrefix OBJECT IDENTIFIER ::= { acctngNotifications 0 }
+
+
+acctngFileNearlyFull NOTIFICATION-TYPE
+    OBJECTS     { acctngFileName,
+                  acctngFileMaximumSize,
+                  acctngControlTrapThreshold,
+                  acctngFileNameSuffix }
+    STATUS      current
+    DESCRIPTION
+            "An indication that the size of the file into which
+            accounting information is currently being collected has
+            exceeded the threshold percentage of its maximum file size.
+            This notification is generated only at the time of the
+            transition from not-exceeding to exceeding."
+    ::= { acctngNotifyPrefix 1 }
+
+
+acctngFileFull NOTIFICATION-TYPE
+    OBJECTS     { acctngFileName,
+                  acctngFileMaximumSize,
+                  acctngFileNameSuffix }
+    STATUS      current
+    DESCRIPTION
+            "An indication that the size of the file into which
+            accounting information is currently being collected has
+            transistioned to its maximum file size.  This notification
+            is generated (for all values of acctngAgentMode) at the time
+            of the transition from not-full to full.  If acctngAgentMode
+            has the value 'swapOnCommand', it is also generated
+            periodically thereafter until such time as collection of
+            data is no longer inhibited by the file full condition."
+    ::= { acctngNotifyPrefix 2 }
+
+
+-- conformance information
+
+acctngConformance OBJECT IDENTIFIER ::= { accountingControlMIB 3 }
+acctngGroups      OBJECT IDENTIFIER ::= { acctngConformance 1 }
+acctngCompliances OBJECT IDENTIFIER ::= { acctngConformance 2 }
+
+acctngCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for switches which implement the
+            Accounting Control MIB."
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { acctngBasicGroup,
+                           acctngNotificationsGroup }
+
+        OBJECT      acctngSelectionType
+        SYNTAX      BITS { svcIncoming(0), svcOutgoing(1) }
+        DESCRIPTION "The minimal requirement is collection for SVCs."
+
+        OBJECT      acctngSelectionRowStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION "Write access is not required."
+
+        OBJECT      acctngFileName
+        MIN-ACCESS  read-only
+        DESCRIPTION "Write access is not required."
+
+        OBJECT      acctngFileCommand
+        MIN-ACCESS  read-only
+        DESCRIPTION "Write access is not required."
+
+        OBJECT      acctngFileFormat
+        SYNTAX      INTEGER { ber(2) }
+        MIN-ACCESS  read-only
+        DESCRIPTION "Only the standard format is required, and write
+                    access is not required."
+
+        OBJECT      acctngFileMaximumSize
+        MIN-ACCESS  read-only
+        DESCRIPTION "Write access is not required."
+
+        OBJECT      acctngFileCollectMode
+        SYNTAX      BITS { onRelease(0) }
+        MIN-ACCESS  read-only
+        DESCRIPTION "The minimal requirement is for collection on
+                    connection release."
+
+        OBJECT      acctngFileInterval
+        MIN-ACCESS  read-only
+        DESCRIPTION "Write access is not required."
+
+        OBJECT      acctngFileCollectFailedAttempts
+        MIN-ACCESS  read-only
+        DESCRIPTION "Write access is not required."
+
+        OBJECT      acctngFileRowStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION "Write access is not required."
+
+    ::= { acctngCompliances 1 }
+
+
+-- units of conformance
+
+acctngBasicGroup    OBJECT-GROUP
+    OBJECTS { acctngSelectionSubtree, acctngSelectionList,
+              acctngSelectionFile, acctngSelectionType,
+              acctngSelectionRowStatus, acctngFileName,
+              acctngFileNameSuffix, acctngFileDescription,
+              acctngFileCommand, acctngFileMaximumSize,
+              acctngFileCurrentSize, acctngFileRowStatus,
+              acctngFileFormat, acctngFileCollectMode,
+              acctngFileCollectFailedAttempts, acctngFileInterval,
+              acctngFileMinAge,
+              acctngAdminStatus, acctngOperStatus,
+              acctngProtection, acctngAgentMode,
+              acctngInterfaceEnable,
+              acctngControlTrapThreshold,
+              acctngControlTrapEnable
+            }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing control of the basic
+            collection of accounting data for connection-oriented
+            networks."
+    ::= { acctngGroups 1 }
+
+acctngNotificationsGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { acctngFileNearlyFull, acctngFileFull }
+    STATUS        current
+    DESCRIPTION
+            "The notifications of events relating to controlling the
+            collection of accounting data."
+    ::= { acctngGroups 2 }
+
+END

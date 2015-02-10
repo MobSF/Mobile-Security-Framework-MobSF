@@ -1,0 +1,228 @@
+# -*- text -*-
+##############################################################################
+#
+#	CableLabs
+#
+#	$Id$
+#
+##############################################################################
+
+
+##wireshark: See packet-radius_packetcable.c for custom dissection of certain
+##            of the below attributes.
+##
+## 2009/07/07: dictionary.cablelabs from FreeRadius v 2.1.6 updated based upon:
+##       PacketCable(TM) 1.5 Specification: Event Messages [PKT-SP-EM1.5-I03-070412]
+##       PacketCable(TM) Specification: Multimedia Specification [PKT-SP-MM-I04-080522]
+
+VENDOR		CableLabs			4491
+
+BEGIN-VENDOR	CableLabs
+
+ATTRIBUTE	CableLabs-Reserved			0	octets
+ATTRIBUTE	CableLabs-Event-Message			1	octets
+ATTRIBUTE	CableLabs-MTA-Endpoint-Name		3	string
+ATTRIBUTE	CableLabs-Calling-Party-Number		4	string
+ATTRIBUTE	CableLabs-Called-Party-Number		5	string
+ATTRIBUTE	CableLabs-Database-ID			6	string
+ATTRIBUTE	CableLabs-Query-Type			7	integer
+ATTRIBUTE	CableLabs-Returned-Number		9	string
+ATTRIBUTE	CableLabs-Call-Termination-Cause	11	octets
+
+#ATTRIBUTE	CableLabs-Related-Call-Billing-Correlation-ID 13 octets
+ATTRIBUTE	CableLabs-Related-Call-Billing-Crl-ID	13	octets
+
+#ATTRIBUTE	CableLabs-First-Call-Calling-Party-Number 14 string
+#ATTRIBUTE	CableLabs-Second-Call-Calling-Party-Number 15 string
+ATTRIBUTE	CableLabs-First-Call-Calling-Party-Num	14	string
+ATTRIBUTE	CableLabs-Second-Call-Calling-Party-Num	15	string
+
+ATTRIBUTE	CableLabs-Charge-Number			16	string
+ATTRIBUTE	CableLabs-Forwarded-Number		17	string
+ATTRIBUTE	CableLabs-Service-Name			18	string
+ATTRIBUTE	CableLabs-Intl-Code			20	string
+ATTRIBUTE	CableLabs-Dial-Around-Code		21	string
+ATTRIBUTE	CableLabs-Location-Routing-Number	22	string
+ATTRIBUTE	CableLabs-Carrier-Identification-Code	23	string
+ATTRIBUTE	CableLabs-Trunk-Group-ID		24	octets
+ATTRIBUTE	CableLabs-Routing-Number		25	string
+ATTRIBUTE	CableLabs-MTA-UDP-Portnum		26	integer
+ATTRIBUTE	CableLabs-Channel-State			29	integer
+ATTRIBUTE	CableLabs-SF-ID				30	integer
+ATTRIBUTE	CableLabs-Error-Description		31	string
+ATTRIBUTE	CableLabs-QoS-Descriptor		32	octets
+ATTRIBUTE	CableLabs-Direction-indicator		37	integer
+ATTRIBUTE	CableLabs-Time-Adjustment		38	octets
+ATTRIBUTE	CableLabs-SDP-Upstream			39	string
+ATTRIBUTE	CableLabs-SDP-Downstream		40	string
+ATTRIBUTE	CableLabs-User-Input			41	string
+ATTRIBUTE	CableLabs-Translation-Input		42	string
+ATTRIBUTE	CableLabs-Redirected-From-Info		43	octets
+
+#ATTRIBUTE	CableLabs-Electronic-Surveillance-Indication 44 octets
+ATTRIBUTE	CableLabs-Electronic-Surveillance-Ind	44	octets
+
+ATTRIBUTE	CableLabs-Redirected-From-Party-Number	45	string
+ATTRIBUTE	CableLabs-Redirected-To-Party-Number	46	string
+
+#ATTRIBUTE	CableLabs-Electronic-Surveillance-DF-Security 47 octets
+ATTRIBUTE	CableLabs-El-Surveillance-DF-Security	47	octets
+
+ATTRIBUTE	CableLabs-CCC-ID			48	octets
+ATTRIBUTE	CableLabs-Financial-Entity-ID		49	string
+ATTRIBUTE	CableLabs-Flow-Direction		50	integer
+ATTRIBUTE	CableLabs-Signal-Type			51	integer
+ATTRIBUTE	CableLabs-Alerting-Signal		52	integer
+ATTRIBUTE	CableLabs-Subject-Audible-Signal	53	integer
+ATTRIBUTE	CableLabs-Terminal-Display-Info		54	octets
+ATTRIBUTE	CableLabs-Switch-Hook-Flash		55	string
+ATTRIBUTE	CableLabs-Dialed-Digits			56	string
+ATTRIBUTE	CableLabs-Misc-Signaling-Information	57	string
+ATTRIBUTE	CableLabs-AM-Opaque-Data		61	integer
+ATTRIBUTE	CableLabs-Subscriber-ID			62	integer
+ATTRIBUTE	CableLabs-Volume-Usage-Limit		63	integer
+ATTRIBUTE	CableLabs-Gate-Usage-Info		64	integer
+ATTRIBUTE	CableLabs-Element-Requesting-QoS	65	integer
+ATTRIBUTE	CableLabs-QoS-Release-Reason		66	integer
+ATTRIBUTE	CableLabs-Policy-Denied-Reason		67	integer
+ATTRIBUTE	CableLabs-Policy-Deleted-Reason		68	integer
+ATTRIBUTE	CableLabs-Policy-Update-Reason		69	integer
+ATTRIBUTE	CableLabs-Policy-Decision-Status	70	integer
+ATTRIBUTE	CableLabs-Application-Manager-ID	71	integer
+ATTRIBUTE	CableLabs-Time-Usage-Limit		72	integer
+ATTRIBUTE	CableLabs-Gate-Time-Info		73	integer
+ATTRIBUTE	CableLabs-IPv6-Subscriber-ID		74	ipv6addr
+ATTRIBUTE	CableLabs-User-ID       		75	string
+ATTRIBUTE	CableLabs-Account-Code			80	string
+ATTRIBUTE	CableLabs-Authorization-Code		81	string
+#ATTRIBUTE	CableLabs-Jurisdiction-Information-Parameter 82 string
+ATTRIBUTE	CableLabs-Jurisdiction-Info-Parameter   82	string
+ATTRIBUTE	CableLabs-Called-Party-NP-Source        83	integer
+ATTRIBUTE	CableLabs-Calling-Party-NP-Source       84	integer
+ATTRIBUTE	CableLabs-Ported-In-Calling-Number      85	integer
+ATTRIBUTE	CableLabs-Ported-In-Called-Number       86	integer
+ATTRIBUTE	CableLabs-Billing-Type                  87	integer
+ATTRIBUTE	CableLabs-Signaled-To-Number            88	string
+ATTRIBUTE	CableLabs-Signaled-From-Number          89	string
+ATTRIBUTE	CableLabs-Communicating-Party           90	octets
+ATTRIBUTE	CableLabs-Joined-Party                  91	octets
+ATTRIBUTE	CableLabs-Removed-Party                 92	octets
+ATTRIBUTE	CableLabs-RTCP-Data                     93	string
+ATTRIBUTE	CableLabs-Local-XR-Block                94	string
+ATTRIBUTE	CableLabs-Remote-XR-Block               95	string
+ATTRIBUTE	Surveillance-Stop-Type                  96	integer
+ATTRIBUTE	Surveillance-Stop-Destination           97	integer
+ATTRIBUTE	Related_ICID                            98	string
+
+## [wireshark: The following values are actualy handled by packet-radius_packetcable.c]
+##VALUE	CableLabs-Event-Message		Reserved		0
+##VALUE	CableLabs-Event-Message		Signaling-Start		1
+##VALUE	CableLabs-Event-Message		Signaling-Stop		2
+##VALUE	CableLabs-Event-Message		Database-Query		3
+##VALUE	CableLabs-Event-Message		Intelligent-Peripheral-Usage-Start 4
+##VALUE	CableLabs-Event-Message		Intelligent-Peripheral-Usage-Stop 5
+##VALUE	CableLabs-Event-Message		Service-Instance	6
+##VALUE	CableLabs-Event-Message		QoS-Reserve		7
+##VALUE	CableLabs-Event-Message		QoS-Release		8
+##VALUE	CableLabs-Event-Message		Service-Activation	9
+##VALUE	CableLabs-Event-Message		Service-Deactivation	10
+##VALUE	CableLabs-Event-Message		Media-Report		11
+##VALUE	CableLabs-Event-Message		Signal-Instance		12
+##VALUE	CableLabs-Event-Message		Interconnect-Signaling-Start 13
+##VALUE	CableLabs-Event-Message		Interconnect-Signaling-Stop 14
+##VALUE	CableLabs-Event-Message		Call-Answer		15
+##VALUE	CableLabs-Event-Message		Call-Disconnect		16
+##VALUE	CableLabs-Event-Message		Time-Change		17
+##VALUE	CableLabs-Event-Message		QoS-Commit		19
+##VALUE	CableLabs-Event-Message		Media-Alive		20
+##VALUE	CableLabs-Event-Message		Policy-Request		31
+##VALUE	CableLabs-Event-Message		Policy-Delete		32
+##VALUE	CableLabs-Event-Message		Policy-Update		33
+
+VALUE	CableLabs-Query-Type		Reserved		0
+VALUE	CableLabs-Query-Type		Toll-Free-Number-Looukp	1
+VALUE	CableLabs-Query-Type		LNP-Number-Lookup	2
+VALUE	CableLabs-Query-Type		Calling-Name-Delivery-Lookup 3
+
+VALUE	CableLabs-Channel-State		Reserved		0
+VALUE	CableLabs-Channel-State		Open			1
+VALUE	CableLabs-Channel-State		Change			2
+VALUE	CableLabs-Channel-State		Close			3
+
+VALUE	CableLabs-Direction-indicator	Undefined		0
+VALUE	CableLabs-Direction-indicator	Originating		1
+VALUE	CableLabs-Direction-indicator	Terminating		2
+
+VALUE	CableLabs-Flow-Direction	Reserved		0
+VALUE	CableLabs-Flow-Direction	Upstream		1
+VALUE	CableLabs-Flow-Direction	Downstream		2
+
+VALUE	CableLabs-Signal-Type		Reserved		0
+VALUE	CableLabs-Signal-Type		Network-Signal		1
+VALUE	CableLabs-Signal-Type		Subject-Signal		2
+
+VALUE	CableLabs-Alerting-Signal	Reserved-0		0
+VALUE	CableLabs-Alerting-Signal	Ringing			1
+VALUE	CableLabs-Alerting-Signal	Distinctive-Ringing-2	2
+VALUE	CableLabs-Alerting-Signal	Distinctive-Ringing-3	3
+VALUE	CableLabs-Alerting-Signal	Distinctive-Ringing-4	4
+VALUE	CableLabs-Alerting-Signal	Ringsplash		5
+VALUE	CableLabs-Alerting-Signal	Call-Waiting-Tone-1	6
+VALUE	CableLabs-Alerting-Signal	Call-Waiting-Tone-2	7
+VALUE	CableLabs-Alerting-Signal	Call-Waiting-Tone-3	8
+VALUE	CableLabs-Alerting-Signal	Call-Waiting-Tone-4	9
+VALUE	CableLabs-Alerting-Signal	Reserved-10		10
+VALUE	CableLabs-Alerting-Signal	Distinctive-Ringing-0	11
+VALUE	CableLabs-Alerting-Signal	Distinctive-Ringing-1	12
+VALUE	CableLabs-Alerting-Signal	Distinctive-Ringing-5	13
+VALUE	CableLabs-Alerting-Signal	Distinctive-Ringing-6	14
+VALUE	CableLabs-Alerting-Signal	Distinctive-Ringing-7	15
+
+VALUE	CableLabs-AM-Opaque-Data	Reserved-0		0
+VALUE	CableLabs-AM-Opaque-Data	Dial-Tone		1
+VALUE	CableLabs-AM-Opaque-Data	Stutter-Dial-Tone	2
+VALUE	CableLabs-AM-Opaque-Data	Ring-Back-Tone		3
+VALUE	CableLabs-AM-Opaque-Data	Reorder-Tone		4
+VALUE	CableLabs-AM-Opaque-Data	Busy-Tone		5
+VALUE	CableLabs-AM-Opaque-Data	Confirmation-Tone	6
+VALUE	CableLabs-AM-Opaque-Data	Reserved-7		7
+VALUE	CableLabs-AM-Opaque-Data	Message-Waiting-Indicator 8
+VALUE	CableLabs-AM-Opaque-Data	Off-hook-Warning-Tone	9
+
+VALUE	CableLabs-Element-Requesting-QoS Client			0
+VALUE	CableLabs-Element-Requesting-QoS Policy-Server		1
+VALUE	CableLabs-Element-Requesting-QoS Embedded-Client	2
+
+VALUE	CableLabs-QoS-Release-Reason	Gate-Closed-By-PS	1
+VALUE	CableLabs-QoS-Release-Reason	Inactivity-Resource-Recovery-Timer-Expiration 2
+VALUE	CableLabs-QoS-Release-Reason	CM-Failure		3
+VALUE	CableLabs-QoS-Release-Reason	Pre-Empted		4
+VALUE	CableLabs-QoS-Release-Reason	RSVP-PathTear-request	5
+VALUE	CableLabs-QoS-Release-Reason	CM-Request		6
+VALUE	CableLabs-QoS-Release-Reason	Admitted-Timer-Expiration 7
+VALUE	CableLabs-QoS-Release-Reason	Other			127
+
+VALUE	CableLabs-Policy-Denied-Reason	Policy-Server-Admission-Control-Failure 1
+VALUE	CableLabs-Policy-Denied-Reason	Insufficient-Resources	2
+VALUE	CableLabs-Policy-Denied-Reason	Unknown-Subscriber	3
+VALUE	CableLabs-Policy-Denied-Reason	Unauthorized-AMID	4
+VALUE	CableLabs-Policy-Denied-Reason	Undefined-Service-Class-Name 5
+VALUE	CableLabs-Policy-Denied-Reason	Incompatible-Envelope	6
+VALUE	CableLabs-Policy-Denied-Reason	Other			127
+
+VALUE	CableLabs-Policy-Deleted-Reason	Application-Manager-Request 1
+VALUE	CableLabs-Policy-Deleted-Reason	CMTS-Decistion		2
+VALUE	CableLabs-Policy-Deleted-Reason	Other			127
+
+VALUE	CableLabs-Policy-Update-Reason	Traffic-Profile		1
+VALUE	CableLabs-Policy-Update-Reason	Classifier		2
+VALUE	CableLabs-Policy-Update-Reason	Volume-Limit		3
+VALUE	CableLabs-Policy-Update-Reason	Time-Limit		4
+VALUE	CableLabs-Policy-Update-Reason	Opaque-Data		5
+VALUE	CableLabs-Policy-Update-Reason	Multiple-Updates	6
+VALUE	CableLabs-Policy-Update-Reason	Other			127
+
+VALUE	CableLabs-Policy-Decision-Status Policy-Approved	1
+VALUE	CableLabs-Policy-Decision-Status Policy-Denied		2
+
+END-VENDOR CableLabs

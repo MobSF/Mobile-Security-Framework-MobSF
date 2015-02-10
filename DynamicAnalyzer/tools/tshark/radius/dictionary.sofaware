@@ -1,0 +1,36 @@
+# -*- text -*-
+##############################################################################
+#
+#	Sofaware VPN-1 Edge from Sofaware (Check Point appliance).
+#
+#	Values are strings, rather than real VALUEs.
+#
+#	SofaWare-Admin    :   "none" / "readonly" / "readwrite"
+#		Users have no, read-only or read-write access to the
+#		appliance's configuration interface (Web / SSH)
+#
+#	SofaWare-VPN   :   `true" / "false"
+#		User can / cannot connect the VPN
+#
+#	SofaWare-Hotspot    :   "true" / "false"
+#		The account can be used for authentication on the
+#		Hotspot web page (may be required before accessing
+#		the Internet)
+#
+#	SofaWare-UFP      :   "true" / "false"
+#		The user can /cannot overwrite the URL Filtering policy
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR		SofaWare			6983
+
+BEGIN-VENDOR	SofaWare
+
+ATTRIBUTE	SofaWare-Admin				1	string
+ATTRIBUTE	SofaWare-VPN				2	string
+ATTRIBUTE	SofaWare-Hotspot			3	string
+ATTRIBUTE	SofaWare-UFP				4	string
+
+END-VENDOR    SofaWare

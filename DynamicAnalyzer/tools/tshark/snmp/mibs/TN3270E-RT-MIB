@@ -1,0 +1,890 @@
+TN3270E-RT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Counter32, Unsigned32, Gauge32
+                FROM SNMPv2-SMI
+    RowStatus, DateAndTime, TimeStamp, TestAndIncr
+                FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+                FROM SNMPv2-CONF
+    tn3270eSrvrConfIndex, tn3270eClientGroupName,
+    tn3270eResMapElementType
+                FROM TN3270E-MIB
+    IANATn3270eAddrType, IANATn3270eAddress
+                FROM IANATn3270eTC-MIB
+    snanauMIB
+                FROM SNA-NAU-MIB;
+
+  tn3270eRtMIB   MODULE-IDENTITY
+      LAST-UPDATED "9807270000Z" -- July 27, 1998
+      ORGANIZATION "TN3270E Working Group"
+      CONTACT-INFO
+        "Kenneth White (kennethw@vnet.ibm.com)
+         IBM Corp. - Dept. BRQA/Bldg. 501/G114
+         P.O. Box 12195
+         3039 Cornwallis
+         RTP, NC 27709-2195
+
+         Robert Moore (remoore@us.ibm.com)
+         IBM Corp. - Dept. BRQA/Bldg. 501/G114
+         P.O. Box 12195
+         3039 Cornwallis
+         RTP, NC 27709-2195
+         (919) 254-4436"
+     DESCRIPTION
+        "This module defines a portion of the management
+        information base (MIB) that enables monitoring of
+        TN3270 and TN3270E clients' response times by a
+        TN3270E server."
+     REVISION  "9807270000Z" -- July 27, 1998
+     DESCRIPTION
+         "RFC nnnn (Proposed Standard)" -- RFC Editor to fill in
+::= { snanauMIB 9 }
+-- snanauMIB ::= { mib-2 34 }
+
+-- Top level structure of the MIB
+
+tn3270eRtNotifications   OBJECT IDENTIFIER  ::= { tn3270eRtMIB 0 }
+tn3270eRtObjects         OBJECT IDENTIFIER  ::= { tn3270eRtMIB 1 }
+tn3270eRtConformance     OBJECT IDENTIFIER  ::= { tn3270eRtMIB 3 }
+
+-- MIB Objects
+
+-- Response Time Control Table
+
+tn3270eRtCollCtlTable  OBJECT-TYPE
+    SYNTAX       SEQUENCE OF Tn3270eRtCollCtlEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+      "The response time monitoring collection control table,
+      which allows a management application to control the
+      types of response time data being collected, and the
+      clients for which it is being collected.
+
+      This table is indexed by tn3270eSrvrConfIndex and
+      tn3270eClientGroupName imported from the
+      TN3270E-MIB.  tn3270eSrvrConfIndex indicates within
+      a host which TN3270E server an entry applies to.
+      tn3270eClientGroupName it identifies the set of IP
+      clients for which response time data is being collected.
+      The particular IP clients making up the set are identified
+      in the tn3270eClientGroupTable in the TN3270E-MIB."
+    ::= { tn3270eRtObjects 1}
+
+tn3270eRtCollCtlEntry    OBJECT-TYPE
+    SYNTAX        Tn3270eRtCollCtlEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+      "An entry in the TN3270E response time monitoring collection
+      control table.  To handle the case of multiple TN3270E
+      servers on the same host, the first index of this table is
+      the tn3270eSrvrConfIndex from the TN3270E-MIB."
+    INDEX {
+      tn3270eSrvrConfIndex,    -- Server's index
+      tn3270eClientGroupName } -- What to collect on
+    ::= { tn3270eRtCollCtlTable 1 }
+
+Tn3270eRtCollCtlEntry ::= SEQUENCE {
+    tn3270eRtCollCtlType              BITS,
+    tn3270eRtCollCtlSPeriod           Unsigned32,
+    tn3270eRtCollCtlSPMult            Unsigned32,
+    tn3270eRtCollCtlThreshHigh        Unsigned32,
+    tn3270eRtCollCtlThreshLow         Unsigned32,
+    tn3270eRtCollCtlIdleCount         Unsigned32,
+    tn3270eRtCollCtlBucketBndry1      Unsigned32,
+    tn3270eRtCollCtlBucketBndry2      Unsigned32,
+    tn3270eRtCollCtlBucketBndry3      Unsigned32,
+    tn3270eRtCollCtlBucketBndry4      Unsigned32,
+    tn3270eRtCollCtlRowStatus         RowStatus   }
+
+-- The OID { tn3270eRtCollCtlEntry 1 } is not used
+
+tn3270eRtCollCtlType  OBJECT-TYPE
+    SYNTAX    BITS {
+                     aggregate(0),
+                     excludeIpComponent(1),
+                     ddr(2),
+                     average(3),
+                     buckets(4),
+                     traps(5)
+                   }
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+      "This object controls what types of response time data to
+       collect, whether to summarize the data across the members
+       of a client group or keep it individually, whether to
+       introduce dynamic definite responses, and whether to
+       generate traps.
+       aggregate(0)          - Aggregate response time data for the
+                               client group as a whole.  If this bit
+                               is set to 0, then maintain response
+                               time data separately for each member
+                               of the client group.
+       excludeIpComponent(1) - Do not include the IP-network
+                               component in any response times.
+       ddr(2)                - Enable dynamic definite response.
+       average(3)            - Produce an average response time
+                               based on a specified collection
+                               interval.
+       buckets(4)            - Maintain tn3270eRtDataBucket values in
+                               a corresponding tn3270eRtDataEntry,
+                               based on the bucket boundaries specified
+                               in the tn3270eRtCollCtlBucketBndry
+                               objects          .
+       traps(5)              - generate the notifications specified
+                               in this MIB module.  The
+                               tn3270eRtExceeded and tn3270eRtOkay
+                               notifications are generated only if
+                               average(3) is also specified."
+    ::= { tn3270eRtCollCtlEntry 2 }
+
+tn3270eRtCollCtlSPeriod OBJECT-TYPE
+    SYNTAX  Unsigned32 (15..86400) -- 15 second min, 24 hour max
+    UNITS   "seconds"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+      "The number of seconds that defines the sample period.
+       The actual interval is defined as tn3270eRtCollCtlSPeriod
+       times tn3270eRtCollCtlSPMult.
+
+       The value of this object is used only if the corresponding
+       tn3270eRtCollCtlType has the average(3) setting."
+    DEFVAL   {20}    -- 20 seconds
+    ::= { tn3270eRtCollCtlEntry 3 }
+
+tn3270eRtCollCtlSPMult OBJECT-TYPE
+    SYNTAX  Unsigned32 (1..5760) -- 5760 x SPeriod of 15 is 24 hours
+    UNITS   "period"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+      "The sample period multiplier; this value is multiplied by
+      the sample period, tn3270eRtCollCtlSPeriod, to determine
+      the collection interval.
+      Sliding-window average calculation can, if necessary, be
+      disabled, by setting the sample period multiplier,
+      tn3270eRtCollCtlSPMult, to 1, and setting the sample
+      period, tn3270eRtCollCtlSPeriod, to the required
+      collection interval.
+
+      The value of this object is used only if the corresponding
+      tn3270eRtCollCtlType has the average(3) setting."
+    DEFVAL   { 30 }    -- yields an interval of 10 minutes when
+                       -- used with the default SPeriod value
+    ::= { tn3270eRtCollCtlEntry 4 }
+
+tn3270eRtCollCtlThreshHigh  OBJECT-TYPE
+    SYNTAX            Unsigned32
+    UNITS             "seconds"
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+      "The threshold for generating a tn3270eRtExceeded
+      notification, signalling that a monitored total response
+      time has exceeded the specified limit.  A value of zero
+      for this object suppresses generation of this notification.
+      The value of this object is used only if the corresponding
+      tn3270eRtCollCtlType has average(3) and traps(5) selected.
+
+      A tn3270eRtExceeded notification is not generated again for a
+      tn3270eRtDataEntry until an average response time falling below
+      the low threshold tn3270eRtCollCtlThreshLow specified for the
+      client group has occurred for the entry."
+
+    DEFVAL   { 0 }   -- suppress notifications
+    ::= { tn3270eRtCollCtlEntry 5 }
+
+tn3270eRtCollCtlThreshLow   OBJECT-TYPE
+    SYNTAX            Unsigned32
+    UNITS             "seconds"
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+      "The threshold for generating a tn3270eRtOkay notification,
+      signalling that a monitored total response time has fallen
+      below the specified limit.  A value of zero for this object
+      suppresses generation of this notification.  The value of
+      this object is used only if the corresponding
+      tn3270eRtCollCtlType has average(3) and traps(5) selected.
+
+      A tn3270eRtOkay notification is not generated again for a
+      tn3270eRtDataEntry until an average response time
+      exceeding the high threshold tn3270eRtCollCtlThreshHigh
+      specified for the client group has occurred for the entry."
+    DEFVAL   { 0 }   -- suppress notifications
+    ::= { tn3270eRtCollCtlEntry 6 }
+
+tn3270eRtCollCtlIdleCount   OBJECT-TYPE
+    SYNTAX            Unsigned32
+    UNITS             "transactions"
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+      "The value of this object is used to determine whether a
+      sample that yields an average response time exceeding the
+      value of tn3270eRtCollCtlThreshHigh was a statistically
+      valid one.  If the following statement is true, then the
+      sample was statistically valid, and so a tn3270eRtExceeded
+      notification should be generated:
+
+        AvgCountTrans * ((AvgRt/ThreshHigh - 1) ** 2) >=  IdleCount
+
+      This comparison is done only if the corresponding
+      tn3270eRtCollCtlType has average(3) and traps(5) selected."
+    DEFVAL { 1 }
+    ::= { tn3270eRtCollCtlEntry 7 }
+
+tn3270eRtCollCtlBucketBndry1   OBJECT-TYPE
+    SYNTAX            Unsigned32
+    UNITS             "tenths of seconds"
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+      "The value of this object defines the range of transaction
+       response times counted in the Tn3270eRtDataBucket1Rts
+       object: those less than or equal to this value."
+    DEFVAL { 10 }
+    ::= { tn3270eRtCollCtlEntry 8 }
+
+tn3270eRtCollCtlBucketBndry2   OBJECT-TYPE
+    SYNTAX            Unsigned32
+    UNITS             "tenths of seconds"
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+      "The value of this object, together with that of the
+      tn3270eRtCollCtlBucketBndry1 object, defines the range
+      of transaction response times counted in the
+      Tn3270eRtDataBucket2Rts object: those greater than the
+      value of the tn3270eRtCollCtlBucketBndry1 object, and
+      less than or equal to the value of this object."
+    DEFVAL { 20 }
+    ::= { tn3270eRtCollCtlEntry 9 }
+
+tn3270eRtCollCtlBucketBndry3   OBJECT-TYPE
+    SYNTAX            Unsigned32
+    UNITS             "tenths of seconds"
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+      "The value of this object, together with that of the
+      tn3270eRtCollCtlBucketBndry2 object, defines the range of
+      transaction response times counted in the
+      Tn3270eRtDataBucket3Rts object:  those greater than the
+      value of the tn3270eRtCollCtlBucketBndry2 object, and less
+      than or equal to the value of this object."
+    DEFVAL { 50 }
+    ::= { tn3270eRtCollCtlEntry 10 }
+
+tn3270eRtCollCtlBucketBndry4   OBJECT-TYPE
+    SYNTAX            Unsigned32
+    UNITS             "tenths of seconds"
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+      "The value of this object, together with that of the
+      tn3270eRtCollCtlBucketBndry3 object, defines the range
+      of transaction response times counted in the
+      Tn3270eRtDataBucket4Rts object: those greater than the
+      value of the tn3270eRtCollCtlBucketBndry3 object, and
+      less than or equal to the value of this object.
+
+      The value of this object also defines the range of
+      transaction response times counted in the
+      Tn3270eRtDataBucket5Rts object: those greater than the
+      value of this object."
+    DEFVAL { 100 }
+    ::= { tn3270eRtCollCtlEntry 11 }
+
+tn3270eRtCollCtlRowStatus  OBJECT-TYPE
+    SYNTAX            RowStatus
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+      "This object allows entries to be created and deleted
+       in the tn3270eRtCollCtlTable.  An entry in this table
+       is deleted by setting this object to destroy(6).
+       Deleting an entry in this table has the side-effect
+       of removing all entries from the tn3270eRtDataTable
+       that are associated with the entry being deleted."
+    ::= { tn3270eRtCollCtlEntry 12 }
+
+
+-- TN3270E Response Time Data Table
+
+tn3270eRtDataTable  OBJECT-TYPE
+    SYNTAX       SEQUENCE OF Tn3270eRtDataEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+      "The response time data table.  Entries in this table are
+       created based on entries in the tn3270eRtCollCtlTable."
+    ::= { tn3270eRtObjects 2 }
+
+tn3270eRtDataEntry  OBJECT-TYPE
+    SYNTAX        Tn3270eRtDataEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+      "Entries in this table are created based upon the
+      tn3270eRtCollCtlTable.  When the corresponding
+      tn3270eRtCollCtlType has aggregate(0) specified, a single
+      entry is created in this table, with a tn3270eRtDataClientAddrType
+      of unknown(0), a zero-length octet string value for
+      tn3270eRtDataClientAddress, and a tn3270eRtDataClientPort value of
+      0.  When aggregate(0) is not specified, a separate entry is
+      created for each client in the group.
+
+      Note that the following objects defined within an entry in this
+      table can  wrap:
+          tn3270eRtDataTotalRts
+          tn3270eRtDataTotalIpRts
+          tn3270eRtDataCountTrans
+          tn3270eRtDataCountDrs
+          tn3270eRtDataElapsRnTrpSq
+          tn3270eRtDataElapsIpRtSq
+          tn3270eRtDataBucket1Rts
+          tn3270eRtDataBucket2Rts
+          tn3270eRtDataBucket3Rts
+          tn3270eRtDataBucket4Rts
+          tn3270eRtDataBucket5Rts"
+    INDEX {
+       tn3270eSrvrConfIndex,      -- Server's local index
+       tn3270eClientGroupName,    -- Collection target
+       tn3270eRtDataClientAddrType,
+       tn3270eRtDataClientAddress,
+       tn3270eRtDataClientPort }
+    ::= { tn3270eRtDataTable 1 }
+
+Tn3270eRtDataEntry ::= SEQUENCE {
+       tn3270eRtDataClientAddrType        IANATn3270eAddrType,
+       tn3270eRtDataClientAddress         IANATn3270eAddress,
+       tn3270eRtDataClientPort            Unsigned32,
+       tn3270eRtDataAvgRt                 Gauge32,
+       tn3270eRtDataAvgIpRt               Gauge32,
+       tn3270eRtDataAvgCountTrans         Gauge32,
+       tn3270eRtDataIntTimeStamp          DateAndTime,
+       tn3270eRtDataTotalRts              Counter32,
+       tn3270eRtDataTotalIpRts            Counter32,
+       tn3270eRtDataCountTrans            Counter32,
+       tn3270eRtDataCountDrs              Counter32,
+       tn3270eRtDataElapsRndTrpSq         Unsigned32,
+       tn3270eRtDataElapsIpRtSq           Unsigned32,
+       tn3270eRtDataBucket1Rts            Counter32,
+       tn3270eRtDataBucket2Rts            Counter32,
+       tn3270eRtDataBucket3Rts            Counter32,
+       tn3270eRtDataBucket4Rts            Counter32,
+       tn3270eRtDataBucket5Rts            Counter32,
+       tn3270eRtDataRtMethod              INTEGER,
+       tn3270eRtDataDiscontinuityTime     TimeStamp
+   }
+
+tn3270eRtDataClientAddrType   OBJECT-TYPE
+    SYNTAX    IANATn3270eAddrType
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+      "Indicates the type of address represented by the value
+      of tn3270eRtDataClientAddress.  The value unknown(0) is
+      used if aggregate data is being collected for the client
+      group."
+    ::= { tn3270eRtDataEntry 1 }
+
+tn3270eRtDataClientAddress   OBJECT-TYPE
+    SYNTAX    IANATn3270eAddress
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+      "Contains the IP address of the TN3270 client being
+      monitored.  A zero-length octet string is used if
+      aggregate data is being collected for the client group."
+    ::= { tn3270eRtDataEntry 2 }
+
+tn3270eRtDataClientPort   OBJECT-TYPE
+    SYNTAX       Unsigned32(0..65535)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+      "Contains the client port number of the TN3270 client being
+      monitored.  The value 0 is used if aggregate data is being
+      collected for the client group, or if the
+      tn3270eRtDataClientAddrType identifies an address type that
+      does not support ports."
+    ::= { tn3270eRtDataEntry 3 }
+
+tn3270eRtDataAvgRt OBJECT-TYPE
+    SYNTAX       Gauge32
+    UNITS        "tenths of seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The average total response time measured over the last
+      collection interval."
+    DEFVAL { 0 }
+    ::= { tn3270eRtDataEntry 4 }
+
+tn3270eRtDataAvgIpRt OBJECT-TYPE
+    SYNTAX       Gauge32
+    UNITS        "tenths of seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The average IP response time measured over the last
+      collection interval."
+    DEFVAL { 0 }
+    ::= { tn3270eRtDataEntry 5 }
+
+tn3270eRtDataAvgCountTrans   OBJECT-TYPE
+    SYNTAX       Gauge32
+    UNITS        "transactions"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The sliding transaction count used for calculating the
+      values of the tn3270eRtDataAvgRt and tn3270eRtDataAvgIpRt
+      objects.  The actual transaction count is available in
+      the tn3270eRtDataCountTrans object.
+
+      The initial value of this object, before any averages have
+      been calculated, is 0."
+    ::= { tn3270eRtDataEntry 6 }
+
+tn3270eRtDataIntTimeStamp   OBJECT-TYPE
+    SYNTAX       DateAndTime
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The date and time of the last interval that
+      tn3270eRtDataAvgRt, tn3270eRtDataAvgIpRt, and
+      tn3270eRtDataAvgCountTrans were calculated.
+
+      Prior to the calculation of the first interval
+      averages, this object returns the value
+      0x0000000000000000000000.  When this value is
+      returned, the remaining objects in the entry have
+      no significance."
+    ::= { tn3270eRtDataEntry 7 }
+
+tn3270eRtDataTotalRts   OBJECT-TYPE
+    SYNTAX       Counter32
+    UNITS        "tenths of seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The count of the total response times collected.
+
+      A management application can detect discontinuities in this
+      counter by monitoring the tn3270eRtDataDiscontinuityTime
+      object."
+    ::= { tn3270eRtDataEntry 8 }
+
+tn3270eRtDataTotalIpRts   OBJECT-TYPE
+    SYNTAX       Counter32
+    UNITS        "tenths of seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The count of the total IP-network response times
+      collected.
+
+      A management application can detect discontinuities in this
+      counter by monitoring the tn3270eRtDataDiscontinuityTime
+      object."
+    ::= { tn3270eRtDataEntry 9 }
+
+tn3270eRtDataCountTrans   OBJECT-TYPE
+    SYNTAX       Counter32
+    UNITS        "transactions"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The count of the total number of transactions detected.
+
+      A management application can detect discontinuities in this
+      counter by monitoring the tn3270eRtDataDiscontinuityTime
+      object."
+    ::= { tn3270eRtDataEntry 10 }
+
+tn3270eRtDataCountDrs   OBJECT-TYPE
+    SYNTAX       Counter32
+    UNITS        "definite responses"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The count of the total number of definite responses
+      detected.
+
+      A management application can detect discontinuities in this
+      counter by monitoring the tn3270eRtDataDiscontinuityTime
+      object."
+    ::= { tn3270eRtDataEntry 11 }
+
+tn3270eRtDataElapsRndTrpSq   OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "tenths of seconds squared"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The sum of the elapsed round trip time squared.  The sum
+      of the squares is kept in order to enable calculation of
+      a variance."
+    DEFVAL { 0 }
+    ::= { tn3270eRtDataEntry 12 }
+
+tn3270eRtDataElapsIpRtSq   OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "tenths of seconds squared"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The sum of the elapsed IP round trip time squared.
+      The sum of the squares is kept in order to enable
+      calculation of a variance."
+    DEFVAL { 0 }
+    ::= { tn3270eRtDataEntry 13 }
+
+tn3270eRtDataBucket1Rts   OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The count of the response times falling into bucket 1.
+
+      A management application can detect discontinuities in this
+      counter by monitoring the tn3270eRtDataDiscontinuityTime
+      object."
+    ::= { tn3270eRtDataEntry 14 }
+
+tn3270eRtDataBucket2Rts   OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The count of the response times falling into bucket 2.
+
+      A management application can detect discontinuities in this
+      counter by monitoring the tn3270eRtDataDiscontinuityTime
+      object."
+    ::= { tn3270eRtDataEntry 15 }
+
+tn3270eRtDataBucket3Rts   OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The count of the response times falling into bucket 3.
+
+      A management application can detect discontinuities in this
+      counter by monitoring the tn3270eRtDataDiscontinuityTime
+      object."
+    ::= { tn3270eRtDataEntry 16 }
+
+tn3270eRtDataBucket4Rts  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The count of the response times falling into bucket 4.
+
+      A management application can detect discontinuities in this
+      counter by monitoring the tn3270eRtDataDiscontinuityTime
+      object."
+    ::= { tn3270eRtDataEntry 17 }
+
+tn3270eRtDataBucket5Rts  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The count of the response times falling into bucket 5.
+
+      A management application can detect discontinuities in this
+      counter by monitoring the tn3270eRtDataDiscontinuityTime
+      object."
+    ::= { tn3270eRtDataEntry 18 }
+
+tn3270eRtDataRtMethod OBJECT-TYPE
+    SYNTAX       INTEGER {
+                           none(0),
+                           responses(1),
+                           timingMark(2)
+                         }
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+      "The value of this object indicates the method that was
+      used in calculating the IP network time.
+
+      The value 'none(0) indicates that response times were not
+      calculated for the IP network."
+    ::= { tn3270eRtDataEntry 19 }
+
+tn3270eRtDataDiscontinuityTime OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of sysUpTime on the most recent occasion at
+        which one or more of this entry's counter objects
+        suffered a discontinuity.  This may happen if a TN3270E
+        server is stopped and then restarted, and local methods
+        are used to set up collection policy
+        (tn3270eRtCollCtlTable entries)."
+    ::= { tn3270eRtDataEntry 20 }
+
+
+tn3270eRtSpinLock OBJECT-TYPE
+    SYNTAX      TestAndIncr
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "An advisory lock used to allow cooperating TN3270E-RT-MIB
+      applications to coordinate their use of the
+      tn3270eRtCollCtlTable.
+      When creating a new entry or altering an existing entry
+      in the tn3270eRtCollCtlTable, an application should make
+      use of tn3270eRtSpinLock to serialize application changes
+      or additions.
+
+      Since this is an advisory lock, the use of this lock is
+      not enforced."
+    ::= { tn3270eRtObjects 3 }
+
+-- Notifications
+
+tn3270eRtExceeded   NOTIFICATION-TYPE
+    OBJECTS {
+       tn3270eRtDataIntTimeStamp,
+       tn3270eRtDataAvgRt,
+       tn3270eRtDataAvgIpRt,
+       tn3270eRtDataAvgCountTrans,
+       tn3270eRtDataRtMethod
+    }
+    STATUS  current
+    DESCRIPTION
+      "This notification is generated when the average response
+      time, tn3270eRtDataAvgRt, exceeds
+      tn3270eRtCollCtlThresholdHigh at the end of a collection
+      interval specified by tn3270eCollCtlSPeriod
+      times tn3270eCollCtlSPMult.  Note that the corresponding
+      tn3270eCollCtlType must have traps(5) and average(3) set
+      for this notification to be generated.  In addition,
+      tn3270eRtDataAvgCountTrans, tn3270eRtCollCtlThreshHigh, and
+      tn3270eRtDataAvgRt are algorithmically compared to
+      tn3270eRtCollCtlIdleCount for determination if this
+      notification will be suppressed."
+    ::= { tn3270eRtNotifications 1 }
+
+tn3270eRtOkay   NOTIFICATION-TYPE
+    OBJECTS {
+       tn3270eRtDataIntTimeStamp,
+       tn3270eRtDataAvgRt,
+       tn3270eRtDataAvgIpRt,
+       tn3270eRtDataAvgCountTrans,
+       tn3270eRtDataRtMethod
+    }
+    STATUS  current
+    DESCRIPTION
+      "This notification is generated when the average response
+      time, tn3270eRtDataAvgRt, falls below
+      tn3270eRtCollCtlThresholdLow at the end of a collection
+      interval specified by tn3270eCollCtlSPeriod times
+      tn3270eCollCtlSPMult, after a tn3270eRtExceeded
+      notification was generated.  Note that the corresponding
+      tn3270eCollCtlType must have traps(5) and average(3)
+      set for this notification to be generated."
+    ::= { tn3270eRtNotifications 2 }
+
+tn3270eRtCollStart NOTIFICATION-TYPE
+    OBJECTS {
+       tn3270eRtDataRtMethod,       -- type of collection
+       tn3270eResMapElementType     -- type of resource
+    }
+    STATUS  current
+    DESCRIPTION
+      "This notification is generated when response time data
+      collection is enabled for a member of a client group.
+      In order for this notification to occur the corresponding
+      tn3270eRtCollCtlType must have traps(5) selected.
+
+      tn3270eResMapElementType contains a valid value only if
+      tn3270eRtDataClientAddress contains a valid address
+      (rather than a zero-length octet string)."
+    ::= { tn3270eRtNotifications 3 }
+
+tn3270eRtCollEnd   NOTIFICATION-TYPE
+    OBJECTS {
+       tn3270eRtDataDiscontinuityTime,
+       tn3270eRtDataAvgRt,
+       tn3270eRtDataAvgIpRt,
+       tn3270eRtDataAvgCountTrans,
+       tn3270eRtDataIntTimeStamp,
+       tn3270eRtDataTotalRts,
+       tn3270eRtDataTotalIpRts,
+       tn3270eRtDataCountTrans,
+       tn3270eRtDataCountDrs,
+       tn3270eRtDataElapsRndTrpSq,
+       tn3270eRtDataElapsIpRtSq,
+       tn3270eRtDataBucket1Rts,
+       tn3270eRtDataBucket2Rts,
+       tn3270eRtDataBucket3Rts,
+       tn3270eRtDataBucket4Rts,
+       tn3270eRtDataBucket5Rts,
+       tn3270eRtDataRtMethod
+    }
+    STATUS  current
+    DESCRIPTION
+      "This notification is generated when an tn3270eRtDataEntry
+      is deleted after being active (actual data collected), in
+      order to enable a management application monitoring an
+      tn3270eRtDataEntry to get the entry's final values.  Note
+      that the corresponding tn3270eCollCtlType must have traps(5)
+      set for this notification to be generated."
+    ::= { tn3270eRtNotifications 4 }
+
+-- Conformance Statement
+
+tn3270eRtGroups       OBJECT IDENTIFIER ::= { tn3270eRtConformance 1 }
+tn3270eRtCompliances  OBJECT IDENTIFIER ::= { tn3270eRtConformance 2 }
+
+-- Compliance statements
+
+tn3270eRtCompliance     MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+      "The compliance statement for agents that support the
+      TN327E-RT-MIB."
+    MODULE   -- this module
+       MANDATORY-GROUPS { tn3270eRtGroup, tn3270eRtNotGroup }
+
+    OBJECT tn3270eRtCollCtlType
+       MIN-ACCESS  read-only
+       DESCRIPTION
+          "The agent is not required to support a SET operation to
+          this object in the absence of adequate security."
+
+    OBJECT tn3270eRtCollCtlSPeriod
+       MIN-ACCESS  read-only
+       DESCRIPTION
+          "The agent is not required to allow the user to change
+          the default value of this object, and is allowed to
+          use a different default."
+
+    OBJECT tn3270eRtCollCtlSPMult
+       MIN-ACCESS  read-only
+       DESCRIPTION
+          "The agent is not required to support a SET operation
+          to this object in the absence of adequate security."
+
+    OBJECT tn3270eRtCollCtlThreshHigh
+       MIN-ACCESS  read-only
+       DESCRIPTION
+          "The agent is not required to support a SET operation
+          to this object in the absence of adequate security."
+
+    OBJECT tn3270eRtCollCtlThreshLow
+       MIN-ACCESS  read-only
+       DESCRIPTION
+          "The agent is not required to support a SET operation
+          to this object in the absence of adequate security."
+
+    OBJECT tn3270eRtCollCtlIdleCount
+       MIN-ACCESS  read-only
+       DESCRIPTION
+          "The agent is not required to support a SET operation
+          to this object in the absence of adequate security."
+
+    OBJECT tn3270eRtCollCtlBucketBndry1
+       MIN-ACCESS  read-only
+       DESCRIPTION
+          "The agent is not required to support a SET operation
+          to this object in the absence of adequate security."
+
+    OBJECT tn3270eRtCollCtlBucketBndry2
+       MIN-ACCESS  read-only
+       DESCRIPTION
+          "The agent is not required to support a SET operation
+          to this object in the absence of adequate security."
+
+    OBJECT tn3270eRtCollCtlBucketBndry3
+       MIN-ACCESS  read-only
+       DESCRIPTION
+          "The agent is not required to support a SET operation
+          to this object in the absence of adequate security."
+
+    OBJECT tn3270eRtCollCtlBucketBndry4
+       MIN-ACCESS  read-only
+       DESCRIPTION
+          "The agent is not required to support a SET operation
+          to this object in the absence of adequate security."
+
+    OBJECT tn3270eRtCollCtlRowStatus
+       SYNTAX   INTEGER {
+                         active(1) -- subset of RowStatus
+                        }
+       MIN-ACCESS read-only
+       DESCRIPTION
+          "Write access is not required, and only one of the six
+          enumerated values for the RowStatus textual convention
+          need be supported, specifically: active(1)."
+
+    ::= {tn3270eRtCompliances 1 }
+
+-- Group definitions
+
+tn3270eRtGroup         OBJECT-GROUP
+    OBJECTS {
+        tn3270eRtCollCtlType,
+        tn3270eRtCollCtlSPeriod,
+        tn3270eRtCollCtlSPMult,
+        tn3270eRtCollCtlThreshHigh,
+        tn3270eRtCollCtlThreshLow,
+        tn3270eRtCollCtlIdleCount,
+        tn3270eRtCollCtlBucketBndry1,
+        tn3270eRtCollCtlBucketBndry2,
+        tn3270eRtCollCtlBucketBndry3,
+        tn3270eRtCollCtlBucketBndry4,
+        tn3270eRtCollCtlRowStatus,
+        tn3270eRtDataDiscontinuityTime,
+        tn3270eRtDataAvgRt,
+        tn3270eRtDataAvgIpRt,
+        tn3270eRtDataAvgCountTrans,
+        tn3270eRtDataIntTimeStamp,
+        tn3270eRtDataTotalRts,
+        tn3270eRtDataTotalIpRts,
+        tn3270eRtDataCountTrans,
+        tn3270eRtDataCountDrs,
+        tn3270eRtDataElapsRndTrpSq,
+        tn3270eRtDataElapsIpRtSq,
+        tn3270eRtDataBucket1Rts,
+        tn3270eRtDataBucket2Rts,
+        tn3270eRtDataBucket3Rts,
+        tn3270eRtDataBucket4Rts,
+        tn3270eRtDataBucket5Rts,
+        tn3270eRtDataRtMethod,
+        tn3270eRtSpinLock }
+    STATUS  current
+    DESCRIPTION
+      "This group is mandatory for all implementations that
+      support the TN3270E-RT-MIB. "
+    ::= { tn3270eRtGroups 1 }
+
+tn3270eRtNotGroup         NOTIFICATION-GROUP
+    NOTIFICATIONS {
+        tn3270eRtExceeded,
+        tn3270eRtOkay,
+        tn3270eRtCollStart,
+        tn3270eRtCollEnd
+     }
+    STATUS  current
+    DESCRIPTION
+      "The notifications that must be supported when the
+      TN3270E-RT-MIB is implemented. "
+    ::= { tn3270eRtGroups 2 }
+
+END

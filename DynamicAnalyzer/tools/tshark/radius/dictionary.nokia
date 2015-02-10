@@ -1,0 +1,38 @@
+# -*- text -*-
+######################################################################
+#
+#	Nokia dictionary
+#	$Id$
+#
+######################################################################
+
+VENDOR		Nokia				94
+
+BEGIN-VENDOR	Nokia
+
+ATTRIBUTE	Nokia-AVPair				1	string
+ATTRIBUTE	Nokia-User-Profile			2	string
+ATTRIBUTE	Nokia-Service-Name			3	octets	# magic format
+ATTRIBUTE	Nokia-Service-Id			4	octets	# magic format
+ATTRIBUTE	Nokia-Service-Username			5	octets	# magic format
+ATTRIBUTE	Nokia-Service-Password			6	octets	# magic format
+ATTRIBUTE	Nokia-Service-Primary-Indicator		7	octets
+ATTRIBUTE	Nokia-Service-Charging-Type		8	octets # magic format
+ATTRIBUTE	Nokia-Service-Encrypted-Password	9	octets # magic format
+ATTRIBUTE	Nokia-Session-Access-Method		10	octets
+ATTRIBUTE	Nokia-Session-Charging-Type		11	octets
+ATTRIBUTE	Nokia-OCS-ID1				12	integer
+ATTRIBUTE	Nokia-OCS-ID2				13	integer
+ATTRIBUTE	Nokia-TREC-Index			14	integer
+ATTRIBUTE	Nokia-Requested-APN			15	string
+END-VENDOR	Nokia
+
+#
+#	The format of some Nokia attributes is binary coded decimal
+#	(BCD) with the last four bits all set to 1 if there are an odd
+#	number of digits,
+#
+#	e.g 123 is encoded as hexadecimal bytes 21 F3
+#
+#	This is an incredibly stupid way of encoding the data.
+#

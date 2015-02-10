@@ -1,0 +1,572 @@
+LOAD-BALANCING-PIB PIB-DEFINITIONS ::= BEGIN 
+
+IMPORTS 
+   ibrpib
+         FROM TUBS-SMI
+   MODULE-IDENTITY, OBJECT-TYPE,  
+   TEXTUAL-CONVENTION, MODULE-COMPLIANCE,  
+   OBJECT-IDENTITY, OBJECT-GROUP, Unsigned32
+         FROM COPS-PR-SPPI 
+   TruthValue 
+         FROM SNMPv2-TC 
+   InstanceId, ReferenceId,  
+   TagId, TagReferenceId, Prid
+         FROM COPS-PR-SPPI-TC 
+   SnmpAdminString 
+         FROM SNMP-FRAMEWORK-MIB 
+   InetAddress, InetAddressType 
+         FROM INET-ADDRESS-MIB
+   frwkIpFilterEntry
+         FROM FRAMEWORK-PIB;
+
+lbPolicyPib MODULE-IDENTITY 
+   SUBJECT-CATEGORIES { all } -- Load Balancing Client Type
+   LAST-UPDATED "200102231000Z" 
+   ORGANIZATION " WG" 
+   CONTACT-INFO "
+                Harsha Hegde 
+                Intel Corporation 
+                MS JF3-206 
+                2111 NE 25th Ave. 
+                Hillsboro, OR 97124 
+                Phone: +1 503 264 1439 
+                Fax: +1 503 264 3483 
+                E-Mail: shriharsha.hegde@intel.com 
+
+                Brad Stone 
+                Resonate, Inc. 
+                385 Moffett Park Drive 
+                Sunnyvale, CA 94089 
+                Phone: +1 408 548 5929 
+                Fax: +1 408 nnn nnnn 
+                Email: bstone@resonate.com 
+                " 
+   DESCRIPTION 
+         "This PIB module contains a set of provisioning classes 
+         that describe load balancing policies." 
+   ::= { ibrpib 22 } 
+
+
+-- 
+-- Classifier Classes 
+-- 
+
+lbClassifierClasses  OBJECT IDENTIFIER ::= { lbPolicyPib 1 } 
+
+-- 
+-- Filter Table 
+-- 
+
+lbFilterTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF LbFilterEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of additional filters. The filters in 
+        this table extend the filters in frwkBaseFilterTable. A 
+        packet must match all the fields in a filter. Wildcards may 
+        be specified for those fields that are not relevant." 
+
+    ::= { lbClassifierClasses  1 } 
+
+lbFilterEntry OBJECT-TYPE 
+    SYNTAX         LbFilterEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes a filter. " 
+
+    EXTENDS        { frwkIpFilterEntry } 
+
+    ::= { lbFilterTable 1 } 
+
+LbFilterEntry ::= SEQUENCE { 
+        lbFilterUrlPrefix      OCTET STRING, 
+        lbFilterUrlDomain      OCTET STRING, 
+        lbFilterUrlSuffix      OCTET STRING } 
+
+lbFilterUrlPrefix OBJECT-TYPE 
+    SYNTAX         OCTET STRING 
+    STATUS         current 
+    DESCRIPTION 
+        "The portion of an URL that identifies the protocol. for 
+        example, http,ftp. A `*' character is used to match any 
+        string." 
+
+    ::= { lbFilterEntry 1 } 
+
+lbFilterUrlDomain OBJECT-TYPE 
+    SYNTAX         OCTET STRING 
+    STATUS         current 
+    DESCRIPTION 
+        "The portion of an URL that identifies the domain. for 
+        example, www.company.com. A `*' character is used to match 
+        any string." 
+
+    ::= { lbFilterEntry 2 } 
+
+lbFilterUrlSuffix OBJECT-TYPE 
+    SYNTAX         OCTET STRING 
+    STATUS         current 
+    DESCRIPTION 
+        "The portion of an URL that identifies the file name. for 
+        example, index.html, mypic.jpg. A `*.*' string matches any 
+        file, a `*.jpg' string matches all files with jpg extension, 
+        and a `index.*' matches all `index' files with any  
+        extension." 
+
+    ::= { lbFilterEntry 3 } 
+
+-- 
+-- Filter Group Table 
+-- 
+
+lbFilterGroupTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF LbFilterGroupEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "A class that defines Filter Groups. Each Group being an 
+        ordered list of filters.  Each instance of this class 
+        identifies one filter of a group and the precedence order of 
+        that filter with respect to other filters in the same 
+        group." 
+
+    ::= { lbClassifierClasses  2 } 
+
+lbFilterGroupEntry OBJECT-TYPE 
+    SYNTAX         LbFilterGroupEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of filter group." 
+
+    PIB-INDEX { lbFilterGroupPrid } 
+
+    ::= { lbFilterGroupTable 1 } 
+
+LbFilterGroupEntry ::= SEQUENCE { 
+        lbFilterGroupPrid           InstanceId, 
+        lbFilterGroupId             TagId, 
+        lbFilterGroupFilterId       ReferenceId, 
+        lbFilterGroupPriority       Unsigned32 } 
+
+lbFilterGroupPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the lbFilterGroupEntry class." 
+
+    ::= { lbFilterGroupEntry 1 } 
+
+lbFilterGroupId OBJECT-TYPE 
+    SYNTAX         TagId 
+    STATUS         current 
+    DESCRIPTION 
+        "An arbitrary integer that identifies the group of filters. 
+        The same lbFilterGroupId is used in all lbFilterGroupEntry 
+        instances that belong to a group." 
+
+    ::= { lbFilterGroupEntry 2 } 
+
+lbFilterGroupFilterId OBJECT-TYPE 
+    SYNTAX         ReferenceId 
+    PIB-REFERENCES { lbFilterEntry }  
+    STATUS         current 
+    DESCRIPTION 
+        "Pointer to an instance of filter. The filter with the same 
+        Id must be present." 
+
+    ::= { lbFilterGroupEntry 3 } 
+
+lbFilterGroupPriority OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "An arbitrary integer index that specifies the position of 
+        this filter in the filter group. A filter with a given  
+        priority order is positioned in the filter group before one 
+        with a higher-value priority. Priority values within a group 
+        must be unique." 
+
+    ::= { lbFilterGroupEntry 4 } 
+
+
+-- 
+-- Capabilities Classes 
+-- 
+
+lbCapabilitiesClasses  OBJECT IDENTIFIER ::= { lbPolicyPib 2 } 
+
+-- 
+-- Capabilities Table 
+-- 
+
+lbCapabilitiesTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF LbCapabilitiesEntry 
+    PIB-ACCESS     install-notify 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of load balancer capabilities. 
+        Instances of this class are used by the PEP to notify PEP 
+        capabilities and by the PDP to install policies. The PDP 
+        must not install a capability not reported by the PEP " 
+
+    ::= { lbCapabilitiesClasses 1 } 
+
+lbCapabilitiesEntry OBJECT-TYPE 
+    SYNTAX         LbCapabilitiesEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes a set of capabilities 
+        of the load balancer or the capabilities applied to a 
+        service policy." 
+    PIB-INDEX { lbCapPrid }
+    
+    ::= { lbCapabilitiesTable 1 } 
+
+LbCapabilitiesEntry ::= SEQUENCE { 
+        lbCapPrid              InstanceId, 
+        lbCapStickyMode        BITS, 
+        lbCapHttpReturnCodes   BITS, 
+        lbCapBalanceAlgorithm  BITS, 
+        lbCapAlgorithmParams   Prid, 
+        lbCapPreserveSrcAddr   TruthValue, 
+        lbCapDirectReturn      TruthValue } 
+
+lbCapPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the lbCapabilitiesEntry class." 
+
+    ::= { lbCapabilitiesEntry 1 } 
+
+lbCapStickyMode OBJECT-TYPE 
+    SYNTAX         BITS { 
+                       cookieBased (1), 
+                       sourceAddressBased (2) } 
+    STATUS         current 
+    DESCRIPTION 
+        "Set of values indicating the type of Sticky Mode in this 
+        capabilities set. When PEP notifies PDP, the bits indicate 
+        the support of these mechanisms. When PDP installs policies,  
+        the bits indicate what mechanism must be used." 
+
+    ::= { lbCapabilitiesEntry 2 } 
+
+lbCapHttpReturnCodes OBJECT-TYPE 
+    SYNTAX         BITS { 
+                       http404(1), 
+                       http505(2) } 
+    STATUS         current 
+    DESCRIPTION 
+        "Set of values indicating the type of HTTP return codes that 
+        the load balancer can interpret and redirect the request to 
+        another server. When PEP notifies PDP, the bits indicate 
+        the ability to interpret the HTTP return codes. When PDP 
+        installs policies, the bits indicate enabling redirection on 
+        any of those HTTP return codes." 
+
+    ::= { lbCapabilitiesEntry 3 } 
+
+lbCapBalanceAlgorithm OBJECT-TYPE 
+    SYNTAX         BITS { 
+                       roundRobin(1), 
+                       weightedRoundRobin(2), 
+                       leastConnections(3), 
+                       weightedLeastConnections(4), 
+                       fastestServerResponse(5), 
+                       serverCpuUtilizaiton(6), 
+                       priorityToUser(7) } 
+    STATUS         current 
+    DESCRIPTION 
+        "Set of values indicating the type of server balance 
+        algorithm. When PEP notifies PDP, the bits indicate all the 
+        algorithms supported. When PDP installs policies the bits  
+        indicate only one algorithm that must be used. Additional  
+        parameters needed for the algorithm may be specified in  
+        another PRC instance identified by the lbCapAlgorithmParams  
+        attribute." 
+
+    ::= { lbCapabilitiesEntry 4 } 
+
+lbCapAlgorithmParams OBJECT-TYPE 
+    SYNTAX         Prid 
+    STATUS         current 
+    DESCRIPTION 
+        "This points to PRI that contains parameters needed for a  
+        specific algorithm. The PRI pointed to must exist prior to  
+        the installation of this class.  
+
+        TBD: define parameters classes for all existing algorithms."
+
+    ::= { lbCapabilitiesEntry 5 } 
+
+lbCapPreserveSrcAddr OBJECT-TYPE 
+    SYNTAX         TruthValue 
+    STATUS         current 
+    DESCRIPTION 
+        "Indicates whether Source Address must be preserved when 
+        forwarding a request to server."
+
+    ::= { lbCapabilitiesEntry 6 } 
+
+lbCapDirectReturn OBJECT-TYPE 
+    SYNTAX         TruthValue 
+    STATUS         current 
+    DESCRIPTION 
+        "Indicates whether a response from data center server could 
+        go directly to client bypassing the load balancer."
+
+    ::= { lbCapabilitiesEntry 7 } 
+
+
+-- 
+-- Server Classes 
+-- 
+
+lbServerClasses  OBJECT IDENTIFIER ::= { lbPolicyPib 3 } 
+
+-- 
+-- Server Table 
+-- 
+
+lbServerTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF LbServerEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of data center servers." 
+
+    ::= { lbCapabilitiesClasses 2 } 
+
+lbServerEntry OBJECT-TYPE 
+    SYNTAX         LbServerEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes a data center server." 
+
+    PIB-INDEX { lbServerPrid } 
+
+    ::= { lbServerTable 1 } 
+
+LbServerEntry ::= SEQUENCE { 
+        lbServerPrid           InstanceId, 
+        lbServerName           SnmpAdminString, 
+        lbServerAddressType    InetAddressType, 
+        lbServerAddress        InetAddress, 
+        lbServerMode           INTEGER } 
+
+lbServerPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the lbServerEntry class." 
+
+    ::= { lbServerEntry 1 } 
+
+lbServerName OBJECT-TYPE 
+    SYNTAX         SnmpAdminString 
+    STATUS         current 
+    DESCRIPTION 
+        "A name for server." 
+
+    ::= { lbServerEntry 2 } 
+
+lbServerAddressType OBJECT-TYPE 
+    SYNTAX         InetAddressType 
+    STATUS         current 
+    DESCRIPTION 
+        "Type of address for server." 
+
+    ::= { lbServerEntry 3 } 
+
+lbServerAddress OBJECT-TYPE 
+    SYNTAX         InetAddress 
+    STATUS         current 
+    DESCRIPTION 
+        "Address (IP address or DNS Name) for server." 
+
+    ::= { lbServerEntry 4 } 
+
+lbServerMode OBJECT-TYPE 
+    SYNTAX         INTEGER { 
+                       disabled(0), 
+                       primary(1), 
+                       backup(2) } 
+    STATUS         current 
+    DESCRIPTION 
+        "Indicates the mode of the server. Enumeration values are 
+             primary server  (1) 
+             backup server   (2)  
+             disabled        (0)." 
+
+    ::= { lbServerEntry 5 } 
+
+-- 
+-- Server Group Table 
+-- 
+
+lbServerGroupTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF LbServerGroupEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "A class that defines Server Groups. Each Group being an 
+        ordered list of data center servers.  Each instance of this 
+        class identifies one server of a group and the precedence 
+        order of that server with respect to other servers in the 
+        same group." 
+
+    ::= { lbServerClasses  2 } 
+
+lbServerGroupEntry OBJECT-TYPE 
+    SYNTAX         LbServerGroupEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of server group." 
+
+    PIB-INDEX { lbServerGroupPrid } 
+
+    ::= { lbServerGroupTable 1 } 
+
+LbServerGroupEntry ::= SEQUENCE { 
+        lbServerGroupPrid           InstanceId, 
+        lbServerGroupId             TagId, 
+        lbServerGroupServerId       ReferenceId, 
+        lbServerGroupPriority       Unsigned32 } 
+
+lbServerGroupPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the lbServerGroupEntry class." 
+
+    ::= { lbServerGroupEntry 1 } 
+
+lbServerGroupId OBJECT-TYPE 
+    SYNTAX         TagId 
+    STATUS         current 
+    DESCRIPTION 
+        "An arbitrary integer that identifies the group of servers. 
+        The same lbServerGroupId is used in all lbServerGroupEntry 
+        instances that belong to a group." 
+
+    ::= { lbServerGroupEntry 2 } 
+
+lbServerGroupServerId OBJECT-TYPE 
+    SYNTAX         ReferenceId 
+    PIB-REFERENCES { lbServerEntry } 
+    STATUS         current 
+    DESCRIPTION 
+        "Pointer to an instance of server. The server with the same 
+        Id must be present." 
+
+    ::= { lbServerGroupEntry 3 } 
+
+lbServerGroupPriority OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "An arbitrary integer index that specifies the position of 
+        this server in the server group. A server with a given  
+        priority order is positioned in the server group before one 
+        with a higher-value priority. Priority values within a group 
+        must be unique." 
+
+    ::= { lbServerGroupEntry 4 } 
+
+
+-- 
+-- Service Classes 
+-- 
+
+lbServiceClasses  OBJECT IDENTIFIER ::= { lbPolicyPib 4 } 
+
+-- 
+-- Service Table 
+-- 
+
+lbServiceTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF LbServiceEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of entries that combine filter groups, 
+        capabilities and server groups to form services." 
+
+    ::= { lbServiceClasses 1 } 
+
+lbServiceEntry OBJECT-TYPE 
+    SYNTAX         LbServiceEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes a service." 
+
+    PIB-INDEX { lbServicePrid } 
+
+    ::= { lbServiceTable 1 } 
+
+LbServiceEntry ::= SEQUENCE { 
+        lbServicePrid           InstanceId, 
+        lbServiceName           SnmpAdminString, 
+        lbServiceFilterGroupId  TagReferenceId, 
+        lbServiceServerGroupId  TagReferenceId, 
+        lbServiceCapabilitiesId ReferenceId } 
+
+lbServicePrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the lbServiceEntry class." 
+
+    ::= { lbServiceEntry 1 } 
+
+lbServiceName OBJECT-TYPE 
+    SYNTAX         SnmpAdminString 
+    STATUS         current 
+    DESCRIPTION 
+        "Name to identify a service." 
+
+    ::= { lbServiceEntry 2 } 
+
+lbServiceFilterGroupId OBJECT-TYPE 
+    SYNTAX         TagReferenceId
+    PIB-TAG        { lbFilterGroupId } 
+    STATUS         current 
+    DESCRIPTION 
+        "Pointer to a group of Filters. An instance of 
+        lbFilterGroupEntry with the same tag id must be present." 
+
+    ::= { lbServiceEntry 3 } 
+
+lbServiceServerGroupId OBJECT-TYPE 
+    SYNTAX         TagReferenceId
+    PIB-TAG        { lbServerGroupId } 
+    STATUS         current 
+    DESCRIPTION 
+        "Pointer to a group of Servers. An instance of 
+        lbServerGroupEntry with the same tag id must be present." 
+
+    ::= { lbServiceEntry 4 } 
+
+lbServiceCapabilitiesId OBJECT-TYPE 
+    SYNTAX         ReferenceId 
+    PIB-REFERENCES { lbCapabilitiesEntry } 
+    STATUS         current 
+    DESCRIPTION 
+        "Pointer to an instance of capabilities class. An instance 
+        of lbCapabilitiesEntry with the same tag id must be 
+        present." 
+
+    ::= { lbServiceEntry 5 } 
+
+
+
+-- Compliance section 
+-- TBD 
+END

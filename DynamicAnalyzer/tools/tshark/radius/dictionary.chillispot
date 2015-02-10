@@ -1,0 +1,38 @@
+# -*- text -*-
+##############################################################################
+#
+#	ChilliSpot (and CoovaChilli) captive portal
+#	http://www.chillispot.org
+#	http://coova.org/wiki/index.php/CoovaChilli
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR		ChilliSpot			14559
+
+BEGIN-VENDOR	ChilliSpot
+
+ATTRIBUTE	ChilliSpot-Max-Input-Octets		1	integer
+ATTRIBUTE	ChilliSpot-Max-Output-Octets		2	integer
+ATTRIBUTE	ChilliSpot-Max-Total-Octets		3	integer
+ATTRIBUTE       ChilliSpot-Bandwidth-Max-Up        	4       integer
+ATTRIBUTE       ChilliSpot-Bandwidth-Max-Down      	5       integer
+ATTRIBUTE       ChilliSpot-Config                  	6       string
+ATTRIBUTE       ChilliSpot-Lang                    	7       string
+ATTRIBUTE       ChilliSpot-Version                 	8       string
+ATTRIBUTE       ChilliSpot-OriginalURL             	9       string
+
+
+# Configuration management parameters (ChilliSpot Only)
+ATTRIBUTE	ChilliSpot-UAM-Allowed			100	string
+ATTRIBUTE	ChilliSpot-MAC-Allowed			101	string
+ATTRIBUTE	ChilliSpot-Interval			102	integer
+
+# Inline with RFC 2882 use of VSE-Authorize-Only for remote config
+# Note that 14559 = 0x38df is used as prefix for the VSE.
+# This is recognized as the best (but bad) way of doing VSEs.
+# (ChilliSpot Only - CoovaChilli uses Service-Type = Administrative-User)
+VALUE	Service-Type			ChilliSpot-Authorize-Only 0x38df0001
+
+END-VENDOR	ChilliSpot

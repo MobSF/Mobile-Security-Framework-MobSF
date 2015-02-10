@@ -1,0 +1,50 @@
+# -*- text -*-
+##############################################################################
+#
+#	Azaire VSAs
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR		Azaire				7751
+
+BEGIN-VENDOR	Azaire
+
+ATTRIBUTE	Azaire-Triplets				1	octets
+ATTRIBUTE	Azaire-IMSI				2	octets
+ATTRIBUTE	Azaire-MSISDN				3	octets
+ATTRIBUTE	Azaire-APN				4	string
+ATTRIBUTE	Azaire-QoS				5	octets
+ATTRIBUTE	Azaire-Selection-Mode			6	integer
+ATTRIBUTE	Azaire-APN-Resolution-Req		7	integer
+ATTRIBUTE	Azaire-Start-Time			8	octets
+ATTRIBUTE	Azaire-NAS-Type				9	integer
+ATTRIBUTE	Azaire-Status				10	integer
+ATTRIBUTE	Azaire-APN-OI				11	string
+ATTRIBUTE	Azaire-Auth-Type			12	integer
+ATTRIBUTE	Azaire-Gn-User-Name			13	string
+ATTRIBUTE	Azaire-Brand-Code			14	string
+ATTRIBUTE	Azaire-Policy-Name			15	string
+ATTRIBUTE	Azaire-Client-Local-IP			16	ipaddr
+
+VALUE	Azaire-Selection-Mode		Subscribed		0
+VALUE	Azaire-Selection-Mode		Sent-By-MS		1
+VALUE	Azaire-Selection-Mode		Chosen-By-SGSN		2
+
+VALUE	Azaire-APN-Resolution-Req	Not-Required		0
+VALUE	Azaire-APN-Resolution-Req	Required		1
+
+VALUE	Azaire-Status			Success			0
+VALUE	Azaire-Status			Failure			1
+
+VALUE	Azaire-Auth-Type		PPP-SIM			1
+VALUE	Azaire-Auth-Type		Dummy-IMSI		2
+VALUE	Azaire-Auth-Type		Soft-SIM		3
+VALUE	Azaire-Auth-Type		Radius-SIM		4
+VALUE	Azaire-Auth-Type		Post-paid		5
+VALUE	Azaire-Auth-Type		Pre-paid		6
+VALUE	Azaire-Auth-Type		Local-Radius		7
+VALUE	Azaire-Auth-Type		Proxy-Radius		8
+
+END-VENDOR	Azaire

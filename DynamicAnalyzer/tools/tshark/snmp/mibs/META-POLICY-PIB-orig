@@ -1,0 +1,915 @@
+META-POLICY-PIB PIB-DEFINITIONS ::= BEGIN 
+ 
+IMPORTS 
+     Unsigned32, timeticks, 
+     MODULE-IDENTITY, OBJECT-TYPE, 
+     InstanceId, ReferenceId 
+          FROM COPS-PR-SPPI 
+     TEXTUAL-CONVENTION 
+  
+          FROM SNMPv2-TC; 
+ 
+metaPolicyPib  MODULE-IDENTITY 
+     SUBJECT-CATEGORY { all } 
+     LAST-UPDATED "200104010000" 
+     ORGANIZATION "IETF" 
+     CONTACT-INFO " Andreas Polyrakis 
+                    Dept. of Computer Science, 
+                    University of Toronto, 
+                    10 King's College Road, 
+                    Toronto, Ontario,M5S 3G4, Canada. 
+                    e-mail: apolyr@cs.toronto.edu 
+                    Phone: ++1 (416) 978-4837 
+                    Fax: ++1 (416) 978 1931 
+ 
+                    Raouf Boutaba 
+                    Dept. of Computer Science, 
+                    University of Waterloo, 
+                    200 University Avenue West, 
+                    Waterloo, Ontario N2L 3G1, Canada 
+                    e-mail: rboutaba@bbcr.uwaterloo.ca 
+                    Phone: ++1 (519) 888 4567 ext.4820 
+                    Fax: ++1 (519) 885 1208" 
+     DESCRIPTION 
+          "The meta-policy PIB module. It contains the classes 
+          that are necessary for the provisioning of meta-policy 
+          related information. This module is applicable, 
+          but not mandatory, to all subject-categories" 
+ 
+     ::= { tbd } 
+-- The root OID for PRCs in the Meta-Policy PIB 
+ 
+ 
+--- 
+--- Textual Conventions 
+--- 
+BERValue ::= TEXTUAL-CONVENTION 
+     STATUS       current 
+     DESCRIPTION 
+          "A sequence of octets that encodes a value using BER. 
+          The suppoted BER types are (borrowed by SNMPv2): 
+          Type                | BER identifier 
+          --------------------|---------------- 
+ 
+          INTEGER             | 02 
+          BIT STRING          | 03 
+          OCTET STRING        | 04 
+          NULL                | 05 
+          OBJECT IDENTIFIER   | 06 
+          IP ADDRESS          | 40 
+          COUNTER32           | 41 
+          GAUGE32             | 42 
+          TIMETICKS           | 43 
+          OPAQUE              | 44 
+  
+ 
+          By using this type, the PEP can store values for different  
+          types of parameters in the same class (PRC)." 
+ 
+     SYNTAX OCTET STRING (SIZE (0..16)) 
+ 
+XMLString ::= TEXTUAL-CONVENTION 
+       STATUS       current 
+       DESCRIPTION 
+          "A string that contains a logical expression encoded using  
+          XML. The semantics of the XML tags are defined in special  
+          DTDs, which the PEP declares that supports." 
+       SYNTAX OCTET STRING (SIZE (0..1024)) 
+--- 
+--- End of Textual Conventions 
+--- 
+ 
+----------------------------------------------- 
+----------------------------------------------- 
+ 
+ 
+-- Meta-Policy Capabilities Group 
+metaPolicyCapabilitiesClasses 
+     OBJECT IDENTIFIER ::= { metaPolicyPib 1 } 
+ 
+ 
+--- 
+--- Meta-Policy Capabilities Table 
+--- 
+xmlDTDTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF xmlDTDEntry 
+     PIB-ACCESS notify 
+     STATUS current 
+     DESCRIPTION 
+          "Each instance of this class specifies a PRC that 
+          identifies an XML DTD supported by the PEP for encoding 
+          logical expressions. If this class has no instances, 
+          then the PEP supports only expressions that are formed 
+          with boolean predicates and operators, and in this case 
+          the PDP MUST not attempt to install any XML-encoded 
+          expressions in the generalConditionTable." 
+     ::= { metaPolicyCapabilitiesClasses 1 } 
+ 
+xmlDTDEntry OBJECT-TYPE 
+     SYNTAX MetaPolicyCapabilitiesEntry 
+     STATUS current 
+     DESCRIPTION 
+          "An instance of the xmlDTDTable class that determines an 
+          XML DTD that can be used to encode a logical expression" 
+     INDEX { metaPolicyPrid } 
+     ::= { metaPolicyTable 1 } 
+ 
+XmlDTDEntry ::= 
+     SEQUENCE { 
+  
+          xmlDTDPrid           InstanceId, 
+          xmlDTDURL            SnmpAdminString 
+     } 
+ 
+xmlDTDPrid OBJECT-TYPE 
+     SYNTAX InstanceId 
+     STATUS current 
+     DESCRIPTION 
+          "An arbitrary integer that uniquely identifies an 
+          instance of the xmlDTD class." 
+     ::= { xmlDTDEntry 1 } 
+ 
+xmlDTDURL OBJECT-TYPE 
+     SYNTAX SnmpAdminString 
+     STATUS current 
+     DESCRIPTION 
+          "The XML DTD URL. A string that indicates the URL of an 
+          XML DTD that can be used for encoding expressions. 
+          These DTDs can be defined either by standardization 
+          organizations, such as IETF, or be vendor specific. 
+ 
+          When the PDP receives a URL that uniquely identifies 
+          such a DTD, it knows that it may encode expressions 
+          according to this DTD that the PEP will be able to 
+          evaluate." 
+     ::= { xmlDTDEntry 2 } 
+ 
+--End of xmlDTDTable 
+ 
+----------------------------------------------- 
+----------------------------------------------- 
+ 
+-- Base Meta-Policy Group 
+metaPolicyClasses 
+     OBJECT IDENTIFIER ::= { metaPolicyPib 2 } 
+ 
+ 
+--- 
+--- Meta-Policy Table 
+--- 
+metaPolicyTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF metaPolicyEntry 
+     PIB-ACCESS INSTALL 
+     STATUS current 
+     DESCRIPTION 
+          "Each instance of this class specifies a PRC that 
+          represents a meta-policy. Each meta-policy, apart 
+          from a unique identifier and an optional name, it 
+          constists of a condition and a group of actions." 
+     ::= { metaPolicyClasses 1 } 
+ 
+metaPolicyEntry OBJECT-TYPE 
+     SYNTAX MetaPolicyEntry 
+     STATUS current 
+  
+     DESCRIPTION 
+          "An instance of the metaPolicy Class that represents 
+          a meta-policy." 
+     INDEX { metaPolicyPrid } 
+     ::= { metaPolicyTable 1 } 
+ 
+MetaPolicyEntry ::= 
+     SEQUENCE { 
+          metaPolicyPrid            InstanceId, 
+          metaPolicyName            SnmpAdminString, 
+          metaPolicyCondition       ReferenceId, 
+          metaPolicyActions         TagId 
+     } 
+ 
+metaPolicyPrid OBJECT-TYPE 
+     SYNTAX InstanceId 
+     STATUS current 
+     DESCRIPTION 
+          "An arbitrary integer that uniquely identifies an 
+          instance of the metaPolicy class." 
+     ::= { metaPolicyEntry 1 } 
+ 
+metaPolicyName OBJECT-TYPE 
+     SYNTAX SnmpAdminString 
+     STATUS current 
+     DESCRIPTION 
+          "A display string that represents the name of the 
+          meta-policy. It is reccomented that different 
+          meta-policies have different names. However, similar 
+          meta-policies may have the same name. 
+          Also, an empty string can be used as a name." 
+     ::= { metaPolicyEntry 2 } 
+ 
+metaPolicyCondition OBJECT-TYPE 
+     SYNTAX ReferenceId 
+     PIB-REFERENCES contitionTable 
+     STATUS current 
+     DESCRIPTION 
+          "This attribute associates the specific meta-policy with 
+          a condition in the condition Class. The condition MUST 
+ 
+          exist when the meta-policy is installed. The meta-policy 
+          MUST always be assosiated with one condition (which means 
+          that the attribute can never be null/invalid." 
+     ::= { metaPolicyEntry 3 } 
+ 
+metaPolicyActions OBJECT-TYPE 
+     SYNTAX TagId 
+     PIB-REFERENCES actionsTable 
+     STATUS current 
+     DESCRIPTION 
+          "A tag that maps this instance (meta-policy) to a group 
+          of actions in the actions Class. Although the tag should 
+          map to at least one action, there might be cases where a 
+  
+          meta-policy is associated to no actions. However such 
+          cases should be avoided and only be temporal." 
+     ::= { metaPolicyEntry 4 } 
+--End of metaPolicyTable 
+ 
+-- 
+-- Meta-Policy Status Table 
+-- 
+metaPolicyStatusTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF metaPolicyStatusEntry 
+     PIB-ACCESS REPORT-ONLY 
+     STATUS current 
+     DESCRIPTION 
+          "This class augments the metaPolicy class. 
+          Each instance of this class defines a PRC that is used 
+          in order to report to the PDP the status of the 
+          meta-policies. 
+ 
+          Also, information form this table can be used as a 
+          parameter to another meta-policy, as an alternative 
+          way to ensure that two priorities cannot be 
+          activated at the same time." 
+     ::= { metaPolicyClasses 2 } 
+ 
+metaPolicyStatusEntry OBJECT-TYPE 
+     SYNTAX MetaPolicyStatusEntry 
+     STATUS current 
+     DESCRIPTION 
+          "An instance of the metaPolicyStatus class that reports 
+          the status of the corresponding meta-policy in the 
+          metaPolicy class." 
+     AUGMENTS { metaPolicyEntry } 
+     ::= { metaPolicyStatusTable 1 } 
+ 
+metaPolicyStatusEntry ::= 
+     SEQUENCE { 
+          metaPolicyActive     TruthValue, 
+          metaPolicySuppressed TruthValue 
+     } 
+ 
+metaPolicyActive OBJECT-TYPE 
+     SYNTAX TruthValue 
+     STATUS current 
+     DESCRIPTION 
+          "True while the meta-policy is active" 
+     ::= { metaPolicyStatusEntry 1 } 
+ 
+metaPolicySuppress OBJECT-TYPE 
+     SYNTAX TruthValue 
+     STATUS current 
+     DESCRIPTION 
+          "If this meta-policy is prevented from being active by 
+          an other meta-policy (but its conditions are met), this 
+          attribute is set to true. 
+  
+ 
+          If this meta-policy prevents another meta-policy from 
+          being active, then this attribute is true. 
+ 
+          In other words: 
+          Active | Suppr.| 
+          -------------------------------- 
+           true  | true  | meta-policy active, 
+                         | it suppresses another one 
+           true  | false | meta-policy active, 
+                         | does not suppress another one 
+           false | true  | meta-policy inactive 
+                         | because it is suppressed by another one 
+           false | false | meta-policy inactive because 
+                         | the conditions are not met 
+          " 
+     ::= { metaPolicyStatusEntry 2 } 
+--End of metaPolicyStatusTable 
+ 
+ 
+--- 
+--- Meta-Policy Priority Table 
+--- 
+metaPolicyPriorityTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF metaPolicyPriorityEntry 
+     PIB-ACCESS INSTALL 
+     STATUS current 
+     DESCRIPTION 
+          "This table reports conflicting meta-policies. 
+          When a meta-policy needs to be activated, the PEP 
+          MUST check if it is conflicting with another meta-policy, 
+          which is already active or needs to be activated at the 
+          same time. If so, the one that is referenced in the 
+          higherPriority attribute is activated and the other one 
+          is deactivated or remains deactivated. Similarly, when a 
+          meta-policy is deactivated, the PEP must check if a 
+          lower-priority meta-policy must now be activated." 
+     ::= { metaPolicyClasses 3 } 
+ 
+metaPolicyPriorityEntry OBJECT-TYPE 
+     SYNTAX MetaPolicyPriorityEntry 
+     STATUS current 
+     DESCRIPTION 
+          "An instance of the metaPolicyPriority Class that 
+          identifies the relative priority between two 
+          meta-policies." 
+     INDEX { metaPolicyPrid } 
+     ::= { metaPolicyPriorityTable 1 } 
+ 
+MetaPolicyPriorityEntry ::= 
+     SEQUENCE { 
+          metaPolicyPriorityPrid   InstanceId, 
+          higherPriority           ReferenceId, 
+          lowerPriority            ReferenceId, 
+  
+     } 
+ 
+metaPolicyPriorityPrid OBJECT-TYPE 
+     SYNTAX InstanceId 
+     STATUS current 
+     DESCRIPTION 
+          "An arbitrary integer  that uniquely identifies an 
+          instance of the metaPolicyPriority class." 
+     ::= { metaPolicyPriorityEntry 1 } 
+ 
+higherPriority OBJECT-TYPE 
+     SYNTAX ReferenceId 
+     PIB-REFERENCES metaPolicyTable 
+     STATUS current 
+     DESCRIPTION 
+          "This attribute references to the meta-policy that 
+          has higher priority than the one referenced by the 
+          lowerPriority attribute" 
+     ::= { metaPolicyPriorityEntry 2 } 
+ 
+lowerPriority OBJECT-TYPE 
+     SYNTAX ReferenceId 
+     PIB-REFERENCES metaPolicyTable 
+     STATUS current 
+     DESCRIPTION 
+ 
+          "This attribute references to the meta-policy that 
+          has lower priority than the one referenced by the 
+          higherPriority attribute" 
+     ::= { metaPolicyPriorityEntry 3 } 
+ 
+--End of metaPolicyPriorityTable 
+----------------------------------------------- 
+---------------------------------------------- 
+ 
+ 
+-- Condition Group 
+conditionClasses 
+     OBJECT IDENTIFIER ::= { metaPolicyPib 3 } 
+ 
+ 
+-- 
+-- Condition Table 
+-- 
+conditionTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF conditionEntry 
+     PIB-ACCESS INSTALL 
+     STATUS current 
+     DESCRIPTION 
+          "Each instance of this PRC represents a boolean 
+          expression. The conditionss of the meta-policies are 
+          instances of this class. However, if the condition of 
+          a meta-policy contains more than one predicate, the 
+          predicates are also instances of this PRC. 
+  
+ 
+          For instance, Suppose that we want to encode a condition 
+          A, which is evaluated as ( B OR C ), where B and C some 
+          other boolean expressions. 
+          In this case, A, B and C are instances of this PRC. 
+ 
+          All instances of this PRC MUST be extended by an instance 
+          of one of the rest PRCs of this group, in order to denote 
+          if this condition should be evaluated based on simpler 
+          conditions, if it is a boolean operand or an other 
+          logical expression." 
+     ::= { conditionClasses 1 } 
+ 
+conditionEntry OBJECT-TYPE 
+     SYNTAX ConditionEntry 
+     STATUS current 
+     DESCRIPTION 
+          "An instance of the condition Class that defines a 
+          boolean condition" 
+     INDEX { conditionIndex } 
+     ::= { conditionTable 1 } 
+ 
+ConditionEntry ::= 
+     SEQUENCE { 
+          conditionPrid       InstanceId, 
+          conditionReverse    Truevalue 
+     } 
+ 
+conditionPrid OBJECT-TYPE 
+     SYNTAX InstanceId 
+     STATUS current 
+     DESCRIPTION 
+          "An arbitrary integer that uniquely identifies an 
+          instance of the condition class." 
+     ::= { conditionEntry 1 } 
+ 
+conditionReverse OBJECT-TYPE 
+     SYNTAX Truevalue 
+     STATUS current 
+     DESCRIPTION 
+          "if true, the negation of the logical expression 
+           is evaluated, instead." 
+     ::= { conditionEntry 2 } 
+-- END OF conditionTable 
+ 
+-- 
+-- Complex Condition Table 
+-- 
+complexConditionTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF complexConditionEntry 
+     PIB-ACCESS INSTALL 
+     STATUS current 
+     DESCRIPTION 
+          "Each instance of this PRC represents a complex 
+  
+          condition. It consists of two simplier conditions, 
+          and a logical operator that determines how the two 
+          terms are assosiated to compose the more 
+          complicated condition" 
+     ::= { conditionClasses 2 } 
+ 
+complexConditionEntry OBJECT-TYPE 
+     SYNTAX ComplexConditionEntry 
+     STATUS current 
+     DESCRIPTION 
+          "An instance of the complexCondition class that breaks a 
+          complex condition into two simpler ones." 
+     EXTENDS { conditionTable } 
+ 
+     ::= { complexConditionTable } 
+ 
+ComplexConditionEntry ::= 
+     SEQUENCE { 
+          operator       Unsigned32, 
+          leftTerm       ReferenceId, 
+          rightTerm      ReferenceId 
+     } 
+ 
+operator OBJECT-TYPE 
+     SYNTAX Unsigned32 { 
+          AND (0), 
+          OR (1) 
+          } 
+     STATUS current 
+     DESCRIPTION 
+          "The logical operator in the complex condition" 
+     ::= { complexConditionEntry 1 } 
+ 
+leftTerm OBJECT-TYPE 
+     SYNTAX ReferenceId 
+     PIB-REFERENCES conditionTable 
+     STATUS current 
+     DESCRIPTION 
+          "A reference to the first simpler condition." 
+     ::= { complexConditionEntry 2 } 
+ 
+rightTerm OBJECT-TYPE 
+     SYNTAX ReferenceId 
+     PIB-REFERENCES conditionTable 
+     STATUS current 
+ 
+     DESCRIPTION 
+          "A reference to the second simpler condition." 
+     ::= { complexConditionEntry 3 } 
+-- END OF complexConditionTable 
+ 
+-- 
+-- Boolean Condition Expression Table 
+-- 
+  
+booleanConditionTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF booleanConditionEntry 
+     PIB-ACCESS INSTALL 
+     STATUS mandatory 
+     DESCRIPTION 
+          "Each instance of this class extends the condition class 
+          and represents a boolean parameter from which the 
+          condition is evaluated." 
+     ::= { metaPolicyPibClasses 2 } 
+ 
+booleanConditionEntry OBJECT-TYPE 
+     SYNTAX BooleanConditionEntry 
+     STATUS mandatory 
+     DESCRIPTION 
+          "An instance of the booleanCondition class that defines 
+          the boolean parameter that gives values to the 
+          corresponding condition." 
+     EXTENDS { conditionTable } 
+     ::= { booleanConditionTable 1 } 
+ 
+BooleanConditionEntry ::= 
+     SEQUENCE { 
+          parameterReference  ReferenceId 
+     } 
+ 
+parameterReference OBJECT-TYPE 
+     SYNTAX ReferenceId 
+     PIB-REFERENCES parameterTable 
+     STATUS current 
+     DESCRIPTION 
+          "A reference to a parameter from where the condition is 
+          evaluated. This condition MUST be of type boolean 
+          (Truthvalue)." 
+     ::= { booleanConditionEntry 1 } 
+-- End of booleanConditionTable 
+ 
+-- 
+-- Generic Condition Table 
+-- 
+genericConditionTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF genericConditionEntry 
+     PIB-ACCESS INSTALL 
+     STATUS current 
+     DESCRIPTION 
+          "Each instance of this class extends the condition class 
+          and assosiates the corresponding condition with a complex 
+          logical expression, from where the condition is 
+          evaluated." 
+     ::= { conditionClasses 2 } 
+ 
+genericConditionEntry OBJECT-TYPE 
+     SYNTAX GenericConditionEntry 
+     STATUS current 
+     DESCRIPTION 
+  
+          "An instance of the generalCondition class that defines 
+          the logical expression for the corresponding condition 
+          of the condition class." 
+     EXTENDS { generalConditionTable } 
+     ::= { conditionNumericalExpressionTable } 
+ 
+GenericConditionEntry ::= 
+     SEQUENCE { 
+        xmlDTDRef   ReferenceId, 
+          xmlCondition   XMLString 
+     } 
+ 
+xmlDTDRef OBJECT-TYPE 
+     SYNTAX ReferenceId 
+     PIB-REFERENCES xmlDTDTable 
+     STATUS current 
+     DESCRIPTION 
+          "A reference to the xmlDTD class that deternies which 
+          of the XML DTDs that this PEP supports is used in 
+          order to encode the expression." 
+     ::= { genericConditionEntry 1 } 
+ 
+xmlCondition OBJECT-TYPE 
+     SYNTAX XMLString 
+     STATUS mandatory 
+     DESCRIPTION 
+          "The XML-encoded expression." 
+     ::={ genericConditionEntry 2 } 
+-- End of genericConditionTable 
+ 
+----------------------------------------------- 
+----------------------------------------------- 
+ 
+ 
+-- Actions Group 
+actionClasses 
+     OBJECT IDENTIFIER ::= { metaPolicyPib 4 } 
+ 
+ 
+-- 
+-- Actions Table 
+-- 
+actionTable OBJECT-TYPE 
+     SYNTAX SEQUENCE of actionEntry 
+     PIB-ACCESS INSTALL 
+     STATUS current 
+     DESCRIPTION 
+          "Each instance of this class stores an action of 
+          a meta-policy." 
+     ::= { actionClasses 1 } 
+ 
+actionEntry OBJECT-TYPE 
+     SYNTAX ActionEntry 
+     STATUS current 
+  
+     DESCRIPTION 
+          "An instance of the action class that stores an action 
+          of a meta-policy." 
+     INDEX { actionPrid } 
+     ::= { actionTable 1 } 
+ 
+ActionEntry ::= 
+     SEQUENCE { 
+          actionPrid        InstanceId, 
+          actionRefTag      TagReferenceId, 
+          actionTargetPrid  Prid 
+     } 
+ 
+actionPrid OBJECT-TYPE 
+     SYNTAX InstanceId 
+     STATUS current 
+     DESCRIPTION 
+          "An arbitrary integer that uniquely identifies an 
+          instance of the action class." 
+     ::= { actionEntry 1 } 
+ 
+actionRefTag OBJECT-TYPE 
+     SYNTAX TagReferenceId 
+     PIB-TAG metaPolicyActions 
+     STATUS current 
+     DESCRIPTION 
+          "An attribute that defines a Tag Group of actions. 
+          All actions with the same tag are grouped as the actions 
+          of a single meta-policy." 
+     ::={ actionEntry 2 } 
+ 
+actionTargetPrid OBJECT-TYPE 
+     SYNTAX Prid 
+     STATUS current 
+     DESCRIPTION 
+          "The PRID of the PRI to be installed/updated. 
+          The PRID must point to a single PRI." 
+     ::={ actionEntry 3 } 
+-- END OF actionsTable 
+ 
+-- 
+-- Action Value table 
+-- 
+actionValueTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF actionValueEntry 
+     PIB-ACCESS INSTALL 
+     STATUS current 
+     DESCRIPTION 
+          "Each instance of this class extends the corresponding 
+          instance of the action class. It provides the BER-encoded 
+value  
+          that will be installed at the corresponding PRI." 
+     ::= { actionClasses 2 } 
+
+  
+ 
+ 
+actionValueEntry OBJECT-TYPE 
+     SYNTAX ActionsValueEntry 
+     STATUS current 
+     DESCRIPTION 
+          "An insance of the actionValue class. It provides 
+          the value (encoded with BER) that will be installed at 
+          the PRI denoted by the corresponding instance of the 
+          action class." 
+     EXTENDS { actionEntry } 
+     ::= { actionValueTable 1 } 
+ 
+ActionValueEntry ::= 
+     SEQUENCE { 
+          ActionValueEpd      BERValue 
+     } 
+ 
+actionValueEpd OBJECT-TYPE 
+     SYNTAX BERValue 
+     STATUS current 
+     DESCRIPTION 
+          "This attribute contains the BER-encoded value of the 
+          PRI to be installed/updated." 
+     ::={ actionValueEntry 1 } 
+-- END OF actionValueTable 
+ 
+-- 
+-- Action Parametric Value Table 
+-- 
+actionParametricValueTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF actionParametricValueEntry 
+     PIB-ACCESS INSTALL 
+     STATUS current 
+     DESCRIPTION 
+          "Each instance of this class that extends the 
+           corresponding instance of the action class. It provides 
+with the 
+           parametric value that will be installed at the 
+corresponding PRI." 
+     ::= { actionClasses 3 } 
+ 
+actionParametricValueEntry OBJECT-TYPE 
+     SYNTAX ActionParametricValueEntry 
+     STATUS current 
+     DESCRIPTION 
+          "An insance of the actionValue class. It provides with 
+          the parametric value that will be installed at the PRI 
+           denoted by the corresponding instance of the action 
+           class." 
+     EXTENDS { actionEntry } 
+ 
+     ::= { actionParametricValueTable 1 } 
+ 
+  
+ActionParametricValueEntry ::= 
+     SEQUENCE { 
+          ParameterRef        ReferenceId 
+     } 
+ 
+ParameterRef OBJECT-TYPE 
+     SYNTAX ReferenceId 
+     PIB-REFERENCES parameterTable 
+     STATUS current 
+     DESCRIPTION 
+          "A reference to a the parameter, from where the value 
+          of the installed PRI should be obtained. Whenever the 
+          value of the parameter changes, the installed PRI 
+          MUST be updated." 
+     ::={ actionParametricValueEntry 1 } 
+-- END OF actionParametricValueTable 
+ 
+----------------------------------------------- 
+----------------------------------------------- 
+ 
+ 
+-- Parameter Group 
+parameterClasses 
+     OBJECT IDENTIFIER ::= { metaPolicyPib 5 } 
+ 
+ 
+- 
+- Parameter Table 
+- 
+parameterTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF parameterEntry 
+     PIB-ACCESS INSTALL 
+     STATUS current 
+     DESCRIPTION 
+          "Each instance of this class defines a parameter 
+          that has been installed on the PEP. This class 
+          MUST be extended by a class that defines how 
+          the value of the parameter will be evaluated." 
+     ::= { parameterClasses 1} 
+ 
+parameterEntry OBJECT-TYPE 
+     SYNTAX ParameterEntry 
+     STATUS current 
+     DESCRIPTION 
+          "An instance of the parameter class that installs 
+          a parameter into the PEP." 
+     INDEX { parameterPrid } 
+     ::= { parameterTable 1 } 
+ 
+ParameterEntry ::= 
+     SEQUENCE { 
+          parameterPrid       InstanceId, 
+          parameterName       SNMPAdminString, 
+          parameterType       Unsigned32 
+  
+     } 
+ 
+parameterPrid OBJECT-TYPE 
+     SYNTAX InstanceId 
+     STATUS current 
+     DESCRIPTION 
+          "An arbitrary integer that uniquely identifies an 
+          instance of the parameter class." 
+     ::= { parameterEntry 1 } 
+ 
+parameterNameOBJECT-TYPE 
+     SYNTAX SNMPAdminString 
+     STATUS current 
+     DESCRIPTION 
+          "A string that represents the name of the parameter. 
+          It is reccomented that different parameter have different 
+          names. However, similar parameter may have the same name. 
+          Also, an empty string can be used as a name." 
+     ::= { parameterEntry 2 } 
+ 
+parameterType 
+     SYNTAX Unsigned32 { 
+          INTEGER (02) 
+          BIT STRING (03) 
+          OCTET STRING (04) 
+          NULL (05) 
+          OBJECT IDENTIFIER (06) 
+          IP ADDRESS (40) 
+          } 
+     STATUS current 
+     DESCRIPTION 
+          "The BER type of the parameter. 
+          The suppoted BER types are: 
+          Type                | BER identifier 
+          --------------------|---------------- 
+          INTEGER             | 02 
+          BIT STRING          | 03 
+          OCTET STRING        | 04 
+          NULL                | 05 
+          OBJECT IDENTIFIER   | 06 
+          IP ADDRESS          | 40" 
+     ::= { parameterEntry 3 } 
+-- END OF parameterTable 
+ 
+-- 
+-- MIBPIB Parameter Table 
+-- 
+mibPibParameterTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF mibPibParameterEntry 
+     PIB-ACCESS INSTALL 
+     STATUS current 
+     DESCRIPTION 
+          "This class extends the parameter class. 
+          Each instance of this class assosiates to the 
+  
+          corresponding parameter a MIB or PIB variable, from 
+          where the parameter is evaluated" 
+     ::= { parameterClasses 2 } 
+ 
+mibPibParameterEntry OBJECT-TYPE 
+     SYNTAX MibPibParameterEntry 
+     STATUS current 
+     DESCRIPTION 
+          "An instance of the mibPibParameter class that provides 
+          the identifier of the MIB/PIB variable from where the 
+          corresponding parameter is evaluated." 
+     EXTENDS { parameterEntry } 
+     ::= { mibPibParameterTable 1 } 
+ 
+MibPibParameterEntry ::= 
+     SEQUENCE { 
+          targetOID        OBJECT-IDENTIFIER, 
+          EvaluationFrequency timeticks 
+          } 
+ 
+targetOID OBJECT-TYPE 
+     SYNTAX OBJECT-IDENTIFIER 
+     PIB-ACCESS INSTALL 
+     STATUS current 
+     DESCRIPTION 
+          "The object identifier of the MIB/PIB variable. 
+          The MIB/PIB variable MUST exist in the MIB/PIB of the 
+          device. Also, the type of the target variable MUST be 
+          compatible with the type of the corresponding PRI of the 
+          parameter Class." 
+     ::={ mibPibParameterEntry 1 } 
+ 
+EvaluationFrequency OBJECT-TYPE 
+     SYNTAX timeticks 
+     STATUS current 
+     DESCRIPTION 
+          "The frequency of updating the parameter in milliseconds" 
+     ::={ mibPibParameterEntry 2 } 
+-- END of mibPibParameterTable 
+ 
+-- 
+-- PDP Parameter Table 
+-- 
+pdpParameterTable OBJECT-TYPE 
+     SYNTAX SEQUENCE OF pdpParameterEntry 
+     PIB-ACCESS INSTALL 
+     STATUS current 
+     DESCRIPTION 
+          "This class extends the parameter class. Each instance 
+          of this class contains the value of the corresponding 
+          paramter. This value is send by the PDP and updated 
+          whenever necessary." 
+     ::= { parameterClasses 3 } 
+ 
+  
+pdpParameterEntry OBJECT-TYPE 
+     SYNTAX PdpParameterEntry 
+     STATUS current 
+     DESCRIPTION 
+          "An instance of the pdpParameter class that stores the 
+          value, sent by the PDP, for the corresponding parameter." 
+     INDEX { parameterIndex } 
+     ::= { pdpParametersTable 1 } 
+ 
+PdpParameterEntry ::= 
+     SEQUENCE { 
+          lastValue         BERValue 
+     } 
+ 
+lastValue OBJECT-TYPE 
+     SYNTAX BERValue 
+     STATUS current 
+     DESCRIPTION 
+          "The latest value of the parameter, encoded with BER. 
+          The BER-encoded value must be of the same type as the 
+          corresponding PRI of the parameter class." 
+     ::={ pdpParameterEntry 1 } 
+-- END OF pdpParameterTable 
+ 
+ 
+END 

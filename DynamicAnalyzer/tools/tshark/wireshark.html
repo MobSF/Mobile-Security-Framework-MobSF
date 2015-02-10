@@ -1,0 +1,3680 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>The Wireshark Network Analyzer 1.10.7</title>
+<link rel="stylesheet" href="ws.css" type="text/css" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:rurban@x-ray.at" />
+</head>
+
+<body>
+
+
+<!-- INDEX BEGIN -->
+<div name="index">
+<p><a name="__index__"></a></p>
+<!--
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#options">OPTIONS</a></li>
+	<li><a href="#interface">INTERFACE</a></li>
+	<ul>
+
+		<li><a href="#menu_items">MENU ITEMS</a></li>
+		<li><a href="#windows">WINDOWS</a></li>
+	</ul>
+
+	<li><a href="#capture_filter_syntax">CAPTURE FILTER SYNTAX</a></li>
+	<li><a href="#display_filter_syntax">DISPLAY FILTER SYNTAX</a></li>
+	<li><a href="#files">FILES</a></li>
+	<li><a href="#environment_variables">ENVIRONMENT VARIABLES</a></li>
+	<li><a href="#see_also">SEE ALSO</a></li>
+	<li><a href="#notes">NOTES</a></li>
+	<li><a href="#authors">AUTHORS</a></li>
+</ul>
+
+-->
+
+
+</div>
+<!-- INDEX END -->
+
+<p>
+</p>
+<hr />
+<h1><a name="name">NAME</a></h1>
+<p>wireshark - Interactively dump and analyze network traffic</p>
+<p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<p><strong>wireshark</strong>
+[&nbsp;<strong>-a</strong>&nbsp;&lt;capture&nbsp;autostop&nbsp;condition&gt;&nbsp;]&nbsp;...
+[&nbsp;<strong>-b</strong>&nbsp;&lt;capture&nbsp;ring&nbsp;buffer&nbsp;option&gt;&nbsp;]&nbsp;...
+[&nbsp;<strong>-B</strong>&nbsp;&lt;capture&nbsp;buffer&nbsp;size&gt;&nbsp;]&nbsp;
+[&nbsp;<strong>-c</strong>&nbsp;&lt;capture&nbsp;packet&nbsp;count&gt;&nbsp;]
+[&nbsp;<strong>-C</strong>&nbsp;&lt;configuration&nbsp;profile&gt;&nbsp;]
+[&nbsp;<strong>-D</strong>&nbsp;]
+[&nbsp;<strong>--display=</strong>&lt;X&nbsp;display&nbsp;to&nbsp;use&gt;&nbsp;]&nbsp;
+[&nbsp;<strong>-f</strong>&nbsp;&lt;capture&nbsp;filter&gt;&nbsp;]
+[&nbsp;<strong>-g</strong>&nbsp;&lt;packet&nbsp;number&gt;&nbsp;]
+[&nbsp;<strong>-h</strong>&nbsp;]
+[&nbsp;<strong>-H</strong>&nbsp;]
+[&nbsp;<strong>-i</strong>&nbsp;&lt;capture&nbsp;interface&gt;|-&nbsp;]
+[&nbsp;<strong>-I</strong>&nbsp;]
+[&nbsp;<strong>-j</strong>&nbsp;]
+[&nbsp;<strong>-J</strong>&nbsp;&lt;jump&nbsp;filter&gt;&nbsp;]
+[&nbsp;<strong>-k</strong>&nbsp;]
+[&nbsp;<strong>-K</strong>&nbsp;&lt;keytab&gt;&nbsp;]
+[&nbsp;<strong>-l</strong>&nbsp;]
+[&nbsp;<strong>-L</strong>&nbsp;]
+[&nbsp;<strong>-m</strong>&nbsp;&lt;font&gt;&nbsp;]
+[&nbsp;<strong>-n</strong>&nbsp;]
+[&nbsp;<strong>-N</strong>&nbsp;&lt;name&nbsp;resolving&nbsp;flags&gt;&nbsp;]&nbsp;
+[&nbsp;<strong>-o</strong>&nbsp;&lt;preference/recent&nbsp;setting&gt;&nbsp;]&nbsp;...
+[&nbsp;<strong>-p</strong>&nbsp;]
+[&nbsp;<strong>-P</strong>&nbsp;&lt;path&nbsp;setting&gt;]
+[&nbsp;<strong>-r</strong>&nbsp;&lt;infile&gt;&nbsp;]
+[&nbsp;<strong>-R</strong>&nbsp;&lt;read&nbsp;(display)&nbsp;filter&gt;&nbsp;]
+[&nbsp;<strong>-s</strong>&nbsp;&lt;capture&nbsp;snaplen&gt;&nbsp;]
+[&nbsp;<strong>-S</strong>&nbsp;]
+[&nbsp;<strong>-t</strong>&nbsp;a|ad|d|dd|e|r|u|ud&nbsp;]
+[&nbsp;<strong>-v</strong>&nbsp;]
+[&nbsp;<strong>-w</strong>&nbsp;&lt;outfile&gt;&nbsp;]
+[&nbsp;<strong>-X</strong>&nbsp;&lt;eXtension&nbsp;option&gt;&nbsp;]
+[&nbsp;<strong>-y</strong>&nbsp;&lt;capture&nbsp;link&nbsp;type&gt;&nbsp;]
+[&nbsp;<strong>-Y</strong>&nbsp;&lt;displaY&nbsp;filter&gt;&nbsp;]
+[&nbsp;<strong>-z</strong>&nbsp;&lt;statistics&gt;&nbsp;]
+[&nbsp;&lt;infile&gt;&nbsp;]</p>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p><strong>Wireshark</strong> is a GUI network protocol analyzer.  It lets you
+interactively browse packet data from a live network or from a
+previously saved capture file.  <strong>Wireshark</strong>'s native capture file format
+is <strong>pcap</strong> format, which is also the format used by <strong>tcpdump</strong> and
+various other tools.</p>
+<p><strong>Wireshark</strong> can read / import the following file formats:</p>
+<ul>
+<li><strong><a name="pcap_captures_from_wireshark_tshark_dumpcap_tcpdump_and_various_other_tools_using_libpcap_s_winpcap_s_tcpdump_s_windump_s_capture_format" class="item">pcap - captures from <strong>Wireshark</strong>/<strong>TShark</strong>/<strong>dumpcap</strong>, <strong>tcpdump</strong>,
+and various other tools using libpcap's/WinPcap's/tcpdump's/WinDump's
+capture format</a></strong>
+
+</li>
+<li><strong><a name="pcap_ng_next_generation_successor_to_pcap_format" class="item">pcap-ng - &quot;next-generation&quot; successor to pcap format</a></strong>
+
+</li>
+<li><strong><a name="snoop_and_atmsnoop_captures" class="item"><strong>snoop</strong> and <strong>atmsnoop</strong> captures</a></strong>
+
+</li>
+<li><strong><a name="shomiti_finisar_surveyor_captures" class="item">Shomiti/Finisar <strong>Surveyor</strong> captures</a></strong>
+
+</li>
+<li><strong><a name="novell_lanalyzer_captures" class="item">Novell <strong>LANalyzer</strong> captures</a></strong>
+
+</li>
+<li><strong><a name="microsoft_network_monitor_captures" class="item">Microsoft <strong>Network Monitor</strong> captures</a></strong>
+
+</li>
+<li><strong><a name="aix_s_iptrace_captures" class="item">AIX's <strong>iptrace</strong> captures</a></strong>
+
+</li>
+<li><strong><a name="cinco_networks_netxray_captures" class="item">Cinco Networks <strong>NetXRay</strong> captures</a></strong>
+
+</li>
+<li><strong><a name="network_associates_windows_based_sniffer_captures" class="item">Network Associates Windows-based <strong>Sniffer</strong> captures</a></strong>
+
+</li>
+<li><strong><a name="sniffer" class="item">Network General/Network Associates DOS-based <strong>Sniffer</strong> (compressed or uncompressed) captures</a></strong>
+
+</li>
+<li><strong><a name="ag_group_wildpackets_etherpeek_tokenpeek_airopeek_etherhelp_packetgrabber_captures" class="item">AG Group/WildPackets <strong>EtherPeek</strong>/<strong>TokenPeek</strong>/<strong>AiroPeek</strong>/<strong>EtherHelp</strong>/<strong>PacketGrabber</strong> captures</a></strong>
+
+</li>
+<li><strong><a name="radcom_s_wan_lan_analyzer_captures" class="item"><strong>RADCOM</strong>'s WAN/LAN analyzer captures</a></strong>
+
+</li>
+<li><strong><a name="network_instruments_observer_version_9_captures" class="item">Network Instruments <strong>Observer</strong> version 9 captures</a></strong>
+
+</li>
+<li><strong><a name="lucent_ascend_router_debug_output" class="item"><strong>Lucent/Ascend</strong> router debug output</a></strong>
+
+</li>
+<li><strong><a name="files_from_hp_ux_s_nettl" class="item">files from HP-UX's <strong>nettl</strong></a></strong>
+
+</li>
+<li><strong><a name="toshiba_s_isdn_routers_dump_output" class="item"><strong>Toshiba's</strong> ISDN routers dump output</a></strong>
+
+</li>
+<li><strong><a name="the_output_from_i4btrace_from_the_isdn4bsd_project" class="item">the output from <strong>i4btrace</strong> from the ISDN4BSD project</a></strong>
+
+</li>
+<li><strong><a name="traces_from_the_eyesdn_usb_s0" class="item">traces from the <strong>EyeSDN</strong> USB S0.</a></strong>
+
+</li>
+<li><strong><a name="the_output_in_iplog_format_from_the_cisco_secure_intrusion_detection_system" class="item">the output in <strong>IPLog</strong> format from the Cisco Secure Intrusion Detection System</a></strong>
+
+</li>
+<li><strong><a name="logs" class="item"><strong>pppd logs</strong> (pppdump format)</a></strong>
+
+</li>
+<li><strong><a name="the_output_from_vms_s_tcpiptrace_tcptrace_ucx_trace_utilities" class="item">the output from VMS's <strong>TCPIPtrace</strong>/<strong>TCPtrace</strong>/<strong>UCX$TRACE</strong> utilities</a></strong>
+
+</li>
+<li><strong><a name="the_text_output_from_the_dbs_etherwatch_vms_utility" class="item">the text output from the <strong>DBS Etherwatch</strong> VMS utility</a></strong>
+
+</li>
+<li><strong><a name="visual_networks_visual_uptime_traffic_capture" class="item">Visual Networks' <strong>Visual UpTime</strong> traffic capture</a></strong>
+
+</li>
+<li><strong><a name="the_output_from_cosine_l2_debug" class="item">the output from <strong>CoSine</strong> L2 debug</a></strong>
+
+</li>
+<li><strong><a name="the_output_from_infovista_s_5view_lan_agents" class="item">the output from InfoVista's <strong>5View</strong> LAN agents</a></strong>
+
+</li>
+<li><strong><a name="endace_measurement_systems_erf_format_captures" class="item">Endace Measurement Systems' ERF format captures</a></strong>
+
+</li>
+<li><strong><a name="linux_bluez_bluetooth_stack_hcidump_w_traces" class="item">Linux Bluez Bluetooth stack <strong>hcidump -w</strong> traces</a></strong>
+
+</li>
+<li><strong><a name="catapult_dct2000_out_files" class="item">Catapult DCT2000 .out files</a></strong>
+
+</li>
+<li><strong><a name="gammu_generated_text_output_from_nokia_dct3_phones_in_netmonitor_mode" class="item">Gammu generated text output from Nokia DCT3 phones in Netmonitor mode</a></strong>
+
+</li>
+<li><strong><a name="series" class="item">IBM Series (OS/400) Comm traces (ASCII &amp; UNICODE)</a></strong>
+
+</li>
+<li><strong><a name="juniper_netscreen_snoop_files" class="item">Juniper Netscreen snoop files</a></strong>
+
+</li>
+<li><strong><a name="symbian_os_btsnoop_files" class="item">Symbian OS btsnoop files</a></strong>
+
+</li>
+<li><strong><a name="tamosoft_commview_files" class="item">TamoSoft CommView files</a></strong>
+
+</li>
+<li><strong><a name="textronix_k12xx_32bit_rf5_format_files" class="item">Textronix K12xx 32bit .rf5 format files</a></strong>
+
+</li>
+<li><strong><a name="textronix_k12_text_file_format_captures" class="item">Textronix K12 text file format captures</a></strong>
+
+</li>
+<li><strong><a name="apple_packetlogger_files" class="item">Apple PacketLogger files</a></strong>
+
+</li>
+<li><strong><a name="files_from_aethra_telecommunications_pc108_software_for_their_test_instruments" class="item">Files from Aethra Telecommunications' PC108 software for their test
+instruments</a></strong>
+
+</li>
+<li><strong><a name="mpeg_2_transport_streams_as_defined_in_iso_iec_13818_1" class="item">MPEG-2 Transport Streams as defined in ISO/IEC 13818-1</a></strong>
+
+</li>
+<li><strong><a name="rabbit_labs_cam_inspector_files" class="item">Rabbit Labs CAM Inspector files</a></strong>
+
+</li>
+</ul>
+<p>There is no need to tell <strong>Wireshark</strong> what type of
+file you are reading; it will determine the file type by itself.
+<strong>Wireshark</strong> is also capable of reading any of these file formats if they
+are compressed using gzip.  <strong>Wireshark</strong> recognizes this directly from
+the file; the '.gz' extension is not required for this purpose.</p>
+<p>Like other protocol analyzers, <strong>Wireshark</strong>'s main window shows 3 views
+of a packet.  It shows a summary line, briefly describing what the
+packet is.  A packet details display is shown, allowing you to drill
+down to exact protocol or field that you interested in.  Finally, a hex
+dump shows you exactly what the packet looks like when it goes over the
+wire.</p>
+<p>In addition, <strong>Wireshark</strong> has some features that make it unique.  It can
+assemble all the packets in a TCP conversation and show you the ASCII
+(or EBCDIC, or hex) data in that conversation.  Display filters in
+<strong>Wireshark</strong> are very powerful; more fields are filterable in <strong>Wireshark</strong>
+than in other protocol analyzers, and the syntax you can use to create
+your filters is richer.  As <strong>Wireshark</strong> progresses, expect more and more
+protocol fields to be allowed in display filters.</p>
+<p>Packet capturing is performed with the pcap library.  The capture filter
+syntax follows the rules of the pcap library.  This syntax is different
+from the display filter syntax.</p>
+<p>Compressed file support uses (and therefore requires) the zlib library.
+If the zlib library is not present, <strong>Wireshark</strong> will compile, but will
+be unable to read compressed files.</p>
+<p>The pathname of a capture file to be read can be specified with the
+<strong>-r</strong> option or can be specified as a command-line argument.</p>
+<p>
+</p>
+<hr />
+<h1><a name="options">OPTIONS</a></h1>
+<p>Most users will want to start <strong>Wireshark</strong> without options and configure
+it from the menus instead.  Those users may just skip this section.</p>
+<dl>
+<dt><strong><a name="a_capture_autostop_condition" class="item">-a  &lt;capture autostop condition&gt;</a></strong></dt>
+
+<dd>
+<p>Specify a criterion that specifies when <strong>Wireshark</strong> is to stop writing
+to a capture file.  The criterion is of the form <em>test</em><strong>:</strong><em>value</em>,
+where <em>test</em> is one of:</p>
+<p><strong>duration</strong>:<em>value</em> Stop writing to a capture file after <em>value</em> seconds have
+elapsed.</p>
+<p><strong>filesize</strong>:<em>value</em> Stop writing to a capture file after it reaches a size of
+<em>value</em> kB.  If this option is used together with the -b option, Wireshark
+will stop writing to the current capture file and switch to the next one if
+filesize is reached.  Note that the filesize is limited to a maximum value of
+2 GiB.</p>
+<p><strong>files</strong>:<em>value</em> Stop writing to capture files after <em>value</em> number of files
+were written.</p>
+</dd>
+<dt><strong><a name="b_capture_ring_buffer_option" class="item">-b  &lt;capture ring buffer option&gt;</a></strong></dt>
+
+<dd>
+<p>Cause <strong>Wireshark</strong> to run in &quot;multiple files&quot; mode.  In &quot;multiple files&quot; mode,
+<strong>Wireshark</strong> will write to several capture files.  When the first capture file
+fills up, <strong>Wireshark</strong> will switch writing to the next file and so on.</p>
+<p>The created filenames are based on the filename given with the <strong>-w</strong> flag,
+the number of the file and on the creation date and time,
+e.g. outfile_00001_20050604120117.pcap, outfile_00002_20050604120523.pcap, ...</p>
+<p>With the <em>files</em> option it's also possible to form a &quot;ring buffer&quot;.
+This will fill up new files until the number of files specified,
+at which point <strong>Wireshark</strong> will discard the data in the first file and start
+writing to that file and so on.  If the <em>files</em> option is not set,
+new files filled up until one of the capture stop conditions match (or
+until the disk is full).</p>
+<p>The criterion is of the form <em>key</em><strong>:</strong><em>value</em>,
+where <em>key</em> is one of:</p>
+<p><strong>duration</strong>:<em>value</em> switch to the next file after <em>value</em> seconds have
+elapsed, even if the current file is not completely filled up.</p>
+<p><strong>filesize</strong>:<em>value</em> switch to the next file after it reaches a size of
+<em>value</em> kB.  Note that the filesize is limited to a maximum value of 2 GiB.</p>
+<p><strong>files</strong>:<em>value</em> begin again with the first file after <em>value</em> number of
+files were written (form a ring buffer).  This value must be less than 100000.
+Caution should be used when using large numbers of files: some filesystems do
+not handle many files in a single directory well.  The <strong>files</strong> criterion
+requires either <strong>duration</strong> or <strong>filesize</strong> to be specified to control when to
+go to the next file.  It should be noted that each <strong>-b</strong> parameter takes exactly
+one criterion; to specify two criterion, each must be preceded by the <strong>-b</strong>
+option.</p>
+<p>Example: <strong>-b filesize:1000 -b files:5</strong> results in a ring buffer of five files
+of size one megabyte each.</p>
+</dd>
+<dt><strong><a name="b_capture_buffer_size" class="item">-B  &lt;capture buffer size&gt;</a></strong></dt>
+
+<dd>
+<p>Set capture buffer size (in MiB, default is 2 MiB).  This is used by
+the capture driver to buffer packet data until that data can be written
+to disk.  If you encounter packet drops while capturing, try to increase
+this size.  Note that, while <strong>Wireshark</strong> attempts to set the buffer size
+to 2 MiB by default, and can be told to set it to a larger value, the
+system or interface on which you're capturing might silently limit the
+capture buffer size to a lower value or raise it to a higher value.</p>
+<p>This is available on UNIX systems with libpcap 1.0.0 or later and on
+Windows.  It is not available on UNIX systems with earlier versions of
+libpcap.</p>
+<p>This option can occur multiple times.  If used before the first
+occurrence of the <strong>-i</strong> option, it sets the default capture buffer size.
+If used after an <strong>-i</strong> option, it sets the capture buffer size for
+the interface specified by the last <strong>-i</strong> option occurring before
+this option.  If the capture buffer size is not set specifically,
+the default capture buffer size is used instead.</p>
+</dd>
+<dt><strong><a name="c_capture_packet_count" class="item">-c  &lt;capture packet count&gt;</a></strong></dt>
+
+<dd>
+<p>Set the maximum number of packets to read when capturing live
+data.</p>
+</dd>
+<dt><strong><a name="c_configuration_profile" class="item">-C  &lt;configuration profile&gt;</a></strong></dt>
+
+<dd>
+<p>Start with the given configuration profile.</p>
+</dd>
+<dt><strong><a name="d" class="item">-D</a></strong></dt>
+
+<dd>
+<p>Print a list of the interfaces on which <strong>Wireshark</strong> can capture, and
+exit.  For each network interface, a number and an
+interface name, possibly followed by a text description of the
+interface, is printed.  The interface name or the number can be supplied
+to the <strong>-i</strong> flag to specify an interface on which to capture.</p>
+<p>This can be useful on systems that don't have a command to list them
+(e.g., Windows systems, or UNIX systems lacking <strong>ifconfig -a</strong>);
+the number can be useful on Windows 2000 and later systems, where the
+interface name is a somewhat complex string.</p>
+<p>Note that &quot;can capture&quot; means that <strong>Wireshark</strong> was able to open
+that device to do a live capture; if, on your system, a program doing a
+network capture must be run from an account with special privileges (for
+example, as root), then, if <strong>Wireshark</strong> is run with the <strong>-D</strong> flag and
+is not run from such an account, it will not list any interfaces.</p>
+</dd>
+<dt><strong><a name="display_x_display_to_use" class="item">--display=&lt;X display to use&gt;</a></strong></dt>
+
+<dd>
+<p>Specifies the X display to use.  A hostname and screen (otherhost:0.0)
+or just a screen (:0.0) can be specified.  This option is not available
+under Windows.</p>
+</dd>
+<dt><strong><a name="f_capture_filter" class="item">-f  &lt;capture filter&gt;</a></strong></dt>
+
+<dd>
+<p>Set the capture filter expression.</p>
+<p>This option can occur multiple times.  If used before the first
+occurrence of the <strong>-i</strong> option, it sets the default capture filter expression.
+If used after an <strong>-i</strong> option, it sets the capture filter expression for
+the interface specified by the last <strong>-i</strong> option occurring before
+this option.  If the capture filter expression is not set specifically,
+the default capture filter expression is used if provided.</p>
+</dd>
+<dt><strong><a name="g_packet_number" class="item">-g  &lt;packet number&gt;</a></strong></dt>
+
+<dd>
+<p>After reading in a capture file using the <strong>-r</strong> flag, go to the given <em>packet number</em>.</p>
+</dd>
+<dt><strong><a name="h" class="item">-h</a></strong></dt>
+
+<dd>
+<p>Print the version and options and exit.</p>
+</dd>
+<dt><strong><a name="h" class="item">-H</a></strong></dt>
+
+<dd>
+<p>Hide the capture info dialog during live packet capture.</p>
+</dd>
+<dt><strong><a name="i_capture_interface" class="item">-i  &lt;capture interface&gt;|-</a></strong></dt>
+
+<dd>
+<p>Set the name of the network interface or pipe to use for live packet
+capture.</p>
+<p>Network interface names should match one of the names listed in
+&quot;<strong>wireshark -D</strong>&quot; (described above); a number, as reported by
+&quot;<strong>wireshark -D</strong>&quot;, can also be used.  If you're using UNIX, &quot;<strong>netstat
+-i</strong>&quot; or &quot;<strong>ifconfig -a</strong>&quot; might also work to list interface names,
+although not all versions of UNIX support the <strong>-a</strong> flag to <strong>ifconfig</strong>.</p>
+<p>If no interface is specified, <strong>Wireshark</strong> searches the list of
+interfaces, choosing the first non-loopback interface if there are any
+non-loopback interfaces, and choosing the first loopback interface if
+there are no non-loopback interfaces.  If there are no interfaces at all,
+<strong>Wireshark</strong> reports an error and doesn't start the capture.</p>
+<p>Pipe names should be either the name of a FIFO (named pipe) or ``-'' to
+read data from the standard input.  On Windows systems, pipe names must be
+of the form ``\\pipe\.\<strong>pipename</strong>''.  Data read from pipes must be in
+standard pcap format.</p>
+<p>This option can occur multiple times.  When capturing from multiple
+interfaces, the capture file will be saved in pcap-ng format.</p>
+</dd>
+<dt><strong><a name="i" class="item">-I</a></strong></dt>
+
+<dd>
+<p>Put the interface in &quot;monitor mode&quot;; this is supported only on IEEE
+802.11 Wi-Fi interfaces, and supported only on some operating systems.</p>
+<p>Note that in monitor mode the adapter might disassociate from the
+network with which it's associated, so that you will not be able to use
+any wireless networks with that adapter.  This could prevent accessing
+files on a network server, or resolving host names or network addresses,
+if you are capturing in monitor mode and are not connected to another
+network with another adapter.</p>
+<p>This option can occur multiple times.  If used before the first
+occurrence of the <strong>-i</strong> option, it enables the monitor mode for all interfaces.
+If used after an <strong>-i</strong> option, it enables the monitor mode for
+the interface specified by the last <strong>-i</strong> option occurring before
+this option.</p>
+</dd>
+<dt><strong><a name="j" class="item">-j</a></strong></dt>
+
+<dd>
+<p>Use after <strong>-J</strong> to change the behavior when no exact match is found for
+the filter.  With this option select the first packet before.</p>
+</dd>
+<dt><strong><a name="j_jump_filter" class="item">-J  &lt;jump filter&gt;</a></strong></dt>
+
+<dd>
+<p>After reading in a capture file using the <strong>-r</strong> flag, jump to the packet
+matching the filter (display filter syntax).  If no exact match is found
+the first packet after that is selected.</p>
+</dd>
+<dt><strong><a name="k" class="item">-k</a></strong></dt>
+
+<dd>
+<p>Start the capture session immediately.  If the <strong>-i</strong> flag was
+specified, the capture uses the specified interface.  Otherwise,
+<strong>Wireshark</strong> searches the list of interfaces, choosing the first
+non-loopback interface if there are any non-loopback interfaces, and
+choosing the first loopback interface if there are no non-loopback
+interfaces; if there are no interfaces, <strong>Wireshark</strong> reports an error and
+doesn't start the capture.</p>
+</dd>
+<dt><strong><a name="k_keytab" class="item">-K  &lt;keytab&gt;</a></strong></dt>
+
+<dd>
+<p>Load kerberos crypto keys from the specified keytab file.
+This option can be used multiple times to load keys from several files.</p>
+<p>Example: <strong>-K krb5.keytab</strong></p>
+</dd>
+<dt><strong><a name="l" class="item">-l</a></strong></dt>
+
+<dd>
+<p>Turn on automatic scrolling if the packet display is being updated
+automatically as packets arrive during a capture (as specified by the
+<strong>-S</strong> flag).</p>
+</dd>
+<dt><strong><a name="l" class="item">-L</a></strong></dt>
+
+<dd>
+<p>List the data link types supported by the interface and exit.</p>
+</dd>
+<dt><strong><a name="m_font" class="item">-m  &lt;font&gt;</a></strong></dt>
+
+<dd>
+<p>Set the name of the font used by <strong>Wireshark</strong> for most text.  <strong>Wireshark</strong>
+will construct the name of the bold font used for the data in the byte
+view pane that corresponds to the field selected in the packet details
+pane from the name of the main text font.</p>
+</dd>
+<dt><strong><a name="n" class="item">-n</a></strong></dt>
+
+<dd>
+<p>Disable network object name resolution (such as hostname, TCP and UDP port
+names), the <strong>-N</strong> flag might override this one.</p>
+</dd>
+<dt><strong><a name="n_name_resolving_flags" class="item">-N  &lt;name resolving flags&gt;</a></strong></dt>
+
+<dd>
+<p>Turn on name resolving only for particular types of addresses and port
+numbers, with name resolving for other types of addresses and port
+numbers turned off.  This flag overrides <strong>-n</strong> if both <strong>-N</strong> and <strong>-n</strong> are
+present.  If both <strong>-N</strong> and <strong>-n</strong> flags are not present, all name resolutions
+are turned on.</p>
+<p>The argument is a string that may contain the letters:</p>
+<p><strong>m</strong> to enable MAC address resolution</p>
+<p><strong>n</strong> to enable network address resolution</p>
+<p><strong>N</strong> to enable using external resolvers (e.g., DNS) for network address
+resolution</p>
+<p><strong>t</strong> to enable transport-layer port number resolution</p>
+<p><strong>C</strong> to enable concurrent (asynchronous) DNS lookups</p>
+</dd>
+<dt><strong><a name="o_preference_recent_setting" class="item">-o  &lt;preference/recent setting&gt;</a></strong></dt>
+
+<dd>
+<p>Set a preference or recent value, overriding the default value and any value
+read from a preference/recent file.  The argument to the flag is a string of
+the form <em>prefname</em><strong>:</strong><em>value</em>, where <em>prefname</em> is the name of the
+preference/recent value (which is the same name that would appear in the
+preference/recent file), and <em>value</em> is the value to which it should be set.
+Since <strong>Ethereal</strong> 0.10.12, the recent settings replaces the formerly used
+-B, -P and -T flags to manipulate the GUI dimensions.</p>
+<p>If <em>prefname</em> is &quot;uat&quot;, you can override settings in various user access
+tables using the form uat<strong>:</strong><em>uat filename</em>:<em>uat record</em>.  <em>uat filename</em>
+must be the name of a UAT file, e.g. <em>user_dlts</em>.  <em>uat_record</em> must be in
+the form of a valid record for that file, including quotes.  For instance, to
+specify a user DLT from the command line, you would use</p>
+<pre>
+    -o &quot;uat:user_dlts:\&quot;User 0 (DLT=147)\&quot;,\&quot;cops\&quot;,\&quot;0\&quot;,\&quot;\&quot;,\&quot;0\&quot;,\&quot;\&quot;&quot;</pre>
+</dd>
+<dt><strong><a name="p" class="item">-p</a></strong></dt>
+
+<dd>
+<p><em>Don't</em> put the interface into promiscuous mode.  Note that the
+interface might be in promiscuous mode for some other reason; hence,
+<strong>-p</strong> cannot be used to ensure that the only traffic that is captured is
+traffic sent to or from the machine on which <strong>Wireshark</strong> is running,
+broadcast traffic, and multicast traffic to addresses received by that
+machine.</p>
+<p>This option can occur multiple times.  If used before the first
+occurrence of the <strong>-i</strong> option, no interface will be put into the
+promiscuous mode.
+If used after an <strong>-i</strong> option, the interface specified by the last <strong>-i</strong>
+option occurring before this option will not be put into the
+promiscuous mode.</p>
+</dd>
+<dt><strong><a name="p_path_setting" class="item">-P &lt;path setting&gt;</a></strong></dt>
+
+<dd>
+<p>Special path settings usually detected automatically.  This is used for
+special cases, e.g. starting Wireshark from a known location on an USB stick.</p>
+<p>The criterion is of the form <em>key</em><strong>:</strong><em>path</em>, where <em>key</em> is one of:</p>
+<p><strong>persconf</strong>:<em>path</em> path of personal configuration files, like the
+preferences files.</p>
+<p><strong>persdata</strong>:<em>path</em> path of personal data files, it's the folder initially
+opened.  After the very first initialization, the recent file will keep the
+folder last used.</p>
+</dd>
+<dt><strong><a name="r_infile" class="item">-r  &lt;infile&gt;</a></strong></dt>
+
+<dd>
+<p>Read packet data from <em>infile</em>, can be any supported capture file format
+(including gzipped files).  It's not possible to use named pipes or stdin
+here! To capture from a pipe or from stdin use <strong>-i -</strong></p>
+</dd>
+<dt><strong><a name="read" class="item">-R  &lt;read (display) filter&gt;</a></strong></dt>
+
+<dd>
+<p>When reading a capture file specified with the <strong>-r</strong> flag, causes the
+specified filter (which uses the syntax of display filters, rather than
+that of capture filters) to be applied to all packets read from the
+capture file; packets not matching the filter are discarded.</p>
+</dd>
+<dt><strong><a name="s_capture_snaplen" class="item">-s  &lt;capture snaplen&gt;</a></strong></dt>
+
+<dd>
+<p>Set the default snapshot length to use when capturing live data.
+No more than <em>snaplen</em> bytes of each network packet will be read into
+memory, or saved to disk.  A value of 0 specifies a snapshot length of
+65535, so that the full packet is captured; this is the default.</p>
+<p>This option can occur multiple times.  If used before the first
+occurrence of the <strong>-i</strong> option, it sets the default snapshot length.
+If used after an <strong>-i</strong> option, it sets the snapshot length for
+the interface specified by the last <strong>-i</strong> option occurring before
+this option.  If the snapshot length is not set specifically,
+the default snapshot length is used if provided.</p>
+</dd>
+<dt><strong><a name="s" class="item">-S</a></strong></dt>
+
+<dd>
+<p>Automatically update the packet display as packets are coming in.</p>
+</dd>
+<dt><strong><a name="t_a_ad_d_dd_e_r_u_ud" class="item">-t  a|ad|d|dd|e|r|u|ud</a></strong></dt>
+
+<dd>
+<p>Set the format of the packet timestamp displayed in the packet list
+window.  The format can be one of:</p>
+<p><strong>a</strong> absolute: The absolute time is the actual time the packet was captured,
+with no date displayed</p>
+<p><strong>ad</strong> absolute with date: The absolute date and time is the actual time and
+date the packet was captured</p>
+<p><strong>d</strong> delta: The delta time is the time since the previous packet was
+captured</p>
+<p><strong>dd</strong> delta_displayed: The delta_displayed time is the time since the
+previous displayed packet was captured</p>
+<p><strong>e</strong> epoch: The time in seconds since epoch (Jan 1, 1970 00:00:00)</p>
+<p><strong>r</strong> relative: The relative time is the time elapsed between the first packet
+and the current packet</p>
+<p><strong>u</strong> UTC: The UTC time is the actual time the packet was captured,
+with no date displayed</p>
+<p><strong>ud</strong> UTC with date: The UTC date and time is the actual time and
+date the packet was captured</p>
+<p>The default format is relative.</p>
+</dd>
+<dt><strong><a name="v" class="item">-v</a></strong></dt>
+
+<dd>
+<p>Print the version and exit.</p>
+</dd>
+<dt><strong><a name="w_outfile" class="item">-w  &lt;outfile&gt;</a></strong></dt>
+
+<dd>
+<p>Set the default capture file name.</p>
+</dd>
+<dt><strong><a name="x_extension_options" class="item">-X &lt;eXtension options&gt;</a></strong></dt>
+
+<dd>
+<p>Specify an option to be passed to an <strong>Wireshark</strong> module.  The eXtension option
+is in the form <em>extension_key</em><strong>:</strong><em>value</em>, where <em>extension_key</em> can be:</p>
+<p><strong>lua_script</strong>:<em>lua_script_filename</em> tells <strong>Wireshark</strong> to load the given script in addition to the
+default Lua scripts.</p>
+<p><strong>stdin_descr</strong>:<em>description</em> tells <strong>Wireshark</strong> to use the given description when
+capturing from standard input (<strong>-i -</strong>).</p>
+</dd>
+<dt><strong><a name="y_capture_link_type" class="item">-y  &lt;capture link type&gt;</a></strong></dt>
+
+<dd>
+<p>If a capture is started from the command line with <strong>-k</strong>, set the data
+link type to use while capturing packets.  The values reported by <strong>-L</strong>
+are the values that can be used.</p>
+<p>This option can occur multiple times.  If used before the first
+occurrence of the <strong>-i</strong> option, it sets the default capture link type.
+If used after an <strong>-i</strong> option, it sets the capture link type for
+the interface specified by the last <strong>-i</strong> option occurring before
+this option.  If the capture link type is not set specifically,
+the default capture link type is used if provided.</p>
+</dd>
+<dt><strong><a name="y_display_filter" class="item">-Y  &lt;displaY filter&gt;</a></strong></dt>
+
+<dd>
+<p>Start with the given display filter.</p>
+</dd>
+<dt><strong><a name="z_statistics" class="item">-z  &lt;statistics&gt;</a></strong></dt>
+
+<dd>
+<p>Get <strong>Wireshark</strong> to collect various types of statistics and display the result
+in a window that updates in semi-real time.</p>
+<p>Currently implemented statistics are:</p>
+<dl>
+<dt><strong><a name="z_conv_type_filter" class="item"><strong>-z</strong> conv,<em>type</em>[,<em>filter</em>]</a></strong></dt>
+
+<dd>
+<p>Create a table that lists all conversations that could be seen in the
+capture.  <em>type</em> specifies the conversation endpoint types for which we
+want to generate the statistics; currently the supported ones are:</p>
+<pre>
+  &quot;eth&quot;   Ethernet addresses
+  &quot;fc&quot;    Fibre Channel addresses
+  &quot;fddi&quot;  FDDI addresses
+  &quot;ip&quot;    IPv4 addresses
+  &quot;ipv6&quot;  IPv6 addresses
+  &quot;ipx&quot;   IPX addresses
+  &quot;tcp&quot;   TCP/IP socket pairs   Both IPv4 and IPv6 are supported
+  &quot;tr&quot;    Token Ring addresses
+  &quot;udp&quot;   UDP/IP socket pairs   Both IPv4 and IPv6 are supported</pre>
+<p>If the optional <em>filter</em> is specified, only those packets that match the
+filter will be used in the calculations.</p>
+<p>The table is presented with one line for each conversation and displays
+the number of packets/bytes in each direction as well as the total
+number of packets/bytes.  By default, the table is sorted according to
+the total number of packets.</p>
+<p>These tables can also be generated at runtime by selecting the appropriate
+conversation type from the menu &quot;Tools/Statistics/Conversation List/&quot;.</p>
+</dd>
+<dt><strong><a name="z_dcerpc_srt_uuid_major_minor_filter" class="item"><strong>-z</strong> dcerpc,srt,<em>uuid</em>,<em>major</em>.<em>minor</em>[,<em>filter</em>]</a></strong></dt>
+
+<dd>
+<p>Collect call/reply SRT (Service Response Time) data for DCERPC interface <em>uuid</em>,
+version <em>major</em>.<em>minor</em>.
+Data collected is the number of calls for each procedure, MinSRT, MaxSRT
+and AvgSRT.</p>
+<p>Example: <strong>-z&nbsp;dcerpc,srt,12345778-1234-abcd-ef00-0123456789ac,1.0</strong> will collect data for the CIFS SAMR Interface.</p>
+<p>This option can be used multiple times on the command line.</p>
+<p>If the optional <em>filter</em>  is provided, the stats will only be calculated
+on those calls that match that filter.</p>
+<p>Example: <strong>-z&nbsp;dcerpc,srt,12345778-1234-abcd-ef00-0123456789ac,1.0,ip.addr==1.2.3.4</strong> will collect SAMR
+SRT statistics for a specific host.</p>
+</dd>
+<dt><strong><a name="z_fc_srt_filter" class="item"><strong>-z</strong> fc,srt[,<em>filter</em>]</a></strong></dt>
+
+<dd>
+<p>Collect call/reply SRT (Service Response Time) data for FC.  Data collected
+is the number of calls for each Fibre Channel command, MinSRT, MaxSRT and AvgSRT.</p>
+<p>Example: <strong>-z fc,srt</strong>
+will calculate the Service Response Time as the time delta between the
+First packet of the exchange and the Last packet of the exchange.</p>
+<p>The data will be presented as separate tables for all normal FC commands,
+Only those commands that are seen in the capture will have its stats
+displayed.</p>
+<p>This option can be used multiple times on the command line.</p>
+<p>If the optional <em>filter</em> is provided, the stats will only be calculated
+on those calls that match that filter.</p>
+<p>Example: <strong>-z &quot;fc,srt,fc.id==01.02.03&quot;</strong> will collect stats only for
+FC packets exchanged by the host at FC address 01.02.03 .</p>
+</dd>
+<dt><strong><a name="z_h225_counter_filter" class="item"><strong>-z</strong> h225,counter[<em>,filter</em>]</a></strong></dt>
+
+<dd>
+<p>Count ITU-T H.225 messages and their reasons.  In the first column you get a
+list of H.225 messages and H.225 message reasons which occur in the current
+capture file.  The number of occurrences of each message or reason is displayed
+in the second column.</p>
+<p>Example: <strong>-z h225,counter</strong></p>
+<p>This option can be used multiple times on the command line.</p>
+<p>If the optional <em>filter</em> is provided, the stats will only be calculated
+on those calls that match that filter.</p>
+<p>Example: <strong>-z &quot;h225,counter,ip.addr==1.2.3.4&quot;</strong> will collect stats only for
+H.225 packets exchanged by the host at IP address 1.2.3.4 .</p>
+</dd>
+<dt><strong><a name="z_h225_srt_filter" class="item"><strong>-z</strong> h225,srt[<em>,filter</em>]</a></strong></dt>
+
+<dd>
+<p>Collect request/response SRT (Service Response Time) data for ITU-T H.225 RAS.
+Data collected is the number of calls of each ITU-T H.225 RAS Message Type,
+Minimum SRT, Maximum SRT, Average SRT, Minimum in Packet, and Maximum in Packet.
+You will also get the number of Open Requests (Unresponded Requests),
+Discarded Responses (Responses without matching request) and Duplicate Messages.</p>
+<p>Example: <strong>-z h225,srt</strong></p>
+<p>This option can be used multiple times on the command line.</p>
+<p>If the optional <em>filter</em> is provided, the stats will only be calculated
+on those calls that match that filter.</p>
+<p>Example: <strong>-z &quot;h225,srt,ip.addr==1.2.3.4&quot;</strong> will collect stats only for
+ITU-T H.225 RAS packets exchanged by the host at IP address 1.2.3.4 .</p>
+</dd>
+<dt><strong><a name="z_io_stat" class="item"><strong>-z</strong> io,stat</a></strong></dt>
+
+<dd>
+<p>Collect packet/bytes statistics for the capture in intervals of 1 second.
+This option will open a window with up to 5 color-coded graphs where
+number-of-packets-per-second or number-of-bytes-per-second statistics
+can be calculated and displayed.</p>
+<p>This option can be used multiple times on the command line.</p>
+<p>This graph window can also be opened from the Analyze:Statistics:Traffic:IO-Stat
+menu item.</p>
+</dd>
+<dt><strong><a name="z_ldap_srt_filter" class="item"><strong>-z</strong> ldap,srt[,<em>filter</em>]</a></strong></dt>
+
+<dd>
+<p>Collect call/reply SRT (Service Response Time) data for LDAP.  Data collected
+is the number of calls for each implemented LDAP command, MinSRT, MaxSRT and AvgSRT.</p>
+<p>Example: <strong>-z ldap,srt</strong>
+will calculate the Service Response Time as the time delta between the
+Request and the Response.</p>
+<p>The data will be presented as separate tables for all implemented LDAP commands,
+Only those commands that are seen in the capture will have its stats
+displayed.</p>
+<p>This option can be used multiple times on the command line.</p>
+<p>If the optional <em>filter</em> is provided, the stats will only be calculated
+on those calls that match that filter.</p>
+<p>Example: use <strong>-z &quot;ldap,srt,ip.addr==10.1.1.1&quot;</strong> will collect stats only for
+LDAP packets exchanged by the host at IP address 10.1.1.1 .</p>
+<p>The only LDAP commands that are currently implemented and for which the stats will be available are:
+BIND
+SEARCH
+MODIFY
+ADD
+DELETE
+MODRDN
+COMPARE
+EXTENDED</p>
+</dd>
+<dt><strong><a name="z_megaco_srt_filter" class="item"><strong>-z</strong> megaco,srt[<em>,filter</em>]</a></strong></dt>
+
+<dd>
+<p>Collect request/response SRT (Service Response Time) data for MEGACO.
+(This is similar to <strong>-z smb,srt</strong>).  Data collected is the number of calls
+for each known MEGACO Command, Minimum SRT, Maximum SRT and Average SRT.</p>
+<p>Example: <strong>-z megaco,srt</strong></p>
+<p>This option can be used multiple times on the command line.</p>
+<p>If the optional <em>filter</em> is provided, the stats will only be calculated
+on those calls that match that filter.</p>
+<p>Example: <strong>-z &quot;megaco,srt,ip.addr==1.2.3.4&quot;</strong> will collect stats only for
+MEGACO packets exchanged by the host at IP address 1.2.3.4 .</p>
+</dd>
+<dt><strong><a name="z_mgcp_srt_filter" class="item"><strong>-z</strong> mgcp,srt[<em>,filter</em>]</a></strong></dt>
+
+<dd>
+<p>Collect request/response SRT (Service Response Time) data for MGCP.
+(This is similar to <strong>-z smb,srt</strong>).  Data collected is the number of calls
+for each known MGCP Type, Minimum SRT, Maximum SRT and Average SRT.</p>
+<p>Example: <strong>-z mgcp,srt</strong></p>
+<p>This option can be used multiple times on the command line.</p>
+<p>If the optional <em>filter</em> is provided, the stats will only be calculated
+on those calls that match that filter.</p>
+<p>Example: <strong>-z &quot;mgcp,srt,ip.addr==1.2.3.4&quot;</strong> will collect stats only for
+MGCP packets exchanged by the host at IP address 1.2.3.4 .</p>
+</dd>
+<dt><strong><a name="z_rpc_programs" class="item"><strong>-z</strong> rpc,programs</a></strong></dt>
+
+<dd>
+<p>Collect call/reply SRT data for all known ONC-RPC programs/versions.
+Data collected is the number of calls for each protocol/version, MinSRT,
+MaxSRT and AvgSRT.</p>
+</dd>
+<dt><strong><a name="z_rpc_srt_program_version_filter" class="item"><strong>-z</strong> rpc,srt,<em>program</em>,<em>version</em>[,&lt;filter&gt;]</a></strong></dt>
+
+<dd>
+<p>Collect call/reply SRT (Service Response Time) data for <em>program</em>/<em>version</em>.  Data collected
+is the number of calls for each procedure, MinSRT, MaxSRT and AvgSRT.</p>
+<p>Example: <strong>-z rpc,srt,100003,3</strong> will collect data for NFS v3.</p>
+<p>This option can be used multiple times on the command line.</p>
+<p>If the optional <em>filter</em> is provided, the stats will only be calculated
+on those calls that match that filter.</p>
+<p>Example: <strong>-z&nbsp;rpc,srt,100003,3,nfs.fh.hash==0x12345678</strong> will collect NFS v3
+SRT statistics for a specific file.</p>
+</dd>
+<dt><strong><a name="z_scsi_srt_cmdset_filter" class="item"><strong>-z</strong> scsi,srt,<em>cmdset</em>[,&lt;filter&gt;]</a></strong></dt>
+
+<dd>
+<p>Collect call/reply SRT (Service Response Time) data for SCSI commandset &lt;cmdset&gt;.</p>
+<p>Commandsets are 0:SBC   1:SSC  5:MMC</p>
+<p>Data collected
+is the number of calls for each procedure, MinSRT, MaxSRT and AvgSRT.</p>
+<p>Example: <strong>-z scsi,srt,0</strong> will collect data for SCSI BLOCK COMMANDS (SBC).</p>
+<p>This option can be used multiple times on the command line.</p>
+<p>If the optional <em>filter</em> is provided, the stats will only be calculated
+on those calls that match that filter.</p>
+<p>Example: <strong>-z scsi,srt,0,ip.addr==1.2.3.4</strong> will collect SCSI SBC
+SRT statistics for a specific iscsi/ifcp/fcip host.</p>
+</dd>
+<dt><strong><a name="z_sip_stat_filter" class="item"><strong>-z</strong> sip,stat[<em>,filter</em>]</a></strong></dt>
+
+<dd>
+<p>This option will activate a counter for SIP messages.  You will get the number
+of occurrences of each SIP Method and of each SIP Status-Code.  Additionally you
+also get the number of resent SIP Messages (only for SIP over UDP).</p>
+<p>Example: <strong>-z sip,stat</strong></p>
+<p>This option can be used multiple times on the command line.</p>
+<p>If the optional <em>filter</em> is provided, the stats will only be calculated
+on those calls that match that filter.</p>
+<p>Example: <strong>-z &quot;sip,stat,ip.addr==1.2.3.4&quot;</strong> will collect stats only for
+SIP packets exchanged by the host at IP address 1.2.3.4 .</p>
+</dd>
+<dt><strong><a name="z_smb_srt_filter" class="item"><strong>-z</strong> smb,srt[,<em>filter</em>]</a></strong></dt>
+
+<dd>
+<p>Collect call/reply SRT (Service Response Time) data for SMB.  Data collected
+is the number of calls for each SMB command, MinSRT, MaxSRT and AvgSRT.</p>
+<p>Example: <strong>-z smb,srt</strong></p>
+<p>The data will be presented as separate tables for all normal SMB commands,
+all Transaction2 commands and all NT Transaction commands.
+Only those commands that are seen in the capture will have their stats
+displayed.
+Only the first command in a xAndX command chain will be used in the
+calculation.  So for common SessionSetupAndX + TreeConnectAndX chains,
+only the SessionSetupAndX call will be used in the statistics.
+This is a flaw that might be fixed in the future.</p>
+<p>This option can be used multiple times on the command line.</p>
+<p>If the optional <em>filter</em> is provided, the stats will only be calculated
+on those calls that match that filter.</p>
+<p>Example: <strong>-z &quot;smb,srt,ip.addr==1.2.3.4&quot;</strong> will collect stats only for
+SMB packets exchanged by the host at IP address 1.2.3.4 .</p>
+</dd>
+<dt><strong><a name="z_voip_calls" class="item"><strong>-z</strong> voip,calls</a></strong></dt>
+
+<dd>
+<p>This option will show a window that shows VoIP calls found in the capture file.
+This is the same window shown as when you go to the Statistics Menu and choose
+VoIP Calls.</p>
+<p>Example: <strong>-z voip,calls</strong></p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="interface">INTERFACE</a></h1>
+<p>
+</p>
+<h2><a name="menu_items">MENU ITEMS</a></h2>
+<dl>
+<dt><strong><a name="file_open" class="item">File:Open</a></strong></dt>
+
+<dt><strong><a name="file_open_recent" class="item">File:Open Recent</a></strong></dt>
+
+<dt><strong><a name="file_merge" class="item">File:Merge</a></strong></dt>
+
+<dd>
+<p>Merge another capture file to the currently loaded one.  The <em>File:Merge</em>
+dialog box allows the merge &quot;Prepended&quot;, &quot;Chronologically&quot; or &quot;Appended&quot;,
+relative to the already loaded one.</p>
+</dd>
+<dt><strong><a name="file_close" class="item">File:Close</a></strong></dt>
+
+<dd>
+<p>Open or close a capture file.  The <em>File:Open</em> dialog box
+allows a filter to be specified; when the capture file is read, the
+filter is applied to all packets read from the file, and packets not
+matching the filter are discarded.  The <em>File:Open Recent</em> is a submenu
+and will show a list of previously opened files.</p>
+</dd>
+<dt><strong><a name="file_save" class="item">File:Save</a></strong></dt>
+
+<dt><strong><a name="file_save_as" class="item">File:Save As</a></strong></dt>
+
+<dd>
+<p>Save the current capture, or the packets currently displayed from that
+capture, to a file.  Check boxes let you select whether to save all
+packets, or just those that have passed the current display filter and/or
+those that are currently marked, and an option menu lets you select (from
+a list of file formats in which at particular capture, or the packets
+currently displayed from that capture, can be saved), a file format in
+which to save it.</p>
+</dd>
+<dt><strong><a name="file_file_set_list_files" class="item">File:File Set:List Files</a></strong></dt>
+
+<dd>
+<p>Show a dialog box that lists all files of the file set matching the currently
+loaded file.  A file set is a compound of files resulting from a capture using
+the &quot;multiple files&quot; / &quot;ringbuffer&quot; mode, recognizable by the filename pattern,
+e.g.: Filename_00001_20050604101530.pcap.</p>
+</dd>
+<dt><strong><a name="file_file_set_next_file" class="item">File:File Set:Next File</a></strong></dt>
+
+<dt><strong><a name="file_file_set_previous_file" class="item">File:File Set:Previous File</a></strong></dt>
+
+<dd>
+<p>If the currently loaded file is part of a file set (see above), open the
+next / previous file in that set.</p>
+</dd>
+<dt><strong><a name="file_export" class="item">File:Export</a></strong></dt>
+
+<dd>
+<p>Export captured data into an external format.  Note: the data cannot be
+imported back into Wireshark, so be sure to keep the capture file.</p>
+</dd>
+<dt><strong><a name="file_print" class="item">File:Print</a></strong></dt>
+
+<dd>
+<p>Print packet data from the current capture.  You can select the range of
+packets to be printed (which packets are printed), and the output format of
+each packet (how each packet is printed).  The output format will be similar
+to the displayed values, so a summary line, the packet details view, and/or
+the hex dump of the packet can be printed.</p>
+<p>Printing options can be set with the <em>Edit:Preferences</em> menu item, or in the
+dialog box popped up by this menu item.</p>
+</dd>
+<dt><strong><a name="file_quit" class="item">File:Quit</a></strong></dt>
+
+<dd>
+<p>Exit the application.</p>
+</dd>
+<dt><strong><a name="edit_copy_description" class="item">Edit:Copy:Description</a></strong></dt>
+
+<dd>
+<p>Copies the description of the selected field in the protocol tree to
+the clipboard.</p>
+</dd>
+<dt><strong><a name="edit_copy_fieldname" class="item">Edit:Copy:Fieldname</a></strong></dt>
+
+<dd>
+<p>Copies the fieldname of the selected field in the protocol tree to
+the clipboard.</p>
+</dd>
+<dt><strong><a name="edit_copy_value" class="item">Edit:Copy:Value</a></strong></dt>
+
+<dd>
+<p>Copies the value of the selected field in the protocol tree to
+the clipboard.</p>
+</dd>
+<dt><strong><a name="edit_copy_as_filter" class="item">Edit:Copy:As Filter</a></strong></dt>
+
+<dd>
+<p>Create a display filter based on the data currently highlighted in the
+packet details and copy that filter to the clipboard.</p>
+<p>If that data is a field that can be tested in a display filter
+expression, the display filter will test that field; otherwise, the
+display filter will be based on the absolute offset within the packet.
+Therefore it could be unreliable if the packet contains protocols with
+variable-length headers, such as a source-routed token-ring packet.</p>
+</dd>
+<dt><strong><a name="edit_find_packet" class="item">Edit:Find Packet</a></strong></dt>
+
+<dd>
+<p>Search forward or backward, starting with the currently selected packet
+(or the most recently selected packet, if no packet is selected).  Search
+criteria can be a display filter expression, a string of hexadecimal
+digits, or a text string.</p>
+<p>When searching for a text string, you can search the packet data, or you
+can search the text in the Info column in the packet list pane or in the
+packet details pane.</p>
+<p>Hexadecimal digits can be separated by colons, periods, or dashes.
+Text string searches can be ASCII or Unicode (or both), and may be
+case insensitive.</p>
+</dd>
+<dt><strong><a name="edit_find_next" class="item">Edit:Find Next</a></strong></dt>
+
+<dt><strong><a name="edit_find_previous" class="item">Edit:Find Previous</a></strong></dt>
+
+<dd>
+<p>Search forward / backward for a packet matching the filter from the previous
+search, starting with the currently selected packet (or the most recently
+selected packet, if no packet is selected).</p>
+</dd>
+<dt><strong><a name="packet" class="item">Edit:Mark Packet (toggle)</a></strong></dt>
+
+<dd>
+<p>Mark (or unmark if currently marked) the selected packet.  The field
+&quot;frame.marked&quot; is set for packets that are marked, so that, for example,
+a display filters can be used to display only marked packets, and so that
+the <a href="#edit_find_packet">Edit:Find Packet</a> dialog can be used to find the next or previous
+marked packet.</p>
+</dd>
+<dt><strong><a name="edit_find_next_mark" class="item">Edit:Find Next Mark</a></strong></dt>
+
+<dt><strong><a name="edit_find_previous_mark" class="item">Edit:Find Previous Mark</a></strong></dt>
+
+<dd>
+<p>Find next/previous marked packet.</p>
+</dd>
+<dt><strong><a name="edit_mark_all_packets" class="item">Edit:Mark All Packets</a></strong></dt>
+
+<dt><strong><a name="edit_unmark_all_packets" class="item">Edit:Unmark All Packets</a></strong></dt>
+
+<dd>
+<p>Mark / Unmark all packets that are currently displayed.</p>
+</dd>
+<dt><strong><a name="reference" class="item">Edit:Time Reference:Set Time Reference (toggle)</a></strong></dt>
+
+<dd>
+<p>Set (or unset if currently set) the selected packet as a Time Reference packet.
+When a packet is set as a Time Reference packet, the timestamps in the packet
+list pane will be replaced with the string &quot;*REF*&quot;.
+The relative time timestamp in later packets will then be calculated relative
+to the timestamp of this Time Reference packet and not the first packet in
+the capture.</p>
+<p>Packets that have been selected as Time Reference packets will always be
+displayed in the packet list pane.  Display filters will not affect or
+hide these packets.</p>
+<p>If there is a column displayed for &quot;Cumulative Bytes&quot; this counter will
+be reset at every Time Reference packet.</p>
+</dd>
+<dt><strong><a name="edit_time_reference_find_next" class="item">Edit:Time Reference:Find Next</a></strong></dt>
+
+<dt><strong><a name="edit_time_reference_find_previous" class="item">Edit:Time Reference:Find Previous</a></strong></dt>
+
+<dd>
+<p>Search forward / backward for a time referenced packet.</p>
+</dd>
+<dt><strong><a name="edit_configuration_profiles" class="item">Edit:Configuration Profiles</a></strong></dt>
+
+<dd>
+<p>Manage configuration profiles to be able to use more than one set of
+preferences and configurations.</p>
+</dd>
+<dt><strong><a name="edit_preferences" class="item">Edit:Preferences</a></strong></dt>
+
+<dd>
+<p>Set the GUI, capture, printing and protocol options
+(see <a href="#preferences">Preferences</a> dialog below).</p>
+</dd>
+<dt><strong><a name="view_main_toolbar" class="item">View:Main Toolbar</a></strong></dt>
+
+<dt><strong><a name="view_filter_toolbar" class="item">View:Filter Toolbar</a></strong></dt>
+
+<dt><strong><a name="view_statusbar" class="item">View:Statusbar</a></strong></dt>
+
+<dd>
+<p>Show or hide the main window controls.</p>
+</dd>
+<dt><strong><a name="view_packet_list" class="item">View:Packet List</a></strong></dt>
+
+<dt><strong><a name="view_packet_details" class="item">View:Packet Details</a></strong></dt>
+
+<dt><strong><a name="view_packet_bytes" class="item">View:Packet Bytes</a></strong></dt>
+
+<dd>
+<p>Show or hide the main window panes.</p>
+</dd>
+<dt><strong><a name="view_time_display_format" class="item">View:Time Display Format</a></strong></dt>
+
+<dd>
+<p>Set the format of the packet timestamp displayed in the packet list window.</p>
+</dd>
+<dt><strong><a name="view_name_resolution_resolve_name" class="item">View:Name Resolution:Resolve Name</a></strong></dt>
+
+<dd>
+<p>Try to resolve a name for the currently selected item.</p>
+</dd>
+<dt><strong><a name="view_name_resolution_enable_for_layer" class="item">View:Name Resolution:Enable for ... Layer</a></strong></dt>
+
+<dd>
+<p>Enable or disable translation of addresses to names in the display.</p>
+</dd>
+<dt><strong><a name="view_colorize_packet_list" class="item">View:Colorize Packet List</a></strong></dt>
+
+<dd>
+<p>Enable or disable the coloring rules.  Disabling will improve performance.</p>
+</dd>
+<dt><strong><a name="view_auto_scroll_in_live_capture" class="item">View:Auto Scroll in Live Capture</a></strong></dt>
+
+<dd>
+<p>Enable or disable the automatic scrolling of the
+packet list while a live capture is in progress.</p>
+</dd>
+<dt><strong><a name="view_zoom_in" class="item">View:Zoom In</a></strong></dt>
+
+<dt><strong><a name="view_zoom_out" class="item">View:Zoom Out</a></strong></dt>
+
+<dd>
+<p>Zoom into / out of the main window data (by changing the font size).</p>
+</dd>
+<dt><strong><a name="view_normal_size" class="item">View:Normal Size</a></strong></dt>
+
+<dd>
+<p>Reset the zoom factor of zoom in / zoom out back to normal font size.</p>
+</dd>
+<dt><strong><a name="view_resize_all_columns" class="item">View:Resize All Columns</a></strong></dt>
+
+<dd>
+<p>Resize all columns to best fit the current packet display.</p>
+</dd>
+<dt><strong><a name="view_expand_subtrees" class="item">View:Expand Subtrees</a></strong></dt>
+
+<dd>
+<p>Expands the currently selected item and it's subtrees in the packet details.</p>
+</dd>
+<dt><strong><a name="view_expand_all" class="item">View:Expand All</a></strong></dt>
+
+<dt><strong><a name="view_collapse_all" class="item">View:Collapse All</a></strong></dt>
+
+<dd>
+<p>Expand / Collapse all branches of the packet details.</p>
+</dd>
+<dt><strong><a name="view_colorize_conversation" class="item">View:Colorize Conversation</a></strong></dt>
+
+<dd>
+<p>Select color for a conversation.</p>
+</dd>
+<dt><strong><a name="view_reset_coloring_1_10" class="item">View:Reset Coloring 1-10</a></strong></dt>
+
+<dd>
+<p>Reset Color for a conversation.</p>
+</dd>
+<dt><strong><a name="view_coloring_rules" class="item">View:Coloring Rules</a></strong></dt>
+
+<dd>
+<p>Change the foreground and background colors of the packet information in
+the list of packets, based upon display filters.  The list of display
+filters is applied to each packet sequentially.  After the first display
+filter matches a packet, any additional display filters in the list are
+ignored.  Therefore, if you are filtering on the existence of protocols,
+you should list the higher-level protocols first, and the lower-level
+protocols last.</p>
+<dl>
+<dt><strong><a name="how_colorization_works" class="item">How Colorization Works</a></strong></dt>
+
+<dd>
+<p>Packets are colored according to a list of color filters.  Each filter
+consists of a name, a filter expression and a coloration.  A packet is
+colored according to the first filter that it matches.  Color filter
+expressions use exactly the same syntax as display filter expressions.</p>
+<p>When Wireshark starts, the color filters are loaded from:</p>
+<ol>
+<li>
+<p>The user's personal color filters file or, if that does not exist,</p>
+</li>
+<li>
+<p>The global color filters file.</p>
+</li>
+</ol>
+<p>If neither of these exist then the packets will not be colored.</p>
+</dd>
+</dl>
+</dd>
+<dt><strong><a name="view_show_packet_in_new_window" class="item">View:Show Packet In New Window</a></strong></dt>
+
+<dd>
+<p>Create a new window containing a packet details view and a hex dump
+window of the currently selected packet; this window will continue to
+display that packet's details and data even if another packet is
+selected.</p>
+</dd>
+<dt><strong><a name="view_reload" class="item">View:Reload</a></strong></dt>
+
+<dd>
+<p>Reload a capture file.  Same as <em>File:Close</em> and <em>File:Open</em> the same
+file again.</p>
+</dd>
+<dt><strong><a name="go_back" class="item">Go:Back</a></strong></dt>
+
+<dd>
+<p>Go back in previously visited packets history.</p>
+</dd>
+<dt><strong><a name="go_forward" class="item">Go:Forward</a></strong></dt>
+
+<dd>
+<p>Go forward in previously visited packets history.</p>
+</dd>
+<dt><strong><a name="go_go_to_packet" class="item">Go:Go To Packet</a></strong></dt>
+
+<dd>
+<p>Go to a particular numbered packet.</p>
+</dd>
+<dt><strong><a name="go_go_to_corresponding_packet" class="item">Go:Go To Corresponding Packet</a></strong></dt>
+
+<dd>
+<p>If a field in the packet details pane containing a packet number is
+selected, go to the packet number specified by that field.  (This works
+only if the dissector that put that entry into the packet details put it
+into the details as a filterable field rather than just as text.) This
+can be used, for example, to go to the packet for the request
+corresponding to a reply, or the reply corresponding to a request, if
+that packet number has been put into the packet details.</p>
+</dd>
+<dt><strong><a name="go_previous_packet" class="item">Go:Previous Packet</a></strong></dt>
+
+<dt><strong><a name="go_next_packet" class="item">Go:Next Packet</a></strong></dt>
+
+<dt><strong><a name="go_first_packet" class="item">Go:First Packet</a></strong></dt>
+
+<dt><strong><a name="go_last_packet" class="item">Go:Last Packet</a></strong></dt>
+
+<dd>
+<p>Go to the previous / next / first / last packet in the capture.</p>
+</dd>
+<dt><strong><a name="go_previous_packet_in_conversation" class="item">Go:Previous Packet In Conversation</a></strong></dt>
+
+<dt><strong><a name="go_next_packet_in_conversation" class="item">Go:Next Packet In Conversation</a></strong></dt>
+
+<dd>
+<p>Go to the previous / next packet of the conversation (TCP, UDP or IP)</p>
+</dd>
+<dt><strong><a name="capture_interfaces" class="item">Capture:Interfaces</a></strong></dt>
+
+<dd>
+<p>Shows a dialog box with all currently known interfaces and displaying the
+current network traffic amount.  Capture sessions can be started from here.
+Beware: keeping this box open results in high system load!</p>
+</dd>
+<dt><strong><a name="capture_options" class="item">Capture:Options</a></strong></dt>
+
+<dd>
+<p>Initiate a live packet capture (see <a href="#capture_options_dialog">Capture Options Dialog</a>
+below).  If no filename is specified, a temporary file will be created
+to hold the capture.  The location of the file can be chosen by setting your
+TMPDIR environment variable before starting <strong>Wireshark</strong>.  Otherwise, the
+default TMPDIR location is system-dependent, but is likely either <em class="file">/var/tmp</em>
+or <em class="file">/tmp</em>.</p>
+</dd>
+<dt><strong><a name="capture_start" class="item">Capture:Start</a></strong></dt>
+
+<dd>
+<p>Start a live packet capture with the previously selected options.  This won't
+open the options dialog box, and can be convenient for repeatedly capturing
+with the same options.</p>
+</dd>
+<dt><strong><a name="capture_stop" class="item">Capture:Stop</a></strong></dt>
+
+<dd>
+<p>Stop a running live capture.</p>
+</dd>
+<dt><strong><a name="capture_restart" class="item">Capture:Restart</a></strong></dt>
+
+<dd>
+<p>While a live capture is running, stop it and restart with the same options
+again.  This can be convenient to remove irrelevant packets, if no valuable
+packets were captured so far.</p>
+</dd>
+<dt><strong><a name="capture_capture_filters" class="item">Capture:Capture Filters</a></strong></dt>
+
+<dd>
+<p>Edit the saved list of capture filters, allowing filters to be added,
+changed, or deleted.</p>
+</dd>
+<dt><strong><a name="analyze_display_filters" class="item">Analyze:Display Filters</a></strong></dt>
+
+<dd>
+<p>Edit the saved list of display filters, allowing filters to be added,
+changed, or deleted.</p>
+</dd>
+<dt><strong><a name="analyze_display_filter_macros" class="item">Analyze:Display Filter Macros</a></strong></dt>
+
+<dd>
+<p>Create shortcuts for complex macros</p>
+</dd>
+<dt><strong><a name="analyze_apply_as_filter" class="item">Analyze:Apply as Filter</a></strong></dt>
+
+<dd>
+<p>Create a display filter based on the data currently highlighted in the
+packet details and apply the filter.</p>
+<p>If that data is a field that can be tested in a display filter
+expression, the display filter will test that field; otherwise, the
+display filter will be based on the absolute offset within the packet.
+Therefore it could be unreliable if the packet contains protocols with
+variable-length headers, such as a source-routed token-ring packet.</p>
+<p>The <strong>Selected</strong> option creates a display filter that tests for a match
+of the data; the <strong>Not Selected</strong> option creates a display filter that
+tests for a non-match of the data.  The <strong>And Selected</strong>, <strong>Or Selected</strong>,
+<strong>And Not Selected</strong>, and <strong>Or Not Selected</strong> options add to the end of
+the display filter in the strip at the top (or bottom) an AND or OR
+operator followed by the new display filter expression.</p>
+</dd>
+<dt><strong><a name="analyze_prepare_a_filter" class="item">Analyze:Prepare a Filter</a></strong></dt>
+
+<dd>
+<p>Create a display filter based on the data currently highlighted in the
+packet details.  The filter strip at the top (or bottom) is updated but
+it is not yet applied.</p>
+</dd>
+<dt><strong><a name="analyze_enabled_protocols" class="item">Analyze:Enabled Protocols</a></strong></dt>
+
+<dd>
+<p>Allow protocol dissection to be enabled or disabled for a specific
+protocol.  Individual protocols can be enabled or disabled by clicking
+on them in the list or by highlighting them and pressing the space bar.
+The entire list can be enabled, disabled, or inverted using the buttons
+below the list.</p>
+<p>When a protocol is disabled, dissection in a particular packet stops
+when that protocol is reached, and Wireshark moves on to the next packet.
+Any higher-layer protocols that would otherwise have been processed will
+not be displayed.  For example, disabling TCP will prevent the dissection
+and display of TCP, HTTP, SMTP, Telnet, and any other protocol exclusively
+dependent on TCP.</p>
+<p>The list of protocols can be saved, so that Wireshark will start up with
+the protocols in that list disabled.</p>
+</dd>
+<dt><strong><a name="analyze_decode_as" class="item">Analyze:Decode As</a></strong></dt>
+
+<dd>
+<p>If you have a packet selected, present a dialog allowing you to change
+which dissectors are used to decode this packet.  The dialog has one
+panel each for the link layer, network layer and transport layer
+protocol/port numbers, and will allow each of these to be changed
+independently.  For example, if the selected packet is a TCP packet to
+port 12345, using this dialog you can instruct Wireshark to decode all
+packets to or from that TCP port as HTTP packets.</p>
+</dd>
+<dt><strong><a name="analyze_user_specified_decodes" class="item">Analyze:User Specified Decodes</a></strong></dt>
+
+<dd>
+<p>Create a new window showing whether any protocol ID to dissector
+mappings have been changed by the user.  This window also allows the
+user to reset all decodes to their default values.</p>
+</dd>
+<dt><strong><a name="analyze_follow_tcp_stream" class="item">Analyze:Follow TCP Stream</a></strong></dt>
+
+<dd>
+<p>If you have a TCP packet selected, display the contents of the data
+stream for the TCP connection to which that packet belongs, as text, in
+a separate window, and leave the list of packets in a filtered state,
+with only those packets that are part of that TCP connection being
+displayed.  You can revert to your old view by pressing ENTER in the
+display filter text box, thereby invoking your old display filter (or
+resetting it back to no display filter).</p>
+<p>The window in which the data stream is displayed lets you select:</p>
+<ul>
+<li>
+<p>whether to display the entire conversation, or one or the other side of
+it;</p>
+</li>
+<li>
+<p>whether the data being displayed is to be treated as ASCII or EBCDIC
+text or as raw hex data;</p>
+</li>
+</ul>
+<p>and lets you print what's currently being displayed, using the same
+print options that are used for the <em>File:Print Packet</em> menu item, or
+save it as text to a file.</p>
+</dd>
+<dt><strong><a name="analyze_follow_udp_stream" class="item">Analyze:Follow UDP Stream</a></strong></dt>
+
+<dt><strong><a name="analyze_follow_ssl_stream" class="item">Analyze:Follow SSL Stream</a></strong></dt>
+
+<dd>
+<p>(Similar to Analyze:Follow TCP Stream)</p>
+</dd>
+<dt><strong><a name="analyze_expert_info" class="item">Analyze:Expert Info</a></strong></dt>
+
+<dt><strong><a name="analyze_expert_info_composite" class="item">Analyze:Expert Info Composite</a></strong></dt>
+
+<dd>
+<p>(Kind of) a log of anomalies found by Wireshark in a capture file.</p>
+</dd>
+<dt><strong><a name="analyze_conversation_filter" class="item">Analyze:Conversation Filter</a></strong></dt>
+
+<dt><strong><a name="statistics_summary" class="item">Statistics:Summary</a></strong></dt>
+
+<dd>
+<p>Show summary information about the capture, including elapsed time,
+packet counts, byte counts, and the like.  If a display filter is in
+effect, summary information will be shown about the capture and about
+the packets currently being displayed.</p>
+</dd>
+<dt><strong><a name="statistics_protocol_hierarchy" class="item">Statistics:Protocol Hierarchy</a></strong></dt>
+
+<dd>
+<p>Show the number of packets, and the number of bytes in those packets,
+for each protocol in the trace.  It organizes the protocols in the same
+hierarchy in which they were found in the trace.  Besides counting the
+packets in which the protocol exists, a count is also made for packets
+in which the protocol is the last protocol in the stack.  These
+last-protocol counts show you how many packets (and the byte count
+associated with those packets) <strong>ended</strong> in a particular protocol.  In
+the table, they are listed under &quot;End Packets&quot; and &quot;End Bytes&quot;.</p>
+</dd>
+<dt><strong><a name="statistics_conversations" class="item">Statistics:Conversations</a></strong></dt>
+
+<dd>
+<p>Lists of conversations; selectable by protocol.  See Statistics:Conversation List below.</p>
+</dd>
+<dt><strong><a name="statistics_end_points" class="item">Statistics:End Points</a></strong></dt>
+
+<dd>
+<p>List of End Point Addresses by protocol with packets/bytes/.... counts.</p>
+</dd>
+<dt><strong><a name="statistics_packet_lengths" class="item">Statistics:Packet Lengths</a></strong></dt>
+
+<dd>
+<p>Grouped counts of packet lengths (0-19 bytes, 20-39 bytes, ...)</p>
+</dd>
+<dt><strong><a name="statistics_io_graphs" class="item">Statistics:IO Graphs</a></strong></dt>
+
+<dd>
+<p>Open a window where up to 5 graphs in different colors can be displayed
+to indicate number of packets or number of bytes per second for all packets
+matching the specified filter.
+By default only one graph will be displayed showing number of packets per second.</p>
+<p>The top part of the window contains the graphs and scales for the X and
+Y axis.  If the graph is too long to fit inside the window there is a
+horizontal scrollbar below the drawing area that can scroll the graphs
+to the left or the right.  The horizontal axis displays the time into
+the capture and the vertical axis will display the measured quantity at
+that time.</p>
+<p>Below the drawing area and the scrollbar are the controls.  On the
+bottom left there will be five similar sets of controls to control each
+individual graph such as &quot;Display:&lt;button&gt;&quot; which button will toggle
+that individual graph on/off.  If &lt;button&gt; is ticked, the graph will be
+displayed.  &quot;Color:&lt;color&gt;&quot; which is just a button to show which color
+will be used to draw that graph (color is only available in Gtk2
+version) and finally &quot;Filter:&lt;filter-text&gt;&quot; which can be used to specify
+a display filter for that particular graph.</p>
+<p>If filter-text is empty then all packets will be used to calculate the
+quantity for that graph.  If filter-text is specified only those packets
+that match that display filter will be considered in the calculation of
+quantity.</p>
+<p>To the right of the 5 graph controls there are four menus to control
+global aspects of the draw area and graphs.  The &quot;Unit:&quot; menu is used to
+control what to measure; &quot;packets/tick&quot;, &quot;bytes/tick&quot; or &quot;advanced...&quot;</p>
+<p>packets/tick will measure the number of packets matching the (if
+specified) display filter for the graph in each measurement interval.</p>
+<p>bytes/tick will measure the total number of bytes in all packets matching
+the (if specified) display filter for the graph in each measurement
+interval.</p>
+<p>advanced... see below</p>
+<p>&quot;Tick interval:&quot; specifies what measurement intervals to use.  The
+default is 1 second and means that the data will be counted over 1
+second intervals.</p>
+<p>&quot;Pixels per tick:&quot; specifies how many pixels wide each measurement
+interval will be in the drawing area.  The default is 5 pixels per tick.</p>
+<p>&quot;Y-scale:&quot; controls the max value for the y-axis.  Default value is
+&quot;auto&quot; which means that <strong>Wireshark</strong> will try to adjust the maxvalue
+automatically.</p>
+<p>&quot;advanced...&quot; If Unit:advanced...  is selected the window will display
+two more controls for each of the five graphs.  One control will be a
+menu where the type of calculation can be selected from
+SUM,COUNT,MAX,MIN,AVG and LOAD, and one control, textbox, where the name of a
+single display filter field can be specified.</p>
+<p>The following restrictions apply to type and field combinations:</p>
+<p>SUM: available for all types of integers and will calculate the SUM of
+all occurrences of this field in the measurement interval.  Note that
+some field can occur multiple times in the same packet and then all
+instances will be summed up.  Example: 'tcp.len' which will count the
+amount of payload data transferred across TCP in each interval.</p>
+<p>COUNT: available for all field types.  This will COUNT the number of times
+certain field occurs in each interval.  Note that some fields
+may occur multiple times in each packet and if that is the case
+then each instance will be counted independently and COUNT
+will be greater than the number of packets.</p>
+<p>MAX: available for all integer and relative time fields.  This will calculate
+the max seen integer/time value seen for the field during the interval.
+Example: 'smb.time' which will plot the maximum SMB response time.</p>
+<p>MIN: available for all integer and relative time fields.  This will calculate
+the min seen integer/time value seen for the field during the interval.
+Example: 'smb.time' which will plot the minimum SMB response time.</p>
+<p>AVG: available for all integer and relative time fields.This will
+calculate the average seen integer/time value seen for the field during
+the interval.  Example: 'smb.time' which will plot the average SMB
+response time.</p>
+<p>LOAD: available only for relative time fields (response times).</p>
+<p>Example of advanced:
+Display how NFS response time MAX/MIN/AVG changes over time:</p>
+<p>Set first graph to:</p>
+<pre>
+   filter:nfs&amp;&amp;rpc.time
+   Calc:MAX rpc.time</pre>
+<p>Set second graph to</p>
+<pre>
+   filter:nfs&amp;&amp;rpc.time
+   Calc:AVG rpc.time</pre>
+<p>Set third graph to</p>
+<pre>
+   filter:nfs&amp;&amp;rpc.time
+   Calc:MIN rpc.time</pre>
+<p>Example of advanced:
+Display how the average packet size from host a.b.c.d changes over time.</p>
+<p>Set first graph to</p>
+<pre>
+   filter:ip.addr==a.b.c.d&amp;&amp;frame.pkt_len
+   Calc:AVG frame.pkt_len</pre>
+<p>LOAD:
+The LOAD io-stat type is very different from anything you have ever seen
+before! While the response times themselves as plotted by MIN,MAX,AVG are
+indications on the Server load (which affects the Server response time),
+the LOAD measurement measures the Client LOAD.
+What this measures is how much workload the client generates,
+i.e. how fast will the client issue new commands when the previous ones
+completed.
+i.e. the level of concurrency the client can maintain.
+The higher the number, the more and faster is the client issuing new
+commands.  When the LOAD goes down, it may be due to client load making
+the client slower in issuing new commands (there may be other reasons as
+well, maybe the client just doesn't have any commands it wants to issue
+right then).</p>
+<p>Load is measured in concurrency/number of overlapping i/o and the value
+1000 means there is a constant load of one i/o.</p>
+<p>In each tick interval the amount of overlap is measured.
+See the graph below containing three commands:
+Below the graph are the LOAD values for each interval that would be calculated.</p>
+<pre>
+  |     |     |     |     |     |     |     |     |
+  |     |     |     |     |     |     |     |     |
+  |     |  o=====*  |     |     |     |     |     |
+  |     |     |     |     |     |     |     |     |
+  |  o========*     | o============*  |     |     |
+  |     |     |     |     |     |     |     |     |
+  --------------------------------------------------&gt; Time
+   500   1500   500  750   1000   500    0     0</pre>
+</dd>
+<dt><strong><a name="statistics_conversation_list" class="item">Statistics:Conversation List</a></strong></dt>
+
+<dd>
+<p>This option will open a new window that displays a list of all
+conversations between two endpoints.  The list has one row for each
+unique conversation and displays total number of packets/bytes seen as
+well as number of packets/bytes in each direction.</p>
+<p>By default the list is sorted according to the number of packets but by
+clicking on the column header; it is possible to re-sort the list in
+ascending or descending order by any column.</p>
+<p>By first selecting a conversation by clicking on it and then using the
+right mouse button (on those platforms that have a right
+mouse button) wireshark will display a popup menu offering several different
+filter operations to apply to the capture.</p>
+<p>These statistics windows can also be invoked from the Wireshark command
+line using the <strong>-z conv</strong> argument.</p>
+</dd>
+<dt><strong><a name="statistics_service_response_time" class="item">Statistics:Service Response Time</a></strong></dt>
+
+<dd>
+<ul>
+<li>
+<p>AFP</p>
+</li>
+<li>
+<p>CAMEL</p>
+</li>
+<li>
+<p>DCE-RPC</p>
+<p>Open a window to display Service Response Time statistics for an
+arbitrary DCE-RPC program
+interface and display <strong>Procedure</strong>, <strong>Number of Calls</strong>, <strong>Minimum SRT</strong>,
+<strong>Maximum SRT</strong> and <strong>Average SRT</strong> for all procedures for that
+program/version.  These windows opened will update in semi-real time to
+reflect changes when doing live captures or when reading new capture
+files into <strong>Wireshark</strong>.</p>
+<p>This dialog will also allow an optional filter string to be used.
+If an optional filter string is used only such DCE-RPC request/response pairs
+that match that filter will be used to calculate the statistics.  If no filter
+string is specified all request/response pairs will be used.</p>
+</li>
+<li>
+<p>Diameter</p>
+</li>
+<li>
+<p>Fibre Channel</p>
+<p>Open a window to display Service Response Time statistics for Fibre Channel
+and display <strong>FC Type</strong>, <strong>Number of Calls</strong>, <strong>Minimum SRT</strong>,
+<strong>Maximum SRT</strong> and <strong>Average SRT</strong> for all FC types.
+These windows opened will update in semi-real time to
+reflect changes when doing live captures or when reading new capture
+files into <strong>Wireshark</strong>.
+The Service Response Time is calculated as the time delta between the
+First packet of the exchange and the Last packet of the exchange.</p>
+<p>This dialog will also allow an optional filter string to be used.
+If an optional filter string is used only such FC first/last exchange pairs
+that match that filter will be used to calculate the statistics.  If no filter
+string is specified all request/response pairs will be used.</p>
+</li>
+<li>
+<p>GTP</p>
+</li>
+<li>
+<p>H.225 RAS</p>
+<p>Collect requests/response SRT (Service Response Time) data for ITU-T H.225 RAS.
+Data collected is <strong>number of calls</strong> for each known ITU-T H.225 RAS Message Type,
+<strong>Minimum SRT</strong>, <strong>Maximum SRT</strong>, <strong>Average SRT</strong>, <strong>Minimum in Packet</strong>, and <strong>Maximum in Packet</strong>.
+You will also get the number of <strong>Open Requests</strong> (Unresponded Requests),
+<strong>Discarded Responses</strong> (Responses without matching request) and Duplicate Messages.
+These windows opened will update in semi-real time to reflect changes when
+doing live captures or when reading new capture files into <strong>Wireshark</strong>.</p>
+<p>You can apply an optional filter string in a dialog box, before starting
+the calculation.  The statistics will only be calculated
+on those calls matching that filter.</p>
+</li>
+<li>
+<p>LDAP</p>
+</li>
+<li>
+<p>MEGACO</p>
+</li>
+<li>
+<p>MGCP</p>
+<p>Collect requests/response SRT (Service Response Time) data for MGCP.
+Data collected is <strong>number of calls</strong> for each known MGCP Type,
+<strong>Minimum SRT</strong>, <strong>Maximum SRT</strong>, <strong>Average SRT</strong>, <strong>Minimum in Packet</strong>, and <strong>Maximum in Packet</strong>.
+These windows opened will update in semi-real time to reflect changes when
+doing live captures or when reading new capture files into <strong>Wireshark</strong>.</p>
+<p>You can apply an optional filter string in a dialog box, before starting
+the calculation.  The statistics will only be calculated
+on those calls matching that filter.</p>
+</li>
+<li>
+<p>NCP</p>
+</li>
+<li>
+<p>ONC-RPC</p>
+<p>Open a window to display statistics for an arbitrary ONC-RPC program interface
+and display <strong>Procedure</strong>, <strong>Number of Calls</strong>, <strong>Minimum SRT</strong>, <strong>Maximum SRT</strong> and <strong>Average SRT</strong> for all procedures for that program/version.
+These windows opened will update in semi-real time to reflect changes when
+doing live captures or when reading new capture files into <strong>Wireshark</strong>.</p>
+<p>This dialog will also allow an optional filter string to be used.
+If an optional filter string is used only such ONC-RPC request/response pairs
+that match that filter will be used to calculate the statistics.  If no filter
+string is specified all request/response pairs will be used.</p>
+<p>By first selecting a conversation by clicking on it and then using the
+right mouse button (on those platforms that have a right
+mouse button) wireshark will display a popup menu offering several different
+filter operations to apply to the capture.</p>
+</li>
+<li>
+<p>RADIUS</p>
+</li>
+<li>
+<p>SCSI</p>
+</li>
+<li>
+<p>SMB</p>
+<p>Collect call/reply SRT (Service Response Time) data for SMB.  Data collected
+is the number of calls for each SMB command, MinSRT, MaxSRT and AvgSRT.</p>
+<p>The data will be presented as separate tables for all normal SMB commands,
+all Transaction2 commands and all NT Transaction commands.
+Only those commands that are seen in the capture will have its stats
+displayed.
+Only the first command in a xAndX command chain will be used in the
+calculation.  So for common SessionSetupAndX + TreeConnectAndX chains,
+only the SessionSetupAndX call will be used in the statistics.
+This is a flaw that might be fixed in the future.</p>
+<p>You can apply an optional filter string in a dialog box, before starting
+the calculation.  The stats will only be calculated
+on those calls matching that filter.</p>
+<p>By first selecting a conversation by clicking on it and then using the
+right mouse button (on those platforms that have a right
+mouse button) wireshark will display a popup menu offering several different
+filter operations to apply to the capture.</p>
+</li>
+<li>
+<p>SMB2</p>
+</li>
+</ul>
+</dd>
+<dt><strong><a name="statistics_bootp_dhcp" class="item">Statistics:BOOTP-DHCP</a></strong></dt>
+
+<dt><strong><a name="statistics_compare" class="item">Statistics:Compare</a></strong></dt>
+
+<dd>
+<p>Compare two Capture Files</p>
+</dd>
+<dt><strong><a name="statistics_flow_graph" class="item">Statistics:Flow Graph</a></strong></dt>
+
+<dd>
+<p>Flow Graph: General/TCP</p>
+</dd>
+<dt><strong><a name="statistics_http" class="item">Statistics:HTTP</a></strong></dt>
+
+<dd>
+<p>HTTP Load Distribution, Packet Counter &amp; Requests</p>
+</dd>
+<dt><strong><a name="statistics_ip_addresses" class="item">Statistics:IP Addresses</a></strong></dt>
+
+<dd>
+<p>Count/Rate/Percent by IP Address</p>
+</dd>
+<dt><strong><a name="statistics_ip_destinations" class="item">Statistics:IP Destinations</a></strong></dt>
+
+<dd>
+<p>Count/Rate/Percent by IP Address/protocol/port</p>
+</dd>
+<dt><strong><a name="statistics_ip_protocol_types" class="item">Statistics:IP Protocol Types</a></strong></dt>
+
+<dd>
+<p>Count/Rate/Percent by IP Protocol Types</p>
+</dd>
+<dt><strong><a name="statistics_onc_rpc_programs" class="item">Statistics:ONC-RPC Programs</a></strong></dt>
+
+<dd>
+<p>This dialog will open a window showing aggregated SRT statistics for all
+ONC-RPC Programs/versions that exist in the capture file.</p>
+</dd>
+<dt><strong><a name="statistics_tcp_stream_graph" class="item">Statistics:TCP Stream Graph</a></strong></dt>
+
+<dd>
+<p>Graphs: Round Trip; Throughput; Time-Sequence (Stevens); Time-Sequence (tcptrace)</p>
+</dd>
+<dt><strong><a name="statistics_udp_multicast_streams" class="item">Statistics:UDP Multicast streams</a></strong></dt>
+
+<dd>
+<p>Multicast Streams Counts/Rates/... by Source/Destination Address/Port pairs</p>
+</dd>
+<dt><strong><a name="statistics_wlan_traffic" class="item">Statistics:WLAN Traffic</a></strong></dt>
+
+<dd>
+<p>WLAN Traffic Statistics</p>
+</dd>
+<dt><strong><a name="telephony_itu_t_h_225" class="item">Telephony:ITU-T H.225</a></strong></dt>
+
+<dd>
+<p>Count ITU-T H.225 messages and their reasons.  In the first column you get a
+list of H.225 messages and H.225 message reasons, which occur in the current
+capture file.  The number of occurrences of each message or reason will be displayed
+in the second column.
+This window opened will update in semi-real time to reflect changes when
+doing live captures or when reading new capture files into <strong>Wireshark</strong>.</p>
+<p>You can apply an optional filter string in a dialog box, before starting
+the counter.  The statistics will only be calculated
+on those calls matching that filter.</p>
+</dd>
+<dt><strong><a name="telephony_sip" class="item">Telephony:SIP</a></strong></dt>
+
+<dd>
+<p>Activate a counter for SIP messages.  You will get the number of occurrences of each
+SIP Method and of each SIP Status-Code.  Additionally you also get the number of
+resent SIP Messages (only for SIP over UDP).</p>
+<p>This window opened will update in semi-real time to reflect changes when
+doing live captures or when reading new capture files into <strong>Wireshark</strong>.</p>
+<p>You can apply an optional filter string in a dialog box, before starting
+the counter.  The statistics will only be calculated
+on those calls matching that filter.</p>
+</dd>
+<dt><strong><a name="tools_firewall_acl_rules" class="item">Tools:Firewall ACL Rules</a></strong></dt>
+
+<dt><strong><a name="help_contents" class="item">Help:Contents</a></strong></dt>
+
+<dd>
+<p>Some help texts.</p>
+</dd>
+<dt><strong><a name="help_supported_protocols" class="item">Help:Supported Protocols</a></strong></dt>
+
+<dd>
+<p>List of supported protocols and display filter protocol fields.</p>
+</dd>
+<dt><strong><a name="help_manual_pages" class="item">Help:Manual Pages</a></strong></dt>
+
+<dd>
+<p>Display locally installed HTML versions of these manual pages in a web browser.</p>
+</dd>
+<dt><strong><a name="help_wireshark_online" class="item">Help:Wireshark Online</a></strong></dt>
+
+<dd>
+<p>Various links to online resources to be open in a web browser, like
+<a href="http://www.wireshark.org">http://www.wireshark.org</a>.</p>
+</dd>
+<dt><strong><a name="help_about_wireshark" class="item">Help:About Wireshark</a></strong></dt>
+
+<dd>
+<p>See various information about Wireshark (see <a href="#about">About</a> dialog below), like the
+version, the folders used, the available plugins, ...</p>
+</dd>
+</dl>
+<p>
+</p>
+<h2><a name="windows">WINDOWS</a></h2>
+<dl>
+<dt><strong><a name="main_window" class="item">Main Window</a></strong></dt>
+
+<dd>
+<p>The main window contains the usual things like the menu, some toolbars, the
+main area and a statusbar.  The main area is split into three panes, you can
+resize each pane using a &quot;thumb&quot; at the right end of each divider line.</p>
+<p>The main window is much more flexible than before.  The layout of the main
+window can be customized by the <em>Layout</em> page in the dialog box popped
+up by <em>Edit:Preferences</em>, the following will describe the layout with the
+default settings.</p>
+<dl>
+<dt><strong><a name="main_toolbar" class="item">Main Toolbar</a></strong></dt>
+
+<dd>
+<p>Some menu items are available for quick access here.  There is no way to
+customize the items in the toolbar, however the toolbar can be hidden by
+<em>View:Main Toolbar</em>.</p>
+</dd>
+<dt><strong><a name="filter_toolbar" class="item">Filter Toolbar</a></strong></dt>
+
+<dd>
+<p>A display filter can be entered into the filter toolbar.
+A filter for HTTP, HTTPS, and DNS traffic might look like this:</p>
+<pre>
+  tcp.port == 80 || tcp.port == 443 || tcp.port == 53</pre>
+<p>Selecting the <em>Filter:</em> button lets you choose from a list of named
+filters that you can optionally save.  Pressing the Return or Enter
+keys, or selecting the <em>Apply</em> button, will cause the filter to be
+applied to the current list of packets.  Selecting the <em>Reset</em> button
+clears the display filter so that all packets are displayed (again).</p>
+<p>There is no way to customize the items in the toolbar, however the toolbar
+can be hidden by <em>View:Filter Toolbar</em>.</p>
+</dd>
+<dt><strong><a name="packet_list_pane" class="item">Packet List Pane</a></strong></dt>
+
+<dd>
+<p>The top pane contains the list of network packets that you can scroll
+through and select.  By default, the packet number, packet timestamp,
+source and destination addresses, protocol, and description are
+displayed for each packet; the <em>Columns</em> page in the dialog box popped
+up by <em>Edit:Preferences</em> lets you change this (although, unfortunately,
+you currently have to save the preferences, and exit and restart
+Wireshark, for those changes to take effect).</p>
+<p>If you click on the heading for a column, the display will be sorted by
+that column; clicking on the heading again will reverse the sort order
+for that column.</p>
+<p>An effort is made to display information as high up the protocol stack
+as possible, e.g. IP addresses are displayed for IP packets, but the
+MAC layer address is displayed for unknown packet types.</p>
+<p>The right mouse button can be used to pop up a menu of operations.</p>
+<p>The middle mouse button can be used to mark a packet.</p>
+</dd>
+<dt><strong><a name="packet_details_pane" class="item">Packet Details Pane</a></strong></dt>
+
+<dd>
+<p>The middle pane contains a display of the details of the
+currently-selected packet.  The display shows each field and its value
+in each protocol header in the stack.  The right mouse button can be
+used to pop up a menu of operations.</p>
+</dd>
+<dt><strong><a name="packet_bytes_pane" class="item">Packet Bytes Pane</a></strong></dt>
+
+<dd>
+<p>The lowest pane contains a hex and ASCII dump of the actual packet data.
+Selecting a field in the packet details highlights the corresponding
+bytes in this section.</p>
+<p>The right mouse button can be used to pop up a menu of operations.</p>
+</dd>
+<dt><strong><a name="statusbar" class="item">Statusbar</a></strong></dt>
+
+<dd>
+<p>The statusbar is divided into three parts, on the left some context dependent
+things are shown, like information about the loaded file, in the center the
+number of packets are displayed, and on the right the current configuration
+profile.</p>
+<p>The statusbar can be hidden by <em>View:Statusbar</em>.</p>
+</dd>
+</dl>
+</dd>
+<dt><strong><a name="preferences" class="item">Preferences</a></strong></dt>
+
+<dd>
+<p>The <em>Preferences</em> dialog lets you control various personal preferences
+for the behavior of <strong>Wireshark</strong>.</p>
+<dl>
+<dt><strong><a name="user_interface_preferences" class="item">User Interface Preferences</a></strong></dt>
+
+<dd>
+<p>The <em>User Interface</em> page is used to modify small aspects of the GUI to
+your own personal taste:</p>
+<dl>
+<dt><strong><a name="selection_bars" class="item">Selection Bars</a></strong></dt>
+
+<dd>
+<p>The selection bar in the packet list and packet details can have either
+a &quot;browse&quot; or &quot;select&quot; behavior.  If the selection bar has a &quot;browse&quot;
+behavior, the arrow keys will move an outline of the selection bar,
+allowing you to browse the rest of the list or details without changing
+the selection until you press the space bar.  If the selection bar has a
+&quot;select&quot; behavior, the arrow keys will move the selection bar and change
+the selection to the new item in the packet list or packet details.</p>
+</dd>
+<dt><strong><a name="save_window_position" class="item">Save Window Position</a></strong></dt>
+
+<dd>
+<p>If this item is selected, the position of the main Wireshark window will
+be saved when Wireshark exits, and used when Wireshark is started again.</p>
+</dd>
+<dt><strong><a name="save_window_size" class="item">Save Window Size</a></strong></dt>
+
+<dd>
+<p>If this item is selected, the size of the main Wireshark window will
+be saved when Wireshark exits, and used when Wireshark is started again.</p>
+</dd>
+<dt><strong><a name="save_window_maximized_state" class="item">Save Window Maximized state</a></strong></dt>
+
+<dd>
+<p>If this item is selected the maximize state of the main Wireshark window
+will be saved when Wireshark exists, and used when Wireshark is started again.</p>
+</dd>
+<dt><strong><a name="file_open_dialog_behavior" class="item">File Open Dialog Behavior</a></strong></dt>
+
+<dd>
+<p>This item allows the user to select how Wireshark handles the listing
+of the &quot;File Open&quot; Dialog when opening trace files.  &quot;Remember Last
+Directory&quot; causes Wireshark to automatically position the dialog in the
+directory of the most recently opened file, even between launches of Wireshark.
+&quot;Always Open in Directory&quot; allows the user to define a persistent directory
+that the dialog will always default to.</p>
+</dd>
+<dt><strong><a name="directory" class="item">Directory</a></strong></dt>
+
+<dd>
+<p>Allows the user to specify a persistent File Open directory.  Trailing
+slashes or backslashes will automatically be added.</p>
+</dd>
+<dt><strong><a name="file_open_preview_timeout" class="item">File Open Preview timeout</a></strong></dt>
+
+<dd>
+<p>This items allows the user to define how much time is spend reading the
+capture file to present preview data in the File Open dialog.</p>
+</dd>
+<dt><strong><a name="open_recent_maximum_list_entries" class="item">Open Recent maximum list entries</a></strong></dt>
+
+<dd>
+<p>The File menu supports a recent file list.  This items allows the user to
+specify how many files are kept track of in this list.</p>
+</dd>
+<dt><strong><a name="ask_for_unsaved_capture_files" class="item">Ask for unsaved capture files</a></strong></dt>
+
+<dd>
+<p>When closing a capture file or Wireshark itself if the file isn't saved yet
+the user is presented the option to save the file when this item is set.</p>
+</dd>
+<dt><strong><a name="wrap_during_find" class="item">Wrap during find</a></strong></dt>
+
+<dd>
+<p>This items determines the behavior when reaching the beginning or the end
+of a capture file.  When set the search wraps around and continues, otherwise
+it stops.</p>
+</dd>
+<dt><strong><a name="settings_dialogs_show_a_save_button" class="item">Settings dialogs show a save button</a></strong></dt>
+
+<dd>
+<p>This item determines if the various dialogs sport an explicit Save button
+or that save is implicit in OK / Apply.</p>
+</dd>
+<dt><strong><a name="web_browser_command" class="item">Web browser command</a></strong></dt>
+
+<dd>
+<p>This entry specifies the command line to launch a web browser.  It is used
+to access online content, like the Wiki and user guide.  Use '%s' to place
+the request URL in the command line.</p>
+</dd>
+<dt><strong><a name="display_leds_in_the_expert_infos_dialog_tab_labels" class="item">Display LEDs in the Expert Infos dialog tab labels</a></strong></dt>
+
+<dd>
+<p>This item determines if LED-like colored images are displayed in the
+Expert Infos dialog tab labels.</p>
+</dd>
+</dl>
+</dd>
+<dt><strong><a name="layout_preferences" class="item">Layout Preferences</a></strong></dt>
+
+<dd>
+<p>The <em>Layout</em> page lets you specify the general layout of the main window.
+You can choose from six different layouts and fill the three panes with the
+contents you like.</p>
+<dl>
+<dt><strong><a name="scrollbars" class="item">Scrollbars</a></strong></dt>
+
+<dd>
+<p>The vertical scrollbars in the three panes can be set to be either on
+the left or the right.</p>
+</dd>
+<dt><strong><a name="alternating_row_colors" class="item">Alternating row colors</a></strong></dt>
+
+<dt><strong><a name="hex_display" class="item">Hex Display</a></strong></dt>
+
+<dd>
+<p>The highlight method in the hex dump display for the selected protocol
+item can be set to use either inverse video, or bold characters.</p>
+</dd>
+<dt><strong><a name="toolbar_style" class="item">Toolbar style</a></strong></dt>
+
+<dt><strong><a name="filter_toolbar_placement" class="item">Filter toolbar placement</a></strong></dt>
+
+<dt><strong><a name="custom_window_title" class="item">Custom window title</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="column_preferences" class="item">Column Preferences</a></strong></dt>
+
+<dd>
+<p>The <em>Columns</em> page lets you specify the number, title, and format
+of each column in the packet list.</p>
+<p>The <em>Column title</em> entry is used to specify the title of the column
+displayed at the top of the packet list.  The type of data that the column
+displays can be specified using the <em>Column format</em> option menu.
+The row of buttons on the left perform the following actions:</p>
+<dl>
+<dt><strong><a name="new" class="item">New</a></strong></dt>
+
+<dd>
+<p>Adds a new column to the list.</p>
+</dd>
+<dt><strong><a name="delete" class="item">Delete</a></strong></dt>
+
+<dd>
+<p>Deletes the currently selected list item.</p>
+</dd>
+<dt><strong><a name="up_down" class="item">Up / Down</a></strong></dt>
+
+<dd>
+<p>Moves the selected list item up or down one position.</p>
+</dd>
+</dl>
+</dd>
+<dt><strong><a name="font_preferences" class="item">Font Preferences</a></strong></dt>
+
+<dd>
+<p>The <em>Font</em> page lets you select the font to be used for most text.</p>
+</dd>
+<dt><strong><a name="color_preferences" class="item">Color Preferences</a></strong></dt>
+
+<dd>
+<p>The <em>Colors</em> page can be used to change the color of the text
+displayed in the TCP stream window and for marked packets.  To change a color,
+simply select an attribute from the &quot;Set:&quot; menu and use the color selector to
+get the desired color.  The new text colors are displayed as a sample text.</p>
+</dd>
+<dt><strong><a name="capture_preferences" class="item">Capture Preferences</a></strong></dt>
+
+<dd>
+<p>The <em>Capture</em> page lets you specify various parameters for capturing
+live packet data; these are used the first time a capture is started.</p>
+<p>The <em>Interface:</em> combo box lets you specify the interface from which to
+capture packet data, or the name of a FIFO from which to get the packet
+data.</p>
+<p>The <em>Data link type:</em> option menu lets you, for some interfaces, select
+the data link header you want to see on the packets you capture.  For
+example, in some OSes and with some versions of libpcap, you can choose,
+on an 802.11 interface, whether the packets should appear as Ethernet
+packets (with a fake Ethernet header) or as 802.11 packets.</p>
+<p>The <em>Limit each packet to ... bytes</em> check box lets you set the
+snapshot length to use when capturing live data; turn on the check box,
+and then set the number of bytes to use as the snapshot length.</p>
+<p>The <em>Filter:</em> text entry lets you set a capture filter expression to be
+used when capturing.</p>
+<p>If any of the environment variables SSH_CONNECTION, SSH_CLIENT,
+REMOTEHOST, DISPLAY, or SESSIONNAME are set, Wireshark will create a
+default capture filter that excludes traffic from the hosts and ports
+defined in those variables.</p>
+<p>The <em>Capture packets in promiscuous mode</em> check box lets you specify
+whether to put the interface in promiscuous mode when capturing.</p>
+<p>The <em>Update list of packets in real time</em> check box lets you specify
+that the display should be updated as packets are seen.</p>
+<p>The <em>Automatic scrolling in live capture</em> check box lets you specify
+whether, in an &quot;Update list of packets in real time&quot; capture, the packet
+list pane should automatically scroll to show the most recently captured
+packets.</p>
+</dd>
+<dt><strong><a name="printing_preferences" class="item">Printing Preferences</a></strong></dt>
+
+<dd>
+<p>The radio buttons at the top of the <em>Printing</em> page allow you choose
+between printing packets with the <em>File:Print Packet</em> menu item as text
+or PostScript, and sending the output directly to a command or saving it
+to a file.  The <em>Command:</em> text entry box, on UNIX-compatible systems,
+is the command to send files to (usually <strong>lpr</strong>), and the <em>File:</em> entry
+box lets you enter the name of the file you wish to save to.
+Additionally, you can select the <em>File:</em> button to browse the file
+system for a particular save file.</p>
+</dd>
+<dt><strong><a name="name_resolution_preferences" class="item">Name Resolution Preferences</a></strong></dt>
+
+<dd>
+<p>The <em>Enable MAC name resolution</em>, <em>Enable network name resolution</em> and
+<em>Enable transport name resolution</em> check boxes let you specify whether
+MAC addresses, network addresses, and transport-layer port numbers
+should be translated to names.</p>
+<p>The <em>Enable concurrent DNS name resolution</em> allows Wireshark to send out
+multiple name resolution requests and not wait for the result before
+continuing dissection.  This speeds up dissection with network name
+resolution but initially may miss resolutions.  The number of concurrent
+requests can be set here as well.</p>
+<p><em>SMI paths</em></p>
+<p><em>SMI modules</em></p>
+</dd>
+<dt><strong><a name="rtp_player_preferences" class="item">RTP Player Preferences</a></strong></dt>
+
+<dd>
+<p>This page allows you to select the number of channels visible in the
+RTP player window.  It determines the height of the window, more channels
+are possible and visible by means of a scroll bar.</p>
+</dd>
+<dt><strong><a name="protocol_preferences" class="item">Protocol Preferences</a></strong></dt>
+
+<dd>
+<p>There are also pages for various protocols that Wireshark dissects,
+controlling the way Wireshark handles those protocols.</p>
+</dd>
+</dl>
+</dd>
+<dt><strong><a name="edit_capture_filter_list" class="item">Edit Capture Filter List</a></strong></dt>
+
+<dt><strong><a name="edit_display_filter_list" class="item">Edit Display Filter List</a></strong></dt>
+
+<dt><strong><a name="capture_filter" class="item">Capture Filter</a></strong></dt>
+
+<dt><strong><a name="display_filter" class="item">Display Filter</a></strong></dt>
+
+<dt><strong><a name="read_filter" class="item">Read Filter</a></strong></dt>
+
+<dt><strong><a name="search_filter" class="item">Search Filter</a></strong></dt>
+
+<dd>
+<p>The <em>Edit Capture Filter List</em> dialog lets you create, modify, and
+delete capture filters, and the <em>Edit Display Filter List</em> dialog lets
+you create, modify, and delete display filters.</p>
+<p>The <em>Capture Filter</em> dialog lets you do all of the editing operations
+listed, and also lets you choose or construct a filter to be used when
+capturing packets.</p>
+<p>The <em>Display Filter</em> dialog lets you do all of the editing operations
+listed, and also lets you choose or construct a filter to be used to
+filter the current capture being viewed.</p>
+<p>The <em>Read Filter</em> dialog lets you do all of the editing operations
+listed, and also lets you choose or construct a filter to be used to
+as a read filter for a capture file you open.</p>
+<p>The <em>Search Filter</em> dialog lets you do all of the editing operations
+listed, and also lets you choose or construct a filter expression to be
+used in a find operation.</p>
+<p>In all of those dialogs, the <em>Filter name</em> entry specifies a
+descriptive name for a filter, e.g.  <strong>Web and DNS traffic</strong>.  The
+<em>Filter string</em> entry is the text that actually describes the filtering
+action to take, as described above.The dialog buttons perform the
+following actions:</p>
+<dl>
+<dt><strong><a name="new2" class="item">New</a></strong></dt>
+
+<dd>
+<p>If there is text in the two entry boxes, creates a new associated list
+item.</p>
+</dd>
+<dt><strong><a name="edit" class="item">Edit</a></strong></dt>
+
+<dd>
+<p>Modifies the currently selected list item to match what's in the entry
+boxes.</p>
+</dd>
+<dt><strong><a name="delete2" class="item">Delete</a></strong></dt>
+
+<dd>
+<p>Deletes the currently selected list item.</p>
+</dd>
+<dt><strong><a name="add_expression" class="item">Add Expression...</a></strong></dt>
+
+<dd>
+<p>For display filter expressions, pops up a dialog box to allow you to
+construct a filter expression to test a particular field; it offers
+lists of field names, and, when appropriate, lists from which to select
+tests to perform on the field and values with which to compare it.  In
+that dialog box, the OK button will cause the filter expression you
+constructed to be entered into the <em>Filter string</em> entry at the current
+cursor position.</p>
+</dd>
+<dt><strong><a name="ok" class="item">OK</a></strong></dt>
+
+<dd>
+<p>In the <em>Capture Filter</em> dialog, closes the dialog box and makes the
+filter in the <em>Filter string</em> entry the filter in the <em>Capture
+Preferences</em> dialog.  In the <em>Display Filter</em> dialog, closes the dialog
+box and makes the filter in the <em>Filter string</em> entry the current
+display filter, and applies it to the current capture.  In the <em>Read
+Filter</em> dialog, closes the dialog box and makes the filter in the
+<em>Filter string</em> entry the filter in the <em>Open Capture File</em> dialog.
+In the <em>Search Filter</em> dialog, closes the dialog box and makes the
+filter in the <em>Filter string</em> entry the filter in the <em>Find Packet</em>
+dialog.</p>
+</dd>
+<dt><strong><a name="apply" class="item">Apply</a></strong></dt>
+
+<dd>
+<p>Makes the filter in the <em>Filter string</em> entry the current display
+filter, and applies it to the current capture.</p>
+</dd>
+<dt><strong><a name="save" class="item">Save</a></strong></dt>
+
+<dd>
+<p>If the list of filters being edited is the list of
+capture filters, saves the current filter list to the personal capture
+filters file, and if the list of filters being edited is the list of
+display filters, saves the current filter list to the personal display
+filters file.</p>
+</dd>
+<dt><strong><a name="close" class="item">Close</a></strong></dt>
+
+<dd>
+<p>Closes the dialog without doing anything with the filter in the <em>Filter
+string</em> entry.</p>
+</dd>
+</dl>
+</dd>
+<dt><strong><a name="the_color_filters_dialog" class="item">The Color Filters Dialog</a></strong></dt>
+
+<dd>
+<p>This dialog displays a list of color filters and allows it to be
+modified.</p>
+<dl>
+<dt><strong><a name="the_filter_list" class="item">THE FILTER LIST</a></strong></dt>
+
+<dd>
+<p>Single rows may be selected by clicking.  Multiple rows may be selected
+by using the ctrl and shift keys in combination with the mouse button.</p>
+</dd>
+<dt><strong><a name="new" class="item">NEW</a></strong></dt>
+
+<dd>
+<p>Adds a new filter at the bottom of the list and opens the Edit Color
+Filter dialog box.  You will have to alter the filter expression at
+least before the filter will be accepted.  The format of color filter
+expressions is identical to that of display filters.  The new filter is
+selected, so it may immediately be moved up and down, deleted or edited.
+To avoid confusion all filters are unselected before the new filter is
+created.</p>
+</dd>
+<dt><strong><a name="edit" class="item">EDIT</a></strong></dt>
+
+<dd>
+<p>Opens the Edit Color Filter dialog box for the selected filter. (If this
+button is disabled you may have more than one filter selected, making it
+ambiguous which is to be edited.)</p>
+</dd>
+<dt><strong><a name="enable" class="item">ENABLE</a></strong></dt>
+
+<dd>
+<p>Enables the selected color filter(s).</p>
+</dd>
+<dt><strong><a name="disable" class="item">DISABLE</a></strong></dt>
+
+<dd>
+<p>Disables the selected color filter(s).</p>
+</dd>
+<dt><strong><a name="delete" class="item">DELETE</a></strong></dt>
+
+<dd>
+<p>Deletes the selected color filter(s).</p>
+</dd>
+<dt><strong><a name="export" class="item">EXPORT</a></strong></dt>
+
+<dd>
+<p>Allows you to choose a file in which to save the current list of color
+filters.  You may also choose to save only the selected filters.  A
+button is provided to save the filters in the global color filters file
+(you must have sufficient permissions to write this file, of course).</p>
+</dd>
+<dt><strong><a name="import" class="item">IMPORT</a></strong></dt>
+
+<dd>
+<p>Allows you to choose a file containing color filters which are then
+added to the bottom of the current list.  All the added filters are
+selected, so they may be moved to the correct position in the list as a
+group.  To avoid confusion, all filters are unselected before the new
+filters are imported.  A button is provided to load the filters from the
+global color filters file.</p>
+</dd>
+<dt><strong><a name="clear" class="item">CLEAR</a></strong></dt>
+
+<dd>
+<p>Deletes your personal color filters file, reloads the global
+color filters file, if any, and closes the dialog.</p>
+</dd>
+<dt><strong><a name="up" class="item">UP</a></strong></dt>
+
+<dd>
+<p>Moves the selected filter(s) up the list, making it more likely that
+they will be used to color packets.</p>
+</dd>
+<dt><strong><a name="down" class="item">DOWN</a></strong></dt>
+
+<dd>
+<p>Moves the selected filter(s) down the list, making it less likely that
+they will be used to color packets.</p>
+</dd>
+<dt><strong><a name="ok2" class="item">OK</a></strong></dt>
+
+<dd>
+<p>Closes the dialog and uses the color filters as they stand.</p>
+</dd>
+<dt><strong><a name="apply" class="item">APPLY</a></strong></dt>
+
+<dd>
+<p>Colors the packets according to the current list of color filters, but
+does not close the dialog.</p>
+</dd>
+<dt><strong><a name="save" class="item">SAVE</a></strong></dt>
+
+<dd>
+<p>Saves the current list of color filters in your personal color filters
+file.  Unless you do this they will not be used the next time you start
+Wireshark.</p>
+</dd>
+<dt><strong><a name="close" class="item">CLOSE</a></strong></dt>
+
+<dd>
+<p>Closes the dialog without changing the coloration of the packets.  Note
+that changes you have made to the current list of color filters are not
+undone.</p>
+</dd>
+</dl>
+</dd>
+<dt><strong><a name="capture_options_dialog" class="item">Capture Options Dialog</a></strong></dt>
+
+<dd>
+<p>The <em>Capture Options Dialog</em> lets you specify various parameters for
+capturing live packet data.</p>
+<p>The <em>Interface:</em> field lets you specify the interface from which to
+capture packet data or a command from which to get the packet data via a
+pipe.</p>
+<p>The <em>Link layer header type:</em> field lets you specify the interfaces link
+layer header type.  This field is usually disabled, as most interface have
+only one header type.</p>
+<p>The <em>Capture packets in promiscuous mode</em> check box lets you specify
+whether the interface should be put into promiscuous mode when
+capturing.</p>
+<p>The <em>Limit each packet to ... bytes</em> check box and field lets you
+specify a maximum number of bytes per packet to capture and save; if the
+check box is not checked, the limit will be 65535 bytes.</p>
+<p>The <em>Capture Filter:</em> entry lets you specify the capture filter using a
+tcpdump-style filter string as described above.</p>
+<p>The <em>File:</em> entry lets you specify the file into which captured packets
+should be saved, as in the <em>Printer Options</em> dialog above.  If not
+specified, the captured packets will be saved in a temporary file; you
+can save those packets to a file with the <em>File:Save As</em> menu item.</p>
+<p>The <em>Use multiple files</em> check box lets you specify that the capture
+should be done in &quot;multiple files&quot; mode.  This option is disabled, if the
+<em>Update list of packets in real time</em> option is checked.</p>
+<p>The <em>Next file every ...  megabyte(s)</em> check box and fields lets
+you specify that a switch to a next file should be done
+if the specified filesize is reached.  You can also select the appropriate
+unit, but beware that the filesize has a maximum of 2 GiB.
+The check box is forced to be checked, as &quot;multiple files&quot; mode requires a
+file size to be specified.</p>
+<p>The <em>Next file every ... minute(s)</em> check box and fields lets
+you specify that the switch to a next file should be done after the specified
+time has elapsed, even if the specified capture size is not reached.</p>
+<p>The <em>Ring buffer with ... files</em> field lets you specify the number
+of files of a ring buffer.  This feature will capture into the first file
+again, after the specified number of files have been used.</p>
+<p>The <em>Stop capture after ... files</em> field lets you specify the number
+of capture files used, until the capture is stopped.</p>
+<p>The <em>Stop capture after ... packet(s)</em> check box and field let
+you specify that Wireshark should stop capturing after having captured
+some number of packets; if the check box is not checked, Wireshark will
+not stop capturing at some fixed number of captured packets.</p>
+<p>The <em>Stop capture after ... megabyte(s)</em> check box and field lets
+you specify that Wireshark should stop capturing after the file to which
+captured packets are being saved grows as large as or larger than some
+specified number of megabytes.  If the check box is not checked, Wireshark
+will not stop capturing at some capture file size (although the operating
+system on which Wireshark is running, or the available disk space, may still
+limit the maximum size of a capture file).  This option is disabled, if
+&quot;multiple files&quot; mode is used,</p>
+<p>The <em>Stop capture after ...  second(s)</em> check box and field let you
+specify that Wireshark should stop capturing after it has been capturing
+for some number of seconds; if the check box is not checked, Wireshark
+will not stop capturing after some fixed time has elapsed.</p>
+<p>The <em>Update list of packets in real time</em> check box lets you specify
+whether the display should be updated as packets are captured and, if
+you specify that, the <em>Automatic scrolling in live capture</em> check box
+lets you specify the packet list pane should automatically scroll to
+show the most recently captured packets as new packets arrive.</p>
+<p>The <em>Enable MAC name resolution</em>, <em>Enable network name resolution</em> and
+<em>Enable transport name resolution</em> check boxes let you specify whether
+MAC addresses, network addresses, and transport-layer port numbers
+should be translated to names.</p>
+</dd>
+<dt><strong><a name="about" class="item">About</a></strong></dt>
+
+<dd>
+<p>The <em>About</em> dialog lets you view various information about Wireshark.</p>
+</dd>
+<dt><strong><a name="about_wireshark" class="item">About:Wireshark</a></strong></dt>
+
+<dd>
+<p>The <em>Wireshark</em> page lets you view general information about Wireshark,
+like the installed version, licensing information and such.</p>
+</dd>
+<dt><strong><a name="about_authors" class="item">About:Authors</a></strong></dt>
+
+<dd>
+<p>The <em>Authors</em> page shows the author and all contributors.</p>
+</dd>
+<dt><strong><a name="about_folders" class="item">About:Folders</a></strong></dt>
+
+<dd>
+<p>The <em>Folders</em> page lets you view the directory names where Wireshark is
+searching it's various configuration and other files.</p>
+</dd>
+<dt><strong><a name="about_plugins" class="item">About:Plugins</a></strong></dt>
+
+<dd>
+<p>The <em>Plugins</em> page lets you view the dissector plugin modules
+available on your system.</p>
+<p>The <em>Plugins List</em> shows the name and version of each dissector plugin
+module found on your system.</p>
+<p>On Unix-compatible systems, the plugins are looked for in the following
+directories: the <em class="file">lib/wireshark/plugins/$VERSION</em> directory under the
+main installation directory (for example,
+<em class="file">/usr/local/lib/wireshark/plugins/$VERSION</em>), and then
+<em class="file">$HOME/.wireshark/plugins</em>.</p>
+<p>On Windows systems, the plugins are looked for in the following
+directories: <em class="file">plugins\$VERSION</em> directory under the main installation
+directory (for example, <em class="file">C:\Program Files\Wireshark\plugins\$VERSION</em>),
+and then <em class="file">%APPDATA%\Wireshark\plugins\$VERSION</em> (or, if %APPDATA% isn't
+defined, <em class="file">%USERPROFILE%\Application Data\Wireshark\plugins\$VERSION</em>).</p>
+<p>$VERSION is the version number of the plugin interface, which
+is typically the version number of Wireshark.  Note that a dissector
+plugin module may support more than one protocol; there is not
+necessarily a one-to-one correspondence between dissector plugin modules
+and protocols.  Protocols supported by a dissector plugin module are
+enabled and disabled using the <em>Edit:Protocols</em> dialog box, just as
+protocols built into Wireshark are.</p>
+</dd>
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="capture_filter_syntax">CAPTURE FILTER SYNTAX</a></h1>
+<p>See the manual page of pcap-filter(7) or, if that doesn't exist, <code>tcpdump(8)</code>,
+or, if that doesn't exist, <a href="http://wiki.wireshark.org/CaptureFilters">http://wiki.wireshark.org/CaptureFilters</a>.</p>
+<p>
+</p>
+<hr />
+<h1><a name="display_filter_syntax">DISPLAY FILTER SYNTAX</a></h1>
+<p>For a complete table of protocol and protocol fields that are filterable
+in <strong>Wireshark</strong> see the wireshark-filter(4) manual page.</p>
+<p>
+</p>
+<hr />
+<h1><a name="files">FILES</a></h1>
+<p>These files contains various <strong>Wireshark</strong> configuration settings.</p>
+<dl>
+<dt><strong><a name="preferences2" class="item">Preferences</a></strong></dt>
+
+<dd>
+<p>The <em class="file">preferences</em> files contain global (system-wide) and personal
+preference settings.  If the system-wide preference file exists, it is
+read first, overriding the default settings.  If the personal preferences
+file exists, it is read next, overriding any previous values.  Note: If
+the command line flag <strong>-o</strong> is used (possibly more than once), it will
+in turn override values from the preferences files.</p>
+<p>The preferences settings are in the form <em>prefname</em><strong>:</strong><em>value</em>,
+one per line,
+where <em>prefname</em> is the name of the preference
+and <em>value</em> is the value to
+which it should be set; white space is allowed between <strong>:</strong> and
+<em>value</em>.  A preference setting can be continued on subsequent lines by
+indenting the continuation lines with white space.  A <strong>#</strong> character
+starts a comment that runs to the end of the line:</p>
+<pre>
+  # Vertical scrollbars should be on right side?
+  # TRUE or FALSE (case-insensitive).
+  gui.scrollbar_on_right: TRUE</pre>
+<p>The global preferences file is looked for in the <em class="file">wireshark</em> directory
+under the <em class="file">share</em> subdirectory of the main installation directory (for
+example, <em class="file">/usr/local/share/wireshark/preferences</em>) on UNIX-compatible
+systems, and in the main installation directory (for example,
+<em class="file">C:\Program Files\Wireshark\preferences</em>) on Windows systems.</p>
+<p>The personal preferences file is looked for in <em class="file">$HOME/.wireshark/preferences</em> on
+UNIX-compatible systems and <em class="file">%APPDATA%\Wireshark\preferences</em> (or, if
+%APPDATA% isn't defined, <em class="file">%USERPROFILE%\Application
+Data\Wireshark\preferences</em>) on Windows systems.</p>
+<p>Note: Whenever the preferences are saved by using the <em>Save</em> button
+in the <em>Edit:Preferences</em> dialog box, your personal preferences file
+will be overwritten with the new settings, destroying any comments and
+unknown/obsolete settings that were in the file.</p>
+</dd>
+<dt><strong><a name="recent" class="item">Recent</a></strong></dt>
+
+<dd>
+<p>The <em class="file">recent</em> file contains personal settings (mostly GUI related) such
+as the current <strong>Wireshark</strong> window size.  The file is saved at program exit and
+read in at program start automatically.  Note: The command line flag <strong>-o</strong>
+may be used to override settings from this file.</p>
+<p>The settings in this file have the same format as in the <em class="file">preferences</em>
+files, and the same directory as for the personal preferences file is
+used.</p>
+<p>Note: Whenever Wireshark is closed, your recent file
+will be overwritten with the new settings, destroying any comments and
+unknown/obsolete settings that were in the file.</p>
+</dd>
+<dt><strong><a name="disabled" class="item">Disabled (Enabled) Protocols</a></strong></dt>
+
+<dd>
+<p>The <em class="file">disabled_protos</em> files contain system-wide and personal lists of
+protocols that have been disabled, so that their dissectors are never
+called.  The files contain protocol names, one per line, where the
+protocol name is the same name that would be used in a display filter
+for the protocol:</p>
+<pre>
+  http
+  tcp     # a comment</pre>
+<p>If a protocol is listed in the global <em class="file">disabled_protos</em> file, it is not
+displayed in the <em>Analyze:Enabled Protocols</em> dialog box, and so cannot
+be enabled by the user.</p>
+<p>The global <em class="file">disabled_protos</em> file uses the same directory as the global
+preferences file.</p>
+<p>The personal <em class="file">disabled_protos</em> file uses the same directory as the
+personal preferences file.</p>
+<p>Note: Whenever the disabled protocols list is saved by using the <em>Save</em>
+button in the <em>Analyze:Enabled Protocols</em> dialog box, your personal
+disabled protocols file will be overwritten with the new settings,
+destroying any comments that were in the file.</p>
+</dd>
+<dt><strong><a name="resolution" class="item">Name Resolution (hosts)</a></strong></dt>
+
+<dd>
+<p>If the personal <em class="file">hosts</em> file exists, it is
+used to resolve IPv4 and IPv6 addresses before any other
+attempts are made to resolve them.  The file has the standard <em class="file">hosts</em>
+file syntax; each line contains one IP address and name, separated by
+whitespace.  The same directory as for the personal preferences file is used.</p>
+<p>Capture filter name resolution is handled by libpcap on UNIX-compatible
+systems and WinPcap on Windows.  As such the Wireshark personal <em class="file">hosts</em> file
+will not be consulted for capture filter name resolution.</p>
+</dd>
+<dt><strong>Name Resolution (ethers)</strong></dt>
+
+<dd>
+<p>The <em class="file">ethers</em> files are consulted to correlate 6-byte hardware addresses to
+names.  First the personal <em class="file">ethers</em> file is tried and if an address is not
+found there the global <em class="file">ethers</em> file is tried next.</p>
+<p>Each line contains one hardware address and name, separated by
+whitespace.  The digits of the hardware address are separated by colons
+(:), dashes (-) or periods (.).  The same separator character must be
+used consistently in an address.  The following three lines are valid
+lines of an <em class="file">ethers</em> file:</p>
+<pre>
+  ff:ff:ff:ff:ff:ff          Broadcast
+  c0-00-ff-ff-ff-ff          TR_broadcast
+  00.00.00.00.00.00          Zero_broadcast</pre>
+<p>The global <em class="file">ethers</em> file is looked for in the <em class="file">/etc</em> directory on
+UNIX-compatible systems, and in the main installation directory (for
+example, <em class="file">C:\Program Files\Wireshark</em>) on Windows systems.</p>
+<p>The personal <em class="file">ethers</em> file is looked for in the same directory as the personal
+preferences file.</p>
+<p>Capture filter name resolution is handled by libpcap on UNIX-compatible
+systems and WinPcap on Windows.  As such the Wireshark personal <em class="file">ethers</em> file
+will not be consulted for capture filter name resolution.</p>
+</dd>
+<dt><strong>Name Resolution (manuf)</strong></dt>
+
+<dd>
+<p>The <em class="file">manuf</em> file is used to match the 3-byte vendor portion of a 6-byte
+hardware address with the manufacturer's name; it can also contain well-known
+MAC addresses and address ranges specified with a netmask.  The format of the
+file is the same as the <em class="file">ethers</em> files, except that entries such as:</p>
+<pre>
+  00:00:0C      Cisco</pre>
+<p>can be provided, with the 3-byte OUI and the name for a vendor, and
+entries such as:</p>
+<pre>
+  00-00-0C-07-AC/40     All-HSRP-routers</pre>
+<p>can be specified, with a MAC address and a mask indicating how many bits
+of the address must match.  The above entry, for example, has 40
+significant bits, or 5 bytes, and would match addresses from
+00-00-0C-07-AC-00 through 00-00-0C-07-AC-FF.  The mask need not be a
+multiple of 8.</p>
+<p>The <em class="file">manuf</em> file is looked for in the same directory as the global
+preferences file.</p>
+</dd>
+<dt><strong>Name Resolution (ipxnets)</strong></dt>
+
+<dd>
+<p>The <em class="file">ipxnets</em> files are used to correlate 4-byte IPX network numbers to
+names.  First the global <em class="file">ipxnets</em> file is tried and if that address is not
+found there the personal one is tried next.</p>
+<p>The format is the same as the <em class="file">ethers</em>
+file, except that each address is four bytes instead of six.
+Additionally, the address can be represented as a single hexadecimal
+number, as is more common in the IPX world, rather than four hex octets.
+For example, these four lines are valid lines of an <em class="file">ipxnets</em> file:</p>
+<pre>
+  C0.A8.2C.00              HR
+  c0-a8-1c-00              CEO
+  00:00:BE:EF              IT_Server1
+  110f                     FileServer3</pre>
+<p>The global <em class="file">ipxnets</em> file is looked for in the <em class="file">/etc</em> directory on
+UNIX-compatible systems, and in the main installation directory (for
+example, <em class="file">C:\Program Files\Wireshark</em>) on Windows systems.</p>
+<p>The personal <em class="file">ipxnets</em> file is looked for in the same directory as the
+personal preferences file.</p>
+</dd>
+<dt><strong><a name="capture_filters" class="item">Capture Filters</a></strong></dt>
+
+<dd>
+<p>The <em class="file">cfilters</em> files contain system-wide and personal capture filters.
+Each line contains one filter, starting with the string displayed in the
+dialog box in quotation marks, followed by the filter string itself:</p>
+<pre>
+  &quot;HTTP&quot; port 80
+  &quot;DCERPC&quot; port 135</pre>
+<p>The global <em class="file">cfilters</em> file uses the same directory as the
+global preferences file.</p>
+<p>The personal <em class="file">cfilters</em> file uses the same directory as the personal
+preferences file.  It is written through the Capture:Capture Filters
+dialog.</p>
+<p>If the global <em class="file">cfilters</em> file exists, it is used only if the personal
+<em class="file">cfilters</em> file does not exist; global and personal capture filters are
+not merged.</p>
+</dd>
+<dt><strong><a name="display_filters" class="item">Display Filters</a></strong></dt>
+
+<dd>
+<p>The <em class="file">dfilters</em> files contain system-wide and personal display filters.
+Each line contains one filter, starting with the string displayed in the
+dialog box in quotation marks, followed by the filter string itself:</p>
+<pre>
+  &quot;HTTP&quot; http
+  &quot;DCERPC&quot; dcerpc</pre>
+<p>The global <em class="file">dfilters</em> file uses the same directory as the
+global preferences file.</p>
+<p>The personal <em class="file">dfilters</em> file uses the same directory as the
+personal preferences file.  It is written through the Analyze:Display
+Filters dialog.</p>
+<p>If the global <em class="file">dfilters</em> file exists, it is used only if the personal
+<em class="file">dfilters</em> file does not exist; global and personal display filters are
+not merged.</p>
+</dd>
+<dt><strong><a name="filters" class="item">Color Filters (Coloring Rules)</a></strong></dt>
+
+<dd>
+<p>The <em class="file">colorfilters</em> files contain system-wide and personal color filters.
+Each line contains one filter, starting with the string displayed in the
+dialog box, followed by the corresponding display filter.  Then the
+background and foreground colors are appended:</p>
+<pre>
+  # a comment
+  @tcp@tcp@[59345,58980,65534][0,0,0]
+  @udp@udp@[28834,57427,65533][0,0,0]</pre>
+<p>The global <em class="file">colorfilters</em> file uses the same directory as the
+global preferences file.</p>
+<p>The personal <em class="file">colorfilters</em> file uses the same directory as the
+personal preferences file.  It is written through the View:Coloring Rules
+dialog.</p>
+<p>If the global <em class="file">colorfilters</em> file exists, it is used only if the personal
+<em class="file">colorfilters</em> file does not exist; global and personal color filters are
+not merged.</p>
+</dd>
+<dt><strong><a name="gtk_rc_files" class="item">GTK rc files</a></strong></dt>
+
+<dd>
+<p>The <em class="file">gtkrc</em> files contain system-wide and personal GTK theme settings.</p>
+<p>The global <em class="file">gtkrc</em> file uses the same directory as the
+global preferences file.</p>
+<p>The personal <em class="file">gtkrc</em> file uses the same directory as the personal
+preferences file.</p>
+</dd>
+<dt><strong><a name="plugins" class="item">Plugins</a></strong></dt>
+
+<dd>
+<p>See above in the description of the About:Plugins page.</p>
+</dd>
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="environment_variables">ENVIRONMENT VARIABLES</a></h1>
+<dl>
+<dt><strong><a name="wireshark_debug_ep_no_chunks" class="item">WIRESHARK_DEBUG_EP_NO_CHUNKS</a></strong></dt>
+
+<dd>
+<p>Normally per-packet memory is allocated in large &quot;chunks.&quot;  This behavior
+doesn't work well with debugging tools such as Valgrind or ElectricFence.
+Export this environment variable to force individual allocations.
+Note: disabling chunks also disables canaries (see below).</p>
+</dd>
+<dt><strong><a name="wireshark_debug_se_no_chunks" class="item">WIRESHARK_DEBUG_SE_NO_CHUNKS</a></strong></dt>
+
+<dd>
+<p>Normally per-file memory is allocated in large &quot;chunks.&quot;  This behavior
+doesn't work well with debugging tools such as Valgrind or ElectricFence.
+Export this environment variable to force individual allocations.
+Note: disabling chunks also disables canaries (see below).</p>
+</dd>
+<dt><strong><a name="wireshark_debug_ep_no_canary" class="item">WIRESHARK_DEBUG_EP_NO_CANARY</a></strong></dt>
+
+<dd>
+<p>Normally per-packet memory allocations are separated by &quot;canaries&quot; which
+allow detection of memory overruns.  This comes at the expense of some extra
+memory usage.  Exporting this environment variable disables these canaries.</p>
+</dd>
+<dt><strong><a name="wireshark_debug_se_use_canary" class="item">WIRESHARK_DEBUG_SE_USE_CANARY</a></strong></dt>
+
+<dd>
+<p>Exporting this environment variable causes per-file memory allocations to be
+protected with &quot;canaries&quot; which allow for detection of memory overruns.
+This comes at the expense of significant extra memory usage.</p>
+</dd>
+<dt><strong><a name="wireshark_debug_scrub_memory" class="item">WIRESHARK_DEBUG_SCRUB_MEMORY</a></strong></dt>
+
+<dd>
+<p>If this environment variable is set, the contents of per-packet and
+per-file memory is initialized to 0xBADDCAFE when the memory is allocated
+and is reset to 0xDEADBEEF when the memory is freed.  This functionality is
+useful mainly to developers looking for bugs in the way memory is handled.</p>
+</dd>
+<dt><strong><a name="wireshark_debug_wmem_override" class="item">WIRESHARK_DEBUG_WMEM_OVERRIDE</a></strong></dt>
+
+<dd>
+<p>Setting this environment variable forces the wmem framework to use the
+specified allocator backend for *all* allocations, regardless of which
+backend is normally specified by the code. This is mainly useful to developers
+when testing or debugging. See <em>README.wmem</em> in the source distribution for
+details.</p>
+</dd>
+<dt><strong><a name="wireshark_run_from_build_directory" class="item">WIRESHARK_RUN_FROM_BUILD_DIRECTORY</a></strong></dt>
+
+<dd>
+<p>This environment variable causes the plugins and other data files to be loaded
+from the build directory (where the program was compiled) rather than from the
+standard locations.  It has no effect when the program in question is running
+with root (or setuid) permissions on *NIX.</p>
+</dd>
+<dt><strong><a name="wireshark_data_dir" class="item">WIRESHARK_DATA_DIR</a></strong></dt>
+
+<dd>
+<p>This environment variable causes the various data files to be loaded from
+a directory other than the standard locations.  It has no effect when the
+program in question is running with root (or setuid) permissions on *NIX.</p>
+</dd>
+<dt><strong><a name="wireshark_python_dir" class="item">WIRESHARK_PYTHON_DIR</a></strong></dt>
+
+<dd>
+<p>This environment variable points to an alternate location for Python.
+It has no effect when the program in question is running with root (or setuid)
+permissions on *NIX.</p>
+</dd>
+<dt><strong><a name="erf_records_to_check" class="item">ERF_RECORDS_TO_CHECK</a></strong></dt>
+
+<dd>
+<p>This environment variable controls the number of ERF records checked when
+deciding if a file really is in the ERF format.  Setting this environment
+variable a number higher than the default (20) would make false positives
+less likely.</p>
+</dd>
+<dt><strong><a name="ipfix_records_to_check" class="item">IPFIX_RECORDS_TO_CHECK</a></strong></dt>
+
+<dd>
+<p>This environment variable controls the number of IPFIX records checked when
+deciding if a file really is in the IPFIX format.  Setting this environment
+variable a number higher than the default (20) would make false positives
+less likely.</p>
+</dd>
+<dt><strong><a name="wireshark_abort_on_dissector_bug" class="item">WIRESHARK_ABORT_ON_DISSECTOR_BUG</a></strong></dt>
+
+<dd>
+<p>If this environment variable is set, <strong>Wireshark</strong> will call <code>abort(3)</code>
+when a dissector bug is encountered.  <code>abort(3)</code> will cause the program to
+exit abnormally; if you are running <strong>Wireshark</strong> in a debugger, it
+should halt in the debugger and allow inspection of the process, and, if
+you are not running it in a debugger, it will, on some OSes, assuming
+your environment is configured correctly, generate a core dump file.
+This can be useful to developers attempting to troubleshoot a problem
+with a protocol dissector.</p>
+</dd>
+<dt><strong><a name="wireshark_ep_verify_pointers" class="item">WIRESHARK_EP_VERIFY_POINTERS</a></strong></dt>
+
+<dd>
+<p>This environment variable, if set, causes certain uses of pointers to be
+audited to ensure they do not point to memory that is deallocated after each
+packet has been fully dissected.  This can be useful to developers writing or
+auditing code.</p>
+</dd>
+<dt><strong><a name="wireshark_se_verify_pointers" class="item">WIRESHARK_SE_VERIFY_POINTERS</a></strong></dt>
+
+<dd>
+<p>This environment variable, if set, causes certain uses of pointers to be
+audited to ensure they do not point to memory that is deallocated after when
+a capture file is closed.  This can be useful to developers writing or
+auditing code.</p>
+</dd>
+<dt><strong><a name="wireshark_quit_after_capture" class="item">WIRESHARK_QUIT_AFTER_CAPTURE</a></strong></dt>
+
+<dd>
+<p>Cause <strong>Wireshark</strong> to exit after the end of the capture session.  This
+doesn't automatically start a capture; you must still use <strong>-k</strong> to do
+that.  You must also specify an autostop condition, e.g.  <strong>-c</strong> or <strong>-a
+duration:...</strong>.  This means that you will not be able to see the results
+of the capture after it stops; it's primarily useful for testing.</p>
+</dd>
+<dt><strong><a name="wireshark_abort_on_out_of_memory" class="item">WIRESHARK_ABORT_ON_OUT_OF_MEMORY</a></strong></dt>
+
+<dd>
+<p>This environment variable, if present, causes <code>abort(3)</code> to be called if certain
+out-of-memory conditions (which normally result in an exception and an
+explanatory error message) are experienced.  This can be useful to developers
+debugging out-of-memory conditions.</p>
+</dd>
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="see_also">SEE ALSO</a></h1>
+<p>wireshark-filter(4), <code>tshark(1)</code>, <code>editcap(1)</code>, <code>pcap(3)</code>, <code>dumpcap(1)</code>, <code>mergecap(1)</code>,
+text2pcap(1), pcap-filter(7) or <code>tcpdump(8)</code></p>
+<p>
+</p>
+<hr />
+<h1><a name="notes">NOTES</a></h1>
+<p>The latest version of <strong>Wireshark</strong> can be found at
+<a href="http://www.wireshark.org">http://www.wireshark.org</a>.</p>
+<p>HTML versions of the Wireshark project man pages are available at:
+<a href="http://www.wireshark.org/docs/man-pages">http://www.wireshark.org/docs/man-pages</a>.</p>
+<p>
+</p>
+<hr />
+<h1><a name="authors">AUTHORS</a></h1>
+<pre><p>Original Author
+-------- ------
+Gerald Combs            &lt;gerald[AT]wireshark.org&gt;</p>
+<p>Contributors
+------------
+Gilbert Ramirez         &lt;gram[AT]alumni.rice.edu&gt; 
+Thomas Bottom           &lt;tom.bottom[AT]labxtechnologies.com&gt; 
+Chris Pane              &lt;chris.pane[AT]labxtechnologies.com&gt; 
+Hannes R. Boehm         &lt;hannes[AT]boehm.org&gt; 
+Mike Hall               &lt;mike[AT]hallzone.net&gt; 
+Bobo Rajec              &lt;bobo[AT]bsp-consulting.sk&gt; 
+Laurent Deniel          &lt;laurent.deniel[AT]free.fr&gt; 
+Don Lafontaine          &lt;lafont02[AT]cn.ca&gt; 
+Guy Harris              &lt;guy[AT]alum.mit.edu&gt; 
+Simon Wilkinson         &lt;sxw[AT]dcs.ed.ac.uk&gt; 
+J&ouml;rg Mayer              &lt;jmayer[AT]loplof.de&gt; 
+Martin Maciaszek        &lt;fastjack[AT]i-s-o.net&gt; 
+Didier Jorand           &lt;Didier.Jorand[AT]alcatel.fr&gt; 
+Jun-ichiro itojun Hagino &lt;itojun[AT]itojun.org&gt; 
+Richard Sharpe          &lt;sharpe[AT]ns.aus.com&gt; 
+John McDermott          &lt;jjm[AT]jkintl.com&gt; 
+Jeff Jahr               &lt;jjahr[AT]shastanets.com&gt; 
+Brad Robel-Forrest      &lt;bradr[AT]watchguard.com&gt; 
+Ashok Narayanan         &lt;ashokn[AT]cisco.com&gt; 
+Aaron Hillegass         &lt;aaron[AT]classmax.com&gt; 
+Jason Lango             &lt;jal[AT]netapp.com&gt; 
+Johan Feyaerts          &lt;Johan.Feyaerts[AT]siemens.com&gt; 
+Olivier Abad            &lt;oabad[AT]noos.fr&gt; 
+Thierry Andry           &lt;Thierry.Andry[AT]advalvas.be&gt; 
+Jeff Foster             &lt;jfoste[AT]woodward.com&gt; 
+Peter Torvals           &lt;petertv[AT]xoommail.com&gt; 
+Christophe Tronche      &lt;ch.tronche[AT]computer.org&gt; 
+Nathan Neulinger        &lt;nneul[AT]umr.edu&gt; 
+Tomislav Vujec          &lt;tvujec[AT]carnet.hr&gt; 
+Kojak                   &lt;kojak[AT]bigwig.net&gt; 
+Uwe Girlich             &lt;Uwe.Girlich[AT]philosys.de&gt; 
+Warren Young            &lt;tangent[AT]mail.com&gt; 
+Heikki Vatiainen        &lt;hessu[AT]cs.tut.fi&gt; 
+Greg Hankins            &lt;gregh[AT]twoguys.org&gt; 
+Jerry Talkington        &lt;jtalkington[AT]users.sourceforge.net&gt; 
+Dave Chapeskie          &lt;dchapes[AT]ddm.on.ca&gt; 
+James Coe               &lt;jammer[AT]cin.net&gt; 
+Bert Driehuis           &lt;driehuis[AT]playbeing.org&gt; 
+Stuart Stanley          &lt;stuarts[AT]mxmail.net&gt; 
+John Thomes             &lt;john[AT]ensemblecom.com&gt; 
+Laurent Cazalet         &lt;laurent.cazalet[AT]mailclub.net&gt; 
+Thomas Parvais          &lt;thomas.parvais[AT]advalvas.be&gt; 
+Gerrit Gehnen           &lt;G.Gehnen[AT]atrie.de&gt; 
+Craig Newell            &lt;craign[AT]cheque.uq.edu.au&gt; 
+Ed Meaney               &lt;emeaney[AT]cisco.com&gt; 
+Dietmar Petras          &lt;DPetras[AT]ELSA.de&gt; 
+Fred Reimer             &lt;fwr[AT]ga.prestige.net&gt; 
+Florian Lohoff          &lt;flo[AT]rfc822.org&gt; 
+Jochen Friedrich        &lt;jochen+ethereal[AT]scram.de&gt; 
+Paul Welchinski         &lt;paul.welchinski[AT]telusplanet.net&gt; 
+Doug Nazar              &lt;nazard[AT]dragoninc.on.ca&gt; 
+Andreas Sikkema         &lt;h323[AT]ramdyne.nl&gt; 
+Mark Muhlestein         &lt;mmm[AT]netapp.com&gt; 
+Graham Bloice           &lt;graham.bloice[AT]trihedral.com&gt; 
+Ralf Schneider          &lt;ralf.schneider[AT]alcatel.se&gt; 
+Yaniv Kaul              &lt;mykaul[AT]gmail.com&gt; 
+Paul Ionescu            &lt;paul[AT]acorp.ro&gt; 
+Mark Burton             &lt;markb[AT]ordern.com&gt; 
+Stefan Raab             &lt;sraab[AT]cisco.com&gt; 
+Mark Clayton            &lt;clayton[AT]shore.net&gt; 
+Michael Rozhavsky       &lt;mike[AT]tochna.technion.ac.il&gt; 
+Dug Song                &lt;dugsong[AT]monkey.org&gt; 
+Michael T&uuml;xen           &lt;tuexen[AT]fh-muenster.de&gt; 
+Bruce Korb              &lt;bkorb[AT]sco.com&gt; 
+Jose Pedro Oliveira     &lt;jpo[AT]di.uminho.pt&gt; 
+David Frascone          &lt;dave[AT]frascone.com&gt; 
+Peter Kjellerstedt      &lt;pkj[AT]axis.com&gt; 
+Phil Techau             &lt;phil_t[AT]altavista.net&gt; 
+Wes Hardaker            &lt;hardaker[AT]users.sourceforge.net&gt; 
+Robert Tsai             &lt;rtsai[AT]netapp.com&gt; 
+Craig Metz              &lt;cmetz[AT]inner.net&gt; 
+Per Flock               &lt;per.flock[AT]axis.com&gt; 
+Jack Keane              &lt;jkeane[AT]OpenReach.com&gt; 
+Brian Wellington        &lt;bwelling[AT]xbill.org&gt; 
+Santeri Paavolainen     &lt;santtu[AT]ssh.com&gt; 
+Ulrich Kiermayr         &lt;uk[AT]ap.univie.ac.at&gt; 
+Neil Hunter             &lt;neil.hunter[AT]energis-squared.com&gt; 
+Ralf Holzer             &lt;ralf[AT]well.com&gt; 
+Craig Rodrigues         &lt;rodrigc[AT]attbi.com&gt; 
+Ed Warnicke             &lt;hagbard[AT]physics.rutgers.edu&gt; 
+Johan Jorgensen         &lt;johan.jorgensen[AT]axis.com&gt; 
+Frank Singleton         &lt;frank.singleton[AT]ericsson.com&gt; 
+Kevin Shi               &lt;techishi[AT]ms22.hinet.net&gt; 
+Mike Frisch             &lt;mfrisch[AT]isurfer.ca&gt; 
+Burke Lau               &lt;burke_lau[AT]agilent.com&gt; 
+Martti Kuparinen        &lt;martti.kuparinen[AT]iki.fi&gt; 
+David Hampton           &lt;dhampton[AT]mac.com&gt; 
+Kent Engstr&ouml;m           &lt;kent[AT]unit.liu.se&gt; 
+Ronnie Sahlberg         &lt;ronnie_sahlberg[AT]ozemail.com.au&gt; 
+Borosa Tomislav         &lt;tomislav.borosa[AT]SIEMENS.HR&gt; 
+Alexandre P. Ferreira   &lt;alexandref[AT]tcoip.com.br&gt; 
+Simharajan Srishylam    &lt;Simharajan.Srishylam[AT]netapp.com&gt; 
+Greg Kilfoyle           &lt;gregk[AT]redback.com&gt; 
+James E. Flemer         &lt;jflemer[AT]acm.jhu.edu&gt; 
+Peter Lei               &lt;peterlei[AT]cisco.com&gt; 
+Thomas Gimpel           &lt;thomas.gimpel[AT]ferrari.de&gt; 
+Albert Chin             &lt;china[AT]thewrittenword.com&gt; 
+Charles Levert          &lt;charles[AT]comm.polymtl.ca&gt; 
+Todd Sabin              &lt;tas[AT]webspan.net&gt; 
+Eduardo P&eacute;rez Ureta     &lt;eperez[AT]dei.inf.uc3m.es&gt; 
+Martin Thomas           &lt;martin_a_thomas[AT]yahoo.com&gt; 
+Hartmut Mueller         &lt;hartmut[AT]wendolene.ping.de&gt; 
+Michal Melerowicz       &lt;Michal.Melerowicz[AT]nokia.com&gt; 
+Hannes Gredler          &lt;hannes[AT]juniper.net&gt; 
+Inoue                   &lt;inoue[AT]ainet.or.jp&gt; 
+Olivier Biot            &lt;obiot.ethereal[AT]gmail.com&gt; 
+Patrick Wolfe           &lt;pjw[AT]zocalo.cellular.ameritech.com&gt; 
+Martin Held             &lt;Martin.Held[AT]icn.siemens.de&gt; 
+Riaan Swart             &lt;rswart[AT]cs.sun.ac.za&gt; 
+Christian Lacunza       &lt;celacunza[AT]gmx.net&gt; 
+Scott Renfro            &lt;scott[AT]renfro.org&gt; 
+Juan Toledo             &lt;toledo[AT]users.sourceforge.net&gt; 
+Jean-Christian Pennetier &lt;jeanchristian.pennetier[AT]rd.francetelecom.fr&gt; 
+Jian Yu                 &lt;bgp4news[AT]yahoo.com&gt; 
+Eran Mann               &lt;emann[AT]opticalaccess.com&gt; 
+Andy Hood               &lt;ajhood[AT]fl.net.au&gt; 
+Randy McEoin            &lt;rmceoin[AT]ahbelo.com&gt; 
+Edgar Iglesias          &lt;edgar.iglesias[AT]axis.com&gt; 
+Martina Obermeier       &lt;Martina.Obermeier[AT]icn.siemens.de&gt; 
+Javier Achirica         &lt;achirica[AT]ttd.net&gt; 
+B. Johannessen          &lt;bob[AT]havoq.com&gt; 
+Thierry Pelle           &lt;thierry.pelle[AT]laposte.net&gt; 
+Francisco Javier Cabello &lt;fjcabello[AT]vtools.es&gt; 
+Laurent Rabret          &lt;laurent.rabret[AT]rd.francetelecom.fr&gt; 
+nuf si                  &lt;gnippiks[AT]yahoo.com&gt; 
+Jeff Morriss            &lt;jeff.morriss.ws[AT]gmail.com&gt; 
+Aamer Akhter            &lt;aakhter[AT]cisco.com&gt; 
+Pekka Savola            &lt;pekkas[AT]netcore.fi&gt; 
+David Eisner            &lt;cradle[AT]Glue.umd.edu&gt; 
+Steve Dickson           &lt;steved[AT]talarian.com&gt; 
+Markus Seehofer         &lt;Markus.Seehofer[AT]hirschmann.de&gt; 
+Lee Berger              &lt;lberger[AT]roy.org&gt; 
+Motonori Shindo         &lt;motonori[AT]shin.do&gt; 
+Terje Krogdahl          &lt;tekr[AT]nextra.com&gt; 
+Jean-Francois Mule      &lt;jfm[AT]cablelabs.com&gt; 
+Thomas Wittwer          &lt;thomas.wittwer[AT]iclip.ch&gt; 
+Matthias Nyffenegger    &lt;matthias.nyffenegger[AT]iclip.ch&gt; 
+Palle Lyckegaard        &lt;Palle[AT]lyckegaard.dk&gt; 
+Nicolas Balkota         &lt;balkota[AT]mac.com&gt; 
+Tom Uijldert            &lt;Tom.Uijldert[AT]cmg.nl&gt; 
+Akira Endoh             &lt;endoh[AT]netmarks.co.jp&gt; 
+Graeme Hewson           &lt;graeme.hewson[AT]oracle.com&gt; 
+Pasi Eronen             &lt;pe[AT]iki.fi&gt; 
+Georg von Zezschwitz    &lt;gvz[AT]2scale.net&gt; 
+Steffen Weinreich       &lt;steve[AT]weinreich.org&gt; 
+Marc Milgram            &lt;ethereal[AT]mmilgram.NOSPAMmail.net&gt; 
+Gordon McKinney         &lt;gordon[AT]night-ray.com&gt; 
+Pavel Novotny           &lt;Pavel.Novotny[AT]icn.siemens.de&gt; 
+Shinsuke Suzuki         &lt;suz[AT]kame.net&gt; 
+Andrew C. Feren         &lt;acferen[AT]yahoo.com&gt; 
+Tomas Kukosa            &lt;tomas.kukosa[AT]siemens.com&gt; 
+Andreas Stockmeier      &lt;a.stockmeier[AT]avm.de&gt; 
+Pekka Nikander          &lt;pekka.nikander[AT]nomadiclab.com&gt; 
+Hamish Moffatt          &lt;hamish[AT]cloud.net.au&gt; 
+Kazushi Sugyo           &lt;k-sugyou[AT]nwsl.mesh.ad.jp&gt; 
+Tim Potter              &lt;tpot[AT]samba.org&gt; 
+Raghu Angadi            &lt;rangadi[AT]inktomi.com&gt; 
+Taisuke Sasaki          &lt;sasaki[AT]soft.net.fujitsu.co.jp&gt; 
+Tim Newsham             &lt;newsham[AT]lava.net&gt; 
+Tom Nisbet              &lt;Tnisbet[AT]VisualNetworks.com&gt; 
+Darren New              &lt;dnew[AT]san.rr.com&gt; 
+Pavel Mores             &lt;pvl[AT]uh.cz&gt; 
+Bernd Becker            &lt;bb[AT]bernd-becker.de&gt; 
+Heinz Prantner          &lt;Heinz.Prantner[AT]radisys.com&gt; 
+Irfan Khan              &lt;ikhan[AT]qualcomm.com&gt; 
+Jayaram V.R             &lt;vjayar[AT]cisco.com&gt; 
+Dinesh Dutt             &lt;ddutt[AT]cisco.com&gt; 
+Nagarjuna Venna         &lt;nvenna[AT]Brixnet.com&gt; 
+Jirka Novak             &lt;j.novak[AT]netsystem.cz&gt; 
+Ricardo Barroetave&ntilde;a    &lt;rbarroetavena[AT]veufort.com&gt; 
+Alan Harrison           &lt;alanharrison[AT]mail.com&gt; 
+Mike Frantzen           &lt;frantzen[AT]w4g.org&gt; 
+Charlie Duke            &lt;cduke[AT]fvc.com&gt; 
+Alfred Arnold           &lt;Alfred.Arnold[AT]elsa.de&gt; 
+Dermot Bradley          &lt;dermot.bradley[AT]openwave.com&gt; 
+Adam Sulmicki           &lt;adam[AT]cfar.umd.edu&gt; 
+Kari Tiirikainen        &lt;kari.tiirikainen[AT]nokia.com&gt; 
+John Mackenzie          &lt;John.A.Mackenzie[AT]t-online.de&gt; 
+Peter Valchev           &lt;pvalchev[AT]openbsd.org&gt; 
+Alex Rozin              &lt;Arozin[AT]mrv.com&gt; 
+Jouni Malinen           &lt;jkmaline[AT]cc.hut.fi&gt; 
+Paul E. Erkkila         &lt;pee[AT]erkkila.org&gt; 
+Jakob Schlyter          &lt;jakob[AT]openbsd.org&gt; 
+Jim Sienicki            &lt;sienicki[AT]issanni.com&gt; 
+Steven French           &lt;sfrench[AT]us.ibm.com&gt; 
+Diana Eichert           &lt;deicher[AT]sandia.gov&gt; 
+Blair Cooper            &lt;blair[AT]teamon.com&gt; 
+Kikuchi Ayamura         &lt;ayamura[AT]ayamura.org&gt; 
+Didier Gautheron        &lt;dgautheron[AT]magic.fr&gt; 
+Phil Williams           &lt;csypbw[AT]comp.leeds.ac.uk&gt; 
+Kevin Humphries         &lt;khumphries[AT]networld.com&gt; 
+Erik Nordstr&ouml;m          &lt;erik.nordstrom[AT]it.uu.se&gt; 
+Devin Heitmueller       &lt;dheitmueller[AT]netilla.com&gt; 
+Chenjiang Hu            &lt;chu[AT]chiaro.com&gt; 
+Kan Sasaki              &lt;sasaki[AT]fcc.ad.jp&gt; 
+Stefan Wenk             &lt;stefan.wenk[AT]gmx.at&gt; 
+Ruud Linders            &lt;ruud[AT]lucent.com&gt; 
+Andrew Esh              &lt;Andrew.Esh[AT]tricord.com&gt; 
+Greg Morris             &lt;GMORRIS[AT]novell.com&gt; 
+Dirk Steinberg          &lt;dws[AT]dirksteinberg.de&gt; 
+Kari Heikkila           &lt;kari.o.heikkila[AT]nokia.com&gt; 
+Olivier Dreux           &lt;Olivier.Dreux[AT]alcatel.fr&gt; 
+Michael Stiller         &lt;ms[AT]2scale.net&gt; 
+Antti Tuominen          &lt;ajtuomin[AT]tml.hut.fi&gt; 
+Martin Gignac           &lt;lmcgign[AT]mobilitylab.net&gt; 
+John Wells              &lt;wells[AT]ieee.org&gt; 
+Loic Tortay             &lt;tortay[AT]cc.in2p3.fr&gt; 
+Steve Housley           &lt;Steve_Housley[AT]eur.3com.com&gt; 
+Peter Hawkins           &lt;peter[AT]hawkins.emu.id.au&gt; 
+Bill Fumerola           &lt;billf[AT]FreeBSD.org&gt; 
+Chris Waters            &lt;chris[AT]waters.co.nz&gt; 
+Solomon Peachy          &lt;pizza[AT]shaftnet.org&gt; 
+Jaime Fournier          &lt;Jaime.Fournier[AT]hush.com&gt; 
+Markus Steinmann        &lt;ms[AT]seh.de&gt; 
+Tsutomu Mieno           &lt;iitom[AT]utouto.com&gt; 
+Yasuhiro Shirasaki      &lt;yasuhiro[AT]gnome.gr.jp&gt; 
+Anand V. Narwani        &lt;anand[AT]narwani.org&gt; 
+Christopher K. St. John &lt;cks[AT]distributopia.com&gt; 
+Nix                     &lt;nix[AT]esperi.demon.co.uk&gt; 
+Liviu Daia              &lt;Liviu.Daia[AT]imar.ro&gt; 
+Richard Urwin           &lt;richard[AT]soronlin.org.uk&gt; 
+Prabhakar Krishnan      &lt;Prabhakar.Krishnan[AT]netapp.com&gt; 
+Jim McDonough           &lt;jmcd[AT]us.ibm.com&gt; 
+Sergei Shokhor          &lt;sshokhor[AT]uroam.com&gt; 
+Hidetaka Ogawa          &lt;ogawa[AT]bs2.qnes.nec.co.jp&gt; 
+Jan Kratochvil          &lt;short[AT]ucw.cz&gt; 
+Alfred Koebler          &lt;ak[AT]icon-sult.de&gt; 
+Vassilii Khachaturov    &lt;Vassilii.Khachaturov[AT]comverse.com&gt; 
+Bill Studenmund         &lt;wrstuden[AT]wasabisystems.com&gt; 
+Brian Bruns             &lt;camber[AT]ais.org&gt; 
+Flavio Poletti          &lt;flavio[AT]polettix.it&gt; 
+Marcus Haebler          &lt;haeblerm[AT]yahoo.com&gt; 
+Ulf Lamping             &lt;ulf.lamping[AT]web.de&gt; 
+Matthew Smart           &lt;smart[AT]monkey.org&gt; 
+Luke Howard             &lt;lukeh[AT]au.padl.com&gt; 
+PC Drew                 &lt;drewpc[AT]ibsncentral.com&gt; 
+Renzo Tomas             &lt;renzo.toma[AT]xs4all.nl&gt; 
+Clive A. Stubbings      &lt;eth[AT]vjet.demon.co.uk&gt; 
+Steve Langasek          &lt;vorlon[AT]netexpress.net&gt; 
+Brad Hards              &lt;bhards[AT]bigpond.net.au&gt; 
+cjs 2895                &lt;cjs2895[AT]hotmail.com&gt; 
+Lutz Jaenicke           &lt;Lutz.Jaenicke[AT]aet.TU-Cottbus.DE&gt; 
+Senthil Kumar Nagappan  &lt;sknagappan[AT]yahoo.com&gt; 
+Jason House             &lt;jhouse[AT]mitre.org&gt; 
+Peter Fales             &lt;psfales[AT]lucent.com&gt; 
+Fritz Budiyanto         &lt;fritzb88[AT]yahoo.com&gt; 
+Jean-Baptiste Marchand  &lt;Jean-Baptiste.Marchand[AT]hsc.fr&gt; 
+Andreas Trauer          &lt;andreas.trauer[AT]siemens.com&gt; 
+Ronald Henderson        &lt;Ronald.Henderson[AT]CognicaseUSA.com&gt; 
+Brian Ginsbach          &lt;ginsbach[AT]cray.com&gt; 
+Dave Richards           &lt;d_m_richards[AT]comcast.net&gt; 
+Martin Regner           &lt;martin.regner[AT]chello.se&gt; 
+Jason Greene            &lt;jason[AT]inetgurus.net&gt; 
+Marco Molteni           &lt;mmolteni[AT]cisco.com&gt; 
+James Harris            &lt;jharris[AT]fourhorsemen.org&gt; 
+rmkml                   &lt;rmkml[AT]wanadoo.fr&gt; 
+Anders Broman           &lt;anders.broman[AT]ericsson.com&gt; 
+Christian Falckenberg   &lt;christian.falckenberg[AT]nortelnetworks.com&gt; 
+Huagang Xie             &lt;xie[AT]lids.org&gt; 
+Pasi Kovanen            &lt;Pasi.Kovanen[AT]tahoenetworks.fi&gt; 
+Teemu Rinta-aho         &lt;teemu.rinta-aho[AT]nomadiclab.com&gt; 
+Martijn Schipper        &lt;mschipper[AT]globespanvirata.com&gt; 
+Wayne Parrott           &lt;wayne_p[AT]pacific.net.au&gt; 
+Laurent Meyer           &lt;laurent.meyer6[AT]wanadoo.fr&gt; 
+Lars Roland             &lt;Lars.Roland[AT]gmx.net&gt; 
+Miha Jemec              &lt;m.jemec[AT]iskratel.si&gt; 
+Markus Friedl           &lt;markus[AT]openbsd.org&gt; 
+Todd Montgomery         &lt;tmontgom[AT]tibco.com&gt; 
+emre                    &lt;emre[AT]flash.net&gt; 
+Stephen Shelley         &lt;steve.shelley[AT]attbi.com&gt; 
+Erwin Rol               &lt;erwin[AT]erwinrol.com&gt; 
+Duncan Laurie           &lt;duncan[AT]sun.com&gt; 
+Tony Schene             &lt;schene[AT]pcisys.net&gt; 
+Matthijs Melchior       &lt;mmelchior[AT]xs4all.nl&gt; 
+Garth Bushell           &lt;gbushell[AT]elipsan.com&gt; 
+Mark C. Brown           &lt;mbrown[AT]hp.com&gt; 
+Can Erkin Acar          &lt;canacar[AT]eee.metu.edu.tr&gt; 
+Martin Warnes           &lt;martin.warnes[AT]ntlworld.com&gt; 
+J Bruce Fields          &lt;bfields[AT]fieldses.org&gt; 
+tz                      &lt;tz1[AT]mac.com&gt; 
+Jeff Liu                &lt;jqliu[AT]broadcom.com&gt; 
+Niels Koot              &lt;Niels.Koot[AT]logicacmg.com&gt; 
+Lionel Ains             &lt;lains[AT]gmx.net&gt; 
+Joakim Wiberg           &lt;jow[AT]hms-networks.com&gt; 
+Jeff Rizzo              &lt;riz[AT]boogers.sf.ca.us&gt; 
+Christoph Wiest         &lt;ch.wiest[AT]tesionmail.de&gt; 
+Xuan Zhang              &lt;xz[AT]aemail4u.com&gt; 
+Thierry Martin          &lt;thierry.martin[AT]accellent-group.com&gt; 
+Oleg Terletsky          &lt;oleg.terletsky[AT]comverse.com&gt; 
+Michael Lum             &lt;mlum[AT]telostech.com&gt; 
+Shiang-Ming Huang       &lt;smhuang[AT]pcs.csie.nctu.edu.tw&gt; 
+Tony Lindstrom          &lt;tony.lindstrom[AT]ericsson.com&gt; 
+Niklas Ogren            &lt;niklas.ogren[AT]71.se&gt; 
+Jesper Peterson         &lt;jesper[AT]endace.com&gt; 
+Giles Scott             &lt;gscott[AT]arubanetworks.com&gt; 
+Vincent Jardin          &lt;vincent.jardin[AT]6wind.com&gt; 
+Jean-Michel Fayard      &lt;jean-michel.fayard[AT]moufrei.de&gt; 
+Josef Korelus           &lt;jkor[AT]quick.cz&gt; 
+Brian K. Teravskis      &lt;Brian_Teravskis[AT]Cargill.com&gt; 
+Nathan Jennings         &lt;njgm890[AT]gmail.com&gt; 
+Hans Viens              &lt;hviens[AT]mediatrix.com&gt; 
+Kevin A. Noll           &lt;kevin.noll[AT]versatile.com&gt; 
+Emanuele Caratti        &lt;wiz[AT]libero.it&gt; 
+Graeme Reid             &lt;graeme.reid[AT]norwoodsystems.com&gt; 
+Lars Ruoff              &lt;lars.ruoff[AT]sxb.bsf.alcatel.fr&gt; 
+Samuel Qu               &lt;samuel.qu[AT]utstar.com&gt; 
+Baktha Muralitharan     &lt;muralidb[AT]cisco.com&gt; 
+Lo&iuml;c Minier             &lt;lool[AT]dooz.org&gt; 
+Marcel Holtmann         &lt;marcel[AT]holtmann.org&gt; 
+Scott Emberley          &lt;scotte[AT]netinst.com&gt; 
+Brian Fundakowski Feldman &lt;bfeldman[AT]fla.fujitsu.com&gt; 
+Yuriy Sidelnikov        &lt;ysidelnikov[AT]hotmail.com&gt; 
+Matthias Drochner       &lt;M.Drochner[AT]fz-juelich.de&gt; 
+Dave Sclarsky           &lt;dave_sclarsky[AT]cnt.com&gt; 
+Scott Hovis             &lt;scott.hovis[AT]ums.msfc.nasa.gov&gt; 
+David Fort              &lt;david.fort[AT]irisa.fr&gt; 
+Felix Fei               &lt;felix.fei[AT]utstar.com&gt; 
+Christoph Neusch        &lt;christoph.neusch[AT]nortelnetworks.com&gt; 
+Jan Kiszka              &lt;jan.kiszka[AT]web.de&gt; 
+Joshua Craig Douglas    &lt;jdouglas[AT]enterasys.com&gt; 
+Dick Gooris             &lt;gooris[AT]alcatel-lucent.com&gt; 
+Michael Shuldman        &lt;michaels[AT]inet.no&gt; 
+Tadaaki Nagao           &lt;nagao[AT]iij.ad.jp&gt; 
+Aaron Woo               &lt;woo[AT]itd.nrl.navy.mil&gt; 
+Chris Wilson            &lt;chris[AT]mxtelecom.com&gt; 
+Rolf Fiedler            &lt;Rolf.Fiedler[AT]Innoventif.com&gt; 
+Alastair Maw            &lt;ethereal[AT]almaw.com&gt; 
+Sam Leffler             &lt;sam[AT]errno.com&gt; 
+Martin Mathieson        &lt;martin.r.mathieson[AT]googlemail.com&gt; 
+Christian Wagner        &lt;Christian.Wagner[AT]stud.uni-karlsruhe.de&gt; 
+Edwin Calo              &lt;calo[AT]fusemail.com&gt; 
+Ian Schorr              &lt;ischorr[AT]comcast.net&gt; 
+Rowan McFarland         &lt;rmcfarla[AT]cisco.com&gt; 
+John Engelhart          &lt;johne[AT]zang.com&gt; 
+Ryuji Somegawa          &lt;ryuji-so[AT]is.aist-nara.ac.jp&gt; 
+metatech                &lt;metatechbe[AT]gmail.com&gt; 
+Brian Wheeler           &lt;Brian.Wheeler[AT]arrisi.com&gt; 
+Josh Bailey             &lt;joshbailey[AT]lucent.com&gt; 
+Jelmer Vernooij         &lt;jelmer[AT]samba.org&gt; 
+Duncan Sargeant         &lt;dunc-ethereal-dev[AT]rcpt.to&gt; 
+Love H&ouml;rnquist &Aring;strand  &lt;lha[AT]it.su.se&gt; 
+Lukas Pokorny           &lt;maskis[AT]seznam.cz&gt; 
+Carlos Pignataro        &lt;cpignata[AT]cisco.com&gt; 
+Thomas Anders           &lt;thomas.anders[AT]blue-cable.de&gt; 
+Rich Coe                &lt;Richard.Coe[AT]med.ge.com&gt; 
+Dominic B&eacute;chaz          &lt;bdo[AT]zhwin.ch&gt; 
+Richard van der Hoff	&lt;richardv[AT]mxtelecom.com&gt; 
+Shaun Jackman		&lt;sjackman[AT]gmail.com&gt; 
+Jon Oberheide           &lt;jon[AT]oberheide.org&gt; 
+Henry Ptasinski		&lt;henryp[AT]broadcom.com&gt; 
+Roberto Morro		&lt;roberto.morro[AT]telecomitalia.it&gt; 
+Chris Maynard		&lt;Christopher.Maynard[AT]GTECH.COM&gt; 
+SEKINE Hideki		&lt;sekineh[AT]gf7.so-net.ne.jp&gt; 
+Jeff Connelly		&lt;shellreef+mp2p[AT]gmail.com&gt; 
+Irene R&uuml;ngeler		&lt;i.ruengeler[AT]fh-muenster.de 
+M. Ortega y Strupp	&lt;moys[AT]loplof.de&gt; 
+Kelly Byrd		&lt;kbyrd-ethereal[AT]memcpy.com&gt; 
+Luis Ontanon		&lt;luis.ontanon[AT]gmail.com&gt; 
+Luca Deri		&lt;deri[AT]ntop.org&gt; 
+Viorel Suman		&lt;vsuman[AT]avmob.ro&gt; 
+Alejandro Vaquero	&lt;alejandro.vaquero[AT]verso.com&gt; 
+Francesco Fondelli	&lt;francesco.fondelli[AT]gmail.com&gt; 
+Artem Tamazov           &lt;artem.tamazov[AT]tellabs.com&gt; 
+Dmitry Trebich          &lt;dmitry.trebich[AT]gmail.com&gt; 
+Bill Meier		&lt;wmeier[AT]newsguy.com&gt; 
+Susanne Edlund		&lt;Susanne.Edlund[AT]ericsson.com&gt; 
+Victor Stratan		&lt;hidralisk[AT]yahoo.com&gt; 
+Peter Johansson		&lt;PeterJohansson73[AT]gmail.com&gt; 
+Stefan Metzmacher	&lt;metze[AT]samba.org&gt; 
+Abhijit Menon-Sen	&lt;ams[AT]oryx.com&gt; 
+James Fields		&lt;jvfields[AT]tds.net&gt; 
+Kevin Johnson		&lt;kjohnson[AT]secureideas.net&gt; 
+Mike Duigou		&lt;bondolo[AT]dev.java.net&gt; 
+Deepak Jain		&lt;jain1971[AT]yahoo.com&gt; 
+Stefano Pettini		&lt;spettini[AT]users.sourceforge.net&gt; 
+Jon Ringle		&lt;ml-ethereal[AT]ringle.org&gt; 
+Tim Endean		&lt;endeant[AT]hotmail.com&gt; 
+Charlie Lenahan		&lt;clenahan[AT]fortresstech.com&gt; 
+Takeshi Nakashima	&lt;T.Nakashima[AT]jp.yokogawa.com&gt; 
+Shoichi Sakane		&lt;sakane[AT]tanu.org&gt; 
+Michael Richardson	&lt;Michael.Richardson[AT]protiviti.com&gt; 
+Olivier Jacques		&lt;olivier.jacques[AT]hp.com&gt; 
+Francisco Alcoba	&lt;francisco.alcoba[AT]ericsson.com&gt; 
+Nils O. Sel&aring;sdal	&lt;noselasd[AT]asgaard.homelinux.org&gt; 
+Guillaume Chazarain 	&lt;guichaz[AT]yahoo.fr&gt; 
+Angelo Bannack		&lt;angelo.bannack[AT]siemens.com&gt; 
+Paolo Frigo		&lt;paolofrigo[AT]gmail.com&gt; 
+Jeremy J Ouellette	&lt;jouellet[AT]scires.com&gt; 
+Aboo Valappil		&lt;valappil_aboo[AT]emc.com&gt; 
+Fred Hoekstra		&lt;fred.hoekstra[AT]philips.com&gt; 
+Ankur Aggarwal		&lt;ankur[AT]in.athenasemi.com&gt; 
+Lucian Piros		&lt;lpiros[AT]avmob.ro&gt; 
+Juan Gonzalez		&lt;juan.gonzalez[AT]pikatech.com&gt; 
+Brian Bogora		&lt;brian_bogora[AT]mitel.com&gt; 
+Jim Young		&lt;sysjhy[AT]langate.gsu.edu&gt; 
+Jeff Snyder		&lt;jeff[AT]mxtelecom.com&gt; 
+William Fiveash		&lt;William.Fiveash[AT]sun.com&gt; 
+Graeme Lunt		&lt;graeme.lunt[AT]smhs.co.uk&gt; 
+Menno Andriesse		&lt;s5066[AT]nc3a.nato.int&gt; 
+Stig Bj&oslash;rlykke		&lt;stig[AT]bjorlykke.org&gt; 
+Kyle J. Harms		&lt;kyle.j.harms[AT]boeing.com&gt; 
+Eric Wedel		&lt;ewedel[AT]bluearc.com&gt; 
+Secfire			&lt;secfire[AT]gmail.com&gt; 
+Eric Hultin		&lt;Eric.Hultin[AT]arrisi.com&gt; 
+Paolo Abeni		&lt;paolo.abeni[AT]email.it&gt; 
+W. Borgert		&lt;debacle[AT]debian.org&gt; 
+Frederic Roudaut	&lt;frederic.roudaut[AT]irisa.fr&gt; 
+Christoph Scholz	&lt;scholz_ch[AT]web.de&gt; 
+Wolfgang Hansmann	&lt;hansmann[AT]cs.uni-bonn.de&gt; 
+Kees Cook		&lt;kees[AT]outflux.net&gt; 
+Thomas Dreibholz	&lt;dreibh[AT]iem.uni-due.de&gt; 
+Authesserre Samuel	&lt;sauthess[AT]gmail.com&gt; 
+Balint Reczey		&lt;balint[AT]balintreczey.hu&gt; 
+Stephen Fisher		&lt;stephenfisher-wireshark[AT]outlook.com&gt; 
+Krzysztof Burghardt	&lt;krzysztof[AT]burghardt.pl&gt; 
+Peter Racz		&lt;racz[AT]ifi.unizh.ch&gt; 
+Jakob Bratkovic		&lt;j.bratkovic[AT]iskratel.si&gt; 
+Mark Lewis		&lt;mlewis[AT]altera.com&gt; 
+David Buechi		&lt;bhd[AT]zhwin.ch&gt; 
+Bill Florac		&lt;bill.florac[AT]etcconnect.com&gt; 
+Alex Burlyga		&lt;Alex.Burlyga[AT]netapp.com&gt; 
+Douglas Pratley		&lt;Douglas.pratley[AT]detica.com&gt; 
+Giorgio Tino		&lt;giorgio.tino[AT]cacetech.com&gt; 
+Davide Schiera		&lt;davide.schiera[AT]riverbed.com&gt; 
+Sebastien Tandel	&lt;sebastien[AT]tandel.be&gt; 
+Clay Jones		&lt;clay.jones[AT]email.com&gt; 
+Kriang Lerdsuwanakij	&lt;lerdsuwa[AT]users.sourceforge.net&gt; 
+Abhik Sarkar 		&lt;sarkar.abhik[AT]gmail.com&gt; 
+Robin Seggelmann	&lt;seggelmann[AT]fh-muenster.de&gt; 
+Chris Bontje		&lt;cbontje[AT]gmail.com&gt; 
+Ryan Wamsley		&lt;wamslers[AT]sbcglobal.net&gt; 
+Dave Butt		&lt;davidbutt[AT]mxtelecom.com&gt; 
+Julian Cable		&lt;julian_cable[AT]yahoo.com&gt; 
+Joost Yervante Damad	&lt;joost[AT]teluna.org&gt; 
+Martin Sustrik		&lt;sustrik[AT]imatix.com&gt;  
+Jon Smirl		&lt;jonsmirl[AT]gmail.com&gt; 
+David Kennedy		&lt;sgsguy[AT]gmail.com&gt; 
+Matthijs Mekking	&lt;matthijs[AT]mlnetlabs.nl&gt; 
+Dustin Johnson		&lt;dustin[AT]dustinj.us&gt; 
+Victor Fajardo		&lt;vfajardo[AT]tari.toshiba.com&gt; 
+Tamas Regos		&lt;tamas.regos[AT]ericsson.com&gt; 
+M&ocirc;she van der Sterre	&lt;moshevds[AT]gmail.com&gt; 
+Rob Casey		&lt;rcasey[AT]gmail.com&gt; 
+Ted Percival		&lt;ted[AT]midg3t.net&gt; 
+Marc Petit-Huguenin	&lt;marc[AT]petit-huguenin.org&gt; 
+Florent Drouin		&lt;florent.drouin[AT]alcatel-lucent.fr&gt; 
+Karen Feng		&lt;kfeng[AT]fas.harvard.edu&gt; 
+Stephen Croll		&lt;croll[AT]mobilemetrics.net&gt; 
+Jens Br&auml;uer		&lt;jensb[AT]cs.tu-berlin.de&gt; 
+Sake Blok		&lt;sake[AT]euronet.nl&gt; 
+Fulko Hew		&lt;fulko.hew[AT]gmail.com&gt; 
+Yukiyo Akisada		&lt;Yukiyo.Akisada[AT]jp.yokogawa.com&gt; 
+Andy Chu		&lt;chu.dev[AT]gmail.com&gt; 
+Shane Kearns		&lt;shane.kearns[AT]symbian.com&gt; 
+Loris Degioanni		&lt;loris.degioanni[AT]riverbed.com&gt; 
+Sven Meier		&lt;msv[AT]zhwin.ch&gt; 
+Holger Pfrommer		&lt;hpfrommer[AT]hilscher.com&gt; 
+Hariharan Ananthakrishnan &lt;hariharan.a[AT]gmail.com&gt; 
+Hannes K&auml;lber		&lt;hannes.kaelber--wireshark[AT]x2e.de&gt; 
+Stephen Donnelly	&lt;stephen[AT]endace.com&gt; 
+Philip Frey		&lt;frey.philip[AT]gmail.com&gt; 
+Yves Geissbuehler	&lt;yves.geissbuehler[AT]gmail.com&gt; 
+Shigeo Nakamura		&lt;naka_shigeo[AT]yahoo.co.jp&gt; 
+Sven Eckelmann		&lt;sven[AT]narfation.org&gt; 
+Edward J. Paradise	&lt;pdice[AT]cisco.com&gt; 
+Brian Stormont		&lt;nospam[AT]stormyprods.com&gt; 
+Vincent Helfre		&lt;vincent.helfre[AT]ericsson.com&gt; 
+Brooss			&lt;brooss.teambb[AT]gmail.com&gt; 
+Joan Rami&oacute;		&lt;joan[AT]ramio.cat&gt; 
+David Castleford	&lt;david.castleford[AT]orange-ftgroup.com&gt; 
+Peter Harris		&lt;pharris[AT]opentext.com&gt; 
+Martin Lutz		&lt;MartinL[AT]copadata.at&gt; 
+Johnny Mitrevski	&lt;mitrevj[AT]hotmail.com&gt; 
+Neil Horman		&lt;nhorman[AT]tuxdriver.com&gt; 
+Andreas Schuler		&lt;krater[AT]badterrorist.com&gt; 
+Matthias Wenzel		&lt;dect[AT]mazzoo.de&gt; 
+Christian Durrer	&lt;christian.durrer[AT]sensemail.ch&gt; 
+Naoyoshi Ueda		&lt;piyomaru3141[AT]gmail.com&gt; 
+Javier Cardona		&lt;javier[AT]cozybit.com&gt; 
+Jens Steinhauser	&lt;jens.steinhauser[AT]omicron.at&gt; 
+Julien Kerihuel		&lt;j.kerihuel[AT]openchange.org&gt; 
+Vincenzo Condoleo	&lt;vcondole[AT]hsr.ch&gt; 
+Mohammad Ebrahim Mohammadi Panah &lt;mebrahim[AT]gmail.com&gt; 
+Greg Schwendimann	&lt;gregs[AT]iol.unh.edu&gt; 
+Nick Lewis		&lt;nick.lewis[AT]atltelecom.com&gt; 
+Fred Fierling		&lt;fff[AT]exegin.com&gt; 
+Samu Varjonen		&lt;samu.varjonen[AT]hiit.fi&gt; 
+Alexis La Goutte	&lt;alexis.lagoutte[AT]gmail.com&gt; 
+Varun Notibala		&lt;nbvarun[AT]gmail.com&gt; 
+Nathan Hartwell		&lt;nhartwell[AT]gmail.com&gt; 
+Don Chirieleison	&lt;donc[AT]mitre.org&gt; 
+Harald Welte		&lt;laforge[AT]gnumonks.org&gt; 
+Chris Costa		&lt;chcosta75[AT]hotmail.com&gt; 
+Bruno Pr&eacute;mont		&lt;bonbons[AT]linux-vserver.org&gt; 
+Florian Forster		&lt;octo[AT]verplant.org&gt; 
+Ivan Sy Jr.		&lt;ivan_jr[AT]yahoo.com&gt; 
+Matthieu Patou		&lt;mat[AT]matws.net&gt; 
+Kovarththanan Rajaratnam &lt;kovarththanan.rajaratnam[AT]gmail.com&gt; 
+Matt Watchinski		&lt;mwatchinski[AT]sourcefire.com&gt; 
+Ravi Kondamuru		&lt;Ravi.Kondamuru[AT]citrix.com&gt; 
+Jan Gerbecks		&lt;jan.gerbecks[AT]stud.uni-due.de&gt; 
+Vladimir Smrekar	&lt;vladimir.smrekar[AT]gmail.com&gt; 
+Tobias Erichsen 	&lt;t.erichsen[AT]gmx.de&gt; 
+Erwin van Eijk		&lt;erwin.vaneijk[AT]gmail.com&gt; 
+Venkateshwaran Dorai	&lt;venkateshwaran.d[AT]gmail.com&gt; 
+Ben Greear		&lt;greearb[AT]candelatech.com&gt; 
+Richard K&uuml;mmel		&lt;r.kuemmel[AT]beckhoff.de&gt; 
+Yi Yu			&lt;yiyu.inbox[AT]gmail.com&gt; 
+Aniruddha A		&lt;aniruddha.a[AT]gmail.com&gt; 
+David Aggeler		&lt;david_aggeler[AT]hispeed.ch&gt; 
+Jens Kilian		&lt;jjk[AT]acm.org&gt; 
+David Bond		&lt;mokon[AT]mokon.net&gt; 
+Paul J. Metzger		&lt;pjm[AT]ll.mit.edu&gt; 
+Robert Hogan		&lt;robert[AT]roberthogan.net&gt; 
+Torrey Atcitty		&lt;torrey.atcitty[AT]harman.com&gt; 
+Dave Olsen		&lt;dave.olsen[AT]harman.com&gt; 
+Craig Gunther		&lt;craig.gunther[AT]harman.com&gt; 
+Levi Pearson		&lt;levi.pearson[AT]harman.com&gt; 
+Allan M. Madsen		&lt;allan.m[AT]madsen.dk&gt; 
+Slava			&lt;slavak[AT]gmail.com&gt; 
+H.sivank		&lt;hsivank[AT]gmail.com&gt; 
+Edgar Gladkich		&lt;edgar.gladkich[AT]inacon.de&gt; 
+Michael Bernhard	&lt;michael.bernhard[AT]bfh.ch&gt; 
+Holger Hans Peter Freyther	&lt;zecke[AT]selfish.org&gt; 
+Jose Pico		&lt;jose[AT]taddong.com&gt; 
+David Perez		&lt;david[AT]taddong.com&gt; 
+H&aring;kon Nessj&oslash;en		&lt;haakon.nessjoen[AT]gmail.com&gt; 
+Herbert Lischka		&lt;herbert[AT]lischka-berlin.de&gt; 
+Felix Kr&auml;mer		&lt;sauter-cumulus[AT]de.sauter-bc.com&gt; 
+Tom Hughes		&lt;tom[AT]compton.nu&gt; 
+Owen Kirby		&lt;osk[AT]exegin.com&gt; 
+Colin O'Flynn		&lt;coflynn[AT]newae.com&gt; 
+Juha Siltanen		&lt;juha.siltanen[AT]nsn.com&gt; 
+Cal Turney		&lt;turney_cal[AT]emc.com&gt; 
+Lukasz Kotasa		&lt;lukasz.kotasa[AT]tieto.com&gt; 
+Jason Masker		&lt;jason[AT]masker.net&gt; 
+Giuliano Fabris		&lt;giuliano.fabris[AT]appeartv.com&gt; 
+Alexander Koeppe	&lt;format_c[AT]online.de&gt; 
+Holger Grandy 		&lt;Holger.Grandy[AT]bmw-carit.de&gt; 
+Hadriel Kaplan		&lt;hadrielk[AT]yahoo.com&gt; 
+Srinivasa Pradeep	&lt;sippyemail-wireshark[AT]yahoo.com&gt; 
+Lori Tribble		&lt;ljtconsulting[AT]gmail.com&gt; 
+Thomas Boehne		&lt;TBoehne[AT]ADwin.de&gt; 
+Gerhard Gappmeier	&lt;gerhard.gappmeier[AT]ascolab.com&gt; 
+David Katz		&lt;dkatz[AT]airspan.com&gt; 
+Toralf F&ouml;rster		&lt;toralf.foerster[AT]gmx.de&gt; 
+St&eacute;phane Bryant		&lt;stephane[AT]glycon.org&gt; 
+Emil Wojak		&lt;emil[AT]wojak.eu&gt; 
+Steve Huston		&lt;shuston[AT]riverace.com&gt; 
+Lor&aacute;nd Jakab		&lt;ljakab[AT]ac.upc.edu&gt; 
+Grzegorz Szczytowski	&lt;Grzegorz.Szczytowski[AT]gmail.com&gt;  
+Martin Kaiser		&lt;martin[AT]kaiser.cx&gt; 
+Jakub Zawadzki		&lt;darkjames-ws[AT]darkjames.pl&gt; 
+Roland Knall		&lt;rknall[AT]gmail.com&gt; 
+Xiao Xiangquan		&lt;xiaoxiangquan[AT]gmail.com&gt; 
+Hans-Christoph Schemmel	&lt;hans-christoph.schemmel[AT]cinterion.com&gt; 
+Tyson Key		&lt;tyson.key[AT]gmail.com&gt; 
+Johannes Jochen		&lt;johannes.jochen[AT]belden.com&gt; 
+Florian Fainelli	&lt;florian[AT]openwrt.org&gt; 
+Daniel Willmann		&lt;daniel[AT]totalueberwachung.de&gt; 
+Brian Cavagnolo		&lt;brian[AT]cozybit.com&gt; 
+Allison			&lt;aobourn[AT]isilon.com&gt; 
+Edwin Groothuis		&lt;wireshark[AT]mavetju.org&gt; 
+Andrew Kampjes		&lt;andrew.kampjes[AT]endace.com&gt; 
+Kurnia Hendrawan	&lt;kurnia.hendrawan[AT]consistec.de&gt; 
+Leonard Tracy		&lt;letracy[AT]cisco.com&gt; 
+Elliott Aldrich		&lt;elliott[AT]aldrichart.com&gt; 
+Glenn Matthews		&lt;glenn.matthews[AT]cisco.com&gt; 
+Donnie Savage		&lt;dsavage[AT]cisco.com&gt; 
+Spenser Sheng		&lt;spenser.sheng[AT]ericsson.com&gt; 
+Benjamin Stocks		&lt;bmstocks[AT]ra.rockwell.com&gt; 
+Florian Reichert	&lt;refl[AT]zhaw.ch&gt; 
+Martin Renold		&lt;reld[AT]zhaw.ch&gt; 
+Iain Arnell		&lt;iarnell[AT]epo.org&gt; 
+Mariusz Okr&oacute;j		&lt;okrojmariusz[AT]gmail.com&gt; 
+Ivan Lawrow		&lt;ivan.lawrow[AT]jennic.com&gt; 
+Kari Vatjus-Anttila	&lt;kari.vatjus-anttila[AT]cie.fi&gt; 
+Shobhank Sharma		&lt;ssharma5[AT]ncsu.edu&gt; 
+Salil Kanitkar		&lt;sskanitk[AT]ncsu.edu&gt; 
+Michael Sakaluk		&lt;mdsakalu[AT]ncsu.edu&gt; 
+Mayuresh Raut		&lt;msraut[AT]ncsu.edu&gt; 
+Sheetal Kshirsagar	&lt;sdkshirs[AT]ncsu.edu&gt; 
+Andrew Williams		&lt;anwilli5[AT]ncsu.edu&gt; 
+Per Liedberg		&lt;per.liedberg[AT]ericsson.com&gt; 
+Gaurav Tungatkar	&lt;gauravstt[AT]gmail.com&gt; 
+Bill Schiller		&lt;bill.schiller[AT]emerson.com&gt; 
+Aditya Ambadkar		&lt;arambadk[AT]ncsu.edu&gt; 
+Diana Chris		&lt;dvchris[AT]ncsu.edu&gt; 
+Guy Martin		&lt;gmsoft[AT]tuxicoman.be&gt; 
+Deepti Ragha		&lt;dlragha[AT]ncsu.edu&gt; 
+Niels de Vos		&lt;ndevos[AT]redhat.com&gt; 
+Clement Marrast		&lt;clement.marrast[AT]molex.com&gt; 
+Jacob Nordgren		&lt;jnordgren[AT]gmail.com&gt; 
+Rishie Sharma		&lt;rishie[AT]kth.se&gt; 
+Richard Stearn		&lt;richard[AT]rns-stearn.demon.co.uk&gt; 
+Tobias Rutz		&lt;tobias.rutz[AT]work-microwave.de&gt; 
+Michal Labedzki		&lt;michal.labedzki[AT]tieto.com&gt; 
+Wido Kelling		&lt;kellingwido[AT]aol.com&gt; 
+Kaushal Shah		&lt;kshah3[AT]ncsu.edu&gt; 
+Subramanian Ramachandran &lt;sramach6[AT]ncsu.edu&gt; 
+Manuel Hofer		&lt;manuel[At]mnlhfr.at&gt; 
+Gaurav Patwardhan	&lt;gspatwar[AT]ncsu.edu&gt; 
+Peter Hatina		&lt;phatina[AT]redhat.com&gt; 
+Tomasz Moń		&lt;desowin[AT]gmail.com&gt;</p>
+<p>and by:</p>
+<p><table cellspacing="0" cellpadding="0"><tr><td>Georgi Guninski<td>&lt;guninski[AT]guninski.com&gt;
+<tr><td>Jason Copenhaver<td>&lt;jcopenha[AT]typedef.org&gt;
+<tr><td>Eric Perie<td>&lt;eric.perie[AT]colubris.com&gt;
+<tr><td>David Yon<td>&lt;yon[AT]tacticalsoftware.com&gt;
+<tr><td>Marcio Franco<td>&lt;franco.marcio[AT]rd.francetelecom.fr&gt;
+<tr><td>Kaloian Stoilov<td>&lt;kalkata[AT]yahoo.com&gt;
+<tr><td>Steven Lass<td>&lt;stevenlass[AT]mail.com&gt;
+<tr><td>Gregory Stark<td>&lt;gsstark[AT]mit.edu&gt;
+<tr><td>Darren Steele<td>&lt;steeley[AT]steeley.co.uk&gt;
+<tr><td>Michael Kopp<td>&lt;michael.kopp[AT]isarnet.de&gt;
+<tr><td>Bernd Leibing<td>&lt;bernd.leibing[AT]kiz.uni-ulm.de&gt;
+<tr><td>Chris Heath<td>&lt;chris[AT]heathens.co.nz&gt;
+<tr><td>Gisle Vanem<td>&lt;gvanem[AT]broadpark.no&gt;
+<tr><td>Ritchie<td>&lt;ritchie[AT]tipsybottle.com&gt;
+<tr><td>Aki Immonen<td>&lt;aki.immonen[AT]golftalma.fi&gt;
+<tr><td>David E. Weekly<td>&lt;david[AT]weekly.org&gt;
+<tr><td>Steve Ford<td>&lt;sford[AT]geeky-boy.com&gt;
+<tr><td>Masaki Chikama<td>&lt;masaki-c[AT]is.aist-nara.ac.jp&gt;
+<tr><td>Mohammad Hanif<td>&lt;mhanif[AT]nexthop.com&gt;
+<tr><td>Reinhard Speyerer<td>&lt;rspmn[AT]arcor.de&gt;
+<tr><td>Patrick Kursawe<td>&lt;phosphan[AT]gentoo.org&gt;
+<tr><td>Arsen Chaloyan<td>&lt;achaloyan[AT]yahoo.com&gt;
+<tr><td><td>&lt;melerski[AT]poczta.onet.pl&gt;
+<tr><td>Arnaud Jacques<td>&lt;webmaster[AT]securiteinfo.com&gt;
+<tr><td>D. Manzella<td>&lt;manzella[AT]lucent.com&gt;
+<tr><td>Jari Mustajarvi<td>&lt;jari.mustajarvi[AT]nokia.com&gt;
+<tr><td>Pierre Juhen<td>&lt;pierre.juhen[AT]wanadoo.fr&gt;
+<tr><td>David Richards<td>&lt;drichards[AT]alum.mit.edu&gt;
+<tr><td>Shusaku Ueda<td>&lt;ueda[AT]sra.co.jp&gt;
+<tr><td>Jonathan Perkins<td>&lt;jonathan.perkins[AT]ipaccess.com&gt;
+<tr><td>Holger Schurig<td>&lt;h.schurig[AT]mn-logistik.de&gt;
+<tr><td>Peter J. Creath<td>&lt;peter-ethereal[AT]creath.net&gt;
+<tr><td>Magnus Hansson<td>&lt;mah[AT]hms.se&gt;
+<tr><td>Pavel Kankovsky<td>&lt;kan[AT]dcit.cz&gt;
+<tr><td>Nick Black<td>&lt;dank[AT]reflexsecurity.com&gt;
+<tr><td>Bill Guyton<td>&lt;guyton[AT]bguyton.com&gt;
+<tr><td>Chernishov Yury<td>&lt;Chernishov[AT]iskrauraltel.ru&gt;
+<tr><td>Thomas Palmer<td>&lt;Thomas.Palmer[AT]Gunter.AF.mil&gt;
+<tr><td>Clinton Work<td>&lt;clinton[AT]scripty.com&gt;
+<tr><td>Joe Marcus Clarke<td>&lt;marcus[AT]marcuscom.com&gt;
+<tr><td>Kendy Kutzner<td>&lt;kutzner[AT]tm.uka.de&gt;
+<tr><td>James H. Cloos Jr.<td>&lt;cloos[AT]jhcloos.com&gt;
+<tr><td>Tim Farley<td>&lt;tfarley[AT]iss.net&gt;
+<tr><td>Daniel Thompson<td>&lt;daniel.thompson[AT]st.com&gt;
+<tr><td>Chris Jepeway<td>&lt;thai-dragon[AT]eleven29.com&gt;
+<tr><td>Matthew Bradley<td>&lt;matthew.bradley[AT]cnsonline.net&gt;
+<tr><td>Nathan Alger<td>&lt;nathan[AT]wasted.com&gt;
+<tr><td>Stas Grabois<td>&lt;sagig[AT]radware.com&gt;
+<tr><td>Ainsley Pereira<td>&lt;APereira[AT]Witness.com&gt;
+<tr><td>Philippe Mazeau<td>&lt;philippe.mazeau[AT]swissvoice.net&gt;
+<tr><td>Carles Kishimoto<td>&lt;ckishimo[AT]ac.upc.es&gt;
+<tr><td>Dennis Lim<td>&lt;Dennis.Lim[AT]motorola.com&gt;
+<tr><td><td>&lt;postadal[AT]suse.cz&gt;
+<tr><td>Martin van der Werff<td>&lt;martin[AT]vanderwerff.org&gt;
+<tr><td>Marco van den Bovenkamp<td>&lt;marco[AT]linuxgoeroe.dhs.org&gt;
+<tr><td>Ming Zhang<td>&lt;mingz[AT]ele.uri.edu&gt;
+<tr><td>Neil Piercy<td>&lt;Neil.Piercy[AT]ipaccess.com&gt;
+<tr><td>R&eacute;mi Denis-Courmont<td>&lt;courmisch[AT]via.ecp.fr&gt;
+<tr><td>Thomas Palmer<td>&lt;tpalmer[AT]elmore.rr.com&gt;
+<tr><td>M&aring;rten Svantesson<td>&lt;f95-msv[AT]f.kth.se&gt;
+<tr><td>Steve Sommars<td>(e-mail address removed at contributor's request)
+<tr><td>Kestutis Kupciunas<td>&lt;kesha[AT]soften.ktu.lt&gt;
+<tr><td>Ren&eacute; Pilz<td>&lt;rene.pilz[AT]ftw.at&gt;
+<tr><td>Laurent Constantin<td>&lt;laurent.constantin[AT]aql.fr&gt;
+<tr><td>Martin Pichlmaier<td>&lt;martin.pichlmaier[AT]siemens.com&gt;
+<tr><td>Mark Phillips<td>&lt;msp[AT]nortelnetworks.com&gt;
+<tr><td>Nils Ohlmeier<td>&lt;lists[AT]ohlmeier.org&gt;
+<tr><td>Ignacio Goyret<td>&lt;igoyret[AT]lucent.com&gt;
+<tr><td>Bart Braem<td>&lt;bart.braem[AT]gmail.com&gt;
+<tr><td>Shingo Horisawa<td>&lt;name4n5[AT]hotmail.com&gt;
+<tr><td>Lane Hu<td>&lt;lane.hu[AT]utstar.com&gt;
+<tr><td>Marc Poulhi&egrave;s<td>&lt;marc.poulhies[AT]epfl.ch&gt;
+<tr><td>Tomasz Mrugalski<td>&lt;thomson[AT]klub.com.pl&gt;
+<tr><td>Brett Kuskie<td>&lt;mstrprgmmr[AT]chek.com&gt;
+<tr><td>Brian Caswell<td>&lt;bmc[AT]sourcefire.com&gt;
+<tr><td>Yann<td>&lt;yann_eads[AT]hotmail.com&gt;
+<tr><td>Julien Leproust<td>&lt;julien[AT]via.ecp.fr&gt;
+<tr><td>Mutsuya Irie<td>&lt;irie[AT]sakura-catv.ne.jp&gt;
+<tr><td>Yoshihiro Oyama<td>&lt;y.oyama[AT]netagent.co.jp&gt;
+<tr><td>Chris Eagle<td>&lt;cseagle[AT]nps.edu&gt;
+<tr><td>Dominique Bastien<td>&lt;dbastien[AT]accedian.com&gt;
+<tr><td>Nicolas Dichtel<td>&lt;nicolas.dichtel[AT]6wind.com&gt;
+<tr><td>Ricardo Muggli<td>&lt;ricardo.muggli[AT]mnsu.edu&gt;
+<tr><td>Vladimir Kondratiev<td>&lt;vladimir.kondratiev[AT]gmail.com&gt;
+<tr><td>Jaap Keuter<td>&lt;jaap.keuter[AT]xs4all.nl&gt;
+<tr><td>Frederic Peters<td>&lt;fpeters[AT]debian.org&gt;
+<tr><td>Anton Ivanov<td>&lt;anthony_johnson[AT]mail.ru&gt;
+<tr><td>Ilya Konstantinov<td>&lt;future[AT]shiny.co.il&gt;
+<tr><td>Neil Kettle <td>&lt;mu-b[AT]65535.com&gt;
+<tr><td>Steve Karg<td>&lt;skarg[AT]users.sourceforge.net&gt;
+<tr><td>Javier Acuna<td>&lt;javier.acuna[AT]sixbell.cl&gt;
+<tr><td>Miklos Szurdi<td>&lt;szurdimiklos[AT]yahoo.com&gt;
+<tr><td>Cvetan Ivanov<td>&lt;zezo[AT]spnet.net&gt;
+<tr><td>Vasanth Manickam<td>&lt;vasanth.manickam[AT]bt.com&gt;
+<tr><td>Julian Onions<td>&lt;julian.onions[AT]gmail.com&gt;
+<tr><td>Samuel Thibault<td>&lt;samuel.thibault[AT]ens-lyon.org&gt;
+<tr><td>Peter Kov&aacute;ř<td>&lt;peter.kovar[AT]gmail.com&gt;
+<tr><td>Paul Ollis<td>&lt;paul.ollis[AT]roke.co.uk&gt;
+<tr><td>Dominik Kuhlen<td>&lt;dkuhlen[AT]gmx.net&gt;
+<tr><td>Karl Knoebl<td>&lt;karl.knoebl[AT]siemens.com&gt;
+<tr><td>Maria-Luiza Crivat<td>&lt;luizacri[AT]gmail.com&gt;
+<tr><td>Brice Augustin<td>&lt;bricecotte[AT]gmail.com&gt;
+<tr><td>Matt Thornton<td>&lt;MATT_THORNTON[AT]appsig.com&gt;
+<tr><td>Timo Metsala<td>&lt;timo.metsala[AT]gmail.com&gt;
+<tr><td>Tomer Shani<td>&lt;thetour[AT]japan.com&gt;
+<tr><td>Manu Pathak<td>&lt;mapathak[AT]cisco.com&gt;
+<tr><td>John Sullivan<td>&lt;john[AT]kanargh.force9.co.uk&gt;
+<tr><td>Martin Andr&eacute;<td>&lt;andre[AT]clarinet.u-strasbg.fr&gt;
+<tr><td>Andrei Emeltchenko<td>&lt;Andrei.Emeltchenko[AT]nokia.com&gt;
+<tr><td>Kirby Files<td>&lt;kfiles[AT]masergy.com&gt;
+<tr><td>Ravi Valmikam<td>&lt;rvalmikam[AT]airvananet.com&gt;
+<tr><td>Diego Petten&ograve;<td>&lt;flameeyes[AT]gentoo.org&gt;
+<tr><td>Daniel Black<td>&lt;dragonheart[AT]gentoo.org&gt;
+<tr><td>Christoph Werle<td>&lt;Christoph.Werle[AT]ira.uka.de&gt;
+<tr><td>Aaron Christensen<td>&lt;aaronmf[AT]gmail.com&gt;
+<tr><td>Ian Abel<td>&lt;ianabel[AT]mxtelecom.com&gt;
+<tr><td>Bryant Eastham<td>&lt;beastham[AT]slc.mew.com&gt;
+<tr><td>Taner Kurtulus<td>&lt;taner.kurtulus[AT]tubitak.gov.tr&gt;
+<tr><td>Joe Breher<td>&lt;linux[AT]q-music.com&gt;
+<tr><td>Patrick vd Lageweg<td>&lt;patrick[AT]bitwizard.nl&gt;
+<tr><td>Thomas Sillaber<td>&lt;Thomas.Sillaber[AT]gmx.de&gt;
+<tr><td>Mike Davies<td>&lt;m.davies[AT]btinternet.com&gt;
+<tr><td>Boris Misenov<td>&lt;Boris.Misenov[AT]oktelabs.ru&gt;
+<tr><td>Joe McEachern<td>&lt;joe[AT]qacafe.com&gt;
+<tr><td>Charles Lepple<td>&lt;clepple[AT]gmail.com&gt;
+<tr><td>Tuomas Maattanen<td>&lt;maattanen[AT]iki.fi&gt;
+<tr><td>Joe Eykholt<td>&lt;joe[AT]nuovasystems.com&gt;
+<tr><td>Ian Brumby<td>&lt;ian.brumby[AT]baesystems.com&gt;
+<tr><td>Todd J Martin<td>&lt;todd.martin[AT]acm.org&gt;
+<tr><td>Scott Robinson<td>&lt;scott.robinson[AT]flukenetworks.com&gt;
+<tr><td>Martin Peylo<td>&lt;wireshark[AT]izac.de&gt;
+<tr><td>St&eacute;phane Loeuillet<td>&lt;leroutier[AT]gmail.com&gt;
+<tr><td>Andrei Rubaniuk<td>&lt;rubaniuk[AT]mail.ru&gt;
+<tr><td>Mikael Magnusson<td>&lt;mikma264[AT]gmail.com&gt;
+<tr><td>Timo Ter&auml;s<td>&lt;timo.teras[AT]iki.fi&gt;
+<tr><td>M&aacute;rton N&eacute;meth<td>&lt;nm127[AT]freemail.hu&gt;
+<tr><td>Kai Blin<td>&lt;kai[AT]samba.org&gt;
+<tr><td>Olivier Montanuy<td>&lt;olivier.montanuy[AT]orange-ftgroup.com&gt;
+<tr><td>Thomas Morin<td>&lt;thomas.morin[AT]orange-ftgroup.com&gt;
+<tr><td>Jesus Roman<td>&lt;jroman[AT]teldat.com&gt;
+<tr><td>Giodi Giorgi<td>&lt;g.giorgi[AT]gmail.com&gt;
+<tr><td>Peter Hertting<td>&lt;Peter.Hertting[AT]gmx.net&gt;
+<tr><td>Jess Balint<td>&lt;jbalint[AT]gmail.com&gt;
+<tr><td>Bahaa Naamneh<td>&lt;b.naamneh[AT]gmail.com&gt;
+<tr><td>Magnus S&ouml;rman<td>&lt;magnus.sorman[AT]ericsson.com
+<tr><td>Pascal Quantin<td>&lt;pascal.quantin[AT]gmail.com&gt;
+<tr><td>Roy Marples<td>&lt;roy[AT]marples.name&gt;
+<tr><td>Ward van Wanrooij<td>&lt;ward[AT]ward.nu&gt;
+<tr><td>Federico Mena Quintero<td>&lt;federico[AT]novell.com&gt;
+<tr><td>Andreas Heise<td>&lt;andreas.heise[AT]nextiraone.de&gt;
+<tr><td>Alex Lindberg<td>&lt;alindber[AT]yahoo.com&gt;
+<tr><td>Rama Chitta<td>&lt;rama[AT]gear6.com&gt;
+<tr><td>Roberto Mariani<td>&lt;jelot-wireshark[AT]jelot.it&gt;
+<tr><td>Sandhya Gopinath<td>&lt;Sandhya.Gopinath[AT]citrix.com&gt;
+<tr><td>Raghav SN<td>&lt;Raghav.SN[AT]citrix.com&gt;
+<tr><td>Murali Raja<td>&lt;Murali.Raja[AT]citrix.com&gt;
+<tr><td>Devesh Prakash<td>&lt;Devesh.Prakash[AT]citrix.com&gt;
+<tr><td>Darryl Champagne<td>&lt;dchampagne[AT]sta.samsung.com&gt;
+<tr><td>Michael Speck<td>&lt;Michael.Speck[AT]avl.com&gt;
+<tr><td>Gerasimos Dimitriadis<td>&lt;dimeg[AT]intracom.gr&gt;
+<tr><td>Robert Simac<td>&lt;rsimac[AT]cronsult.com&gt;
+<tr><td>Johanna Sochos<td>&lt;johanna.sochos[AT]swissqual.com&gt;
+<tr><td>Felix Obenhuber<td>&lt;felix[AT]obenhuber.de&gt;
+<tr><td>Hilko Bengen<td>&lt;bengen--wireshark[AT]hilluzination.de&gt;
+<tr><td>Hadar Shoham<td>&lt;hadar[AT]ti.com&gt;
+<tr><td>Robert Bullen<td>&lt;robert[AT]bitcricket.com&gt;
+<tr><td>Chuck Kristofek<td>&lt;chuck.kristofek[AT]ngc.com&gt;
+<tr><td>Markus Renz<td>&lt;Markus.Renz[AT]hirschmann.de&gt;
+<tr><td>Toshihiro Kataoka<td>&lt;kataoka.toshihiro[AT]gmail.com&gt;
+<tr><td>Petr Lautrbach<td>&lt;plautrba[AT]redhat.com&gt;
+<tr><td>Frank Lahm<td>&lt;franklahm[AT]googlemail.com&gt;
+<tr><td>Jon Ellch<td>&lt;jellch[AT]harris.com&gt;
+<tr><td>Alex Badea<td>&lt;vamposdecampos[AT]gmail.com&gt;
+<tr><td>Dirk Jagdmann<td>&lt;doj[AT]cubic.org&gt;
+<tr><td>RSA  <td>&lt;ryazanov.s.a[AT]gmail.com&gt;
+<tr><td>Juliusz Chroboczek<td>&lt;jch[AT]pps.jussieu.fr&gt;
+<tr><td>Vladimir Kazansky<td>&lt;vovjo[AT]yandex.ru&gt;
+<tr><td>Peter Paluch <td>&lt;peter.paluch[AT]fri.uniza.sk&gt;
+<tr><td>Tom Brezinski<td>&lt;tombr[AT]netinst.com&gt;
+<tr><td>Nick Glass<td>&lt;nick.glass[AT]lycos.com&gt;
+<tr><td>Michael Mann<td>&lt;mmann78[AT]netscape.net&gt;
+<tr><td>Romain Fliedel<td>&lt;romain.fliedel+wireshark[AT]gmail.com&gt;
+<tr><td>Michael Chen<td>&lt;michaelc[AT]idssoftware.com&gt;
+<tr><td>Paul Stath<td>&lt;pstath[AT]axxcelera.com&gt;
+<tr><td>DeCount<td>&lt;aatrade[AT]libero.it&gt;
+<tr><td>Andras Veres-Szentkiralyi<td>&lt;vsza[AT]vsza.hu&gt;
+<tr><td>Jakob Hirsch <td>&lt;jh.wireshark-bugzilla[AT]plonk.de&gt;
+<tr><td>Роман Донченко<td>&lt;DXDragon[AT]yandex.ru&gt;
+<tr><td><td>&lt;billyjeans[AT]gmail.com&gt;
+<tr><td>Evan Huus<td>&lt;eapache[AT]gmail.com&gt;
+<tr><td>Tom Cook<td>&lt;tcook[AT]ixiacom.com&gt;
+<tr><td>Tom Alexander<td>&lt;talexander[AT]ixiacom.com&gt;
+<tr><td>Klaus Heckelmann<td>&lt;klaus.heckelmann[AT]nashtech.com&gt;
+<tr><td>Ben Bowen<td>&lt;bbowen[AT]godaddy.com&gt;
+<tr><td>Bodo Petermann<td>&lt;bp245[AT]hotmail.com&gt;
+<tr><td>Martin Kupec<td>&lt;martin.kupec[AT]kupson.cz&gt;
+<tr><td>Litao Gao<td>&lt;ltgao[AT]juniper.net&gt;
+<tr><td>Niels Widger<td>&lt;niels[AT]qacafe.com&gt;
+<tr><td>Pontus Fuchs<td>&lt;pontus.fuchs[AT]gmail.com&gt;
+<tr><td>Bill Parker<td>&lt;wp02855[AT]gmail.com&gt;
+<tr><td>Tomofumi Hayashi<td>&lt;s1061123[AT]gmail.com&gt;
+<tr><td>Tim Hentenaar<td>&lt;tim.hentenaar[AT]gmail.com&gt;
+<tr><td>Krishnamurthy Mayya<td>&lt;krishnamurthymayya[AT]gmail.com&gt;
+<tr><td>Nikitha Malgi<td>&lt;nikitha01[AT]gmail.com&gt;
+<tr><td>Adam Butcher<td>&lt;adam[AT]jessamine.co.uk&gt;
+<tr><td>Hendrik Uhlmann<td>&lt;Hendrik.Uhlmann[AT]rheinmetall.com&gt;
+<tr><td>Alex Gaertner<td>&lt;gaertner.alex[AT]gmx.de&gt;
+<tr><td>Sebastiano Di Paola<td>&lt;sebastiano.dipaola[AT]gmail.com&gt;
+<tr><td>Steven J. Magnani<td>&lt;steve[AT]digidescorp.com&gt;
+<tr><td>David Arnold<td>&lt;davida[AT]pobox.com&gt;
+<tr><td>Dario Lombardo<td>&lt;lomato[AT]gmail.com&gt;
+<tr><td>Alexander Chemeris<td>&lt;alexander.chemeris[AT]gmail.com&gt;
+<tr><td>Ivan Klyuchnikov<td>&lt;kluchnikovi[AT]gmail.com&gt;
+<tr><td>Max Baker<td>&lt;max[AT]warped.org&gt;
+<tr><td>Mike Garratt<td>&lt;mg.wireshark[AT]evn.co.nz&gt;
+<tr><td>Bart Van Assche<td>&lt;bvanassche[AT]acm.org&gt;
+<tr><td>Karl Beldan<td>&lt;karl.beldan[AT]gmail.com&gt;
+<tr><td>Masayuki Takemura<td>&lt;masayuki.takemura[AT]gmail.com&gt;</table></p>
+<p>Dan Lasley &lt;dlasley[AT]promus.com&gt; gave permission for his
+<code>dumpit()</code> hex-dump routine to be used.</p>
+<p>Mattia Cazzola &lt;mattiac[AT]alinet.it&gt; provided a patch to the
+hex dump display routine.</p>
+<p>We use the exception module from Kazlib, a C library written by
+Kaz Kylheku &lt;kaz[AT]ashi.footprints.net&gt;. Thanks go to him for
+his well-written library. The Kazlib home page can be found at
+<a href="http://users.footprints.net/~kaz/kazlib.html">http://users.footprints.net/~kaz/kazlib.html</a></p>
+<p>We use Lua BitOp, written by Mike Pall, for bitwise operations
+on numbers in Lua. The Lua BitOp home page can be found at
+<a href="http://bitop.luajit.org/">http://bitop.luajit.org/</a></p>
+<p>Henrik Brix Andersen &lt;brix[AT]gimp.org&gt; gave permission for his
+webbrowser calling routine to be used.</p>
+<p>Christophe Devine &lt;c.devine[AT]cr0.net&gt; gave permission for his
+SHA1 routines to be used.</p>
+<p>snax &lt;snax[AT]shmoo.com&gt; gave permission to use his(?) weak key
+detection code from Airsnort.</p>
+<p>IANA gave permission for their port-numbers file to be used.</p>
+</pre>
+</body>
+
+</html>

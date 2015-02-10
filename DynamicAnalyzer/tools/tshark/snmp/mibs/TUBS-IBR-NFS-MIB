@@ -1,0 +1,372 @@
+TUBS-IBR-NFS-MIB DEFINITIONS ::= BEGIN
+
+-- @(#) $Id: TUBS-IBR-NFS-MIB 807 2000-02-12 11:52:35Z strauss $
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, 
+    Counter32
+   	FROM SNMPv2-SMI
+    ibr
+	FROM TUBS-SMI;
+
+nfsMIB MODULE-IDENTITY
+    LAST-UPDATED "200002090000Z"
+    ORGANIZATION "TU Braunschweig"
+    CONTACT-INFO
+	"Juergen Schoenwaelder
+	 TU Braunschweig
+	 Bueltenweg 74/75
+	 38106 Braunschweig
+	 Germany
+
+	 Tel: +49 531 391 3283
+	 Fax: +49 531 391 5936
+	 E-mail: schoenw@ibr.cs.tu-bs.de"
+    DESCRIPTION
+	"Experimental MIB module for NFS server and clients."
+    REVISION	"200002090000Z"
+    DESCRIPTION
+	"Updated IMPORTS and minor stylistic fixes."
+    REVISION	"9702141023Z"
+    DESCRIPTION
+	"Various cleanups to make the module conforming to SNMPv2 SMI."
+    REVISION	"9411152024Z"
+    DESCRIPTION
+	"The initial revision of this module."
+    ::= { ibr 2 }
+
+nfsServer OBJECT IDENTIFIER ::= { nfsMIB 1 }
+nfsClient OBJECT IDENTIFIER ::= { nfsMIB 2 }
+
+-- server nfs statistics
+
+nfsServerCalls OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs calls received by the server.
+	 Every read access to this variable will cause the
+	 agent to reload the statistics contained in this
+	 group."
+    ::= { nfsServer 1 }
+
+nfsServerBad OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of incorrect nfs calls received by the
+	 server."
+    ::= { nfsServer 2 }
+
+nfsServerNull OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs null operations."
+    ::= { nfsServer 3 }
+
+nfsServerGetattr OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs getattr operations."
+    ::= { nfsServer 4 }
+
+nfsServerSetattr OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs setattr operations."
+    ::= { nfsServer 5 }
+
+nfsServerRoot OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs root operations."
+    ::= { nfsServer 6 }
+
+nfsServerLookup OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs lookup operations."
+    ::= { nfsServer 7 }
+
+nfsServerReadlink OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs readlink operations."
+    ::= { nfsServer 8 }
+
+nfsServerRead OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs read operations."
+    ::= { nfsServer 9 }
+
+nfsServerWrcache OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs wrcache operations."
+    ::= { nfsServer 10 }
+
+nfsServerWrite OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+                "The number of nfs write operations."
+    ::= { nfsServer 11 }
+
+nfsServerCreate OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs create operations."
+    ::= { nfsServer 12 }
+
+nfsServerRemove OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs remove operations."
+    ::= { nfsServer 13 }
+
+nfsServerRename OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs rename operations."
+    ::= { nfsServer 14 }
+
+nfsServerLink OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs link operations."
+    ::= { nfsServer 15 }
+
+nfsServerSymlink OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs symlink operations."
+    ::= { nfsServer 16 }
+
+nfsServerMkdir OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs mkdir operations."
+    ::= { nfsServer 17 }
+
+nfsServerRmdir OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs rmdir operations."
+    ::= { nfsServer 18 }
+
+nfsServerReaddir OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs readdir operations."
+    ::= { nfsServer 19 }
+
+nfsServerFsstat OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs fsstat operations."
+    ::= { nfsServer 20 }
+
+-- client nfs statistics.
+
+nfsClientCalls OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs calls send by the client
+	 Every read access to this variable will cause the
+	 agent to reload the statistics contained in this
+	 group."
+    ::= { nfsClient 1 }
+
+nfsClientBad OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of incorrect nfs calls send by the client."
+    ::= { nfsClient 2 }
+
+nfsClientNull OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs null operations."
+    ::= { nfsClient 3 }
+
+nfsClientGetattr OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs getattr operations."
+    ::= { nfsClient 4 }
+
+nfsClientSetattr OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs setattr operations."
+    ::= { nfsClient 5 }
+
+nfsClientRoot OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs root operations."
+    ::= { nfsClient 6 }
+
+nfsClientLookup OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs lookup operations."
+    ::= { nfsClient 7 }
+
+nfsClientReadlink OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs readlink operations."
+    ::= { nfsClient 8 }
+
+nfsClientRead OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs read operations."
+    ::= { nfsClient 9 }
+
+nfsClientWrcache OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs wrcache operations."
+    ::= { nfsClient 10 }
+
+nfsClientWrite OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs write operations."
+    ::= { nfsClient 11 }
+
+nfsClientCreate OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs create operations."
+    ::= { nfsClient 12 }
+
+nfsClientRemove OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs remove operations."
+    ::= { nfsClient 13 }
+
+nfsClientRename OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs rename operations."
+    ::= { nfsClient 14 }
+
+nfsClientLink OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs link operations."
+    ::= { nfsClient 15 }
+
+nfsClientSymlink OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs symlink operations."
+    ::= { nfsClient 16 }
+
+nfsClientMkdir OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs mkdir operations."
+    ::= { nfsClient 17 }
+
+nfsClientRmdir OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs rmdir operations."
+    ::= { nfsClient 18 }
+
+nfsClientReaddir OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs readdir operations."
+    ::= { nfsClient 19 }
+
+nfsClientFsstat OBJECT-TYPE
+    SYNTAX	Counter32
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The number of nfs fsstat operations."
+    ::= { nfsClient 20 }
+
+END

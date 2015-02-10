@@ -1,0 +1,714 @@
+DOCS-IETF-SUBMGT-MIB  DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        mib-2
+                FROM SNMPv2-SMI
+        RowStatus,
+        TruthValue,
+        TimeStamp,
+        StorageType
+                FROM SNMPv2-TC
+        OBJECT-GROUP,
+        MODULE-COMPLIANCE
+                FROM SNMPv2-CONF
+        InetAddressType,
+        InetAddress
+                FROM INET-ADDRESS-MIB
+        docsIfCmtsCmStatusIndex,
+        docsIfCmtsCmStatusEntry
+                FROM DOCS-IF-MIB  -- RFC2670
+        diffServMIBDataPathGroup,
+        diffServMIBClfrGroup,
+        diffServMIBClfrElementGroup,
+        diffServMIBMultiFieldClfrGroup,
+
+
+
+        diffServMIBActionGroup,
+        diffServMIBAlgDropGroup,
+        diffServMIBCounterGroup,
+        diffServDataPathStatus,
+        diffServClfrStatus,
+        diffServClfrElementStatus,
+        diffServMultiFieldClfrAddrType,
+        diffServMultiFieldClfrSrcAddr,
+        diffServMultiFieldClfrDstAddr,
+        diffServAlgDropStatus,
+        diffServDataPathStorage,
+        diffServClfrStorage,
+        diffServClfrElementStorage,
+        diffServMultiFieldClfrStorage,
+        diffServActionStorage,
+        diffServCountActStorage,
+        diffServAlgDropStorage,
+        diffServAlgDropType
+                FROM DIFFSERV-MIB  -- RFC3289
+     ;
+
+docsSubMgt MODULE-IDENTITY
+    LAST-UPDATED    "200503290000Z" -- March 29, 2005
+    ORGANIZATION    "IETF IP over Cable Data Network (IPCDN) Working
+                     Group"
+    CONTACT-INFO
+        "        Wilson Sawyer
+         Postal: 50 Kelly Brook Lane
+                 East Hampstead, NH 03826
+                 U.S.A.
+
+         Phone:  +1 603 382 7080
+         E-mail: wsawyer@ieee.org
+
+         IETF IPCDN Working Group
+         General Discussion: ipcdn@ietf.org
+         Subscribe: http://www.ietf.org/mailman/listinfo/ipcdn
+         Archive: ftp://ftp.ietf.org/ietf-mail-archive/ipcdn
+         Co-chairs: Richard Woundy, Richard_Woundy@cable.comcast.com
+                    Jean-Francois Mule, jf.mule@cablelabs.com"
+    DESCRIPTION
+        "This is the CMTS centric subscriber management MIB for
+    DOCSIS-compliant CMTS.  It provides the objects to allow a Cable
+    Modem Termination operator to control the IP addresses and
+    protocols associated with subscribers' cable modems.
+
+
+
+
+
+
+    Copyright (C) The Internet Society (2005).  This version of this
+    MIB module is part of RFC 4036; see the RFC itself for full legal
+    notices."
+    REVISION "200503290000Z" -- March 29, 2005
+    DESCRIPTION
+       "Initial version, published as RFC 4036.  Note that the
+       compliance statements in this version apply only to
+       implementations that support DOCSIS 1.0/1.1/2.0, which
+       are not IPv6-capable."
+    ::= { mib-2 125 }
+
+docsSubMgtObjects OBJECT IDENTIFIER ::= { docsSubMgt 1 }
+
+docsSubMgtCpeControlTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF DocsSubMgtCpeControlEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "This table AUGMENTs the docsIfCmtsCmStatusTable, adding
+    four WRITEable objects, as well as a read-only object, all of
+    which reflect the state of subscriber management on a particular
+    CM."
+    ::= { docsSubMgtObjects 1 }
+
+docsSubMgtCpeControlEntry OBJECT-TYPE
+    SYNTAX  DocsSubMgtCpeControlEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "A row in the docsSubMgtCpeControlTable.  All values are set
+    at successful modem registration, either from the system default,
+    or from objects included in the DOCSIS registration request sent
+    upstream to the CMTS from the CM.  The contents of this entry are
+    meaningless unless the corresponding docsIfCmtsCmStatusValue (see
+    reference) is registrationComplete(6).  The persistence of this
+    row is determined solely by the lifespan of the corresponding
+    docsIfCmtsCmStatusEntry (normally StorageType=volatile)."
+
+    REFERENCE
+        "RFC 2670"
+    AUGMENTS { docsIfCmtsCmStatusEntry }
+    ::= {docsSubMgtCpeControlTable 1 }
+
+DocsSubMgtCpeControlEntry ::= SEQUENCE
+    {
+    docsSubMgtCpeControlMaxCpeIp        Integer32,
+    docsSubMgtCpeControlActive          TruthValue,
+    docsSubMgtCpeControlLearnable       TruthValue,
+
+
+
+    docsSubMgtCpeControlReset           TruthValue,
+    docsSubMgtCpeControlLastReset       TimeStamp
+    }
+
+docsSubMgtCpeControlMaxCpeIp OBJECT-TYPE
+    SYNTAX  Integer32(0..2147483647)
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+        "The number of simultaneous IP addresses permitted behind
+    the CM.  If this is set to zero, all CPE traffic from the CM is
+    dropped.  If the provisioning object corresponding to
+    docsSubMgtCpeIpTable includes more CPE IP address entries for
+    this modem than the value of this object, then this object is
+    set to the count of the number of rows in docsSubMgtCpeIpTable
+    that have the same docsIfCmtsCmStatusIndex value.  (For example,
+    if the CM has 5 IP addresses specified for it, this value is 5.)
+    This limit applies to learned and DOCSIS-provisioned entries
+    but not to entries added through some administrative
+    process at the CMTS.  If not set through DOCSIS provisioning,
+    this object defaults to docsSubMgtCpeMaxIpDefault.  Note that
+    this object is only meaningful if docsSubMgtCpeControlActive
+    is true."
+    ::= { docsSubMgtCpeControlEntry 1 }
+
+docsSubMgtCpeControlActive OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+        "Controls the application of subscriber management to
+    this cable modem.  If this is set to true, CMTS-based CPE
+    control is active, and all the actions required by the various
+    filter tables and controls apply at the CMTS.  If this is set
+    to false, no subscriber management filtering is done at the
+    CMTS (but other filters may apply).  If not set through DOCSIS
+    provisioning, this object defaults to
+    docsSubMgtCpeActiveDefault."
+    ::= { docsSubMgtCpeControlEntry 2 }
+
+docsSubMgtCpeControlLearnable OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+        "Controls whether the CMTS may learn (and pass traffic
+    for) CPE IP addresses associated with a cable modem.  If this is
+    set to true, the CMTS may learn up to docsSubMgtMaxCpeIp
+
+
+
+    addresses (less any DOCSIS-provisioned entries) related to this
+    CM.  Those IP addresses are added (by internal process) to the
+    docsSubMgtCpeIpTable.  The nature of the learning mechanism is
+    not specified here.
+
+    If not set through DOCSIS provisioning, this object defaults to
+    docsSubMgtCpeLearnableDefault.  Note that this object is only
+    meaningful if docsSubMgtCpeControlActive is true."
+    ::= { docsSubMgtCpeControlEntry 3 }
+
+docsSubMgtCpeControlReset OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+        "This object always returns false on read.  If this object is
+    set to true, the rows with 'learned' addresses in
+    docsSubMgtCpeIpTable for this CM are deleted from that table."
+    ::= { docsSubMgtCpeControlEntry 4 }
+
+docsSubMgtCpeControlLastReset OBJECT-TYPE
+    SYNTAX  TimeStamp
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "The value of sysUpTime when docsSubMgtCpeControlReset was
+    last set true.  Zero if never reset."
+    DEFVAL { 0 }
+    ::= { docsSubMgtCpeControlEntry 5 }
+
+docsSubMgtCpeMaxIpDefault OBJECT-TYPE
+    SYNTAX  Integer32(0..2147483647)
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+        "The default value for docsSubMgtCpeControlMaxCpeIp if not
+    signaled in the DOCSIS Registration request.  This value should
+    be treated as nonvolatile; if set, its value should persist
+    across device resets."
+    DEFVAL { 16 }
+    ::= { docsSubMgtObjects 2 }
+
+docsSubMgtCpeActiveDefault OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+        "The default value for docsSubMgtCpeControlActive if not
+
+
+
+    signaled in the DOCSIS Registration request.  This value should
+    be treated as nonvolatile; if set, its value should persist
+    across device resets."
+    DEFVAL { false }
+    ::= { docsSubMgtObjects 3 }
+
+docsSubMgtCpeLearnableDefault OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+        "The default value for docsSubMgtCpeControlLearnable if not
+    signaled in the DOCSIS Registration request.  This value should
+    be treated as nonvolatile; if set, its value should persist
+    across device resets."
+    DEFVAL { true }
+    ::= { docsSubMgtObjects 4 }
+
+docsSubMgtCpeIpTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DocsSubMgtCpeIpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of CPE IP addresses known on a per-CM basis."
+    ::= { docsSubMgtObjects 5 }
+
+docsSubMgtCpeIpEntry OBJECT-TYPE
+    SYNTAX      DocsSubMgtCpeIpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in the docsSubMgtCpeIpTable.  The first index is
+    the specific modem we're referring to, and the second index is
+    the specific CPE IP entry."
+    INDEX   { docsIfCmtsCmStatusIndex,
+              docsSubMgtCpeIpIndex }
+    ::= {docsSubMgtCpeIpTable 1 }
+
+DocsSubMgtCpeIpEntry ::= SEQUENCE
+    {
+    docsSubMgtCpeIpIndex        Integer32,
+    docsSubMgtCpeIpAddressType  InetAddressType,
+    docsSubMgtCpeIpAddr         InetAddress,
+    docsSubMgtCpeIpLearned      TruthValue
+    }
+
+docsSubMgtCpeIpIndex OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+
+
+
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index of this CPE IP address relative to the indexed CM.
+    An entry is created either through the included CPE IP addresses
+    in the provisioning object, or via learning.
+
+    If docsSubMgtCpeControlActive is true and a CMTS receives
+    an IP packet from a CM that contains a source IP address that
+    does not match one of the docsSubMgtCpeIpAddr entries for this
+    CM, one of two things occurs.  If the number of entries is less
+    than docsSubMgtCpeControlMaxCpeIp, the source address is added to
+    the table and the packet is forwarded.  If the number of entries
+    equals the docsSubMgtCpeControlMaxCpeIp, then the packet is
+    dropped."
+    ::= { docsSubMgtCpeIpEntry 1 }
+
+docsSubMgtCpeIpAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The type of internet address of docsSubMgtCpeIpAddr."
+    ::= { docsSubMgtCpeIpEntry 2 }
+
+docsSubMgtCpeIpAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The IP address either set from provisioning or learned via
+    address gleaning or other forwarding means.  See
+    docsSubMgtCpeIpIndex for the mechanism.
+
+    The type of this address is determined by the value of
+    docsSubMgtCpeIpAddressType."
+    ::= { docsSubMgtCpeIpEntry 3 }
+
+docsSubMgtCpeIpLearned OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "If true, this entry was learned from IP packets sent
+    upstream rather than from the provisioning objects."
+    ::= { docsSubMgtCpeIpEntry 4 }
+
+docsSubMgtCmFilterTable OBJECT-TYPE
+
+
+
+    SYNTAX  SEQUENCE OF DocsSubMgtCmFilterEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Binds filter groups to modems, identifying for each modem
+    the upstream and downstream filter groups that apply to packets
+    for that modem.  Normally, this table reflects the filter group
+    values signaled by DOCSIS Registration, although values may be
+    overridden by management action.
+
+    For each of the columns in this table, zero is a distinguished
+    value, indicating that the default filtering action is to be
+    taken rather than that associated with a filter group number.
+    Zero is used if the filter group is not signaled by DOCSIS
+    registration."
+    ::= { docsSubMgtObjects 6 }
+
+docsSubMgtCmFilterEntry OBJECT-TYPE
+    SYNTAX  DocsSubMgtCmFilterEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Binds a filter group to each direction of traffic for a
+    modem.  The filters in this entry apply if
+    docsSubMgtCpeControlActive is true.
+
+    The contents of this entry are meaningless unless the
+    corresponding docsIfCmtsCmStatusValue (see reference) is
+    registrationComplete(6).  The persistence of this row is
+    determined solely by the lifespan of the corresponding
+    docsIfCmtsCmStatusEntry (normally StorageType=volatile)."
+    REFERENCE
+        "RFC 2670"
+    AUGMENTS { docsIfCmtsCmStatusEntry }
+    ::= {docsSubMgtCmFilterTable 1 }
+
+DocsSubMgtCmFilterEntry ::= SEQUENCE
+    {
+    docsSubMgtCmFilterSubDownstream        Integer32,
+    docsSubMgtCmFilterSubUpstream          Integer32,
+    docsSubMgtCmFilterCmDownstream         Integer32,
+    docsSubMgtCmFilterCmUpstream           Integer32
+}
+
+docsSubMgtCmFilterSubDownstream OBJECT-TYPE
+    SYNTAX  Integer32(0..65535)
+    MAX-ACCESS read-write
+    STATUS  current
+
+
+
+    DESCRIPTION
+        "The filter group applied to traffic destined for subscribers
+    attached to the referenced CM.  Upon row creation, this is set
+    either to zero (use default classification, the
+    diffServClfrElementSpecific=zeroDotZero row of
+    diffServClfrElementTable) or to the value in the provisioning
+    object sent upstream from the CM to the CMTS during registration.
+    The value of this object is the same as that of the filter group
+    index appearing as docsSubMgtFilterGroupIndex."
+    ::= { docsSubMgtCmFilterEntry 1 }
+
+docsSubMgtCmFilterSubUpstream OBJECT-TYPE
+    SYNTAX  Integer32(0..65535)
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+        "The filter group applied to traffic originating from
+    subscribers attached to the referenced CM.  Upon row creation
+    this is set to either zero (use default classification, the
+    diffServClfrElementSpecific=zeroDotZero row of
+    diffServClfrElementTable), or to the value in the provisioning
+    object sent upstream from the CM to the CMTS.  The value of this
+    object is the same as that of the filter group index appearing as
+    docsSubMgtFilterGroupIndex."
+    ::= { docsSubMgtCmFilterEntry 2 }
+
+docsSubMgtCmFilterCmDownstream OBJECT-TYPE
+    SYNTAX  Integer32(0..65535)
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+        "The filter group applied to traffic destined for the
+    referenced CM itself.  Upon row creation this is set either to
+    zero (use default classification, the
+    diffServClfrElementSpecific=zeroDotZero row of
+    diffServClfrElementTable), or to the value in the provisioning
+    object sent upstream from the CM to the CMTS during registration.
+    The value of this object is the same as that of the filter group
+    index appearing as docsSubMgtFilterGroupIndex."
+    ::= { docsSubMgtCmFilterEntry 3 }
+
+docsSubMgtCmFilterCmUpstream OBJECT-TYPE
+    SYNTAX  Integer32(0..65535)
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+        "The filter group applied to traffic originating from the
+    referenced CM itself.  This is set upon row creation to either
+
+
+
+    zero (use default classification, the
+    diffServClfrElementSpecific=zeroDotZero row of
+    diffServClfrElementTable), or to the value in the provisioning
+    object sent upstream from the CM to the CMTS during registration.
+    The value of this object is the same as the filter group index
+    appearing as docsSubMgtFilterGroupIndex."
+    ::= { docsSubMgtCmFilterEntry 4 }
+
+docsSubMgtFilterGroupTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF DocsSubMgtFilterGroupEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Provides a collection of referenceable entries to which
+    diffServClfrElementSpecific refers.  This table provides filter
+    group indices that can be compared with those signaled during
+    DOCSIS registration.  A packet matches an entry from this table
+    if the packet originated from or is destined to a cable modem
+    that registered this index as one of its four filter groups
+    (see docsSubMgtCmFilterTable), and if the packet direction and
+    MAC address select the use of this index among the four."
+    ::= { docsSubMgtObjects 7 }
+
+docsSubMgtFilterGroupEntry OBJECT-TYPE
+    SYNTAX  DocsSubMgtFilterGroupEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "An entry only exists if needed by the
+    diffServClfrElementEntry.  A packet matches this entry if the
+    packet's cable modem registered this index as one of its four
+    filter groups (see docsSubMgtCmFilterTable) and if the packet
+    direction and MAC address select the use of this index among
+    the four."
+    INDEX { docsSubMgtFilterGroupIndex }
+    ::= { docsSubMgtFilterGroupTable 1 }
+
+DocsSubMgtFilterGroupEntry ::= SEQUENCE
+    {
+    docsSubMgtFilterGroupIndex    Integer32
+    }
+
+docsSubMgtFilterGroupIndex OBJECT-TYPE
+    SYNTAX  Integer32(1..65535)
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "The filter group index, from the set signaled at DOCSIS
+
+
+
+    Registration.  Provides a referenceable entry to which
+    diffServClfrElementSpecific points.  A packet matches this
+    classifier entry if the packet's cable modem registered this
+    index value as one of its four filter groups, and if the packet
+    direction and MAC address select the use of this index among
+    the four.  Because this is the only field in this table, it is
+    read-only, contrary to the usual SMI custom of making indices
+    not-accessible.
+
+    Note that although zero may be signaled (or defaulted) at DOCSIS
+    Registration to indicate a default filtering group, no such entry
+    appears in this table, as diffServClfrElementSpecific will
+    use a zeroDotZero pointer for that classification."
+    ::= { docsSubMgtFilterGroupEntry 1 }
+
+docsSubMgtConformance OBJECT IDENTIFIER ::= { docsSubMgt 2 }
+docsSubMgtCompliances OBJECT IDENTIFIER ::=
+                                        { docsSubMgtConformance 1 }
+docsSubMgtGroups OBJECT IDENTIFIER      ::=
+                                        { docsSubMgtConformance 2 }
+
+docsSubMgtBasicCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for CMTS devices that implement
+    CMTS centric subscriber management.
+
+    This compliance statement applies to implementations that
+    support DOCSIS 1.0/1.1/2.0, which are not IPv6 capable."
+
+
+MODULE DIFFSERV-MIB -- RFC3289
+  MANDATORY-GROUPS {
+           diffServMIBDataPathGroup,
+           diffServMIBClfrGroup,
+           diffServMIBClfrElementGroup,
+           diffServMIBMultiFieldClfrGroup,
+           diffServMIBActionGroup,
+           diffServMIBAlgDropGroup,
+           diffServMIBCounterGroup
+           }
+
+OBJECT diffServDataPathStatus  -- same as RFC3289
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+        "Support for createAndWait and notInService is not required."
+
+
+
+
+OBJECT diffServClfrStatus  -- same as RFC3289
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+        "Support for createAndWait and notInService is not required."
+
+OBJECT diffServClfrElementStatus  -- same as RFC3289
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+        "Support for createAndWait and notInService is not required."
+
+OBJECT diffServMultiFieldClfrAddrType
+    SYNTAX  InetAddressType { ipv4(1) }
+    DESCRIPTION
+        "An implementation is only required to support IPv4
+    addresses."
+
+OBJECT diffServMultiFieldClfrSrcAddr
+    SYNTAX  InetAddress (SIZE(4))
+    DESCRIPTION
+        "An implementation is only required to support IPv4
+    addresses."
+
+OBJECT diffServMultiFieldClfrDstAddr
+    SYNTAX  InetAddress (SIZE(4))
+    DESCRIPTION
+        "An implementation is only required to support IPv4
+    addresses."
+
+OBJECT diffServAlgDropStatus  -- same as RFC3289
+    SYNTAX RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+        "Support for createAndWait and notInService is not required."
+
+OBJECT diffServDataPathStorage
+    SYNTAX StorageType { nonVolatile(3) }
+    DESCRIPTION
+        "An implementation is only required to support nonvolatile
+    storage."
+
+OBJECT diffServClfrStorage
+    SYNTAX StorageType { nonVolatile(3) }
+    DESCRIPTION
+        "An implementation is only required to support nonvolatile
+    storage."
+
+
+
+
+OBJECT diffServClfrElementStorage
+    SYNTAX StorageType { nonVolatile(3) }
+    DESCRIPTION
+        "An implementation is only required to support nonvolatile
+    storage."
+
+OBJECT diffServMultiFieldClfrStorage
+    SYNTAX StorageType { nonVolatile(3) }
+    DESCRIPTION
+        "An implementation is only required to support nonvolatile
+    storage."
+
+OBJECT diffServActionStorage
+    SYNTAX StorageType { nonVolatile(3) }
+    DESCRIPTION
+        "An implementation is only required to support nonvolatile
+    storage."
+
+OBJECT diffServCountActStorage
+    SYNTAX StorageType { nonVolatile(3) }
+    DESCRIPTION
+        "An implementation is only required to support nonvolatile
+    storage."
+
+OBJECT diffServAlgDropStorage
+    SYNTAX StorageType { nonVolatile(3) }
+    DESCRIPTION
+        "An implementation is only required to support nonvolatile
+    storage."
+
+OBJECT diffServAlgDropType
+    SYNTAX  INTEGER { alwaysDrop(5) }
+    DESCRIPTION
+        "For DOCSIS subscriber management, this object is
+    only used to provide packet filtering.  Implementations
+    need not support other values of this enumeration."
+
+MODULE -- This module i.e., DOCS-IETF-SUBMGT-MIB
+
+MANDATORY-GROUPS {
+        docsSubMgtGroup
+        }
+
+OBJECT docsSubMgtCpeControlMaxCpeIp
+    SYNTAX Integer32(0..16)
+    DESCRIPTION
+        "An implementation is only required to support up to
+    sixteen addresses per modem."
+
+
+
+OBJECT docsSubMgtCpeMaxIpDefault
+    SYNTAX Integer32(0..16)
+    DESCRIPTION
+        "An implementation is only required to support up to
+    sixteen addresses per modem."
+
+OBJECT docsSubMgtCpeIpAddressType
+    SYNTAX InetAddressType { ipv4(1) }
+    DESCRIPTION
+        "An implementation is only required to support IPv4
+    addresses."
+
+OBJECT docsSubMgtCpeIpAddr
+    SYNTAX  InetAddress (SIZE(4))
+    DESCRIPTION
+        "An implementation is only required to support IPv4
+    addresses."
+
+OBJECT docsSubMgtCmFilterSubDownstream
+    SYNTAX  Integer32(0..30)
+    DESCRIPTION
+        "An implementation is only required to support thirty
+    filter groups."
+
+OBJECT docsSubMgtCmFilterSubUpstream
+    SYNTAX  Integer32(0..30)
+    DESCRIPTION
+        "An implementation is only required to support thirty
+    filter groups."
+
+OBJECT docsSubMgtCmFilterCmDownstream
+    SYNTAX  Integer32(0..30)
+    DESCRIPTION
+        "An implementation is only required to support thirty
+    filter groups."
+
+OBJECT docsSubMgtCmFilterCmUpstream
+    SYNTAX  Integer32(0..30)
+    DESCRIPTION
+        "An implementation is only required to support thirty
+    filter groups."
+
+        ::= { docsSubMgtCompliances 1 }
+
+docsSubMgtGroup OBJECT-GROUP
+        OBJECTS {
+            docsSubMgtCpeControlMaxCpeIp,
+            docsSubMgtCpeControlActive,
+
+
+
+            docsSubMgtCpeControlLearnable,
+            docsSubMgtCpeControlReset,
+            docsSubMgtCpeControlLastReset,
+            docsSubMgtCpeMaxIpDefault,
+            docsSubMgtCpeActiveDefault,
+            docsSubMgtCpeLearnableDefault,
+            docsSubMgtCpeIpAddressType,
+            docsSubMgtCpeIpAddr,
+            docsSubMgtCpeIpLearned,
+            docsSubMgtCmFilterSubDownstream,
+            docsSubMgtCmFilterSubUpstream,
+            docsSubMgtCmFilterCmDownstream,
+            docsSubMgtCmFilterCmUpstream,
+            docsSubMgtFilterGroupIndex
+            }
+            STATUS      current
+            DESCRIPTION
+                "The objects used to manage host-based cable modems
+            via a set of CMTS enforced controls."
+            ::= {  docsSubMgtGroups 1 }
+
+END

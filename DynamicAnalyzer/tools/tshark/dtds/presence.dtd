@@ -1,0 +1,28 @@
+<? wireshark:protocol
+   proto_name="presence"
+   description="presence XML doc (RFC 3863)"
+   media="application/cpim-pidf+xml"
+   hierarchy="yes" ?>
+<!--
+$Id$
+-->
+
+
+<!ELEMENT presence (tuple)* >
+<!ATTLIST presence xmlns CDATA #IMPLIED entity CDATA #REQUIRED>
+
+<!ELEMENT tuple (status? | contact? | note? | timestamp?)* >
+<!ATTLIST tuple id CDATA #REQUIRED>
+
+<!ELEMENT status (basic)>
+
+<!ELEMENT basic (#PCDATA)>
+
+<!ELEMENT contact (#PCDATA)>
+<!ATTLIST contact priority CDATA #REQUIRED>
+
+<!ELEMENT note (#PCDATA)>
+<!ATTLIST note    lang CDATA #REQUIRED>
+
+<!ELEMENT timestamp (#PCDATA)>
+

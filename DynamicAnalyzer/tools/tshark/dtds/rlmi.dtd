@@ -1,0 +1,31 @@
+<? wireshark:protocol
+   proto_name="list"
+   description="Event Notification for Resource Lists (RFC 4662)"
+   hierarchy="yes" ?>
+
+<!--
+$Id$
+-->
+
+<!ELEMENT list (name | resource)* >
+<!ATTLIST list xmlns CDATA #IMPLIED
+               uri CDATA #REQUIRED
+               version CDATA #REQUIRED
+               fullstate CDATA #REQUIRED
+               cid CDATA #REQUIRED>
+
+<!ELEMENT resource  (name | instance)*>
+<!ATTLIST resource     uri CDATA #REQUIRED>
+
+<!-- N.B. name appears at 2 different levels in this schema! -->
+<!ELEMENT name  (#PCDATA)>
+<!ATTLIST name     lang CDATA #REQUIRED>
+
+<!ELEMENT instance (#PCDATA)>
+<!ATTLIST instance  id CDATA #IMPLIED
+                    STATE CDATA #IMPLIED
+                    reason CDATA #IMPLIED
+                    cid CDATA #IMPLIED>
+
+
+

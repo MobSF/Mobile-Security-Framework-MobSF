@@ -1,0 +1,89 @@
+ITU-ALARM-TC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   MODULE-IDENTITY, mib-2
+       FROM SNMPv2-SMI         -- [RFC2578]
+   TEXTUAL-CONVENTION
+       FROM SNMPv2-TC;         -- [RFC2579]
+
+  ituAlarmTc MODULE-IDENTITY
+      LAST-UPDATED "200409090000Z"  -- September 09, 2004
+      ORGANIZATION "IETF Distributed Management Working Group"
+      CONTACT-INFO
+         " WG EMail: disman@ietf.org
+           Subscribe: disman-request@ietf.org
+           http://www.ietf.org/html.charters/disman-charter.html
+
+           Chair:     Randy Presuhn
+                      randy_presuhn@mindspring.com
+
+           Editors:   Sharon Chisholm
+                      Nortel Networks
+                      PO Box 3511 Station C
+                      Ottawa, Ont.  K1Y 4H7
+                      Canada
+                      schishol@nortelnetworks.com
+
+                      Dan Romascanu
+                      Avaya
+                      Atidim Technology Park, Bldg. #3
+                      Tel Aviv, 61131
+                      Israel
+                      Tel: +972-3-645-8414
+                      Email: dromasca@avaya.com"
+      DESCRIPTION
+         "This MIB module defines the ITU Alarm
+         textual convention for objects not expected to require
+         regular extension.
+
+         Copyright (C) The Internet Society (2004).  The
+         initial version of this MIB module was published
+         in RFC 3877.  For full legal notices see the RFC
+         itself.  Supplementary information may be available on:
+         http://www.ietf.org/copyrights/ianamib.html"
+      REVISION    "200409090000Z"  -- September 09, 2004
+      DESCRIPTION
+          "Initial version, published as RFC 3877."
+
+
+
+     ::= { mib-2 120 }
+
+ItuPerceivedSeverity ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+            "ITU perceived severity values"
+    REFERENCE
+           "ITU Recommendation M.3100, 'Generic Network Information
+            Model', 1995
+            ITU Recommendation X.733, 'Information Technology - Open
+            Systems Interconnection - System Management: Alarm
+            Reporting Function', 1992"
+    SYNTAX         INTEGER
+           {
+           cleared (1),
+           indeterminate (2),
+           critical (3),
+           major (4),
+           minor (5),
+           warning (6)
+           }
+
+ItuTrendIndication ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+            "ITU trend indication values for alarms."
+    REFERENCE
+           "ITU Recommendation M.3100, 'Generic Network Information
+            Model', 1995
+            ITU Recommendation X.733, 'Information Technology - Open
+            Systems Interconnection - System Management: Alarm
+            Reporting Function', 1992"
+    SYNTAX         INTEGER
+      {
+      moreSevere (1),
+      noChange (2),
+      lessSevere (3)
+      }
+
+END

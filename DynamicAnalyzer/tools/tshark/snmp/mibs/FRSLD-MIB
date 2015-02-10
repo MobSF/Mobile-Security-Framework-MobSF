@@ -1,0 +1,1823 @@
+FRSLD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Counter32, Gauge32, Integer32,
+    Counter64, TimeTicks, mib-2             FROM SNMPv2-SMI
+    CounterBasedGauge64                     FROM HCNUM-TC
+    TEXTUAL-CONVENTION, RowStatus,
+    TimeStamp                               FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP         FROM SNMPv2-CONF
+    ifIndex                                 FROM IF-MIB
+    DLCI                                    FROM FRAME-RELAY-DTE-MIB;
+
+    frsldMIB MODULE-IDENTITY
+        LAST-UPDATED "200201030000Z" -- January 3, 2002
+        ORGANIZATION "IETF Frame Relay Service MIB Working Group"
+        CONTACT-INFO
+          "IETF Frame Relay Service MIB (frnetmib) Working Group
+
+           WG Charter:    http://www.ietf.org/html.charters/
+                                 frnetmib-charter.html
+           WG-email:      frnetmib@sunroof.eng.sun.com
+           Subscribe:     frnetmib-request@sunroof.eng.sun.com
+           Email Archive: ftp://ftp.ietf.org/ietf-mail-archive/frnetmib
+
+
+           Chair:      Andy Malis
+                       Vivace Networks
+           Email:      Andy.Malis@vivacenetworks.com
+
+           WG editor:  Robert Steinberger
+                       Paradyne Networks and
+                       Fujitsu Network Communications
+           Email:      robert.steinberger@fnc.fujitsu.com
+
+           Co-author:  Orly Nicklass
+                       RAD Data Communications Ltd.
+           EMail:      Orly_n@rad.co.il"
+        DESCRIPTION
+            "The MIB module to describe generic objects for
+             FRF.13 Frame Relay Service Level Definitions."
+        REVISION "200201030000Z" -- January 3, 2002
+        DESCRIPTION
+            "Initial version, published as RFC 3202"
+        ::= { mib-2 95 }
+
+    --
+    -- Textual Conventions
+    --
+    FrsldTxRP ::= TEXTUAL-CONVENTION
+        STATUS  current
+        DESCRIPTION
+            "The reference point a PVC uses for calculation
+             of transmitter related statistics.
+
+             The valid values for this type of object are as follows:
+               - srcLocalRP(1) for the local source
+               - ingTxLocalRP(2) for the local ingress queue input
+               - tpTxLocalRP(3) for the local traffic policing
+               - eqiTxLocalRP(4) for the local egress queue input
+               - eqoTxLocalRP(5) for the local egress queue output
+               - otherTxLocalRP(6) for any other local transmit point
+               - srcRemoteRP(7) for the remote source
+               - ingTxLocalRP(8) for the remote ingress queue input
+               - tpTxLocalRP(9) for the remote traffic policing
+               - eqiTxRemoteRP(10) for the remote egress queue input
+               - eqoTxRemoteRP(11) for the remote egress queue output
+               - otherTxRemoteRP(12) for any other remote xmit point"
+        REFERENCE
+            "FRF.13: Section 2.3"
+        SYNTAX      INTEGER {
+                      srcLocalRP(1),
+                      ingTxLocalRP(2),
+                      tpTxLocalRP(3),
+
+
+                      eqiTxLocalRP(4),
+                      eqoTxLocalRP(5),
+                      otherTxLocalRP(6),
+                      srcRemoteRP(7),
+                      ingTxRemoteRP(8),
+                      tpTxRemoteRP(9),
+                      eqiTxRemoteRP(10),
+                      eqoTxRemoteRP(11),
+                      otherTxRemoteRP(12)
+                    }
+
+    FrsldRxRP ::= TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+            "The reference point a PVC uses for calculation
+             of receiver related statistics.
+
+             The valid values for this object are as follows:
+               - desLocalRP(1) for the local destination
+               - ingRxLocalRP(2) for the local ingress queue input
+               - tpRxLocalRP(3) for the local traffic policing
+               - eqiRxLocalRP(4) for the local egress queue input
+               - eqoRxLocalRP(5) for the local egress queue output
+               - otherRxLocalRP(6) for any other local receive point
+               - desRemoteRP(7) for the remote destination
+               - ingRxRemoteRP(8) for the remote ingress input
+               - tpRxRemoteRP(9) for the remote traffic policing
+               - eqiRxRemoteRP(10) for the remote egress queue input
+               - eqoRxRemoteRP(11) for the remote egress queue output
+               - otherRxRemoteRP(12) for any other remote receive point"
+        REFERENCE
+            "FRF.13: Section 2.3"
+        SYNTAX      INTEGER {
+                      desLocalRP(1),
+                      ingRxLocalRP(2),
+                      tpRxLocalRP(3),
+                      eqiRxLocalRP(4),
+                      eqoRxLocalRP(5),
+                      otherRxLocalRP(6),
+                      desRemoteRP(7),
+                      ingRxRemoteRP(8),
+                      tpRxRemoteRP(9),
+                      eqiRxRemoteRP(10),
+                      eqoRxRemoteRP(11),
+                      otherRxRemoteRP(12)
+                    }
+
+    --
+
+
+    -- Base Objects
+    ---
+
+    frsldObjects      OBJECT IDENTIFIER ::= { frsldMIB 1 }
+    frsldCapabilities OBJECT IDENTIFIER ::= { frsldMIB 2 }
+    frsldConformance  OBJECT IDENTIFIER ::= { frsldMIB 3 }
+
+    -- The Frame Relay Service Level Definitions PVC Control Table
+    --
+    -- This table is used to define and display the parameters of
+    -- service level definitions on individual PVCs.
+
+    frsldPvcCtrlTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF FrsldPvcCtrlEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The Frame Relay Service Level Definitions
+             PVC control table."
+        ::= { frsldObjects 1 }
+
+    frsldPvcCtrlEntry OBJECT-TYPE
+        SYNTAX      FrsldPvcCtrlEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry in the Frame Relay Service Level
+             Definitions PVC control table."
+        INDEX    { ifIndex, frsldPvcCtrlDlci,
+                   frsldPvcCtrlTransmitRP, frsldPvcCtrlReceiveRP}
+        ::= { frsldPvcCtrlTable 1 }
+
+    FrsldPvcCtrlEntry ::=
+        SEQUENCE {
+            --
+            -- Index Control Variables
+            --
+            frsldPvcCtrlDlci                DLCI,
+            frsldPvcCtrlTransmitRP          FrsldTxRP,
+            frsldPvcCtrlReceiveRP           FrsldRxRP,
+            frsldPvcCtrlStatus              RowStatus,
+            --
+            -- Service Level Definitions Setup Variables
+            --
+            frsldPvcCtrlPacketFreq          Integer32,
+            --
+            -- Delay Specific Setup Variables
+            --
+
+
+            frsldPvcCtrlDelayFrSize         Integer32,
+            frsldPvcCtrlDelayType           INTEGER,
+            frsldPvcCtrlDelayTimeOut        Integer32,
+            --
+            -- Data Persistence Control Variables
+            --
+            frsldPvcCtrlPurge               Integer32,
+            frsldPvcCtrlDeleteOnPurge       INTEGER,
+            frsldPvcCtrlLastPurgeTime       TimeStamp
+        }
+
+    frsldPvcCtrlDlci OBJECT-TYPE
+        SYNTAX      DLCI
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The value of this object is equal to the DLCI
+             value for this PVC."
+        ::= { frsldPvcCtrlEntry 1 }
+
+    frsldPvcCtrlTransmitRP OBJECT-TYPE
+        SYNTAX      FrsldTxRP
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The reference point this PVC uses for calculation
+             of transmitter related statistics.  This object
+             together with frsldPvcCtrlReceiveRP define the
+             measurement domain."
+        REFERENCE
+            "FRF.13: Section 2.3"
+        ::= { frsldPvcCtrlEntry 2 }
+
+    frsldPvcCtrlReceiveRP OBJECT-TYPE
+        SYNTAX      FrsldRxRP
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The reference point this PVC uses for calculation
+             of receiver related statistics.  This object
+             together with frsldPvcCtrlTransmitRP define the
+             measurement domain."
+        ::= { frsldPvcCtrlEntry 3 }
+
+    frsldPvcCtrlStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+
+
+        DESCRIPTION
+            "The status of the current row.  This object is
+             used to add, delete, and disable rows in this
+             table.  When the status changes to active(1) for the
+             first time, a row will also be added to the data
+             table below.  This row SHOULD not be removed until
+             the status is changed to deleted.
+
+             When this object is set to destroy(6), all associated
+             sample and data table rows will also be deleted.
+             When this object is changed from active(1) to any
+             other valid value, the defined purge behavior will
+             affect the data and sample tables.
+
+             The rows added to this table MUST have a valid
+             ifIndex and an ifType related to frame relay.  Further,
+             the reference points referred to by frsldPvcCtrlTransmitRP
+             and frsldPvcCtrlReceiveRP MUST be supported (see the
+             frsldRPCaps object).
+
+             If at any point the row is not in the active(1) state
+             and the DLCI no longer exists, the state SHOULD
+             report notReady(3).
+
+             The data in this table SHOULD persist through power
+             cycles.  The symantics of readiness for the rows still
+             applies.  This means that it is possible for a row to be
+             reprovisioned as notReady(3) if the underlying DLCI does
+             not persist."
+        ::= { frsldPvcCtrlEntry 4 }
+
+    frsldPvcCtrlPacketFreq OBJECT-TYPE
+        SYNTAX      Integer32 (0..3600)
+        UNITS       "seconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The frequency in seconds between initiation of
+             specialized packets used to collect delay and / or
+             delivery information as supported by the device.
+             A value of zero indicates that no packets will
+             be sent."
+        DEFVAL { 60 }
+        ::= { frsldPvcCtrlEntry 5 }
+
+    frsldPvcCtrlDelayFrSize OBJECT-TYPE
+        SYNTAX      Integer32 (1..8188)
+        UNITS       "octets"
+
+
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The size of the payload in the frame used for
+             calculation of network delay."
+        DEFVAL { 128 }
+        ::= { frsldPvcCtrlEntry 6 }
+
+    frsldPvcCtrlDelayType OBJECT-TYPE
+        SYNTAX      INTEGER {
+                      oneWay(1),
+                      roundTrip(2)
+                    }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+                "The type of delay measurement performed."
+        REFERENCE
+            "FRF.13: Section 3"
+        ::= { frsldPvcCtrlEntry 7 }
+
+    frsldPvcCtrlDelayTimeOut OBJECT-TYPE
+        SYNTAX      Integer32 (1..3600)
+        UNITS       "seconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "A delay frame will count as a missed poll if
+             it is not updated in the time specified by
+             frsldPvcCtrlDelayTimeOut."
+        DEFVAL { 60 }
+        ::= { frsldPvcCtrlEntry 8 }
+
+    frsldPvcCtrlPurge OBJECT-TYPE
+        SYNTAX      Integer32 (0..172800) -- up to 48 hours
+        UNITS       "seconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "This object defines the amount of time the device
+             will wait, after discovering that a DLCI does not exist,
+             the DLCI was deleted or the value of frsldPvcCtrlStatus
+             changes from active(1) to either notInService(2) or
+             notReady(3), prior to automatically purging the history
+             in the sample tables and resetting the data in the data
+             tables to all zeroes.  If frsldPvcCtrlStatus is manually
+             set to destroy(6), this object does not apply."
+        DEFVAL { 0 }
+
+
+        ::= { frsldPvcCtrlEntry 9 }
+
+    frsldPvcCtrlDeleteOnPurge OBJECT-TYPE
+        SYNTAX      INTEGER {
+                      none(1),
+                      sampleContols(2),
+                      all(3)
+                    }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "This object defines whether rows will
+             automatically be deleted from the tables
+             when the information is purged.
+
+             - A value of none(1) indicates that no rows
+               will deleted.  The last known values will
+               be preserved.
+             - A value of sampleControls(2) indicates
+               that all associated sample control rows
+               will be deleted.
+             - A value of all(3) indicates that all
+               associated rows SHOULD be deleted."
+        DEFVAL { all }
+        ::= { frsldPvcCtrlEntry 10 }
+
+    frsldPvcCtrlLastPurgeTime OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This object returns the value of sysUpTime
+             at the time the information was last purged.
+             This value SHOULD be set to the sysUpTime
+             upon setting frsldPvcCtrlStatus to active(1)
+             for the first time.  Each time a
+             discontinuity in the counters occurs, this
+             value MUST be set to the sysUpTime.
+
+             If frsldPvcCtrlStatus has never been active(1),
+             this object SHOULD return 0.
+
+             This object SHOULD be used as the discontinuity
+             timer for the counters in frsldPvcDataTable."
+        ::= { frsldPvcCtrlEntry 11 }
+
+    -- The Frame Relay Service Level Definitions Sampling Control
+    -- Table
+
+
+    --
+    -- This table is used to define the sample control parameters
+    -- of service level definitions on individual PVCs.
+
+    frsldSmplCtrlTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF FrsldSmplCtrlEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The Frame Relay Service Level Definitions
+             sampling control table."
+        ::= { frsldObjects 2 }
+
+    frsldSmplCtrlEntry OBJECT-TYPE
+        SYNTAX      FrsldSmplCtrlEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry in the Frame Relay Service Level
+             Definitions sample control table."
+        INDEX    { ifIndex, frsldPvcCtrlDlci,
+                   frsldPvcCtrlTransmitRP, frsldPvcCtrlReceiveRP,
+                   frsldSmplCtrlIdx }
+        ::= { frsldSmplCtrlTable 1 }
+
+    FrsldSmplCtrlEntry ::=
+        SEQUENCE {
+            --
+            -- Index Control Variables
+            --
+            frsldSmplCtrlIdx                Integer32,
+            frsldSmplCtrlStatus             RowStatus,
+            --
+            -- Collection Control Variables
+            --
+            frsldSmplCtrlColPeriod          Integer32,
+            frsldSmplCtrlBuckets            Integer32,
+            frsldSmplCtrlBucketsGranted     Integer32
+        }
+
+    frsldSmplCtrlIdx OBJECT-TYPE
+        SYNTAX  Integer32 (1..256)
+        MAX-ACCESS not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The unique index for this row in the
+             sample control table."
+        ::= { frsldSmplCtrlEntry 1 }
+
+
+    frsldSmplCtrlStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The status of the current row.  This object is
+             used to add, delete, and disable rows in this
+             table.  This row SHOULD NOT be removed until the
+             status is changed to destroy(6).  When the status
+             changes to active(1), the collection in the sample
+             tables below will be activated.
+
+             The rows added to this table MUST have a valid
+             ifIndex, an ifType related to frame relay,
+             frsldPvcCtrlDlci MUST exist for the specified
+             ifIndex and frsldPvcCtrlStatus MUST have a
+             value of active(1).
+
+             The value of frsldPvcCtrlStatus MUST be active(1)
+             to transition this object to active(1).  If
+             the value of frsldPvcCtrlStatus becomes anything
+             other than active(1) when the state of this object
+             is not active(1), this object SHOULD be set to
+             notReady(3).
+
+             The data in this table SHOULD persist through power
+             cycles.  The symantics of readiness for the rows still
+             applies.  This means that it is possible for a row to be
+             reprovisioned as notReady(3) if the underlying DLCI does
+             not persist."
+        ::= { frsldSmplCtrlEntry 2 }
+
+    frsldSmplCtrlColPeriod OBJECT-TYPE
+        SYNTAX      Integer32 (1..2147483647)
+        UNITS       "seconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The amount of time in seconds that defines a
+             period of collection for the statistics.
+             At the end of each period, the statistics will be
+             sampled and a row is added to the sample table."
+        ::= { frsldSmplCtrlEntry 3 }
+
+    frsldSmplCtrlBuckets OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+
+
+        DESCRIPTION
+            "The number of discrete buckets over which the
+             data statistics are sampled.
+
+             When this object is created or modified, the device
+             SHOULD attempt to set the frsldSmplCtrlBuckets-
+             Granted to a value as close as is possible
+             depending upon the implementation and the available
+             resources."
+        DEFVAL { 60 }
+        ::= { frsldSmplCtrlEntry 4 }
+
+    frsldSmplCtrlBucketsGranted OBJECT-TYPE
+        SYNTAX      Integer32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of discrete buckets granted.  This
+             object will return 0 until frsldSmplCtrlStatus is
+             set to active(1).  At that time the buckets will be
+             allocated depending upon implementation and
+             available resources."
+        ::= { frsldSmplCtrlEntry 5 }
+
+    -- The Frame Relay Service Level Definitions PVC Data Table
+    --
+    -- This table contains the accumulated values of
+    -- the collected data.  This table is the table that should
+    -- be referenced by external polling mechanisms if time
+    -- based polling be desired.
+
+     frsldPvcDataTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF FrsldPvcDataEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The Frame Relay Service Level Definitions
+             data table.
+
+             This table contains accumulated values of the
+             collected data.  It is the table that should be
+             referenced by external polling mechanisms if
+             time based polling be desired."
+        ::= { frsldObjects 3 }
+
+    frsldPvcDataEntry OBJECT-TYPE
+        SYNTAX      FrsldPvcDataEntry
+        MAX-ACCESS  not-accessible
+
+
+        STATUS      current
+        DESCRIPTION
+            "An entry in the Frame Relay Service Level
+             Definitions data table."
+        INDEX    { ifIndex, frsldPvcCtrlDlci,
+                  frsldPvcCtrlTransmitRP, frsldPvcCtrlReceiveRP}
+        ::= { frsldPvcDataTable 1 }
+
+    FrsldPvcDataEntry ::=
+        SEQUENCE {
+            frsldPvcDataMissedPolls       Counter32,
+            frsldPvcDataFrDeliveredC      Counter32,
+            frsldPvcDataFrDeliveredE      Counter32,
+            frsldPvcDataFrOfferedC        Counter32,
+            frsldPvcDataFrOfferedE        Counter32,
+            frsldPvcDataDataDeliveredC    Counter32,
+            frsldPvcDataDataDeliveredE    Counter32,
+            frsldPvcDataDataOfferedC      Counter32,
+            frsldPvcDataDataOfferedE      Counter32,
+            frsldPvcDataHCFrDeliveredC    Counter64,
+            frsldPvcDataHCFrDeliveredE    Counter64,
+            frsldPvcDataHCFrOfferedC      Counter64,
+            frsldPvcDataHCFrOfferedE      Counter64,
+            frsldPvcDataHCDataDeliveredC  Counter64,
+            frsldPvcDataHCDataDeliveredE  Counter64,
+            frsldPvcDataHCDataOfferedC    Counter64,
+            frsldPvcDataHCDataOfferedE    Counter64,
+            frsldPvcDataUnavailableTime   TimeTicks,
+            frsldPvcDataUnavailables      Counter32
+        }
+
+    frsldPvcDataMissedPolls OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The total number of polls that have been determined
+             to be missed.  These polls are typically associated
+             with the calculation of delay but may also be
+             used for the calculation of other statistics.  If an
+             anticipated poll is not received in a reasonable
+             amount of time, it should be counted as missed.
+             The value used to determine the reasonable amount
+             of time is contained in frsldPvcCtrlDelayTimeOut.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+
+
+             frsldPvcCtrlLastPurgeTime."
+        ::= { frsldPvcDataEntry 1 }
+
+    frsldPvcDataFrDeliveredC OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent within CIR.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesDeliveredc)"
+        ::= { frsldPvcDataEntry 2 }
+
+    frsldPvcDataFrDeliveredE OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent in excess of the CIR.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesDeliverede)"
+        ::= { frsldPvcDataEntry 3 }
+
+    frsldPvcDataFrOfferedC OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were offered through
+             frsldPvcCtrlTransmitRP within CIR.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+
+
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesOfferedc)"
+        ::= { frsldPvcDataEntry 4 }
+
+    frsldPvcDataFrOfferedE OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were offered through
+             frsldPvcCtrlTransmitRP in excess of the CIR.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesOfferede)"
+        ::= { frsldPvcDataEntry 5 }
+
+    frsldPvcDataDataDeliveredC OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent within CIR.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataDeliveredc)"
+        ::= { frsldPvcDataEntry 6 }
+
+    frsldPvcDataDataDeliveredE OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent in excess of the CIR.
+
+             Discontinuities in the value of this counter can
+
+
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataDeliverede)"
+        ::= { frsldPvcDataEntry 7 }
+
+    frsldPvcDataDataOfferedC OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were offered through
+             frsldPvcCtrlTransmitRP within CIR.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataOfferedc)"
+        ::= { frsldPvcDataEntry 8 }
+
+    frsldPvcDataDataOfferedE OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were offered through
+             frsldPvcCtrlTransmitRP in excess of the CIR.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataOfferede)"
+        ::= { frsldPvcDataEntry 9 }
+
+    frsldPvcDataHCFrDeliveredC OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent within CIR.  This object is a 64-bit version
+             of frsldPvcDataFrDeliveredC.
+
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesDeliveredc)"
+        ::= { frsldPvcDataEntry 10 }
+
+    frsldPvcDataHCFrDeliveredE OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent in excess of the CIR.  This object is a 64-bit
+             version of frsldPvcDataFrDeliveredE.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesDeliverede)"
+        ::= { frsldPvcDataEntry 11 }
+
+    frsldPvcDataHCFrOfferedC OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were offered through
+             frsldPvcCtrlTransmitRP within CIR.  This object is
+             a 64-bit version of frsldPvcDataFrOfferedC.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesOfferedc)"
+        ::= { frsldPvcDataEntry 12 }
+
+    frsldPvcDataHCFrOfferedE OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+
+
+            "The number of frames that were offered through
+             frsldPvcCtrlTransmitRP in excess of the CIR.  This
+             object is a 64-bit version of frsldPvcDataFrOfferedE.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesOfferede)"
+        ::= { frsldPvcDataEntry 13 }
+
+    frsldPvcDataHCDataDeliveredC OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent within CIR.  This object is a 64-bit version of
+             frsldPvcDataDataDeliveredC.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataDeliveredc)"
+        ::= { frsldPvcDataEntry 14 }
+
+    frsldPvcDataHCDataDeliveredE OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent in excess of the CIR.  This object is a 64-bit
+             version of frsldPvcDataDataDeliveredE.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataDeliverede)"
+        ::= { frsldPvcDataEntry 15 }
+
+
+
+    frsldPvcDataHCDataOfferedC OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were offered through
+             frsldPvcCtrlTransmitRP within CIR.  This object is
+             a 64-bit version of frsldPvcDataDataOfferedC.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataOfferedc)"
+        ::= { frsldPvcDataEntry 16 }
+
+    frsldPvcDataHCDataOfferedE OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were offered through
+             frsldPvcCtrlTransmitRP in excess of the CIR.
+             This object is a 64-bit version of
+             frsldPvcDataDataOfferedE.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataOfferede)"
+        ::= { frsldPvcDataEntry 17 }
+
+    frsldPvcDataUnavailableTime OBJECT-TYPE
+        SYNTAX      TimeTicks
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The amount of time this PVC was declared unavailable
+             for any reason since this row was created."
+        REFERENCE
+            "FRF.13: Section 6.1 (OutageTime)"
+        ::= { frsldPvcDataEntry 18 }
+
+    frsldPvcDataUnavailables OBJECT-TYPE
+        SYNTAX      Counter32
+
+
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of times this PVC was declared unavailable
+             for any reason since this row was created.
+
+             Discontinuities in the value of this counter can
+             occur at re-initialization of the management system
+             and at other times as indicated by
+             frsldPvcCtrlLastPurgeTime."
+        REFERENCE
+            "FRF.13: Section 6.1 (OutageCount)"
+        ::= { frsldPvcDataEntry 19 }
+
+    -- The Frame Relay Service Level Definitions PVC Sample Table
+    --
+    -- This table contains the sampled delay, delivery and
+    -- availability information.
+
+    frsldPvcSampleTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF FrsldPvcSampleEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The Frame Relay Service Level Definitions
+             sample table."
+        ::= { frsldObjects 4 }
+
+    frsldPvcSampleEntry OBJECT-TYPE
+        SYNTAX      FrsldPvcSampleEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry in the Frame Relay Service Level
+             Definitions data sample table."
+        INDEX    { ifIndex, frsldPvcCtrlDlci,
+                   frsldPvcCtrlTransmitRP, frsldPvcCtrlReceiveRP,
+                   frsldSmplCtrlIdx, frsldPvcSmplIdx }
+        ::= { frsldPvcSampleTable 1 }
+
+    FrsldPvcSampleEntry ::=
+        SEQUENCE {
+            frsldPvcSmplIdx              Integer32,
+            frsldPvcSmplDelayMin         Gauge32,
+            frsldPvcSmplDelayMax         Gauge32,
+            frsldPvcSmplDelayAvg         Gauge32,
+            frsldPvcSmplMissedPolls      Gauge32,
+            frsldPvcSmplFrDeliveredC     Gauge32,
+
+
+            frsldPvcSmplFrDeliveredE     Gauge32,
+            frsldPvcSmplFrOfferedC       Gauge32,
+            frsldPvcSmplFrOfferedE       Gauge32,
+            frsldPvcSmplDataDeliveredC   Gauge32,
+            frsldPvcSmplDataDeliveredE   Gauge32,
+            frsldPvcSmplDataOfferedC     Gauge32,
+            frsldPvcSmplDataOfferedE     Gauge32,
+            frsldPvcSmplHCFrDeliveredC   CounterBasedGauge64,
+            frsldPvcSmplHCFrDeliveredE   CounterBasedGauge64,
+            frsldPvcSmplHCFrOfferedC     CounterBasedGauge64,
+            frsldPvcSmplHCFrOfferedE     CounterBasedGauge64,
+            frsldPvcSmplHCDataDeliveredC CounterBasedGauge64,
+            frsldPvcSmplHCDataDeliveredE CounterBasedGauge64,
+            frsldPvcSmplHCDataOfferedC   CounterBasedGauge64,
+            frsldPvcSmplHCDataOfferedE   CounterBasedGauge64,
+            frsldPvcSmplUnavailableTime  TimeTicks,
+            frsldPvcSmplUnavailables     Gauge32,
+            frsldPvcSmplStartTime        TimeStamp,
+            frsldPvcSmplEndTime          TimeStamp
+        }
+
+    frsldPvcSmplIdx OBJECT-TYPE
+        SYNTAX      Integer32 (1..2147483647)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The bucket index of the current sample.  This
+             increments once for each new bucket in the
+             table."
+        ::= { frsldPvcSampleEntry 1 }
+
+    frsldPvcSmplDelayMin OBJECT-TYPE
+        SYNTAX      Gauge32
+        UNITS       "microseconds"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The minimum delay reported in microseconds measured
+             for any information packet that arrived during this
+             interval.
+
+             A value of zero means that no data is available."
+        REFERENCE
+            "FRF.13: Section 3.1 (FTD)"
+        ::= { frsldPvcSampleEntry 2 }
+
+    frsldPvcSmplDelayMax OBJECT-TYPE
+        SYNTAX      Gauge32
+
+
+        UNITS       "microseconds"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The largest delay reported in microseconds measured
+             for any information packet that arrived during this
+             interval.
+
+             A value of zero means that no data is available."
+        REFERENCE
+            "FRF.13: Section 3.1 (FTD)"
+        ::= { frsldPvcSampleEntry 3 }
+
+    frsldPvcSmplDelayAvg OBJECT-TYPE
+        SYNTAX      Gauge32
+        UNITS       "microseconds"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The average delay reported in microseconds measured
+             for all delay packets that arrived during this
+             interval.
+
+             A value of zero means that no data is available."
+        REFERENCE
+            "FRF.13: Section 3.1 (FTD)"
+        ::= { frsldPvcSampleEntry 4 }
+
+    frsldPvcSmplMissedPolls OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The total number of polls that were missed during
+             this interval."
+        ::= { frsldPvcSampleEntry 5 }
+
+    frsldPvcSmplFrDeliveredC OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent within CIR during this interval.
+
+             If it is the case that the high capacity counters
+             are also used, this MUST report the value of the
+
+
+             lower 32 bits of the CounterBasedGauge64 value of
+             frsldPvcSmplHCFrDeliveredC."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesDeliveredc)"
+        ::= { frsldPvcSampleEntry 6 }
+
+    frsldPvcSmplFrDeliveredE OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent in excess of the CIR during this interval.
+
+             If it is the case that the high capacity counters
+             are also used, this MUST report the value of the
+             lower 32 bits of the CounterBasedGauge64 value of
+             frsldPvcSmplHCFrDeliveredE."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesDeliverede))"
+        ::= { frsldPvcSampleEntry 7 }
+
+    frsldPvcSmplFrOfferedC OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were offered through
+             frsldPvcCtrlTransmitRP within CIR during this
+             interval.
+
+             If it is the case that the high capacity counters
+             are also used, this MUST report the value of the
+             lower 32 bits of the CounterBasedGauge64 value of
+             frsldPvcSmplHCFrOfferedC."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesOfferedc)"
+        ::= { frsldPvcSampleEntry 8 }
+
+    frsldPvcSmplFrOfferedE OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were offered through
+             frsldPvcCtrlTransmitRP in excess of the CIR
+             during this interval.
+
+
+             If it is the case that the high capacity counters
+             are also used, this MUST report the value of the
+             lower 32 bits of the CounterBasedGauge64 value of
+             frsldPvcSmplHCFrOfferedE."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesOfferede)"
+        ::= { frsldPvcSampleEntry 9 }
+
+    frsldPvcSmplDataDeliveredC OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent within CIR during this interval.
+
+             If it is the case that the high capacity counters
+             are also used, this MUST report the value of the
+             lower 32 bits of the CounterBasedGauge64 value of
+             frsldPvcSmplHCDataDeliveredC."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataDeliveredc)"
+        ::= { frsldPvcSampleEntry 10 }
+
+    frsldPvcSmplDataDeliveredE OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were received at
+             frsldPvcCtrlDeliveredRP and determined to have been
+             sent in excess of the CIR during this interval.
+
+             If it is the case that the high capacity counters
+             are also used, this MUST report the value of the
+             lower 32 bits of the CounterBasedGauge64 value of
+             frsldPvcSmplHCDataDeliveredE."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataDeliverede)"
+        ::= { frsldPvcSampleEntry 11 }
+
+    frsldPvcSmplDataOfferedC OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were offered through
+
+
+             frsldPvcCtrlTransmitRP within CIR during this
+             interval.
+
+             If it is the case that the high capacity counters
+             are also used, this MUST report the value of the
+             lower 32 bits of the CounterBasedGauge64 value of
+             frsldPvcSmplHCDataOfferredC."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataOfferedc)"
+        ::= { frsldPvcSampleEntry 12 }
+
+    frsldPvcSmplDataOfferedE OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were offered through
+             frsldPvcCtrlTransmitRP in excess of the CIR
+             during this interval.
+
+             If it is the case that the high capacity counters
+             are also used, this MUST report the value of the
+             lower 32 bits of the CounterBasedGauge64 value of
+             frsldPvcSmplHCDataOfferedE."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataOfferede)"
+        ::= { frsldPvcSampleEntry 13 }
+
+    frsldPvcSmplHCFrDeliveredC OBJECT-TYPE
+        SYNTAX      CounterBasedGauge64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent within CIR during this interval.  This object
+             is a 64-bit version of frsldPvcSmplFrDeliveredC."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesDeliveredc)"
+        ::= { frsldPvcSampleEntry 14 }
+
+    frsldPvcSmplHCFrDeliveredE OBJECT-TYPE
+        SYNTAX      CounterBasedGauge64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+
+
+             sent in excess of the CIR during this interval.
+             This object is a 64-bit version of frsldPvcSmpl-
+             FrDeliveredE."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesDeliverede)"
+       ::= { frsldPvcSampleEntry 15 }
+
+    frsldPvcSmplHCFrOfferedC OBJECT-TYPE
+        SYNTAX      CounterBasedGauge64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were offered through
+             frsldPvcCtrlTransmitRP within CIR during this
+             interval.  This object is a 64-bit version of
+             frsldPvcSmplFrOfferedC."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesOfferedc)"
+        ::= { frsldPvcSampleEntry 16 }
+
+    frsldPvcSmplHCFrOfferedE OBJECT-TYPE
+        SYNTAX      CounterBasedGauge64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of frames that were offered through
+             frsldPvcCtrlTransmitRP in excess of the CIR
+             during this interval.  This object is a 64-bit
+             version of frsldPvcSmplFrOfferedE."
+        REFERENCE
+            "FRF.13: Section 4.1 (FramesOfferede)"
+        ::= { frsldPvcSampleEntry 17 }
+
+    frsldPvcSmplHCDataDeliveredC OBJECT-TYPE
+        SYNTAX      CounterBasedGauge64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent within CIR during this interval.  This value
+             is a 64-bit version of frsldPvcSmplDataDeliveredC."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataDeliveredc)"
+        ::= { frsldPvcSampleEntry 18 }
+
+    frsldPvcSmplHCDataDeliveredE OBJECT-TYPE
+        SYNTAX      CounterBasedGauge64
+
+
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were received at
+             frsldPvcCtrlReceiveRP and determined to have been
+             sent in excess of the CIR during this interval.  This
+             value is a 64-bit version of frsldPvcSmplData-
+             DeliveredE."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataDeliverede)"
+        ::= { frsldPvcSampleEntry 19 }
+
+    frsldPvcSmplHCDataOfferedC OBJECT-TYPE
+        SYNTAX      CounterBasedGauge64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were offered through
+             frsldPvcCtrlTransmitRP within CIR during this
+             interval.  This value is a 64-bit version of
+             frsldPvcSmplDataOfferedC."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataOfferedc)"
+        ::= { frsldPvcSampleEntry 20 }
+
+    frsldPvcSmplHCDataOfferedE OBJECT-TYPE
+        SYNTAX      CounterBasedGauge64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of octets that were offered through
+             frsldPvcCtrlTransmitRP in excess of the CIR
+             during this interval.  This object is a 64-bit
+             version of frsldPvcSmplDataOfferedE."
+        REFERENCE
+            "FRF.13: Section 5.1 (DataOfferede)"
+        ::= { frsldPvcSampleEntry 21 }
+
+    frsldPvcSmplUnavailableTime OBJECT-TYPE
+        SYNTAX  TimeTicks
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The amount of time this PVC was declared
+             unavailable for any reason during this interval."
+        REFERENCE
+            "FRF.13: Section 6.1 (OutageTime)"
+        ::= { frsldPvcSampleEntry 22 }
+
+
+    frsldPvcSmplUnavailables OBJECT-TYPE
+        SYNTAX  Gauge32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of times this PVC was declared
+             unavailable for any reason during this interval."
+        REFERENCE
+            "FRF.13: Section 6.1 (OutageCount)"
+        ::= { frsldPvcSampleEntry 23 }
+
+    frsldPvcSmplStartTime OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The value of sysUpTime when this sample interval
+             started."
+        ::= { frsldPvcSampleEntry 24 }
+
+    frsldPvcSmplEndTime OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The value of sysUpTime when this sample interval
+             ended.  No data will be reported and the row will
+             not appear in the table until the sample has
+             been collected."
+        ::= { frsldPvcSampleEntry 25 }
+
+    -- Capabilities Group
+    -- This group provides capabilities objects for the tables
+    -- that control configuration.
+
+    frsldPvcCtrlWriteCaps OBJECT-TYPE
+        SYNTAX  BITS {
+               frsldPvcCtrlStatus(0),
+               frsldPvcCtrlPacketFreq(1),
+               frsldPvcCtrlDelayFrSize(2),
+               frsldPvcCtrlDelayType(3),
+               frsldPvcCtrlDelayTimeOut(4),
+               frsldPvcCtrlPurge(5),
+               frsldPvcCtrlDeleteOnPurge(6)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+
+
+            "This object specifies the write capabilities
+             for the read-create objects of the PVC Control
+             table.  If the corresponding bit is enabled (1),
+             the agent supports writes to that object."
+        ::= { frsldCapabilities 1 }
+
+    frsldSmplCtrlWriteCaps OBJECT-TYPE
+        SYNTAX  BITS {
+               frsldSmplCtrlStatus(0),
+               frsldSmplCtrlBuckets(1)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This object specifies the write capabilities
+             for the read-create objects of the Sample Control
+             table.  If the corresponding bit is enabled (1),
+             the agent supports writes to that object."
+        ::= { frsldCapabilities 2 }
+
+    frsldRPCaps OBJECT-TYPE
+        SYNTAX  BITS {
+               srcLocalRP(0),
+               ingTxLocalRP(1),
+               tpTxLocalRP(2),
+               eqiTxLocalRP(3),
+               eqoTxLocalRP(4),
+               otherTxLocalRP(5),
+               srcRemoteRP(6),
+               ingTxRemoteRP(7),
+               tpTxRemoteRP(8),
+               eqiTxRemoteRP(9),
+               eqoTxRemoteRP(10),
+               otherTxRemoteRP(11),
+               desLocalRP(12),
+               ingRxLocalRP(13),
+               tpRxLocalRP(14),
+               eqiRxLocalRP(15),
+               eqoRxLocalRP(16),
+               otherRxLocalRP(17),
+               desRemoteRP(18),
+               ingRxRemoteRP(19),
+               tpRxRemoteRP(20),
+               eqiRxRemoteRP(21),
+               eqoRxRemoteRP(22),
+               otherRxRemoteRP(23)
+        }
+        MAX-ACCESS  read-only
+
+
+        STATUS  current
+        DESCRIPTION
+            "This object specifies the reference points that
+             the agent supports.  This object allows the management
+             application to discover which rows can be created on
+             a specific device."
+        ::= { frsldCapabilities 3 }
+
+    frsldMaxPvcCtrls   OBJECT-TYPE
+        SYNTAX      Integer32 (0..2147483647)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The maximum number of control rows that can be created
+             in frsldPvcCtrlTable.  Sets to this object lower than
+             the current value of frsldNumPvcCtrls should result in
+             inconsistentValue."
+        ::= { frsldCapabilities 4 }
+
+    frsldNumPvcCtrls   OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The current number of rows in frsldPvcCtrlTable."
+        ::= { frsldCapabilities 5 }
+
+
+    frsldMaxSmplCtrls   OBJECT-TYPE
+        SYNTAX      Integer32 (0..2147483647)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The maximum number of control rows that can be created
+             in frsldSmplCtrlTable.  Sets to this object lower than
+             the current value of frsldNumSmplCtrls should result in
+             inconsistentValue."
+        ::= { frsldCapabilities 6 }
+
+    frsldNumSmplCtrls   OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The current number of rows in frsldSmplCtrlTable."
+        ::= { frsldCapabilities 7 }
+
+    -- Conformance Information
+
+
+    frsldMIBGroups      OBJECT IDENTIFIER ::= { frsldConformance 1 }
+    frsldMIBCompliances OBJECT IDENTIFIER ::= { frsldConformance 2 }
+
+    --
+    -- Compliance Statements
+    --
+
+    frsldCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+            "The compliance statement for SNMP entities
+             which support with Frame Relay Service Level
+             Definitions.  This group defines the minimum
+             level of support required for compliance."
+        MODULE -- this module
+            MANDATORY-GROUPS { frsldPvcReqCtrlGroup,
+                               frsldPvcReqDataGroup,
+                               frsldCapabilitiesGroup}
+
+            GROUP       frsldPvcHCFrameDataGroup
+            DESCRIPTION
+               "This group is mandatory only for those network
+                interfaces with corresponding instance of ifSpeed
+                 greater than 650,000,000 bits/second."
+
+            GROUP       frsldPvcHCOctetDataGroup
+            DESCRIPTION
+               "This group is mandatory only for those network
+                interfaces with corresponding instance of ifSpeed
+                greater than 650,000,000 bits/second."
+
+            GROUP       frsldPvcPacketGroup
+            DESCRIPTION
+               "This group is optional.  Network interfaces that
+                allow control of the packets used to collect
+                information are encouraged to implement this
+                group."
+
+            GROUP       frsldPvcDelayCtrlGroup
+            DESCRIPTION
+               "This group is optional.  Network interfaces that
+                offer control of the delay measurement are
+                strongly encouraged to implement this group."
+
+
+            GROUP       frsldPvcSampleCtrlGroup
+            DESCRIPTION
+               "This group is mandatory only for those network
+
+
+                interfaces that allow data sampling."
+
+            GROUP       frsldPvcDelayDataGroup
+            DESCRIPTION
+               "This group is only mandatory when
+                frsldPvcDelayCtrlGroup is implemented.  It is
+                strongly encouraged that any device capable
+                of measuring delay implement this group."
+
+            GROUP       frsldPvcSampleDelayGroup
+            DESCRIPTION
+               "This group is only mandatory when both
+                frsldPvcSampleCtrlGroup and frsldPvcDelayDataGroup
+                are supported."
+
+            GROUP       frsldPvcSampleDataGroup
+            DESCRIPTION
+               "This group is mandatory whenever
+                frsldPvcSampleCtrlGroup is supported."
+
+            GROUP       frsldPvcSampleHCFrameGroup
+            DESCRIPTION
+               "This group is mandatory whenever both
+                frsldPvcSampleCtrlGroup and frsldPvcHCFrameDataGroup
+                are supported."
+
+            GROUP       frsldPvcSampleHCDataGroup
+            DESCRIPTION
+               "This group is mandatory whenever both
+                frsldPvcSampleCtrlGroup and frsldPvcHCOctetDataGroup
+                are supported."
+
+            GROUP       frsldPvcSampleAvailGroup
+            DESCRIPTION
+               "This group is mandatory whenever
+                frsldPvcSampleCtrlGroup is supported."
+
+            GROUP       frsldPvcSampleGeneralGroup
+            DESCRIPTION
+               "This group is mandatory whenever
+                frsldPvcSampleCtrlGroup is supported."
+
+            OBJECT      frsldPvcCtrlStatus
+            SYNTAX      RowStatus { active(1) } -- subset of RowStatus
+            MIN-ACCESS  read-only
+            DESCRIPTION
+               "Row creation can be done outside of the scope of
+                the SNMP protocol.  If this object is implemented
+
+
+                with max-access of read-only, then the only value
+                that MUST be returned is active(1) and
+                frsldPvcCtrlWriteCaps MUST return 0 for the
+                frsldPvcCtrlStatus(0) bit."
+
+            OBJECT      frsldPvcCtrlPurge
+            MIN-ACCESS  read-only
+            DESCRIPTION
+                "Write access is not required.  If this object is
+                 implemented with a max-access of read-only, then
+                 the frsldPvcCtrlPurge(5) bit must return 0."
+
+            OBJECT      frsldPvcCtrlDeleteOnPurge
+            MIN-ACCESS  read-only
+            DESCRIPTION
+                "Write access is not required.  If this object is
+                 implemented with a max-access of read-only, then
+                 the frsldPvcCtrlDeleteOnPurge(6) bit must return
+                 0."
+
+            OBJECT      frsldMaxPvcCtrls
+            MIN-ACCESS  read-only
+            DESCRIPTION
+                "Write access is not required if the device either
+                 dynamically allocates memory or statically allocates
+                 a fixed number of entries.  In the case of static
+                 allocation, the device should always report the
+                 correct maximum number of controls.  In the case
+                 of dynamic allocation, the device SHOULD always
+                 report a number greater than frsldNumPvcCtrls
+                 when allocation is possible and a number equal to
+                 frsldNumPvcCtrls when allocation is not possible."
+            OBJECT      frsldMaxSmplCtrls
+            MIN-ACCESS  read-only
+            DESCRIPTION
+                "Write access is not required if the device either
+                 dynamically allocates memory or statically allocates
+                 a fixed number of entries.  In the case of static
+                 allocation, the device should always report the
+                 correct maximum number of controls.  In the case
+                 of dynamic allocation, the device SHOULD always
+                 report a number greater than frsldNumSmplCtrls
+                 when allocation is possible and a number equal to
+                 frsldNumSmplCtrls when allocation is not possible."
+
+    ::= { frsldMIBCompliances 1 }
+
+    --
+
+
+    -- Units of Conformance
+    --
+    frsldPvcReqCtrlGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldPvcCtrlStatus,
+            frsldPvcCtrlPurge,
+            frsldPvcCtrlDeleteOnPurge,
+            frsldPvcCtrlLastPurgeTime
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of required objects providing
+            control information applicable to a PVC which
+            implements Service Level Definitions."
+       ::= { frsldMIBGroups 1 }
+
+    frsldPvcPacketGroup OBJECT-GROUP
+       OBJECTS {
+            frsldPvcCtrlPacketFreq
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of optional objects providing packet
+            level control information applicable to a PVC which
+            implements Service Level Definitions."
+       ::= { frsldMIBGroups 2 }
+
+    frsldPvcDelayCtrlGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldPvcCtrlDelayFrSize,
+            frsldPvcCtrlDelayType,
+            frsldPvcCtrlDelayTimeOut
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of optional objects providing delay
+            control information applicable to a PVC which
+            implements Service Level Definitions.
+
+            If this group is implemented, frsldPvcPacketGroup
+            and frsldPvcDelayDataGroup MUST also be implemented."
+       ::= { frsldMIBGroups 3 }
+
+    frsldPvcSampleCtrlGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldSmplCtrlStatus,
+            frsldSmplCtrlColPeriod,
+            frsldSmplCtrlBuckets,
+
+
+            frsldSmplCtrlBucketsGranted
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of optional objects providing sample
+            control information applicable to a PVC which
+            implements Service Level Definitions.
+
+            If this group is implemented, frsldPvcReqDataGroup
+            and frsldPvcSampleGeneralGroup MUST also be
+            implemented."
+       ::= { frsldMIBGroups 4 }
+
+    frsldPvcReqDataGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldPvcDataFrDeliveredC,
+            frsldPvcDataFrDeliveredE,
+            frsldPvcDataFrOfferedC,
+            frsldPvcDataFrOfferedE,
+            frsldPvcDataDataDeliveredC,
+            frsldPvcDataDataDeliveredE,
+            frsldPvcDataDataOfferedC,
+            frsldPvcDataDataOfferedE,
+            frsldPvcDataUnavailableTime,
+            frsldPvcDataUnavailables
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of required objects providing data
+            collected on a PVC which implements Service
+            Level Definitions."
+       ::= { frsldMIBGroups 5 }
+
+    frsldPvcDelayDataGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldPvcDataMissedPolls
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of optional objects providing delay
+            data collected on a PVC which implements Service
+            Level Definitions.
+
+            If this group is implemented, frsldPvcDelayCtrlGroup
+            MUST also be implemented."
+       ::= { frsldMIBGroups 6 }
+
+    frsldPvcHCFrameDataGroup  OBJECT-GROUP
+
+
+       OBJECTS {
+            frsldPvcDataHCFrDeliveredC,
+            frsldPvcDataHCFrDeliveredE,
+            frsldPvcDataHCFrOfferedC,
+            frsldPvcDataHCFrOfferedE
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of optional objects providing high
+            capacity frame data collected on a PVC which
+            implements Service Level Definitions."
+       ::= { frsldMIBGroups 7 }
+
+    frsldPvcHCOctetDataGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldPvcDataHCDataDeliveredC,
+            frsldPvcDataHCDataDeliveredE,
+            frsldPvcDataHCDataOfferedC,
+            frsldPvcDataHCDataOfferedE
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of optional objects providing high
+            capacity octet data collected on a PVC which
+            implements Service Level Definitions."
+       ::= { frsldMIBGroups 8 }
+
+    frsldPvcSampleDelayGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldPvcSmplDelayMin,
+            frsldPvcSmplDelayMax,
+            frsldPvcSmplDelayAvg,
+            frsldPvcSmplMissedPolls
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of optional objects providing delay
+            sample data collected on a PVC which implements
+            Service Level Definitions.
+
+            If this group is implemented, frsldPvcDelayCtrlGroup
+            MUST also be implemented."
+       ::= { frsldMIBGroups 9 }
+
+    frsldPvcSampleDataGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldPvcSmplFrDeliveredC,
+            frsldPvcSmplFrDeliveredE,
+
+
+            frsldPvcSmplFrOfferedC,
+            frsldPvcSmplFrOfferedE,
+            frsldPvcSmplDataDeliveredC,
+            frsldPvcSmplDataDeliveredE,
+            frsldPvcSmplDataOfferedC,
+            frsldPvcSmplDataOfferedE
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of optional objects providing data
+            and frame delivery sample data collected on a PVC
+            which implements Service Level Definitions.
+
+            If this group is implemented, frsldPvcReqDataGroup
+            MUST also be implemented."
+       ::= { frsldMIBGroups 10 }
+
+    frsldPvcSampleHCFrameGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldPvcSmplHCFrDeliveredC,
+            frsldPvcSmplHCFrDeliveredE,
+            frsldPvcSmplHCFrOfferedC,
+            frsldPvcSmplHCFrOfferedE
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of optional objects providing high
+            capacity frame delivery sample data collected on a PVC
+            which implements Service Level Definitions.
+
+            If this group is implemented, frsldPvcHCFrameDataGroup
+            MUST also be implemented."
+       ::= { frsldMIBGroups 11 }
+
+    frsldPvcSampleHCDataGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldPvcSmplHCDataDeliveredC,
+            frsldPvcSmplHCDataDeliveredE,
+            frsldPvcSmplHCDataOfferedC,
+            frsldPvcSmplHCDataOfferedE
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of optional objects providing high
+            capacity data delivery sample data collected on a PVC
+            which implements Service Level Definitions.
+
+            If this group is implemented, frsldPvcHCOctetDataGroup
+
+
+            MUST also be implemented."
+       ::= { frsldMIBGroups 12 }
+
+    frsldPvcSampleAvailGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldPvcSmplUnavailableTime,
+            frsldPvcSmplUnavailables
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of optional objects providing
+            availability sample data collected on a PVC which
+            implements Service Level Definitions.
+
+            If this group is implemented, frsldPvcReqDataGroup
+            MUST also be implemented."
+       ::= { frsldMIBGroups 13 }
+
+    frsldPvcSampleGeneralGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldPvcSmplStartTime,
+            frsldPvcSmplEndTime
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of optional objects providing
+            general sample data collected on a PVC which
+            implements Service Level Definitions."
+       ::= { frsldMIBGroups 14 }
+
+    frsldCapabilitiesGroup  OBJECT-GROUP
+       OBJECTS {
+            frsldPvcCtrlWriteCaps,
+            frsldSmplCtrlWriteCaps,
+            frsldRPCaps,
+            frsldMaxPvcCtrls,
+            frsldNumPvcCtrls,
+            frsldMaxSmplCtrls,
+            frsldNumSmplCtrls
+       }
+       STATUS  current
+       DESCRIPTION
+           "A collection of required objects providing
+            capability information and control for this
+            MIB module."
+       ::= { frsldMIBGroups 15 }
+END

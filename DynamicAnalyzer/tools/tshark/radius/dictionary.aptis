@@ -1,0 +1,182 @@
+# -*- text -*-
+#
+#	$Id$
+#
+
+VENDOR		Aptis				2637
+
+BEGIN-VENDOR	Aptis
+ATTRIBUTE	CVX-Identification			1	string
+ATTRIBUTE	CVX-VPOP-ID				2	integer
+ATTRIBUTE	CVX-SS7-Session-ID-Type			3	integer
+ATTRIBUTE	CVX-Radius-Redirect			4	integer
+ATTRIBUTE	CVX-IPSVC-AZNLVL			5	integer
+ATTRIBUTE	CVX-IPSVC-Mask				6	integer
+ATTRIBUTE	CVX-Multilink-Match-Info		7	integer
+ATTRIBUTE	CVX-Multilink-Group-Number		8	integer
+ATTRIBUTE	CVX-PPP-Log-Mask			9	integer
+
+ATTRIBUTE	CVX-Modem-Begin-Modulation		10	string
+ATTRIBUTE	CVX-Modem-End-Modulation		11	string
+ATTRIBUTE	CVX-Modem-Error-Correction		12	string
+ATTRIBUTE	CVX-Modem-Data-Compression		13	string
+ATTRIBUTE	CVX-Modem-Tx-Packets			14	integer
+ATTRIBUTE	CVX-Modem-ReTx-Packets			15	integer
+ATTRIBUTE	CVX-Modem-SNR				16	integer
+ATTRIBUTE	CVX-Modem-Local-Retrains		17	integer
+ATTRIBUTE	CVX-Modem-Remote-Retrains		18	integer
+ATTRIBUTE	CVX-Modem-Local-Rate-Negs		19	integer
+ATTRIBUTE	CVX-Modem-Remote-Rate-Negs		20	integer
+ATTRIBUTE	CVX-Modem-Begin-Recv-Line-Lvl		21	integer
+ATTRIBUTE	CVX-Modem-End-Recv-Line-Lvl		22	integer
+ATTRIBUTE	CVX-Terminate-Component			23	integer
+ATTRIBUTE	CVX-Terminate-Cause			24	integer
+ATTRIBUTE	CVX-Reject-Reason			25	integer
+
+#
+#	These are similar to the Ascend attributes
+#
+ATTRIBUTE	CVX-Primary-DNS				135	ipaddr
+ATTRIBUTE	CVX-Secondary-DNS			136	ipaddr
+ATTRIBUTE	CVX-Client-Assign-DNS			137	integer
+ATTRIBUTE	CVX-Multicast-Rate-Limit		152	integer
+ATTRIBUTE	CVX-Multicast-Client			155	integer
+ATTRIBUTE	CVX-Disconnect-Cause			195	integer
+ATTRIBUTE	CVX-Data-Rate				197	integer
+ATTRIBUTE	CVX-PreSession-Time			198	integer
+ATTRIBUTE	CVX-Assign-IP-Pool			218	integer
+ATTRIBUTE	CVX-Maximum-Channels			235	integer
+ATTRIBUTE	CVX-Data-Filter				242	string
+ATTRIBUTE	CVX-Idle-Limit				244	integer
+ATTRIBUTE	CVX-PPP-Address				253	ipaddr
+ATTRIBUTE	CVX-Xmit-Rate				255	integer
+
+#
+#	Aptis VSAs may have either one-octet or four-octet <type>
+#	fields.  One-octet types always have a type less than or equal
+#	to 127 (i.e.  the upper bit is set to 0); four-octet types
+#	always have the upper bit set to 1.
+#
+#	The 4-byte ones *appear* to also have a length, unlike the USR
+#	attributes, but there's no way of knowing for sure.
+#
+#	http://samuel.labs.nic.at/at43/dictionary
+#	says a number of these are "boolean", which means what, exactly?
+#
+#	These are commented out until we figure out how to parse them.
+#
+#ATTRIBUTE	CVX-VPOP-DSByteEnabled		0x84c80001	integer
+#ATTRIBUTE	CVX-VPOP-DSByteValue		0x84c80002	integer
+#ATTRIBUTE	CVX-PPP-EstablishTimeLimit	0x85210065	integer
+#ATTRIBUTE	CVX-PPP-ConnectLimit		0x85210066	integer
+#ATTRIBUTE	CVX-PPP-InactivityLimit		0x85210067	integer
+#ATTRIBUTE	CVX-PPP-MonitorTxActivity	0x85210068	integer
+#ATTRIBUTE	CVX-PPP-MonitorRxActivity	0x85210069	integer
+#ATTRIBUTE	CVX-PPP-CountRIP		0x8521006a	integer
+#ATTRIBUTE	CVX-PPP-CountPings		0x8521006b	integer
+#ATTRIBUTE	CVX-PPP-CountIGMP		0x8521006c	integer
+#ATTRIBUTE	CVX-PPP-UseEchoes		0x852100c9	integer
+#ATTRIBUTE	CVX-PPP-SendID			0x852100ca	integer
+#ATTRIBUTE	CVX-PPP-SendTimeRemaining	0x852100cb	integer
+#ATTRIBUTE	CVX-PPP-SendMRU			0x8521012d	integer
+#ATTRIBUTE	CVX-PPP-SendACCM		0x8521012e	integer
+#ATTRIBUTE	CVX-PPP-SendMagic		0x8521012f	integer
+#ATTRIBUTE	CVX-PPP-SendPFC			0x85210130	integer
+#ATTRIBUTE	CVX-PPP-SendACFC		0x85210131	integer
+#ATTRIBUTE	CVX-PPP-SendShortSeq		0x85210132	integer
+#ATTRIBUTE	CVX-PPP-SendEndpointDisc	0x85210133	integer
+#ATTRIBUTE	CVX-PPP-AllowMRU		0x85210137	integer
+#ATTRIBUTE	CVX-PPP-AllowACCM		0x85210138	integer
+#ATTRIBUTE	CVX-PPP-AllowMagic		0x85210139	integer
+#ATTRIBUTE	CVX-PPP-AllowPFC		0x8521013a	integer
+#ATTRIBUTE	CVX-PPP-AllowACFC		0x8521013b	integer
+#ATTRIBUTE	CVX-PPP-AllowShortSeq		0x8521013c	integer
+#ATTRIBUTE	CVX-PPP-AllowEndpointDisc	0x8521013d	integer
+#ATTRIBUTE	CVX-PPP-LCPMaxConfigure		0x85210191	integer
+#ATTRIBUTE	CVX-PPP-LCPRestartTimer		0x85210192	integer
+#ATTRIBUTE	CVX-PPP-PassiveLCP		0x85210193	integer
+#ATTRIBUTE	CVX-PPP-PassiveLCPTimeout	0x85210194	integer
+#ATTRIBUTE	CVX-PPP-MinRemoteMRU		0x852101f5	integer
+#ATTRIBUTE	CVX-PPP-MinLocalMRU		0x852101f6	integer
+#ATTRIBUTE	CVX-PPP-DesiredLocalMRU		0x852101f7	integer
+#ATTRIBUTE	CVX-PPP-TransmitACCM		0x852101f8	integer
+#ATTRIBUTE	CVX-PPP-ReceiveACCM		0x852101f9	integer
+#ATTRIBUTE	CVX-PPP-MinRemoteMRRU		0x852101fa	integer
+#ATTRIBUTE	CVX-PPP-DesiredRemoteMRRU	0x852101fb	integer
+#ATTRIBUTE	CVX-PPP-MinLocalMRRU		0x852101fc	integer
+#ATTRIBUTE	CVX-PPP-DesiredLocalMRRU	0x852101fd	integer
+#ATTRIBUTE	CVX-PPP-LCPEchoRetries		0x852101fe	integer
+#ATTRIBUTE	CVX-PPP-LCPEchoTimeout		0x852101ff	integer
+#ATTRIBUTE	CVX-PPP-LCPEchoErrorTimeout	0x85210200	integer
+#ATTRIBUTE	CVX-PPP-TimeRemainingInterval	0x85210201	integer
+#ATTRIBUTE	CVX-PPP-IDText			0x85210202	string
+#ATTRIBUTE	CVX-PPP-AuthRequire		0x85210259	integer
+#ATTRIBUTE	CVX-PPP-AuthAllow		0x8521025a	integer
+#ATTRIBUTE	CVX-PPP-AuthServerProtocol1	0x85210262	integer
+#ATTRIBUTE	CVX-PPP-AuthServerProtocol2	0x85210263	integer
+#ATTRIBUTE	CVX-PPP-AuthServerProtocol3	0x85210264	integer
+#ATTRIBUTE	CVX-PPP-AuthServerProtocol4	0x85210265	integer
+#ATTRIBUTE	CVX-PPP-AuthClientProtocol1	0x8521026d	integer
+#ATTRIBUTE	CVX-PPP-AuthClientProtocol2	0x8521026e	integer
+#ATTRIBUTE	CVX-PPP-AuthClientProtocol3	0x8521026f	integer
+#ATTRIBUTE	CVX-PPP-AuthClientProtocol4	0x85210270	integer
+#ATTRIBUTE	CVX-PPP-PAPClientRetries	0x85210277	integer
+#ATTRIBUTE	CVX-PPP-PAPClientTimeout	0x85210278	integer
+#ATTRIBUTE	CVX-PPP-PAPServerRetries	0x85210279	integer
+#ATTRIBUTE	CVX-PPP-PAPServerTimeout	0x8521027a	integer
+#ATTRIBUTE	CVX-PPP-CHAPClientRetries	0x85210281	integer
+#ATTRIBUTE	CVX-PPP-CHAPClientTimeout	0x85210282	integer
+#ATTRIBUTE	CVX-PPP-CHAPServerRetries	0x85210283	integer
+#ATTRIBUTE	CVX-PPP-CHAPServerChallenges	0x85210284	integer
+#ATTRIBUTE	CVX-PPP-CHAPServerTimeout	0x85210285	integer
+#ATTRIBUTE	CVX-PPP-CHAPValueLength		0x85210286	integer
+#ATTRIBUTE	CVX-PPP-AuthFailureRenegotiatesLCP	0x85210287	integer
+#ATTRIBUTE	CVX-PPP-UserName		0x8521028b	string
+#ATTRIBUTE	CVX-PPP-Password		0x8521028c	string
+#ATTRIBUTE	CVX-PPP-IPCPEnabled		0x852102bd	integer
+#ATTRIBUTE	CVX-PPP-LocalIPAddress		0x852102be	ipaddr
+#ATTRIBUTE	CVX-PPP-RemoteIPAddress		0x852102bf	ipaddr
+#ATTRIBUTE	CVX-PPP-AllowPeerIPAddress	0x852102c0	integer
+#ATTRIBUTE	CVX-PPP-VJEnabled		0x852102c1	integer
+#ATTRIBUTE	CVX-PPP-VJSlots			0x852102c2	integer
+#ATTRIBUTE	CVX-PPP-SendDNS			0x852102c3	integer
+#ATTRIBUTE	CVX-PPP-SendNBNS		0x852102c4	integer
+#ATTRIBUTE	CVX-PPP-IPCPMaxConfigure	0x852102c5	integer
+#ATTRIBUTE	CVX-PPP-IPCPRestartTimer	0x852102c6	integer
+#ATTRIBUTE	CVX-PPP-PassiveIPCP		0x852102c7	integer
+#ATTRIBUTE	CVX-PPP-PassiveIPCPTimeout	0x852102c8	integer
+#ATTRIBUTE	CVX-PPP-DNS1			0x852102c9	ipaddr
+#ATTRIBUTE	CVX-PPP-DNS2			0x852102ca	ipaddr
+#ATTRIBUTE	CVX-PPP-NBNS1			0x852102cb	ipaddr
+#ATTRIBUTE	CVX-PPP-NBNS2			0x852102cc	ipaddr
+#ATTRIBUTE	CVX-PPP-SendLocalIPAddress	0x852102cd	integer
+#ATTRIBUTE	CVX-PPP-RejectUnknownNS		0x852102ce	integer
+#ATTRIBUTE	CVX-PPP-PeerNSStrategy		0x852102cf	integer
+#ATTRIBUTE	CVX-PPP-MLPEnabled		0x85210321	integer
+#ATTRIBUTE	CVX-PPP-MLPMaxLinks		0x85210322	integer
+#ATTRIBUTE	CVX-PPP-MLPFragmentSize		0x85210323	integer
+#ATTRIBUTE	CVX-PPP-MLPMaxFragments		0x85210324	integer
+#ATTRIBUTE	CVX-PPP-MLPScaleFragments	0x85210325	integer
+#ATTRIBUTE	CVX-PPP-MLPSendNullFragments	0x85210326	integer
+#ATTRIBUTE	CVX-PPP-MLPNullFragmentTimeout	0x85210327	integer
+#ATTRIBUTE	CVX-PPP-MLPEndpointDisc		0x85210328	integer
+#ATTRIBUTE	CVX-PPP-MLPGroupNumber		0x85210329	integer
+#ATTRIBUTE	CVX-PPP-LogEnabled		0x85210385	integer
+#ATTRIBUTE	CVX-PPP-LogDump			0x85210386	integer
+#ATTRIBUTE	CVX-PPP-LogSize			0x8521038e	integer
+#ATTRIBUTE	CVX-PPP-LogControlFrames	0x8521038f	integer
+#ATTRIBUTE	CVX-PPP-LogProtocolFrames	0x85210390	integer
+#ATTRIBUTE	CVX-PPP-LogOptions		0x85210391	integer
+#ATTRIBUTE	CVX-PPP-LogStates		0x85210392	integer
+#ATTRIBUTE	CVX-PPP-LogCompression		0x85210393	integer
+#ATTRIBUTE	CVX-PPP-LogMLP			0x85210394	integer
+#ATTRIBUTE	CVX-PPP-LogVJ			0x85210395	integer
+#ATTRIBUTE	CVX-PPP-CCPEnabled		0x852103e9	integer
+#ATTRIBUTE	CVX-PPP-CompressFrames		0x852103ea	integer
+#ATTRIBUTE	CVX-PPP-Stac3Enabled		0x852103eb	integer
+#ATTRIBUTE	CVX-PPP-Stac4Enabled		0x852103ec	integer
+#ATTRIBUTE	CVX-PPP-MPPCEnabled		0x852103ed	integer
+#ATTRIBUTE	CVX-PPP-StacPerformance		0x852103ee	integer
+#ATTRIBUTE	CVX-PPP-StacMode		0x852103ef	integer
+
+END-VENDOR Aptis

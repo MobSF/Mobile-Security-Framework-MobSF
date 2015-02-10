@@ -1,0 +1,2523 @@
+SONET-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Integer32, transmission
+          FROM SNMPv2-SMI
+    DisplayString, TruthValue
+          FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP
+          FROM SNMPv2-CONF
+    ifIndex
+          FROM IF-MIB
+    PerfCurrentCount, PerfIntervalCount
+          FROM PerfHist-TC-MIB;
+
+--  This is the MIB module for the SONET/SDH Interface objects.
+
+sonetMIB MODULE-IDENTITY
+    LAST-UPDATED "200308110000Z"
+    ORGANIZATION "IETF AToM MIB Working Group"
+
+
+
+    CONTACT-INFO
+      "WG charter:
+         http://www.ietf.org/html.charters/atommib-charter.html
+
+       Mailing Lists:
+         General Discussion: atommib@research.telcordia.com
+         To Subscribe: atommib-request@research.telcordia.com
+
+       Kaj Tesink
+       Telcordia Technologies
+       Tel: (732) 758-5254
+       Fax: (732) 758-2269
+       E-mail: kaj@research.telcordia.com."
+    DESCRIPTION
+      "The MIB module to describe SONET/SDH interface objects.
+
+       Copyright (C) The Internet Society (2003).  This version
+       of this MIB module is part of RFC 3592;  see the RFC
+       itself for full legal notices."
+    REVISION      "200308110000Z"
+    DESCRIPTION
+        "The key changes made to this MIB module
+        since its publication in RFC 2558
+        are as follows.
+
+        (1) Corrected typographical error
+            (bellcore1991(2) in sonetSESthresholdSet)
+
+        (2) Added support for sts192cSTM64(6) and
+            sts768cSTM256(7) in sonetPathCurrentWidth
+
+        (3) Corrected description of the applicability
+            of VTs for SDH for improved accuracy
+
+        (4) Added clarification in the SES description that
+            CV counts should be frozen during SESs
+
+        (5) Corrected typographical errors:
+            - Line Alarm Indication Signal description of the
+              Terminology section (20.5 --> 2.5 seconds)
+            - In the Terminology section
+              sonetSESThresholdSet  --> sonetSESthresholdSet
+            "
+    REVISION      "199810190000Z"
+    DESCRIPTION
+        "The RFC 2558 version of this MIB module.
+
+
+
+
+
+        The key changes made to this MIB module
+        since its initial publication in RFC 1595
+        are as follows.
+
+        (1) The MODULE-IDENTITY has been updated to reflect the
+            changes to the MIB.
+
+        (2) Where applicable, the textual conventions
+            PerfCurrentCount and PerfIntervalCount from
+            PerfHist-TC-MIB have been used in place of Gauge32.
+
+        (3) An agent now has the option to delay updates to
+            the various performance counts in lieu of performing
+            retroactive adjustments upon entering into or exiting
+            from unavailable time. This implementation option is
+            described in Appendix A of this memo.
+
+        (4) In order to make the SONET-MIB more useful for
+            circuit provisioning, the formerly read-only objects
+            sonetMediumType, sonetMediumLineCoding,
+            sonetMediumLineType, and sonetMediumCircuitIdentifier
+            have been given a MAX-ACCESS of read-write. The
+            MIN-ACCESS remains read-only.
+
+        (5) The DESCRIPTION clause for sonetMediumTimeElapsed has
+            been updated to describe its behaviour if the duration
+            of the current interval exceeds the maximum value.
+
+        (6) The DESCRIPTION clause for sonetMediumValidIntervals
+            has been updated to describe its behaviour when some
+            intervals may be unavailable, and the object
+            sonetMediumInvalidIntervals has been added to keep
+            count of the number of missing intervals (if any).
+
+        (7) The object sonetMediumLoopbackConfig has been added
+            to enable or disable loopback configurations.
+
+        (8) Because the error count thresholds for declaring
+            severely errored seconds that are specified in ANSI
+            T1.231-1993, ITU-T G.826-1995, and ANSI T1.231-1997
+            are all different from each other and from the thresholds
+            specified in RFC 1595, an enumerated INTEGER object
+            sonetSESthresholdSet has been added to allow an agent
+            to specify which threshold set is in use. Text has
+            been added to Section 3 stating that if this object is
+            not implemented the thresholds specified in RFC 1595
+            should be assumed, and the table containing those
+            thresholds has been moved to Appendix B of this memo.
+
+
+
+        (9) A column with SYNTAX TruthValue has been added to each
+            interval table.  The purpose of the additional column
+            is to indicate, for each interval, whether the data
+            is valid in the sense intended by ANSI T1.231 clause
+            9.1.2.2 [T1.231a][T1.231b]. The objects in question are:
+
+                sonetSectionIntervalValidData
+                sonetLineIntervalValidData
+                sonetFarEndLineIntervalValidData
+                sonetPathIntervalValidData
+                sonetFarEndPathIntervalValidData
+                sonetVTIntervalValidData
+                sonetFarEndVTIntervalValidData
+
+       (10) The ranges for sonetPathCurrentStatus and
+            sonetVTCurrentStatus have been made consistent
+            with the DESCRIPTION clauses.
+
+       (11) The conformance information has been updated. Previous
+            conformance information from RFC 1595 has been
+            deprecated. Some typographical errors in the deprecated
+            section have been corrected in order to prevent
+            MIB compilation errors."
+
+    REVISION      "199401030000Z"
+    DESCRIPTION
+        "The RFC 1595 version of this MIB module."
+
+    ::= { transmission 39 }
+
+--  This is the MIB module for the SONET/SDH objects
+
+sonetObjects      OBJECT IDENTIFIER ::= { sonetMIB 1 }
+
+sonetObjectsPath  OBJECT IDENTIFIER ::= { sonetMIB 2 }
+
+sonetObjectsVT    OBJECT IDENTIFIER ::= { sonetMIB 3 }
+
+-- groups in the SONET/SDH MIB module
+
+sonetMedium        OBJECT IDENTIFIER ::= { sonetObjects 1 }
+
+sonetSection       OBJECT IDENTIFIER ::= { sonetObjects 2 }
+
+sonetLine          OBJECT IDENTIFIER ::= { sonetObjects 3 }
+
+sonetFarEndLine    OBJECT IDENTIFIER ::= { sonetObjects 4 }
+
+
+
+
+sonetPath          OBJECT IDENTIFIER ::= { sonetObjectsPath 1 }
+
+sonetFarEndPath    OBJECT IDENTIFIER ::= { sonetObjectsPath 2 }
+
+sonetVT            OBJECT IDENTIFIER ::= { sonetObjectsVT 1 }
+
+sonetFarEndVT      OBJECT IDENTIFIER ::= { sonetObjectsVT 2 }
+
+-- the SONET/SDH Medium group
+
+-- SONET/SDH interfaces for some applications may be electrical
+-- interfaces and not optical interfaces.  This group handles
+-- the configuration information for both optical SONET/SDH
+-- interfaces and electrical SONET/SDH interfaces.
+
+sonetMediumTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetMediumEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "The SONET/SDH Medium table."
+     ::= { sonetMedium 1 }
+
+sonetMediumEntry OBJECT-TYPE
+    SYNTAX  SonetMediumEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "An entry in the SONET/SDH Medium table."
+    INDEX   { ifIndex }
+     ::= { sonetMediumTable 1 }
+
+SonetMediumEntry ::=
+    SEQUENCE {
+         sonetMediumType               INTEGER,
+         sonetMediumTimeElapsed        Integer32,
+         sonetMediumValidIntervals     Integer32,
+         sonetMediumLineCoding         INTEGER,
+         sonetMediumLineType           INTEGER,
+         sonetMediumCircuitIdentifier  DisplayString,
+         sonetMediumInvalidIntervals   Integer32,
+         sonetMediumLoopbackConfig     BITS
+    }
+
+sonetMediumType OBJECT-TYPE
+    SYNTAX  INTEGER  {
+               sonet(1),
+               sdh(2)
+
+
+
+            }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+       "This variable identifies whether a SONET
+       or a SDH signal is used across this interface."
+    ::= { sonetMediumEntry 1 }
+
+sonetMediumTimeElapsed OBJECT-TYPE
+    SYNTAX  Integer32 (1..900)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The number of seconds, including partial seconds,
+       that have elapsed since the beginning of the current
+       measurement period. If, for some reason, such as an
+       adjustment in the system's time-of-day clock, the
+       current interval exceeds the maximum value, the
+       agent will return the maximum value."
+    ::= { sonetMediumEntry 2 }
+
+sonetMediumValidIntervals OBJECT-TYPE
+    SYNTAX  Integer32 (0..96)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The number of previous 15-minute intervals
+       for which data was collected.
+       A SONET/SDH interface must be capable
+       of supporting at least n intervals.
+       The minimum value of n is 4.
+       The default of n is 32.
+       The maximum value of n is 96.
+       The value will be <n> unless the measurement was
+       (re-)started within the last (<n>*15) minutes, in which
+       case the value will be the number of complete 15
+       minute intervals for which the agent has at least
+       some data. In certain cases (e.g., in the case
+       where the agent is a proxy) it is possible that some
+       intervals are unavailable.  In this case, this
+       interval is the maximum interval number for
+       which data is available. "
+    ::= { sonetMediumEntry 3 }
+
+sonetMediumLineCoding OBJECT-TYPE
+    SYNTAX  INTEGER {
+                sonetMediumOther(1),
+                sonetMediumB3ZS(2),
+
+
+
+                sonetMediumCMI(3),
+                sonetMediumNRZ(4),
+                sonetMediumRZ(5)
+            }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+       "This variable describes the line coding for
+       this interface. The B3ZS and CMI are used for
+       electrical SONET/SDH signals (STS-1 and STS-3).
+       The Non-Return to Zero (NRZ) and the Return
+       to Zero are used for optical SONET/SDH signals."
+    ::= { sonetMediumEntry 4 }
+
+sonetMediumLineType OBJECT-TYPE
+    SYNTAX  INTEGER {
+                sonetOther(1),
+                sonetShortSingleMode(2),
+                sonetLongSingleMode(3),
+                sonetMultiMode(4),
+                sonetCoax(5),
+                sonetUTP(6)
+            }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+       "This variable describes the line type for
+       this interface. The line types are
+       Short and Long Range
+       Single Mode fiber or Multi-Mode fiber interfaces,
+       and coax and UTP for electrical interfaces.  The
+       value sonetOther should be used when the Line Type is
+       not one of the listed values."
+    ::= { sonetMediumEntry 5 }
+
+sonetMediumCircuitIdentifier OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+       "This variable contains the transmission
+       vendor's circuit identifier, for the
+       purpose of facilitating troubleshooting.
+       Note that the circuit identifier, if available,
+       is also represented by ifPhysAddress."
+    ::= { sonetMediumEntry 6 }
+
+
+
+
+
+sonetMediumInvalidIntervals OBJECT-TYPE
+    SYNTAX  Integer32 (0..96)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The number of intervals in the range from
+        0 to sonetMediumValidIntervals for which no
+        data is available. This object will typically
+        be zero except in cases where the data for some
+        intervals are not available (e.g., in proxy
+        situations)."
+    ::= { sonetMediumEntry 7 }
+
+sonetMediumLoopbackConfig OBJECT-TYPE
+    SYNTAX      BITS {
+                  sonetNoLoop(0),
+                  sonetFacilityLoop(1),
+                  sonetTerminalLoop(2),
+                  sonetOtherLoop(3) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "The current loopback state of the SONET/SDH interface.  The
+        values mean:
+
+          sonetNoLoop
+             Not in the loopback state. A device that is not
+             capable of performing a loopback on this interface
+             shall always return this value.
+
+          sonetFacilityLoop
+             The received signal at this interface is looped back
+             out through the corresponding transmitter in the return
+             direction.
+
+          sonetTerminalLoop
+             The signal that is about to be transmitted is connected
+             to the associated incoming receiver.
+
+          sonetOtherLoop
+             Loopbacks that are not defined here."
+
+    ::= { sonetMediumEntry 8 }
+
+sonetSESthresholdSet    OBJECT-TYPE
+    SYNTAX   INTEGER {
+               other(1),
+               bellcore1991(2),
+
+
+
+               ansi1993(3),
+               itu1995(4),
+               ansi1997(5)
+                      }
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+      "An enumerated integer indicating which
+       recognized set of SES thresholds that
+       the agent uses for determining severely
+       errored seconds and unavailable time.
+
+       other(1)
+         None of the following.
+
+       bellcore1991(2)
+         Bellcore TR-NWT-000253, 1991 [TR253], or
+         ANSI T1M1.3/93-005R2, 1993 [T1M1.3].
+         See also Appendix B.
+
+       ansi1993(3)
+         ANSI T1.231, 1993 [T1.231a], or
+         Bellcore GR-253-CORE, Issue 2, 1995 [GR253]
+
+       itu1995(4)
+         ITU Recommendation G.826, 1995 [G.826]
+
+       ansi1997(5)
+         ANSI T1.231, 1997 [T1.231b]
+
+       If a manager changes the value of this
+       object then the SES statistics collected
+       prior to this change must be invalidated."
+     ::= { sonetMedium 2 }
+
+-- the SONET/SDH Section group
+
+-- this group consists of 2 tables:
+-- - the SONET/SDH Section Current Table
+-- - the SONET/SDH Section Interval Table
+
+-- the SONET/SDH Section Current Table
+
+-- The SONET/SDH Section
+-- current table contains various statistics
+-- being collected for the current 15 minute interval.
+
+
+
+
+
+sonetSectionCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetSectionCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "The SONET/SDH Section Current table."
+     ::= { sonetSection 1 }
+
+sonetSectionCurrentEntry OBJECT-TYPE
+    SYNTAX  SonetSectionCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "An entry in the SONET/SDH Section Current table."
+    INDEX   { ifIndex }
+     ::= { sonetSectionCurrentTable 1 }
+
+SonetSectionCurrentEntry ::=
+    SEQUENCE {
+        sonetSectionCurrentStatus   Integer32,
+        sonetSectionCurrentESs      PerfCurrentCount,
+        sonetSectionCurrentSESs     PerfCurrentCount,
+        sonetSectionCurrentSEFSs    PerfCurrentCount,
+        sonetSectionCurrentCVs      PerfCurrentCount
+    }
+
+sonetSectionCurrentStatus OBJECT-TYPE
+    SYNTAX  Integer32 (1..6)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This variable indicates the
+       status of the interface.
+       The sonetSectionCurrentStatus
+       is a bit map represented
+       as a sum, therefore,
+       it can represent multiple defects
+       simultaneously.
+       The sonetSectionNoDefect should be
+       set if and only if
+       no other flag is set.
+
+       The various bit positions are:
+             1   sonetSectionNoDefect
+             2   sonetSectionLOS
+             4   sonetSectionLOF"
+     ::= { sonetSectionCurrentEntry 1 }
+
+
+
+
+sonetSectionCurrentESs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The counter associated with the number of Errored
+       Seconds encountered by a SONET/SDH
+       Section in the current 15 minute interval."
+     ::= { sonetSectionCurrentEntry 2 }
+
+sonetSectionCurrentSESs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The counter associated with the number of
+       Severely Errored Seconds
+       encountered by a SONET/SDH Section in the current 15
+       minute interval."
+     ::= { sonetSectionCurrentEntry 3 }
+
+sonetSectionCurrentSEFSs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The counter associated with the number of
+       Severely Errored Framing Seconds
+       encountered by a SONET/SDH Section in the current
+       15 minute interval."
+    ::= { sonetSectionCurrentEntry 4 }
+
+sonetSectionCurrentCVs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The counter associated with the number of Coding
+       Violations encountered by a
+       SONET/SDH Section in the current 15 minute interval."
+     ::= { sonetSectionCurrentEntry 5 }
+
+-- the SONET/SDH Section Interval Table
+
+-- The SONET/SDH Section Interval Table
+-- contains various statistics
+-- collected by each system over a maximum
+-- of the previous 24 hours of
+
+
+
+-- operation.  The past 24 hours may be broken into 96
+-- completed 15 minute intervals.
+-- A system is required to store at
+-- least 4 completed 15 minute interval.
+-- The default value is 32 intervals.
+
+sonetSectionIntervalTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetSectionIntervalEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "The SONET/SDH Section Interval table."
+     ::= { sonetSection 2 }
+
+sonetSectionIntervalEntry OBJECT-TYPE
+    SYNTAX  SonetSectionIntervalEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "An entry in the SONET/SDH Section Interval table."
+    INDEX   { ifIndex,
+              sonetSectionIntervalNumber }
+     ::= { sonetSectionIntervalTable 1 }
+
+SonetSectionIntervalEntry ::=
+    SEQUENCE {
+         sonetSectionIntervalNumber  Integer32,
+         sonetSectionIntervalESs     PerfIntervalCount,
+         sonetSectionIntervalSESs    PerfIntervalCount,
+         sonetSectionIntervalSEFSs   PerfIntervalCount,
+         sonetSectionIntervalCVs     PerfIntervalCount,
+         sonetSectionIntervalValidData  TruthValue
+    }
+
+sonetSectionIntervalNumber OBJECT-TYPE
+    SYNTAX  Integer32 (1..96)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+      "A number between 1 and 96, which identifies the
+      interval for which the set of statistics is available.
+      The interval identified by 1 is the most recently
+      completed 15 minute interval,
+      and the interval identified
+      by N is the interval immediately preceding the
+      one identified
+      by N-1."
+     ::= { sonetSectionIntervalEntry 1 }
+
+
+
+sonetSectionIntervalESs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The counter associated with the number of
+       Errored Seconds encountered
+       by a SONET/SDH Section in a
+       particular 15-minute interval
+       in the past 24 hours."
+     ::= { sonetSectionIntervalEntry 2 }
+
+sonetSectionIntervalSESs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The counter associated with the number of
+       Severely Errored Seconds
+       encountered by a SONET/SDH Section in a
+       particular 15-minute interval
+       in the past 24 hours."
+    ::= { sonetSectionIntervalEntry 3 }
+
+sonetSectionIntervalSEFSs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The counter associated with the number of
+       Severely Errored Framing Seconds
+       encountered by a SONET/SDH Section in a
+       particular 15-minute interval
+       in the past 24 hours."
+    ::= { sonetSectionIntervalEntry 4 }
+
+sonetSectionIntervalCVs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The counter associated with the number of Coding
+       Violations encountered by a
+       SONET/SDH Section in a particular 15-minute interval
+       in the past 24 hours."
+    ::= { sonetSectionIntervalEntry 5 }
+
+
+
+
+
+sonetSectionIntervalValidData OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This variable indicates if the data for this
+        interval is valid."
+    ::= { sonetSectionIntervalEntry 6 }
+
+-- the SONET/SDH Line group
+
+-- this group consists of 2 tables:
+-- - the SONET/SDH Line Current Table
+-- - the SONET/SDH Line Interval Table
+
+-- the SONET/SDH Line Current Table
+
+-- The SONET/SDH Line
+-- current table contains various statistics
+-- being collected for the current 15 minute interval.
+
+sonetLineCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetLineCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+      "The SONET/SDH Line Current table."
+    ::= { sonetLine 1 }
+
+sonetLineCurrentEntry OBJECT-TYPE
+    SYNTAX  SonetLineCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+      "An entry in the SONET/SDH Line Current table."
+    INDEX   { ifIndex }
+    ::= { sonetLineCurrentTable 1 }
+
+SonetLineCurrentEntry ::=
+    SEQUENCE {
+         sonetLineCurrentStatus    Integer32,
+         sonetLineCurrentESs       PerfCurrentCount,
+         sonetLineCurrentSESs      PerfCurrentCount,
+         sonetLineCurrentCVs       PerfCurrentCount,
+         sonetLineCurrentUASs      PerfCurrentCount
+     }
+
+
+
+
+
+sonetLineCurrentStatus OBJECT-TYPE
+    SYNTAX  Integer32 (1..6)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This variable indicates the
+       status of the interface.
+       The sonetLineCurrentStatus
+       is a bit map represented
+       as a sum, therefore,
+       it can represent multiple defects
+       simultaneously.
+       The sonetLineNoDefect should be
+       set if and only if
+       no other flag is set.
+
+       The various bit positions are:
+        1   sonetLineNoDefect
+        2   sonetLineAIS
+        4   sonetLineRDI"
+     ::= { sonetLineCurrentEntry 1 }
+
+sonetLineCurrentESs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of Errored
+     Seconds encountered by a SONET/SDH
+     Line in the current 15 minute interval."
+    ::= { sonetLineCurrentEntry 2 }
+
+sonetLineCurrentSESs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of
+     Severely Errored Seconds
+     encountered by a SONET/SDH Line in the current 15
+     minute
+     interval."
+    ::= { sonetLineCurrentEntry 3 }
+
+sonetLineCurrentCVs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+
+
+
+    DESCRIPTION
+     "The counter associated with the number of Coding
+     Violations encountered by a
+     SONET/SDH Line in the current 15 minute interval."
+    ::= { sonetLineCurrentEntry 4 }
+
+sonetLineCurrentUASs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of
+     Unavailable Seconds
+     encountered by a SONET/SDH Line in the current 15
+     minute
+     interval."
+    ::= { sonetLineCurrentEntry 5 }
+
+-- the SONET/SDH Line Interval Table
+
+-- The SONET/SDH Line Interval Table
+-- contains various statistics
+-- collected by each system over a maximum
+-- of the previous 24 hours of
+-- operation.  The past 24 hours may be broken into 96
+-- completed 15 minute intervals.
+-- A system is required to store at
+-- least 4 completed 15 minute interval.
+-- The default value is 32 intervals.
+
+sonetLineIntervalTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetLineIntervalEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "The SONET/SDH Line Interval table."
+     ::= { sonetLine 2 }
+
+sonetLineIntervalEntry OBJECT-TYPE
+    SYNTAX  SonetLineIntervalEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "An entry in the SONET/SDH Line Interval table."
+   INDEX   { ifIndex,
+             sonetLineIntervalNumber }
+   ::= { sonetLineIntervalTable 1 }
+
+
+
+
+SonetLineIntervalEntry ::=
+    SEQUENCE {
+        sonetLineIntervalNumber    Integer32,
+        sonetLineIntervalESs       PerfIntervalCount,
+        sonetLineIntervalSESs      PerfIntervalCount,
+        sonetLineIntervalCVs       PerfIntervalCount,
+        sonetLineIntervalUASs      PerfIntervalCount,
+        sonetLineIntervalValidData TruthValue
+    }
+
+sonetLineIntervalNumber OBJECT-TYPE
+    SYNTAX  Integer32 (1..96)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "A number between 1 and 96, which identifies the
+        interval for which the set of statistics is available.
+        The interval identified by 1 is the most recently
+        completed 15 minute interval,
+        and the interval identified
+        by N is the interval immediately preceding the
+        one identified
+        by N-1."
+     ::= { sonetLineIntervalEntry 1 }
+
+sonetLineIntervalESs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The counter associated with the number of
+       Errored Seconds encountered
+       by a SONET/SDH Line in a
+       particular 15-minute interval
+       in the past 24 hours."
+     ::= { sonetLineIntervalEntry 2 }
+
+sonetLineIntervalSESs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The counter associated with the number of
+       Severely Errored Seconds
+       encountered by a SONET/SDH Line in a
+       particular 15-minute interval
+       in the past 24 hours."
+      ::= { sonetLineIntervalEntry 3 }
+
+
+
+sonetLineIntervalCVs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+      "The counter associated with the number of Coding
+      Violations encountered by a
+      SONET/SDH Line in a
+      particular 15-minute interval
+      in the past 24 hours."
+    ::= { sonetLineIntervalEntry 4 }
+
+sonetLineIntervalUASs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+      "The counter associated with the
+      number of Unavailable Seconds
+      encountered by a SONET/SDH Line in
+      a particular 15-minute interval
+      in the past 24 hours."
+    ::= { sonetLineIntervalEntry 5 }
+
+sonetLineIntervalValidData OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This variable indicates if the data for this
+        interval is valid."
+    ::= { sonetLineIntervalEntry 6 }
+
+-- The SONET/SDH Far End Line group.
+-- This group may only be implemented by SONET/SDH (LTEs)
+-- systems that provide for a far end block error (FEBE)
+-- information at the SONET/SDH Line Layer.
+
+-- This group consists of two tables:
+--    SONET/SDH Far End Line Current Table
+--    SONET/SDH Far End Line Interval Table
+
+-- The SONET/SDH Far End Line Current Table
+
+-- The SONET/SDH Far End Line Current table contains
+-- various statistics being
+-- collected for the current 15 minute interval.
+-- The statistics are collected from the far end
+
+
+
+-- block error code (FEBE)
+-- within the third Z2 byte of the Line Overhead
+-- in Broadband ISDN applications.
+-- The definitions are the same as described for
+-- the near-end information.
+
+sonetFarEndLineCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetFarEndLineCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+      "The SONET/SDH Far End Line Current table."
+    ::= { sonetFarEndLine 1 }
+
+sonetFarEndLineCurrentEntry OBJECT-TYPE
+    SYNTAX  SonetFarEndLineCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+      "An entry in the SONET/SDH Far End Line Current table."
+    INDEX   { ifIndex }
+    ::= { sonetFarEndLineCurrentTable 1 }
+
+SonetFarEndLineCurrentEntry ::=
+    SEQUENCE {
+        sonetFarEndLineCurrentESs       PerfCurrentCount,
+        sonetFarEndLineCurrentSESs      PerfCurrentCount,
+        sonetFarEndLineCurrentCVs       PerfCurrentCount,
+        sonetFarEndLineCurrentUASs      PerfCurrentCount
+       }
+
+sonetFarEndLineCurrentESs OBJECT-TYPE
+   SYNTAX  PerfCurrentCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+       "The counter associated with the number of Far
+       End Errored Seconds encountered by a SONET/SDH
+       interface in the current 15 minute interval."
+   ::= { sonetFarEndLineCurrentEntry 1 }
+
+sonetFarEndLineCurrentSESs OBJECT-TYPE
+   SYNTAX  PerfCurrentCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+       "The counter associated with the number of
+       Far End Severely Errored Seconds
+
+
+
+       encountered by a SONET/SDH Medium/Section/Line
+       interface in the current 15 minute
+       interval."
+   ::= { sonetFarEndLineCurrentEntry 2 }
+
+sonetFarEndLineCurrentCVs OBJECT-TYPE
+   SYNTAX  PerfCurrentCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+       "The counter associated with the number of
+       Far End Coding Violations reported via
+       the far end block error count
+       encountered by a
+       SONET/SDH Medium/Section/Line
+       interface in the current 15 minute interval."
+   ::= { sonetFarEndLineCurrentEntry 3 }
+
+sonetFarEndLineCurrentUASs OBJECT-TYPE
+   SYNTAX  PerfCurrentCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+       "The counter associated with the number of
+       Far End Unavailable Seconds
+       encountered by a
+       SONET/SDH Medium/Section/Line
+       interface in the current 15 minute interval."
+   ::= { sonetFarEndLineCurrentEntry 4 }
+
+-- The SONET/SDH Far End Line Interval Table
+
+-- The SONET/SDH Far End Line Interval Table
+-- contains various statistics
+-- collected by each system over a maximum
+-- of the previous 24 hours of
+-- operation.  The past 24 hours may be broken into 96
+-- completed 15 minute intervals.
+-- A system is required to store at
+-- least 4 completed 15 minute interval.
+-- The default value is 32 intervals.
+
+sonetFarEndLineIntervalTable OBJECT-TYPE
+   SYNTAX  SEQUENCE OF SonetFarEndLineIntervalEntry
+   MAX-ACCESS  not-accessible
+   STATUS  current
+   DESCRIPTION
+      "The SONET/SDH Far End Line Interval table."
+
+
+
+   ::= { sonetFarEndLine 2 }
+
+sonetFarEndLineIntervalEntry OBJECT-TYPE
+   SYNTAX  SonetFarEndLineIntervalEntry
+   MAX-ACCESS  not-accessible
+   STATUS  current
+   DESCRIPTION
+     "An entry in the SONET/SDH Far
+     End Line Interval table."
+   INDEX   { ifIndex,
+             sonetFarEndLineIntervalNumber }
+   ::= { sonetFarEndLineIntervalTable 1 }
+
+SonetFarEndLineIntervalEntry ::=
+    SEQUENCE {
+         sonetFarEndLineIntervalNumber    Integer32,
+         sonetFarEndLineIntervalESs       PerfIntervalCount,
+         sonetFarEndLineIntervalSESs      PerfIntervalCount,
+         sonetFarEndLineIntervalCVs       PerfIntervalCount,
+         sonetFarEndLineIntervalUASs      PerfIntervalCount,
+         sonetFarEndLineIntervalValidData TruthValue
+    }
+
+sonetFarEndLineIntervalNumber OBJECT-TYPE
+   SYNTAX  Integer32 (1..96)
+   MAX-ACCESS  not-accessible
+   STATUS  current
+   DESCRIPTION
+         "A number between 1 and 96, which identifies the
+         interval for which the set of statistics is available.
+         The interval identified by 1 is the most recently
+         completed 15 minute interval,
+         and the interval identified
+         by N is the interval immediately preceding the
+         one identified
+         by N-1."
+   ::= { sonetFarEndLineIntervalEntry 1 }
+
+sonetFarEndLineIntervalESs OBJECT-TYPE
+   SYNTAX  PerfIntervalCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+        "The counter associated with the number of
+        Far End Errored Seconds encountered
+        by a SONET/SDH Line
+        interface in a particular 15-minute interval
+        in the past 24 hours."
+
+
+
+  ::= { sonetFarEndLineIntervalEntry 2 }
+
+sonetFarEndLineIntervalSESs OBJECT-TYPE
+   SYNTAX  PerfIntervalCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+        "The counter associated with the number of
+        Far End Severely Errored Seconds
+        encountered by a SONET/SDH Line
+        interface in a particular 15-minute interval
+        in the past 24 hours."
+  ::= { sonetFarEndLineIntervalEntry 3 }
+
+sonetFarEndLineIntervalCVs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+         "The counter associated with the number of
+         Far End Coding Violations reported via
+         the far end block error count
+         encountered by a
+         SONET/SDH Line
+         interface in a particular 15-minute interval
+         in the past 24 hours."
+    ::= { sonetFarEndLineIntervalEntry 4 }
+
+sonetFarEndLineIntervalUASs OBJECT-TYPE
+   SYNTAX  PerfIntervalCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+       "The counter associated with the number of
+       Far End Unavailable Seconds
+       encountered by a
+       SONET/SDH Line
+       interface in a particular 15-minute interval
+       in the past 24 hours."
+   ::= { sonetFarEndLineIntervalEntry 5 }
+
+sonetFarEndLineIntervalValidData OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This variable indicates if the data for this
+        interval is valid."
+
+
+
+    ::= { sonetFarEndLineIntervalEntry 6 }
+
+-- the SONET/SDH Path group
+
+-- this group consists of 2 tables:
+-- - the SONET/SDH Path Current Table
+-- - the SONET/SDH Path Interval Table
+
+-- the SONET/SDH Path Current Table
+
+-- The SONET/SDH Path
+-- current table contains various statistics
+-- being collected for the current 15 minute interval.
+
+sonetPathCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetPathCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+     "The SONET/SDH Path Current table."
+::= { sonetPath 1 }
+
+sonetPathCurrentEntry OBJECT-TYPE
+    SYNTAX  SonetPathCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+     "An entry in the SONET/SDH Path Current table."
+    INDEX   { ifIndex }
+::= { sonetPathCurrentTable 1 }
+
+SonetPathCurrentEntry ::=
+    SEQUENCE {
+        sonetPathCurrentWidth      INTEGER,
+        sonetPathCurrentStatus     Integer32,
+        sonetPathCurrentESs        PerfCurrentCount,
+        sonetPathCurrentSESs       PerfCurrentCount,
+        sonetPathCurrentCVs        PerfCurrentCount,
+        sonetPathCurrentUASs       PerfCurrentCount
+    }
+
+sonetPathCurrentWidth OBJECT-TYPE
+    SYNTAX  INTEGER  {
+            sts1(1),
+            sts3cSTM1(2),
+            sts12cSTM4(3),
+            sts24c(4),
+            sts48cSTM16(5),
+
+
+
+            sts192cSTM64(6),
+            sts768cSTM256(7)
+     }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+     "A value that indicates the type of the SONET/SDH
+     Path.  For SONET, the assigned types are
+     the STS-Nc SPEs, where N = 1, 3, 12, 24, 48, 192 and 768.
+     STS-1 is equal to 51.84 Mbps.  For SDH, the assigned
+     types are the STM-Nc VCs, where N = 1, 4, 16, 64 and 256."
+::= { sonetPathCurrentEntry 1 }
+
+sonetPathCurrentStatus OBJECT-TYPE
+    SYNTAX  Integer32 (1..62)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+      "This variable indicates the
+      status of the interface.
+      The sonetPathCurrentStatus
+      is a bit map represented
+      as a sum, therefore,
+      it can represent multiple defects
+      simultaneously.
+      The sonetPathNoDefect should be
+      set if and only if
+      no other flag is set.
+
+      The various bit positions are:
+         1   sonetPathNoDefect
+         2   sonetPathSTSLOP
+         4   sonetPathSTSAIS
+         8   sonetPathSTSRDI
+        16   sonetPathUnequipped
+        32   sonetPathSignalLabelMismatch"
+::= { sonetPathCurrentEntry 2 }
+
+sonetPathCurrentESs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of Errored
+     Seconds encountered by a SONET/SDH
+     Path in the current 15 minute interval."
+::= { sonetPathCurrentEntry 3 }
+
+
+
+
+sonetPathCurrentSESs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of
+     Severely Errored Seconds
+     encountered by a SONET/SDH Path in the current 15
+     minute
+     interval."
+::= { sonetPathCurrentEntry 4 }
+
+sonetPathCurrentCVs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of Coding
+     Violations encountered by a
+     SONET/SDH Path in the current 15 minute interval."
+::= { sonetPathCurrentEntry 5 }
+
+sonetPathCurrentUASs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of
+     Unavailable Seconds
+     encountered by a Path in the current
+     15 minute interval."
+::= { sonetPathCurrentEntry 6 }
+
+-- the SONET/SDH Path Interval Table
+
+-- The SONET/SDH Path Interval Table
+-- contains various statistics
+-- collected by each system over a maximum
+-- of the previous 24 hours of
+-- operation.  The past 24 hours may be broken into 96
+-- completed 15 minute intervals.
+-- A system is required to store at
+-- least 4 completed 15 minute interval.
+-- The default value is 32 intervals.
+
+
+
+
+
+
+
+sonetPathIntervalTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetPathIntervalEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+     "The SONET/SDH Path Interval table."
+::= { sonetPath 2 }
+
+sonetPathIntervalEntry OBJECT-TYPE
+    SYNTAX  SonetPathIntervalEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+     "An entry in the SONET/SDH Path Interval table."
+    INDEX   { ifIndex,
+              sonetPathIntervalNumber }
+::= { sonetPathIntervalTable 1 }
+
+SonetPathIntervalEntry ::=
+    SEQUENCE {
+         sonetPathIntervalNumber     Integer32,
+         sonetPathIntervalESs        PerfIntervalCount,
+         sonetPathIntervalSESs       PerfIntervalCount,
+         sonetPathIntervalCVs        PerfIntervalCount,
+         sonetPathIntervalUASs       PerfIntervalCount,
+         sonetPathIntervalValidData  TruthValue
+    }
+
+sonetPathIntervalNumber OBJECT-TYPE
+    SYNTAX  Integer32 (1..96)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "A number between 1 and 96, which identifies the
+       interval for which the set of statistics is available.
+       The interval identified by 1 is the most recently
+       completed 15 minute interval,
+       and the interval identified
+       by N is the interval immediately preceding the
+       one identified
+       by N-1."
+::= { sonetPathIntervalEntry 1 }
+
+sonetPathIntervalESs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+
+
+
+     "The counter associated with the number of
+     Errored Seconds encountered
+     by a SONET/SDH Path in a
+     particular 15-minute interval
+     in the past 24 hours."
+::= { sonetPathIntervalEntry 2 }
+
+sonetPathIntervalSESs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of
+     Severely Errored Seconds
+     encountered by a SONET/SDH Path in
+     a particular 15-minute interval
+     in the past 24 hours."
+::= { sonetPathIntervalEntry 3 }
+
+sonetPathIntervalCVs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of Coding
+     Violations encountered by a
+     SONET/SDH Path in a particular 15-minute interval
+     in the past 24 hours."
+::= { sonetPathIntervalEntry 4 }
+
+sonetPathIntervalUASs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of
+     Unavailable Seconds
+     encountered by a Path in a
+     particular 15-minute interval
+     in the past 24 hours."
+::= { sonetPathIntervalEntry 5 }
+
+sonetPathIntervalValidData OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This variable indicates if the data for this
+
+
+
+        interval is valid."
+    ::= { sonetPathIntervalEntry 6 }
+
+-- The SONET/SDH Far End Path group
+
+-- This group consists of two tables:
+--  - SONET/SDH Far End Path Current Table
+--  - SONET/SDH Far End Path Interval Table
+
+-- The SONET/SDH Far End Path Current Table
+
+-- The SONET/SDH Far End Path Current table
+-- contains various statistics
+-- being collected for the current 15 minute interval.
+-- The statistics are collected from
+-- the far end block error code
+-- (FEBE) within the G1 byte of the Path Overhead.
+-- The definitions are the same as described for
+-- the near-end information.
+
+sonetFarEndPathCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetFarEndPathCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The SONET/SDH Far End Path Current table."
+    ::= { sonetFarEndPath 1 }
+
+sonetFarEndPathCurrentEntry OBJECT-TYPE
+    SYNTAX  SonetFarEndPathCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "An entry in the SONET/SDH Far End Path Current table."
+    INDEX   { ifIndex }
+    ::= { sonetFarEndPathCurrentTable 1 }
+
+SonetFarEndPathCurrentEntry ::=
+    SEQUENCE {
+        sonetFarEndPathCurrentESs       PerfCurrentCount,
+        sonetFarEndPathCurrentSESs      PerfCurrentCount,
+        sonetFarEndPathCurrentCVs       PerfCurrentCount,
+        sonetFarEndPathCurrentUASs      PerfCurrentCount
+    }
+
+
+
+
+
+
+
+sonetFarEndPathCurrentESs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+         "The counter associated with the number of Far
+         End Errored Seconds encountered by a SONET/SDH
+         interface in the current 15 minute interval."
+    ::= { sonetFarEndPathCurrentEntry 1 }
+
+sonetFarEndPathCurrentSESs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+         "The counter associated with the number of
+         Far End Severely Errored Seconds
+         encountered by a SONET/SDH Path
+         interface in the current 15 minute
+         interval."
+    ::= { sonetFarEndPathCurrentEntry 2 }
+
+sonetFarEndPathCurrentCVs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+         "The counter associated with the number of
+         Far End Coding Violations reported via
+         the far end block error count
+         encountered by a
+         SONET/SDH Path interface in
+         the current 15 minute interval."
+    ::= { sonetFarEndPathCurrentEntry 3 }
+
+sonetFarEndPathCurrentUASs OBJECT-TYPE
+   SYNTAX  PerfCurrentCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+       "The counter associated with the number of
+       Far End Unavailable Seconds
+       encountered by a
+       SONET/SDH Path interface in
+       the current 15 minute interval."
+   ::= { sonetFarEndPathCurrentEntry 4 }
+
+
+
+
+
+-- The SONET/SDH Far End Path Interval Table
+
+-- The SONET/SDH Far End Path Interval Table
+-- contains various statistics
+-- collected by each system over a maximum
+-- of the previous 24 hours of
+-- operation.  The past 24 hours may be broken into 96
+-- completed 15 minute intervals.
+-- A system is required to store at
+-- least 4 completed 15 minute interval.
+-- The default value is 32 intervals.
+
+sonetFarEndPathIntervalTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetFarEndPathIntervalEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The SONET/SDH Far End Path Interval table."
+    ::= { sonetFarEndPath 2 }
+
+sonetFarEndPathIntervalEntry OBJECT-TYPE
+    SYNTAX  SonetFarEndPathIntervalEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "An entry in the SONET/SDH Far
+       End Path Interval table."
+    INDEX   { ifIndex,
+              sonetFarEndPathIntervalNumber }
+    ::= { sonetFarEndPathIntervalTable 1 }
+
+SonetFarEndPathIntervalEntry ::=
+    SEQUENCE {
+         sonetFarEndPathIntervalNumber     Integer32,
+         sonetFarEndPathIntervalESs        PerfIntervalCount,
+         sonetFarEndPathIntervalSESs       PerfIntervalCount,
+         sonetFarEndPathIntervalCVs        PerfIntervalCount,
+         sonetFarEndPathIntervalUASs       PerfIntervalCount,
+         sonetFarEndPathIntervalValidData  TruthValue
+    }
+
+sonetFarEndPathIntervalNumber OBJECT-TYPE
+   SYNTAX  Integer32 (1..96)
+   MAX-ACCESS  not-accessible
+   STATUS  current
+   DESCRIPTION
+        "A number between 1 and 96, which identifies the
+        interval for which the set of statistics is available.
+
+
+
+        The interval identified by 1 is the most recently
+        completed 15 minute interval,
+        and the interval identified
+        by N is the interval immediately preceding the
+        one identified
+        by N-1."
+   ::= { sonetFarEndPathIntervalEntry 1 }
+
+sonetFarEndPathIntervalESs OBJECT-TYPE
+   SYNTAX  PerfIntervalCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+        "The counter associated with the number of
+        Far End Errored Seconds encountered
+        by a SONET/SDH Path interface in a
+        particular 15-minute interval
+        in the past 24 hours."
+   ::= { sonetFarEndPathIntervalEntry 2 }
+
+sonetFarEndPathIntervalSESs OBJECT-TYPE
+   SYNTAX  PerfIntervalCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+        "The counter associated with the number of
+        Far End Severely Errored Seconds
+        encountered by a SONET/SDH Path interface
+        in a particular 15-minute interval
+        in the past 24 hours."
+   ::= { sonetFarEndPathIntervalEntry 3 }
+
+sonetFarEndPathIntervalCVs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+         "The counter associated with the number of
+         Far End Coding Violations reported via
+         the far end block error count
+         encountered by a
+         SONET/SDH Path interface
+         in a particular 15-minute interval
+         in the past 24 hours."
+    ::= { sonetFarEndPathIntervalEntry 4 }
+
+
+
+
+
+
+sonetFarEndPathIntervalUASs OBJECT-TYPE
+   SYNTAX  PerfIntervalCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+       "The counter associated with the number of
+       Far End Unavailable Seconds
+       encountered by a
+       SONET/SDH Path interface in
+       a particular 15-minute interval
+       in the past 24 hours."
+   ::= { sonetFarEndPathIntervalEntry 5 }
+
+sonetFarEndPathIntervalValidData OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This variable indicates if the data for this
+        interval is valid."
+    ::= { sonetFarEndPathIntervalEntry 6 }
+
+-- the SONET/SDH Virtual Tributary group
+
+-- this group consists of 2 tables:
+-- - the SONET/SDH VT Current Table
+-- - the SONET/SDH VT Interval Table
+
+-- Corresponding SDH signals for SONET VTs are
+-- as follows:
+
+-- A VT1.5 = TU11
+-- A VT2 = TU12
+-- A VT3 = none
+-- none  = TU3
+-- A VT6 = TU2
+
+-- the SONET/SDH VT Current Table
+
+-- The SONET/SDH VT current table
+-- contains various statistics
+-- being collected for the
+-- current 15 minute interval.
+
+
+
+
+
+
+
+
+sonetVTCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetVTCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+     "The SONET/SDH VT Current table."
+::= { sonetVT 1 }
+
+sonetVTCurrentEntry OBJECT-TYPE
+    SYNTAX  SonetVTCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+     "An entry in the SONET/SDH VT Current table."
+    INDEX   { ifIndex }
+::= { sonetVTCurrentTable 1 }
+
+SonetVTCurrentEntry ::=
+    SEQUENCE {
+        sonetVTCurrentWidth      INTEGER,
+        sonetVTCurrentStatus     Integer32,
+        sonetVTCurrentESs        PerfCurrentCount,
+        sonetVTCurrentSESs       PerfCurrentCount,
+        sonetVTCurrentCVs        PerfCurrentCount,
+        sonetVTCurrentUASs       PerfCurrentCount
+    }
+
+sonetVTCurrentWidth OBJECT-TYPE
+    SYNTAX  INTEGER {
+            vtWidth15VC11(1),
+            vtWidth2VC12(2),
+            vtWidth3(3),
+            vtWidth6VC2(4),
+            vtWidth6c(5)
+         }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+    "A value that indicates the type of the SONET
+     VT and SDH VC.  Assigned widths are
+     VT1.5/VC11, VT2/VC12, VT3, VT6/VC2, and VT6c."
+::= { sonetVTCurrentEntry 1 }
+
+
+
+
+
+
+
+
+
+sonetVTCurrentStatus OBJECT-TYPE
+    SYNTAX  Integer32 (1..126)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+      "This variable indicates the
+      status of the interface.
+      The sonetVTCurrentStatus
+      is a bit map represented
+      as a sum, therefore,
+      it can represent multiple defects
+      and failures
+      simultaneously.
+      The sonetVTNoDefect should be
+      set if and only if
+      no other flag is set.
+
+      The various bit positions are:
+         1   sonetVTNoDefect
+         2   sonetVTLOP
+         4   sonetVTPathAIS
+         8   sonetVTPathRDI
+        16   sonetVTPathRFI
+        32   sonetVTUnequipped
+        64   sonetVTSignalLabelMismatch"
+::= { sonetVTCurrentEntry 2 }
+
+sonetVTCurrentESs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of Errored
+     Seconds encountered by a SONET/SDH
+     VT in the current 15 minute interval."
+::= { sonetVTCurrentEntry 3 }
+
+sonetVTCurrentSESs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of
+     Severely Errored Seconds
+     encountered by a SONET/SDH VT in the current 15 minute
+     interval."
+::= { sonetVTCurrentEntry 4 }
+
+
+
+
+sonetVTCurrentCVs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of Coding
+     Violations encountered by a
+     SONET/SDH VT in the current 15 minute interval."
+::= { sonetVTCurrentEntry 5 }
+
+sonetVTCurrentUASs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of
+     Unavailable Seconds
+     encountered by a VT in the current
+     15 minute interval."
+::= { sonetVTCurrentEntry 6 }
+
+-- the SONET/SDH VT Interval Table
+
+-- The SONET/SDH VT Interval Table
+-- contains various statistics
+-- collected by each system over a maximum
+-- of the previous 24 hours of
+-- operation.  The past 24 hours may be broken into 96
+-- completed 15 minute intervals.
+-- A system is required to store at
+-- least 4 completed 15 minute interval.
+-- The default value is 32 intervals.
+
+sonetVTIntervalTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetVTIntervalEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+     "The SONET/SDH VT Interval table."
+::= { sonetVT 2 }
+
+sonetVTIntervalEntry OBJECT-TYPE
+    SYNTAX  SonetVTIntervalEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+     "An entry in the SONET/SDH VT Interval table."
+    INDEX   { ifIndex,
+
+
+
+              sonetVTIntervalNumber }
+::= { sonetVTIntervalTable 1 }
+
+SonetVTIntervalEntry ::=
+    SEQUENCE {
+        sonetVTIntervalNumber     Integer32,
+        sonetVTIntervalESs        PerfIntervalCount,
+        sonetVTIntervalSESs       PerfIntervalCount,
+        sonetVTIntervalCVs        PerfIntervalCount,
+        sonetVTIntervalUASs       PerfIntervalCount,
+        sonetVTIntervalValidData  TruthValue
+    }
+
+sonetVTIntervalNumber OBJECT-TYPE
+    SYNTAX  Integer32 (1..96)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+      "A number between 1 and 96, which identifies the
+      interval for which the set of statistics is available.
+      The interval identified by 1 is the most recently
+      completed 15 minute interval,
+      and the interval identified
+      by N is the interval immediately preceding the
+      one identified
+      by N-1."
+::= { sonetVTIntervalEntry 1 }
+
+sonetVTIntervalESs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of
+     Errored Seconds encountered
+     by a SONET/SDH VT in a particular 15-minute interval
+     in the past 24 hours."
+::= { sonetVTIntervalEntry 2 }
+
+sonetVTIntervalSESs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of
+     Severely Errored Seconds
+     encountered by a SONET/SDH VT
+     in a particular 15-minute interval
+
+
+
+     in the past 24 hours."
+::= { sonetVTIntervalEntry 3 }
+
+sonetVTIntervalCVs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of Coding
+     Violations encountered by a
+     SONET/SDH VT in a particular 15-minute interval
+     in the past 24 hours."
+::= { sonetVTIntervalEntry 4 }
+
+sonetVTIntervalUASs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+     "The counter associated with the number of
+     Unavailable Seconds
+     encountered by a VT in a particular 15-minute interval
+     in the past 24 hours."
+::= { sonetVTIntervalEntry 5 }
+
+sonetVTIntervalValidData OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This variable indicates if the data for this
+        interval is valid."
+    ::= { sonetVTIntervalEntry 6 }
+
+-- The SONET/SDH Far End VT group
+
+-- This group consists of two tables:
+--    SONET/SDH Far End VT Current Table
+--    SONET/SDH Far End VT Interval Table
+
+-- The SONET/SDH Far End VT Current
+
+-- The SONET/SDH Far End VT Current table
+-- contains various statistics
+-- being collected for the current 15 minute interval.
+-- The statistics are collected from
+-- the far end block error code
+-- (FEBE) within the G1 byte of the VT Overhead.
+
+
+
+-- The definitions are the same as described for
+-- the near-end information.
+
+sonetFarEndVTCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetFarEndVTCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The SONET/SDH Far End VT Current table."
+    ::= { sonetFarEndVT 1 }
+
+sonetFarEndVTCurrentEntry OBJECT-TYPE
+    SYNTAX  SonetFarEndVTCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "An entry in the SONET/SDH Far End VT Current table."
+    INDEX   { ifIndex }
+    ::= { sonetFarEndVTCurrentTable 1 }
+
+SonetFarEndVTCurrentEntry ::=
+    SEQUENCE {
+        sonetFarEndVTCurrentESs       PerfCurrentCount,
+        sonetFarEndVTCurrentSESs      PerfCurrentCount,
+        sonetFarEndVTCurrentCVs       PerfCurrentCount,
+        sonetFarEndVTCurrentUASs      PerfCurrentCount
+    }
+
+sonetFarEndVTCurrentESs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The counter associated with the number of Far
+        End Errored Seconds encountered by a SONET/SDH
+        interface in the current 15 minute interval."
+::= { sonetFarEndVTCurrentEntry 1 }
+
+sonetFarEndVTCurrentSESs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The counter associated with the number of
+        Far End Severely Errored Seconds
+        encountered by a SONET/SDH VT interface
+        in the current 15 minute
+        interval."
+
+
+
+    ::= { sonetFarEndVTCurrentEntry 2 }
+
+sonetFarEndVTCurrentCVs OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The counter associated with the number of
+        Far End Coding Violations reported via
+        the far end block error count
+        encountered by a
+        SONET/SDH VT interface
+        in the current 15 minute interval."
+    ::= { sonetFarEndVTCurrentEntry 3 }
+
+sonetFarEndVTCurrentUASs OBJECT-TYPE
+   SYNTAX  PerfCurrentCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+      "The counter associated with the number of
+      Far End Unavailable Seconds
+      encountered by a
+      SONET/SDH VT interface
+      in the current 15 minute interval."
+   ::= { sonetFarEndVTCurrentEntry 4 }
+
+-- The SONET/SDH Far End VT Interval Table
+
+-- The SONET/SDH Far End VT Interval Table
+-- contains various statistics
+-- collected by each system over a maximum
+-- of the previous 24 hours of
+-- operation.  The past 24 hours may be broken into 96
+-- completed 15 minute intervals.
+-- A system is required to store at
+-- least 4 completed 15 minute interval.
+-- The default value is 32 intervals.
+
+sonetFarEndVTIntervalTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetFarEndVTIntervalEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "The SONET/SDH Far End VT Interval table."
+    ::= { sonetFarEndVT 2 }
+
+
+
+
+
+sonetFarEndVTIntervalEntry OBJECT-TYPE
+    SYNTAX  SonetFarEndVTIntervalEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+      "An entry in the SONET/SDH Far
+      End VT Interval table."
+    INDEX   { ifIndex,
+              sonetFarEndVTIntervalNumber }
+    ::= { sonetFarEndVTIntervalTable 1 }
+
+SonetFarEndVTIntervalEntry ::=
+   SEQUENCE {
+         sonetFarEndVTIntervalNumber     Integer32,
+         sonetFarEndVTIntervalESs        PerfIntervalCount,
+         sonetFarEndVTIntervalSESs       PerfIntervalCount,
+         sonetFarEndVTIntervalCVs        PerfIntervalCount,
+         sonetFarEndVTIntervalUASs       PerfIntervalCount,
+         sonetFarEndVTIntervalValidData  TruthValue
+    }
+
+sonetFarEndVTIntervalNumber OBJECT-TYPE
+    SYNTAX  Integer32 (1..96)
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "A number between 1 and 96, which identifies the
+       interval for which the set of statistics is available.
+       The interval identified by 1 is the most recently
+       completed 15 minute interval,
+       and the interval identified
+       by N is the interval immediately preceding the
+       one identified
+       by N-1."
+    ::= { sonetFarEndVTIntervalEntry 1 }
+
+sonetFarEndVTIntervalESs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+          "The counter associated with the number of
+          Far End Errored Seconds encountered
+          by a SONET/SDH VT interface
+          in a particular 15-minute interval
+          in the past 24 hours."
+   ::= { sonetFarEndVTIntervalEntry 2 }
+
+
+
+
+sonetFarEndVTIntervalSESs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+          "The counter associated with the number of
+          Far End Severely Errored Seconds
+          encountered by a SONET/SDH VT interface
+          in a particular 15-minute interval
+          in the past 24 hours."
+    ::= { sonetFarEndVTIntervalEntry 3 }
+
+sonetFarEndVTIntervalCVs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+         "The counter associated with the number of
+         Far End Coding Violations reported via
+         the far end block error count
+         encountered by a
+         SONET/SDH VT interface in a
+         particular 15-minute interval
+         in the past 24 hours."
+    ::= { sonetFarEndVTIntervalEntry 4 }
+
+sonetFarEndVTIntervalUASs OBJECT-TYPE
+   SYNTAX  PerfIntervalCount
+   MAX-ACCESS  read-only
+   STATUS  current
+   DESCRIPTION
+       "The counter associated with the number of
+       Far End Unavailable Seconds
+       encountered by a
+       SONET/SDH VT interface in a
+       particular 15-minute interval
+       in the past 24 hours."
+   ::= { sonetFarEndVTIntervalEntry 5 }
+
+sonetFarEndVTIntervalValidData OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "This variable indicates if the data for this
+        interval is valid."
+    ::= { sonetFarEndVTIntervalEntry 6 }
+
+
+
+
+-- conformance information
+
+sonetConformance OBJECT IDENTIFIER ::= { sonetMIB 4 }
+
+sonetGroups      OBJECT IDENTIFIER ::= { sonetConformance 1 }
+sonetCompliances OBJECT IDENTIFIER ::= { sonetConformance 2 }
+
+-- deprecated compliance statement
+
+sonetCompliance MODULE-COMPLIANCE
+    STATUS  deprecated
+    DESCRIPTION
+            "The compliance statement for SONET/SDH interfaces."
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { sonetMediumStuff, sonetSectionStuff }
+
+        GROUP       sonetLineStuff
+        DESCRIPTION
+            "Implementation of this group is mandatory for all
+             SONET/SDH systems that terminate SONET/SDH Lines,
+             Paths or Virtual Tributaries."
+
+        GROUP       sonetFarEndLineStuff
+        DESCRIPTION
+            "Implementation of this group is optional for all
+             SONET/SDH systems that terminate SONET/SDH Lines,
+             Paths or Virtual Tributaries, and that
+             provide for a far end block error (FEBE)
+             information at the SONET/SDH Line Layer."
+
+        GROUP       sonetPathStuff
+        DESCRIPTION
+            "Implementation of this group is mandatory for all
+             SONET/SDH systems that terminate SONET/SDH
+             Paths or Virtual Tributaries."
+
+        OBJECT      sonetPathCurrentWidth
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        GROUP       sonetFarEndPathStuff
+        DESCRIPTION
+            "Implementation of this group is optional for all
+             SONET/SDH systems that terminate SONET/SDH
+             Paths or Virtual Tributaries, and that process
+             Far End information."
+
+
+
+        GROUP       sonetVTStuff
+        DESCRIPTION
+            "Implementation of this group is mandatory for all
+             SONET/SDH systems that terminate SONET/SDH Virtual
+             Tributaries."
+
+        OBJECT      sonetVTCurrentWidth
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        GROUP       sonetFarEndVTStuff
+        DESCRIPTION
+            "Implementation of this group is optional for all
+             SONET/SDH systems that terminate the SONET/SDH
+             floating Virtual Tributaries, and that process
+             Far End information."
+
+    ::= { sonetCompliances 1 }
+
+-- current compliance statements
+
+sonetCompliance2 MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for SONET/SDH interfaces."
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { sonetMediumStuff2, sonetSectionStuff2 }
+
+        OBJECT      sonetMediumType
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      sonetMediumLineCoding
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      sonetMediumLineType
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      sonetMediumCircuitIdentifier
+        MIN-ACCESS  read-only
+        DESCRIPTION
+
+
+
+            "Write access is not required."
+
+        OBJECT      sonetMediumLoopbackConfig
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      sonetSESthresholdSet
+        MIN-ACCESS  read-only
+        DESCRIPTION
+          "Write access is not required, and only one
+          of the enumerated values need be supported."
+
+        GROUP       sonetLineStuff2
+        DESCRIPTION
+            "Implementation of this group is mandatory for all
+             SONET/SDH systems that terminate SONET/SDH Lines,
+             Paths or Virtual Tributaries."
+
+        GROUP       sonetFarEndLineStuff2
+        DESCRIPTION
+            "Implementation of this group is optional for all
+             SONET/SDH systems that terminate SONET/SDH Lines,
+             Paths or Virtual Tributaries, and that
+             provide for a far end block error (FEBE)
+             information at the SONET/SDH Line Layer."
+
+        GROUP       sonetPathStuff2
+        DESCRIPTION
+            "Implementation of this group is mandatory for all
+             SONET/SDH systems that terminate SONET/SDH
+             Paths or Virtual Tributaries."
+
+        OBJECT      sonetPathCurrentWidth
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        GROUP       sonetFarEndPathStuff2
+        DESCRIPTION
+            "Implementation of this group is optional for all
+             SONET/SDH systems that terminate SONET/SDH
+             Paths or Virtual Tributaries, and that process
+             Far End information."
+
+        GROUP       sonetVTStuff2
+        DESCRIPTION
+            "Implementation of this group is mandatory for all
+
+
+
+             SONET/SDH systems that terminate SONET/SDH Virtual
+             Tributaries."
+
+        OBJECT      sonetVTCurrentWidth
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        GROUP       sonetFarEndVTStuff2
+        DESCRIPTION
+            "Implementation of this group is optional for all
+             SONET/SDH systems that terminate the SONET/SDH
+             floating Virtual Tributaries, and that process
+             Far End information."
+
+    ::= { sonetCompliances 2 }
+
+-- units of conformance
+
+-- deprecated groups
+
+sonetMediumStuff    OBJECT-GROUP
+    OBJECTS { sonetMediumType,
+              sonetMediumTimeElapsed,
+              sonetMediumValidIntervals,
+              sonetMediumLineCoding,
+              sonetMediumLineType,
+              sonetMediumCircuitIdentifier }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing configuration
+            information applicable to all SONET/SDH interfaces."
+    ::= { sonetGroups 1 }
+
+sonetSectionStuff    OBJECT-GROUP
+    OBJECTS { sonetSectionCurrentStatus,
+              sonetSectionCurrentESs,
+              sonetSectionCurrentSESs,
+              sonetSectionCurrentSEFSs,
+              sonetSectionCurrentCVs,
+              sonetSectionIntervalESs,
+              sonetSectionIntervalSESs,
+              sonetSectionIntervalSEFSs,
+              sonetSectionIntervalCVs
+ }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing information
+
+
+
+            specific to SONET/SDH Section interfaces."
+    ::= { sonetGroups 2 }
+
+sonetLineStuff    OBJECT-GROUP
+    OBJECTS { sonetLineCurrentStatus,
+              sonetLineCurrentESs,
+              sonetLineCurrentSESs,
+              sonetLineCurrentCVs,
+              sonetLineCurrentUASs,
+              sonetLineIntervalESs,
+              sonetLineIntervalSESs,
+              sonetLineIntervalCVs,
+              sonetLineIntervalUASs }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing information
+            specific to SONET/SDH Line interfaces."
+    ::= { sonetGroups 3 }
+
+sonetFarEndLineStuff    OBJECT-GROUP
+    OBJECTS { sonetFarEndLineCurrentESs,
+              sonetFarEndLineCurrentSESs,
+              sonetFarEndLineCurrentCVs,
+              sonetFarEndLineCurrentUASs,
+              sonetFarEndLineIntervalESs,
+              sonetFarEndLineIntervalSESs,
+              sonetFarEndLineIntervalCVs,
+              sonetFarEndLineIntervalUASs }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing information
+            specific to SONET/SDH Line interfaces,
+            and maintaining Line Far End information."
+    ::= { sonetGroups 4 }
+
+sonetPathStuff    OBJECT-GROUP
+    OBJECTS { sonetPathCurrentWidth,
+              sonetPathCurrentStatus,
+              sonetPathCurrentESs,
+              sonetPathCurrentSESs,
+              sonetPathCurrentCVs,
+              sonetPathCurrentUASs,
+              sonetPathIntervalESs,
+              sonetPathIntervalSESs,
+              sonetPathIntervalCVs,
+              sonetPathIntervalUASs }
+    STATUS  deprecated
+    DESCRIPTION
+
+
+
+            "A collection of objects providing information
+            specific to SONET/SDH Path interfaces."
+    ::= { sonetGroups 5 }
+
+sonetFarEndPathStuff    OBJECT-GROUP
+    OBJECTS { sonetFarEndPathCurrentESs,
+              sonetFarEndPathCurrentSESs,
+              sonetFarEndPathCurrentCVs,
+              sonetFarEndPathCurrentUASs,
+              sonetFarEndPathIntervalESs,
+              sonetFarEndPathIntervalSESs,
+              sonetFarEndPathIntervalCVs,
+              sonetFarEndPathIntervalUASs }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing information
+            specific to SONET/SDH Path interfaces,
+            and maintaining Path Far End information."
+    ::= { sonetGroups 6 }
+
+sonetVTStuff    OBJECT-GROUP
+    OBJECTS { sonetVTCurrentWidth,
+              sonetVTCurrentStatus,
+              sonetVTCurrentESs,
+              sonetVTCurrentSESs,
+              sonetVTCurrentCVs,
+              sonetVTCurrentUASs,
+              sonetVTIntervalESs,
+              sonetVTIntervalSESs,
+              sonetVTIntervalCVs,
+              sonetVTIntervalUASs }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing information
+            specific to SONET/SDH VT interfaces."
+    ::= { sonetGroups 7 }
+
+sonetFarEndVTStuff    OBJECT-GROUP
+    OBJECTS { sonetFarEndVTCurrentESs,
+              sonetFarEndVTCurrentSESs,
+              sonetFarEndVTCurrentCVs,
+              sonetFarEndVTCurrentUASs,
+              sonetFarEndVTIntervalESs,
+              sonetFarEndVTIntervalSESs,
+              sonetFarEndVTIntervalCVs,
+              sonetFarEndVTIntervalUASs }
+    STATUS  deprecated
+    DESCRIPTION
+
+
+
+            "A collection of objects providing information
+            specific to SONET/SDH VT interfaces,
+            and maintaining VT Far End information."
+    ::= { sonetGroups 8 }
+
+-- current groups
+
+sonetMediumStuff2    OBJECT-GROUP
+    OBJECTS { sonetMediumType,
+              sonetMediumTimeElapsed,
+              sonetMediumValidIntervals,
+              sonetMediumLineCoding,
+              sonetMediumLineType,
+              sonetMediumCircuitIdentifier,
+              sonetMediumInvalidIntervals,
+              sonetMediumLoopbackConfig,
+              sonetSESthresholdSet }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing configuration
+            information applicable to all SONET/SDH interfaces."
+    ::= { sonetGroups 9 }
+
+sonetSectionStuff2    OBJECT-GROUP
+    OBJECTS { sonetSectionCurrentStatus,
+              sonetSectionCurrentESs,
+              sonetSectionCurrentSESs,
+              sonetSectionCurrentSEFSs,
+              sonetSectionCurrentCVs,
+              sonetSectionIntervalESs,
+              sonetSectionIntervalSESs,
+              sonetSectionIntervalSEFSs,
+              sonetSectionIntervalCVs,
+              sonetSectionIntervalValidData }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing information
+            specific to SONET/SDH Section interfaces."
+    ::= { sonetGroups 10 }
+
+sonetLineStuff2    OBJECT-GROUP
+    OBJECTS { sonetLineCurrentStatus,
+              sonetLineCurrentESs,
+              sonetLineCurrentSESs,
+              sonetLineCurrentCVs,
+              sonetLineCurrentUASs,
+              sonetLineIntervalESs,
+              sonetLineIntervalSESs,
+
+
+
+              sonetLineIntervalCVs,
+              sonetLineIntervalUASs,
+              sonetLineIntervalValidData }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing information
+            specific to SONET/SDH Line interfaces."
+    ::= { sonetGroups 11 }
+
+sonetPathStuff2    OBJECT-GROUP
+    OBJECTS { sonetPathCurrentWidth,
+              sonetPathCurrentStatus,
+              sonetPathCurrentESs,
+              sonetPathCurrentSESs,
+              sonetPathCurrentCVs,
+              sonetPathCurrentUASs,
+              sonetPathIntervalESs,
+              sonetPathIntervalSESs,
+              sonetPathIntervalCVs,
+              sonetPathIntervalUASs,
+              sonetPathIntervalValidData }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing information
+            specific to SONET/SDH Path interfaces."
+    ::= { sonetGroups 12 }
+
+sonetVTStuff2    OBJECT-GROUP
+    OBJECTS { sonetVTCurrentWidth,
+              sonetVTCurrentStatus,
+              sonetVTCurrentESs,
+              sonetVTCurrentSESs,
+              sonetVTCurrentCVs,
+              sonetVTCurrentUASs,
+              sonetVTIntervalESs,
+              sonetVTIntervalSESs,
+              sonetVTIntervalCVs,
+              sonetVTIntervalUASs,
+              sonetVTIntervalValidData }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing information
+            specific to SONET/SDH VT interfaces."
+    ::= { sonetGroups 13 }
+
+sonetFarEndLineStuff2    OBJECT-GROUP
+    OBJECTS { sonetFarEndLineCurrentESs,
+              sonetFarEndLineCurrentSESs,
+
+
+
+              sonetFarEndLineCurrentCVs,
+              sonetFarEndLineCurrentUASs,
+              sonetFarEndLineIntervalESs,
+              sonetFarEndLineIntervalSESs,
+              sonetFarEndLineIntervalCVs,
+              sonetFarEndLineIntervalUASs,
+              sonetFarEndLineIntervalValidData }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing information
+            specific to SONET/SDH Line interfaces,
+            and maintaining Line Far End information."
+    ::= { sonetGroups 14 }
+
+sonetFarEndPathStuff2    OBJECT-GROUP
+    OBJECTS { sonetFarEndPathCurrentESs,
+              sonetFarEndPathCurrentSESs,
+              sonetFarEndPathCurrentCVs,
+              sonetFarEndPathCurrentUASs,
+              sonetFarEndPathIntervalESs,
+              sonetFarEndPathIntervalSESs,
+              sonetFarEndPathIntervalCVs,
+              sonetFarEndPathIntervalUASs,
+              sonetFarEndPathIntervalValidData }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing information
+            specific to SONET/SDH Path interfaces,
+            and maintaining Path Far End information."
+    ::= { sonetGroups 15 }
+
+sonetFarEndVTStuff2    OBJECT-GROUP
+    OBJECTS { sonetFarEndVTCurrentESs,
+              sonetFarEndVTCurrentSESs,
+              sonetFarEndVTCurrentCVs,
+              sonetFarEndVTCurrentUASs,
+              sonetFarEndVTIntervalESs,
+              sonetFarEndVTIntervalSESs,
+              sonetFarEndVTIntervalCVs,
+              sonetFarEndVTIntervalUASs,
+              sonetFarEndVTIntervalValidData }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing information
+            specific to SONET/SDH VT interfaces,
+            and maintaining VT Far End information."
+    ::= { sonetGroups 16 }
+
+
+
+
+END

@@ -1,0 +1,834 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<!-- ETSI ES 283 034 V2.2.0  -->
+<!-- ETSI ES 283 035 V2.5.1 (2008-08) -->
+
+
+	<application id="16777231" name="Diameter e2e4 Application" uri="http://pda.etsi.org">
+
+	<!-- ETSI ES 283 026 V1.6.0 (2008-02) Specifies some experimental resultcodes with vendor id ETSI
+		6.3.2 Experimental-Result-Code AVP values defined in the present
+		document
+	This clause defines the specific values of the Experimental-Result-Code AVP (vendor-id is ETSI):
+	-->
+		<avp name="Experimental-Result-Code" code="298" mandatory="must" protected="mustnot" vendor-bit="must" vendor-id="ETSI" may-encrypt="no" >
+			<type type-name="Unsigned32"/>
+			<enum name="INSUFFICIENT_RESOURCES" code="4041"/>
+			<enum name="COMMIT_FAILURE"		code="4043"/>
+			<enum name="REFRESH_FAILURE"		code="4044"/>
+			<enum name="QOS_PROFILE_FAILURE"	code="4045"/>
+			<enum name="ACCESS_PROFILE_FAILURE" code="4046"/>
+			<enum name="PRIORITY_NOT_GRANTED"	code="4047"/>
+			<enum name="MODIFICATION_FAILURE"	code="5041"/>
+		</avp>
+<!-- dummy AVP to fill out the range -->
+    <avp name="Not defined in .xml" code="299" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+
+    <!-- ************************* e4 AVPs ************************ -->
+
+		<avp name="Globally-Unique-Address" code="300" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<grouped>
+				<gavp name="Framed-IP-Address"/>
+				<gavp name="Framed-IPv6-Prefix"/>
+				<gavp name="Address-Realm"/>
+			</grouped>
+		</avp>
+		<avp name="Address-Realm" code="301" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="Logical-Access-Id" code="302" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="Initial-Gate-Setting" code="303" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<grouped>
+				<gavp name="NAS-Filter-Rule"/>
+				<gavp name="Maximum-Allowed-Bandwidth-UL"/>
+				<gavp name="Maximum-Allowed-Bandwidth-DL"/>
+			</grouped>
+		</avp>
+		<avp name="QoS-Profile" code="304" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<grouped>
+				<gavp name="Application-Class-ID"/>
+				<gavp name="Media-Type"/>
+				<gavp name="Reservation-Priority"/>
+				<gavp name="Maximum-Allowed-Bandwidth-UL"/>
+				<gavp name="Maximum-Allowed-Bandwidth-DL"/>
+				<gavp name="Transport-Class"/>
+			</grouped>
+		</avp>
+		<avp name="IP-Connectivity-Status" code="305" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="Enumerated"/>
+				<enum name="IP-CONNECTIVITY-ON" code="0"/>
+				<enum name="IP-CONNECTIVITY-LOST" code="1"/>
+		</avp>
+		<avp name="Access-Network-Type" code="306" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<grouped>
+				<gavp name="NAS-Port-Type"/>
+				<gavp name="Aggregation-Network-Type"/>
+			</grouped>
+		</avp>
+		<avp name="Aggregation-Network-Type" code="307" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="Enumerated"/>
+				<enum name="UNKNOWN" code="0"/>
+				<enum name="ATM" code="1"/>
+				<enum name="ETHERNET" code="2"/>
+		</avp>
+		<avp name="Maximum-Allowed-Bandwidth-UL" code="308" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="Maximum-Allowed-Bandwidth-DL" code="309" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<!-- Removed from ETSI ES 283 034 V1.2.0 (2007-05) -->
+		<avp name="Maximum-Priority(deprecated)" code="310" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="Transport-Class" code="311" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="Application-Class-ID" code="312" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="Physical-Access-ID" code="313" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="UTF8String"/>
+		</avp>
+    <avp name="Initial-Gate-Setting-ID" code="314" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="Unsigned32"/>
+    </avp>
+    <avp name="QoS-Profile-ID" code="315" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="Unsigned32"/>
+    </avp>
+
+    <!-- dummy AVP:s to fill out the range -->
+    <avp name="Not defined in .xml" code="315" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="316" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="317" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="318" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="319" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="320" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="321" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="322" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="323" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="324" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="325" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="326" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="327" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="328" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="329" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="330" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="331" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="332" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="333" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="334" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="335" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="336" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="337" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="338" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="339" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="340" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="341" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="342" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="343" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="344" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="345" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="346" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="347" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="348" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="349" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+
+    <!-- ************************* e2 AVPs ************************ -->
+
+		<avp name="Location-Information" code="350" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<grouped>
+				<gavp name="Line-Identifier"/>
+			</grouped>
+		</avp>
+		<avp name="RACS-Contact-Point" code="351" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="DiameterIdentity"/>
+		</avp>
+		<avp name="Terminal-Type" code="352" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="Requested-Information" code="353" mandatory="mustnot" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="Enumerated"/>
+				<enum name="SUBSCRIBER-ID" code="0"/>
+				<enum name="LOCATION-INFORMATION" code="1"/>
+				<enum name="RACS-CONTACT-POINT" code="2"/>
+				<enum name="ACCESS-NETWORK-TYPE" code="3"/>
+				<enum name="TERMINAL-TYPE" code="4"/>
+				<!-- The following values are reserved for future use and
+				     are out of scope in ETSI ES 283 035 V1.2.1 (2007-06). -->
+				<enum name="LOGICAL-ACCESS-ID" code="5"/>
+				<enum name="PHYSICAL-ACCESS-ID" code="6"/>
+				<enum name="ACCESS-NETWORK-TYPE" code="7"/>
+				<enum name="INITIAL-GATE-SETTING" code="8"/>
+				<enum name="QOS-PROFILE" code="9"/>
+				<enum name="IP-CONNECTIVITY-STATUS" code="10"/>
+		</avp>
+    <avp name="Event-Type" code="354" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="Enumerated"/>
+      <enum name="USER-LOGON" code="0"/>
+      <enum name="LOCATION-INFORMATION-CHANGED" code="1"/>
+      <enum name="RACS-CONTACT-POINT-CHANGED" code="2"/>
+      <enum name="ACCESS-NETWORK-TYPE" code="3"/>
+      <enum name="TERMINAL-TYPE-CHANGED" code="4"/>
+      <enum name="LOGICAL-ACCESS-ID-CHANGED" code="5"/>
+      <enum name="PHYSICAL-ACCESS-ID-CHANGED" code="6"/>
+      <enum name="IP-ADDRESS-CHANGED" code="7"/>
+      <enum name="INITIAL-GATE-SETTING-CHANGED" code="8"/>
+      <enum name="QOS-PROFILE-CHANGED" code="9"/>
+      <enum name="USER-LOGOFF" code="10"/>
+    </avp>
+    <avp name="Civic-Location" code="355" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Geospatial-Location" code="356" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <!-- dummy AVP:s to fill out the range -->
+    <avp name="Not defined in .xml" code="357" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="358" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="359" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="360" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="361" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="362" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="363" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="364" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="365" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="366" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="367" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="368" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="369" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="370" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="371" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="372" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="373" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="374" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="375" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="376" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="377" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="378" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="379" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="380" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="381" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="382" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="383" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="384" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="385" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="386" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="387" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="388" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="389" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="390" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="391" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="392" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="393" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="394" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="395" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="396" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="397" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="398" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="399" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+
+    <!--- ETSI ES 283 026 V1.6.0 (2008-02) -->
+		<avp name="Session-Bundle-Id" code="400" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+    <!-- dummy AVP:s to fill out the range -->
+    <avp name="Not defined in .xml" code="401" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="402" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="403" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="404" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="405" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="406" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="407" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="408" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="409" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="410" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="411" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="412" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="413" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="414" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="415" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="416" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="417" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="418" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="419" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <!--- ETSI TS 183 066 V2.1.1 (2009-01) -->
+    <avp name="Event-Type" code="420" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="Enumerated"/>
+      <enum name="UPDATE" code="0"/>
+      <enum name="REMOVE" code="1"/>
+    </avp>
+
+    <!-- dummy AVP:s to fill out the range -->
+    <avp name="Not defined in .xml" code="421" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="422" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="423" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="424" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="425" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="426" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="427" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="428" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="429" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="430" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="431" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="432" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="433" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="434" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="435" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="436" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="437" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="438" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="439" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="440" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="441" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="442" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="443" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="444" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="445" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="446" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="447" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="448" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="449" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+
+    <!-- ETSI TS 183 017 V1.4.0 (2007-08) -->
+		<avp name="Binding-information" code="450" mandatory="mustnot" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<grouped>
+				<gavp name="Binding-Input-List"/>
+				<gavp name="Binding-Output-List"/>
+			</grouped>
+		</avp>
+		<avp name="Binding-Input-List" code="451" mandatory="mustnot" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<grouped>
+				<gavp name="V6-Transport-Address"/>
+				<gavp name="V4-Transport-Address"/>
+			</grouped>
+		</avp>
+		<avp name="Binding-Output-List" code="452" mandatory="mustnot" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<grouped>
+				<gavp name="V6-Transport-Address"/>
+				<gavp name="V4-Transport-Address"/>
+			</grouped>
+		</avp>
+		<avp name="V6-Transport-address" code="453" mandatory="mustnot" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<grouped>
+				<gavp name="Framed-IPv6-Prefix"/>
+				<gavp name="Port-Number"/>
+			</grouped>
+		</avp>
+		<avp name="V4-Transport-Address" code="454" mandatory="mustnot" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<grouped>
+				<gavp name="Framed-IP-Address"/>
+				<gavp name="Port-Number"/>
+			</grouped>
+		</avp>
+		<avp name="Port-Number" code="455" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="Reservation-Class" code="456" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="Requested-Information" code="457" mandatory="mustnot" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="Enumerated"/>
+				<enum name="LATCH" code="0"/>
+				<enum name="RELATCH" code="1"/>
+		</avp>
+		<avp name="Reservation-Priority" code="458" mandatory="mustnot" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+			<type type-name="Enumerated"/>
+      <enum name="DEFAULT" code="0"/>
+      <enum name="PRIORITY-ONE" code="1"/>
+      <enum name="PRIORITY-TWO" code="2"/>
+			<enum name="PRIORITY-THREE" code="3"/>
+			<enum name="PRIORITY-FOUR" code="4"/>
+			<enum name="PRIORITY-FIVE" code="5"/>
+			<enum name="PRIORITY-SIX" code="6"/>
+			<enum name="PRIORITY-SEVEN" code="7"/>
+		</avp>
+    <avp name="Service-Class" code="459" mandatory="mustnot" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+       <type type-name="UTF8String"/>
+    </avp>
+
+    <!-- dummy AVP:s to fill out the range -->
+    <avp name="Not defined in .xml" code="460" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="461" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="462" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="463" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="464" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="465" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="466" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="467" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="468" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="469" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="470" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="471" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="472" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="473" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="474" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="475" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="476" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="477" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="478" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="479" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="480" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="481" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="482" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="483" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="484" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="485" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="486" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="487" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="488" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="489" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="490" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="491" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="492" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="493" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="494" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="495" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="496" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="497" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="498" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Not defined in .xml" code="499" mandatory="must" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+      <type type-name="OctetString"/>
+    </avp>
+
+    <!--- ETSI TS 183 033 V1.2.0 (2007-10) -->
+		<!-- The Line-Identifier AVP has a Vendor-Id header set to ETSI (13019).
+		6.3.34 Line-Identifier AVP
+		The Line-Identifier AVP is of type OctetString. This AVP contains a fixed broadband access line identifier
+		 associated to the user.
+		-->
+		<avp name="Line-Identifier" code="500" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="OctetString"/>
+		</avp>
+		<!-- The following table describes the Diameter AVPs defined for the Cx interface protocol in support of
+			 HTTP Digest, their AVP Code values, types, possible flag values and whether or not the AVP may be
+			 encrypted. The Vendor-Id header of all AVPs defined in the present document shall be set to ETSI (13019). -->
+
+		<avp name="ETSI-SIP-Authenticate" code="501" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<grouped>
+				<gavp name="ETSI-Digest-Realm"/>
+				<gavp name="ETSI-Digest-Nonce"/>
+				<gavp name="ETSI-Digest-Domain"/>
+				<gavp name="ETSI-Digest-Opaque"/>
+				<gavp name="ETSI-Digest-Stale"/>
+				<gavp name="ETSI-Digest-Algorithm"/>
+				<gavp name="ETSI-Digest-QoP"/>
+				<gavp name="ETSI-Digest-HA1"/>
+				<gavp name="ETSI-Digest-Auth-Param"/>
+			</grouped>
+		</avp>
+		<avp name="ETSI-SIP-Authorization" code="502" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<grouped>
+				<gavp name="ETSI-Digest-Username"/>
+				<gavp name="ETSI-Digest-Realm"/>
+				<gavp name="ETSI-Digest-Nonce"/>
+				<gavp name="ETSI-Digest-URI"/>
+				<gavp name="ETSI-Digest-Response"/>
+				<gavp name="ETSI-Digest-Algorithm"/>
+				<gavp name="ETSI-Digest-CNonce"/>
+				<gavp name="ETSI-Digest-Opaque"/>
+				<gavp name="ETSI-Digest-QoP"/>
+				<gavp name="ETSI-Digest-Nonce-Count"/>
+				<gavp name="ETSI-Digest-Method"/>
+				<gavp name="ETSI-Digest-Entity-Body-Hash"/>
+				<gavp name="ETSI-Digest-Auth-Param"/>
+			</grouped>
+		</avp>
+		<avp name="ETSI-SIP-Authentication-Info" code="503" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<grouped>
+				<gavp name="ETSI-Digest-Nextnonce"/>
+				<gavp name="ETSI-Digest-QoP"/>
+				<gavp name="ETSI-Digest-Response-Auth"/>
+				<gavp name="ETSI-Digest-CNonce"/>
+				<gavp name="ETSI-Digest-Nonce-Count"/>
+			</grouped>
+		</avp>
+		<avp name="ETSI-Digest-Realm" code="504" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Nonce" code="505" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Domain" code="506" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Opaque" code="507" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Stale" code="508" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Algorithm" code="509" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-QoP" code="510" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-HA1" code="511" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Auth-Param" code="512" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Username" code="513" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-URI" code="514" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Response" code="515" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-CNonce" code="516" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Nonce-Count" code="517" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Method" code="518" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Entity-Body-Hash" code="519" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Nextnonce" code="520" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="ETSI-Digest-Response-Auth" code="521" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+			<type type-name="UTF8String"/>
+		</avp>
+	</application>

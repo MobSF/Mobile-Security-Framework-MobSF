@@ -1,0 +1,1011 @@
+RFC1381-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        Counter
+                FROM RFC1155-SMI
+        transmission
+                FROM RFC1213-MIB
+        OBJECT-TYPE
+                FROM RFC-1212;
+
+
+                --  LAPB MIB
+
+lapb    OBJECT IDENTIFIER ::= { transmission 16 }
+
+PositiveInteger ::= INTEGER (0..2147483647)
+
+IfIndexType     ::= INTEGER (1..2147483647)
+-- IfIndexType specifies an index object for a table
+-- with entries that match entries in the MIB-II ifTable.
+-- The value of the index for the table will match the
+-- ifIndex entry for same interface in the ifTable.
+-- The values of this object range from 1 to ifNumber
+-- inclusive.
+
+
+-- ###########################################################
+--                      LAPB Admn Table
+-- ###########################################################
+
+-- Support of the lapbAdmnTable is mandatory for all
+-- agents of systems that implement LAPB.
+
+lapbAdmnTable   OBJECT-TYPE
+        SYNTAX  SEQUENCE OF LapbAdmnEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "This table contains objects that can be
+                changed to manage a LAPB interface.
+                Changing one of these parameters may take
+                effect in the operating LAPB immediately or
+                may wait until the interface is restarted
+                depending on the details of the
+                implementation.
+
+                Most of the objects in this read-write table
+                have corresponding read-only objects in the
+                lapbOperTable that return the current
+                operating value.
+
+                The operating values may be different from
+                these configured values if changed by XID
+                negotiation or if a configured parameter was
+                changed after the interface was started."
+        ::= { lapb 1 }
+
+lapbAdmnEntry   OBJECT-TYPE
+        SYNTAX  LapbAdmnEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "Configured parameter values for a specific
+                LAPB."
+        INDEX { lapbAdmnIndex }
+        ::= { lapbAdmnTable 1 }
+
+LapbAdmnEntry ::= SEQUENCE {
+        lapbAdmnIndex
+                IfIndexType,
+        lapbAdmnStationType
+                INTEGER,
+        lapbAdmnControlField
+                INTEGER,
+        lapbAdmnTransmitN1FrameSize
+                PositiveInteger,
+        lapbAdmnReceiveN1FrameSize
+                PositiveInteger,
+        lapbAdmnTransmitKWindowSize
+                INTEGER,
+        lapbAdmnReceiveKWindowSize
+                INTEGER,
+        lapbAdmnN2RxmitCount
+        INTEGER,
+        lapbAdmnT1AckTimer
+                PositiveInteger,
+        lapbAdmnT2AckDelayTimer
+                PositiveInteger,
+        lapbAdmnT3DisconnectTimer
+                PositiveInteger,
+        lapbAdmnT4IdleTimer
+                PositiveInteger,
+        lapbAdmnActionInitiate
+                INTEGER,
+        lapbAdmnActionRecvDM
+                INTEGER
+        }
+
+lapbAdmnIndex   OBJECT-TYPE
+        SYNTAX  IfIndexType
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The ifIndex value for the LAPB interface."
+        ::= { lapbAdmnEntry 1 }
+
+lapbAdmnStationType     OBJECT-TYPE
+        SYNTAX  INTEGER {
+                dte (1),
+                dce (2),
+                dxe (3)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "Identifies the desired station type of this
+                interface."
+        REFERENCE "ISO 7776 section 3.1"
+        DEFVAL { dte }
+        ::= { lapbAdmnEntry 2 }
+
+lapbAdmnControlField OBJECT-TYPE
+        SYNTAX  INTEGER {
+                modulo8 (1),
+                modulo128 (2)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The desired size of the sequence numbers
+                used to number frames."
+        REFERENCE "ISO 8885 Table 3, Name: HDLC Option - 10"
+        DEFVAL { modulo8 }
+        ::= { lapbAdmnEntry 3 }
+
+lapbAdmnTransmitN1FrameSize OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The default maximum N1 frame size desired
+                in number of bits for a frame transmitted by
+                this DTE.  This excludes flags and 0 bits
+                inserted for transparency."
+        REFERENCE "ISO 8885 Table 3,
+                Name: Information Field length"
+        DEFVAL { 36000 } -- 4500 * 8; 802.5 Frame size
+        ::= { lapbAdmnEntry 4 }
+
+lapbAdmnReceiveN1FrameSize OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The default maximum N1 frame size desired
+                in number of bits for a frame the DCE/remote
+                DTE transmits to this DTE.  This excludes
+                flags and 0 bits inserted for transparency."
+        DEFVAL { 36000  } -- 4500 * 8; 802.5 Frame size
+        ::= { lapbAdmnEntry 5 }
+
+lapbAdmnTransmitKWindowSize OBJECT-TYPE
+        SYNTAX  INTEGER (1..127)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The default transmit window size for this
+                Interface.  This is the maximum number of
+                unacknowledged sequenced PDUs that may be
+                outstanding from this DTE at any one time."
+        REFERENCE "ISO 8885 Table 3, Name: Window size"
+        DEFVAL { 7 }
+        ::= { lapbAdmnEntry 6 }
+
+lapbAdmnReceiveKWindowSize OBJECT-TYPE
+        SYNTAX  INTEGER (1..127)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The default receive window size for this
+                Interface.  This is the maximum number of
+                unacknowledged sequenced PDUs that may be
+                outstanding from the DCE/remote DTE at any
+                one time."
+        REFERENCE "ISO 8885 Table 3, Name: Window size"
+        DEFVAL { 7 }
+        ::= { lapbAdmnEntry 7 }
+
+lapbAdmnN2RxmitCount    OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The default N2 retry counter for this
+                interface.  This specifies the number of
+                times a PDU will be resent after the T1
+                timer expires without an acknowledgement for
+                the PDU."
+        REFERENCE "ISO 8885 Table 3,
+                Name: Retransmission Attempts"
+        DEFVAL { 20 }
+        ::= { lapbAdmnEntry 8 }
+
+lapbAdmnT1AckTimer      OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The default T1 timer for this interface.
+                This specifies the maximum time in
+                Milliseconds to wait for acknowledgment of a
+                PDU."
+        REFERENCE "ISO 8885 Table 3, Name:
+                Acknowledgement timer"
+        DEFVAL { 3000 }
+        ::= { lapbAdmnEntry 9 }
+
+lapbAdmnT2AckDelayTimer         OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The default T2 timer for this interface.
+                This specifies the maximum time in
+                Milliseconds to wait before sending an
+                acknowledgment for a sequenced PDU.  A value
+                of zero means there will be no delay in
+                acknowledgement generation."
+        REFERENCE "ISO 8885 Table 3,
+                Name: Reply delay timer"
+        DEFVAL { 0 }
+        ::= { lapbAdmnEntry 10 }
+
+lapbAdmnT3DisconnectTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The T3 timer for this interface.  This
+                specifies the time in Milliseconds to wait
+                before considering the link disconnected.  A
+                value of zero indicates the link will be
+                considered disconnected upon completion of
+                the frame exchange to disconnect the link."
+        REFERENCE "ISO 7776 section 5.7.1.3"
+        DEFVAL { 60000 }
+        ::= { lapbAdmnEntry 11 }
+
+lapbAdmnT4IdleTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The T4 timer for this interface.  This
+                specifies the maximum time in Milliseconds
+                to allow without frames being exchanged on
+                the data link.  A value of 2147483647
+                indicates no idle timer is being kept."
+        REFERENCE "ISO 7776 section 5.7.1.4"
+        DEFVAL { 2147483647 }
+        ::= { lapbAdmnEntry 12 }
+
+lapbAdmnActionInitiate OBJECT-TYPE
+        SYNTAX  INTEGER {
+        sendSABM (1),
+                sendDISC (2),
+                sendDM (3),
+                none (4),
+                other (5)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "This identifies the action LAPB will take
+                to initiate link set-up."
+        DEFVAL { sendSABM }
+        ::= { lapbAdmnEntry 13 }
+
+lapbAdmnActionRecvDM OBJECT-TYPE
+        SYNTAX  INTEGER {
+                sendSABM (1),
+                sendDISC (2),
+                other (3)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "This identifies the action LAPB will take
+                when it receives a DM response."
+        DEFVAL { sendSABM }
+        ::= { lapbAdmnEntry 14 }
+
+
+-- ###########################################################
+--                      LAPB operating parameters.
+-- ###########################################################
+
+-- Support of the lapbOperTable is mandatory for all
+-- agents of systems that implement LAPB.
+
+lapbOperTable   OBJECT-TYPE
+        SYNTAX  SEQUENCE OF LapbOperEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "This table contains configuration
+                information about interface parameters
+                currently set in the interface.  Many of
+                these objects have corresponding objects in
+        the lapbAdmnTable."
+        ::= { lapb 2 }
+
+lapbOperEntry   OBJECT-TYPE
+        SYNTAX  LapbOperEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "Currently set parameter values for a
+                specific LAPB."
+        INDEX { lapbOperIndex }
+        ::= { lapbOperTable 1 }
+
+LapbOperEntry ::= SEQUENCE {
+        lapbOperIndex
+                IfIndexType,
+        lapbOperStationType
+                INTEGER,
+        lapbOperControlField
+                INTEGER,
+        lapbOperTransmitN1FrameSize
+                PositiveInteger,
+        lapbOperReceiveN1FrameSize
+                PositiveInteger,
+        lapbOperTransmitKWindowSize
+                INTEGER,
+        lapbOperReceiveKWindowSize
+                INTEGER,
+        lapbOperN2RxmitCount
+                INTEGER,
+        lapbOperT1AckTimer
+                PositiveInteger,
+        lapbOperT2AckDelayTimer
+                PositiveInteger,
+        lapbOperT3DisconnectTimer
+                PositiveInteger,
+        lapbOperT4IdleTimer
+                PositiveInteger,
+        lapbOperPortId
+                OBJECT IDENTIFIER,
+        lapbOperProtocolVersionId
+                OBJECT IDENTIFIER
+        }
+
+lapbOperIndex   OBJECT-TYPE
+   SYNTAX       IfIndexType
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The ifIndex value for the LAPB interface."
+        ::= { lapbOperEntry 1 }
+
+lapbOperStationType     OBJECT-TYPE
+        SYNTAX  INTEGER {
+                dte (1),
+                dce (2),
+                dxe (3)
+                }
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "Identifies the current operating station
+                type of this interface.  A value of dxe (3)
+                indicates XID negotiation has not yet taken
+                place."
+        REFERENCE "ISO 7776 section 3.1"
+        ::= { lapbOperEntry 2 }
+
+lapbOperControlField OBJECT-TYPE
+        SYNTAX  INTEGER {
+                modulo8 (1),
+                modulo128 (2)
+                }
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The current operating size of the sequence
+                numbers used to number frames."
+        REFERENCE "ISO 7776 section 3.3"
+        ::= { lapbOperEntry 3 }
+
+lapbOperTransmitN1FrameSize OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The current operating N1 frame size used
+                for the maximum number of bits in a frame
+                this DTE can transmit.  This excludes flags
+                and 0 bits inserted for transparency."
+        REFERENCE "ISO 7776 section 5.7.3"
+        ::= { lapbOperEntry 4 }
+
+lapbOperReceiveN1FrameSize OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        -- See lapbOperTransmitN1FrameSize above
+        DESCRIPTION
+                "The current operating N1 frame size used
+                for the maximum number of bits in a frame
+                the DCE/remote DTE can transmit.  This
+                excludes flags and 0 bits inserted for
+                transparency."
+        ::= { lapbOperEntry 5 }
+
+lapbOperTransmitKWindowSize OBJECT-TYPE
+        SYNTAX  INTEGER (1..127)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The current PDU window size this Interface
+                uses to transmit.  This is the maximum
+                number of unacknowledged sequenced PDUs that
+                may be outstanding from this DTE at any one
+                time."
+        REFERENCE "ISO 7776 section 5.7.4"
+        ::= { lapbOperEntry 6 }
+
+lapbOperReceiveKWindowSize OBJECT-TYPE
+        SYNTAX  INTEGER (1..127)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The current receive PDU window size for
+                this Interface.  This is the maximum number
+                of unacknowledged sequenced PDUs that may be
+                outstanding from the DCE/remote DTE at any
+                one time."
+        REFERENCE "ISO 7776 section 5.7.4"
+        ::= { lapbOperEntry 7 }
+
+lapbOperN2RxmitCount    OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The current N2 retry counter used for this
+                interface.  This specifies the number of
+                times a PDU will be resent after the T1
+                timer expires without an acknowledgement for
+                the PDU."
+        REFERENCE "ISO 7776 section 5.7.2"
+        ::= { lapbOperEntry 8 }
+
+lapbOperT1AckTimer      OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The current T1 timer for this interface.
+                This specifies the maximum time in
+                Milliseconds to wait for acknowledgment of a
+                PDU."
+        REFERENCE "ISO 7776 section 5.7.1.1"
+        ::= { lapbOperEntry 9 }
+
+lapbOperT2AckDelayTimer         OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The current T2 timer for this interface.
+                This specifies the maximum time in
+                Milliseconds to wait before sending an
+                acknowledgment for a sequenced PDU.  A value
+                of zero means there will be no delay in
+                acknowledgement generation."
+        REFERENCE "ISO 7776 section 5.7.1.2"
+        ::= { lapbOperEntry 10 }
+
+lapbOperT3DisconnectTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The current T3 timer for this interface.
+                This specifies the time in Milliseconds to
+                wait before considering the link
+                disconnected.  A value of zero indicates the
+                link will be considered disconnected upon
+                completion of the frame exchange to
+                disconnect the link."
+        REFERENCE "ISO 7776 section 5.7.1.3"
+        ::= { lapbOperEntry 11 }
+
+lapbOperT4IdleTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The current T4 timer for this interface.
+                This specifies the maximum time in
+                Milliseconds to allow without frames being
+                exchanged on the data link.  A value of
+                2147483647 indicates no idle timer is being
+                kept."
+        REFERENCE "ISO 7776 section 5.7.1.4"
+        ::= { lapbOperEntry 12 }
+
+lapbOperPortId OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "This object identifies an instance of the
+                index object in the first group of objects
+                in the MIB specific to the physical device
+                or interface used to send and receive
+                frames.  If an agent does not support any
+                such objects, it should return nullSpec
+                OBJECT IDENTIFIER {0 0}."
+        ::= { lapbOperEntry 13 }
+
+lapbOperProtocolVersionId       OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "This object identifies the version of the
+                lapb protocol implemented by this
+                interface."
+        ::= { lapbOperEntry 14 }
+
+
+-- ###########################################################
+--                      LAPB    Flow Table
+-- ###########################################################
+
+-- Support of the lapbFlowTable is mandatory for all
+-- agents of systems that implement LAPB.
+
+lapbFlowTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF LapbFlowEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "This table defines the objects recorded by
+                LAPB to provide information about the
+                traffic flow through the interface."
+        ::= { lapb 3 }
+
+lapbFlowEntry OBJECT-TYPE
+        SYNTAX  LapbFlowEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "The information regarding the effects of
+                flow controls in LAPB."
+         INDEX { lapbFlowIfIndex }
+        ::= { lapbFlowTable 1 }
+
+LapbFlowEntry ::= SEQUENCE {
+        lapbFlowIfIndex
+                IfIndexType,
+        lapbFlowStateChanges
+                Counter,
+        lapbFlowChangeReason
+                INTEGER,
+        lapbFlowCurrentMode
+                INTEGER,
+        lapbFlowBusyDefers
+                Counter,
+        lapbFlowRejOutPkts
+                Counter,
+        lapbFlowRejInPkts
+                Counter,
+        lapbFlowT1Timeouts
+                Counter,
+        lapbFlowFrmrSent
+        OCTET STRING,
+        lapbFlowFrmrReceived
+                OCTET STRING,
+        lapbFlowXidReceived
+                OCTET STRING
+        }
+
+lapbFlowIfIndex OBJECT-TYPE
+        SYNTAX  IfIndexType
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The ifIndex value for the LAPB Interface."
+        ::= { lapbFlowEntry 1 }
+
+lapbFlowStateChanges OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of LAPB State Changes, including
+                resets."
+        ::= { lapbFlowEntry 2 }
+
+lapbFlowChangeReason OBJECT-TYPE
+        SYNTAX  INTEGER {
+                notStarted (1),    -- Initial state
+                abmEntered (2),    -- SABM or UA
+                abmeEntered (3),   -- SABME or UA
+                abmReset (4),      -- SABM in ABM
+                abmeReset (5),     -- SABME in ABME
+                dmReceived (6),    -- DM Response
+                dmSent (7),        -- DM sent
+                discReceived (8),  -- DISC Response
+                discSent (9),      -- DISC Sent
+                frmrReceived (10), -- FRMR Received
+                frmrSent (11),     -- FRMR Sent
+                n2Timeout (12),    -- N2 Timer Expired
+                other (13)
+                  }
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The reason for the most recent incrementing
+                of lapbFlowStateChanges.  A DM or DISC frame
+                generated to initiate link set-up does not
+                alter this object.  When the MIB-II object
+                ifOperStatus does not have a value of
+                testing, there exists a correlation between
+                this object and ifOperStatus.  IfOperStatus
+                will have a value of up when this object
+                contains:  abmEntered, abmeEntered,
+                abmReset, or abmeReset.  IfOperStatus will
+                have a value of down when this object has a
+                value of notStarted, or dmReceived through
+                n2Timeout.  There is no correlation when
+                this object has the value other."
+        ::= { lapbFlowEntry 3 }
+
+lapbFlowCurrentMode OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disconnected (1),
+                        -- initial state or DISC received
+
+                linkSetup (2),
+                        -- SABM sent
+
+                frameReject (3),
+                        -- Invalid frame received and
+                        -- FRMR sent
+
+                disconnectRequest (4),
+                        -- DISC sent
+
+                informationTransfer (5),
+                        -- normal information transfer state
+                        -- SABM(E) sent and UA received, or
+                        -- SABM(E) received and UA sent
+
+                rejFrameSent (6),
+                        -- invalid NS received and REJ sent
+
+                waitingAcknowledgement (7),
+
+                        -- T1 expired and RR sent
+
+                stationBusy (8),
+                        -- RNR sent
+
+                remoteStationBusy (9),
+                        -- RNR received
+
+                bothStationsBusy (10),
+                        -- RNR received and RNR sent
+
+                waitingAckStationBusy (11),
+                        -- T1 expired, RNR sent
+
+                waitingAckRemoteBusy (12),
+                        -- T1 expired, RNR received
+
+                waitingAckBothBusy (13),
+                        -- T1 expired, RNR sent,
+                        -- and RNR received
+
+                rejFrameSentRemoteBusy (14),
+                        -- REJ sent and RNR received
+
+                xidFrameSent (15),
+                        -- XID frame sent
+
+                error (16),
+                        -- An error state other than
+                        -- a one defined above
+
+                other (17)
+                        --  A state not listed above
+                  }
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The current condition of the conversation."
+        ::= { lapbFlowEntry 4 }
+
+lapbFlowBusyDefers OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times this device was unable
+                to transmit a frame due to a perceived
+                remote busy condition.  Busy conditions can
+                result from the receipt of an RNR from the
+                remote device, the lack of valid sequence
+                number space (window saturation), or other
+                conditions."
+        ::= { lapbFlowEntry 5 }
+
+lapbFlowRejOutPkts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of REJ or SREJ frames sent by
+                this station."
+        ::= { lapbFlowEntry 6 }
+
+lapbFlowRejInPkts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of REJ or SREJ frames received
+                by this station."
+        ::= { lapbFlowEntry 7 }
+
+lapbFlowT1Timeouts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times a re-transmission was
+                effected by the T1 Timer expiring."
+        ::= { lapbFlowEntry 8 }
+
+lapbFlowFrmrSent OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..7))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The Information Field of the FRMR most
+                recently sent.  If no FRMR has been sent
+                (the normal case) or the information isn't
+                available, this will be an OCTET STRING of
+                zero length."
+        REFERENCE "ISO 7776 Section 4.3.9, tables 7 and 8"
+        ::= { lapbFlowEntry 9 }
+
+lapbFlowFrmrReceived OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..7))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The Information Field of the FRMR most
+                recently received.  If no FRMR has been
+                received (the normal case) or the
+                information isn't available, this will be an
+                OCTET STRING of zero length."
+        REFERENCE "ISO 7776 Section 4.3.9, tables 7 and 8"
+        ::= { lapbFlowEntry 10 }
+
+lapbFlowXidReceived OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..8206))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The Information Field of the XID frame most
+                recently received.  If no XID frame has been
+                received, this will be an OCTET STRING of
+                zero length."
+        REFERENCE "ISO 8885"
+        ::= { lapbFlowEntry 11 }
+
+
+-- ###########################################################
+--                      LAPB    XID Table
+-- ###########################################################
+
+-- Support for the lapbXidTable is mandatory for all agents
+-- of systems that have a LAPB implementation using XID
+-- negotiation.  Agents of systems without XID negotiation
+-- support should not implement this table.
+
+lapbXidTable    OBJECT-TYPE
+        SYNTAX  SEQUENCE OF LapbXidEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "This table defines values to use for XID
+                negotiation that are not found in the
+                lapbAdmnTable.  This table is optional for
+                implementations that don't support XID and
+                mandatory for implementations that do
+                initiate XID negotiation."
+        ::= { lapb 4 }
+
+lapbXidEntry    OBJECT-TYPE
+        SYNTAX  LapbXidEntry
+   ACCESS       not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "XId negotiation parameter values for a
+                specific LAPB."
+        INDEX { lapbXidIndex }
+        ::= { lapbXidTable 1 }
+
+
+LapbXidEntry ::= SEQUENCE {
+        lapbXidIndex
+                IfIndexType,
+        lapbXidAdRIdentifier
+                OCTET STRING,
+        lapbXidAdRAddress
+                OCTET STRING,
+        lapbXidParameterUniqueIdentifier
+                OCTET STRING,
+        lapbXidGroupAddress
+                OCTET STRING,
+        lapbXidPortNumber
+                OCTET STRING,
+        lapbXidUserDataSubfield
+                OCTET STRING
+        }
+
+lapbXidIndex    OBJECT-TYPE
+        SYNTAX  IfIndexType
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The ifIndex value for the LAPB interface."
+        ::= { lapbXidEntry 1 }
+
+lapbXidAdRIdentifier OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..255))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The value of the Address Resolution
+                Identifier.  A zero length string indicates
+                no Identifier value has been assigned."
+        REFERENCE "ISO 8885 Table 2, Name: Identifier"
+        DEFVAL { ''h }
+        ::= { lapbXidEntry 2 }
+
+lapbXidAdRAddress OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..255))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The value of the Address Resolution
+                Address.  A zero length string indicates no
+                Address value has been assigned."
+        REFERENCE "ISO 8885 Table 2, Name: Address"
+        DEFVAL { ''h }
+        ::= { lapbXidEntry 3 }
+
+lapbXidParameterUniqueIdentifier OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..255))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The value of the parameter unique
+                Identifier.  A zero length string indicates
+                no Unique identifier value has been
+                assigned."
+        REFERENCE "ISO 8885 Table 3, Name: Identifier"
+        DEFVAL { ''h }
+        ::= { lapbXidEntry 4 }
+
+lapbXidGroupAddress OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..255))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The value of the parameter Group address.
+                A zero length string indicates no Group
+                address value has been assigned."
+        REFERENCE "ISO 8885 Table 3, Name: Group address"
+        DEFVAL { ''h }
+        ::= { lapbXidEntry 5 }
+
+lapbXidPortNumber OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..255))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The port number assigned for this link.  A
+                zero length string indicates no local port
+                number identifier has been assigned."
+        REFERENCE "ISO 8885 Table 3, Name: Port number"
+        DEFVAL { ''h }
+        ::= { lapbXidEntry 6 }
+
+lapbXidUserDataSubfield OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..8206))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "A user data subfield, if any, to be
+                transmitted in an XID frame.  A zero length
+                frame indicates no user data subfield has
+                been assigned.  The octet string should
+                include both the User data identifier and
+                User data field as shown in Figures 1 and
+                4."
+        REFERENCE "ISO 8885 section 4.3"
+        DEFVAL { ''h }
+        ::= { lapbXidEntry 7 }
+
+
+-- ###########################################################
+--                      LAPB protocol versions
+-- ###########################################################
+
+lapbProtocolVersion OBJECT IDENTIFIER
+        ::= { lapb 5 }
+
+lapbProtocolIso7776v1986 OBJECT IDENTIFIER
+        ::= { lapbProtocolVersion 1 }
+
+lapbProtocolCcittV1980 OBJECT IDENTIFIER
+        ::= { lapbProtocolVersion 2 }
+
+lapbProtocolCcittV1984 OBJECT IDENTIFIER
+        ::= { lapbProtocolVersion 3 }
+
+
+
+-- The following describes some of the MIB-II interface
+-- objects and their relationship with the objects in this
+-- MIB extension.
+
+-- ifDescr:  describes the interface.   It should include
+-- identification information for the physical line and a
+-- description of the network.  For connections to PDNs,
+-- it should name the PDN.
+
+-- ifMtu: the maximum number of octets an upper layer can
+-- pass to this interface as a single frame.
+
+-- ifSpeed:
+
+-- ifAdminStatus:
+
+-- ifOperStatus:
+
+-- ifLastChange: the last time the state of the interface
+-- changed.  A reset is considered an instantaneous change to
+-- the ndm state and back to abm or abme.  This will be the
+-- last time that lapbFlowChangeReason and lapbFlowChanges
+-- changed.
+
+-- ifInOctets: contains the number of octets
+-- received from the peer LAPB including FCS.
+
+-- ifInUcastPkts: contains the number of I-frames delivered
+-- by this interface to a higher layer interface.
+
+-- ifInDiscards: contains the number of received
+-- frames discarded because of internal conditions
+-- (such as lack of buffering).
+
+-- ifInErrors: contains the number of Invalid frames received.
+-- This does not have any relationship with the number REJ,
+-- or RNR frames sent or received.
+
+-- ifInUnknownProtos: contains the number of frames
+-- that were correct but were dropped because they
+-- were inappropriate for the current state.  This
+-- includes an invalid Poll bit, an unknown address,
+-- or other condition such as an RNR when connection
+-- not established.  This also includes the number of
+-- DISC or other frames that were ignored because the
+-- link was not established and this interface was not
+-- configured to perform link setup on that type frame.
+
+-- ifOutOctets: number of octets sent to peer including
+-- FCS octets.
+
+-- ifOutUcastPkts: number of I-frames received from
+-- a higher layer for transmission to peer.
+
+-- ifOutDiscards: number of frames to be sent that were
+-- dropped due to internal conditions such as buffering etc.
+
+-- ifOutErrors: number of transmissions that failed
+-- due to errors or were considered invalid by the receiver.
+-- This does not have any relationship with the number REJ,
+-- or RNR frames sent or received.
+
+-- ifOutQLen: number of frames waiting to be transmitted.
+
+
+-- This MIB does not provide any support for:
+--      Multilink procedure (MLP) in ISO 7776 section 6
+--      LLC Pbit timer
+--      LLC REJ timer
+--      LLC Busy State Timer 7.8.1.4
+
+-- ###########################################################
+
+END

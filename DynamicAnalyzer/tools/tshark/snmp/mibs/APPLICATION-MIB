@@ -1,0 +1,2999 @@
+APPLICATION-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+        Counter64, Counter32, Gauge32,
+        mib-2, Unsigned32, zeroDotZero   FROM SNMPv2-SMI
+
+    DateAndTime, TEXTUAL-CONVENTION,
+        TestAndIncr, TDomain,
+        TimeStamp, TruthValue            FROM SNMPv2-TC
+
+    SnmpAdminString                      FROM SNMP-FRAMEWORK-MIB
+
+    MODULE-COMPLIANCE, OBJECT-GROUP
+                                         FROM SNMPv2-CONF
+
+    LongUtf8String, sysApplElmtRunIndex  FROM SYSAPPL-MIB;
+
+applicationMib MODULE-IDENTITY
+    LAST-UPDATED "9811171815Z"
+    ORGANIZATION "Application MIB Working Group"
+    CONTACT-INFO
+       "http://www.ietf.org/html.charters/applmib-charter.html
+
+        Randy Presuhn
+        BMC Software, Inc.
+        965 Stewart Drive
+        Sunnyvale, CA 94086
+        USA
+
+        Telephone: +1 408 616-3100
+        Facsimile: +1 408 616-3101
+        EMail: randy_presuhn@bmc.com
+       "
+    DESCRIPTION
+       "This MIB defines objects representing generic aspects of
+        applications that are of interest to management but typically
+        require instrumentation within managed application elements.
+       "
+    ::= { mib-2 62 }
+
+
+--
+--      Registration hierarchy for this MIB
+--
+applicationMibObjects OBJECT IDENTIFIER ::=
+                         { applicationMib 1 }
+applicationMibConformance OBJECT IDENTIFIER ::=
+                         { applicationMib 2 }
+
+
+--
+--      Groups defined in this MIB
+--
+applServiceGroup OBJECT IDENTIFIER ::=
+                         { applicationMibObjects 1 }
+
+applChannelGroup OBJECT IDENTIFIER ::=
+                         { applicationMibObjects 2 }
+
+applPastChannelGroup OBJECT IDENTIFIER ::=
+                         { applicationMibObjects 3 }
+
+applElmtRunControlGroup OBJECT IDENTIFIER ::=
+                         { applicationMibObjects 4 }
+
+
+Unsigned64TC ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "A non-negative 64-bit bit integer, without counter
+         semantics."
+    SYNTAX Counter64
+
+ApplTAddress ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+          "Denotes a transport service address.
+
+          For snmpUDPDomain, an ApplTAddress is 6 octets long,
+          the initial 4 octets containing the IP-address in
+          network-byte order and the last 2 containing the UDP
+          port in network-byte order.  Consult 'Transport Mappings
+          for Version 2 of the Simple Network Management Protocol
+          (SNMPv2)' for further information on snmpUDPDomain."
+    SYNTAX       OCTET STRING (SIZE (0..255))
+
+-- ****************************************************************
+--
+--      applServiceGroup -
+--
+--      The service-level tables permit the identification of one
+--      or more instances of named services on a system, and the
+--      association of running application elements to services.
+--
+-- ****************************************************************
+
+
+-- ****************************************************************
+--
+--      The service name to service instance table
+--
+-- ****************************************************************
+
+applSrvNameToSrvInstTable OBJECT-TYPE
+        SYNTAX            SEQUENCE OF ApplSrvNameToSrvInstEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION
+           "The service name to service instance table uses
+            service name as its primary key, and service instance
+            identifier as its secondary key.  It facilitates the
+            identification and lookup of the instances of a given
+            service in a system."
+        ::= { applServiceGroup 1 }
+
+applSrvNameToSrvInstEntry OBJECT-TYPE
+        SYNTAX            ApplSrvNameToSrvInstEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION
+           "An applSrvNameToSrvInstEntry identifies an instance of
+            a given service.  The allocation and reservation
+            of unique values for applSrvIndex is an administrative
+            issue.
+
+            An applSrvNameToSrvInstEntry exists for the lifetime of
+            that instance of that service; the index values may not
+            change during that lifetime.  "
+        INDEX { applSrvName, applSrvIndex }
+        ::= { applSrvNameToSrvInstTable 1 }
+
+ApplSrvNameToSrvInstEntry ::= SEQUENCE
+        {
+                applSrvInstQual SnmpAdminString
+        }
+
+
+applSrvInstQual         OBJECT-TYPE
+        SYNTAX          SnmpAdminString
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+           "The value of applSrcInstQual provides additional
+            information about this particular instance of this
+            service.
+
+            Although not used for indexing purposes, the value of
+            this attribute should be sufficiently unique to be
+            helpful to an administrator in distinguishing among
+            service instances.  "
+        ::= { applSrvNameToSrvInstEntry 1 }
+
+
+-- ****************************************************************
+--
+--      Service instance to Service Name table
+--
+-- ****************************************************************
+
+applSrvInstToSrvNameTable OBJECT-TYPE
+        SYNTAX            SEQUENCE OF ApplSrvInstToSrvNameEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION
+           "The service instance to service name table uses
+            service instance identifier as its primary key, and
+            service name as its secondary key.  Given a service
+            instance identifier, it facilitates the lookup of the
+            name of the service being provided."
+        ::= { applServiceGroup 2 }
+
+applSrvInstToSrvNameEntry OBJECT-TYPE
+        SYNTAX            ApplSrvInstToSrvNameEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION
+           "An applSrvInstToSrvNameEntry maps a service instance
+            identifier back to a service name."
+        INDEX { applSrvIndex, applSrvName }
+        ::= { applSrvInstToSrvNameTable 1 }
+
+ApplSrvInstToSrvNameEntry ::= SEQUENCE
+        {
+                applSrvName     SnmpAdminString
+        }
+
+applSrvName        OBJECT-TYPE
+        SYNTAX     SnmpAdminString
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+           "The human-readable name of a service.  Where
+            appropriate, as in the case where a service can be
+            identified in terms of a single protocol, the strings
+            should be established names such as those assigned by
+            IANA and found in STD 2 [13], or defined by some other
+            authority.  In some cases private conventions apply
+            and the string should in these cases be consistent
+            with these non-standard conventions.   An applicability
+            statement may specify the service name(s) to be used.
+           "
+        ::= { applSrvInstToSrvNameEntry 1 }
+
+-- ****************************************************************
+--
+--      The service instance to running application element table
+--
+-- ****************************************************************
+
+applSrvInstToRunApplElmtTable OBJECT-TYPE
+        SYNTAX            SEQUENCE OF ApplSrvInstToRunApplElmtEntry
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+           "The service instance to running application element
+            table uses the service instance identifier as its primary
+            key, and the running application element index as its
+            secondary key.  This facilitates the identification
+            of the set of running application elements providing a
+            given instance of a service."
+        ::= { applServiceGroup 3 }
+
+applSrvInstToRunApplElmtEntry OBJECT-TYPE
+        SYNTAX                ApplSrvInstToRunApplElmtEntry
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+           "An applSrvInstToRunApplElmtEntry identifies a running
+            application element providing an instance of a service.
+            Note that there may be multiple running application
+            elements involved in the provision of an instance of
+            a service."
+        INDEX { applSrvIndex, sysApplElmtRunIndex }
+        ::= { applSrvInstToRunApplElmtTable 1 }
+
+ApplSrvInstToRunApplElmtEntry ::= SEQUENCE
+        {
+                applSrvIndex       Unsigned32
+        }
+
+applSrvIndex        OBJECT-TYPE
+        SYNTAX      Unsigned32 (1..'ffffffff'h)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "An applSrvIndex is the system-unique identifier of
+             an instance of a service.  The value is unique not only
+             across all instances of a given service, but also across
+             all services in a system.
+
+             Re-use of values for this index should be avoided.
+             No two service instances in a given system shall
+             concurrently have the same value for this index.
+
+             The value zero is excluded from the set of permitted
+             values for this index.  This allows other tables to
+             potentially represent things which cannot be associated
+             with a specific service instance.
+            "
+        ::= { applSrvInstToRunApplElmtEntry 1 }
+
+-- ****************************************************************
+--
+--      The running application element to service instance table
+--
+-- ****************************************************************
+
+applRunApplElmtToSrvInstTable OBJECT-TYPE
+        SYNTAX           SEQUENCE OF ApplRunApplElmtToSrvInstEntry
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+           "The running application element to service instance
+            table uses the running application element index as
+            its primary key and the service instance identifier as
+            its secondary key.  It identifies the set of services
+            provided by a given running application element."
+        ::= { applServiceGroup 4 }
+
+applRunApplElmtToSrvInstEntry OBJECT-TYPE
+        SYNTAX                ApplRunApplElmtToSrvInstEntry
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+           "An applRunApplElmtToSrvInstEntry serves to identify an
+            instance of a service being provided by a given running
+            application element.  Note that a particular running
+            application element may provide multiple services."
+        INDEX { sysApplElmtRunIndex, applSrvInstance }
+        ::= { applRunApplElmtToSrvInstTable 1 }
+
+ApplRunApplElmtToSrvInstEntry ::= SEQUENCE
+        {
+                applSrvInstance         Unsigned32
+        }
+
+applSrvInstance    OBJECT-TYPE
+        SYNTAX     Unsigned32 (1..'ffffffff'h)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+           "An applSrvInstance is the system-unique identifier of an
+            instance of a service.  The value is unique not only
+            across all instances of a given service, but also across
+            all services.
+
+            Re-use of values for this index should be avoided.
+            No two service instances in a given system shall
+            concurrently have the same value for this index.
+            The value zero is excluded from the set of permitted
+            values for this index.  This allows other tables to
+            potentially represent things which cannot be associated
+            with a specific service instance.
+
+            This attribute is semantically identical to
+            applSrvIndex."
+        ::= { applRunApplElmtToSrvInstEntry  1 }
+
+
+-- ****************************************************************
+--
+--      applChannelGroup - group with tables for I/O
+--
+--      In this group, the common abstraction is the Channel.
+--      Channels are realized as files or connections.
+--      The information flowing on a channel can always be
+--      measured in terms of a byte stream.  Furthermore, for many
+--      channels, this information may also be measured in terms
+--      of transactions.
+--
+--      For all of these tables, the first two indexes determines
+--      whether what is being measured is for a single running
+--      application element or for an instance of a service.
+--
+--      The second index identifies the running application element
+--      or service instance.
+--
+--      The third index is the channel id, which uniquely identifies
+--      a channel within the context of a running application element
+--      or service instance.
+--
+--      Any remaining indexes are table-specific.
+--
+-- ****************************************************************
+
+
+-- ****************************************************************
+--
+--      applOpenChannelTable - Table of Open Channels
+--
+-- ****************************************************************
+
+applOpenChannelTable OBJECT-TYPE
+        SYNTAX       SEQUENCE OF ApplOpenChannelEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+           "The applOpenChannelTable reports information on open
+            channels for running application elements
+            and for service instances.  This table is
+            indexed by applElmtOrSvc, applElmtOrSvcId, and
+            applOpenChannelIndex. This effectively groups all
+            entries for a given running application element
+            or service instance together.  ApplChannelIndex uniquely
+            identifies an open channel (and, consequently, a file
+            or connection) within the context of a particular
+            running application element or service instance.
+
+            Some of the information in this table is available
+            through both sixty-four and thirty-two bit counters.
+            The sixty-four bit counters are not accessible in
+            protocols that do not support this data type."
+        ::= { applChannelGroup 1 }
+
+applOpenChannelEntry OBJECT-TYPE
+        SYNTAX       ApplOpenChannelEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+           "An applOpenChannelEntry indicates that a channel has been
+            opened by this running application element or service
+            instance and is still open.  Note that if a file has been
+            opened multiple times, even by the same process, it will
+            have multiple channel entries."
+        INDEX           { applElmtOrSvc, applElmtOrSvcId,
+                          applOpenChannelIndex }
+        ::= { applOpenChannelTable 1 }
+
+ApplOpenChannelEntry  ::= SEQUENCE
+        {
+                applElmtOrSvc                      INTEGER,
+                applElmtOrSvcId                    Unsigned32,
+                applOpenChannelIndex               Unsigned32,
+                applOpenChannelOpenTime            TimeStamp,
+                applOpenChannelReadRequests        Counter64,
+                applOpenChannelReadRequestsLow     Counter32,
+                applOpenChannelReadFailures        Counter32,
+                applOpenChannelBytesRead           Counter64,
+                applOpenChannelBytesReadLow        Counter32,
+                applOpenChannelLastReadTime        DateAndTime,
+                applOpenChannelWriteRequests       Counter64,
+                applOpenChannelWriteRequestsLow    Counter32,
+                applOpenChannelWriteFailures       Counter32,
+                applOpenChannelBytesWritten        Counter64,
+                applOpenChannelBytesWrittenLow     Counter32,
+                applOpenChannelLastWriteTime       DateAndTime
+        }
+
+applElmtOrSvc      OBJECT-TYPE
+        SYNTAX     INTEGER { service(1),
+                             element(2) }
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+           "The applElmtOrSvc attribute serves as an index for tables
+            that can hold information both for individual running
+            application elements as well as for service instances.
+
+            If the value is service(1), the row contains information
+            gathered at the level of a service.
+
+            If the value is element(2), the row contains information
+            for an individual running application element."
+        ::= { applOpenChannelEntry 1 }
+
+applElmtOrSvcId    OBJECT-TYPE
+        SYNTAX     Unsigned32 (1..'ffffffff'h)
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+           "The applElmtOrSvcId attribute is used as an index in
+            conjunction with the applElmtOrSvc attribute.
+
+            When the value of applElmtOrSvc is service(1), this
+            attribute's value corresponds to that of applSrvIndex,
+            when the value of applElmtOrSvc is element(2), this
+            attribute's value corresponds to sysApplElmtRunIndex."
+        ::= { applOpenChannelEntry 2 }
+
+applOpenChannelIndex OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+           "This attribute serves to uniquely identify this open
+            connection in the context of the running application
+            element or service instance.  Where suitable, the
+            application's native descriptor number should be used."
+        ::= { applOpenChannelEntry 3 }
+
+applOpenChannelOpenTime OBJECT-TYPE
+        SYNTAX          TimeStamp
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+           "This attribute records the value of sysUpTime.0
+            when this channel was opened and this entry was added to
+            this table.  This attribute serves as a discontinuity
+            indicator for the counter attributes in this entry
+            and for any corresponding entries in the
+            applOpenConnectionTable, applOpenFileTable, and the
+            applTransactionStreamTable."
+        ::= { applOpenChannelEntry 4 }
+
+applOpenChannelReadRequests OBJECT-TYPE
+        SYNTAX              Counter64
+        UNITS               "read requests"
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "This attribute reports the number of read requests
+            for this channel.  All read requests for this channel
+            by this entity, regardless of completion status, are
+            included in this count.
+
+            Read requests are counted in terms of system calls,
+            rather than API calls.
+
+            Discontinuities in this counter can be detected by
+            monitoring the applOpenChannelOpenTime value for this
+            entry."
+        ::= { applOpenChannelEntry 5 }
+
+applOpenChannelReadRequestsLow OBJECT-TYPE
+        SYNTAX                 Counter32
+        UNITS                  "read requests"
+        MAX-ACCESS             read-only
+        STATUS                 current
+        DESCRIPTION
+           "This attribute reports the low thirty-two bits of
+            applOpenChannelReadRequests.
+
+            Discontinuities in this counter can be detected by
+            monitoring the applOpenChannelOpenTime value for this
+            entry."
+        ::= { applOpenChannelEntry 6 }
+
+applOpenChannelReadFailures OBJECT-TYPE
+        SYNTAX              Counter32
+        UNITS               "failed read requests"
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "This attribute reports the number of failed read
+            requests.
+
+            Discontinuities in this counter can be detected by
+            monitoring the applOpenChannelOpenTime value for this
+            entry."
+        ::= { applOpenChannelEntry 7 }
+
+applOpenChannelBytesRead OBJECT-TYPE
+        SYNTAX           Counter64
+        UNITS            "bytes"
+        MAX-ACCESS       read-only
+        STATUS           current
+        DESCRIPTION
+           "This attribute reports the number of bytes read from
+            this channel.  Only bytes successfully read are included
+            in this count.
+
+            Discontinuities in this counter can be detected by
+            monitoring the applOpenChannelOpenTime value for this
+            entry."
+        ::= { applOpenChannelEntry 8 }
+
+applOpenChannelBytesReadLow OBJECT-TYPE
+        SYNTAX              Counter32
+        UNITS               "bytes"
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "This attribute corresponds to the low thirty-two bits
+            of applOpenChannelBytesRead.
+
+            Discontinuities in this counter can be detected by
+            monitoring the applOpenChannelOpenTime value for this
+            entry."
+        ::= { applOpenChannelEntry 9 }
+
+applOpenChannelLastReadTime OBJECT-TYPE
+        SYNTAX              DateAndTime
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "This attribute reports the time of the most recent read
+            request made by this entity, regardless of completion
+            status, for this open channel.
+
+            If no read requests have been made the value of this
+            attribute shall be '0000000000000000'H "
+        DEFVAL { '0000000000000000'H }
+        ::= { applOpenChannelEntry 10 }
+
+applOpenChannelWriteRequests OBJECT-TYPE
+        SYNTAX               Counter64
+        UNITS                "write requests"
+        MAX-ACCESS           read-only
+        STATUS               current
+        DESCRIPTION
+           "This attribute reports the number of write requests for
+            this channel made by this entity.  All write requests
+            for this channel, regardless of completion status, are
+            included in this count.
+
+            Write requests are counted in terms of system calls,
+            rather than API calls.
+
+            Discontinuities in this counter can be detected by
+            monitoring the applOpenChannelOpenTime value for this
+            entry."
+        ::= { applOpenChannelEntry 11 }
+
+applOpenChannelWriteRequestsLow OBJECT-TYPE
+        SYNTAX                  Counter32
+        UNITS                   "write requests"
+        MAX-ACCESS              read-only
+        STATUS                  current
+        DESCRIPTION
+           "This attribute corresponds to the low thirty-two bits
+            of applOpenChannelWriteRequests.
+
+            Discontinuities in this counter can be detected
+            by monitoring the applOpenChannelOpenTime value for
+            this entry."
+        ::= { applOpenChannelEntry 12 }
+
+applOpenChannelWriteFailures OBJECT-TYPE
+        SYNTAX               Counter32
+        UNITS                "failed write requests"
+        MAX-ACCESS           read-only
+        STATUS               current
+        DESCRIPTION
+           "This attribute reports the number of failed write
+            requests.
+
+            Discontinuities in this counter can be detected
+            by monitoring the applOpenChannelOpenTime value for
+            this entry."
+        ::= { applOpenChannelEntry 13 }
+
+applOpenChannelBytesWritten OBJECT-TYPE
+        SYNTAX              Counter64
+        UNITS               "bytes"
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "This attribute reports the number of bytes written to
+            this channel.  Only bytes successfully written (without
+            errors reported by the system to the API in use by the
+            application) are included in this count.
+
+            Discontinuities in this counter can be detected by
+            monitoring the applOpenChannelOpenTime value for this
+            entry."
+        ::= { applOpenChannelEntry 14 }
+
+applOpenChannelBytesWrittenLow OBJECT-TYPE
+        SYNTAX                 Counter32
+        UNITS                  "bytes"
+        MAX-ACCESS             read-only
+        STATUS                 current
+        DESCRIPTION
+           "This attribute corresponds to the low thirty-two bits
+            of applOpenChannelBytesWritten.
+
+            Discontinuities in this counter can be detected by
+            monitoring the applOpenChannelOpenTime value for this
+            entry."
+        ::= { applOpenChannelEntry 15 }
+
+applOpenChannelLastWriteTime OBJECT-TYPE
+        SYNTAX               DateAndTime
+        MAX-ACCESS           read-only
+        STATUS               current
+        DESCRIPTION
+           "This attribute reports the time of the most recent write
+            request made by this running application element or
+            service instance, regardless of completion status, for
+            this open channel.
+            If no write requests have been made, the value
+            of this attribute shall be '0000000000000000'H "
+        DEFVAL { '0000000000000000'H }
+        ::= { applOpenChannelEntry 16 }
+
+-- ****************************************************************
+--
+--      applOpenFileTable - Table of Open Files
+--
+-- ****************************************************************
+
+applOpenFileTable  OBJECT-TYPE
+        SYNTAX     SEQUENCE OF ApplOpenFileEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+           "The applOpenFileTable reports information on open files
+            for service instances or application elements.  This
+            table is indexed by applElmtOrSvc and applElmtOrSvcId,
+            effectively grouping all entries for a given running
+            service instance or application element together, and
+            by applOpenChannelIndex, uniquely identifying an open
+            channel (and, consequently, a file) within the context
+            of a particular service instance or application element.
+
+            Elements in this table correspond to elements in the
+            applOpenChannelTable that represent files.  For rows in
+            the applOpenChannelTable that do not represent files,
+            corresponding rows in this table will not exist."
+        ::= { applChannelGroup 2 }
+
+applOpenFileEntry   OBJECT-TYPE
+        SYNTAX      ApplOpenFileEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "An applOpenFileEntry indicates that a file has been
+            opened by this running application element and is
+            still open.  Note that if a file has been opened
+            multiple times, even by the same process, it will have
+            multiple entries."
+        INDEX       { applElmtOrSvc, applElmtOrSvcId,
+                      applOpenChannelIndex }
+        ::= { applOpenFileTable 1 }
+
+ApplOpenFileEntry  ::= SEQUENCE
+        {
+                applOpenFileName                LongUtf8String,
+                applOpenFileSizeHigh            Unsigned32,
+                applOpenFileSizeLow             Unsigned32,
+                applOpenFileMode                INTEGER
+         }
+
+applOpenFileName   OBJECT-TYPE
+        SYNTAX     LongUtf8String
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+          "This attribute reports the name of this open file.
+           Wherever practical, a fully qualified path name should
+           be reported.
+
+           The values 'stdin', 'stdout', and 'stderr' are reserved
+           in accordance with common usage when the fully qualified
+           path name cannot be determined."
+        ::= { applOpenFileEntry 1 }
+
+applOpenFileSizeHigh OBJECT-TYPE
+        SYNTAX       Unsigned32
+        UNITS        "2^32 byte blocks"
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+          "This file's current size in 2^32 byte blocks.
+
+           For example, for a file with a total size of 4,294,967,296
+           bytes, this attribute would have a value of 1; for a file
+           with a total size of 4,294,967,295 bytes this attribute's
+           value would be 0."
+        ::= { applOpenFileEntry 2 }
+
+applOpenFileSizeLow OBJECT-TYPE
+        SYNTAX      Unsigned32
+        UNITS       "bytes"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "This file's current size modulo 2^32 bytes.
+
+            For example, for a file with a total size of
+            4,294,967,296 bytes this attribute would have a value
+            of 0; for a file with a total size of 4,294,967,295
+            bytes this attribute's value would be 4,294,967,295."
+        ::= { applOpenFileEntry 3 }
+
+applOpenFileMode   OBJECT-TYPE
+        SYNTAX     INTEGER { read(1),
+                             write(2),
+                             readWrite(3) }
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+           "This attribute reports the current mode of this file from
+            the perspective of this running application element.
+
+            These values have the following meanings:
+
+                read(1) - file opened for reading only
+                write(2) - file opened for writing only
+                readWrite(3) - file opened for read and write.
+
+            These values correspond to the POSIX/ANSI C library
+            function fopen() 'type' parameter, using the following
+            mappings:
+
+                r -> read(1)
+                w -> write(2)
+                a -> write(2)
+                + -> readWrite(3)
+          "
+        ::= { applOpenFileEntry 4 }
+
+
+-- ****************************************************************
+--
+--      applOpenConnectionTable - Open Connection Table
+--
+-- ****************************************************************
+
+applOpenConnectionTable OBJECT-TYPE
+        SYNTAX          SEQUENCE OF ApplOpenConnectionEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+           "The applOpenConnectionTable provides information about
+            open and listening connections from the perspective
+            of a running application element or service instance.
+            Entries in this table are indexed by applElmtOrSvc,
+            applElmtOrSvcID, and by applOpenChannelIndex, which
+            serves to uniquely identify each connection in the
+            context of a service instance or running application
+            element.
+
+            For each row in this table, a corresponding row will
+            exist in the applOpenChannel table.  For rows in the
+            applOpenChannelTable which do not represent open or
+            listening connections, no corresponding rows will exist
+            in this table."
+        ::= { applChannelGroup 3 }
+
+applOpenConnectionEntry OBJECT-TYPE
+        SYNTAX          ApplOpenConnectionEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+           "An applOpenConnectionEntry indicates that a running
+            application element or service instance has an open
+            connection.  The entry has information describing that
+            connection.
+
+            In the case of a TCP transport, the element
+            applOpenConnectionNearEndAddr and that row's
+            applOpenConnectionFarEndAddr would correspond
+            to a tcpConnEntry.  For a UDP transport, a
+            similar relationship exists with respect to
+            a udpEntry."
+        INDEX           { applElmtOrSvc, applElmtOrSvcId,
+                          applOpenChannelIndex }
+        ::= { applOpenConnectionTable 1 }
+
+ApplOpenConnectionEntry  ::= SEQUENCE
+        {
+                applOpenConnectionTransport     TDomain,
+                applOpenConnectionNearEndAddr   ApplTAddress,
+                applOpenConnectionNearEndpoint  SnmpAdminString,
+                applOpenConnectionFarEndAddr    ApplTAddress,
+                applOpenConnectionFarEndpoint   SnmpAdminString,
+                applOpenConnectionApplication   SnmpAdminString
+        }
+
+applOpenConnectionTransport OBJECT-TYPE
+        SYNTAX              TDomain
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "The applOpenConnectionTransport attribute identifies the
+            transport protocol in use for this connection.  If it is
+            not practical to determine the underlying transport, this
+            attribute's value shall have a value of {0 0}."
+        DEFVAL { zeroDotZero }
+        ::= { applOpenConnectionEntry 1 }
+
+applOpenConnectionNearEndAddr OBJECT-TYPE
+        SYNTAX                ApplTAddress
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+           "The applOpenConnectionNearEndAddr attribute reports the
+            transport address and port information for the near end
+            of this connection.
+
+            If the value is not known, the value has a  length
+            of zero."
+        DEFVAL { "" }
+        ::= { applOpenConnectionEntry 2 }
+
+applOpenConnectionNearEndpoint OBJECT-TYPE
+        SYNTAX                 SnmpAdminString
+        MAX-ACCESS             read-only
+        STATUS                 current
+        DESCRIPTION
+           "The applOpenConnectionNearEndpoint attribute reports the
+            fully-qualified domain name and port information for the
+            near end of this connection.
+
+            The format of this attribute for TCP and UDP-based
+            protocols is the fully-qualified domain name immediately
+            followed by a colon which is immediately followed by
+            the decimal representation of the port number.
+
+            If the value is not known, the value has a  length
+            of zero."
+        DEFVAL { "" }
+        ::= { applOpenConnectionEntry 3 }
+
+applOpenConnectionFarEndAddr OBJECT-TYPE
+        SYNTAX               ApplTAddress
+        MAX-ACCESS           read-only
+        STATUS               current
+        DESCRIPTION
+           "The applOpenConnectionFarEndAddr attribute reports the
+            transport address and port information for the far end
+            of this connection.
+
+            If not known, as in the case of a connectionless
+            transport, the value of this attribute shall be a
+            zero-length string."
+        DEFVAL { "" }
+        ::= { applOpenConnectionEntry 4 }
+
+applOpenConnectionFarEndpoint OBJECT-TYPE
+        SYNTAX               SnmpAdminString
+        MAX-ACCESS           read-only
+        STATUS               current
+        DESCRIPTION
+           "The applOpenConnectionFarEndpoint attribute reports
+            the fully-qualified domain name and port information
+            for the far end of this connection.
+
+            The format of this attribute for TCP and UDP-based
+            protocols is the fully-qualified domain name immediately
+            followed by a colon which is immediately followed by
+            the decimal representation of the port number.
+
+            If not known, as in the case of a connectionless
+            transport, the value of this attribute shall be a
+            zero-length string."
+        DEFVAL { "" }
+        ::= { applOpenConnectionEntry 5 }
+
+applOpenConnectionApplication OBJECT-TYPE
+        SYNTAX                SnmpAdminString
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+           "The applOpenConnectionApplication attribute identifies
+            the application layer protocol in use.  If not known,
+            the value of this attribute shall be a zero-length
+            string.
+
+            When possible, protocol names should be those used in
+            the 'ASSIGNED NUMBERS' [13].  For example, an SMTP mail
+            server would use 'SMTP'."
+        DEFVAL { "" }
+        ::= { applOpenConnectionEntry 6 }
+
+-- ****************************************************************
+--
+--      applTransactionStreamTable - common
+--      information for transaction stream monitoring
+--
+-- ****************************************************************
+
+applTransactionStreamTable OBJECT-TYPE
+        SYNTAX             SEQUENCE OF ApplTransactionStreamEntry
+        MAX-ACCESS         not-accessible
+        STATUS             current
+        DESCRIPTION
+           "The applTransactionStreamTable contains common
+            information for transaction statistic accumulation."
+        ::= { applChannelGroup 4 }
+
+applTransactionStreamEntry OBJECT-TYPE
+        SYNTAX             ApplTransactionStreamEntry
+        MAX-ACCESS         not-accessible
+        STATUS             current
+        DESCRIPTION
+           "An applTransactionStreamEntry contains information for
+            a single transaction stream.  A transaction stream
+            can be a network connection, file, or other source
+            of transactions."
+        INDEX           { applElmtOrSvc, applElmtOrSvcId,
+                          applOpenChannelIndex }
+        ::= { applTransactionStreamTable 1 }
+
+ApplTransactionStreamEntry ::= SEQUENCE {
+        applTransactStreamDescr       SnmpAdminString,
+        applTransactStreamUnitOfWork  SnmpAdminString,
+        applTransactStreamInvokes     Counter64,
+        applTransactStreamInvokesLow  Counter32,
+        applTransactStreamInvCumTimes Counter32,
+        applTransactStreamInvRspTimes Counter32,
+        applTransactStreamPerforms    Counter64,
+        applTransactStreamPerformsLow Counter32,
+        applTransactStreamPrfCumTimes Counter32,
+        applTransactStreamPrfRspTimes Counter32 }
+
+applTransactStreamDescr OBJECT-TYPE
+        SYNTAX          SnmpAdminString
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+           "The applTransactStreamDescr attribute provides a
+            human-readable description of this transaction stream.
+            If no descriptive information is available, this
+            attribute's value shall be a zero-length string."
+        DEFVAL { "" }
+        ::= { applTransactionStreamEntry 1 }
+
+applTransactStreamUnitOfWork OBJECT-TYPE
+        SYNTAX               SnmpAdminString
+        MAX-ACCESS           read-only
+        STATUS               current
+        DESCRIPTION
+           "The applTransactStreamUnitOfWork attribute provides a
+            human-readable definition of what the unit of work is
+            for this transaction stream.
+
+            If no descriptive information is available, this
+            attribute's value shall be a zero-length string."
+        DEFVAL { "" }
+        ::= { applTransactionStreamEntry 2 }
+
+applTransactStreamInvokes OBJECT-TYPE
+        SYNTAX            Counter64
+        UNITS             "transactions"
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION
+           "Cumulative count of requests / invocations issued.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactionStreamEntry 3 }
+
+applTransactStreamInvokesLow OBJECT-TYPE
+        SYNTAX               Counter32
+        UNITS                "transactions"
+        MAX-ACCESS           read-only
+        STATUS               current
+        DESCRIPTION
+           "This counter corresponds to the low thirty-two
+            bits of applTransactStreamInvokes.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactionStreamEntry 4 }
+
+applTransactStreamInvCumTimes OBJECT-TYPE
+        SYNTAX                Counter32
+        UNITS                 "milliseconds"
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+           "The applTransactStreamInvCumTimes attribute reports the
+            cumulative sum of the lengths of the intervals measured
+            between the transmission of requests and the receipt of
+            (the first of) the corresponding response(s).
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactionStreamEntry 5 }
+
+applTransactStreamInvRspTimes OBJECT-TYPE
+        SYNTAX                Counter32
+        UNITS                 "milliseconds"
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+           "The applTransactStreamInvRspTimes attribute reports the
+            cumulative sum of the lengths of the intervals measured
+            between the receipt of the first and last of multiple
+            responses to a request.
+
+            For transaction streams which do not permit multiple
+            responses to a single request, this attribute will be
+            constant.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactionStreamEntry 6 }
+
+applTransactStreamPerforms OBJECT-TYPE
+        SYNTAX             Counter64
+        UNITS              "transactions"
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+           "Cumulative count of transactions performed.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactionStreamEntry 7 }
+
+applTransactStreamPerformsLow OBJECT-TYPE
+        SYNTAX                Counter32
+        UNITS                 "transactions"
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+           "This counter reports the low thirty-two bits of
+            applTransactStreamPerforms.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactionStreamEntry 8 }
+
+applTransactStreamPrfCumTimes OBJECT-TYPE
+        SYNTAX                Counter32
+        UNITS                 "milliseconds"
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+           "The applTransactStreamPrfCumTimes attribute reports the
+            cumulative sum of the interval lengths measured between
+            receipt of requests and the transmission of the
+            corresponding responses.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactionStreamEntry 9 }
+
+applTransactStreamPrfRspTimes OBJECT-TYPE
+        SYNTAX                Counter32
+        UNITS                 "milliseconds"
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+           "For each transaction performed, the elapsed time between
+            when the first response is enqueued and when the last
+            response is enqueued is added to this cumulative sum.
+
+            For single-response protocols, the value of
+            applTransactStreamPrfRspTimes will be constant.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactionStreamEntry 10 }
+
+-- ****************************************************************
+--
+--      applTransactFlowTable
+--
+-- ****************************************************************
+
+applTransactFlowTable OBJECT-TYPE
+        SYNTAX        SEQUENCE OF ApplTransactFlowEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+           "The applTransactFlowTable contains entries, organized by
+            application instance or running application element,
+            direction of flow, and type (request/response) for each
+            open transaction stream.
+
+            The simple model of a transaction used here looks like
+            this:
+
+                invoker  |   Request     | performer
+                         | - - - - - - > |
+                         |               |
+                         |   Response    |
+                         | < - - - - - - |
+                         |               |
+
+            Since in some protocols it is possible for an entity
+            to take on both the invoker and performer roles,
+            information here is accumulated for transmitted and
+            received requests, as well as for transmitted and
+            received responses.  Counts are maintained for both
+            transactions and bytes transferred."
+        ::= { applChannelGroup 5 }
+
+applTransactFlowEntry OBJECT-TYPE
+        SYNTAX        ApplTransactFlowEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+           "An applTransactFlowEntry reports transaction throughput
+            information for requests or response in a particular
+            direction (transmit / receive) for a transaction stream.
+
+            Entries in this table correspond to those in the
+            applTransactionStreamTable with identical values for the
+            applElmtOrSvc, applElmtOrSvcId, and applOpenChannelIndex.
+
+            For all counter objects in one of these entries,
+            the corresponding (same value for applElmtOrSvc,
+            applElmtOrSvcId, and applOpenChannelIndex)
+            applOpenChannelOpenTime object serves as a discontinuity
+            indicator.  "
+        INDEX           { applElmtOrSvc,
+                          applElmtOrSvcId,
+                          applOpenChannelIndex,
+                          applTransactFlowDirection,
+                          applTransactFlowReqRsp }
+        ::= { applTransactFlowTable 1 }
+
+ApplTransactFlowEntry ::= SEQUENCE {
+                applTransactFlowDirection INTEGER,
+                applTransactFlowReqRsp    INTEGER,
+                applTransactFlowTrans     Counter64,
+                applTransactFlowTransLow  Counter32,
+                applTransactFlowBytes     Counter64,
+                applTransactFlowBytesLow  Counter32,
+                applTransactFlowTime      DateAndTime }
+
+applTransactFlowDirection OBJECT-TYPE
+        SYNTAX            INTEGER { transmit(1),
+                                    receive(2) }
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION
+            "The applTransactFlowDirection index serves to identify
+             an entry as containing information pertaining to the
+             transmit (1) or receive (2) flow of a transaction
+             stream."
+        ::= { applTransactFlowEntry 1 }
+
+applTransactFlowReqRsp OBJECT-TYPE
+        SYNTAX         INTEGER { request(1),
+                                 response(2) }
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+           "The value of the applTransactFlowReqRsp index indicates
+            whether this entry contains information on requests
+            (1), or responses (2)."
+        ::= { applTransactFlowEntry 2 }
+
+applTransactFlowTrans OBJECT-TYPE
+        SYNTAX        Counter64
+        UNITS         "transactions"
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The applTransactFlowTrans attribute reports the number
+             of request/response transactions (as indicated by
+             the applTransactFlowReqRsp index) received/generated
+             (as indicated by the applTransactFlowDirection index)
+             that this service instance or running application
+             element has processed for this transaction stream.
+
+             Discontinuities in this counter can be detected
+             by monitoring the corresponding instance of
+             applOpenChannelOpenTime."
+        ::= { applTransactFlowEntry 3 }
+
+applTransactFlowTransLow OBJECT-TYPE
+        SYNTAX           Counter32
+        UNITS            "transactions"
+        MAX-ACCESS       read-only
+        STATUS           current
+        DESCRIPTION
+            "This attribute corresponds to the low thirty-two
+             bits of applTransactFlowTrans.
+
+             Discontinuities in this counter can be detected
+             by monitoring the corresponding instance of
+             applOpenChannelOpenTime."
+        ::= { applTransactFlowEntry 4 }
+
+applTransactFlowBytes OBJECT-TYPE
+        SYNTAX        Counter64
+        UNITS         "bytes"
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+           "The applTransactFlowBytes attribute reports the number
+            of request/response (as indicated by the
+            applTransactFlowReqRsp index) bytes received/generated
+            (as indicated by the applTransactFlowDirection index)
+            handled by this application element or service instance
+            on this transaction stream.
+
+            All application layer bytes are included in this count,
+            including any application layer wrappers, headers, or
+            other overhead.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactFlowEntry 5 }
+
+applTransactFlowBytesLow OBJECT-TYPE
+        SYNTAX           Counter32
+        UNITS            "bytes"
+        MAX-ACCESS       read-only
+        STATUS           current
+        DESCRIPTION
+           "This attribute corresponds to the low thirty-two
+            bits of applTransactFlowBytes.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactFlowEntry 6 }
+
+applTransactFlowTime OBJECT-TYPE
+        SYNTAX       DateAndTime
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+           "The applTransactFlowTime attribute records the time of
+            the processing (receipt or transmission as indicated
+            by the applTransactFlowDirection index) by this
+            running application element or service instance of
+            the most recent request/response (as indicated by
+            the applTransactFlowReqRsp index) on this transaction
+            stream.
+
+            If no requests/responses been received/transmitted by
+            this entity over this transaction stream, the value
+            of this attribute shall be '0000000000000000'H "
+        DEFVAL { '0000000000000000'H }
+        ::= { applTransactFlowEntry 7 }
+
+-- ****************************************************************
+--
+--      applTransactKindTable - transaction statistics broken down
+--      according to the kinds of transactions in each direction
+--      for a transaction stream.
+--
+-- ****************************************************************
+
+applTransactKindTable   OBJECT-TYPE
+        SYNTAX SEQUENCE OF ApplTransactKindEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+           "The applTransactKindTable provides transaction statistics
+            broken down by kinds of transaction.  The definition of
+            the kinds of transactions is specific to the application
+            protocol in use, and may be documented in the form of an
+            applicability statement.  "
+        ::= { applChannelGroup 6 }
+
+applTransactKindEntry OBJECT-TYPE
+        SYNTAX        ApplTransactKindEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+           "An applTransactKindEntry reports information for a
+            specific service instance or running application
+            element's use of a specific transaction stream in
+            a particular direction in requests or responses
+            (as indicated by the applTransactFlowReqRsp index)
+            broken down by transaction kind, as indicated by the
+            applTransactKind index.
+
+            Discontinuities in any of the counters in an entry can
+            be detected by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+
+        INDEX           { applElmtOrSvc,
+                          applElmtOrSvcId,
+                          applOpenChannelIndex,
+                          applTransactFlowDirection,
+                          applTransactFlowReqRsp,
+                          applTransactKind }
+        ::= { applTransactKindTable 1 }
+
+ApplTransactKindEntry ::= SEQUENCE
+        {
+                applTransactKind                SnmpAdminString,
+                applTransactKindTrans           Counter64,
+                applTransactKindTransLow        Counter32,
+                applTransactKindBytes           Counter64,
+                applTransactKindBytesLow        Counter32,
+                applTransactKindTime            DateAndTime
+        }
+
+applTransactKind   OBJECT-TYPE
+        SYNTAX     SnmpAdminString (SIZE (1 .. 32))
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+           "The applTransactKind index is the human-readable
+            identifier for a particular transaction kind within
+            the context of an application protocol.  The values
+            to be used for a particular protocol may be identified
+            in an applicability statement."
+        ::= { applTransactKindEntry 1 }
+
+applTransactKindTrans OBJECT-TYPE
+        SYNTAX        Counter64
+        UNITS         "transactions"
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+           "The applTransactKindTrans attribute reports the number
+            of request/response (as indicated by the
+            applTransactFlowReqRsp index) transactions
+            received/generated (as indicated by the
+            applTransactFlowDirection index) handled by this
+            application instance or application element on this
+            transaction stream for this transaction kind.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactKindEntry 2 }
+
+applTransactKindTransLow OBJECT-TYPE
+        SYNTAX           Counter32
+        UNITS            "transactions"
+        MAX-ACCESS       read-only
+        STATUS           current
+        DESCRIPTION
+           "The applTransactKindTransLow attribute reports
+            the low thirty-two bits of applTransactKindTrans.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactKindEntry 3 }
+
+applTransactKindBytes OBJECT-TYPE
+        SYNTAX        Counter64
+        UNITS         "bytes"
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+           "The applTransactKindBytes attribute reports the number
+            of request/response (as indicated by the
+            applTransactFlowReqRsp index) bytes received/generated
+            (as indicated by the applTransactFlowDirection index)
+            handled by this application element on this transaction
+            stream for this transaction kind.
+
+            All application layer bytes are included in this count,
+            including any application layer wrappers, headers, or
+            other overhead.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactKindEntry 4 }
+
+applTransactKindBytesLow OBJECT-TYPE
+        SYNTAX           Counter32
+        UNITS            "bytes"
+        MAX-ACCESS       read-only
+        STATUS           current
+        DESCRIPTION
+           "The applTransactKindBytesLow attribute corresponds
+            to the low thirty-two bits of applTransactKindBytes.
+
+            Discontinuities in this counter can be detected
+            by monitoring the corresponding instance of
+            applOpenChannelOpenTime."
+        ::= { applTransactKindEntry 5 }
+
+applTransactKindTime OBJECT-TYPE
+        SYNTAX       DateAndTime
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+           "The applTransactKindTime attribute records the time of
+            the processing (receipt or transmission as indicated
+            by the applTransactFlowDirection index) by this
+            running application element or service instance of
+            the most recent request/response (as indicated by
+            the applTransactFlowReqRsp index) of this kind of
+            transaction on this transaction stream.
+
+            If no requests/responses of this kind been
+            received/transmitted by this running application element
+            or service instance over this transaction stream, the
+            value of this attribute shall be '0000000000000000'H "
+        DEFVAL { '0000000000000000'H }
+        ::= { applTransactKindEntry 6 }
+
+-- ****************************************************************
+--
+--      applPastChannelGroup - logged information on former channels.
+--      These tables control the collection of channel history
+--      information and represent the accumulated historical data.
+--
+-- ****************************************************************
+
+applPastChannelControlTable OBJECT-TYPE
+        SYNTAX           SEQUENCE OF ApplPastChannelControlEntry
+        MAX-ACCESS       not-accessible
+        STATUS           current
+        DESCRIPTION
+           "The applPastChannelControlTable controls the
+            accumulation of history information about channels
+            from the perspective of service instances and running
+            application elements.  Entries in this table are indexed
+            by applElmtOrSvc and applElmtOrSvcId, giving control
+            of channel history accumulation at the level of each
+            service instance and running application element."
+        ::= { applPastChannelGroup 1 }
+
+applPastChannelControlEntry OBJECT-TYPE
+        SYNTAX           ApplPastChannelControlEntry
+        MAX-ACCESS       not-accessible
+        STATUS           current
+        DESCRIPTION
+           "An applPastChannelControlEntry provides the ability
+            to control the retention of channel history information
+            by service instances and running application elements."
+        INDEX           { applElmtOrSvc, applElmtOrSvcId }
+        ::= { applPastChannelControlTable 1 }
+
+ApplPastChannelControlEntry  ::= SEQUENCE
+        {
+                applPastChannelControlCollect   INTEGER,
+                applPastChannelControlMaxRows   Unsigned32,
+                applPastChannelControlTimeLimit Unsigned32,
+                applPastChannelControlRemItems  Counter32
+        }
+
+applPastChannelControlCollect OBJECT-TYPE
+        SYNTAX             INTEGER { enabled (1),
+                                     frozen (2),
+                                     disabled (3) }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+           "When the value of applPastChannelControlCollect is
+            'enabled', each time the corresponding running
+            application element or service instance closes
+            an open channel a new entry will be added to the
+            applPastChannelTable.
+
+            When the value of applPastChannelControlCollect
+            is 'frozen', no new entries are added to the
+            applPastChannelTable for this running application
+            element or service instance, and old entries are not
+            aged out.
+
+            When the value of applPastChannelControlCollect
+            is 'disabled', all entries are removed from
+            applPastChannelTable for this running application or
+            service instance, and no new entries are added."
+        DEFVAL { enabled }
+        ::= { applPastChannelControlEntry 1 }
+
+applPastChannelControlMaxRows OBJECT-TYPE
+        SYNTAX             Unsigned32
+        UNITS              "channel history entries"
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+           "The maximum number of entries allowed in the
+            applPastChannelTable for this running application element
+            or service instance.  Once the number of rows for this
+            running application element or service instance in the
+            applPastChannelTable reaches this value, when new
+            entries are to be added the management subsystem will
+            make room for them by removing the oldest entries.
+            Entries will be removed on the basis of oldest
+            applPastChannelCloseTime value first."
+        DEFVAL          { 500 }
+        ::= { applPastChannelControlEntry 2 }
+
+applPastChannelControlTimeLimit OBJECT-TYPE
+        SYNTAX               Unsigned32
+        UNITS                "seconds"
+        MAX-ACCESS           read-write
+        STATUS               current
+        DESCRIPTION
+           "The maximum time in seconds which an entry for this
+            running application element or service instance
+            may exist in the applPastChannelTable before it
+            is removed.  Any entry that is older than this value
+            will be removed (aged out) from the table, unless the
+            applPastChannelControlCollect is set to 'frozen'.
+
+            Note that an entry may be aged out prior to reaching
+            this time limit if it is the oldest entry in the table
+            and must be removed to make space for a new entry so
+            as to not exceed applPastChannelControlMaxRows, or if the
+            applPastChannelControlCollect is set to 'disabled'."
+        DEFVAL          { 7200 }
+        ::= { applPastChannelControlEntry 3 }
+
+applPastChannelControlRemItems OBJECT-TYPE
+        SYNTAX              Counter32
+        UNITS               "channel history entries"
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "The applPastChannelControlRemItems attribute reports the
+            number of applPastChannelControlTable entries for this
+            running application element or service instance that
+            were deleted in order to make room for new history
+            entries.
+
+            This count does NOT include entries deleted for the
+            following reasons:
+                - the corresponding applPastChannelControlCollect
+                  attribute has been set to 'disabled'
+
+                - the entry has been in the table longer that the
+                  time limit indicated by the corresponding
+                  applPastChannelControlTimeLimit.
+          "
+        ::= { applPastChannelControlEntry 4 }
+
+
+-- ****************************************************************
+--
+--      applPastChannelTable - Table of former channels
+--
+-- ****************************************************************
+
+applPastChannelTable   OBJECT-TYPE
+        SYNTAX         SEQUENCE OF ApplPastChannelEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+           "The applPastChannelTable provides history information
+            about channels from the perspective of running
+            application elements and service instances.
+            Entries in this table are indexed by applElmtOrSvc,
+            applElmtOrSvcId, and by applPastChannelIndex, which
+            serves to uniquely identify each former channel in the
+            context of a running application element or service
+            instance.
+
+            Note that the value of applPastChannelIndex is
+            independent of the value applOpenChannelIndex had when
+            this channel was open.
+
+            Entries for closed channels for a given running
+            application element or service instance can
+            be added to this table only if its entry in the
+            applPastChannelControlTable has the value 'enabled'
+            for the attribute applPastChannelControlCollect.
+
+            Entries for closed channels are removed under the
+            following circumstances:
+
+                - the running application element or service
+                  instance no longer exists
+
+                - the corresponding applPastChannelControlCollect
+                  attribute has been set to 'disabled'
+
+                - the entry has been in the table longer that the
+                  time limit indicated by the corresponding
+                  applPastChannelControlTimeLimit and the value of
+                  applPastChannelControlCollect is not 'frozen'
+
+                - this is the oldest entry for the running
+                  application element or service instance in
+                  question and the addition of a new element would
+                  otherwise cause applPastChannelControlMaxRows to
+                  be exceeded for this running application element
+                  or service instance.
+
+                - a value of applPastChannelIndex has been re-used.
+                  Note that under normal circumstances, this is
+                  unlikely.
+
+            Removal/replacement of an entry under the
+            last two conditions causes the corresponding
+            applPastChannelControlRemItems to be incremented."
+        ::= { applPastChannelGroup 2 }
+
+applPastChannelEntry   OBJECT-TYPE
+        SYNTAX         ApplPastChannelEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+          "An applPastChannelEntry indicates that a running
+           application element or service instance once had an open
+           channel, which is now closed.  The entry has information
+           describing that channel."
+        INDEX       { applElmtOrSvc, applElmtOrSvcId,
+                      applPastChannelIndex }
+        ::= { applPastChannelTable 1 }
+
+ApplPastChannelEntry  ::= SEQUENCE
+        {
+                applPastChannelIndex           Unsigned32,
+                applPastChannelOpenTime        DateAndTime,
+                applPastChannelCloseTime       DateAndTime,
+                applPastChannelReadRequests    Unsigned64TC,
+                applPastChannelReadReqsLow     Unsigned32,
+                applPastChannelReadFailures    Unsigned32,
+                applPastChannelBytesRead       Unsigned64TC,
+                applPastChannelBytesReadLow    Unsigned32,
+                applPastChannelLastReadTime    DateAndTime,
+                applPastChannelWriteRequests   Unsigned64TC,
+                applPastChannelWriteReqsLow    Unsigned32,
+                applPastChannelWriteFailures   Unsigned32,
+                applPastChannelBytesWritten    Unsigned64TC,
+                applPastChannelBytesWritLow    Unsigned32,
+                applPastChannelLastWriteTime   DateAndTime
+        }
+
+applPastChannelIndex      OBJECT-TYPE
+        SYNTAX            Unsigned32 (1..'ffffffff'h)
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION
+           "This attribute serves to uniquely identify this closed
+            channel in the context of the running application
+            element or service instance.  This attribute has no
+            other semantics.
+
+            Note that the value of applPastChannelIndex is
+            independent of the value applOpenChannelIndex had when
+            this channel was active.
+
+            In issuing this index value, the implementation must
+            avoid re-issuing an index value which has already been
+            assigned to an entry which has not yet been deleted due
+            to age or space considerations.
+
+            The value zero is excluded from the set of permitted
+            values for this index in order to permit other tables to
+            possibly represent information that cannot be associated
+            with a specific entry in this table.  "
+        ::= { applPastChannelEntry 1 }
+
+applPastChannelOpenTime OBJECT-TYPE
+        SYNTAX          DateAndTime
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+           "This attribute records the time when this channel was
+            originally opened.  Note that this information is quite
+            different from applOpenChannelOpenTime, which is used
+            for the detection of counter discontinuities."
+        ::= { applPastChannelEntry 2 }
+
+applPastChannelCloseTime OBJECT-TYPE
+        SYNTAX           DateAndTime
+        MAX-ACCESS       read-only
+        STATUS           current
+        DESCRIPTION
+           "This attribute records the time when this channel
+            was closed."
+        ::= { applPastChannelEntry 3 }
+
+applPastChannelReadRequests OBJECT-TYPE
+        SYNTAX              Unsigned64TC
+        UNITS               "read requests"
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "This attribute records the number of read requests for
+            this channel made by this running application element or
+            service instance.  All read requests for this channel by
+            this running application element or service instance,
+            regardless of completion status, are included in this
+            count.  Read requests are counted in terms of system
+            calls, rather than API calls."
+
+        ::= { applPastChannelEntry 4 }
+
+applPastChannelReadReqsLow OBJECT-TYPE
+        SYNTAX             Unsigned32
+        UNITS              "read requests"
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+           "This attribute corresponds to the low thirty-two bits
+            of applPastChannelReadRequests."
+        ::= { applPastChannelEntry 5 }
+
+applPastChannelReadFailures OBJECT-TYPE
+        SYNTAX              Unsigned32
+        UNITS               "failed read requests"
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "This attribute reports the number of failed read
+            requests."
+        ::= { applPastChannelEntry 6 }
+
+applPastChannelBytesRead OBJECT-TYPE
+        SYNTAX           Unsigned64TC
+        UNITS            "bytes"
+        MAX-ACCESS       read-only
+        STATUS           current
+        DESCRIPTION
+           "This attribute reports the number of bytes read from this
+            channel by this running application element or service
+            instance.  Only bytes successfully read are included in
+            this count. "
+        ::= { applPastChannelEntry 7 }
+
+applPastChannelBytesReadLow OBJECT-TYPE
+        SYNTAX              Unsigned32
+        UNITS               "bytes"
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "This attribute corresponds to the low thirty-two bits
+            of applPastChannelBytesRead."
+        ::= { applPastChannelEntry 8 }
+
+applPastChannelLastReadTime OBJECT-TYPE
+        SYNTAX              DateAndTime
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "This attribute reports the time of the most recent read
+            request made by this running application element or
+            service instance regardless of completion status, for
+            this former channel.
+
+            If no read requests have been made , the value of this
+            attribute shall be '0000000000000000'H "
+        DEFVAL { '0000000000000000'H }
+        ::= { applPastChannelEntry 9 }
+
+applPastChannelWriteRequests OBJECT-TYPE
+        SYNTAX               Unsigned64TC
+        UNITS                "write requests"
+        MAX-ACCESS           read-only
+        STATUS               current
+        DESCRIPTION
+           "The applPastChannelWriteRequests attribute reports
+            the number of write requests, regardless of completion
+            status, made by this running application element or
+            service instance for this former channel.
+
+            Write requests are counted in terms of system calls,
+            rather than API calls."
+        ::= { applPastChannelEntry 10 }
+
+applPastChannelWriteReqsLow OBJECT-TYPE
+        SYNTAX              Unsigned32
+        UNITS               "write requests"
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "This attribute corresponds to the low thirty-two
+            bits of applPastChannelWriteRequests."
+        ::= { applPastChannelEntry 11 }
+
+applPastChannelWriteFailures OBJECT-TYPE
+        SYNTAX               Unsigned32
+        UNITS                "failed write requests"
+        MAX-ACCESS           read-only
+        STATUS               current
+        DESCRIPTION
+           "This attribute reports the number of failed write
+            requests."
+        ::= { applPastChannelEntry 12 }
+
+applPastChannelBytesWritten OBJECT-TYPE
+        SYNTAX              Unsigned64TC
+        UNITS               "bytes"
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "This attribute reports the number of bytes written to
+            this former channel by this running application element
+            or service instance.  Only bytes successfully written
+            (no errors reported by the API in use by the application)
+            are included in this count."
+        ::= { applPastChannelEntry 13 }
+
+applPastChannelBytesWritLow OBJECT-TYPE
+        SYNTAX              Unsigned32
+        UNITS               "bytes"
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION
+           "This attribute corresponds to the low thirty-two bits of
+            applPastChannelBytesWritten."
+        ::= { applPastChannelEntry 14 }
+
+applPastChannelLastWriteTime OBJECT-TYPE
+        SYNTAX               DateAndTime
+        MAX-ACCESS           read-only
+        STATUS               current
+        DESCRIPTION
+           "The applPastChannelLastWriteTime attribute reports
+            the time of the most recent write request made by
+            this running application element or service instance,
+            regardless of completion status, for this former
+            channel.
+
+            If no write requests have been made the value of this
+            attribute shall be '0000000000000000'H "
+        DEFVAL { '0000000000000000'H }
+        ::= { applPastChannelEntry 15 }
+
+-- ****************************************************************
+--
+--      applPastFileTable - information specific to former files
+--
+-- ****************************************************************
+
+applPastFileTable  OBJECT-TYPE
+        SYNTAX     SEQUENCE OF ApplPastFileEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+           "The applPastFileTable supplements the
+            applPastChannelTable for entries corresponding to
+            channels which were files.  The indexing structure is
+            identical to applPastChannelTable.  An entry exists in
+            the applPastFileTable only if there is a corresponding
+            (same index values) entry in the applPastChannelTable
+            and if the channel was a file.
+
+            Entries for closed files are removed when the
+            corresponding entries are removed from the
+            applPastChannelTable."
+        ::= { applPastChannelGroup 3 }
+
+applPastFileEntry   OBJECT-TYPE
+        SYNTAX      ApplPastFileEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+          "An applPastFileEntry provides additional, file-specific
+           information to complement the corresponding
+           applPastChannelEntry for a channel which was a file."
+        INDEX       { applElmtOrSvc, applElmtOrSvcId,
+                      applPastChannelIndex }
+        ::= { applPastFileTable 1 }
+
+ApplPastFileEntry ::= SEQUENCE
+        {
+                applPastFileName                LongUtf8String,
+                applPastFileSizeHigh            Unsigned32,
+                applPastFileSizeLow             Unsigned32,
+                applPastFileMode                INTEGER
+        }
+
+
+applPastFileName   OBJECT-TYPE
+        SYNTAX     LongUtf8String
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+          "This attribute records the last known value of
+           applOpenFileName before the channel was closed."
+        ::= { applPastFileEntry 1 }
+
+applPastFileSizeHigh OBJECT-TYPE
+        SYNTAX       Unsigned32
+        UNITS        "2^32 byte blocks"
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+          "This attribute records the value of applOpenFileSizeHigh
+           at the time this channel was closed.
+
+           For example, for a file with a total size of
+           4,294,967,296 bytes, this attribute would have a value
+           of 1; for a file with a total size of 4,294,967,295
+           bytes this attribute's value would be 0."
+        ::= { applPastFileEntry 2 }
+
+applPastFileSizeLow OBJECT-TYPE
+        SYNTAX      Unsigned32
+        UNITS       "bytes"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "This attribute records the value of applOpenFileSizeLow
+            at the time this channel was closed.
+
+            For example, for a file with a total size of
+            4,294,967,296 bytes this attribute would have a value
+            of 0; for a file with a total size of 4,294,967,295
+            bytes this attribute's value would be 4,294,967,295."
+        ::= { applPastFileEntry 3 }
+
+applPastFileMode   OBJECT-TYPE
+        SYNTAX     INTEGER { read(1),
+                             write(2),
+                             readWrite(3) }
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+           "This attribute records the value of applOpenFileMode
+            at the time this channel was closed.  "
+        ::= { applPastFileEntry 4 }
+
+-- ****************************************************************
+--
+--      applPastConTable - information specific to former connections
+--
+-- ****************************************************************
+
+applPastConTable OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ApplPastConEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+           "The applPastConTable supplements the applPastChannelTable
+            for entries corresponding to channels which were
+            connections.  The indexing structure is identical
+            to applPastChannelTable.  An entry exists in the
+            applPastConTable only if there is a corresponding
+            (same index values) entry in the applPastChannelTable
+            and if the channel was a connection.
+
+            Entries for closed connections are removed when
+            the corresponding entries are removed from the
+            applPastChannelTable."
+        ::= { applPastChannelGroup 4 }
+
+applPastConEntry   OBJECT-TYPE
+        SYNTAX      ApplPastConEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+          "An applPastConEntry provides additional,
+           connection-specific information to complement the
+           corresponding applPastChannelEntry for a channel which
+           was a connection."
+        INDEX       { applElmtOrSvc, applElmtOrSvcId,
+                      applPastChannelIndex }
+        ::= { applPastConTable 1 }
+
+ApplPastConEntry ::= SEQUENCE
+        {
+                applPastConTransport       TDomain,
+                applPastConNearEndAddr     ApplTAddress,
+                applPastConNearEndpoint    SnmpAdminString,
+                applPastConFarEndAddr      ApplTAddress,
+                applPastConFarEndpoint     SnmpAdminString,
+                applPastConApplication     SnmpAdminString
+        }
+
+applPastConTransport OBJECT-TYPE
+        SYNTAX       TDomain
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+           "The applPastConTransport attribute identifies the
+            transport protocol that was in use for this former
+            connection.  If the transport protocol could not be
+            determined, the value { 0 0 } shall be used."
+        DEFVAL { zeroDotZero }
+        ::= { applPastConEntry 1 }
+
+applPastConNearEndAddr OBJECT-TYPE
+        SYNTAX         ApplTAddress
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+           "The applPastConNearEndAddr attribute reports the
+            transport address and port information for the near
+            end of this former connection.
+
+            If the information could not be determined, the value
+            shall be a zero-length string."
+        DEFVAL { "" }
+        ::= { applPastConEntry 2 }
+
+applPastConNearEndpoint OBJECT-TYPE
+        SYNTAX          SnmpAdminString
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+           "The applPastConNearEndpoint attribute reports the
+            fully-qualified domain name and port information for the
+            near end of this former connection.
+
+            The format of this attribute for TCP and UDP-based
+            protocols is the fully-qualified domain name immediately
+            followed by a colon which is immediately followed by
+            the decimal representation of the port number.
+
+            If the information could not be determined, the value
+            shall be a zero-length string."
+        DEFVAL { "" }
+        ::= { applPastConEntry 3 }
+
+applPastConFarEndAddr OBJECT-TYPE
+        SYNTAX        ApplTAddress
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+           "The applPastConFarEnd attribute reports the transport
+            address and port information for the far end of this
+            former connection.
+
+            If not known, as in the case of a connectionless
+            transport, the value of this attribute shall be a
+            zero-length string."
+        DEFVAL { "" }
+        ::= { applPastConEntry 4 }
+
+applPastConFarEndpoint OBJECT-TYPE
+        SYNTAX        SnmpAdminString
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+           "The applPastConFarEndpoint attribute reports the
+            transport address and port information for the far
+            end of this former connection.
+
+            The format of this attribute for TCP and UDP-based
+            protocols is the fully-qualified domain name immediately
+            followed by a colon which is immediately followed by
+            the decimal representation of the port number.
+
+            If not known, as in the case of a connectionless
+            transport, the value of this attribute shall be a
+            zero-length string."
+        DEFVAL { "" }
+        ::= { applPastConEntry 5 }
+
+applPastConApplication OBJECT-TYPE
+        SYNTAX         SnmpAdminString
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+           "The applPastConApplication attribute identifies the
+            application layer protocol that was in use.  Where
+            possible, the values defined in [13] shall be used.
+            If not known, the value of this attribute shall be a
+            zero-length string."
+        DEFVAL { "" }
+        ::= { applPastConEntry 6 }
+
+
+-- ****************************************************************
+--
+--      applPastTransStreamTable - historical
+--      information for transaction stream monitoring
+--
+-- ****************************************************************
+
+applPastTransStreamTable OBJECT-TYPE
+        SYNTAX             SEQUENCE OF ApplPastTransStreamEntry
+        MAX-ACCESS         not-accessible
+        STATUS             current
+        DESCRIPTION
+           "The applPastTransStreamTable contains common
+            information for historical transaction statistics."
+        ::= { applPastChannelGroup 5 }
+
+applPastTransStreamEntry OBJECT-TYPE
+        SYNTAX             ApplPastTransStreamEntry
+        MAX-ACCESS         not-accessible
+        STATUS             current
+        DESCRIPTION
+           "An applPastTransStreamEntry contains information for
+            a single former transaction stream.  A transaction
+            stream could have been a network connection, file, or
+            other source of transactions."
+        INDEX           { applElmtOrSvc, applElmtOrSvcId,
+                          applPastChannelIndex }
+        ::= { applPastTransStreamTable 1 }
+
+ApplPastTransStreamEntry ::= SEQUENCE {
+        applPastTransStreamDescr        SnmpAdminString,
+        applPastTransStreamUnitOfWork   SnmpAdminString,
+        applPastTransStreamInvokes      Unsigned64TC,
+        applPastTransStreamInvokesLow   Unsigned32,
+        applPastTransStreamInvCumTimes  Unsigned32,
+        applPastTransStreamInvRspTimes  Unsigned32,
+        applPastTransStreamPerforms     Unsigned64TC,
+        applPastTransStreamPerformsLow  Unsigned32,
+        applPastTransStreamPrfCumTimes  Unsigned32,
+        applPastTransStreamPrfRspTimes  Unsigned32 }
+applPastTransStreamDescr OBJECT-TYPE
+        SYNTAX          SnmpAdminString
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+           "The applPastTransStreamDescr attribute provides a
+            human-readable description of this transaction stream.
+
+            If no descriptive information is available, this
+            attribute's value shall be a zero-length string."
+        DEFVAL { "" }
+        ::= { applPastTransStreamEntry 1 }
+
+applPastTransStreamUnitOfWork OBJECT-TYPE
+        SYNTAX               SnmpAdminString
+        MAX-ACCESS           read-only
+        STATUS               current
+        DESCRIPTION
+           "The applPastTransStreamUnitOfWork attribute provides a
+            human-readable definition of what the unit of work is
+            for this transaction stream.
+
+            If no descriptive information is available, this
+            attribute's value shall be a zero-length string."
+        DEFVAL { "" }
+        ::= { applPastTransStreamEntry 2 }
+
+applPastTransStreamInvokes OBJECT-TYPE
+        SYNTAX            Unsigned64TC
+        UNITS             "transactions"
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION
+           "Cumulative count of requests / invocations issued
+            for this transaction stream when it was active."
+        ::= { applPastTransStreamEntry 3 }
+
+applPastTransStreamInvokesLow OBJECT-TYPE
+        SYNTAX               Unsigned32
+        UNITS                "transactions"
+        MAX-ACCESS           read-only
+        STATUS               current
+        DESCRIPTION
+           "This object corresponds to the low thirty-two
+            bits of applPastTransStreamInvokes."
+        ::= { applPastTransStreamEntry 4 }
+
+applPastTransStreamInvCumTimes OBJECT-TYPE
+        SYNTAX                Unsigned32
+        UNITS                 "milliseconds"
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+           "The applPastTransStreamInvCumTimes attribute reports the
+            cumulative sum of the lengths of the intervals times
+            measured between the transmission of requests and the
+            receipt of (the first of) the corresponding response(s)."
+        ::= { applPastTransStreamEntry 5 }
+
+applPastTransStreamInvRspTimes OBJECT-TYPE
+        SYNTAX                Unsigned32
+        UNITS                 "milliseconds"
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+           "The applPastTransStreamInvRspTimes attribute reports the
+            cumulative sum of the lengths of the intervals measured
+            between the receipt of the first and last of multiple
+            responses to a request.
+
+            For transaction streams which do not permit multiple
+            responses to a single request, this attribute will be
+            zero."
+        ::= { applPastTransStreamEntry 6 }
+
+applPastTransStreamPerforms OBJECT-TYPE
+        SYNTAX             Unsigned64TC
+        UNITS              "transactions"
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+           "Total number of transactions performed."
+        ::= { applPastTransStreamEntry 7 }
+
+applPastTransStreamPerformsLow OBJECT-TYPE
+        SYNTAX                Unsigned32
+        UNITS                 "transactions"
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+           "This objecy reports the low thirty-two bits of
+            applPastTransStreamPerforms."
+        ::= { applPastTransStreamEntry 8 }
+
+applPastTransStreamPrfCumTimes OBJECT-TYPE
+        SYNTAX                Unsigned32
+        UNITS                 "milliseconds"
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+           "The applPastTransStreamPrfCumTimes attribute reports the
+            cumulative sum of the lengths of the intervals measured
+            between receipt of requests and the transmission of the
+            corresponding responses."
+        ::= { applPastTransStreamEntry 9 }
+
+applPastTransStreamPrfRspTimes OBJECT-TYPE
+        SYNTAX                 Unsigned32
+        UNITS                  "milliseconds"
+        MAX-ACCESS             read-only
+        STATUS                 current
+        DESCRIPTION
+           "For each transaction performed, the elapsed time between
+            when the first response is enqueued and when the last
+            response is enqueued is added to this cumulative sum.
+
+            For single-response protocols, the value of
+            applPastTransStreamPrfRspTimes will be zero."
+        ::= { applPastTransStreamEntry 10 }
+
+
+-- ****************************************************************
+--
+--      applPastTransFlowTable
+--
+-- ****************************************************************
+
+applPastTransFlowTable OBJECT-TYPE
+        SYNTAX        SEQUENCE OF ApplPastTransFlowEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+           "The applPastTransFlowTable contains entries, organized by
+            application instance or running application element,
+            direction of flow, and type (request/response) for each
+            former transaction stream.
+
+            The simple model of a transaction used here looks like
+            this:
+
+                invoker  |   Request     | performer
+                         | - - - - - - > |
+                         |               |
+                         |   Response    |
+                         | < - - - - - - |
+                         |               |
+
+            Since in some protocols it is possible for an entity
+            to take on both the invoker and performer roles,
+            information here is accumulated for transmitted and
+            received requests, as well as for transmitted and
+            received responses.  Counts are maintained for both
+            transactions and bytes transferred."
+        ::= { applPastChannelGroup 6 }
+
+applPastTransFlowEntry OBJECT-TYPE
+        SYNTAX        ApplPastTransFlowEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+           "An applPastTransFlowEntry records transaction throughput
+            information for requests or response in a particular
+            direction (transmit / receive) for a transaction stream.
+
+            Entries in this table correspond to those in the
+            applPastTransStreamTable with identical values
+            for the applElmtOrSvc, applElmtOrSvcId, and the
+            applPastChannelIndex."
+        INDEX           { applElmtOrSvc,
+                          applElmtOrSvcId,
+                          applPastChannelIndex,
+                          applPastTransFlowDirection,
+                          applPastTransFlowReqRsp }
+        ::= { applPastTransFlowTable 1 }
+
+ApplPastTransFlowEntry ::= SEQUENCE {
+                applPastTransFlowDirection INTEGER,
+                applPastTransFlowReqRsp    INTEGER,
+                applPastTransFlowTrans     Unsigned64TC,
+                applPastTransFlowTransLow  Unsigned32,
+                applPastTransFlowBytes     Unsigned64TC,
+                applPastTransFlowBytesLow  Unsigned32,
+                applPastTransFlowTime      DateAndTime }
+
+applPastTransFlowDirection OBJECT-TYPE
+        SYNTAX             INTEGER { transmit(1),
+                                     receive(2) }
+        MAX-ACCESS         not-accessible
+        STATUS             current
+        DESCRIPTION
+            "The applPastTransFlowDirection index serves
+             to identify an entry as containing information
+             pertaining to the transmit (1) or receive (2) flow
+             of a past transaction stream.  This index corresponds
+             to applTransactFlowDirection."
+        ::= { applPastTransFlowEntry 1 }
+
+applPastTransFlowReqRsp OBJECT-TYPE
+        SYNTAX          INTEGER { request(1),
+                                  response(2) }
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+           "The value of the applPastTransFlowReqRsp index indicates
+            whether this entry contains information on requests
+            (1), or responses (2).  This index corresponds to
+            applTransactFlowReqRsp."
+        ::= { applPastTransFlowEntry 2 }
+
+applPastTransFlowTrans OBJECT-TYPE
+        SYNTAX        Unsigned64TC
+        UNITS         "transactions"
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The applPastTransFlowTrans attribute reports the number
+             of request/response (as indicated by the
+             applPastTransFlowReqRsp index) transactions
+             received/generated (as indicated by the
+             applPastTransFlowDirection index) handled on this
+             transaction stream."
+        ::= { applPastTransFlowEntry 3 }
+
+applPastTransFlowTransLow OBJECT-TYPE
+        SYNTAX           Unsigned32
+        UNITS            "transactions"
+        MAX-ACCESS       read-only
+        STATUS           current
+        DESCRIPTION
+            "This attribute corresponds to the low thirty-two
+             bits of applPastTransFlowTrans."
+        ::= { applPastTransFlowEntry 4 }
+
+applPastTransFlowBytes OBJECT-TYPE
+        SYNTAX        Unsigned64TC
+        UNITS         "bytes"
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+           "The applPastTransFlowBytes attribute reports the number
+            of request/response (as indicated by the
+            applPastTransFlowReqRsp index) bytes received/generated
+            (as indicated by the applPastTransFlowDirection index)
+            handled on this transaction stream.
+
+            All application layer bytes are included in this count,
+            including any application layer wrappers, headers, or
+            other overhead."
+        ::= { applPastTransFlowEntry 5 }
+
+applPastTransFlowBytesLow OBJECT-TYPE
+        SYNTAX           Unsigned32
+        UNITS            "bytes"
+        MAX-ACCESS       read-only
+        STATUS           current
+        DESCRIPTION
+           "This attribute corresponds to the low thirty-two
+            bits of applPastTransFlowBytes."
+        ::= { applPastTransFlowEntry 6 }
+
+applPastTransFlowTime OBJECT-TYPE
+        SYNTAX       DateAndTime
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+           "The applPastTransFlowTime attribute records the time of
+            the processing (receipt or transmission as
+            indicated by the applPastTransFlowDirection index)
+            of the last request/response (as indicated by the
+            applPastTransFlowReqRsp index) on this transaction
+            stream.
+
+            If no requests/responses been received/transmitted by
+            this entity over this transaction stream, the value
+            of this attribute shall be '0000000000000000'H "
+        DEFVAL { '0000000000000000'H }
+        ::= { applPastTransFlowEntry 7 }
+
+-- ****************************************************************
+--
+--      applPastTransKindTable - transaction statistics broken down
+--      according to the kinds of transactions in each direction
+--      for a transaction stream.
+--
+-- ****************************************************************
+
+applPastTransKindTable   OBJECT-TYPE
+        SYNTAX SEQUENCE OF ApplPastTransKindEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+           "The applPastTransKindTable provides transaction
+            statistics broken down by kinds of transaction.
+            The definition of the kinds of transactions is
+            specific to the application protocol in use, and may be
+            documented in the form of an applicability statement.  "
+        ::= { applPastChannelGroup 7 }
+
+applPastTransKindEntry OBJECT-TYPE
+        SYNTAX        ApplPastTransKindEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+           "An applPastTransKindEntry reports historical data for a
+            specific service instance or running application
+            element's use of a specific transaction stream in
+            a particular direction in requests or responses
+            (as indicated by the applPastTransFlowReqRsp index)
+            broken down by transaction kind, as indicated by the
+            applPastTransKind index."
+        INDEX           { applElmtOrSvc,
+                          applElmtOrSvcId,
+                          applPastChannelIndex,
+                          applPastTransFlowDirection,
+                          applPastTransFlowReqRsp,
+                          applPastTransKind }
+        ::= { applPastTransKindTable 1 }
+
+ApplPastTransKindEntry ::= SEQUENCE
+        {
+                applPastTransKind                SnmpAdminString,
+                applPastTransKindTrans           Unsigned64TC,
+                applPastTransKindTransLow        Unsigned32,
+                applPastTransKindBytes           Unsigned64TC,
+                applPastTransKindBytesLow        Unsigned32,
+                applPastTransKindTime            DateAndTime
+        }
+
+applPastTransKind   OBJECT-TYPE
+        SYNTAX      SnmpAdminString (SIZE (1 .. 32))
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The applPastTransKind index is the human-readable
+            identifier for a particular transaction kind within
+            the context of an application protocol.  The values
+            to be used for a particular protocol may be identified
+            in an applicability statement.  This index corresponds
+            to applTransactKind."
+        ::= { applPastTransKindEntry 1 }
+
+applPastTransKindTrans OBJECT-TYPE
+        SYNTAX        Unsigned64TC
+        UNITS         "transactions"
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+           "For this transaction stream, this attribute records
+            the total number of transactions of the type
+            identified by the indexes.  The type is characterized
+            according to the receive/transmit direction
+            (applPastTransFlowDirecton), whether it was a request
+            or a response (applPastTransFlowReqRsp), and the
+            protocol-specific transaction kind (applPastTransKind).
+            stream for this transaction kind."
+        ::= { applPastTransKindEntry 2 }
+
+applPastTransKindTransLow OBJECT-TYPE
+        SYNTAX           Unsigned32
+        UNITS            "transactions"
+        MAX-ACCESS       read-only
+        STATUS           current
+        DESCRIPTION
+           "The applPastTransKindTransLow attribute reports
+            the low thirty-two bits of applPastTransKindTrans."
+        ::= { applPastTransKindEntry 3 }
+
+applPastTransKindBytes OBJECT-TYPE
+        SYNTAX        Unsigned64TC
+        UNITS         "bytes"
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+           "For this transaction stream and transaction kind, the
+            applPastTransKindBytes attribute reports the number
+            of bytes received or generated (as indicated by
+            the applPastTransFlowDirection index) in requests or
+            responses (as indicated by the applPastTransFlowReqRsp
+            index).
+
+            All application layer bytes are included in this count,
+            including any application layer wrappers, headers, or
+            other overhead."
+        ::= { applPastTransKindEntry 4 }
+
+applPastTransKindBytesLow OBJECT-TYPE
+        SYNTAX           Unsigned32
+        UNITS            "bytes"
+        MAX-ACCESS       read-only
+        STATUS           current
+        DESCRIPTION
+           "The applPastTransKindBytesLow attribute corresponds
+            to the low thirty-two bits of applPastTransKindBytes."
+        ::= { applPastTransKindEntry 5 }
+
+applPastTransKindTime OBJECT-TYPE
+        SYNTAX       DateAndTime
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+           "The applPastTransKindTime attribute records the time of
+            the processing (receipt or transmission as
+            indicated by the applPastTransFlowDirection index)
+            of the last request/response (as indicated by the
+            applPastTransFlowReqRsp index) of this kind of
+            transaction on this transaction stream.
+
+            If no requests/responses of this kind were
+            received/transmitted over this transaction stream, the
+            value of this attribute shall be '0000000000000000'H "
+        DEFVAL { '0000000000000000'H }
+        ::= { applPastTransKindEntry 6 }
+
+
+-- ****************************************************************
+--
+--      applElmtRunControlGroup - monitor and control running
+--      application elements
+--
+-- ****************************************************************
+
+applElmtRunStatusTable OBJECT-TYPE
+        SYNTAX         SEQUENCE OF ApplElmtRunStatusEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+           "This table provides information on running application
+            elements, complementing information available in the
+            correspondingly indexed sysApplElmtRunTable [31]."
+        ::= { applElmtRunControlGroup 1 }
+
+applElmtRunStatusEntry OBJECT-TYPE
+        SYNTAX         ApplElmtRunStatusEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+          "An applElmtRunStatusEntry contains information to support
+           the control and monitoring of a single running application
+           element."
+        INDEX { sysApplElmtRunIndex }
+        ::= { applElmtRunStatusTable 1 }
+
+ApplElmtRunStatusEntry ::= SEQUENCE {
+        applElmtRunStatusSuspended              TruthValue,
+        applElmtRunStatusHeapUsage              Unsigned32,
+        applElmtRunStatusOpenConnections        Unsigned32,
+        applElmtRunStatusOpenFiles              Gauge32,
+        applElmtRunStatusLastErrorMsg           SnmpAdminString,
+        applElmtRunStatusLastErrorTime          DateAndTime }
+
+applElmtRunStatusSuspended OBJECT-TYPE
+        SYNTAX             TruthValue
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+           "The applElmtRunStatusSuspended attribute reports
+            whether processing by this running application element
+            has been suspended, whether by management request or by
+            other means."
+        ::= { applElmtRunStatusEntry 1 }
+
+applElmtRunStatusHeapUsage OBJECT-TYPE
+        SYNTAX             Unsigned32
+        UNITS              "bytes"
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+           "The applElmtRunStatusHeapUsage reports the current
+            approximate heap usage by this running application
+            element."
+        ::= { applElmtRunStatusEntry 2 }
+
+applElmtRunStatusOpenConnections OBJECT-TYPE
+        SYNTAX                   Unsigned32
+        UNITS                    "connections"
+        MAX-ACCESS               read-only
+        STATUS                   current
+        DESCRIPTION
+           "The applElmtRunStatusOpenConnections attribute reports
+            the current number of open connections in use by this
+            running application element."
+        ::= { applElmtRunStatusEntry 3 }
+
+applElmtRunStatusOpenFiles OBJECT-TYPE
+        SYNTAX             Gauge32
+        UNITS              "files"
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+           "The applElmtRunStatusOpenFiles attribute reports the
+            current number of open files in use by this running
+            application element."
+        ::= { applElmtRunStatusEntry 4 }
+
+applElmtRunStatusLastErrorMsg OBJECT-TYPE
+        SYNTAX                SnmpAdminString
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+           "The applElmtRunStatusLastErrorMessage attribute reports
+            the most recent error message (typically written to
+            stderr or a system error logging facility) from this
+            running application element.  If no such message has yet
+            been generated, the value of this attribute shall be a
+            zero-length string."
+        DEFVAL { "" }
+        ::= { applElmtRunStatusEntry 5 }
+
+applElmtRunStatusLastErrorTime OBJECT-TYPE
+        SYNTAX                 DateAndTime
+        MAX-ACCESS             read-only
+        STATUS                 current
+        DESCRIPTION
+           "The applElmtRunStatusLastErrorTime attribute reports the
+            time of the most recent error message in
+            applElmtRunStatusLastErrorMsg.
+
+            If no such message has yet been generated, the value
+            of this attribute shall be '0000000000000000'H "
+        DEFVAL { '0000000000000000'H }
+        ::= { applElmtRunStatusEntry 6 }
+
+
+-- ****************************************************************
+--
+--      applElmtRunControlTable - control running application
+--      elements
+--
+-- ****************************************************************
+
+applElmtRunControlTable OBJECT-TYPE
+        SYNTAX          SEQUENCE OF ApplElmtRunControlEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+           "This table provides the ability to control application
+            elements, complementing information available in the
+            correspondingly indexed sysApplElmtRunTable [31]."
+        ::= { applElmtRunControlGroup 2 }
+
+applElmtRunControlEntry OBJECT-TYPE
+        SYNTAX          ApplElmtRunControlEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+           "An applElmtRunControlEntry contains information to
+           support the control of a single running application
+           element."
+        INDEX { sysApplElmtRunIndex }
+        ::= { applElmtRunControlTable 1 }
+
+ApplElmtRunControlEntry ::= SEQUENCE {
+                applElmtRunControlSuspend       TruthValue,
+                applElmtRunControlReconfigure   TestAndIncr,
+                applElmtRunControlTerminate     TruthValue }
+
+applElmtRunControlSuspend OBJECT-TYPE
+        SYNTAX            TruthValue
+        MAX-ACCESS        read-write
+        STATUS            current
+        DESCRIPTION
+           "Setting this variable to 'true' requests the suspension
+            of processing by this running application element.
+            Setting this variable to 'false' requests that processing
+            be resumed.  The effect, if any, will be reported by the
+            applElmtRunStatusSuspended attribute."
+        DEFVAL { false }
+        ::= { applElmtRunControlEntry 1 }
+
+applElmtRunControlReconfigure OBJECT-TYPE
+        SYNTAX                TestAndIncr
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+           "Changing the value of this variable requests that the
+            running application element re-load its configuration
+            (like SIGHUP for many UNIX-based daemons).
+
+            Note that completion of a SET on this object only implies
+            that configuration reload was initiated, not necessarily
+            that the reload has been completed."
+        ::= { applElmtRunControlEntry 2 }
+
+applElmtRunControlTerminate OBJECT-TYPE
+        SYNTAX              TruthValue
+        MAX-ACCESS          read-write
+        STATUS              current
+        DESCRIPTION
+           "Setting the value of applElmtRunControlTerminate to
+            'true' requests that the running application element
+            terminate processing and exit in an orderly manner.
+            This is a 'polite' shutdown request.
+
+            When read, this object's value will be 'false' except
+            when orderly termination is in progress.
+
+            Note that completion of a SET on this object only implies
+            that termination was initiated, not necessarily that the
+            termination has been completed."
+        DEFVAL { false }
+        ::= { applElmtRunControlEntry 3 }
+
+
+-- ****************************************************************
+--
+--      Conformance requirements
+--
+-- ****************************************************************
+
+applicationMibGroups OBJECT IDENTIFIER ::=
+                        { applicationMibConformance 1}
+
+applicationMonitorGroup OBJECT-GROUP
+    OBJECTS { applSrvInstQual,
+              applSrvName,
+              applSrvIndex,
+              applSrvInstance,
+              applOpenChannelOpenTime,
+              applOpenChannelReadRequestsLow,
+              applOpenChannelReadFailures,
+              applOpenChannelBytesReadLow,
+              applOpenChannelLastReadTime,
+              applOpenChannelWriteRequestsLow,
+              applOpenChannelWriteFailures,
+              applOpenChannelBytesWrittenLow,
+              applOpenChannelLastWriteTime,
+              applOpenFileName,
+              applOpenFileSizeHigh,
+              applOpenFileSizeLow,
+              applOpenFileMode,
+              applOpenConnectionTransport,
+              applOpenConnectionNearEndAddr,
+              applOpenConnectionNearEndpoint,
+              applOpenConnectionFarEndAddr,
+              applOpenConnectionFarEndpoint,
+              applOpenConnectionApplication }
+    STATUS current
+    DESCRIPTION
+        "This group represents the basic capabilities of this MIB."
+    ::= { applicationMibGroups 1 }
+
+applicationFastMonitorGroup OBJECT-GROUP
+    OBJECTS { applOpenChannelReadRequests,
+              applOpenChannelBytesRead,
+              applOpenChannelWriteRequests,
+              applOpenChannelBytesWritten }
+    STATUS current
+    DESCRIPTION
+        "This group comprises 64-bit counters mandatory in
+         high-throughput environments, where 32-bit counters
+         could wrap in less than an hour."
+    ::= { applicationMibGroups 2 }
+
+applicationTransactGroup OBJECT-GROUP
+    OBJECTS { applTransactStreamDescr,
+              applTransactStreamUnitOfWork,
+              applTransactStreamInvokesLow,
+              applTransactStreamInvCumTimes,
+              applTransactStreamInvRspTimes,
+              applTransactStreamPerformsLow,
+              applTransactStreamPrfCumTimes,
+              applTransactStreamPrfRspTimes,
+              applTransactFlowTransLow,
+              applTransactFlowBytesLow,
+              applTransactFlowTime,
+              applTransactKindTransLow,
+              applTransactKindBytesLow,
+              applTransactKindTime }
+    STATUS current
+    DESCRIPTION
+        "This group comprises objects appropriate from monitoring
+         transaction-structured flows."
+    ::= { applicationMibGroups 3 }
+
+applicationFastTransactGroup OBJECT-GROUP
+    OBJECTS { applTransactStreamInvokes,
+              applTransactStreamPerforms,
+              applTransactFlowTrans,
+              applTransactFlowBytes,
+              applTransactKindTrans,
+              applTransactKindBytes }
+    STATUS current
+    DESCRIPTION
+        "This group comprises 64-bit transaction counters required in
+         high-throughput environments, where 32-bit counters could
+         wrap in less than an hour."
+    ::= { applicationMibGroups 4 }
+
+applicationHistoryGroup OBJECT-GROUP
+    OBJECTS { applPastChannelControlCollect,
+              applPastChannelControlMaxRows,
+              applPastChannelControlTimeLimit,
+              applPastChannelControlRemItems,
+              applPastChannelOpenTime,
+              applPastChannelCloseTime,
+              applPastChannelReadReqsLow,
+              applPastChannelReadFailures,
+              applPastChannelBytesReadLow,
+              applPastChannelLastReadTime,
+              applPastChannelWriteReqsLow,
+              applPastChannelWriteFailures,
+              applPastChannelBytesWritLow,
+              applPastChannelLastWriteTime,
+              applPastFileName,
+              applPastFileSizeHigh,
+              applPastFileSizeLow,
+              applPastFileMode,
+              applPastConTransport,
+              applPastConNearEndAddr,
+              applPastConNearEndpoint,
+              applPastConFarEndAddr,
+              applPastConFarEndpoint,
+              applPastConApplication}
+    STATUS current
+    DESCRIPTION
+        "This group models basic historical data."
+    ::= { applicationMibGroups 5 }
+
+applicationFastHistoryGroup OBJECT-GROUP
+    OBJECTS { applPastChannelReadRequests,
+              applPastChannelBytesRead,
+              applPastChannelWriteRequests,
+              applPastChannelBytesWritten}
+    STATUS current
+    DESCRIPTION
+        "This group comprises additional 64-bit objects required
+         for recording historical data in high-volume environments,
+         where a 32-bit integer would be insufficient."
+    ::= { applicationMibGroups 6 }
+
+applicationTransHistoryGroup OBJECT-GROUP
+    OBJECTS { applPastTransStreamDescr,
+              applPastTransStreamUnitOfWork,
+              applPastTransStreamInvokesLow,
+              applPastTransStreamInvCumTimes,
+              applPastTransStreamInvRspTimes,
+              applPastTransStreamPerformsLow,
+              applPastTransStreamPrfCumTimes,
+              applPastTransStreamPrfRspTimes,
+              applPastTransFlowTransLow,
+              applPastTransFlowBytesLow,
+              applPastTransFlowTime,
+              applPastTransKindTransLow,
+              applPastTransKindBytesLow,
+              applPastTransKindTime }
+    STATUS current
+    DESCRIPTION
+        "This group represents historical data for transaction-
+         structured information streams."
+    ::= { applicationMibGroups 7 }
+
+applicationFastTransHistoryGroup OBJECT-GROUP
+    OBJECTS { applPastTransFlowTrans,
+              applPastTransFlowBytes,
+              applPastTransKindTrans,
+              applPastTransKindBytes,
+              applPastTransStreamPerforms,
+              applPastTransStreamInvokes }
+    STATUS current
+    DESCRIPTION
+        "This group contains 64-bit objects required for historical
+         records on high-volume transaction-structured streams,
+         where 32-bit integers would be insufficient."
+    ::= { applicationMibGroups 8 }
+
+applicationRunGroup OBJECT-GROUP
+    OBJECTS { applElmtRunStatusSuspended,
+              applElmtRunStatusHeapUsage,
+              applElmtRunStatusOpenConnections,
+              applElmtRunStatusOpenFiles,
+              applElmtRunStatusLastErrorMsg,
+              applElmtRunStatusLastErrorTime,
+              applElmtRunControlSuspend,
+              applElmtRunControlReconfigure,
+              applElmtRunControlTerminate }
+    STATUS current
+    DESCRIPTION
+        "This group represents extensions to the system application
+         MIB."
+    ::= { applicationMibGroups 9 }
+
+applicationMibCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION "The compliance statement for the application MIB."
+    MODULE
+        MANDATORY-GROUPS { applicationMonitorGroup,
+                           applicationHistoryGroup,
+                           applicationRunGroup }
+
+            OBJECT applPastChannelControlCollect
+                MIN-ACCESS read-only
+                DESCRIPTION
+                    "This object should be limited to read-only
+                     access in environments with inadequate
+                     security."
+
+            OBJECT applPastChannelControlMaxRows
+                MIN-ACCESS read-only
+                DESCRIPTION
+                    "This object should be limited to read-only
+                     access in environments with inadequate
+                     security."
+
+            OBJECT applPastChannelControlTimeLimit
+                MIN-ACCESS read-only
+                DESCRIPTION
+                    "This object should be limited to read-only
+                     access in environments with inadequate
+                     security."
+
+            OBJECT applElmtRunControlSuspend
+                MIN-ACCESS read-only
+                DESCRIPTION
+                    "This object should be limited to read-only
+                     access in environments with inadequate
+                     security."
+            OBJECT applElmtRunControlReconfigure
+                MIN-ACCESS read-only
+                DESCRIPTION
+                    "This object should be limited to read-only
+                     access in environments with inadequate
+                     security."
+
+            OBJECT applElmtRunControlTerminate
+                MIN-ACCESS read-only
+                DESCRIPTION
+                    "This object should be limited to read-only
+                     access in environments with inadequate
+                     security."
+
+        GROUP applicationTransactGroup
+        DESCRIPTION
+            "The applicationTransactGroup is required when the
+             information stream processed has a transaction
+             structure. "
+
+        GROUP applicationTransHistoryGroup
+        DESCRIPTION
+            "The applicationTransHistoryGroup must be implemented
+             if applicationTransactGroup and applicationHistoryGroup
+             are implemented."
+
+        GROUP applicationFastMonitorGroup
+        DESCRIPTION
+           "The applicationFastMonitorGroup is mandatory when
+            the applicationMonitorGroup is implemented and its
+            counts group may exceed what can be represented in 32 bits."
+
+        GROUP applicationFastTransactGroup
+        DESCRIPTION
+           "The applicationFastTransactGroup is mandatory when
+            the applicationTransactGroup is implemented and its
+            counts may exceed what can be represented in 32 bits."
+
+        GROUP applicationFastHistoryGroup
+        DESCRIPTION
+           "The applicationFastHistoryGroup is mandatory when
+            the applicationHistoryGroup is implemented and its
+            counts may exceed what can be represented in 32 bits."
+        GROUP applicationFastTransHistoryGroup
+        DESCRIPTION
+           "The applicationFastTransHistoryGroup is mandatory when
+            the applicationTransHistoryGroup is implemented and its
+            counts may exceed what can be represented in 32 bits."
+    ::= { applicationMibConformance 2 }
+
+END

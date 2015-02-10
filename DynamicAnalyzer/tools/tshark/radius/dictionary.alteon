@@ -1,0 +1,32 @@
+# -*- text -*-
+#
+#  dictionary.alteon
+#
+#	Alteon Webswitch
+#
+#	$Id$
+#
+VENDOR		Alteon				1872
+
+BEGIN-VENDOR	Alteon
+
+ATTRIBUTE	Alteon-Group-Mapping			1	string
+ATTRIBUTE	Alteon-VPN-Id				3	integer
+ATTRIBUTE	Alteon-Client-IP-Address		4	ipaddr
+ATTRIBUTE	Alteon-Client-Netmask			5	ipaddr
+ATTRIBUTE	Alteon-Primary-NBNS-Server		6	ipaddr
+ATTRIBUTE	Alteon-Secondary-NBNS-Server		7	ipaddr
+ATTRIBUTE	Alteon-Primary-DNS-Server		8	ipaddr
+ATTRIBUTE	Alteon-Secondary-DNS-Server		9	ipaddr
+ATTRIBUTE	Alteon-Domain-Name			10	string
+
+ATTRIBUTE	Alteon-Service-Type			26	integer
+
+VALUE	Alteon-Service-Type		Alteon-L4admin		250
+VALUE	Alteon-Service-Type		Alteon-Slbadmin		251
+VALUE	Alteon-Service-Type		Alteon-Oper		252
+VALUE	Alteon-Service-Type		Alteon-L4oper		253
+VALUE	Alteon-Service-Type		Alteon-Slboper		254
+VALUE	Alteon-Service-Type		Alteon-User		255
+
+END-VENDOR	Alteon

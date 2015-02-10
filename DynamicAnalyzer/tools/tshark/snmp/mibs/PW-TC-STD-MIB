@@ -1,0 +1,322 @@
+PW-TC-STD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   MODULE-IDENTITY, Unsigned32, mib-2
+      FROM SNMPv2-SMI               -- [RFC2578]
+
+   TEXTUAL-CONVENTION
+      FROM SNMPv2-TC;               -- [RFC2579]
+
+pwTcStdMIB MODULE-IDENTITY
+   LAST-UPDATED "200904210000Z"  -- 21 April 2009 00:00:00 GMT
+   ORGANIZATION "Pseudowire Edge-to-Edge Emulation (PWE3) Working
+                 Group"
+   CONTACT-INFO
+   " Thomas D. Nadeau
+     Email:  tom.nadeau@bt.com
+
+     David Zelig
+     Email: davidz@oversi.com
+
+     Orly Nicklass
+     Email: orlyn@radvision.com
+
+     The PWE3 Working Group (email distribution pwe3@ietf.org,
+     http://www.ietf.org/html.charters/pwe3-charter.html)
+    "
+
+   DESCRIPTION
+      "This MIB module defines TEXTUAL-CONVENTIONS
+      for concepts used in pseudowire edge-to-edge
+      networks.
+
+      Copyright (c) 2009 IETF Trust and the persons identified
+      as authors of the code.  All rights reserved.
+
+      Redistribution and use in source and binary forms, with or
+      without modification, are permitted provided that the following
+      conditions are met:
+
+      - Redistributions of source code must retain the above
+        copyright notice, this list of conditions and the following
+        disclaimer.
+
+
+
+
+
+
+
+      - Redistributions in binary form must reproduce the above
+        copyright notice, this list of conditions and the following
+        disclaimer in the documentation and/or other materials
+        provided with the distribution.
+
+      - Neither the name of Internet Society, IETF or IETF Trust, nor
+        the names of specific contributors, may be used to endorse or
+        promote products derived from this software without specific
+        prior written permission.
+
+      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+      CONTRIBUTORS 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+      INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+      MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+      DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+      CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+      SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+      NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+      LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+      HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+      CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+      OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+      EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+      This version of this MIB module is part of RFC 5542;
+      see the RFC itself for full legal notices."
+
+   -- Revision history.
+
+   REVISION "200904210000Z"  -- 21 April 2009 00:00:00 GMT
+   DESCRIPTION
+        "Original Version"
+      ::= { mib-2 188 }
+
+PwGroupID ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "d"
+   STATUS      current
+   DESCRIPTION
+        "An administrative identification for grouping a
+         set of service-specific pseudowire services."
+   SYNTAX  Unsigned32
+
+PwIDType ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "d"
+   STATUS      current
+
+
+
+
+
+
+   DESCRIPTION
+        "Pseudowire Identifier.  Used to identify the PW
+         (together with some other fields) in the signaling
+         session."
+   SYNTAX  Unsigned32
+
+PwIndexType ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "d"
+   STATUS      current
+   DESCRIPTION
+        "Pseudowire Index.  A unique value, greater than zero,
+        for each locally defined PW.  Used for indexing
+        several MIB tables associated with the particular PW.
+        It is recommended that values are assigned contiguously
+        starting from 1.  The value for each PW MUST remain
+        constant at least from one re-initialization
+        to the next re-initialization."
+   SYNTAX  Unsigned32 (1..4294967295)
+
+PwIndexOrZeroType ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "d"
+   STATUS      current
+   DESCRIPTION
+        "This TEXTUAL-CONVENTION is an extension of the
+         PwIndexType convention.  The latter defines a greater-
+         than-zero value used to identify a pseudowire
+         in the managed system.  This extension permits the
+         additional value of zero.  The zero value is object-specific
+         and MUST therefore be defined as part of the description of
+         any object that uses this syntax.  Examples of the usage of
+         zero might include situations where pseudowire was unknown,
+         or where none or all pseudowires need to be referenced."
+    SYNTAX  Unsigned32 (0..4294967295)
+
+PwOperStatusTC ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION
+     "Indicates the operational status of the PW.
+
+     - up(1):             Ready to pass packets.
+     - down(2):           PW signaling is not yet finished, or
+                          indications available at the service
+                          level indicate that the PW is not
+                          passing packets.
+     - testing(3):        AdminStatus at the PW level is set to
+                          test.
+
+
+
+
+
+     - dormant(4):        The PW is not in a condition to pass
+                          packets but is in a 'pending' state,
+                          waiting for some external event.
+     - notPresent(5):     Some component is missing to accomplish
+                          the setup of the PW.  It can be
+                          configuration error, incomplete
+                          configuration, or a missing H/W component.
+     - lowerLayerDown(6): One or more of the lower-layer interfaces
+                          responsible for running the underlying PSN
+                          is not in OperStatus 'up' state."
+ SYNTAX   INTEGER {
+     up(1),
+     down(2),
+     testing(3),
+     dormant(4),
+     notPresent(5),
+     lowerLayerDown(6)
+     }
+
+PwAttachmentIdentifierType ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION
+      "An octet string used in the generalized Forward Error
+       Correction (FEC) element for identifying attachment forwarder
+       and groups.  A NULL identifier is of zero length.
+      "
+  SYNTAX    OCTET STRING (SIZE (0..255))
+
+PwGenIdType ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION
+      "Represents the Attachment Group Identifier (AGI) Type and
+       Attachment Individual Identifier (AII) Type in generalized FEC
+       signaling and configuration.
+      "
+  SYNTAX    Unsigned32( 0..254 )
+
+PwCwStatusTC ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION
+      "Indicates the status of the control word (CW) negotiation
+       based on the local configuration and the indications received
+       from the peer node.
+
+       waitingForNextMsg(1) indicates that the node is waiting for
+       another label mapping from the peer.
+
+
+
+
+
+       sentWrongBitErrorCode(2) indicates that the local node has
+       notified the peer about a mismatch in the C-bit.
+
+       rxWithdrawWithWrongBitErrorCode(3) indicates that a withdraw
+       message has been received with the wrong C-bit error code.
+
+       illegalReceivedBit(4) indicates a C-bit configuration with
+       the peer that is not compatible with the PW type.
+
+       cwPresent(5) indicates that the CW is present for this PW.
+       If signaling is used, the C-bit is set and agreed upon between
+       the nodes.  For manually configured PW, the local
+       configuration requires the use of the CW.
+
+       cwNotPresent(6) indicates that the CW is not present for this
+       PW.  If signaling is used, the C-bit is reset and agreed upon
+       between the nodes.  For manually configured PW, the local
+       configuration requires that the CW not be used.
+
+       notYetKnown(7) indicates that a label mapping has not yet
+       been received from the peer.
+      "
+   REFERENCE
+      "Martini, et al., 'Pseudowire Setup and Maintenance Using
+       the Label Distribution Protocol', [RFC4447]."
+
+   SYNTAX    INTEGER {
+              waitingForNextMsg(1),
+              sentWrongBitErrorCode(2),
+              rxWithdrawWithWrongBitErrorCode(3),
+              illegalReceivedBit(4),
+              cwPresent(5),
+              cwNotPresent(6),
+              notYetKnown(7)
+              }
+
+PwStatus ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION
+      "Indicates the status of the PW and the interfaces affecting
+       this PW.  If none of the bits are set, it indicates no faults
+       are reported.
+      "
+
+
+
+
+
+
+
+
+   SYNTAX   BITS {
+     pwNotForwarding(0),
+     servicePwRxFault(1),
+     servicePwTxFault(2),
+     psnPwRxFault(3),
+     psnPwTxFault(4)
+     }
+
+PwFragSize ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "d"
+   STATUS      current
+   DESCRIPTION
+      "If set to a value other than zero, it indicates the desired
+       fragmentation length in bytes.  If set to zero,
+       fragmentation is not desired for PSN bound packets.
+      "
+   SYNTAX   Unsigned32
+
+PwFragStatus ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION
+      "Indicates the status of the fragmentation/reassembly process
+       based on local configuration and peer capability.
+
+       noFrag(0) bit indicates that local configuration is for no
+       fragmentation.
+
+       cfgFragGreaterThanPsnMtu(1) bit indicates that the local node
+       is set to fragment, but the fragmentation size is greater
+       than the MTU available at the PSN between the nodes.
+       Fragmentation is not done in this case.
+
+       cfgFragButRemoteIncapable(2) bit indicates that the local
+       configuration conveys the desire for fragmentation but
+       the peer is not capable of reassembly.
+
+       remoteFragCapable(3) bit indicates that the remote node
+       is capable to accept fragmented PDUs.
+
+       fragEnabled(4) bit indicates that fragmentation will be used
+       on this PW.  Fragmentation can be used if the local node was
+       configured for fragmentation, the peer has the capability
+       to accept fragmented packets, and the CW is in use for this
+       PW."
+
+   REFERENCE
+       "Malis, A. and M. Townsley, 'Pseudowire Emulation Edge-to-
+        Edge (PWE3) Fragmentation and Reassembly', [RFC4623]."
+
+
+
+   SYNTAX   BITS {
+      noFrag(0),
+      cfgFragGreaterThanPsnMtu(1),
+      cfgFragButRemoteIncapable(2),
+      remoteFragCapable(3),
+      fragEnabled(4)
+      }
+
+PwCfgIndexOrzero ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "d"
+   STATUS      current
+   DESCRIPTION
+        "Index in any of the relevant configuration tables for
+        supplement information regarding configuration of the
+        specific technology.  Value zero implies no additional
+        configuration information is applicable."
+   SYNTAX  Unsigned32 (0..4294967295)
+END

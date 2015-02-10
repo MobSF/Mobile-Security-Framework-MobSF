@@ -1,0 +1,1013 @@
+FRAMEWORK-FEEDBACK-PIB PIB-DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       pib, Unsigned32, Unsigned64, Integer32,
+       MODULE-IDENTITY, OBJECT-TYPE, MODULE-COMPLIANCE, OBJECT-GROUP
+               FROM COPS-PR-SPPI
+       TruthValue, TEXTUAL-CONVENTION
+               FROM SNMPv2-TC
+       InstanceId, ReferenceId, Prid,
+       TagId, TagReferenceId
+               FROM COPS-PR-SPPI-TC
+       PrcIdentifierOid, PrcIdentifierOidOrZero
+               FROM FRAMEWORK-TC-PIB
+       frwkRoleComboEntry
+               FROM FRAMEWORK-PIB
+       InterfaceIndex
+               FROM IF-MIB;
+
+   frwkFeedbackPib  MODULE-IDENTITY
+       SUBJECT-CATEGORIES  { all }
+       LAST-UPDATED "200307140000Z"  -- 14 July 2003
+       ORGANIZATION "IETF RAP WG"
+       CONTACT-INFO "IETF RAP WG
+                     Email: rap@ops.ietf.org
+
+                     Diana Rawlins
+                     MCI
+                     400 International Parkway
+                     Richardson, Texas 75081
+                     Phone: 972-729-4071
+                     Email: Diana.Rawlins@mci.com
+
+
+
+
+                     Amol Kulkarni
+                     JF3-206
+                     2111 NE 25th Ave
+                     Hillsboro, Oregon 97124
+                     Phone: 503-712-1168
+                     Email: amol.kulkarni@intel.com
+
+                     Kwok Ho Chan
+                     Nortel Networks
+                     600 Technology Park Drive
+                     Billerica, MA 01821 USA
+                     Phone: 978-288-8175
+                     Email: khchan@nortelnetworks.com
+
+                     Martin Bokaemper
+                     Juniper Networks
+                     700 Silver Seven Road
+                     Kanata, ON, K2V 1C3, Canada
+                     Phone: 613-591-2735
+                     Email: mbokaemper@juniper.net
+
+                     Dinesh G Dutt
+                     Cisco Systems, Inc.
+                     170 Tasman Dr.
+                     San Jose, CA 95134-1706
+                     Phone: 408-527-0955
+                     Email: ddutt@cisco.com"
+
+   DESCRIPTION
+           "The PIB module containing the base set of policy rule
+           classes that are required for support of all policy
+           usage monitoring, tracking and reporting policies.
+
+           Copyright (C) The Internet Society (2003). This version
+           of this PIB module is part of RFC 3571; see the RFC
+           itself for full legal notices."
+   REVISION     "200307140000Z"
+   DESCRIPTION
+            "Initial version, published in RFC 3571."
+
+         ::= { pib 5 }
+
+--
+-- Textual Conventions
+--
+
+Usage32 ::= TEXTUAL-CONVENTION
+     STATUS    current
+
+
+
+     DESCRIPTION
+             "The Usage32 type represents a non-negative integer
+             which monotonically increases.
+             Usage32 initial value is 0 and the object-type using
+             Usage32 needs to specify when it is initialized.
+
+             The Usage32 type is intended to reflect the absolute
+             number of counted events, so that even a new PDP
+             after a COPS reconnect can use the value directly.
+
+             If there is the possibility that the maximum Usage32
+             value of 2^32-1 is exceeded during the lifetime
+             of the Usage32 object, the larger Usage64 type
+             should be used.
+
+             If conditions other than the reset of the COPS
+             subsystem exist that disrupt the monotonic
+             characteristics of Usage32, these conditions and a
+             method how to detect their presence should be
+             specified in the description of the object-type using
+             Usage32 or its enclosing object-types (e.g. the
+             Entry or Table object-type of the Usage32
+             object-type).
+
+             Whenever the monotonic increase of Usage32 is violated,
+             it should be reset to 0 and the fact that this occurred
+             should be indicated through an appropriate mechanism,
+             for example a corresponding object of type TimeStamp
+             or TimeAndDate."
+     SYNTAX Unsigned32
+
+Usage64 ::= TEXTUAL-CONVENTION
+     STATUS    current
+     DESCRIPTION
+             "The Usage64 type represents a non-negative integer
+             which monotonically increases.
+             Usage64 initial value is 0 and the object-type using
+             Usage64 needs to specify when it is initialized.
+
+             The Usage64 type is intended to reflect the absolute
+             number of counted events, so that even a new PDP
+             after a COPS reconnect can use the value directly.
+
+             The lifetime of the Usage64 object should be defined
+             in a way that ensures the maximum Usage64 value of
+             2^64-1 is never exceeded.
+
+             If conditions other than the reset of the COPS
+
+
+
+             subsystem exist that disrupt the monotonic
+             characteristics of Usage64, these conditions and a
+             method how to detect their presence should be
+             specified in the description of the object-type using
+             Usage64 or its enclosing object-types (e.g. the
+             Entry or Table object-type of the Usage64
+             object-type).
+
+             Whenever the monotonic increase of Usage64 is violated,
+             it should be reset to 0 and the fact that this occurred
+             should be indicated through an appropriate mechanism,
+             for example a corresponding object of type TimeStamp
+             or TimeAndDate."
+     SYNTAX Unsigned64
+
+--
+-- The feedback report group
+--
+
+frwkFeedbackGroupClasses
+               OBJECT IDENTIFIER ::= { frwkFeedbackPib  1 }
+
+--
+--  Feedback Action Table
+--
+
+frwkFeedbackActionTable OBJECT-TYPE
+     SYNTAX          SEQUENCE OF FrwkFeedbackActionEntry
+     PIB-ACCESS      install
+     STATUS          current
+     DESCRIPTION
+             "This class represents commands that the PDP sends to
+             suspend, resume or solicit collection or reporting of
+             usage data."
+
+        ::= { frwkFeedbackGroupClasses  1}
+
+frwkFeedbackActionEntry OBJECT-TYPE
+     SYNTAX  FrwkFeedbackActionEntry
+     STATUS  current
+     DESCRIPTION
+             "Each frwkFeedbackActionEntry represents a command from
+             the PDP. FrwkFeedbackActionIndicator specifies the
+             command itself while frwkFeedbackActionSpecificPri
+             indicates if all frwkFeedbackLink objects in the system
+             are affected by the command, or just the set that is
+             referenced by frwkFeedbackActionList."
+
+
+
+
+     PIB-INDEX { frwkFeedbackActionId}
+
+     ::= { frwkFeedbackActionTable 1}
+
+FrwkFeedbackActionEntry ::= SEQUENCE {
+        frwkFeedbackActionId                 InstanceId,
+        frwkFeedbackActionIndicator          INTEGER,
+        frwkFeedbackActionSpecificPri        TruthValue,
+        frwkFeedbackActionList               TagReferenceId
+     }
+
+frwkFeedbackActionId  OBJECT-TYPE
+     SYNTAX        InstanceId
+     STATUS        current
+     DESCRIPTION
+        "An arbitrary integer index that uniquely identifies an
+         instance of the frwkFeedbackAction class."
+
+     ::= { frwkFeedbackActionEntry 1}
+
+frwkFeedbackActionIndicator OBJECT-TYPE
+     SYNTAX  INTEGER {
+                suspendMonitoringAndReports(1),
+                suspendReports(2),
+                resume(3),
+                solicitReport(4)
+     }
+     STATUS  current
+     DESCRIPTION
+               "The value indicates if the PEP is to send cached
+                usage policies via COPS accounting type report
+                messages.
+                The enumeration values are:
+                (1)  suspendMonitoringAndReports
+                (2)  suspendReports
+                (3)  resume
+                (4)  solicitReport "
+
+       ::= { frwkFeedbackActionEntry 2 }
+
+frwkFeedbackActionSpecificPri OBJECT-TYPE
+        SYNTAX        TruthValue
+        STATUS        current
+        DESCRIPTION
+                 "A value of 0 indicates that the
+                 frwkFeedbackActionList attribute should be ignored,
+                 and the action applied to all policies. A value of
+                 1 indicates that the action entry has a specific
+
+
+
+                 list of policies to which it is to be applied."
+        ::= { frwkFeedbackActionEntry 3}
+
+frwkFeedbackActionList OBJECT-TYPE
+        SYNTAX        TagReferenceId
+        PIB-TAG       { frwkFeedbackActionListTag }
+        STATUS        current
+        DESCRIPTION
+                 "Identifies a group of frwkFeedbackLink instances
+                 that this action should affect. The group is
+                 identified through a tag reference in the
+                 frwkFeedbackList class."
+        ::= { frwkFeedbackActionEntry 4}
+
+--
+--  Feedback Action List Table
+--
+
+frwkFeedbackActionListTable OBJECT-TYPE
+        SYNTAX          SEQUENCE OF FrwkFeedbackActionListEntry
+        PIB-ACCESS      install
+        STATUS          current
+        DESCRIPTION
+                 "This class defines groups of linkage instances.
+                 Groups can be referenced by commands sent by the
+                 PDP in a frwkFeedbackActionEntry -in this case the
+                 command affects all linkage instances that are part
+                 of the group.
+                 A group can be referred to by its tag stored in
+                 frwkFeedbackActionListTag."
+        ::= { frwkFeedbackGroupClasses  2}
+
+frwkFeedbackActionListEntry OBJECT-TYPE
+        SYNTAX          FrwkFeedbackActionListEntry
+        STATUS          current
+        DESCRIPTION
+                 "Each instance associates a linkage instance with a
+                  specific ActionListGroup."
+
+        PIB-INDEX {frwkFeedbackActionListId }
+        UNIQUENESS { frwkFeedbackActionListTag,
+                     frwkFeedbackActionListRefID
+                   }
+        ::= { frwkFeedbackActionListTable 1}
+
+FrwkFeedbackActionListEntry::= SEQUENCE {
+           frwkFeedbackActionListId          InstanceId,
+           frwkFeedbackActionListTag         TagId,
+
+
+
+           frwkFeedbackActionListRefID       ReferenceId
+     }
+
+frwkFeedbackActionListId OBJECT-TYPE
+        SYNTAX       InstanceId
+        STATUS       current
+        DESCRIPTION
+                  "Arbitrary integer index that uniquely
+                  identifies an instance of the class."
+
+        ::= { frwkFeedbackActionListEntry 1 }
+
+frwkFeedbackActionListTag OBJECT-TYPE
+        SYNTAX       TagId
+        STATUS       current
+        DESCRIPTION
+                  "Identifies a group of linkage instances that can
+                  be referenced from the Action class."
+
+        ::= { frwkFeedbackActionListEntry 2 }
+
+frwkFeedbackActionListRefID   OBJECT-TYPE
+        SYNTAX       ReferenceId
+        PIB-REFERENCES { frwkFeedbackLinkEntry }
+        STATUS       current
+        DESCRIPTION
+                  "A frwkFeedbackLink instance that is referred to
+                  by this ReferenceId becomes part of the group,
+                  that is identified by the
+                  frwkFeedbackActionListTag."
+
+        ::= { frwkFeedbackActionListEntry 3 }
+
+--
+-- The Feedback Link Capability Table
+--
+
+frwkFeedbackLinkCapsTable OBJECT-TYPE
+     SYNTAX           SEQUENCE OF FrwkFeedbackLinkCapsEntry
+     PIB-ACCESS       notify
+     STATUS           current
+     DESCRIPTION
+             "Instances of the frwkFeedbackLink class reference
+              instances of selection and threshold classes and a
+              usage class.
+              This class allows the PEP to communicate valid
+              combinations of these three classes to the PDP."
+      ::= { frwkFeedbackGroupClasses 3}
+
+
+
+frwkFeedbackLinkCapsEntry OBJECT-TYPE
+     SYNTAX          FrwkFeedbackLinkCapsEntry
+     STATUS          current
+     DESCRIPTION
+              "The attributes of this class identify valid
+               combinations of selection criteria, usage and
+               threshold classes for feedback."
+     PIB-INDEX { frwkFeedbackLinkCapsId }
+     UNIQUENESS {
+                 frwkFeedbackLinkCapsSelection,
+                 frwkFeedbackLinkCapsUsage,
+                 frwkFeedbackLinkCapsThreshold
+              }
+
+     ::= {frwkFeedbackLinkCapsTable 1}
+
+FrwkFeedbackLinkCapsEntry ::= SEQUENCE {
+       frwkFeedbackLinkCapsId         InstanceId,
+       frwkFeedbackLinkCapsSelection  PrcIdentifierOid,
+       frwkFeedbackLinkCapsUsage      PrcIdentifierOid,
+       frwkFeedbackLinkCapsThreshold  PrcIdentifierOidOrZero
+}
+
+frwkFeedbackLinkCapsId OBJECT-TYPE
+     SYNTAX        InstanceId
+     STATUS        current
+     DESCRIPTION
+          "An arbitrary integer index that uniquely identifies an
+          instance of the frwkFeedbackLinkCaps class."
+     ::= { frwkFeedbackLinkCapsEntry 1}
+
+frwkFeedbackLinkCapsSelection OBJECT-TYPE
+     SYNTAX        PrcIdentifierOid
+     STATUS        current
+     DESCRIPTION
+            "The identifier of a class that is supported by the
+             device for feedback selection in combination with the
+             usage and threshold classes referenced in this
+             instance."
+     ::= { frwkFeedbackLinkCapsEntry 2}
+
+frwkFeedbackLinkCapsUsage OBJECT-TYPE
+     SYNTAX        PrcIdentifierOid
+     STATUS        current
+     DESCRIPTION
+             "The identifier of the usage class that is supported by
+             the PEP in combination with the selection and threshold
+             classes referenced in this instance."
+
+
+
+     ::= { frwkFeedbackLinkCapsEntry 3}
+
+
+frwkFeedbackLinkCapsThreshold OBJECT-TYPE
+        SYNTAX        PrcIdentifierOidOrZero
+        STATUS        current
+        DESCRIPTION
+             "The identifier of the threshold class that is
+             supported by the PEP in combination with the selection
+             and usage classes referenced in this instance.
+             0.0 is used if this combination does not allow a
+             threshold."
+        ::= { frwkFeedbackLinkCapsEntry 4}
+
+--
+-- The Feedback Report Linkage Table
+--
+
+frwkFeedbackLinkTable OBJECT-TYPE
+     SYNTAX          SEQUENCE OF FrwkFeedbackLinkEntry
+     PIB-ACCESS      install
+     STATUS          current
+     DESCRIPTION
+              "This class associates the selection criteria with the
+               usage policy. It also permits the defining of the max
+               interval used for reporting the usage instance."
+
+     ::= { frwkFeedbackGroupClasses  4}
+
+frwkFeedbackLinkEntry OBJECT-TYPE
+     SYNTAX          FrwkFeedbackLinkEntry
+     STATUS          current
+     DESCRIPTION
+              "This class associates the selection criteria with the
+               usage policy. It also permits the defining of the max
+               interval used for reporting the usage instance."
+     PIB-INDEX { frwkFeedbackLinkId }
+     UNIQUENESS {frwkFeedbackLinkSel,
+                 frwkFeedbackLinkUsage }
+     ::= {frwkFeedbackLinkTable 1}
+
+FrwkFeedbackLinkEntry ::= SEQUENCE {
+       frwkFeedbackLinkId         InstanceId,
+       frwkFeedbackLinkSel        Prid,
+       frwkFeedbackLinkUsage      PrcIdentifierOid,
+       frwkFeedbackLinkInterval   Integer32,
+       frwkFeedbackLinkThreshold  Prid,
+       frwkFeedbackLinkFlags      BITS
+
+
+
+}
+
+frwkFeedbackLinkId OBJECT-TYPE
+     SYNTAX        InstanceId
+     STATUS        current
+     DESCRIPTION
+         "An arbitrary integer index that uniquely identifies an
+          instance of the frwkFeedbackLinkTable class."
+     ::= { frwkFeedbackLinkEntry 1}
+
+frwkFeedbackLinkSel OBJECT-TYPE
+     SYNTAX       Prid
+     STATUS       current
+     DESCRIPTION
+         "The PRID of the Policy Class instance as the monitoring
+          point, or the PRID of the selection criteria instance that
+          defines the conditions for monitoring, to be use by the
+          PEP for usage reporting."
+
+     ::= { frwkFeedbackLinkEntry 2}
+
+frwkFeedbackLinkUsage OBJECT-TYPE
+     SYNTAX      PrcIdentifierOid
+     STATUS      current
+     DESCRIPTION
+          "The identifier of the usage class that the PEP uses to
+          monitor, record and report."
+
+     ::= { frwkFeedbackLinkEntry 3}
+
+frwkFeedbackLinkInterval  OBJECT-TYPE
+     SYNTAX   Integer32
+     STATUS   current
+     DESCRIPTION
+             "Maximum interval in units of the value of the
+              Accounting Timer specified by the PDP in the client
+              accept message. A frwkFeedbackLinkInterval of 1 is
+              equal to the value of the Accounting Timer. This value
+              must be 1 or greater. "
+
+     ::= { frwkFeedbackLinkEntry 4}
+
+frwkFeedbackLinkThreshold  OBJECT-TYPE
+     SYNTAX   Prid
+     STATUS   current
+     DESCRIPTION
+             "The PRID of a threshold class instance. This instance
+              specifies the threshold values for the usage policy."
+
+
+
+     ::= { frwkFeedbackLinkEntry 5}
+
+frwkFeedbackLinkFlags  OBJECT-TYPE
+     SYNTAX   BITS {
+                      periodic(0),
+                      threshold(1),
+                      changeOnly(2)
+              }
+     STATUS   current
+     DESCRIPTION
+            "This value indicates the reporting basis of the usage
+              policy. The feed back may be generated on demand, on a
+              periodic basis regardless of a change in value from the
+              previous report, on a periodic basis if a change in
+              value has occurred, or the usage is reported when an
+              identified threshold value in the usage instance has
+              been reached.
+             If the 'periodic' flag is set, the PEP will provide
+              unsolicited reports at the rate specified in
+              frwkFeedbackLinkInterval.
+             If the 'periodic' flag is not set, reports will only be
+              generated when solicited by the PDP.
+             The 'threshold' and 'changeOnly' flags make the
+              periodic reports conditional - these flags only make
+              sense in combination with the 'periodic' flag."
+
+        ::= { frwkFeedbackLinkEntry 6}
+
+--
+-- The Threshold class that accompanies the above Usage PRCs
+--
+
+frwkFeedbackTrafficThresTable OBJECT-TYPE
+        SYNTAX         SEQUENCE OF FrwkFeedbackTrafficThresEntry
+        PIB-ACCESS     install
+        STATUS         current
+        DESCRIPTION
+              "This class defines the threshold attributes
+               corresponding to usage attributes specified in
+               frwkFeedbackTrafficTable, frwkFeedbackIfTrafficTable
+               and other similar usage classes.
+
+               The usage object is considered to match the threshold
+               condition if at least one of the packet or byte
+               threshold conditions match.
+
+               The byte and packet thresholds are considered to
+               match, if the threshold is present (not ASN1 NULL)
+
+
+
+               and the corresponding usage value exceeds the
+               threshold."
+
+        ::= { frwkFeedbackGroupClasses  5}
+
+frwkFeedbackTrafficThresEntry OBJECT-TYPE
+        SYNTAX          FrwkFeedbackTrafficThresEntry
+        STATUS          current
+        DESCRIPTION
+                 "Defines the attributes to hold threshold values."
+        PIB-INDEX {frwkFeedbackTrafficThresId}
+
+        ::= {frwkFeedbackTrafficThresTable 1}
+
+FrwkFeedbackTrafficThresEntry ::= SEQUENCE {
+         frwkFeedbackTrafficThresId                  InstanceId,
+         frwkFeedbackTrafficThresPackets            Unsigned64,
+         frwkFeedbackTrafficThresBytes              Unsigned64
+}
+
+frwkFeedbackTrafficThresId   OBJECT-TYPE
+        SYNTAX       InstanceId
+        STATUS       current
+        DESCRIPTION
+                  "Arbitrary integer index that uniquely identifies
+                   an instance of the class."
+        ::= { frwkFeedbackTrafficThresEntry 1 }
+
+frwkFeedbackTrafficThresPackets   OBJECT-TYPE
+        SYNTAX       Unsigned64
+        STATUS       current
+        DESCRIPTION
+                  "The threshold, in terms of packets, that must be
+                   matched or exceeded to trigger a report in the
+                   next reporting interval."
+        ::= { frwkFeedbackTrafficThresEntry 2 }
+
+frwkFeedbackTrafficThresBytes   OBJECT-TYPE
+        SYNTAX       Unsigned64
+        STATUS       current
+        DESCRIPTION
+                "The threshold, in terms of bytes, that must be
+                 exceeded to trigger a report in the next reporting
+                 interval."
+        ::= { frwkFeedbackTrafficThresEntry 3 }
+
+
+--
+
+
+
+-- All actual usage classes are in the separate
+-- frwkFeedbackUsageClasses group
+--
+
+frwkFeedbackUsageClasses
+    OBJECT IDENTIFIER ::= { frwkFeedbackPib  2 }
+
+
+--
+-- The generic traffic (byte & packet count) usage class
+--
+
+frwkFeedbackTrafficTable OBJECT-TYPE
+     SYNTAX          SEQUENCE OF FrwkFeedbackTrafficEntry
+     PIB-ACCESS      report-only
+     STATUS          current
+     DESCRIPTION
+              "This class defines the usage attributes that the PEP
+               is to monitor for plain traffic handling elements
+               like filters. All packets and the bytes contained in
+               these packets are counted. It also contains the PRID
+               of the linkage instance associating the selection
+               criteria instance with the usage instance."
+
+     ::= { frwkFeedbackUsageClasses  1}
+
+frwkFeedbackTrafficEntry OBJECT-TYPE
+     SYNTAX          FrwkFeedbackTrafficEntry
+     STATUS          current
+     DESCRIPTION
+              "Defines the attributes the PEP is to monitor,
+               record and report."
+     PIB-INDEX {frwkFeedbackTrafficId}
+     UNIQUENESS { frwkFeedbackTrafficLinkRefID }
+
+     ::= {frwkFeedbackTrafficTable 1}
+
+FrwkFeedbackTrafficEntry ::= SEQUENCE {
+      frwkFeedbackTrafficId              InstanceId,
+      frwkFeedbackTrafficLinkRefID       ReferenceId,
+      frwkFeedbackTrafficPacketCount     Usage64,
+      frwkFeedbackTrafficByteCount       Usage64
+
+}
+
+frwkFeedbackTrafficId   OBJECT-TYPE
+     SYNTAX       InstanceId
+     STATUS       current
+
+
+
+     DESCRIPTION
+               "Arbitrary integer index that uniquely identifies
+                an instance of the class."
+     ::= { frwkFeedbackTrafficEntry 1 }
+
+frwkFeedbackTrafficLinkRefID  OBJECT-TYPE
+     SYNTAX      ReferenceId
+     PIB-REFERENCES { frwkFeedbackLinkEntry }
+     STATUS      current
+     DESCRIPTION
+               "The ReferenceId of the Linkage policy instance used
+                to base this usage policy instance upon."
+
+     ::= { frwkFeedbackTrafficEntry 2 }
+
+frwkFeedbackTrafficPacketCount OBJECT-TYPE
+     SYNTAX       Usage64
+     STATUS       current
+     DESCRIPTION
+               "The count of packets handled by the associated
+                element. The initial value of 0 is set when the
+                frwkFeedbackTraffic instance is created, for example
+                triggered through the creation of a frwkFeedbackLink
+                instance."
+
+     ::= {frwkFeedbackTrafficEntry 3}
+
+frwkFeedbackTrafficByteCount OBJECT-TYPE
+     SYNTAX       Usage64
+     STATUS       current
+     DESCRIPTION
+                "The byte count of packets handled by the associated
+                 element. The initial value of 0 is set when the
+                 frwkFeedbackTraffic instance is created."
+     ::= { frwkFeedbackTrafficEntry 4}
+
+
+
+--
+-- The traffic usage class, qualified for an interface
+--
+frwkFeedbackIfTrafficTable OBJECT-TYPE
+     SYNTAX          SEQUENCE OF FrwkFeedbackIfTrafficEntry
+     PIB-ACCESS      report-only
+     STATUS          current
+     DESCRIPTION
+             "A usage class similar to the basic Traffic class that
+             also contains a reference to an interface index. This
+
+
+
+             class should be used with an underspecified selection
+             criteria entry from the frwkRoleComboTable that matches
+             an element that can be assigned to multiple interface
+             indices. The interface field can be used to associate
+             the instances of this class with the specific element's
+             assignment."
+     ::= { frwkFeedbackUsageClasses  2 }
+
+frwkFeedbackIfTrafficEntry OBJECT-TYPE
+     SYNTAX          FrwkFeedbackIfTrafficEntry
+     STATUS          current
+     DESCRIPTION
+              "Defines the attributes the PEP is to monitor,
+               record and report."
+     PIB-INDEX {frwkFeedbackIfTrafficId}
+     UNIQUENESS { frwkFeedbackIfTrafficLinkRefID,
+                  frwkFeedbackIfTrafficIfIndex }
+
+     ::= {frwkFeedbackIfTrafficTable 1}
+
+FrwkFeedbackIfTrafficEntry ::= SEQUENCE {
+      frwkFeedbackIfTrafficId              InstanceId,
+      frwkFeedbackIfTrafficLinkRefID       ReferenceId,
+      frwkFeedbackIfTrafficIfIndex         InterfaceIndex,
+      frwkFeedbackIfTrafficPacketCount     Usage64,
+      frwkFeedbackIfTrafficByteCount       Usage64
+
+}
+
+frwkFeedbackIfTrafficId   OBJECT-TYPE
+     SYNTAX       InstanceId
+     STATUS       current
+     DESCRIPTION
+               "Arbitrary integer index that uniquely identifies
+                an instance of the class."
+     ::= { frwkFeedbackIfTrafficEntry 1 }
+
+frwkFeedbackIfTrafficLinkRefID  OBJECT-TYPE
+     SYNTAX      ReferenceId
+     PIB-REFERENCES { frwkFeedbackLinkEntry }
+     STATUS      current
+     DESCRIPTION
+               "The ReferenceId of the Linkage policy instance used
+                to base this usage policy instance upon."
+     ::= { frwkFeedbackIfTrafficEntry 2 }
+
+frwkFeedbackIfTrafficIfIndex  OBJECT-TYPE
+       SYNTAX         InterfaceIndex
+
+
+
+       STATUS         current
+       DESCRIPTION
+           "The value of this attribute is the ifIndex which is
+           associated with the specified RoleCombination and
+           interface capability set name."
+
+       ::= { frwkFeedbackIfTrafficEntry 3 }
+
+frwkFeedbackIfTrafficPacketCount OBJECT-TYPE
+     SYNTAX       Usage64
+     STATUS       current
+     DESCRIPTION
+             "The count of packets handled by the associated
+             element. The initial value of 0 is set when the
+             frwkFeedbackIfTraffic instance is created."
+     ::= { frwkFeedbackIfTrafficEntry 4 }
+
+frwkFeedbackIfTrafficByteCount OBJECT-TYPE
+     SYNTAX       Usage64
+     STATUS       current
+     DESCRIPTION
+               "The byte count of packets handled by the associated
+               element. The initial value of 0 is set when the
+               frwkFeedbackIfTraffic instance is created."
+     ::= { frwkFeedbackIfTrafficEntry 5 }
+
+
+--
+-- All Selection classes are in the separate
+-- FrwkFeedbackSelectionClasses group
+--
+
+frwkFeedbackSelectionClasses
+    OBJECT IDENTIFIER ::= { frwkFeedbackPib  3 }
+
+--
+-- The Role Combination Filter Selection Table
+--
+
+frwkFeedbackRoleFilterSelTable OBJECT-TYPE
+     SYNTAX          SEQUENCE OF FrwkFeedbackRoleFilterSelEntry
+     PIB-ACCESS      install
+     STATUS          current
+     DESCRIPTION
+             "A selection class that defines selection of objects
+             for monitoring based on the role combination,
+             capability set and a filter."
+     ::= { frwkFeedbackSelectionClasses  1 }
+
+
+
+frwkFeedbackRoleFilterSelEntry OBJECT-TYPE
+     SYNTAX          FrwkFeedbackRoleFilterSelEntry
+     STATUS          current
+     DESCRIPTION
+             "Each instance selects a filter on multiple interfaces
+             that share the same frwkRoleCombo instance."
+     PIB-INDEX { frwkFeedbackRoleFilterSelId}
+     UNIQUENESS { frwkFeedbackRoleFilterSelRCombo,
+                  frwkFeedbackRoleFilterSelFilter
+                 }
+
+     ::= {frwkFeedbackRoleFilterSelTable 1}
+
+FrwkFeedbackRoleFilterSelEntry ::= SEQUENCE {
+      frwkFeedbackRoleFilterSelId          InstanceId,
+      frwkFeedbackRoleFilterSelRCombo      ReferenceId,
+      frwkFeedbackRoleFilterSelFilter      Prid
+}
+
+frwkFeedbackRoleFilterSelId   OBJECT-TYPE
+     SYNTAX       InstanceId
+     STATUS       current
+     DESCRIPTION
+               "Arbitrary integer index that uniquely identifies
+                an instance of the class."
+     ::= { frwkFeedbackRoleFilterSelEntry 1 }
+
+frwkFeedbackRoleFilterSelRCombo  OBJECT-TYPE
+     SYNTAX      ReferenceId
+     PIB-REFERENCES { frwkRoleComboEntry }
+     STATUS      current
+     DESCRIPTION
+               "The ReferenceId of the frwkRoleComboTable policy
+                instance used for selection."
+     ::= { frwkFeedbackRoleFilterSelEntry 2 }
+
+frwkFeedbackRoleFilterSelFilter     OBJECT-TYPE
+     SYNTAX      Prid
+     STATUS      current
+     DESCRIPTION
+               "The identifier of a filter instance. Valid classes
+                are the subclasses of frwkBaseFilter:
+                - frwkIpFilter
+                - frwk802Filter
+                - frwkILabelFilter"
+     ::= { frwkFeedbackRoleFilterSelEntry 3 }
+
+
+
+
+
+--
+-- Compliance Section
+--
+
+frwkFeedbackPibConformance
+             OBJECT IDENTIFIER ::= { frwkFeedbackPib 4 }
+
+frwkFeedbackPibCompliances
+             OBJECT IDENTIFIER ::= { frwkFeedbackPibConformance 1 }
+
+frwkFeedbackPibGroups
+             OBJECT IDENTIFIER ::= { frwkFeedbackPibConformance 2 }
+
+
+frwkFeedbackPibCompliance MODULE-COMPLIANCE
+     STATUS  current
+     DESCRIPTION
+     "Describes the requirements for conformance to the feedback
+     framework PIB"
+
+   MODULE   -- this module
+      MANDATORY-GROUPS { frwkFeedbackLinkCapsGroup,
+                         frwkFeedbackLinkGroup,
+                         frwkFeedbackActionGroup }
+
+   GROUP frwkFeedbackActionListGroup
+      DESCRIPTION
+                   "The frwkFeedbackActionListGroup is mandatory if
+                   actions on subsets linkEntries are to be
+                   supported."
+
+   GROUP frwkFeedbackTrafficGroup
+      DESCRIPTION
+                   "The frwkFeedbackTrafficGroup is mandatory if
+                   monitoring of traffic data is to be supported."
+
+   GROUP frwkFeedbackTrafficThresGroup
+      DESCRIPTION
+                   "The frwkFeedbackTrafficThresGroup is mandatory
+                   if conditional reporting of traffic usage
+                   thresholds is to be supported."
+
+   GROUP frwkFeedbackIfTrafficGroup
+      DESCRIPTION
+                   "The frwkFeedbackIfTrafficGroup is mandatory if
+                   per-interface usage collection of traffic data is
+                   to be supported."
+
+
+
+
+   GROUP frwkFeedbackRoleFilterSelGroup
+      DESCRIPTION
+                   "The frwkFeedbackRoleFilterSelGroup is mandatory
+                   if monitoring of filters referenced through the
+                   frwkRoleCombo class is to be supported."
+
+   ::= { frwkFeedbackPibCompliances 1 }
+
+ frwkFeedbackLinkCapsGroup OBJECT-GROUP
+     OBJECTS {
+             frwkFeedbackLinkCapsId,
+             frwkFeedbackLinkCapsSelection,
+             frwkFeedbackLinkCapsUsage,
+             frwkFeedbackLinkCapsThreshold }
+     STATUS  current
+     DESCRIPTION
+          "Objects from the frwkFeedbackLinkCapsTable."
+
+     ::= { frwkFeedbackPibGroups 1 }
+
+ frwkFeedbackLinkGroup OBJECT-GROUP
+     OBJECTS {
+             frwkFeedbackLinkId,
+             frwkFeedbackLinkSel,
+             frwkFeedbackLinkUsage,
+             frwkFeedbackLinkInterval,
+             frwkFeedbackLinkThreshold,
+             frwkFeedbackLinkFlags }
+     STATUS  current
+     DESCRIPTION
+          "Objects from the frwkFeedbackLinkTable."
+
+     ::= { frwkFeedbackPibGroups 2 }
+
+ frwkFeedbackActionGroup OBJECT-GROUP
+     OBJECTS {
+             frwkFeedbackActionId,
+             frwkFeedbackActionIndicator,
+             frwkFeedbackActionSpecificPri,
+             frwkFeedbackActionList }
+     STATUS  current
+     DESCRIPTION
+          "Objects from the frwkFeedbackActionTable."
+
+     ::= { frwkFeedbackPibGroups 3 }
+
+ frwkFeedbackActionListGroup OBJECT-GROUP
+     OBJECTS {
+
+
+
+             frwkFeedbackActionListId,
+             frwkFeedbackActionListTag,
+             frwkFeedbackActionListRefID }
+     STATUS  current
+     DESCRIPTION
+          "Objects from the frwkFeedbackActionListTable."
+
+     ::= { frwkFeedbackPibGroups 4 }
+
+ frwkFeedbackTrafficGroup OBJECT-GROUP
+     OBJECTS {
+             frwkFeedbackTrafficId,
+             frwkFeedbackTrafficLinkRefID,
+             frwkFeedbackTrafficPacketCount,
+             frwkFeedbackTrafficByteCount }
+     STATUS  current
+     DESCRIPTION
+          "Objects from the frwkFeedbackTrafficTable."
+
+     ::= { frwkFeedbackPibGroups 5 }
+
+ frwkFeedbackTrafficThresGroup OBJECT-GROUP
+     OBJECTS {
+             frwkFeedbackTrafficThresId,
+             frwkFeedbackTrafficThresPackets,
+             frwkFeedbackTrafficThresBytes }
+     STATUS  current
+     DESCRIPTION
+          "Objects from the frwkFeedbackTrafficThresTable."
+
+     ::= { frwkFeedbackPibGroups 6 }
+
+ frwkFeedbackIfTrafficGroup OBJECT-GROUP
+     OBJECTS {
+             frwkFeedbackIfTrafficId,
+             frwkFeedbackIfTrafficLinkRefID,
+             frwkFeedbackIfTrafficIfIndex,
+             frwkFeedbackIfTrafficPacketCount,
+             frwkFeedbackIfTrafficByteCount }
+     STATUS  current
+     DESCRIPTION
+          "Objects from the frwkFeedbackIfTrafficTable."
+
+     ::= { frwkFeedbackPibGroups 7 }
+
+ frwkFeedbackRoleFilterSelGroup OBJECT-GROUP
+     OBJECTS {
+             frwkFeedbackRoleFilterSelId,
+
+
+
+             frwkFeedbackRoleFilterSelRCombo,
+             frwkFeedbackRoleFilterSelFilter }
+     STATUS  current
+     DESCRIPTION
+          "Objects from the frwkFeedbackRoleFilterSelTable."
+
+     ::= { frwkFeedbackPibGroups 8 }
+
+END

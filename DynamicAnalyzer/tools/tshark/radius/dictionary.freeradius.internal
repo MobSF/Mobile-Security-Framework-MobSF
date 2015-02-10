@@ -1,0 +1,588 @@
+# -*- text -*-
+#
+#	Non Protocol Attributes used by FreeRADIUS
+#
+#	$Id$
+#
+
+#	The attributes number ranges are allocates as follows:
+#
+#	Range:	500-999
+#		server-side attributes which can go in a reply list
+
+# 	These attributes CAN go in the reply item list.
+ATTRIBUTE	Fall-Through				500	integer
+ATTRIBUTE	Exec-Program				502	string
+ATTRIBUTE	Exec-Program-Wait			503	string
+
+#	These attributes CANNOT go in the reply item list.
+
+#
+#	Range:	1000+
+#		Attributes which cannot go in a reply list.
+#
+#
+#	Range:	1000-1199
+#		Miscellaneous server attributes.
+#
+#
+#	Non-Protocol Attributes
+#	These attributes are used internally by the server
+#
+ATTRIBUTE	Auth-Type				1000	integer
+ATTRIBUTE	Menu					1001	string
+ATTRIBUTE	Termination-Menu			1002	string
+ATTRIBUTE	Prefix					1003	string
+ATTRIBUTE	Suffix					1004	string
+ATTRIBUTE	Group					1005	string
+ATTRIBUTE	Crypt-Password				1006	string
+ATTRIBUTE	Connect-Rate				1007	integer
+ATTRIBUTE	Add-Prefix				1008	string
+ATTRIBUTE	Add-Suffix				1009	string
+ATTRIBUTE	Expiration				1010	date
+ATTRIBUTE	Autz-Type				1011	integer
+ATTRIBUTE	Acct-Type				1012	integer
+ATTRIBUTE	Session-Type				1013	integer
+ATTRIBUTE	Post-Auth-Type				1014	integer
+ATTRIBUTE	Pre-Proxy-Type				1015	integer
+ATTRIBUTE	Post-Proxy-Type				1016	integer
+ATTRIBUTE	Pre-Acct-Type				1017	integer
+
+#
+#	This is the EAP type of authentication, which is set
+#	by the EAP module, for informational purposes only.
+#
+ATTRIBUTE	EAP-Type				1018	integer
+ATTRIBUTE	EAP-TLS-Require-Client-Cert		1019	integer
+ATTRIBUTE	EAP-Id					1020	integer
+ATTRIBUTE	EAP-Code				1021	integer
+# Attribute 1022 unused, was EAP-MD5-Password, which was
+# used only be radeapclient.  It's been replaced by Cleartext-Password
+ATTRIBUTE	PEAP-Version				1023	integer
+ATTRIBUTE	Client-Shortname			1024	string
+ATTRIBUTE	Load-Balance-Key			1025	string
+ATTRIBUTE	Raw-Attribute				1026	octets
+ATTRIBUTE	TNC-VLAN-Access				1027	string
+ATTRIBUTE	TNC-VLAN-Isolate			1028	string
+ATTRIBUTE	User-Category				1029	string
+ATTRIBUTE	Group-Name				1030	string
+ATTRIBUTE	Huntgroup-Name				1031	string
+ATTRIBUTE	Simultaneous-Use			1034	integer
+ATTRIBUTE	Strip-User-Name				1035	integer
+ATTRIBUTE	Hint					1040	string
+ATTRIBUTE	Pam-Auth				1041	string
+ATTRIBUTE	Login-Time				1042	string
+ATTRIBUTE	Stripped-User-Name			1043	string
+ATTRIBUTE	Current-Time				1044	string
+ATTRIBUTE	Realm					1045	string
+ATTRIBUTE	No-Such-Attribute			1046	string
+ATTRIBUTE	Packet-Type				1047	integer
+ATTRIBUTE	Proxy-To-Realm				1048	string
+ATTRIBUTE	Replicate-To-Realm			1049	string
+ATTRIBUTE	Acct-Session-Start-Time			1050	date
+ATTRIBUTE	Acct-Unique-Session-Id			1051	string
+ATTRIBUTE	Client-IP-Address			1052	ipaddr
+ATTRIBUTE	Ldap-UserDn				1053	string
+ATTRIBUTE	NS-MTA-MD5-Password			1054	string
+ATTRIBUTE	SQL-User-Name				1055	string
+ATTRIBUTE	LM-Password				1057	octets
+ATTRIBUTE	NT-Password				1058	octets
+ATTRIBUTE	SMB-Account-CTRL			1059	integer
+ATTRIBUTE	SMB-Account-CTRL-TEXT			1061	string
+ATTRIBUTE	User-Profile				1062	string
+ATTRIBUTE	Digest-Realm				1063	string
+ATTRIBUTE	Digest-Nonce				1064	string
+ATTRIBUTE	Digest-Method				1065	string
+ATTRIBUTE	Digest-URI				1066	string
+ATTRIBUTE	Digest-QOP				1067	string
+ATTRIBUTE	Digest-Algorithm			1068	string
+ATTRIBUTE	Digest-Body-Digest			1069	string
+ATTRIBUTE	Digest-CNonce				1070	string
+ATTRIBUTE	Digest-Nonce-Count			1071	string
+ATTRIBUTE	Digest-User-Name			1072	string
+ATTRIBUTE	Pool-Name				1073	string
+ATTRIBUTE	Ldap-Group				1074	string
+ATTRIBUTE	Module-Success-Message			1075	string
+ATTRIBUTE	Module-Failure-Message			1076	string
+#		X99-Fast		1077	integer
+ATTRIBUTE	Rewrite-Rule				1078	string
+ATTRIBUTE	Sql-Group				1079	string
+ATTRIBUTE	Response-Packet-Type			1080	integer
+ATTRIBUTE	Digest-HA1				1081	string
+ATTRIBUTE	MS-CHAP-Use-NTLM-Auth			1082	integer
+ATTRIBUTE	NTLM-User-Name				1083	string
+ATTRIBUTE	MS-CHAP-User-Name			1083	string
+ATTRIBUTE	Packet-Src-IP-Address			1084	ipaddr
+ATTRIBUTE	Packet-Dst-IP-Address			1085	ipaddr
+ATTRIBUTE	Packet-Src-Port				1086	integer
+ATTRIBUTE	Packet-Dst-Port				1087	integer
+ATTRIBUTE	Packet-Authentication-Vector		1088	octets
+ATTRIBUTE	Time-Of-Day				1089	string
+ATTRIBUTE	Request-Processing-Stage		1090	string
+ATTRIBUTE	Cache-No-Caching			1091	string
+ATTRIBUTE	Cache-Delete-Cache			1092	string
+ATTRIBUTE	SHA-Password				1093	octets
+ATTRIBUTE	SSHA-Password				1094	octets
+ATTRIBUTE	SHA1-Password				1093	octets
+ATTRIBUTE	SSHA1-Password				1094	octets
+ATTRIBUTE	MD5-Password				1095	octets
+ATTRIBUTE	SMD5-Password				1096	octets
+ATTRIBUTE	Packet-Src-IPv6-Address			1097	ipv6addr
+ATTRIBUTE	Packet-Dst-IPv6-Address			1098	ipv6addr
+ATTRIBUTE	Virtual-Server				1099	string
+ATTRIBUTE	Cleartext-Password			1100	string
+ATTRIBUTE	Password-With-Header			1101	string
+ATTRIBUTE	Inner-Tunnel-User-Name			1102	string
+
+#
+#	EAP-IKEv2 is experimental.
+#
+ATTRIBUTE	EAP-IKEv2-IDType			1103	integer
+
+VALUE	EAP-IKEv2-IDType		IPV4_ADDR		1
+VALUE	EAP-IKEv2-IDType		FQDN			2
+VALUE	EAP-IKEv2-IDType		RFC822_ADDR		3
+VALUE	EAP-IKEv2-IDType		IPV6_ADDR		5
+VALUE	EAP-IKEv2-IDType		DER_ASN1_DN		9
+VALUE	EAP-IKEv2-IDType		DER_ASN1_GN		10
+VALUE	EAP-IKEv2-IDType		KEY_ID			11
+
+ATTRIBUTE	EAP-IKEv2-ID				1104	string
+ATTRIBUTE	EAP-IKEv2-Secret			1105	string
+ATTRIBUTE	EAP-IKEv2-AuthType			1106	integer
+
+VALUE	EAP-IKEv2-AuthType		none			0
+VALUE	EAP-IKEv2-AuthType		secret			1
+VALUE	EAP-IKEv2-AuthType		cert			2
+VALUE	EAP-IKEv2-AuthType		both			3
+
+ATTRIBUTE	Send-Disconnect-Request			1107	integer
+ATTRIBUTE	Send-CoA-Request			1107	integer
+
+VALUE	Send-CoA-Request		No			0
+VALUE	Send-CoA-Request		Yes			1
+
+ATTRIBUTE	Module-Return-Code			1108	integer
+
+VALUE	Module-Return-Code		reject			0
+VALUE	Module-Return-Code		fail			1
+VALUE	Module-Return-Code		ok			2
+VALUE	Module-Return-Code		handled			3
+VALUE	Module-Return-Code		invalid			4
+VALUE	Module-Return-Code		userlock		5
+VALUE	Module-Return-Code		notfound		6
+VALUE	Module-Return-Code		noop			7
+VALUE	Module-Return-Code		updated			8
+
+ATTRIBUTE	Packet-Original-Timestamp		1109	date
+ATTRIBUTE	SQL-Table-Name				1110	string
+ATTRIBUTE	Home-Server-Pool			1111	string
+
+ATTRIBUTE	FreeRADIUS-Client-IP-Address		1120	ipaddr
+ATTRIBUTE	FreeRADIUS-Client-IPv6-Address		1121	ipv6addr
+ATTRIBUTE	FreeRADIUS-Client-Require-MA		1122	integer
+
+VALUE	FreeRADIUS-Client-Require-MA	no			0
+VALUE	FreeRADIUS-Client-Require-MA	yes			1
+
+ATTRIBUTE	FreeRADIUS-Client-Secret		1123	string
+ATTRIBUTE	FreeRADIUS-Client-Shortname		1124	string
+ATTRIBUTE	FreeRADIUS-Client-NAS-Type		1125	string
+ATTRIBUTE	FreeRADIUS-Client-Virtual-Server	1126	string
+
+# For session resumption
+ATTRIBUTE	Allow-Session-Resumption		1127	integer
+
+VALUE	Allow-Session-Resumption	no			0
+VALUE	Allow-Session-Resumption	yes			1
+
+ATTRIBUTE	EAP-Session-Resumed			1128	integer
+
+VALUE	EAP-Session-Resumed		no			0
+VALUE	EAP-Session-Resumed		yes			1
+
+#
+#	Expose EAP keys in the reply.
+#
+ATTRIBUTE	EAP-MSK					1129	octets
+ATTRIBUTE	EAP-EMSK				1130	octets
+
+#
+#	For send/recv CoA packets (like Auth-Type, Acct-Type, etc.)
+#
+ATTRIBUTE	Recv-CoA-Type				1131	integer
+ATTRIBUTE	Send-CoA-Type				1132	integer
+
+ATTRIBUTE	MS-CHAP-Password			1133	string
+ATTRIBUTE	Packet-Transmit-Counter			1134	integer
+ATTRIBUTE	Cached-Session-Policy			1135	string
+
+#
+#	Range:	1200-1279
+#		EAP-SIM (and other EAP type) weirdness.
+#
+#	For EAP-SIM, some attribute definitions for database interface
+#
+ATTRIBUTE	EAP-Sim-Subtype				1200	integer
+
+ATTRIBUTE	EAP-Sim-Rand1				1201	octets
+ATTRIBUTE	EAP-Sim-Rand2				1202	octets
+ATTRIBUTE	EAP-Sim-Rand3				1203	octets
+
+ATTRIBUTE	EAP-Sim-SRES1				1204	octets
+ATTRIBUTE	EAP-Sim-SRES2				1205	octets
+ATTRIBUTE	EAP-Sim-SRES3				1206	octets
+
+VALUE	EAP-Sim-Subtype			Start			10
+VALUE	EAP-Sim-Subtype			Challenge		11
+VALUE	EAP-Sim-Subtype			Notification		12
+VALUE	EAP-Sim-Subtype			Re-authentication	13
+
+# this attribute is used internally by the client code.
+ATTRIBUTE	EAP-Sim-State				1207	integer
+
+ATTRIBUTE	EAP-Sim-IMSI				1208	string
+ATTRIBUTE	EAP-Sim-HMAC				1209	string
+ATTRIBUTE	EAP-Sim-KEY				1210	octets
+ATTRIBUTE	EAP-Sim-EXTRA				1211	octets
+
+ATTRIBUTE	EAP-Sim-KC1				1212	octets
+ATTRIBUTE	EAP-Sim-KC2				1213	octets
+ATTRIBUTE	EAP-Sim-KC3				1214	octets
+
+#
+#	Range:	1280 - 1535
+#		EAP-type specific attributes
+#
+
+# these are PW_EAP_X  + 1280
+ATTRIBUTE	EAP-Type-Identity			1281	string
+ATTRIBUTE	EAP-Type-Notification			1282	string
+ATTRIBUTE	EAP-Type-NAK				1283	string
+ATTRIBUTE	EAP-Type-MD5				1284	octets
+ATTRIBUTE	EAP-Type-OTP				1285	string
+ATTRIBUTE	EAP-Type-GTC				1286	string
+ATTRIBUTE	EAP-Type-TLS				1297	octets
+ATTRIBUTE	EAP-Type-SIM				1298	octets
+ATTRIBUTE	EAP-Type-LEAP				1301	octets
+ATTRIBUTE	EAP-Type-SIM2				1302	octets
+ATTRIBUTE	EAP-Type-TTLS				1305	octets
+ATTRIBUTE	EAP-Type-PEAP				1309	octets
+
+#
+#	Range:	1536 - 1791
+#		EAP Sim sub-types.
+#
+
+# these are PW_EAP_SIM_X + 1536
+ATTRIBUTE	EAP-Sim-RAND				1537	octets
+ATTRIBUTE	EAP-Sim-PADDING				1542	octets
+ATTRIBUTE	EAP-Sim-NONCE_MT			1543	octets
+ATTRIBUTE	EAP-Sim-PERMANENT_ID_REQ		1546	octets
+ATTRIBUTE	EAP-Sim-MAC				1547	octets
+ATTRIBUTE	EAP-Sim-NOTIFICATION			1548	octets
+ATTRIBUTE	EAP-Sim-ANY_ID_REQ			1549	octets
+ATTRIBUTE	EAP-Sim-IDENTITY			1550	octets
+ATTRIBUTE	EAP-Sim-VERSION_LIST			1551	octets
+ATTRIBUTE	EAP-Sim-SELECTED_VERSION		1552	octets
+ATTRIBUTE	EAP-Sim-FULLAUTH_ID_REQ			1553	octets
+ATTRIBUTE	EAP-Sim-COUNTER				1555	octets
+ATTRIBUTE	EAP-Sim-COUNTER_TOO_SMALL		1556	octets
+ATTRIBUTE	EAP-Sim-NONCE_S				1557	octets
+ATTRIBUTE	EAP-Sim-IV				1665	octets
+ATTRIBUTE	EAP-Sim-ENCR_DATA			1666	octets
+ATTRIBUTE	EAP-Sim-NEXT_PSEUDONUM			1668	octets
+ATTRIBUTE	EAP-Sim-NEXT_REAUTH_ID			1669	octets
+ATTRIBUTE	EAP-Sim-CHECKCODE			1670	octets
+
+#
+#	Range: 1800-1899
+#	       Temporary attributes, for local storage.
+#
+ATTRIBUTE	Tmp-String-0				1800	string
+ATTRIBUTE	Tmp-String-1				1801	string
+ATTRIBUTE	Tmp-String-2				1802	string
+ATTRIBUTE	Tmp-String-3				1803	string
+ATTRIBUTE	Tmp-String-4				1804	string
+ATTRIBUTE	Tmp-String-5				1805	string
+ATTRIBUTE	Tmp-String-6				1806	string
+ATTRIBUTE	Tmp-String-7				1807	string
+ATTRIBUTE	Tmp-String-8				1808	string
+ATTRIBUTE	Tmp-String-9				1809	string
+
+ATTRIBUTE	Tmp-Integer-0				1810	integer
+ATTRIBUTE	Tmp-Integer-1				1811	integer
+ATTRIBUTE	Tmp-Integer-2				1812	integer
+ATTRIBUTE	Tmp-Integer-3				1813	integer
+ATTRIBUTE	Tmp-Integer-4				1814	integer
+ATTRIBUTE	Tmp-Integer-5				1815	integer
+ATTRIBUTE	Tmp-Integer-6				1816	integer
+ATTRIBUTE	Tmp-Integer-7				1817	integer
+ATTRIBUTE	Tmp-Integer-8				1818	integer
+ATTRIBUTE	Tmp-Integer-9				1819	integer
+
+ATTRIBUTE	Tmp-IP-Address-0			1820	ipaddr
+ATTRIBUTE	Tmp-IP-Address-1			1821	ipaddr
+ATTRIBUTE	Tmp-IP-Address-2			1822	ipaddr
+ATTRIBUTE	Tmp-IP-Address-3			1823	ipaddr
+ATTRIBUTE	Tmp-IP-Address-4			1824	ipaddr
+ATTRIBUTE	Tmp-IP-Address-5			1825	ipaddr
+ATTRIBUTE	Tmp-IP-Address-6			1826	ipaddr
+ATTRIBUTE	Tmp-IP-Address-7			1827	ipaddr
+ATTRIBUTE	Tmp-IP-Address-8			1828	ipaddr
+ATTRIBUTE	Tmp-IP-Address-9			1829	ipaddr
+
+#	Range:	1900-1909
+#	WiMAX server-side attributes.
+#
+#	These are NOT sent in a packet, but are otherwise
+#	available for testing and validation.  The various
+#	things that *are* sent in a packet are derived from
+#	these attributes.
+#
+ATTRIBUTE	WiMAX-MN-NAI				1900	string
+ATTRIBUTE	WiMAX-FA-IP-Address			1901	ipaddr
+ATTRIBUTE	WiMAX-MN-FA				1902	octets
+
+ATTRIBUTE	TLS-Cert-Serial				1910	string
+ATTRIBUTE	TLS-Cert-Expiration			1911	string
+ATTRIBUTE	TLS-Cert-Issuer				1912	string
+ATTRIBUTE	TLS-Cert-Subject			1913	string
+ATTRIBUTE	TLS-Cert-Common-Name			1914	string
+# 1915 - 1919: reserved for future cert attributes
+ATTRIBUTE	TLS-Client-Cert-Serial			1920	string
+ATTRIBUTE	TLS-Client-Cert-Expiration		1921	string
+ATTRIBUTE	TLS-Client-Cert-Issuer			1922	string
+ATTRIBUTE	TLS-Client-Cert-Subject			1923	string
+ATTRIBUTE	TLS-Client-Cert-Common-Name		1924	string
+ATTRIBUTE	TLS-Client-Cert-Filename		1925	string
+
+#
+#	Range:	1910-2999
+#		Free
+#
+#	Range:	3000-3999
+#		Site-local attributes (see raddb/dictionary.in)
+#		Do NOT define attributes in this range!
+#
+#	Range:	4000-65535
+#		Unused
+#
+#	Range:	65536-
+#		Invalid.  Don't use.
+#
+
+#
+#	Non-Protocol Integer Translations
+#
+
+VALUE	Auth-Type			Local			0
+VALUE	Auth-Type			System			1
+VALUE	Auth-Type			SecurID			2
+VALUE	Auth-Type			Crypt-Local		3
+VALUE	Auth-Type			Reject			4
+VALUE	Auth-Type			ActivCard		5
+VALUE	Auth-Type			EAP			6
+VALUE	Auth-Type			ARAP			7
+
+#
+#	FreeRADIUS extensions (most originally from Cistron)
+#
+VALUE	Auth-Type			Accept			254
+
+VALUE	Auth-Type			PAP			1024
+VALUE	Auth-Type			CHAP			1025
+# 1026 was LDAP, but we deleted it.  Adding it back will break the
+# ldap module.
+VALUE	Auth-Type			PAM			1027
+VALUE	Auth-Type			MS-CHAP			1028
+VALUE	Auth-Type			MSCHAP			1028
+VALUE	Auth-Type			Kerberos		1029
+VALUE	Auth-Type			CRAM			1030
+VALUE	Auth-Type			NS-MTA-MD5		1031
+# 1032 is unused (was a duplicate of CRAM)
+VALUE	Auth-Type			SMB			1033
+
+#
+#	Authorization type, too.
+#
+VALUE	Autz-Type			Local			0
+
+#
+#	And accounting
+#
+VALUE	Acct-Type			Local			0
+
+#
+#	And Session handling
+#
+VALUE	Session-Type			Local			0
+
+#
+#	And Post-Auth
+VALUE	Post-Auth-Type			Local			0
+
+#
+#	Experimental Non-Protocol Integer Translations for FreeRADIUS
+#
+VALUE	Fall-Through			No			0
+VALUE	Fall-Through			Yes			1
+
+VALUE	Strip-User-Name			No			0
+VALUE	Strip-User-Name			Yes			1
+
+VALUE	Packet-Type			Access-Request		1
+VALUE	Packet-Type			Access-Accept		2
+VALUE	Packet-Type			Access-Reject		3
+VALUE	Packet-Type			Accounting-Request	4
+VALUE	Packet-Type			Accounting-Response	5
+VALUE	Packet-Type			Accounting-Status	6
+VALUE	Packet-Type			Password-Request	7
+VALUE	Packet-Type			Password-Accept		8
+VALUE	Packet-Type			Password-Reject		9
+VALUE	Packet-Type			Accounting-Message	10
+VALUE	Packet-Type			Access-Challenge	11
+VALUE	Packet-Type			Status-Server		12
+VALUE	Packet-Type			Status-Client		13
+
+#
+#	The following packet types are described in RFC 2882,
+#	but they are NOT part of the RADIUS standard.  Instead,
+#	they are informational about vendor-specific extensions
+#	to the RADIUS standard.
+#
+VALUE	Packet-Type			Resource-Free-Request	21
+VALUE	Packet-Type			Resource-Free-Response	22
+VALUE	Packet-Type			Resource-Query-Request	23
+VALUE	Packet-Type			Resource-Query-Response	24
+VALUE	Packet-Type			Alternate-Resource-Reclaim-Request 25
+VALUE	Packet-Type			NAS-Reboot-Request	26
+VALUE	Packet-Type			NAS-Reboot-Response	27
+VALUE	Packet-Type			Next-Passcode		29
+VALUE	Packet-Type			New-Pin			30
+VALUE	Packet-Type			Terminate-Session	31
+VALUE	Packet-Type			Password-Expired	32
+VALUE	Packet-Type			Event-Request		33
+VALUE	Packet-Type			Event-Response		34
+
+#	RFC 3576 allocates packet types 40-45
+
+VALUE	Packet-Type			Disconnect-Request	40
+VALUE	Packet-Type			Disconnect-ACK		41
+VALUE	Packet-Type			Disconnect-NAK		42
+VALUE	Packet-Type			CoA-Request		43
+VALUE	Packet-Type			CoA-ACK			44
+VALUE	Packet-Type			CoA-NAK			45
+
+VALUE	Packet-Type			IP-Address-Allocate	50
+VALUE	Packet-Type			IP-Address-Release	51
+
+VALUE	Response-Packet-Type		Access-Request		1
+VALUE	Response-Packet-Type		Access-Accept		2
+VALUE	Response-Packet-Type		Access-Reject		3
+VALUE	Response-Packet-Type		Accounting-Request	4
+VALUE	Response-Packet-Type		Accounting-Response	5
+VALUE	Response-Packet-Type		Accounting-Status	6
+VALUE	Response-Packet-Type		Password-Request	7
+VALUE	Response-Packet-Type		Password-Accept		8
+VALUE	Response-Packet-Type		Password-Reject		9
+VALUE	Response-Packet-Type		Accounting-Message	10
+VALUE	Response-Packet-Type		Access-Challenge	11
+VALUE	Response-Packet-Type		Status-Server		12
+VALUE	Response-Packet-Type		Status-Client		13
+
+VALUE	Response-Packet-Type		Disconnect-Request	40
+VALUE	Response-Packet-Type		Disconnect-ACK		41
+VALUE	Response-Packet-Type		Disconnect-NAK		42
+VALUE	Response-Packet-Type		CoA-Request		43
+VALUE	Response-Packet-Type		CoA-ACK			44
+VALUE	Response-Packet-Type		CoA-NAK			45
+#
+#  Special value
+#
+VALUE	Response-Packet-Type		Do-Not-Respond		256
+
+#
+#	EAP Sub-types, inside of Request and Response packets
+#
+#	http://www.iana.org/assignments/ppp-numbers
+#		"PPP EAP REQUEST/RESPONSE TYPES"
+#
+#
+#	See dictionary.microsoft, MS-Acct-EAP-Type for similar definitions
+#
+VALUE	EAP-Type			None			0
+VALUE	EAP-Type			Identity		1
+VALUE	EAP-Type			Notification		2
+VALUE	EAP-Type			NAK			3
+VALUE	EAP-Type			MD5-Challenge		4
+VALUE	EAP-Type			One-Time-Password	5
+VALUE	EAP-Type			Generic-Token-Card	6
+VALUE	EAP-Type			RSA-Public-Key		9
+VALUE	EAP-Type			DSS-Unilateral		10
+VALUE	EAP-Type			KEA			11
+VALUE	EAP-Type			KEA-Validate		12
+VALUE	EAP-Type			EAP-TLS			13
+VALUE	EAP-Type			Defender-Token		14
+VALUE	EAP-Type			RSA-SecurID-EAP		15
+VALUE	EAP-Type			Arcot-Systems-EAP	16
+VALUE	EAP-Type			Cisco-LEAP		17
+VALUE	EAP-Type			Nokia-IP-Smart-Card	18
+VALUE	EAP-Type			SIM			18
+VALUE	EAP-Type			SRP-SHA1-Part-1		19
+VALUE	EAP-Type			SRP-SHA1-Part-2		20
+VALUE	EAP-Type			EAP-TTLS		21
+VALUE	EAP-Type			Remote-Access-Service	22
+VALUE	EAP-Type			UMTS			23
+VALUE	EAP-Type			EAP-3Com-Wireless	24
+VALUE	EAP-Type			PEAP			25
+VALUE	EAP-Type			MS-EAP-Authentication	26
+VALUE	EAP-Type			MAKE			27
+VALUE	EAP-Type			CRYPTOCard		28
+VALUE	EAP-Type			EAP-MSCHAP-V2		29
+VALUE	EAP-Type			DynamID			30
+VALUE	EAP-Type			Rob-EAP			31
+VALUE	EAP-Type			SecurID-EAP		32
+VALUE	EAP-Type			MS-Authentication-TLV	33
+VALUE	EAP-Type			SentriNET		34
+VALUE	EAP-Type			EAP-Actiontec-Wireless	35
+VALUE	EAP-Type			Cogent-Biomentric-EAP	36
+VALUE	EAP-Type			AirFortress-EAP		37
+VALUE	EAP-Type			EAP-HTTP-Digest		38
+VALUE	EAP-Type			SecuriSuite-EAP		39
+VALUE	EAP-Type			DeviceConnect-EAP	40
+VALUE	EAP-Type			EAP-SPEKE		41
+VALUE	EAP-Type			EAP-MOBAC		42
+
+#
+#	These are duplicate values, to get around the problem of
+#	having two MS-CHAPv2 EAP types.
+#
+VALUE	EAP-Type			Microsoft-MS-CHAPv2	26
+VALUE	EAP-Type			Cisco-MS-CHAPv2		29
+
+#
+#	And this is what most people mean by MS-CHAPv2
+#
+VALUE	EAP-Type			MS-CHAP-V2		26
+
+#
+#	This says TLS, but it's only valid for TTLS & PEAP.
+#	EAP-TLS *always* requires a client certificate.
+#
+VALUE	EAP-TLS-Require-Client-Cert	No			0
+VALUE	EAP-TLS-Require-Client-Cert	Yes			1
+
+#
+# 	These are the EAP-Code values.
+#
+VALUE	EAP-Code			Request			1
+VALUE	EAP-Code			Response		2
+VALUE	EAP-Code			Success			3
+VALUE	EAP-Code			Failure			4
+
+#
+#  For MS-CHAP, do we run ntlm_auth, or not.
+#
+VALUE	MS-CHAP-Use-NTLM-Auth		No			0
+VALUE	MS-CHAP-Use-NTLM-Auth		Yes			1

@@ -1,0 +1,46 @@
+# -*- text -*-
+#
+#	$Id$
+#
+VENDOR		NTUA				969
+
+BEGIN-VENDOR	NTUA
+
+#
+# Authentication Attributes
+#
+ATTRIBUTE	UserLogon-Uid				10	integer
+ATTRIBUTE	UserLogon-Gid				11	integer
+ATTRIBUTE	UserLogon-HomeDir			12	string
+ATTRIBUTE	UserLogon-Type				13	integer
+ATTRIBUTE	UserLogon-QuotaBytes			14	integer
+ATTRIBUTE	UserLogon-QuotaFiles			15	integer
+ATTRIBUTE	UserLogon-Shell				16	string
+ATTRIBUTE	UserLogon-Restriction			17	integer
+ATTRIBUTE	UserLogon-GroupNames			18	string
+ATTRIBUTE	UserLogon-DriveNames			19	string
+ATTRIBUTE	UserLogon-UserDescription		20	string
+ATTRIBUTE	UserLogon-UserFullName			21	string
+ATTRIBUTE	UserLogon-UserDomain			22	string
+ATTRIBUTE	UserLogon-LogonTask			23	string
+ATTRIBUTE	UserLogon-LogoffTask			24	string
+ATTRIBUTE	UserLogon-Expiration			25	string
+ATTRIBUTE	UserLogon-UserProfile			26	string
+#
+# Accounting Attributes
+#
+ATTRIBUTE	UserLogon-Acct-TerminateCause		50	string
+
+VALUE	UserLogon-Type			FTP			1
+VALUE	UserLogon-Type			WEB			2
+VALUE	UserLogon-Type			POP			3
+VALUE	UserLogon-Type			IMAP			4
+VALUE	UserLogon-Type			Windows-Logon		5
+VALUE	UserLogon-Type			Unix-Logon		6
+VALUE	UserLogon-Type			SMTP-Auth		7
+VALUE	UserLogon-Type			Other			200
+
+VALUE	UserLogon-Restriction		Anonymous-User		1
+VALUE	UserLogon-Restriction		Admin-User		2
+
+END-VENDOR	NTUA

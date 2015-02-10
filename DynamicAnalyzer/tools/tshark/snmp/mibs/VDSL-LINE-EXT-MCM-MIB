@@ -1,0 +1,705 @@
+VDSL-LINE-EXT-MCM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+MODULE-IDENTITY,
+OBJECT-TYPE,
+transmission,
+Unsigned32                      FROM SNMPv2-SMI         -- [RFC2578]
+RowStatus                       FROM SNMPv2-TC          -- [RFC2579]
+MODULE-COMPLIANCE,
+OBJECT-GROUP                    FROM SNMPv2-CONF        -- [RFC2580]
+vdslLineConfProfileName         FROM VDSL-LINE-MIB;     -- [RFC3728]
+
+vdslExtMCMMIB MODULE-IDENTITY
+   LAST-UPDATED "200504280000Z" --    April 28, 2005
+   ORGANIZATION "ADSLMIB Working Group"
+   CONTACT-INFO "WG-email:  adslmib@ietf.org
+         Info:      https://www1.ietf.org/mailman/listinfo/adslmib
+
+         Chair:     Mike Sneed
+                    Sand Channel Systems
+         Postal:    P.O. Box 37324
+                    Raleigh NC 27627-732
+         Email:     sneedmike@hotmail.com
+         Phone:     +1 206 600 7022
+
+         Co-Chair/Co-editor:
+                    Bob Ray
+                    PESA Switching Systems, Inc.
+         Postal:    330-A Wynn Drive
+                    Huntsville, AL 35805
+                    USA
+         Email:     rray@pesa.com
+         Phone:     +1 256 726 9200 ext.  142
+
+
+
+
+         Co-editor: Menachem Dodge
+                    ECI Telecom Ltd.
+         Postal:    30 hasivim St.
+                    Petach Tikva 49517,
+                    Israel.
+         Email:     mbdodge@ieee.org
+         Phone:     +972 3 926 8421
+        "
+
+DESCRIPTION
+    "The VDSL-LINE-MIB found in RFC 3728 defines objects for
+    the management of a pair of VDSL transceivers at each end of
+    the VDSL line.  The VDSL-LINE-MIB configures and monitors the
+    line code independent parameters (TC layer) of the VDSL line.
+    This MIB module is an optional extension of the VDSL-LINE-MIB
+    and defines objects for configuration and monitoring of the
+    line code specific (LCS) elements (PMD layer) for VDSL lines
+    using MCM coding.  The objects in this extension MIB MUST NOT
+    be used for VDSL lines using Single Carrier Modulation (SCM)
+    line coding.  If an object in this extension MIB is referenced
+    by a line which does not use MCM, it has no effect on the
+    operation of that line.
+
+    Naming Conventions:
+        Vtuc -- (VTUC) transceiver at near (Central) end of line
+        Vtur -- (VTUR) transceiver at Remote end of line
+        Vtu  -- One of either Vtuc or Vtur
+        Curr -- Current
+        LCS  -- Line Code Specific
+        Max  -- Maximum
+        PSD  -- Power Spectral Density
+        Rx   -- Receive
+        Tx   -- Transmit
+
+    Copyright (C) The Internet Society (2005).  This version
+    of this MIB module is part of RFC 4070: see the RFC
+    itself for full legal notices."
+        REVISION "200504280000Z" --    April 28, 2005
+        DESCRIPTION "Initial version, published as RFC 4070."
+    ::= { transmission 229 }
+
+vdslLineExtMCMMib OBJECT IDENTIFIER ::= { vdslExtMCMMIB 1 }
+vdslLineExtMCMMibObjects OBJECT IDENTIFIER ::= {vdslLineExtMCMMib 1}
+
+--
+-- Multiple carrier modulation (MCM) configuration profile tables
+--
+
+
+
+
+vdslLineMCMConfProfileTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslLineMCMConfProfileEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table contains additional information on multiple
+        carrier VDSL lines.  One entry in this table reflects a
+        profile defined by a manager which can be used to
+        configure the VDSL line.
+
+        If an entry in this table is referenced by a line which
+        does not use MCM, it has no effect on the operation of that
+        line.
+
+        All read-create-objects defined in this table SHOULD be
+        stored persistently."
+
+    ::= { vdslLineExtMCMMibObjects  1 }
+
+vdslLineMCMConfProfileEntry OBJECT-TYPE
+    SYNTAX       VdslLineMCMConfProfileEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Each entry consists of a list of parameters that
+        represents the configuration of a multiple carrier
+        modulation VDSL modem."
+    INDEX { vdslLineConfProfileName }
+    ::= { vdslLineMCMConfProfileTable 1 }
+
+VdslLineMCMConfProfileEntry ::=
+    SEQUENCE
+        {
+        vdslLineMCMConfProfileTxWindowLength       Unsigned32,
+        vdslLineMCMConfProfileRowStatus            RowStatus
+        }
+
+vdslLineMCMConfProfileTxWindowLength OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..255)
+    UNITS        "samples"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Specifies the length of the transmit window, counted
+        in samples at the sampling rate corresponding to the
+        negotiated value of N."
+    REFERENCE    "T1E1.4/2000-013R4"    -- Part 3, MCM
+    ::= { vdslLineMCMConfProfileEntry 1 }
+
+
+
+vdslLineMCMConfProfileRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object is used to create a new row or modify or
+        delete an existing row in this table.
+
+        A profile is activated by setting this object to `active'.
+        When `active' is set, the system will validate the profile.
+
+        None of the columns in this row may be modified while the
+        row is in the 'active' state.
+
+        Before a profile can be deleted or taken out of
+        service, (by setting this object to `destroy' or
+        `notInService') it must first be unreferenced
+        from all associated lines."
+    ::= { vdslLineMCMConfProfileEntry 2 }
+
+vdslLineMCMConfProfileTxBandTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslLineMCMConfProfileTxBandEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table contains transmit band descriptor configuration
+        information for a VDSL line.  Each entry in this table
+        reflects the configuration for one of possibly many bands
+        with a multiple carrier modulation (MCM) VDSL line.
+        These entries are defined by a manager and can be used to
+        configure the VDSL line.
+
+        If an entry in this table is referenced by a line which
+        does not use MCM, it has no effect on the operation of that
+        line.
+
+        All read-create-objects defined in this table SHOULD be
+        stored persistently."
+    ::= { vdslLineExtMCMMibObjects  2 }
+
+vdslLineMCMConfProfileTxBandEntry OBJECT-TYPE
+    SYNTAX       VdslLineMCMConfProfileTxBandEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Each entry consists of a transmit band descriptor, which
+        is defined by a start and a stop tone index."
+    INDEX { vdslLineConfProfileName,
+
+
+
+            vdslLineMCMConfProfileTxBandNumber }
+    ::= { vdslLineMCMConfProfileTxBandTable 1 }
+
+VdslLineMCMConfProfileTxBandEntry ::=
+    SEQUENCE
+        {
+        vdslLineMCMConfProfileTxBandNumber           Unsigned32,
+        vdslLineMCMConfProfileTxBandStart            Unsigned32,
+        vdslLineMCMConfProfileTxBandStop             Unsigned32,
+        vdslLineMCMConfProfileTxBandRowStatus        RowStatus
+        }
+
+vdslLineMCMConfProfileTxBandNumber OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4096)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The index for this band descriptor entry."
+    ::= { vdslLineMCMConfProfileTxBandEntry 1 }
+
+vdslLineMCMConfProfileTxBandStart OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4096)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Start tone index for this band."
+    REFERENCE    "T1E1.4/2000-013R4"    -- Part 3, MCM
+    ::= { vdslLineMCMConfProfileTxBandEntry 2 }
+
+vdslLineMCMConfProfileTxBandStop OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4096)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Stop tone index for this band."
+    REFERENCE    "T1E1.4/2000-013R4"    -- Part 3, MCM
+    ::= { vdslLineMCMConfProfileTxBandEntry 3 }
+
+vdslLineMCMConfProfileTxBandRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object is used to create a new row or modify or
+        delete an existing row in this table.
+        A profile is activated by setting this object to `active'.
+        When `active' is set, the system will validate the profile.
+
+
+
+
+        Each entry must be internally consistent, the Stop Tone must
+        be greater than the Start Tone.  Each entry must also be
+        externally consistent, all entries indexed by a specific
+        profile must not overlap.  Validation of the profile will
+        check both internal and external consistency.
+
+        None of the columns in this row may be modified while the
+        row is in the 'active' state.
+
+        Before a profile can be deleted or taken out of
+        service, (by setting this object to `destroy' or
+        `notInService') it must be first unreferenced
+        from all associated lines."
+    ::= { vdslLineMCMConfProfileTxBandEntry 4 }
+
+vdslLineMCMConfProfileRxBandTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslLineMCMConfProfileRxBandEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table contains receive band descriptor configuration
+        information for a VDSL line.  Each entry in this table
+        reflects the configuration for one of possibly many bands
+        with a multiple carrier modulation (MCM) VDSL line.
+        These entries are defined by a manager and can be used to
+        configure the VDSL line.
+
+        If an entry in this table is referenced by a line which
+        does not use MCM, it has no effect on the operation of that
+        line.
+
+        All read-create-objects defined in this table SHOULD be
+        stored persistently."
+    ::= { vdslLineExtMCMMibObjects 3 }
+
+vdslLineMCMConfProfileRxBandEntry OBJECT-TYPE
+    SYNTAX       VdslLineMCMConfProfileRxBandEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Each entry consists of a transmit band descriptor, which
+        is defined by a start and a stop tone index."
+
+    INDEX { vdslLineConfProfileName,
+            vdslLineMCMConfProfileRxBandNumber }
+    ::= { vdslLineMCMConfProfileRxBandTable 1 }
+
+VdslLineMCMConfProfileRxBandEntry ::=
+
+
+
+    SEQUENCE
+        {
+        vdslLineMCMConfProfileRxBandNumber           Unsigned32,
+        vdslLineMCMConfProfileRxBandStart            Unsigned32,
+        vdslLineMCMConfProfileRxBandStop             Unsigned32,
+        vdslLineMCMConfProfileRxBandRowStatus        RowStatus
+        }
+
+vdslLineMCMConfProfileRxBandNumber OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4096)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The index for this band descriptor entry."
+    ::= { vdslLineMCMConfProfileRxBandEntry 1 }
+
+vdslLineMCMConfProfileRxBandStart OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4096)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Start tone index for this band."
+    REFERENCE    "T1E1.4/2000-013R4"    -- Part 3, MCM
+    ::= { vdslLineMCMConfProfileRxBandEntry 2 }
+
+
+vdslLineMCMConfProfileRxBandStop OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4096)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Stop tone index for this band."
+    REFERENCE    "T1E1.4/2000-013R4"    -- Part 3, MCM
+    ::= { vdslLineMCMConfProfileRxBandEntry 3 }
+
+vdslLineMCMConfProfileRxBandRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object is used to create a new row or modify or
+        delete an existing row in this table.
+
+        A profile is activated by setting this object to `active'.
+        When `active' is set, the system will validate the profile.
+        Each entry must be internally consistent, the Stop Tone must
+        be greater than the Start Tone.  Each entry must also be
+        externally consistent, all entries indexed by a specific
+
+
+
+        profile must not overlap.  Validation of the profile will
+        check both internal and external consistency.
+
+        None of the columns in this row may be modified while the
+        row is in the 'active' state.
+
+        Before a profile can be deleted or taken out of
+        service, (by setting this object to `destroy' or
+        `notInService') it must be first unreferenced
+        from all associated lines."
+    ::= { vdslLineMCMConfProfileRxBandEntry 4 }
+
+vdslLineMCMConfProfileTxPSDTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslLineMCMConfProfileTxPSDEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table contains transmit PSD mask descriptor
+        configuration information for a VDSL line.  Each entry in
+        this table reflects the configuration for one tone within
+        a multiple carrier modulation (MCM) VDSL line.  These
+        entries are defined by a manager and can be used to
+        configure the VDSL line.
+
+        If an entry in this table is referenced by a line which
+        does not use MCM, it has no effect on the operation of that
+        line.
+
+        All read-create-objects defined in this table SHOULD be
+        stored persistently."
+    ::= { vdslLineExtMCMMibObjects 4 }
+
+vdslLineMCMConfProfileTxPSDEntry OBJECT-TYPE
+    SYNTAX       VdslLineMCMConfProfileTxPSDEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Each entry consists of a transmit PSD mask descriptor,
+        which defines the power spectral density (PSD) for a tone."
+
+    INDEX { vdslLineConfProfileName,
+            vdslLineMCMConfProfileTxPSDNumber }
+    ::= { vdslLineMCMConfProfileTxPSDTable 1 }
+
+VdslLineMCMConfProfileTxPSDEntry ::=
+    SEQUENCE
+        {
+        vdslLineMCMConfProfileTxPSDNumber            Unsigned32,
+
+
+
+        vdslLineMCMConfProfileTxPSDTone              Unsigned32,
+        vdslLineMCMConfProfileTxPSDPSD               Unsigned32,
+        vdslLineMCMConfProfileTxPSDRowStatus         RowStatus
+        }
+
+vdslLineMCMConfProfileTxPSDNumber OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4096)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The index for this mask descriptor entry."
+    ::= { vdslLineMCMConfProfileTxPSDEntry 1 }
+
+vdslLineMCMConfProfileTxPSDTone OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4096)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The tone index for which the PSD is being specified."
+    REFERENCE    "T1E1.4/2000-013R4"    -- Part 3, MCM
+    ::= { vdslLineMCMConfProfileTxPSDEntry 2 }
+
+vdslLineMCMConfProfileTxPSDPSD OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "0.5dBm/Hz"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Power Spectral Density level in steps of 0.5dBm/Hz with
+        an offset of -140dBm/Hz."
+    REFERENCE    "T1E1.4/2000-013R4"    -- Part 3, MCM
+    ::= { vdslLineMCMConfProfileTxPSDEntry 3 }
+
+    vdslLineMCMConfProfileTxPSDRowStatus OBJECT-TYPE
+        SYNTAX       RowStatus
+        MAX-ACCESS   read-create
+        STATUS       current
+        DESCRIPTION
+            "This object is used to create a new row or modify or
+        delete an existing row in this table.
+
+        A profile is activated by setting this object to `active'.
+        When `active' is set, the system will validate the profile.
+
+        None of the columns in this row may be modified while the
+        row is in the 'active' state.
+
+        Before a profile can be deleted or taken out of
+
+
+
+        service, (by setting this object to `destroy' or
+        `notInService') it must be first unreferenced
+        from all associated lines."
+    ::= { vdslLineMCMConfProfileTxPSDEntry 4 }
+
+vdslLineMCMConfProfileMaxTxPSDTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslLineMCMConfProfileMaxTxPSDEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table contains transmit maximum PSD mask descriptor
+        configuration information for a VDSL line.  Each entry in
+        this table reflects the configuration for one tone within
+        a multiple carrier modulation (MCM) VDSL modem.  These
+        entries are defined by a manager and can be used to
+        configure the VDSL line.
+
+        If an entry in this table is referenced by a line which
+        does not use MCM, it has no effect on the operation of that
+        line.
+
+        All read-create-objects defined in this table SHOULD be
+        stored persistently."
+    ::= { vdslLineExtMCMMibObjects 5 }
+
+vdslLineMCMConfProfileMaxTxPSDEntry OBJECT-TYPE
+    SYNTAX       VdslLineMCMConfProfileMaxTxPSDEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Each entry consists of a transmit PSD mask descriptor,
+        which defines the maximum power spectral density (PSD)
+        for a tone."
+    INDEX { vdslLineConfProfileName,
+            vdslLineMCMConfProfileMaxTxPSDNumber }
+    ::= { vdslLineMCMConfProfileMaxTxPSDTable 1 }
+
+VdslLineMCMConfProfileMaxTxPSDEntry ::=
+    SEQUENCE
+        {
+        vdslLineMCMConfProfileMaxTxPSDNumber            Unsigned32,
+        vdslLineMCMConfProfileMaxTxPSDTone              Unsigned32,
+        vdslLineMCMConfProfileMaxTxPSDPSD               Unsigned32,
+        vdslLineMCMConfProfileMaxTxPSDRowStatus         RowStatus
+        }
+
+vdslLineMCMConfProfileMaxTxPSDNumber OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4096)
+
+
+
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The index for this band descriptor entry."
+    ::= { vdslLineMCMConfProfileMaxTxPSDEntry 1 }
+
+vdslLineMCMConfProfileMaxTxPSDTone OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4096)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The tone index for which the PSD is being specified.
+         There must not be multiple rows defined, for a particular
+         profile, with the same value for this field."
+    REFERENCE    "T1E1.4/2000-013R4"    -- Part 3, MCM
+    ::= { vdslLineMCMConfProfileMaxTxPSDEntry 2 }
+
+vdslLineMCMConfProfileMaxTxPSDPSD OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "0.5dBm/Hz"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Power Spectral Density level in steps of 0.5dBm/Hz with
+        an offset of -140dBm/Hz."
+    REFERENCE    "T1E1.4/2000-013R4"    -- Part 3, MCM
+    ::= { vdslLineMCMConfProfileMaxTxPSDEntry 3 }
+
+vdslLineMCMConfProfileMaxTxPSDRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object is used to create a new row or modify or
+        delete an existing row in this table.
+        A profile is activated by setting this object to `active'.
+        When `active' is set, the system will validate the profile.
+        There must be only one entry in this table for each tone
+        associated with a specific profile.  This will be checked
+        during the validation process.
+
+        None of the columns in this row may be modified while the
+        row is in the 'active' state.
+
+        Before a profile can be deleted or taken out of
+        service, (by setting this object to `destroy' or
+        `notInService') it must be first unreferenced
+        from all associated lines."
+
+
+
+    ::= { vdslLineMCMConfProfileMaxTxPSDEntry 4 }
+
+vdslLineMCMConfProfileMaxRxPSDTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslLineMCMConfProfileMaxRxPSDEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "This table contains maximum receive PSD mask descriptor
+        configuration information for a VDSL line.  Each entry in
+        this table reflects the configuration for one tone within
+        a multiple carrier modulation (MCM) VDSL modem.  These
+        entries are defined by a manager and can be used to
+        configure the VDSL line.
+
+        If an entry in this table is referenced by a line which
+        does not use MCM, it has no effect on the operation of that
+        line.
+
+        All read-create-objects defined in this table SHOULD be
+        stored persistently."
+    ::= { vdslLineExtMCMMibObjects 6 }
+
+vdslLineMCMConfProfileMaxRxPSDEntry OBJECT-TYPE
+    SYNTAX       VdslLineMCMConfProfileMaxRxPSDEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Each entry consists of a transmit PSD mask descriptor,
+        which defines the power spectral density (PSD) for a
+        tone."
+
+    INDEX { vdslLineConfProfileName,
+            vdslLineMCMConfProfileMaxRxPSDNumber }
+    ::= { vdslLineMCMConfProfileMaxRxPSDTable 1 }
+
+VdslLineMCMConfProfileMaxRxPSDEntry ::=
+    SEQUENCE
+        {
+        vdslLineMCMConfProfileMaxRxPSDNumber            Unsigned32,
+        vdslLineMCMConfProfileMaxRxPSDTone              Unsigned32,
+        vdslLineMCMConfProfileMaxRxPSDPSD               Unsigned32,
+        vdslLineMCMConfProfileMaxRxPSDRowStatus         RowStatus
+        }
+
+vdslLineMCMConfProfileMaxRxPSDNumber OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4096)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+
+
+
+    DESCRIPTION
+        "The index for this band descriptor entry."
+    ::= { vdslLineMCMConfProfileMaxRxPSDEntry 1 }
+
+vdslLineMCMConfProfileMaxRxPSDTone OBJECT-TYPE
+    SYNTAX       Unsigned32 (1..4096)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The tone index for which the PSD is being specified.
+         There must not be multiple rows defined, for a particular
+         profile, with the same value for this field."
+    REFERENCE    "T1E1.4/2000-013R4"    -- Part 3, MCM
+    ::= { vdslLineMCMConfProfileMaxRxPSDEntry 2 }
+
+vdslLineMCMConfProfileMaxRxPSDPSD OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "0.5dBm/Hz"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Power Spectral Density level in steps of 0.5dBm/Hz with
+        an offset of -140dBm/Hz."
+    REFERENCE    "T1E1.4/2000-013R4"    -- Part 3, MCM
+    ::= { vdslLineMCMConfProfileMaxRxPSDEntry 3 }
+
+vdslLineMCMConfProfileMaxRxPSDRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object is used to create a new row or modify or
+        delete an existing row in this table.
+
+        A profile is activated by setting this object to `active'.
+        When `active' is set, the system will validate the profile.
+        There must be only one entry in this table for each tone
+        associated with a specific profile.  This will be checked
+        during the validation process.
+
+        None of the columns in this row may be modified while the
+        row is in the 'active' state.
+
+        Before a profile can be deleted or taken out of
+        service, (by setting this object to `destroy' or
+        `notInService') it must be first unreferenced
+        from all associated lines."
+    ::= { vdslLineMCMConfProfileMaxRxPSDEntry 4 }
+
+
+
+-- conformance information
+
+vdslLineExtMCMConformance OBJECT IDENTIFIER ::=
+                 { vdslLineExtMCMMib 2 }
+vdslLineExtMCMGroups OBJECT IDENTIFIER ::=
+                 { vdslLineExtMCMConformance 1 }
+vdslLineExtMCMCompliances OBJECT IDENTIFIER ::=
+                 { vdslLineExtMCMConformance 2 }
+
+vdslLineExtMCMMibCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for SNMP entities which
+        manage VDSL interfaces."
+    MODULE  -- this module
+    MANDATORY-GROUPS
+    {
+        vdslLineExtMCMGroup
+    }
+
+    ::= { vdslLineExtMCMCompliances 1 }
+
+-- units of conformance
+
+    vdslLineExtMCMGroup OBJECT-GROUP
+        OBJECTS
+            {
+            vdslLineMCMConfProfileTxWindowLength,
+            vdslLineMCMConfProfileRowStatus,
+            vdslLineMCMConfProfileTxBandStart,
+            vdslLineMCMConfProfileTxBandStop,
+            vdslLineMCMConfProfileTxBandRowStatus,
+            vdslLineMCMConfProfileRxBandStart,
+            vdslLineMCMConfProfileRxBandStop,
+            vdslLineMCMConfProfileRxBandRowStatus,
+            vdslLineMCMConfProfileTxPSDTone,
+            vdslLineMCMConfProfileTxPSDPSD,
+            vdslLineMCMConfProfileTxPSDRowStatus,
+            vdslLineMCMConfProfileMaxTxPSDTone,
+            vdslLineMCMConfProfileMaxTxPSDPSD,
+            vdslLineMCMConfProfileMaxTxPSDRowStatus,
+            vdslLineMCMConfProfileMaxRxPSDTone,
+            vdslLineMCMConfProfileMaxRxPSDPSD,
+            vdslLineMCMConfProfileMaxRxPSDRowStatus
+            }
+         STATUS     current
+         DESCRIPTION
+             "A collection of objects providing configuration
+
+
+
+             information for a VDSL line based upon multiple
+             carrier modulation modem."
+     ::= { vdslLineExtMCMGroups 1 }
+
+END

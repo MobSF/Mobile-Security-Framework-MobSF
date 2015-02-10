@@ -1,0 +1,419 @@
+# -*- text -*-
+##############################################################################
+#
+#	DHCP to RADUS gateway dictionary.
+#
+#	http://www.iana.org/assignments/bootp-dhcp-parameters
+#
+#	Also http://www.networksorcery.com/enp/protocol/bootp/options.htm
+#
+#	http://www.bind9.net/rfc-dhcp
+#
+#	$Id$
+#
+##############################################################################
+
+#
+
+#	This is really Apollo's number, but since they're out of business,
+#	I don't think they'll be needing this.
+#
+#	HP owns the Apollo assets, but let's not worry about that.
+#
+#	The vendor codes are 2 octets, because we need 256 numbers
+#	for the base DHCP options, PLUS a few for the DHCP headers,
+#	which aren't in option format.
+#
+#	On top of that, a number of options are really TLV's.
+#	We need to be able to understand them, too.
+#
+VENDOR		DHCP				54	format=2,1
+
+BEGIN-VENDOR	DHCP
+
+ATTRIBUTE	DHCP-Opcode				256	byte
+ATTRIBUTE	DHCP-Hardware-Type			257	byte
+ATTRIBUTE	DHCP-Hardware-Address-Length		258	byte
+ATTRIBUTE	DHCP-Hop-Count				259	byte
+ATTRIBUTE	DHCP-Transaction-Id			260	integer
+ATTRIBUTE	DHCP-Number-of-Seconds			261	short
+ATTRIBUTE	DHCP-Flags				262	short
+ATTRIBUTE	DHCP-Client-IP-Address			263	ipaddr
+ATTRIBUTE	DHCP-Your-IP-Address			264	ipaddr
+ATTRIBUTE	DHCP-Server-IP-Address			265	ipaddr
+ATTRIBUTE	DHCP-Gateway-IP-Address			266	ipaddr
+ATTRIBUTE	DHCP-Client-Hardware-Address		267	ether	  # 16 octets
+ATTRIBUTE	DHCP-Server-Host-Name			268	string	  # 64 octets
+ATTRIBUTE	DHCP-Boot-Filename			269	string	  # 128 octets
+
+VALUE	DHCP-Flags			Broadcast		0x8000
+
+
+VALUE	DHCP-Hardware-Type		Ethernet		1
+VALUE	DHCP-Hardware-Type		Experiemental-Ethernet	2
+VALUE	DHCP-Hardware-Type		AX.25			3
+VALUE	DHCP-Hardware-Type		Proteon-Token-Ring	4
+VALUE	DHCP-Hardware-Type		Chaos			5
+VALUE	DHCP-Hardware-Type		IEEE-802		6
+VALUE	DHCP-Hardware-Type		Arcnet			7
+VALUE	DHCP-Hardware-Type		Hyperchannel		8
+VALUE	DHCP-Hardware-Type		Lanstar			9
+VALUE	DHCP-Hardware-Type		Autonet-Short-Address	10
+VALUE	DHCP-Hardware-Type		LocalTalk		11
+VALUE	DHCP-Hardware-Type		LocalNet		12
+VALUE	DHCP-Hardware-Type		Ultra-Link		13
+VALUE	DHCP-Hardware-Type		SMDS			14
+VALUE	DHCP-Hardware-Type		Frame-Relay		15
+VALUE	DHCP-Hardware-Type		ATM-16			16
+VALUE	DHCP-Hardware-Type		HDLC			17
+VALUE	DHCP-Hardware-Type		Fibre-Channel		18
+VALUE	DHCP-Hardware-Type		ATM-19			19
+VALUE	DHCP-Hardware-Type		Serial-Line		20
+VALUE	DHCP-Hardware-Type		ATM-21			21
+VALUE	DHCP-Hardware-Type		MIL-STD-188-220		22
+VALUE	DHCP-Hardware-Type		Metricom		23
+VALUE	DHCP-Hardware-Type		IEEE-1394		24
+VALUE	DHCP-Hardware-Type		MAPOS			25
+VALUE	DHCP-Hardware-Type		Twinaxial		26
+VALUE	DHCP-Hardware-Type		EUI-64			27
+VALUE	DHCP-Hardware-Type		HIPARP			28
+VALUE	DHCP-Hardware-Type		IP-Over-ISO-7816-3	29
+VALUE	DHCP-Hardware-Type		ARPSec			30
+VALUE	DHCP-Hardware-Type		IPSec-Tunnel		31
+VALUE	DHCP-Hardware-Type		Infiniband		32
+VALUE	DHCP-Hardware-Type		CAI-TIA-102		33
+
+##############################################################################
+#
+#	DHCP Options, with comments.  For now, many are as FreeRADIUS
+#	doesn't handle MAC addresses natively.
+#
+##############################################################################
+
+#ATTRIBUTE	DHCP-Pad				0	octets
+ATTRIBUTE	DHCP-Subnet-Mask			1	ipaddr
+# Time Offset in
+ATTRIBUTE	DHCP-Time-Offset			2	octets
+ATTRIBUTE	DHCP-Router-Address			3	ipaddr array
+ATTRIBUTE	DHCP-Time-Server			4	ipaddr array
+ATTRIBUTE	DHCP-IEN-116-Name-Server		5	ipaddr array
+ATTRIBUTE	DHCP-Domain-Name-Server			6	ipaddr array
+# Logging-Server addresses
+ATTRIBUTE	DHCP-Log-Server				7	ipaddr array
+ATTRIBUTE	DHCP-Quotes-Server			8	ipaddr array
+ATTRIBUTE	DHCP-LPR-Server				9	ipaddr array
+ATTRIBUTE	DHCP-Impress-Server			10	ipaddr array
+ATTRIBUTE	DHCP-RLP-Server				11	ipaddr array
+# Hostname string
+ATTRIBUTE	DHCP-Hostname				12	string
+# Size of boot file in 512 byte
+ATTRIBUTE	DHCP-Boot-File-Size			13	short
+# Client to dump and name
+ATTRIBUTE	DHCP-Merit-Dump-File			14	octets
+ATTRIBUTE	DHCP-Domain-Name			15	string
+ATTRIBUTE	DHCP-Swap-Server			16	ipaddr
+# Path name for root disk
+ATTRIBUTE	DHCP-Root-Path				17	string
+ATTRIBUTE	DHCP-Bootp-Extensions-Path		18	string
+ATTRIBUTE	DHCP-IP-Forward-Enable			19	byte
+ATTRIBUTE	DHCP-Source-Route-Enable		20	byte
+# Routing Policy Filters
+ATTRIBUTE	DHCP-Policy-Filter			21	octets
+ATTRIBUTE	DHCP-Max-Datagram-Reassembly-Sz		22	short
+ATTRIBUTE	DHCP-Default-IP-TTL			23	octets
+ATTRIBUTE	DHCP-Path-MTU-Aging-Timeout		24	integer
+ATTRIBUTE	DHCP-Path-MTU-Plateau-Table		25	short array
+ATTRIBUTE	DHCP-Interface-MTU-Size			26	short
+ATTRIBUTE	DHCP-All-Subnets-Are-Local		27	byte
+ATTRIBUTE	DHCP-Broadcast-Address			28	ipaddr
+ATTRIBUTE	DHCP-Perform-Mask-Discovery		29	byte
+ATTRIBUTE	DHCP-Provide-Mask-To-Others		30	byte
+ATTRIBUTE	DHCP-Perform-Router-Discovery		31	byte
+ATTRIBUTE	DHCP-Router-Solicitation-Address	32	ipaddr
+# first is destination address, second is router.
+ATTRIBUTE	DHCP-Static-Routes			33	ipaddr array
+ATTRIBUTE	DHCP-Trailer-Encapsulation		34	byte
+ATTRIBUTE	DHCP-ARP-Cache-Timeout			35	integer
+ATTRIBUTE	DHCP-Ethernet-Encapsulation		36	byte
+ATTRIBUTE	DHCP-Default-TCP-TTL			37	byte
+ATTRIBUTE	DHCP-Keep-Alive-Interval		38	integer
+ATTRIBUTE	DHCP-Keep-Alive-Garbage			39	byte
+ATTRIBUTE	DHCP-NIS-Domain-Name			40	string
+ATTRIBUTE	DHCP-NIS-Servers			41	ipaddr array
+ATTRIBUTE	DHCP-NTP-Servers			42	ipaddr array
+# N Vendor Specific Information
+ATTRIBUTE	DHCP-Vendor				43	octets # tlv
+ATTRIBUTE	DHCP-NETBIOS-Name-Servers		44	ipaddr array
+ATTRIBUTE	DHCP-NETBIOS-Dgm-Dist-Servers		45	ipaddr array
+ATTRIBUTE	DHCP-NETBIOS-Node-Type			46	byte
+# N NETBIOS Scope
+ATTRIBUTE	DHCP-NETBIOS				47	octets
+ATTRIBUTE	DHCP-X-Window-Font-Server		48	ipaddr array
+ATTRIBUTE	DHCP-X-Window-Display-Mgr		49	ipaddr array
+ATTRIBUTE	DHCP-Requested-IP-Address		50	ipaddr
+ATTRIBUTE	DHCP-IP-Address-Lease-Time		51	integer
+# Overload "sname" or "file"
+ATTRIBUTE	DHCP-Overload				52	byte
+ATTRIBUTE	DHCP-Message-Type			53	byte
+ATTRIBUTE	DHCP-DHCP-Server-Identifier		54	ipaddr
+
+# Array of 1-byte numbers indicating which options the client
+# would like to see in the response.
+ATTRIBUTE	DHCP-Parameter-Request-List		55	byte array
+ATTRIBUTE	DHCP-DHCP-Error-Message			56	octets
+ATTRIBUTE	DHCP-DHCP-Maximum-Msg-Size		57	short
+ATTRIBUTE	DHCP-Renewal-Time			58	integer
+ATTRIBUTE	DHCP-Rebinding-Time			59	integer
+ATTRIBUTE	DHCP-Vendor-Class-Identifier		60	string
+
+# Client Identifier
+# First octets is DHCP-Hardware-Type, rest are type-specific data,
+# e.g. MAC address.
+ATTRIBUTE	DHCP-Client-Identifier			61	octets
+ATTRIBUTE	DHCP-Netware-Domain-Name		62	octets
+ATTRIBUTE	DHCP-Netware-Sub-Options		63	octets
+ATTRIBUTE	DHCP-NIS-Client-Domain-Name		64	octets
+ATTRIBUTE	DHCP-NIS-Server-Address			65	ipaddr
+ATTRIBUTE	DHCP-TFTP-Server-Name			66	string
+ATTRIBUTE	DHCP-Boot-File-Name			67	string
+# Home Agent Addresses
+ATTRIBUTE	DHCP-Home-Agent-Address			68	octets
+ATTRIBUTE	DHCP-SMTP-Server-Address		69	ipaddr array
+ATTRIBUTE	DHCP-POP3-Server-Address		70	ipaddr array
+ATTRIBUTE	DHCP-NNTP-Server-Address		71	ipaddr array
+ATTRIBUTE	DHCP-WWW-Server-Address			72	ipaddr array
+ATTRIBUTE	DHCP-Finger-Server-Address		73	ipaddr array
+ATTRIBUTE	DHCP-IRC-Server-Address			74	ipaddr array
+ATTRIBUTE	DHCP-StreetTalk-Server-Address		75	ipaddr array
+ATTRIBUTE	DHCP-STDA-Server-Address		76	ipaddr array
+# User Class Information
+ATTRIBUTE	DHCP-User-Class				77	octets
+# directory agent information
+ATTRIBUTE	DHCP-Directory-Agent			78	octets
+# service location agent scope
+ATTRIBUTE	DHCP-Service-Scope			79	octets
+# Rapid Commit
+ATTRIBUTE	DHCP-Rapid-Commit			80	octets
+# Fully Qualified Domain Name
+ATTRIBUTE	DHCP-Client-FQDN			81	string
+# Relay Agent Information
+ATTRIBUTE	DHCP-Relay-Agent-Information		82	octets # tlv
+# Internet Storage Name Service
+ATTRIBUTE	DHCP-iSNS				83	octets
+# Novell Directory Services
+ATTRIBUTE	DHCP-NDS-Servers			85	octets
+# Novell Directory Services
+ATTRIBUTE	DHCP-NDS-Tree-Name			86	octets
+# Novell Directory Services
+ATTRIBUTE	DHCP-NDS-Context			87	octets
+# Authentication
+ATTRIBUTE	DHCP-Authentication			90	octets
+
+ATTRIBUTE	DHCP-Client-Last-Txn-Time		91	octets
+
+ATTRIBUTE	DHCP-associated-ip			92	octets
+# Client System Architecture
+ATTRIBUTE	DHCP-Client-System			93	octets
+# Client Network Device Interface
+ATTRIBUTE	DHCP-Client-NDI				94	octets
+# Lightweight Directory Access Protocol
+ATTRIBUTE	DHCP-LDAP				95	octets
+# UUID/GUID-based Client Identifier
+ATTRIBUTE	DHCP-UUID/GUID				97	octets
+# Open Group's User Authentication
+ATTRIBUTE	DHCP-User-Auth				98	octets
+# NetInfo Parent-Server Address
+ATTRIBUTE	DHCP-Netinfo-Address			112	octets
+# NetInfo Parent-Server Tag
+ATTRIBUTE	DHCP-Netinfo-Tag			113	octets
+# URL
+ATTRIBUTE	DHCP-URL				114	octets
+# DHCP Auto-Configuration
+ATTRIBUTE	DHCP-Auto-Config			116	byte
+# Name Service Search
+ATTRIBUTE	DHCP-Name-Service-Search		117	octets
+# Subnet Selection Option
+ATTRIBUTE	DHCP-Subnet-Selection-Option		118	octets
+# DNS domain serach list
+ATTRIBUTE	DHCP-Domain-Search			119	octets
+# SIP-Servers DHCP Option
+ATTRIBUTE	DHCP-SIP-Servers-DHCP-Option		120	octets
+# Classless Static Route Option
+ATTRIBUTE	DHCP-Classless-Static-Route		121	octets
+# CableLabs Client Configuration
+ATTRIBUTE	DHCP-CCC				122	octets
+# 16 GeoConf Option
+ATTRIBUTE	DHCP-GeoConf-Option			123	octets
+
+# Vendor Class
+#
+# String name that defines the vendor space used for the TLV's
+# in option 125.
+#
+ATTRIBUTE	DHCP-V-I-Vendor-Class			124	octets
+# Vendor-Specific
+ATTRIBUTE	DHCP-V-I-Vendor-Specific		125	octets # tlv
+# 6 bytes: E4:45:74:68:00:00
+ATTRIBUTE	DHCP-Etherboot				128	octets
+# (for IP Phone software load)
+ATTRIBUTE	DHCP-TFTP-Server-IP-Address		128	octets
+
+ATTRIBUTE	DHCP-Call-Server-IP-address		129	octets
+
+ATTRIBUTE	DHCP-Ethernet-Interface			130	octets
+
+ATTRIBUTE	DHCP-Vendor-Discrimination-Str		130	octets
+
+ATTRIBUTE	DHCP-Remote-Stats-Svr-IP-Address	131	octets
+
+ATTRIBUTE	DHCP-IEEE-802.1Q-L2-Priority		132	octets
+
+ATTRIBUTE	DHCP-IEEE-802.1P-VLAN-ID		133	octets
+
+ATTRIBUTE	DHCP-Diffserv-Code-Point		134	octets
+
+ATTRIBUTE	DHCP-HTTP-Proxy				135	octets
+
+ATTRIBUTE	DHCP-Cisco-TFTP-Server-IP-Addresses	150	ipaddr array
+
+ATTRIBUTE	DHCP-End-Of-Options			255	byte
+
+VALUE	DHCP-Opcode			Client-Message		1
+VALUE	DHCP-Opcode			Server-Message		2
+
+VALUE	DHCP-Message-Type		DHCP-Discover		1
+VALUE	DHCP-Message-Type		DHCP-Offer		2
+VALUE	DHCP-Message-Type		DHCP-Request		3
+VALUE	DHCP-Message-Type		DHCP-Decline		4
+VALUE	DHCP-Message-Type		DHCP-Ack		5
+VALUE	DHCP-Message-Type		DHCP-NAK		6
+VALUE	DHCP-Message-Type		DHCP-Release		7
+VALUE	DHCP-Message-Type		DHCP-Inform		8
+VALUE	DHCP-Message-Type		DHCP-Force-Renew	9
+
+VALUE	DHCP-Parameter-Request-List	DHCP-Subnet-Mask	1
+VALUE	DHCP-Parameter-Request-List	DHCP-Time-Offset	2
+VALUE	DHCP-Parameter-Request-List	DHCP-Router-Address	3
+VALUE	DHCP-Parameter-Request-List	DHCP-Time-Server	4
+VALUE	DHCP-Parameter-Request-List	DHCP-IEN-116-Name-Server 5
+VALUE	DHCP-Parameter-Request-List	DHCP-Domain-Name-Server	6
+VALUE	DHCP-Parameter-Request-List	DHCP-Log-Server		7
+VALUE	DHCP-Parameter-Request-List	DHCP-Quotes-Server	8
+VALUE	DHCP-Parameter-Request-List	DHCP-LPR-Server		9
+VALUE	DHCP-Parameter-Request-List	DHCP-Impress-Server	10
+VALUE	DHCP-Parameter-Request-List	DHCP-RLP-Server		11
+VALUE	DHCP-Parameter-Request-List	DHCP-Hostname		12
+VALUE	DHCP-Parameter-Request-List	DHCP-Boot-File-Size	13
+VALUE	DHCP-Parameter-Request-List	DHCP-Merit-Dump-File	14
+VALUE	DHCP-Parameter-Request-List	DHCP-Domain-Name	15
+VALUE	DHCP-Parameter-Request-List	DHCP-Swap-Server	16
+VALUE	DHCP-Parameter-Request-List	DHCP-Root-Path		17
+VALUE	DHCP-Parameter-Request-List	DHCP-Bootp-Extensions-Path 18
+VALUE	DHCP-Parameter-Request-List	DHCP-IP-Forward-Enable	19
+VALUE	DHCP-Parameter-Request-List	DHCP-Source-Route-Enable 20
+VALUE	DHCP-Parameter-Request-List	DHCP-Policy-Filter	21
+VALUE	DHCP-Parameter-Request-List	DHCP-Max-Datagram-Reassembly-Sz 22
+VALUE	DHCP-Parameter-Request-List	DHCP-Default-IP-TTL	23
+VALUE	DHCP-Parameter-Request-List	DHCP-Path-MTU-Aging-Timeout 24
+VALUE	DHCP-Parameter-Request-List	DHCP-Path-MTU-Plateau-Table 25
+VALUE	DHCP-Parameter-Request-List	DHCP-Interface-MTU-Size	26
+VALUE	DHCP-Parameter-Request-List	DHCP-All-Subnets-Are-Local 27
+VALUE	DHCP-Parameter-Request-List	DHCP-Broadcast-Address	28
+VALUE	DHCP-Parameter-Request-List	DHCP-Perform-Mask-Discovery 29
+VALUE	DHCP-Parameter-Request-List	DHCP-Provide-Mask-To-Others 30
+VALUE	DHCP-Parameter-Request-List	DHCP-Perform-Router-Discovery 31
+VALUE	DHCP-Parameter-Request-List	DHCP-Router-Solicitation-Address 32
+VALUE	DHCP-Parameter-Request-List	DHCP-Static-Routes	33
+VALUE	DHCP-Parameter-Request-List	DHCP-Trailer-Encapsulation 34
+VALUE	DHCP-Parameter-Request-List	DHCP-ARP-Cache-Timeout	35
+VALUE	DHCP-Parameter-Request-List	DHCP-Ethernet-Encapsulation 36
+VALUE	DHCP-Parameter-Request-List	DHCP-Default-TCP-TTL	37
+VALUE	DHCP-Parameter-Request-List	DHCP-Keep-Alive-Interval 38
+VALUE	DHCP-Parameter-Request-List	DHCP-Keep=Alive-Garbage 39
+VALUE	DHCP-Parameter-Request-List	DHCP-NIS-Domain-Name	40
+VALUE	DHCP-Parameter-Request-List	DHCP-NIS-Servers	41
+VALUE	DHCP-Parameter-Request-List	DHCP-NTP-Servers	42
+VALUE	DHCP-Parameter-Request-List	DHCP-Vendor		43
+VALUE	DHCP-Parameter-Request-List	DHCP-NETBIOS-Name-Servers 44
+VALUE	DHCP-Parameter-Request-List	DHCP-NETBIOS-Dgm-Dist-Servers 45
+VALUE	DHCP-Parameter-Request-List	DHCP-NETBIOS-Node-Type	46
+VALUE	DHCP-Parameter-Request-List	DHCP-NETBIOS		47
+VALUE	DHCP-Parameter-Request-List	DHCP-X-Window-Font-Server 48
+VALUE	DHCP-Parameter-Request-List	DHCP-X-Window-Display-Mgr 49
+VALUE	DHCP-Parameter-Request-List	DHCP-Requested-IP-Address 50
+VALUE	DHCP-Parameter-Request-List	DHCP-IP-Address-Lease-Time 51
+VALUE	DHCP-Parameter-Request-List	DHCP-Overload		52
+VALUE	DHCP-Parameter-Request-List	DHCP-Message-Type	53
+VALUE	DHCP-Parameter-Request-List	DHCP-DHCP-Server-Identifier 54
+VALUE	DHCP-Parameter-Request-List	DHCP-Parameter-Request-List 55
+VALUE	DHCP-Parameter-Request-List	DHCP-DHCP-Error-Message	56
+VALUE	DHCP-Parameter-Request-List	DHCP-DHCP-Maximum-Msg-Size 57
+VALUE	DHCP-Parameter-Request-List	DHCP-Renewal-Time	58
+VALUE	DHCP-Parameter-Request-List	DHCP-Rebinding-Time	59
+VALUE	DHCP-Parameter-Request-List	DHCP-Class-Identifier	60
+VALUE	DHCP-Parameter-Request-List	DHCP-Client-Identifier	61
+VALUE	DHCP-Parameter-Request-List	DHCP-Netware-Domain-Name 62
+VALUE	DHCP-Parameter-Request-List	DHCP-Netware-Sub-Options 63
+VALUE	DHCP-Parameter-Request-List	DHCP-NIS-Client-Domain-Name 64
+VALUE	DHCP-Parameter-Request-List	DHCP-NIS-Server-Address	65
+VALUE	DHCP-Parameter-Request-List	DHCP-TFTP-Server-Name	66
+VALUE	DHCP-Parameter-Request-List	DHCP-Boot-File-Name	67
+VALUE	DHCP-Parameter-Request-List	DHCP-Home-Agent-Address	68
+VALUE	DHCP-Parameter-Request-List	DHCP-SMTP-Server-Address 69
+VALUE	DHCP-Parameter-Request-List	DHCP-POP3-Server-Address 70
+VALUE	DHCP-Parameter-Request-List	DHCP-NNTP-Server-Address 71
+VALUE	DHCP-Parameter-Request-List	DHCP-WWW-Server-Address	72
+VALUE	DHCP-Parameter-Request-List	DHCP-Finger-Server-Address 73
+VALUE	DHCP-Parameter-Request-List	DHCP-IRC-Server-Address	74
+VALUE	DHCP-Parameter-Request-List	DHCP-StreetTalk-Server-Address 75
+VALUE	DHCP-Parameter-Request-List	DHCP-STDA-Server-Address 76
+VALUE	DHCP-Parameter-Request-List	DHCP-User-Class		77
+VALUE	DHCP-Parameter-Request-List	DHCP-Directory-Agent	78
+VALUE	DHCP-Parameter-Request-List	DHCP-Service-Scope	79
+VALUE	DHCP-Parameter-Request-List	DHCP-Rapid-Commit	80
+VALUE	DHCP-Parameter-Request-List	DHCP-Client-FQDN	81
+VALUE	DHCP-Parameter-Request-List	DHCP-Relay-Agent-Information 82
+VALUE	DHCP-Parameter-Request-List	DHCP-iSNS		83
+VALUE	DHCP-Parameter-Request-List	DHCP-NDS-Servers	85
+VALUE	DHCP-Parameter-Request-List	DHCP-NDS-Tree-Name	86
+VALUE	DHCP-Parameter-Request-List	DHCP-NDS-Context	87
+VALUE	DHCP-Parameter-Request-List	DHCP-Authentication	90
+VALUE	DHCP-Parameter-Request-List	DHCP-Client-Last-Txn-Time 91
+VALUE	DHCP-Parameter-Request-List	DHCP-associated-ip	92
+VALUE	DHCP-Parameter-Request-List	DHCP-Client-System	93
+VALUE	DHCP-Parameter-Request-List	DHCP-Client-NDI		94
+VALUE	DHCP-Parameter-Request-List	DHCP-LDAP		95
+VALUE	DHCP-Parameter-Request-List	DHCP-UUID/GUID		97
+VALUE	DHCP-Parameter-Request-List	DHCP-User-Auth		98
+VALUE	DHCP-Parameter-Request-List	DHCP-Netinfo-Address	112
+VALUE	DHCP-Parameter-Request-List	DHCP-Netinfo-Tag	113
+VALUE	DHCP-Parameter-Request-List	DHCP-URL		114
+VALUE	DHCP-Parameter-Request-List	DHCP-Auto-Config	116
+VALUE	DHCP-Parameter-Request-List	DHCP-Name-Service-Search 117
+VALUE	DHCP-Parameter-Request-List	DHCP-Subnet-Selection-Option 118
+VALUE	DHCP-Parameter-Request-List	DHCP-Domain-Search	119
+VALUE	DHCP-Parameter-Request-List	DHCP-SIP-Servers-DHCP-Option 120
+VALUE	DHCP-Parameter-Request-List	DHCP-Classless-Static-Route 121
+VALUE	DHCP-Parameter-Request-List	DHCP-CCC		122
+VALUE	DHCP-Parameter-Request-List	DHCP-GeoConf-Option	123
+VALUE	DHCP-Parameter-Request-List	DHCP-V-I-Vendor-Class	124
+VALUE	DHCP-Parameter-Request-List	DHCP-V-I-Vendor-Specific 125
+VALUE	DHCP-Parameter-Request-List	DHCP-Etherboot		128
+VALUE	DHCP-Parameter-Request-List	DHCP-TFTP-Server-IP-Address 128
+VALUE	DHCP-Parameter-Request-List	DHCP-Call-Server-IP-address 129
+VALUE	DHCP-Parameter-Request-List	DHCP-Ethernet-Interface	130
+VALUE	DHCP-Parameter-Request-List	DHCP-Vendor-Discrimination-Str 130
+VALUE	DHCP-Parameter-Request-List	DHCP-Remote-Stats-Svr-IP-Address 131
+VALUE	DHCP-Parameter-Request-List	DHCP-IEEE-802.1P-VLAN-ID 132
+VALUE	DHCP-Parameter-Request-List	DHCP-IEEE-802.1Q-L2-Priority 133
+VALUE	DHCP-Parameter-Request-List	DHCP-Diffserv-Code-Point 134
+VALUE	DHCP-Parameter-Request-List	DHCP-HTTP-Proxy		135
+
+#
+#  Don't pay too much attention to these values.  They will be fixed
+#  in a future release.
+#
+ATTRIBUTE DHCP-Agent-Circuit-Id		0x0152			octets
+ATTRIBUTE DHCP-Agent-Remote-Id		0x0252			octets
+
+END-VENDOR	DHCP

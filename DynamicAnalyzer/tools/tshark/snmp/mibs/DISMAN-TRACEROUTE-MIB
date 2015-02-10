@@ -1,0 +1,1946 @@
+DISMAN-TRACEROUTE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32,
+    Gauge32, Unsigned32, mib-2,
+    NOTIFICATION-TYPE,
+    OBJECT-IDENTITY
+        FROM SNMPv2-SMI                  -- RFC2578
+    RowStatus, StorageType,
+    TruthValue, DateAndTime
+        FROM SNMPv2-TC                   -- RFC2579
+    MODULE-COMPLIANCE, OBJECT-GROUP,
+    NOTIFICATION-GROUP
+        FROM SNMPv2-CONF                 -- RFC2580
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB          -- RFC3411
+    InterfaceIndexOrZero                 -- RFC2863
+        FROM IF-MIB
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB            -- RFC4001
+    OperationResponseStatus
+        FROM DISMAN-PING-MIB;            -- RFC4560
+
+ traceRouteMIB MODULE-IDENTITY
+    LAST-UPDATED "200606130000Z"         -- 13 June 2006
+    ORGANIZATION "IETF Distributed Management Working Group"
+    CONTACT-INFO
+        "Juergen Quittek
+
+        NEC Europe Ltd.
+        Network Laboratories
+        Kurfuersten-Anlage 36
+        69115 Heidelberg
+        Germany
+
+        Phone: +49 6221 4342-115
+        Email: quittek@netlab.nec.de"
+    DESCRIPTION
+        "The Traceroute MIB (DISMAN-TRACEROUTE-MIB) provides
+        access to the traceroute capability at a remote host.
+
+        Copyright (C) The Internet Society (2006). This version of
+        this MIB module is part of RFC 4560; see the RFC itself for
+        full legal notices."
+
+     --  Revision history
+
+
+     REVISION     "200606130000Z"         -- 13 June 2006
+     DESCRIPTION
+         "Updated version, published as RFC 4560.
+             - Correctly considered IPv6 in DESCRIPTION clause of
+               object traceRouteCtlDataSize
+             - Replaced references to RFC 2575 by RFC 3415
+             - Replaced references to RFC 2571 by RFC 3411
+             - Replaced references to RFC 2851 by RFC 4001
+             - Clarified DESCRIPTION clause of object
+               traceRouteResultsLastGoodPath
+             - Changed range of object traceRouteCtlInitialTtl
+               from (0..255) to (1..255)
+             - Extended DESCRIPTION clause of traceRouteResultsTable
+               describing re-initialization of entries
+             - Changed SYNTAX of traceRouteResultsTestAttempts and
+               traceRouteResultsTestSuccesses from Unsigned32 to
+               Gauge32
+             - Changed status of traceRouteCompliance to deprecated
+             - Added traceRouteFullCompliance and
+               traceRouteMinimumCompliance
+             - Changed status of traceRouteGroup and
+               traceRouteTimeStampGroup to deprecated
+             - Added traceRouteMinimumGroup,
+               traceRouteCtlRowStatusGroup, and
+               traceRouteHistoryGroup
+             - Changed DEFVAL of object
+               traceRouteCtlTargetAddressType from { ipv4 }
+               to { unknown }
+             - Changed DEFVAL of object traceRouteCtlDescr
+               from { '00'H } to { ''H }
+             - Added DEFVAL for object traceRouteCtlTrapGeneration
+               of DEFVAL { { } }"
+     REVISION     "200009210000Z"         -- 21 September 2000
+     DESCRIPTION
+         "Initial version, published as RFC 2925."
+
+    ::= { mib-2 81 }
+
+ -- Top level structure of the MIB
+
+ traceRouteNotifications  OBJECT IDENTIFIER ::= { traceRouteMIB 0 }
+ traceRouteObjects        OBJECT IDENTIFIER ::= { traceRouteMIB 1 }
+ traceRouteConformance    OBJECT IDENTIFIER ::= { traceRouteMIB 2 }
+
+ -- The registration node (point) for traceroute implementation types
+
+ traceRouteImplementationTypeDomains OBJECT IDENTIFIER
+ ::= { traceRouteMIB 3 }
+
+
+ traceRouteUsingUdpProbes OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "Indicates that an implementation is using UDP probes to
+        perform the traceroute operation."
+    ::= { traceRouteImplementationTypeDomains 1 }
+
+
+ -- Simple Object Definitions
+
+ traceRouteMaxConcurrentRequests OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "requests"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "The maximum number of concurrent active traceroute requests
+       that are allowed within an agent implementation.  A value
+       of 0 for this object implies that there is no limit for
+       the number of concurrent active requests in effect.
+
+       The limit applies only to new requests being activated.
+       When a new value is set, the agent will continue processing
+       all the requests already active, even if their number
+       exceeds the limit just imposed."
+    DEFVAL { 10 }
+    ::= { traceRouteObjects 1 }
+
+
+  -- Traceroute Control Table
+
+ traceRouteCtlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TraceRouteCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines the Remote Operations Traceroute Control Table for
+        providing the capability of invoking traceroute from a remote
+        host.  The results of traceroute operations can be stored in
+        the traceRouteResultsTable, traceRouteProbeHistoryTable, and
+        the traceRouteHopsTable."
+   ::= { traceRouteObjects 2 }
+
+ traceRouteCtlEntry OBJECT-TYPE
+    SYNTAX      TraceRouteCtlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+
+
+        "Defines an entry in the traceRouteCtlTable.  The first
+        index element, traceRouteCtlOwnerIndex, is of type
+        SnmpAdminString, a textual convention that allows for
+        use of the SNMPv3 View-Based Access Control Model
+        (RFC 3415, VACM) and that allows a management
+        application to identify its entries.  The second index,
+        traceRouteCtlTestName (also an SnmpAdminString),
+        enables the same management application to have
+        multiple requests outstanding."
+    INDEX {
+            traceRouteCtlOwnerIndex,
+            traceRouteCtlTestName
+          }
+    ::= { traceRouteCtlTable 1 }
+
+ TraceRouteCtlEntry ::=
+    SEQUENCE {
+      traceRouteCtlOwnerIndex         SnmpAdminString,
+      traceRouteCtlTestName           SnmpAdminString,
+      traceRouteCtlTargetAddressType  InetAddressType,
+      traceRouteCtlTargetAddress      InetAddress,
+      traceRouteCtlByPassRouteTable   TruthValue,
+      traceRouteCtlDataSize           Unsigned32,
+      traceRouteCtlTimeOut            Unsigned32,
+      traceRouteCtlProbesPerHop       Unsigned32,
+      traceRouteCtlPort               Unsigned32,
+      traceRouteCtlMaxTtl             Unsigned32,
+      traceRouteCtlDSField            Unsigned32,
+      traceRouteCtlSourceAddressType  InetAddressType,
+      traceRouteCtlSourceAddress      InetAddress,
+      traceRouteCtlIfIndex            InterfaceIndexOrZero,
+      traceRouteCtlMiscOptions        SnmpAdminString,
+      traceRouteCtlMaxFailures        Unsigned32,
+      traceRouteCtlDontFragment       TruthValue,
+      traceRouteCtlInitialTtl         Unsigned32,
+      traceRouteCtlFrequency          Unsigned32,
+      traceRouteCtlStorageType        StorageType,
+      traceRouteCtlAdminStatus        INTEGER,
+      traceRouteCtlDescr              SnmpAdminString,
+      traceRouteCtlMaxRows            Unsigned32,
+      traceRouteCtlTrapGeneration     BITS,
+      traceRouteCtlCreateHopsEntries  TruthValue,
+      traceRouteCtlType               OBJECT IDENTIFIER,
+      traceRouteCtlRowStatus          RowStatus
+    }
+
+ traceRouteCtlOwnerIndex OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..32))
+
+
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "To facilitate the provisioning of access control by a
+       security administrator using the View-Based Access
+       Control Model (RFC 3415, VACM) for tables in which
+       multiple users may need to create or
+       modify entries independently, the initial index is used as
+       an 'owner index'.  Such an initial index has a syntax of
+       SnmpAdminString and can thus be trivially mapped to a
+       securityName or groupName defined in VACM, in
+       accordance with a security policy.
+
+       When used in conjunction with such a security policy,
+       all entries in the table belonging to a particular user
+       (or group) will have the same value for this initial
+       index.  For a given user's entries in a particular
+       table, the object identifiers for the information in
+       these entries will have the same subidentifiers (except
+       for the 'column' subidentifier) up to the end of the
+       encoded owner index. To configure VACM to permit access
+       to this portion of the table, one would create
+       vacmViewTreeFamilyTable entries with the value of
+       vacmViewTreeFamilySubtree including the owner index
+       portion, and vacmViewTreeFamilyMask 'wildcarding' the
+       column subidentifier.  More elaborate configurations
+       are possible."
+    ::= { traceRouteCtlEntry 1 }
+
+  traceRouteCtlTestName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The name of a traceroute test.  This is locally unique,
+        within the scope of a traceRouteCtlOwnerIndex."
+    ::= { traceRouteCtlEntry 2 }
+
+ traceRouteCtlTargetAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the type of host address to be used on the
+        traceroute request at the remote host."
+    DEFVAL { unknown }
+    ::= { traceRouteCtlEntry 3 }
+
+
+
+ traceRouteCtlTargetAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the host address used on the
+        traceroute request at the remote host.  The
+        host address type can be determined by
+        examining the value of the corresponding
+        traceRouteCtlTargetAddressType.
+
+        A value for this object MUST be set prior to
+        transitioning its corresponding traceRouteCtlEntry to
+        active(1) via traceRouteCtlRowStatus."
+    ::= { traceRouteCtlEntry 4 }
+
+ traceRouteCtlByPassRouteTable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+       "The purpose of this object is to enable optional
+       bypassing the route table.  If enabled, the remote
+       host will bypass the normal routing tables and send
+       directly to a host on an attached network.  If the
+       host is not on a directly attached network, an
+       error is returned.  This option can be used to perform
+       the traceroute operation to a local host through an
+       interface that has no route defined (e.g., after the
+       interface was dropped by the routing daemon at the host)."
+    DEFVAL { false }
+    ::= { traceRouteCtlEntry 5 }
+
+ traceRouteCtlDataSize OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..65507)
+    UNITS       "octets"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the size of the data portion of a traceroute
+        request, in octets.  If the RECOMMENDED traceroute method
+        (UDP datagrams as probes) is used, then the value
+        contained in this object MUST be applied.  If another
+        traceroute method is used for which the specified size
+        is not appropriate, then the implementation SHOULD use
+        whatever size (appropriate to the method) is closest to
+        the specified size.
+
+
+
+
+        The maximum value for this object was computed by
+        subtracting the smallest possible IP header size of
+        20 octets (IPv4 header with no options) and the UDP
+        header size of 8 octets from the maximum IP packet size.
+        An IP packet has a maximum size of 65535 octets
+        (excluding IPv6 Jumbograms)."
+    DEFVAL { 0 }
+    ::= { traceRouteCtlEntry 6 }
+
+ traceRouteCtlTimeOut OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..60)
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the time-out value, in seconds, for
+        a traceroute request."
+    DEFVAL { 3 }
+    ::= { traceRouteCtlEntry 7 }
+
+ traceRouteCtlProbesPerHop OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..10)
+    UNITS       "probes"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the number of times to reissue a traceroute
+        request with the same time-to-live (TTL) value."
+    DEFVAL { 3 }
+    ::= { traceRouteCtlEntry 8 }
+
+ traceRouteCtlPort OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..65535)
+    UNITS       "UDP Port"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the (initial) UDP port to send the traceroute
+        request to.  A port needs to be specified that is not in
+        use at the destination (target) host.  The default
+        value for this object is the IANA assigned port,
+        33434, for the traceroute function."
+    DEFVAL { 33434 }
+    ::= { traceRouteCtlEntry 9 }
+
+ traceRouteCtlMaxTtl OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..255)
+    UNITS       "time-to-live value"
+
+
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the maximum time-to-live value."
+    DEFVAL { 30 }
+    ::= { traceRouteCtlEntry 10 }
+
+ traceRouteCtlDSField OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+
+    DESCRIPTION
+        "Specifies the value to store in the Type of Service
+        (TOS) octet in the IPv4 header or in the Traffic
+        Class octet in the IPv6 header, respectively, of the
+        IP packet used to encapsulate the traceroute probe.
+
+        The octet to be set in the IP header contains the
+        Differentiated Services (DS) Field in the six most
+        significant bits.
+
+        This option can be used to determine what effect an
+        explicit DS Field setting has on a traceroute response.
+        Not all values are legal or meaningful.  A value of 0
+        means that the function represented by this option is
+        not supported.  DS Field usage is often not supported
+        by IP implementations, and not all values are supported.
+        Refer to RFC 2474 and RFC 3260 for guidance on usage of
+        this field."
+    REFERENCE
+        "Refer to RFC 1812 for the definition of the IPv4 TOS
+        octet and to RFC 2460 for the definition of the IPv6
+        Traffic Class octet.  Refer to RFC 2474 and RFC 3260
+        for the definition of the Differentiated Services Field."
+    DEFVAL { 0 }
+    ::= { traceRouteCtlEntry 11 }
+
+ traceRouteCtlSourceAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the type of the source address,
+        traceRouteCtlSourceAddress, to be used at a remote host
+        when a traceroute operation is performed."
+    DEFVAL { unknown }
+    ::= { traceRouteCtlEntry 12 }
+
+
+ traceRouteCtlSourceAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Use the specified IP address (which must be given as an
+        IP number, not a hostname) as the source address in
+        outgoing probe packets.  On hosts with more than one IP
+        address, this option can be used to select the address
+        to be used.  If the IP address is not one of this
+        machine's interface addresses, an error is returned, and
+        nothing is sent.  A zero-length octet string value for
+        this object disables source address specification.
+        The address type (InetAddressType) that relates to
+        this object is specified by the corresponding value
+        of traceRouteCtlSourceAddressType."
+    DEFVAL { ''H }
+    ::= { traceRouteCtlEntry 13 }
+
+ traceRouteCtlIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Setting this object to an interface's ifIndex prior
+        to starting a remote traceroute operation directs
+        the traceroute probes to be transmitted over the
+        specified interface.  A value of zero for this object
+        implies that this option is not enabled."
+    DEFVAL { 0 }
+    ::= { traceRouteCtlEntry 14 }
+
+ traceRouteCtlMiscOptions OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Enables an application to specify implementation-dependent
+        options."
+    DEFVAL { ''H }
+    ::= { traceRouteCtlEntry 15 }
+
+ traceRouteCtlMaxFailures OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..255)
+    UNITS       "timeouts"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+
+
+        "The value of this object indicates the maximum number
+        of consecutive timeouts allowed before a remote traceroute
+        request is terminated.  A value of either 255 (maximum
+        hop count/possible TTL value) or 0 indicates that the
+        function of terminating a remote traceroute request when a
+        specific number of consecutive timeouts are detected is
+        disabled."
+    DEFVAL { 5 }
+    ::= { traceRouteCtlEntry 16 }
+
+ traceRouteCtlDontFragment OBJECT-TYPE
+    SYNTAX         TruthValue
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "This object enables setting of the don't fragment flag (DF)
+        in the IP header for a probe.  Use of this object enables
+        a manual PATH MTU test is performed."
+    DEFVAL  { false }
+    ::= { traceRouteCtlEntry 17 }
+
+ traceRouteCtlInitialTtl OBJECT-TYPE
+    SYNTAX         Unsigned32 (1..255)
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The value of this object specifies the initial TTL value to
+        use.  This enables bypassing the initial (often well known)
+        portion of a path."
+    DEFVAL { 1 }
+    ::= { traceRouteCtlEntry 18 }
+
+ traceRouteCtlFrequency  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The number of seconds to wait before repeating a
+        traceroute test, as defined by the value of the
+        various objects in the corresponding row.
+
+        After a single test is completed the number of seconds
+        as defined by the value of traceRouteCtlFrequency MUST
+        elapse before the next traceroute test is started.
+
+        A value of 0 for this object implies that the test
+        as defined by the corresponding entry will not be
+
+
+        repeated."
+    DEFVAL { 0 }
+    ::= { traceRouteCtlEntry 19 }
+
+ traceRouteCtlStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The storage type for this conceptual row.
+        Conceptual rows having the value 'permanent' need not
+        allow write-access to any columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { traceRouteCtlEntry 20 }
+
+ traceRouteCtlAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+
+                          enabled(1), -- operation should be started
+                          disabled(2) -- operation should be stopped
+                        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Reflects the desired state that an traceRouteCtlEntry
+        should be in:
+
+           enabled(1)  - Attempt to activate the test as defined by
+                         this traceRouteCtlEntry.
+           disabled(2) - Deactivate the test as defined by this
+                         traceRouteCtlEntry.
+
+        Refer to the corresponding traceRouteResultsOperStatus to
+        determine the operational state of the test defined by
+        this entry."
+     DEFVAL { disabled }
+    ::= { traceRouteCtlEntry 21 }
+
+ traceRouteCtlDescr OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The purpose of this object is to provide a
+        descriptive name of the remote traceroute
+        test."
+    DEFVAL { ''H }
+    ::= { traceRouteCtlEntry 22 }
+
+
+ traceRouteCtlMaxRows OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "rows"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of corresponding entries allowed
+        in the traceRouteProbeHistoryTable.  An implementation
+        of this MIB will remove the oldest corresponding entry
+        in the traceRouteProbeHistoryTable to allow the
+        addition of an new entry once the number of
+        corresponding rows in the traceRouteProbeHistoryTable
+        reaches this value.
+
+        Old entries are not removed when a new test is
+        started.  Entries are added to the
+        traceRouteProbeHistoryTable until traceRouteCtlMaxRows
+        is reached before entries begin to be removed.
+        A value of 0 for this object disables creation of
+        traceRouteProbeHistoryTable entries."
+    DEFVAL      { 50 }
+    ::= { traceRouteCtlEntry 23 }
+
+ traceRouteCtlTrapGeneration OBJECT-TYPE
+    SYNTAX      BITS {
+                  pathChange(0),
+                  testFailure(1),
+                  testCompletion(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object determines when and whether to
+        generate a notification for this entry:
+
+        pathChange(0)     - Generate a traceRoutePathChange
+            notification when the current path varies from a
+            previously determined path.
+        testFailure(1)    - Generate a traceRouteTestFailed
+            notification when the full path to a target
+            can't be determined.
+        testCompletion(2) - Generate a traceRouteTestCompleted
+            notification when the path to a target has been
+            determined.
+
+        The value of this object defaults to an empty set,
+        indicating that none of the above options has been
+        selected."
+
+
+    DEFVAL { { } }
+    ::= { traceRouteCtlEntry 24 }
+
+ traceRouteCtlCreateHopsEntries OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The current path for a traceroute test is kept in the
+        traceRouteHopsTable on a per-hop basis when the value of
+        this object is true(1)."
+    DEFVAL { false }
+    ::= { traceRouteCtlEntry 25 }
+
+ traceRouteCtlType OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object is used either to report or to
+        select the implementation method to be used for
+        performing a traceroute operation.  The value of this
+        object may be selected from
+        traceRouteImplementationTypeDomains.
+
+        Additional implementation types should be allocated as
+        required by implementers of the DISMAN-TRACEROUTE-MIB
+        under their enterprise specific registration point,
+        not beneath traceRouteImplementationTypeDomains."
+    DEFVAL { traceRouteUsingUdpProbes }
+    ::= { traceRouteCtlEntry 26 }
+
+ traceRouteCtlRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object allows entries to be created and deleted
+        in the traceRouteCtlTable.  Deletion of an entry in
+        this table results in a deletion of all corresponding (same
+        traceRouteCtlOwnerIndex and traceRouteCtlTestName
+        index values) traceRouteResultsTable,
+        traceRouteProbeHistoryTable, and traceRouteHopsTable
+        entries.
+
+        A value MUST be specified for traceRouteCtlTargetAddress
+        prior to acceptance of a transition to active(1) state.
+
+
+
+
+        When a value for pingCtlTargetAddress is set,
+        the value of object pingCtlRowStatus changes
+        from notReady(3) to notInService(2).
+
+        Activation of a remote traceroute operation is
+        controlled via traceRouteCtlAdminStatus, and not
+        by transitioning of this object's value to active(1).
+
+        Transitions in and out of active(1) state are not
+        allowed while an entry's traceRouteResultsOperStatus
+        is active(1), with the exception that deletion of
+        an entry in this table by setting its RowStatus
+        object to destroy(6) will stop an active
+        traceroute operation.
+
+        The operational state of an traceroute operation
+        can be determined by examination of the corresponding
+        traceRouteResultsOperStatus object."
+    REFERENCE
+        "See definition of RowStatus in RFC 2579, 'Textual
+        Conventions for SMIv2.'"
+    ::= { traceRouteCtlEntry 27 }
+
+
+ -- Traceroute Results Table
+
+ traceRouteResultsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TraceRouteResultsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines the Remote Operations Traceroute Results Table for
+        keeping track of the status of a traceRouteCtlEntry.
+
+        An entry is added to the traceRouteResultsTable when an
+        traceRouteCtlEntry is started by successful transition
+        of its traceRouteCtlAdminStatus object to enabled(1).
+
+        If the object traceRouteCtlAdminStatus already has the value
+        enabled(1), and if the corresponding
+        traceRouteResultsOperStatus object has the value
+        completed(3), then successfully writing enabled(1) to the
+        object traceRouteCtlAdminStatus re-initializes the already
+        existing entry in the traceRouteResultsTable.  The values of
+        objects in the re-initialized entry are the same as
+        the values of objects in a new entry would be.
+
+        An entry is removed from the traceRouteResultsTable when
+
+
+
+        its corresponding traceRouteCtlEntry is deleted."
+   ::= { traceRouteObjects 3 }
+
+ traceRouteResultsEntry OBJECT-TYPE
+    SYNTAX      TraceRouteResultsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines an entry in the traceRouteResultsTable.  The
+        traceRouteResultsTable has the same indexing as the
+        traceRouteCtlTable so that a traceRouteResultsEntry
+        corresponds to the traceRouteCtlEntry that caused it to
+        be created."
+    INDEX {
+            traceRouteCtlOwnerIndex,
+            traceRouteCtlTestName
+          }
+    ::= { traceRouteResultsTable 1 }
+
+ TraceRouteResultsEntry ::=
+    SEQUENCE {
+      traceRouteResultsOperStatus       INTEGER,
+      traceRouteResultsCurHopCount      Gauge32,
+      traceRouteResultsCurProbeCount    Gauge32,
+      traceRouteResultsIpTgtAddrType    InetAddressType,
+      traceRouteResultsIpTgtAddr        InetAddress,
+      traceRouteResultsTestAttempts     Gauge32,
+      traceRouteResultsTestSuccesses    Gauge32,
+      traceRouteResultsLastGoodPath     DateAndTime
+    }
+
+ traceRouteResultsOperStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                          enabled(1),  -- test is in progress
+                          disabled(2), -- test has stopped
+                          completed(3) -- test is completed
+                        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Reflects the operational state of an traceRouteCtlEntry:
+
+           enabled(1)   - Test is active.
+           disabled(2)  - Test has stopped.
+           completed(3) - Test is completed."
+    ::= { traceRouteResultsEntry 1 }
+
+ traceRouteResultsCurHopCount OBJECT-TYPE
+
+
+    SYNTAX      Gauge32
+    UNITS       "hops"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Reflects the current TTL value (from 1 to
+        255) for a remote traceroute operation.
+        Maximum TTL value is determined by
+        traceRouteCtlMaxTtl."
+    ::= { traceRouteResultsEntry 2 }
+
+ traceRouteResultsCurProbeCount OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "probes"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Reflects the current probe count (1..10) for
+        a remote traceroute operation.  The maximum
+        probe count is determined by
+        traceRouteCtlProbesPerHop."
+    ::= { traceRouteResultsEntry 3 }
+
+ traceRouteResultsIpTgtAddrType OBJECT-TYPE
+    SYNTAX      InetAddressType
+
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the type of address stored
+        in the corresponding traceRouteResultsIpTgtAddr
+        object."
+    ::= { traceRouteResultsEntry 4 }
+
+ traceRouteResultsIpTgtAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object reports the IP address associated
+        with a traceRouteCtlTargetAddress value when the
+        destination address is specified as a DNS name.
+        The value of this object should be a zero-length
+        octet string when a DNS name is not specified or
+        when a specified DNS name fails to resolve."
+    ::= { traceRouteResultsEntry 5 }
+
+ traceRouteResultsTestAttempts OBJECT-TYPE
+
+
+    SYNTAX      Gauge32
+    UNITS       "tests"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current number of attempts to determine a path
+        to a target.  The value of this object MUST be started
+        at 0."
+    ::= { traceRouteResultsEntry 6 }
+
+ traceRouteResultsTestSuccesses OBJECT-TYPE
+    SYNTAX      Gauge32
+    UNITS       "tests"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current number of attempts to determine a path
+        to a target that have succeeded.  The value of this
+        object MUST be reported as 0 when no attempts have
+        succeeded."
+    ::= { traceRouteResultsEntry 7 }
+
+ traceRouteResultsLastGoodPath OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The date and time when the last complete path
+        was determined.  A path is complete if responses
+        were received or timeout occurred for each hop on
+        the path; i.e., for each TTL value from the value
+        of the corresponding traceRouteCtlInitialTtl object
+        up to the end of the path or (if no reply from the
+        target IP address was received) up to the value of
+        the corresponding traceRouteCtlMaxTtl object."
+    ::= { traceRouteResultsEntry 8 }
+
+ -- Trace Route Probe History Table
+
+ traceRouteProbeHistoryTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TraceRouteProbeHistoryEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines the Remote Operations Traceroute Results Table
+        for storing the results of a traceroute operation.
+
+        An implementation of this MIB will remove the oldest
+
+
+        entry in the traceRouteProbeHistoryTable of the
+        corresponding entry in the traceRouteCtlTable to allow
+        the addition of a new entry once the number of rows in
+        the traceRouteProbeHistoryTable reaches the value specified
+        by traceRouteCtlMaxRows for the corresponding entry in the
+        traceRouteCtlTable."
+   ::= { traceRouteObjects 4 }
+
+ traceRouteProbeHistoryEntry OBJECT-TYPE
+    SYNTAX      TraceRouteProbeHistoryEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines a table for storing the results of a traceroute
+        operation.  Entries in this table are limited by
+        the value of the corresponding traceRouteCtlMaxRows
+        object.
+
+        The first two index elements identify the
+        traceRouteCtlEntry that a traceRouteProbeHistoryEntry
+        belongs to.  The third index element selects a single
+        traceroute operation result.  The fourth and fifth indexes
+        select the hop and the probe for a particular
+        traceroute operation."
+    INDEX {
+             traceRouteCtlOwnerIndex,
+             traceRouteCtlTestName,
+             traceRouteProbeHistoryIndex,
+             traceRouteProbeHistoryHopIndex,
+             traceRouteProbeHistoryProbeIndex
+
+          }
+    ::= { traceRouteProbeHistoryTable 1 }
+
+ TraceRouteProbeHistoryEntry ::=
+    SEQUENCE {
+      traceRouteProbeHistoryIndex         Unsigned32,
+      traceRouteProbeHistoryHopIndex      Unsigned32,
+      traceRouteProbeHistoryProbeIndex    Unsigned32,
+      traceRouteProbeHistoryHAddrType     InetAddressType,
+      traceRouteProbeHistoryHAddr         InetAddress,
+      traceRouteProbeHistoryResponse      Unsigned32,
+      traceRouteProbeHistoryStatus        OperationResponseStatus,
+      traceRouteProbeHistoryLastRC        Integer32,
+      traceRouteProbeHistoryTime          DateAndTime
+    }
+
+ traceRouteProbeHistoryIndex OBJECT-TYPE
+
+
+
+    SYNTAX      Unsigned32 (1..'ffffffff'h)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in this table is created when the result of
+        a traceroute probe is determined.  The initial 2 instance
+        identifier index values identify the traceRouteCtlEntry
+        that a probe result (traceRouteProbeHistoryEntry) belongs
+        to.  An entry is removed from this table when
+        its corresponding traceRouteCtlEntry is deleted.
+
+        An implementation MUST start assigning
+        traceRouteProbeHistoryIndex values at 1 and wrap after
+        exceeding the maximum possible value, as defined by the
+        limit of this object ('ffffffff'h)."
+    ::= { traceRouteProbeHistoryEntry 1 }
+
+ traceRouteProbeHistoryHopIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..255)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "Indicates which hop in a traceroute path the probe's
+       results are for.  The value of this object is initially
+       determined by the value of traceRouteCtlInitialTtl."
+    ::= { traceRouteProbeHistoryEntry 2 }
+
+ traceRouteProbeHistoryProbeIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..10)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "Indicates the index of a probe for a particular
+       hop in a traceroute path.  The number of probes per
+       hop is determined by the value of the corresponding
+       traceRouteCtlProbesPerHop object."
+    ::= { traceRouteProbeHistoryEntry 3 }
+
+ traceRouteProbeHistoryHAddrType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This objects indicates the type of address stored
+        in the corresponding traceRouteProbeHistoryHAddr
+        object."
+    ::= { traceRouteProbeHistoryEntry 4 }
+
+
+
+
+ traceRouteProbeHistoryHAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The address of a hop in a traceroute path.  This object
+       is not allowed to be a DNS name.  The value of the
+       corresponding object, traceRouteProbeHistoryHAddrType,
+       indicates this object's IP address type."
+    ::= { traceRouteProbeHistoryEntry 5 }
+
+ traceRouteProbeHistoryResponse OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "milliseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The amount of time measured in milliseconds from when
+        a probe was sent to when its response was received or
+        when it timed out.  The value of this object is reported
+        as 0 when it is not possible to transmit a probe."
+    ::= { traceRouteProbeHistoryEntry 6 }
+
+ traceRouteProbeHistoryStatus OBJECT-TYPE
+    SYNTAX      OperationResponseStatus
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The result of a traceroute operation made by a remote
+        host for a particular probe."
+    ::= { traceRouteProbeHistoryEntry 7 }
+
+ traceRouteProbeHistoryLastRC OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+
+    STATUS      current
+    DESCRIPTION
+        "The last implementation-method-specific reply code received.
+
+        Traceroute is usually implemented by transmitting a series of
+        probe packets with increasing time-to-live values.  A probe
+        packet is a UDP datagram encapsulated into an IP packet.
+        Each hop in a path to the target (destination) host rejects
+        the probe packets (probe's TTL too small, ICMP reply) until
+        either the maximum TTL is exceeded or the target host is
+        received."
+    ::= { traceRouteProbeHistoryEntry 8 }
+
+
+
+ traceRouteProbeHistoryTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Timestamp for when this probe's results were determined."
+    ::= { traceRouteProbeHistoryEntry 9 }
+
+ -- Traceroute Hop Results Table
+
+ traceRouteHopsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TraceRouteHopsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines the Remote Operations Traceroute Hop Table for
+        keeping track of the results of traceroute tests on a
+        per-hop basis."
+    ::= { traceRouteObjects 5 }
+
+ traceRouteHopsEntry OBJECT-TYPE
+    SYNTAX      TraceRouteHopsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Defines an entry in the traceRouteHopsTable.
+        The first two index elements identify the
+        traceRouteCtlEntry that a traceRouteHopsEntry
+        belongs to.  The third index element,
+        traceRouteHopsHopIndex, selects a
+        hop in a traceroute path."
+    INDEX {
+            traceRouteCtlOwnerIndex,
+            traceRouteCtlTestName,
+            traceRouteHopsHopIndex
+          }
+
+    ::= { traceRouteHopsTable 1 }
+
+ TraceRouteHopsEntry ::=
+    SEQUENCE {
+        traceRouteHopsHopIndex         Unsigned32,
+        traceRouteHopsIpTgtAddressType InetAddressType,
+        traceRouteHopsIpTgtAddress     InetAddress,
+        traceRouteHopsMinRtt           Unsigned32,
+        traceRouteHopsMaxRtt           Unsigned32,
+        traceRouteHopsAverageRtt       Unsigned32,
+        traceRouteHopsRttSumOfSquares  Unsigned32,
+
+
+
+        traceRouteHopsSentProbes       Unsigned32,
+        traceRouteHopsProbeResponses   Unsigned32,
+        traceRouteHopsLastGoodProbe    DateAndTime
+      }
+
+ traceRouteHopsHopIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..'ffffffff'h)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Specifies the hop index for a traceroute hop.  Values
+        for this object with respect to the same
+        traceRouteCtlOwnerIndex and traceRouteCtlTestName
+        MUST start at 1 and be given increasing values for
+        subsequent hops.  The value of traceRouteHopsHopIndex is not
+        necessarily the number of the hop on the traced path.
+
+        The traceRouteHopsTable keeps the current traceroute
+        path per traceRouteCtlEntry if enabled by
+        setting the corresponding traceRouteCtlCreateHopsEntries
+        to true(1).
+
+        All hops (traceRouteHopsTable entries) in a traceroute
+        path MUST be updated at the same time when a traceroute
+        operation is completed.  Care needs to be applied when a path
+        either changes or can't be determined.  The initial portion
+        of the path, up to the first hop change, MUST retain the
+        same traceRouteHopsHopIndex values.  The remaining portion
+        of the path SHOULD be assigned new traceRouteHopsHopIndex
+        values."
+    ::= { traceRouteHopsEntry 1 }
+
+ traceRouteHopsIpTgtAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the type of address stored
+        in the corresponding traceRouteHopsIpTgtAddress
+        object."
+    ::= { traceRouteHopsEntry 2 }
+
+ traceRouteHopsIpTgtAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object reports the IP address associated with
+
+
+
+        the hop.  A value for this object should be reported
+        as a numeric IP address, not as a DNS name.
+
+        The address type (InetAddressType) that relates to
+        this object is specified by the corresponding value
+        of pingCtlSourceAddressType."
+    ::= { traceRouteHopsEntry 3 }
+
+ traceRouteHopsMinRtt OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The minimum traceroute round-trip-time (RTT) received for
+        this hop.  A value of 0 for this object implies that no
+        RTT has been received."
+    ::= { traceRouteHopsEntry 4 }
+
+ traceRouteHopsMaxRtt OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum traceroute round-trip-time (RTT) received for
+        this hop.  A value of 0 for this object implies that no
+        RTT has been received."
+    ::= { traceRouteHopsEntry 5 }
+
+ traceRouteHopsAverageRtt OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current average traceroute round-trip-time (RTT) for
+        this hop."
+    ::= { traceRouteHopsEntry 6 }
+
+ traceRouteHopsRttSumOfSquares OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object contains the sum of the squares of all
+        round-trip-times received for this hop.  Its purpose is
+        to enable standard deviation calculation."
+    ::= { traceRouteHopsEntry 7 }
+
+ traceRouteHopsSentProbes OBJECT-TYPE
+
+
+
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of this object reflects the number of probes sent
+        for this hop during this traceroute test.  The value of this
+        object should start at 0."
+    ::= { traceRouteHopsEntry 8 }
+
+ traceRouteHopsProbeResponses OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of responses received for this hop during this
+        traceroute test.  This value of this object should start
+        at 0."
+    ::= { traceRouteHopsEntry 9 }
+
+ traceRouteHopsLastGoodProbe OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Date and time at which the last response was received for a
+         probe for this hop during this traceroute test."
+    ::= { traceRouteHopsEntry 10 }
+
+ -- Notification Definition section
+
+ traceRoutePathChange NOTIFICATION-TYPE
+      OBJECTS {
+        traceRouteCtlTargetAddressType,
+        traceRouteCtlTargetAddress,
+        traceRouteResultsIpTgtAddrType,
+        traceRouteResultsIpTgtAddr
+      }
+      STATUS  current
+      DESCRIPTION
+          "The path to a target has changed."
+      ::= { traceRouteNotifications 1 }
+
+ traceRouteTestFailed NOTIFICATION-TYPE
+      OBJECTS {
+        traceRouteCtlTargetAddressType,
+        traceRouteCtlTargetAddress,
+        traceRouteResultsIpTgtAddrType,
+        traceRouteResultsIpTgtAddr
+
+
+
+      }
+      STATUS  current
+      DESCRIPTION
+          "Could not determine the path to a target."
+      ::= { traceRouteNotifications 2 }
+
+ traceRouteTestCompleted NOTIFICATION-TYPE
+      OBJECTS {
+        traceRouteCtlTargetAddressType,
+        traceRouteCtlTargetAddress,
+        traceRouteResultsIpTgtAddrType,
+        traceRouteResultsIpTgtAddr
+      }
+      STATUS  current
+      DESCRIPTION
+          "The path to a target has just been determined."
+      ::= { traceRouteNotifications 3 }
+
+ -- Conformance information
+ -- Compliance statements
+
+ traceRouteCompliances OBJECT IDENTIFIER
+      ::= { traceRouteConformance 1 }
+ traceRouteGroups      OBJECT IDENTIFIER
+      ::= { traceRouteConformance 2 }
+
+ -- Compliance statements
+
+ traceRouteFullCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for SNMP entities that
+            fully implement the DISMAN-TRACEROUTE-MIB."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+                            traceRouteMinimumGroup,
+                            traceRouteCtlRowStatusGroup,
+                            traceRouteHistoryGroup
+                         }
+
+        GROUP traceRouteHopsTableGroup
+        DESCRIPTION
+            "This group lists the objects that make up a
+            traceRouteHopsEntry.  Support of the traceRouteHopsTable
+            is optional."
+
+        GROUP traceRouteNotificationsGroup
+        DESCRIPTION
+
+
+
+            "This group defines a collection of optional
+            notifications."
+
+        OBJECT traceRouteMaxConcurrentRequests
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "The agent is not required to support SET
+            operations to this object."
+
+        OBJECT traceRouteCtlByPassRouteTable
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access to this object is not required by
+            implementations that are not capable of its
+            implementation.  The function represented by this
+            object is implementable if the setsockopt
+            SOL_SOCKET SO_DONTROUTE option is supported."
+
+        OBJECT traceRouteCtlDSField
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  If write access is
+            not supported, return a 0 as the value of this object.
+            A value of 0 implies that the function represented by
+            this option is not supported."
+
+        OBJECT traceRouteCtlSourceAddressType
+        SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access to this object is not required by
+            implementations that are not capable of binding the
+            send socket with a source address.  An implementation
+            is only required to support IPv4 and IPv6 addresses."
+
+        OBJECT traceRouteCtlSourceAddress
+        SYNTAX  InetAddress (SIZE(0|4|16))
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access to this object is not required by
+            implementations that are not capable of binding the
+            send socket with a source address.  An implementation
+            is only required to support IPv4 and IPv6 addresses."
+
+        OBJECT traceRouteCtlIfIndex
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  If write access is
+
+
+
+            not supported, return a 0 as the value of this object.
+            A value of 0 implies that the function represented by
+            this option is not supported."
+
+        OBJECT traceRouteCtlMiscOptions
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Support of this object is optional.  If not
+            supporting, do not allow write access and return a
+            zero-length octet string as the value of the object."
+
+        OBJECT traceRouteCtlStorageType
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  It is also allowed
+            that implementations support only the volatile(2)
+            StorageType enumeration."
+
+        OBJECT traceRouteCtlType
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  In addition, the only
+            value that is RECOMMENDED to be supported by an
+            implementation is traceRouteUsingUdpProbes."
+
+        OBJECT traceRouteResultsIpTgtAddrType
+        SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteResultsIpTgtAddr
+        SYNTAX  InetAddress (SIZE(0|4|16))
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteResultsLastGoodPath
+        DESCRIPTION
+            "If the traceRouteHopsTableGroup is implemented, then
+            this object is mandatory for implementations that have
+            access to a system clock and that are capable of setting
+            the values for DateAndTime objects.  It is RECOMMENDED
+            that when this object is not supported its values
+            be reported as '0000000000000000'H."
+
+        OBJECT traceRouteProbeHistoryHAddrType
+        SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+
+
+
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteProbeHistoryHAddr
+        SYNTAX  InetAddress (SIZE(0|4|16))
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteProbeHistoryTime
+        DESCRIPTION
+            "This object is mandatory for implementations that have
+            access to a system clock and that are capable of setting
+            the values for DateAndTime objects.  It is RECOMMENDED
+            that when this object is not supported its values
+            be reported as '0000000000000000'H."
+
+        OBJECT traceRouteHopsIpTgtAddressType
+        SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteHopsIpTgtAddress
+        SYNTAX  InetAddress (SIZE(0|4|16))
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteHopsLastGoodProbe
+        DESCRIPTION
+            "This object is mandatory for implementations that have
+            access to a system clock and that are capable of setting
+            the values for DateAndTime objects.  It is RECOMMENDED
+            that when this object is not supported its values
+            be reported as '0000000000000000'H."
+
+    ::= { traceRouteCompliances 2 }
+
+ traceRouteMinimumCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The minimum compliance statement for SNMP entities
+            which implement the minimal subset of the
+            DISMAN-TRACEROUTE-MIB.  Implementors might choose this
+            subset for small devices with limited resources."
+    MODULE  -- this module
+
+
+
+        MANDATORY-GROUPS { traceRouteMinimumGroup }
+
+        GROUP traceRouteCtlRowStatusGroup
+        DESCRIPTION
+            "A compliant implementation does not have to implement
+            the traceRouteCtlRowStatusGroup."
+
+        GROUP traceRouteHistoryGroup
+        DESCRIPTION
+            "A compliant implementation does not have to implement
+            the traceRouteHistoryGroup."
+
+        GROUP traceRouteHopsTableGroup
+        DESCRIPTION
+            "This group lists the objects that make up a
+            traceRouteHopsEntry.  Support of the traceRouteHopsTable
+            is optional."
+
+        GROUP traceRouteNotificationsGroup
+        DESCRIPTION
+            "This group defines a collection of optional
+            notifications."
+
+        OBJECT traceRouteMaxConcurrentRequests
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "The agent is not required to support SET
+            operations to this object."
+
+        OBJECT traceRouteCtlByPassRouteTable
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  If write access is
+            not supported, return a false(2) as the value of this
+            object.  A value of false(2) means that the function
+            represented by this option is not supported."
+
+        OBJECT traceRouteCtlDSField
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  If write access is
+            not supported, return a 0 as the value of this object.
+            A value of 0 implies that the function represented by
+            this option is not supported."
+
+        OBJECT traceRouteCtlSourceAddressType
+        SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+        MIN-ACCESS  read-only
+
+
+
+        DESCRIPTION
+            "Write access to this object is not required by
+            implementations that are not capable of binding the
+            send socket with a source address.  An implementation
+            is only required to support IPv4 and IPv6 addresses."
+
+        OBJECT traceRouteCtlSourceAddress
+        SYNTAX  InetAddress (SIZE(0|4|16))
+        MIN-ACCESS  read-only
+
+        DESCRIPTION
+            "Write access to this object is not required by
+            implementations that are not capable of binding the
+            send socket with a source address.  An implementation
+            is only required to support IPv4 and IPv6 addresses."
+
+        OBJECT traceRouteCtlIfIndex
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  If write access is
+            not supported, return a 0 as the value of this object.
+            A value of 0 implies that the function represented by
+            this option is not supported."
+
+        OBJECT traceRouteCtlMiscOptions
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Support of this object is optional.  If not
+            supporting, do not allow write access, and return a
+            zero-length octet string as the value of the object."
+
+        OBJECT traceRouteCtlDontFragment
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  If write access is
+            not supported, return a false(2) as the value of this
+            object.  A value of false(2) means that the function
+            represented by this option is not supported."
+
+        OBJECT traceRouteCtlInitialTtl
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  If write access is
+            not supported, return a 1 as the value of this object."
+
+        OBJECT traceRouteCtlFrequency
+        MIN-ACCESS  read-only
+        DESCRIPTION
+
+
+
+            "Write access is not required.  If write access is
+            not supported, return a 0 as the value of this object.
+            A value of 0 implies that the function represented by
+            this option is not supported."
+
+        OBJECT traceRouteCtlStorageType
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  It is also allowed
+            that implementations support only the volatile(2)
+            StorageType enumeration."
+
+        OBJECT traceRouteCtlDescr
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "The agent is not required to support set
+            operations to this object."
+
+        OBJECT traceRouteCtlMaxRows
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  If the
+            traceRouteHistoryGroup is not implemented, then write
+            access to this object MUST be disabled, and the object
+            MUST return a value of 0 when retrieved."
+
+        OBJECT traceRouteCtlTrapGeneration
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  If the
+            traceRouteNotificationsGroup is not implemented, then
+            write access to this object MUST be disabled, and the
+            object MUST return a value with no bit set when
+            retrieved.  No bit set indicates that no notification
+            is generated."
+
+        OBJECT traceRouteCtlCreateHopsEntries
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  If the
+            traceRouteHopsTableGroup is not implemented, then
+            write access to this object MUST be disabled, and the
+            object MUST return a value of false(2) when retrieved."
+
+        OBJECT traceRouteCtlType
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  In addition, the only
+
+
+
+            value that is RECOMMENDED to be supported by an
+            implementation is traceRouteUsingUdpProbes."
+
+        OBJECT traceRouteResultsIpTgtAddrType
+        SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteResultsIpTgtAddr
+        SYNTAX  InetAddress (SIZE(0|4|16))
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteResultsLastGoodPath
+        DESCRIPTION
+            "This object is mandatory for implementations that have
+            access to a system clock and that are capable of setting
+            the values for DateAndTime objects.  It is RECOMMENDED
+            that when this object is not supported its values
+            be reported as '0000000000000000'H."
+
+        OBJECT traceRouteProbeHistoryHAddrType
+        SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteProbeHistoryHAddr
+        SYNTAX  InetAddress (SIZE(0|4|16))
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteProbeHistoryTime
+        DESCRIPTION
+            "If the traceRouteHistoryGroup is implemented, then
+            this object is mandatory for implementations that have
+            access to a system clock and that are capable of setting
+            the values for DateAndTime objects.  It is RECOMMENDED
+            that when this object is not supported its values
+            be reported as '0000000000000000'H."
+
+        OBJECT traceRouteHopsIpTgtAddressType
+        SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+
+
+
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteHopsIpTgtAddress
+        SYNTAX  InetAddress (SIZE(0|4|16))
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteHopsLastGoodProbe
+        DESCRIPTION
+            "If the traceRouteHopsTableGroup is implemented, then
+            this object is mandatory for implementations that have
+            access to a system clock and that are capable of setting
+            the values for DateAndTime objects.  It is RECOMMENDED
+            that when this object is not supported its values
+            be reported as '0000000000000000'H."
+
+    ::= { traceRouteCompliances 3 }
+
+ traceRouteCompliance MODULE-COMPLIANCE
+    STATUS  deprecated
+    DESCRIPTION
+            "The compliance statement for the DISMAN-TRACEROUTE-MIB.
+            This compliance statement has been deprecated because
+            the traceRouteGroup and the traceRouteTimeStampGroup
+            have been split and deprecated. The
+            traceRouteFullCompliance is semantically identical to the
+            deprecated traceRouteCompliance statement."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+                            traceRouteGroup
+                          }
+        GROUP traceRouteTimeStampGroup
+        DESCRIPTION
+            "This group is mandatory for implementations that have
+            access to a system clock and that are capable of setting
+            the values for DateAndTime objects."
+
+        GROUP traceRouteNotificationsGroup
+        DESCRIPTION
+            "This group defines a collection of optional
+            notifications."
+
+        GROUP traceRouteHopsTableGroup
+        DESCRIPTION
+            "This group lists the objects that make up a
+            traceRouteHopsEntry.  Support of the traceRouteHopsTable
+            is optional."
+
+
+
+        OBJECT traceRouteMaxConcurrentRequests
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "The agent is not required to support SET
+            operations to this object."
+
+        OBJECT traceRouteCtlByPassRouteTable
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "This object is not required by implementations that
+            are not capable of its implementation.  The function
+            represented by this object is implementable if the
+            setsockopt SOL_SOCKET SO_DONTROUTE option is
+            supported."
+
+        OBJECT traceRouteCtlSourceAddressType
+        SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+        MIN-ACCESS  read-only
+
+        DESCRIPTION
+            "This object is not required by implementations that
+            are not capable of binding the send socket with a
+            source address.  An implementation is only required to
+            support IPv4 and IPv6 addresses."
+
+        OBJECT traceRouteCtlSourceAddress
+        SYNTAX  InetAddress (SIZE(0|4|16))
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "This object is not required by implementations that
+            are not capable of binding the send socket with a
+            source address.  An implementation is only required to
+            support IPv4 and globally unique IPv6 addresses."
+
+        OBJECT traceRouteCtlIfIndex
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  When write access is
+            not supported, return a 0 as the value of this object.
+            A value of 0 implies that the function represented by
+            this option is not supported."
+
+        OBJECT traceRouteCtlMiscOptions
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Support of this object is optional.  When not
+            supporting, do not allow write access, and return a
+            zero-length octet string as the value of the object."
+
+
+
+        OBJECT traceRouteCtlStorageType
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  It is also allowed
+           that implementations support only the volatile
+            StorageType enumeration."
+
+        OBJECT traceRouteCtlDSField
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  When write access is
+            not supported, return a 0 as the value of this object.
+            A value of 0 implies that the function represented by
+            this option is not supported."
+
+        OBJECT traceRouteCtlType
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required.  In addition, the only
+            value that is RECOMMENDED to be supported by an
+            implementation is traceRouteUsingUdpProbes."
+
+        OBJECT traceRouteResultsIpTgtAddrType
+        SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteResultsIpTgtAddr
+        SYNTAX  InetAddress (SIZE(0|4|16))
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteProbeHistoryHAddrType
+        SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteProbeHistoryHAddr
+        SYNTAX  InetAddress (SIZE(0|4|16))
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteHopsIpTgtAddressType
+        SYNTAX  InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+
+
+
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+
+        OBJECT traceRouteHopsIpTgtAddress
+        SYNTAX  InetAddress (SIZE(0|4|16))
+        DESCRIPTION
+            "An implementation should only support IPv4 and
+            globally unique IPv6 address values for this object."
+    ::= { traceRouteCompliances 1 }
+
+ -- MIB groupings
+
+ traceRouteMinimumGroup OBJECT-GROUP
+   OBJECTS {
+             traceRouteMaxConcurrentRequests,
+             traceRouteCtlTargetAddressType,
+             traceRouteCtlTargetAddress,
+             traceRouteCtlByPassRouteTable,
+             traceRouteCtlDataSize,
+             traceRouteCtlTimeOut,
+             traceRouteCtlProbesPerHop,
+             traceRouteCtlPort,
+             traceRouteCtlMaxTtl,
+             traceRouteCtlDSField,
+             traceRouteCtlSourceAddressType,
+             traceRouteCtlSourceAddress,
+             traceRouteCtlIfIndex,
+             traceRouteCtlMiscOptions,
+             traceRouteCtlMaxFailures,
+             traceRouteCtlDontFragment,
+             traceRouteCtlInitialTtl,
+             traceRouteCtlFrequency,
+             traceRouteCtlStorageType,
+             traceRouteCtlAdminStatus,
+             traceRouteCtlMaxRows,
+             traceRouteCtlTrapGeneration,
+             traceRouteCtlDescr,
+             traceRouteCtlCreateHopsEntries,
+             traceRouteCtlType,
+             traceRouteResultsOperStatus,
+             traceRouteResultsCurHopCount,
+             traceRouteResultsCurProbeCount,
+             traceRouteResultsIpTgtAddrType,
+             traceRouteResultsIpTgtAddr,
+             traceRouteResultsTestAttempts,
+             traceRouteResultsTestSuccesses,
+             traceRouteResultsLastGoodPath
+
+
+
+          }
+   STATUS  current
+   DESCRIPTION
+       "The group of objects that constitute the remote traceroute
+       operation."
+   ::= { traceRouteGroups 5 }
+
+ traceRouteCtlRowStatusGroup OBJECT-GROUP
+   OBJECTS {
+             traceRouteCtlRowStatus
+          }
+   STATUS  current
+   DESCRIPTION
+       "The RowStatus object of the traceRouteCtlTable."
+   ::= { traceRouteGroups 6 }
+
+ traceRouteHistoryGroup OBJECT-GROUP
+   OBJECTS {
+             traceRouteProbeHistoryHAddrType,
+             traceRouteProbeHistoryHAddr,
+             traceRouteProbeHistoryResponse,
+             traceRouteProbeHistoryStatus,
+             traceRouteProbeHistoryLastRC,
+             traceRouteProbeHistoryTime
+           }
+
+   STATUS  current
+   DESCRIPTION
+       "The group of objects that constitute the history
+       capability."
+    ::= { traceRouteGroups 7 }
+
+ traceRouteNotificationsGroup NOTIFICATION-GROUP
+   NOTIFICATIONS {
+             traceRoutePathChange,
+             traceRouteTestFailed,
+             traceRouteTestCompleted
+          }
+   STATUS   current
+   DESCRIPTION
+       "The notifications that are required to be supported by
+       implementations of this MIB."
+   ::= { traceRouteGroups 3 }
+
+ traceRouteHopsTableGroup OBJECT-GROUP
+   OBJECTS {
+             traceRouteHopsIpTgtAddressType,
+             traceRouteHopsIpTgtAddress,
+
+
+
+             traceRouteHopsMinRtt,
+             traceRouteHopsMaxRtt,
+             traceRouteHopsAverageRtt,
+             traceRouteHopsRttSumOfSquares,
+             traceRouteHopsSentProbes,
+             traceRouteHopsProbeResponses,
+             traceRouteHopsLastGoodProbe
+           }
+    STATUS   current
+    DESCRIPTION
+        "The group of objects that constitute the
+        traceRouteHopsTable."
+  ::= { traceRouteGroups 4 }
+
+ traceRouteGroup OBJECT-GROUP
+   OBJECTS {
+             traceRouteMaxConcurrentRequests,
+             traceRouteCtlTargetAddressType,
+             traceRouteCtlTargetAddress,
+             traceRouteCtlByPassRouteTable,
+             traceRouteCtlDataSize,
+             traceRouteCtlTimeOut,
+             traceRouteCtlProbesPerHop,
+             traceRouteCtlPort,
+             traceRouteCtlMaxTtl,
+             traceRouteCtlDSField,
+             traceRouteCtlSourceAddressType,
+             traceRouteCtlSourceAddress,
+             traceRouteCtlIfIndex,
+             traceRouteCtlMiscOptions,
+             traceRouteCtlMaxFailures,
+             traceRouteCtlDontFragment,
+             traceRouteCtlInitialTtl,
+             traceRouteCtlFrequency,
+             traceRouteCtlStorageType,
+             traceRouteCtlAdminStatus,
+             traceRouteCtlMaxRows,
+             traceRouteCtlTrapGeneration,
+             traceRouteCtlDescr,
+             traceRouteCtlCreateHopsEntries,
+             traceRouteCtlType,
+             traceRouteCtlRowStatus,
+             traceRouteResultsOperStatus,
+             traceRouteResultsCurHopCount,
+             traceRouteResultsCurProbeCount,
+             traceRouteResultsIpTgtAddrType,
+             traceRouteResultsIpTgtAddr,
+             traceRouteResultsTestAttempts,
+
+
+
+             traceRouteResultsTestSuccesses,
+             traceRouteProbeHistoryHAddrType,
+             traceRouteProbeHistoryHAddr,
+             traceRouteProbeHistoryResponse,
+             traceRouteProbeHistoryStatus,
+             traceRouteProbeHistoryLastRC
+          }
+   STATUS  deprecated
+   DESCRIPTION
+       "The group of objects that constitute the remote traceroute
+       operation."
+   ::= { traceRouteGroups 1 }
+
+ traceRouteTimeStampGroup OBJECT-GROUP
+   OBJECTS {
+             traceRouteResultsLastGoodPath,
+             traceRouteProbeHistoryTime
+           }
+   STATUS  deprecated
+   DESCRIPTION
+       "The group of DateAndTime objects."
+    ::= { traceRouteGroups 2 }
+
+END

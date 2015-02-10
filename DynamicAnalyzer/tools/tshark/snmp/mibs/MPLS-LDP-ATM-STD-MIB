@@ -1,0 +1,792 @@
+MPLS-LDP-ATM-STD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE, MODULE-IDENTITY,
+    Unsigned32
+        FROM SNMPv2-SMI                                 --  [RFC2578]
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF                                --  [RFC2580]
+    RowStatus,
+    StorageType
+        FROM SNMPv2-TC                                  --  [RFC2579]
+
+    InterfaceIndexOrZero
+        FROM IF-MIB                                     --  [RFC2020]
+
+    AtmVpIdentifier
+        FROM ATM-TC-MIB                                 --  [RFC2514]
+
+    mplsStdMIB,
+    MplsAtmVcIdentifier
+        FROM MPLS-TC-STD-MIB                            --  [RFC3811]
+
+    mplsLdpEntityLdpId,
+    mplsLdpEntityIndex,
+    mplsLdpPeerLdpId
+        FROM MPLS-LDP-STD-MIB                           --  [RFC3813]
+
+    ;
+
+mplsLdpAtmStdMIB MODULE-IDENTITY
+    LAST-UPDATED "200406030000Z"  -- June 3, 2004
+
+
+    ORGANIZATION "Multiprotocol Label Switching (mpls)
+                  Working Group"
+    CONTACT-INFO
+        "Joan Cucchiara (jcucchiara@mindspring.com)
+         Marconi Communications, Inc.
+
+         Hans Sjostrand (hans@ipunplugged.com)
+         ipUnplugged
+
+         James V. Luciani (james_luciani@mindspring.com)
+         Marconi Communications, Inc.
+
+         Working Group Chairs:
+         George Swallow,   email: swallow@cisco.com
+         Loa Andersson,    email: loa@pi.se
+
+         MPLS Working Group, email: mpls@uu.net
+    "
+    DESCRIPTION
+        "Copyright (C) The Internet Society (2004). The
+        initial version of this MIB module was published
+        in RFC 3815. For full legal notices see the RFC
+        itself or see:
+        http://www.ietf.org/copyrights/ianamib.html
+
+        This MIB contains managed object definitions for
+        configuring and monitoring the Multiprotocol Label
+        Switching (MPLS), Label Distribution Protocol (LDP),
+        utilizing Asynchronous Transfer Mode (ATM) as the Layer 2
+        media."
+    REVISION "200406030000Z"  -- June 3, 2004
+    DESCRIPTION
+        "Initial version published as part of RFC 3815."
+
+    ::= { mplsStdMIB 5 }
+
+--****************************************************************
+
+mplsLdpAtmObjects       OBJECT IDENTIFIER
+                            ::= { mplsLdpAtmStdMIB 1 }
+mplsLdpAtmConformance   OBJECT IDENTIFIER
+                            ::= { mplsLdpAtmStdMIB 2 }
+
+--****************************************************************
+-- MPLS LDP ATM Objects
+--****************************************************************
+--
+-- Ldp Entity Objects for ATM
+
+
+--
+
+mplsLdpEntityAtmObjects  OBJECT IDENTIFIER ::=
+                              { mplsLdpAtmObjects 1 }
+
+mplsLdpEntityAtmTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MplsLdpEntityAtmEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains ATM specific information
+        which could be used in the
+        'Optional Parameters' and other ATM specific
+        information.
+
+        This table 'sparse augments' the mplsLdpEntityTable
+        when ATM is the Layer 2 medium."
+    ::= { mplsLdpEntityAtmObjects 1 }
+
+mplsLdpEntityAtmEntry OBJECT-TYPE
+    SYNTAX      MplsLdpEntityAtmEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in this table represents the ATM parameters
+        and ATM information for this LDP entity."
+    INDEX       {  mplsLdpEntityLdpId,
+                   mplsLdpEntityIndex
+                }
+    ::= { mplsLdpEntityAtmTable 1 }
+
+
+MplsLdpEntityAtmEntry ::= SEQUENCE {
+    mplsLdpEntityAtmIfIndexOrZero        InterfaceIndexOrZero,
+    mplsLdpEntityAtmMergeCap             INTEGER,
+    mplsLdpEntityAtmLRComponents         Unsigned32,
+    mplsLdpEntityAtmVcDirectionality     INTEGER,
+    mplsLdpEntityAtmLsrConnectivity      INTEGER,
+    mplsLdpEntityAtmDefaultControlVpi    AtmVpIdentifier,
+    mplsLdpEntityAtmDefaultControlVci    MplsAtmVcIdentifier,
+    mplsLdpEntityAtmUnlabTrafVpi         AtmVpIdentifier,
+    mplsLdpEntityAtmUnlabTrafVci         MplsAtmVcIdentifier,
+    mplsLdpEntityAtmStorageType          StorageType,
+    mplsLdpEntityAtmRowStatus            RowStatus
+}
+
+mplsLdpEntityAtmIfIndexOrZero  OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+
+
+
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+       "This value represents either the InterfaceIndex
+       or 0 (zero).  The value of zero means that the
+       InterfaceIndex is not known.
+
+       However, if the InterfaceIndex is known, then it must
+       be represented by this value.
+
+       If an InterfaceIndex becomes known, then the
+       network management entity (e.g., SNMP agent) responsible
+       for this object MUST change the value from 0 (zero) to the
+       value of the InterfaceIndex.  If an ATM Label is
+       being used in forwarding data, then the value of this
+       object MUST be the InterfaceIndex."
+    ::= { mplsLdpEntityAtmEntry 1 }
+
+mplsLdpEntityAtmMergeCap OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    notSupported(0),
+                    vpMerge(1),
+                    vcMerge(2),
+                    vpAndVcMerge(3)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Denotes the Merge Capability of this Entity.
+        This is the EXACT value for the ATM Session
+        Parameter, field M (for ATM Merge Capabilities).
+        The ATM Session Parameter is an optional
+        parameter in the Initialization Message.
+
+        The description from rfc3036.txt is:
+
+        'M, ATM Merge Capabilities
+           Specifies the merge capabilities of an ATM switch.  The
+           following values are supported in this version of the
+           specification:
+
+                  Value          Meaning
+
+                    0            Merge not supported
+                    1            VP Merge supported
+                    2            VC Merge supported
+                    3            VP & VC Merge supported
+
+
+
+
+           If the merge capabilities of the LSRs differ, then:
+           -  Non-merge and VC-merge LSRs may freely interoperate.
+
+           -  The interoperability of VP-merge-capable switches
+              with non-VP-merge-capable switches is a subject
+              for future study.  When the LSRs differ on the
+              use of VP-merge, the session is established,
+              but VP merge is not used.'
+
+           Please refer to the following reference for a
+           complete description of this feature."
+
+     REFERENCE
+        "RFC3036, LDP Specification, Section 3.5.3
+        Initialization Message."
+    ::= { mplsLdpEntityAtmEntry 2 }
+
+mplsLdpEntityAtmLRComponents OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Number of Label Range Components in the Initialization
+        message.  This also represents the number of entries
+        in the mplsLdpEntityAtmLRTable which correspond
+        to this entry.
+
+        This is the EXACT value for the ATM Session Parameter,
+        field N (for Number of label range components).
+        The ATM Session Parameter is an optional parameter
+        in the Initialization Message.
+
+        The description from rfc3036.txt is:
+
+        'N, Number of label range components
+           Specifies the number of ATM Label Range
+           Components included in the TLV.'
+
+         Please refer to the following reference for
+         a complete description of this feature."
+     REFERENCE
+        "RFC3036, LDP Specification, Section 3.5.3
+        Initialization Message."
+    ::= { mplsLdpEntityAtmEntry 3 }
+
+mplsLdpEntityAtmVcDirectionality OBJECT-TYPE
+    SYNTAX      INTEGER {
+                           bidirectional(0),
+
+
+
+                           unidirectional(1)
+                        }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If the value of this object is 'bidirectional(0)',
+        a given VCI, within a given VPI, is used as a
+        label for both directions independently.
+
+        If the value of this object is 'unidirectional(1)',
+        a given VCI within a VPI designates one direction.
+
+        This is the EXACT value for the ATM Session Parameter,
+        field D (for VC Directionality).  The ATM Session
+        Parameter is an optional parameter in the
+        Initialization Message.
+
+        The description from rfc3036.txt is:
+
+        'D, VC Directionality
+           A value of 0 specifies bidirectional VC capability,
+           meaning the LSR can (within a given VPI) support
+           the use of a given VCI as a label for both link
+           directions independently.  A value of 1
+           specifies unidirectional VC capability, meaning
+           (within a given VPI) a given VCI may appear in
+           a label mapping for one direction on the link
+           only.  When either or both of the peers
+           specifies unidirectional VC capability, both
+           LSRs use unidirectional VC label assignment for
+           the link as follows.  The LSRs compare their
+           LDP Identifiers as unsigned integers.  The LSR
+           with the larger LDP Identifier may assign
+           only odd-numbered VCIs in the VPI/VCI
+           range as labels.  The system with the smaller
+           LDP Identifier may assign only even-numbered
+           VCIs in the VPI/VCI range as labels.'
+
+           Please refer to the following reference
+           for a complete description of this feature."
+     REFERENCE
+        "RFC3036, LDP Specification, Section 3.5.3
+        Initialization Message."
+    ::= { mplsLdpEntityAtmEntry 4 }
+
+mplsLdpEntityAtmLsrConnectivity OBJECT-TYPE
+    SYNTAX      INTEGER {
+                   direct(1),
+
+
+                   indirect(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The peer LSR may be connected indirectly by means
+        of an ATM VP so that the VPI values may be different
+        on either endpoint so the label MUST be encoded
+        entirely within the VCI field."
+    DEFVAL { direct }
+    ::= { mplsLdpEntityAtmEntry 5 }
+
+mplsLdpEntityAtmDefaultControlVpi OBJECT-TYPE
+    SYNTAX      AtmVpIdentifier
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The default VPI value for the non-MPLS connection.  The
+        default value of this is 0 (zero) but other values may
+        be configured.  This object allows a different value
+        to be configured."
+    DEFVAL { 0 }
+    ::= { mplsLdpEntityAtmEntry 6 }
+
+mplsLdpEntityAtmDefaultControlVci OBJECT-TYPE
+    SYNTAX      MplsAtmVcIdentifier
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The Default VCI value for a non-MPLS connection.  The
+        default value of this is 32 but other values may be
+        configured.  This object allows a different value to
+        be configured."
+    DEFVAL { 32 }
+    ::= { mplsLdpEntityAtmEntry 7 }
+
+mplsLdpEntityAtmUnlabTrafVpi OBJECT-TYPE
+    SYNTAX      AtmVpIdentifier
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "VPI value of the VCC supporting unlabeled traffic.  This
+        non-MPLS connection is used to carry unlabeled (IP)
+        packets.  The default value is the same as the default
+        value of the 'mplsLdpEntityAtmDefaultControlVpi', however
+        another value may be configured."
+    DEFVAL  { 0 }
+    ::= { mplsLdpEntityAtmEntry 8 }
+
+
+mplsLdpEntityAtmUnlabTrafVci OBJECT-TYPE
+    SYNTAX      MplsAtmVcIdentifier
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "VCI value of the VCC supporting unlabeled traffic.
+        This non-MPLS connection is used to carry unlabeled (IP)
+        packets. The default value is the same as the default
+        value of the 'mplsLdpEntityAtmDefaultControlVci', however
+        another value may be configured."
+    DEFVAL  { 32 }
+    ::= { mplsLdpEntityAtmEntry 9 }
+
+mplsLdpEntityAtmStorageType  OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The storage type for this conceptual row.
+        Conceptual rows having the value 'permanent(4)'
+        need not allow write-access to any columnar
+        objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { mplsLdpEntityAtmEntry 10 }
+
+mplsLdpEntityAtmRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this conceptual row.  All writable
+         objects in this row may be modified at any time,
+         however, as described in detail in the section
+         entitled, 'Changing Values After Session
+         Establishment', and again described in the
+         DESCRIPTION clause of the mplsLdpEntityAdminStatus
+         object, if a session has been initiated with a Peer,
+         changing objects in this table will wreak havoc
+         with the session and interrupt traffic.  To repeat again:
+         the recommended procedure is to set the
+         mplsLdpEntityAdminStatus to down, thereby explicitly
+         causing a session to be torn down. Then,
+         change objects in this entry, then set the
+         mplsLdpEntityAdminStatus to enable
+         which enables a new session to be initiated."
+    ::= { mplsLdpEntityAtmEntry 11 }
+
+--
+
+
+-- The MPLS LDP Entity ATM Label Range Table
+--
+
+mplsLdpEntityAtmLRTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MplsLdpEntityAtmLREntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The MPLS LDP Entity ATM Label Range (LR) Table.
+        The purpose of this table is to provide a mechanism
+        for configuring a contiguous range of vpi's
+        with a contiguous range of vci's, or a 'label range'
+        for LDP Entities.
+
+        LDP Entities which use ATM must have at least one
+        entry in this table.
+
+        There must exist at least one entry in this
+        table for every LDP Entity that has
+        'mplsLdpEntityOptionalParameters' object with
+        a value of 'atmSessionParameters'."
+    ::= { mplsLdpEntityAtmObjects 2 }
+
+mplsLdpEntityAtmLREntry OBJECT-TYPE
+    SYNTAX MplsLdpEntityAtmLREntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A row in the LDP Entity ATM Label
+        Range Table.  One entry in this table contains
+        information on a single range of labels
+        represented by the configured Upper and Lower
+        Bounds VPI/VCI pairs.  These are the same
+        data used in the Initialization Message.
+
+        NOTE:  The ranges for a specific LDP Entity
+        are UNIQUE and non-overlapping.  For example,
+        for a specific LDP Entity index, there could
+        be one entry having LowerBound vpi/vci == 0/32, and
+        UpperBound vpi/vci == 0/100, and a second entry
+        for this same interface with LowerBound
+        vpi/vci == 0/101 and UpperBound vpi/vci == 0/200.
+        However, there could not be a third entry with
+        LowerBound vpi/vci == 0/200 and
+        UpperBound vpi/vci == 0/300 because this label
+        range overlaps with the second entry (i.e., both
+        entries now have 0/200).
+
+
+
+        A row will not become active unless a unique and
+        non-overlapping range is specified.
+
+        At least one label range entry for a
+        specific LDP Entity MUST
+        include the default VPI/VCI  values denoted
+        in the LDP Entity Table.
+
+        A request to create a row with an overlapping
+        range should result in an inconsistentValue
+        error."
+    INDEX       {  mplsLdpEntityLdpId,
+                   mplsLdpEntityIndex,
+                   mplsLdpEntityAtmLRMinVpi,
+                   mplsLdpEntityAtmLRMinVci
+                }
+    ::= { mplsLdpEntityAtmLRTable 1 }
+
+MplsLdpEntityAtmLREntry ::= SEQUENCE {
+    mplsLdpEntityAtmLRMinVpi       AtmVpIdentifier,
+    mplsLdpEntityAtmLRMinVci       MplsAtmVcIdentifier,
+    mplsLdpEntityAtmLRMaxVpi       AtmVpIdentifier,
+    mplsLdpEntityAtmLRMaxVci       MplsAtmVcIdentifier,
+    mplsLdpEntityAtmLRStorageType  StorageType,
+    mplsLdpEntityAtmLRRowStatus    RowStatus
+}
+
+mplsLdpEntityAtmLRMinVpi OBJECT-TYPE
+    SYNTAX AtmVpIdentifier
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The minimum VPI number configured for this range.
+        The value of zero is a valid value for the VPI portion
+        of the label."
+    ::= { mplsLdpEntityAtmLREntry 1 }
+
+mplsLdpEntityAtmLRMinVci OBJECT-TYPE
+    SYNTAX MplsAtmVcIdentifier
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The minimum VCI number configured for this range."
+    ::= { mplsLdpEntityAtmLREntry 2 }
+
+mplsLdpEntityAtmLRMaxVpi OBJECT-TYPE
+    SYNTAX AtmVpIdentifier
+    MAX-ACCESS read-create
+
+
+    STATUS current
+    DESCRIPTION
+        "The maximum VPI number configured for this range."
+    ::= { mplsLdpEntityAtmLREntry 3 }
+
+mplsLdpEntityAtmLRMaxVci OBJECT-TYPE
+    SYNTAX MplsAtmVcIdentifier
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The maximum VCI number configured for this range."
+   ::= { mplsLdpEntityAtmLREntry 4 }
+
+mplsLdpEntityAtmLRStorageType  OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The storage type for this conceptual row.
+        Conceptual rows having the value 'permanent(4)'
+        need not allow write-access to any columnar
+        objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { mplsLdpEntityAtmLREntry 5 }
+
+mplsLdpEntityAtmLRRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The status of this conceptual row.  All writable
+         objects in this row may be modified at any time,
+         however, as described in detail in the section
+         entitled, 'Changing Values After Session
+         Establishment', and again described in the
+         DESCRIPTION clause of the
+         mplsLdpEntityAdminStatus object,
+         if a session has been initiated with a Peer,
+         changing objects in this table will
+         wreak havoc with the session and interrupt traffic.
+         To repeat again:  the recommended procedure
+         is to set the mplsLdpEntityAdminStatus to
+         down, thereby explicitly causing a session
+         to be torn down. Then, change objects in this
+         entry, then set the mplsLdpEntityAdminStatus
+         to enable which enables a new session
+         to be initiated."
+    ::= { mplsLdpEntityAtmLREntry 6 }
+
+
+--
+-- MPLS LDP ATM Session Information
+--
+
+mplsLdpAtmSessionObjects OBJECT IDENTIFIER ::=
+                               { mplsLdpAtmObjects 2 }
+
+mplsLdpAtmSessionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MplsLdpAtmSessionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table which relates sessions in the
+        'mplsLdpSessionTable' and their label
+        range intersections.  There could be one
+        or more label range intersections between an
+        LDP Entity and LDP Peer using ATM as the
+        underlying  media.  Each row represents
+        a single label range intersection.
+
+        This table cannot use the 'AUGMENTS'
+        clause because there is not necessarily
+        a one-to-one mapping between this table
+        and the mplsLdpSessionTable."
+    ::= { mplsLdpAtmSessionObjects 1 }
+
+mplsLdpAtmSessionEntry OBJECT-TYPE
+    SYNTAX      MplsLdpAtmSessionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry in this table represents information on a
+        single label range intersection between an LDP Entity
+        and LDP Peer.
+
+        The information contained in a row is read-only."
+    INDEX       { mplsLdpEntityLdpId,
+                  mplsLdpEntityIndex,
+                  mplsLdpPeerLdpId,
+                  mplsLdpSessionAtmLRLowerBoundVpi,
+                  mplsLdpSessionAtmLRLowerBoundVci
+                }
+    ::= { mplsLdpAtmSessionTable 1 }
+
+MplsLdpAtmSessionEntry ::= SEQUENCE {
+    mplsLdpSessionAtmLRLowerBoundVpi     AtmVpIdentifier,
+    mplsLdpSessionAtmLRLowerBoundVci     MplsAtmVcIdentifier,
+    mplsLdpSessionAtmLRUpperBoundVpi     AtmVpIdentifier,
+
+
+    mplsLdpSessionAtmLRUpperBoundVci     MplsAtmVcIdentifier
+}
+
+mplsLdpSessionAtmLRLowerBoundVpi OBJECT-TYPE
+    SYNTAX AtmVpIdentifier
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The minimum VPI number for this range."
+    ::= { mplsLdpAtmSessionEntry 1 }
+
+mplsLdpSessionAtmLRLowerBoundVci OBJECT-TYPE
+    SYNTAX MplsAtmVcIdentifier
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The minimum VCI number for this range."
+    ::= { mplsLdpAtmSessionEntry 2 }
+
+mplsLdpSessionAtmLRUpperBoundVpi OBJECT-TYPE
+    SYNTAX AtmVpIdentifier
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The maximum VPI number for this range."
+    ::= { mplsLdpAtmSessionEntry 3 }
+
+mplsLdpSessionAtmLRUpperBoundVci OBJECT-TYPE
+    SYNTAX MplsAtmVcIdentifier
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The maximum VCI number for this range."
+    ::= { mplsLdpAtmSessionEntry 4 }
+
+--**************************************************************
+-- Module Conformance Statement
+--**************************************************************
+
+mplsLdpAtmGroups
+    OBJECT IDENTIFIER ::= { mplsLdpAtmConformance 1 }
+
+mplsLdpAtmCompliances
+    OBJECT IDENTIFIER ::= { mplsLdpAtmConformance 2 }
+
+--
+-- Full Compliance
+--
+
+
+mplsLdpAtmModuleFullCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+        "The Module is implemented with support for
+        read-create and read-write.  In other words,
+        both monitoring and configuration
+        are available when using this MODULE-COMPLIANCE."
+    MODULE -- this module
+    MANDATORY-GROUPS    {
+                           mplsLdpAtmGroup
+                        }
+
+
+    OBJECT       mplsLdpEntityAtmRowStatus
+    SYNTAX       RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+       "Support for createAndWait and notInService is not required."
+
+    OBJECT       mplsLdpEntityAtmLRRowStatus
+    SYNTAX       RowStatus { active(1) }
+    WRITE-SYNTAX RowStatus { createAndGo(4), destroy(6) }
+    DESCRIPTION
+       "Support for createAndWait and notInService is not required."
+
+    ::= { mplsLdpAtmCompliances 1 }
+
+--
+-- Read-Only Compliance
+--
+
+mplsLdpAtmModuleReadOnlyCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+        "The Module is implemented with support for
+        read-only.  In other words, only monitoring
+        is available by implementing this MODULE-COMPLIANCE."
+    MODULE -- this module
+    MANDATORY-GROUPS    {
+                           mplsLdpAtmGroup
+                        }
+
+    OBJECT       mplsLdpEntityAtmIfIndexOrZero
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       mplsLdpEntityAtmMergeCap
+
+
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       mplsLdpEntityAtmVcDirectionality
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       mplsLdpEntityAtmLsrConnectivity
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       mplsLdpEntityAtmDefaultControlVpi
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       mplsLdpEntityAtmDefaultControlVci
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       mplsLdpEntityAtmUnlabTrafVpi
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       mplsLdpEntityAtmUnlabTrafVci
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       mplsLdpEntityAtmStorageType
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       mplsLdpEntityAtmRowStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the
+       only status that needs to be supported."
+
+    OBJECT       mplsLdpEntityAtmLRMaxVpi
+    MIN-ACCESS   read-only
+
+
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       mplsLdpEntityAtmLRMaxVci
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       mplsLdpEntityAtmLRStorageType
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required."
+
+    OBJECT       mplsLdpEntityAtmLRRowStatus
+    SYNTAX       RowStatus { active(1) }
+    MIN-ACCESS   read-only
+    DESCRIPTION
+       "Write access is not required, and active is the
+       only status that needs to be supported."
+
+    ::= { mplsLdpAtmCompliances 2 }
+
+--
+-- units of conformance
+--
+
+mplsLdpAtmGroup OBJECT-GROUP
+    OBJECTS {
+    mplsLdpEntityAtmIfIndexOrZero,
+    mplsLdpEntityAtmMergeCap,
+    mplsLdpEntityAtmLRComponents,
+    mplsLdpEntityAtmVcDirectionality,
+    mplsLdpEntityAtmLsrConnectivity,
+    mplsLdpEntityAtmDefaultControlVpi,
+    mplsLdpEntityAtmDefaultControlVci,
+    mplsLdpEntityAtmUnlabTrafVpi,
+    mplsLdpEntityAtmUnlabTrafVci,
+    mplsLdpEntityAtmStorageType,
+    mplsLdpEntityAtmRowStatus,
+    mplsLdpEntityAtmLRMaxVpi,
+    mplsLdpEntityAtmLRMaxVci,
+    mplsLdpEntityAtmLRStorageType,
+    mplsLdpEntityAtmLRRowStatus,
+    mplsLdpSessionAtmLRUpperBoundVpi,
+    mplsLdpSessionAtmLRUpperBoundVci
+
+    }
+    STATUS    current
+
+
+    DESCRIPTION
+        "Objects that apply to all MPLS LDP implementations
+        using ATM as the Layer 2."
+    ::= { mplsLdpAtmGroups 1 }
+
+END

@@ -1,0 +1,141 @@
+IPV6-UDP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   MODULE-COMPLIANCE, OBJECT-GROUP      FROM SNMPv2-CONF
+   MODULE-IDENTITY, OBJECT-TYPE,
+   mib-2, experimental                  FROM SNMPv2-SMI
+   Ipv6Address, Ipv6IfIndexOrZero       FROM IPV6-TC;
+
+ipv6UdpMIB MODULE-IDENTITY
+   LAST-UPDATED "9801290000Z"
+   ORGANIZATION "IETF IPv6 MIB Working Group"
+   CONTACT-INFO
+        "               Mike Daniele
+
+                Postal: Compaq Computer Corporation
+                        110 Spitbrook Rd
+                        Nashua, NH 03062.
+                        US
+
+                Phone:  +1 603 884 1423
+                Email:  daniele@zk3.dec.com"
+   DESCRIPTION
+        "The MIB module for entities implementing UDP over IPv6."
+   ::= { experimental 87 }
+
+-- objects specific to UDP for IPv6
+
+udp      OBJECT IDENTIFIER ::= { mib-2 7 }
+
+-- the UDP over IPv6 Listener table
+
+-- This table contains information about this entity's
+-- UDP/IPv6 endpoints.  Only endpoints utilizing IPv6 addresses
+-- are contained in this table.  This entity's UDP/IPv4 endpoints
+-- are contained in udpTable.
+
+ipv6UdpTable OBJECT-TYPE
+   SYNTAX      SEQUENCE OF Ipv6UdpEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+        "A table containing UDP listener information for
+         UDP/IPv6 endpoints."
+   ::= { udp 6 }
+
+ipv6UdpEntry OBJECT-TYPE
+   SYNTAX      Ipv6UdpEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+        "Information about a particular current UDP listener.
+
+         Note that conceptual rows in this table require an
+         additional index object compared to udpTable, since
+         IPv6 addresses are not guaranteed to be unique on the
+         managed node."
+   INDEX   { ipv6UdpLocalAddress,
+             ipv6UdpLocalPort,
+             ipv6UdpIfIndex }
+   ::= { ipv6UdpTable 1 }
+
+Ipv6UdpEntry ::= SEQUENCE {
+   ipv6UdpLocalAddress    Ipv6Address,
+   ipv6UdpLocalPort       INTEGER,
+   ipv6UdpIfIndex         Ipv6IfIndexOrZero }
+
+ipv6UdpLocalAddress OBJECT-TYPE
+   SYNTAX       Ipv6Address
+   MAX-ACCESS   not-accessible
+   STATUS       current
+   DESCRIPTION
+        "The local IPv6 address for this UDP listener.
+         In the case of a UDP listener which is willing
+         to accept datagrams for any IPv6 address
+         associated with the managed node, the value ::0
+         is used."
+   ::= { ipv6UdpEntry 1 }
+
+ipv6UdpLocalPort OBJECT-TYPE
+    SYNTAX     INTEGER (0..65535)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The local port number for this UDP listener."
+    ::= { ipv6UdpEntry 2 }
+
+ipv6UdpIfIndex OBJECT-TYPE
+   SYNTAX     Ipv6IfIndexOrZero
+   MAX-ACCESS   read-only
+   STATUS     current
+   DESCRIPTION
+        "An index object used to disambiguate conceptual rows in
+         the table, since the ipv6UdpLocalAddress/ipv6UdpLocalPort
+         pair may not be unique.
+
+         This object identifies the local interface that is
+         associated with ipv6UdpLocalAddress for this UDP listener.
+         If such a local interface cannot be determined, this object
+         should take on the value 0.  (A possible example of this
+         would be if the value of ipv6UdpLocalAddress is ::0.)
+
+         The interface identified by a particular non-0 value of
+         this index is the same interface as identified by the same
+         value of ipv6IfIndex.
+
+         The value of this object must remain constant during
+         the life of this UDP endpoint."
+   ::= { ipv6UdpEntry 3 }
+
+--
+-- conformance information
+--
+
+ipv6UdpConformance OBJECT IDENTIFIER ::= { ipv6UdpMIB 2 }
+
+ipv6UdpCompliances OBJECT IDENTIFIER ::= { ipv6UdpConformance 1 }
+ipv6UdpGroups      OBJECT IDENTIFIER ::= { ipv6UdpConformance 2 }
+
+-- compliance statements
+
+ipv6UdpCompliance MODULE-COMPLIANCE
+   STATUS  current
+   DESCRIPTION
+        "The compliance statement for SNMPv2 entities which
+         implement UDP over IPv6."
+   MODULE  -- this module
+   MANDATORY-GROUPS { ipv6UdpGroup }
+   ::= { ipv6UdpCompliances 1 }
+
+ipv6UdpGroup OBJECT-GROUP
+   OBJECTS   { -- these are defined in this module
+               -- ipv6UdpLocalAddress (not-accessible)
+               -- ipv6UdpLocalPort (not-accessible)
+               ipv6UdpIfIndex }
+   STATUS    current
+   DESCRIPTION
+        "The group of objects providing management of
+         UDP over IPv6."
+   ::= { ipv6UdpGroups 1 }
+
+END

@@ -1,0 +1,1299 @@
+MPLS-SETUP-PIB PIB-DEFINITIONS ::= BEGIN 
+ 
+IMPORTS 
+   MODULE-IDENTITY, OBJECT-TYPE,  
+   TEXTUAL-CONVENTION, MODULE-COMPLIANCE,  
+   OBJECT-IDENTITY, OBJECT-GROUP 
+      FROM COPS-PR-SPPI 
+   TruthValue 
+         FROM SNMPv2-TC 
+   InstanceId, ReferenceId, TagId, TagReference 
+         FROM COPS-PR-SPPI-TC 
+   SnmpAdminString 
+         FROM SNMP-FRAMEWORK-MIB 
+   InetAddressIPv4, InetAddressIPv6 
+         FROM INET-ADDRESS-MIB 
+ 
+mplsSetupPib MODULE-IDENTITY 
+   SUBJECT-CATEGORIES SUBJECT-CATEGORY { tbd “ MPLS Setup Client 
+Type } 
+   LAST-UPDATED "200107131000Z" 
+   ORGANIZATION " WG" 
+   CONTACT-INFO " 
+                Harsha Hegde 
+                Intel Corporation 
+                MS JF3-206 
+                2111 NE 25th Ave. 
+                Hillsboro, OR 97124 
+                Phone: +1 503 264 1439 
+                Fax: +1 503 264 3483 
+                E-Mail: shriharsha.hegde@intel.com 
+ 
+                Ravi Sahita   
+                Intel Corporation 
+                JF3-206            
+                2111 NE 25th Ave   
+                Hillsboro, Oregon 97124   
+                Phone: +1 503 264 1439 
+                Fax: +1 503 264 3483 
+                Email: ravi.sahita@intel.com 
+                " 
+   DESCRIPTION 
+         "This PIB module contains a set of provisioning classes 
+
+         that are used to setup MPLS LSPs on MPLS Routers." 
+   ::= { tbd } 
+ 
+ 
+-- 
+-- Forward Equivalence Class (FEC) Classes 
+-- 
+ 
+mplsFecClasses  OBJECT IDENTIFIER ::= { mplsSetupPib 1 } 
+ 
+-- 
+-- IPv4 Host Address FEC Table 
+-- 
+ 
+mplsFecIPv4HostAddrTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsFecIPv4HostAddrEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of MPLS IPv4 FEC Entrees." 
+ 
+    ::= { mplsFecClasses  1 } 
+ 
+mplsFecIPv4HostAddrEntry OBJECT-TYPE 
+    SYNTAX         MplsFecIPv4HostAddrEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes MPLS IPv4 Host Address 
+        FEC. " 
+ 
+    PIB-INDEX { mplsFecIPv4HostAddrPrid } 
+ 
+    ::= { mplsFecIPv4HostAddrTable 1 } 
+ 
+MplsFecIPv4HostAddrEntry ::= SEQUENCE { 
+        mplsFecIPv4HostAddrPrid        InstanceId, 
+        mplsFecIPv4HostAddrIpAddr      InetAddressIPv4 } 
+ 
+mplsFecIPv4HostAddrPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsFecIPv4HostAddrEntry class." 
+ 
+    ::= { mplsFecIPv4HostAddrEntry 1 } 
+ 
+mplsFecIPv4HostAddrIpAddr OBJECT-TYPE 
+    SYNTAX         InetAddressIPv4 
+    STATUS         current 
+    DESCRIPTION 
+        "IPv4 Host Address in a FEC." 
+ 
+
+    ::= { mplsFecIPv4HostAddrEntry 2 } 
+ 
+ 
+-- 
+-- IPv6 Host Address FEC Table 
+-- 
+ 
+mplsFecIPv6HostAddrTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsFecIPv6HostAddrEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of MPLS IPv6 FEC entrees." 
+ 
+    ::= { mplsFecClasses  2 } 
+ 
+mplsFecIPv6HostAddrEntry OBJECT-TYPE 
+    SYNTAX         MplsFecIPv6HostAddrEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes an IPv6 Host Address 
+        FEC. " 
+ 
+    PIB-INDEX { mplsFecIPv6HostAddrPrid } 
+ 
+    ::= { mplsFecIPv6HostAddrTable 1 } 
+ 
+MplsFecIPv6HostAddrEntry ::= SEQUENCE { 
+        mplsFecIPv6HostAddrPrid        InstanceId, 
+        mplsFecIPv6HostAddrIpAddr      InetAddressIPv6 } 
+ 
+mplsFecIPv6HostAddrPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsFecIPv6HostAddrEntry class." 
+ 
+    ::= { mplsFecIPv6HostAddrEntry 1 } 
+ 
+mplsFecIPv6HostAddrIpAddr OBJECT-TYPE 
+    SYNTAX         InetAddressIPv6 
+    STATUS         current 
+    DESCRIPTION 
+        "IPv6 Host Address in a FEC." 
+ 
+    ::= { mplsFecIPv6HostAddrEntry 2 } 
+ 
+ 
+-- 
+-- IPv4 Prefix FEC Table 
+-- 
+ 
+
+mplsFecIPv4PrefixTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsFecIPv4PrefixEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of MPLS IPv4 Prefix FEC entrees." 
+ 
+    ::= { mplsFecClasses  3 } 
+ 
+mplsFecIPv4PrefixEntry OBJECT-TYPE 
+    SYNTAX         MplsFecIPv4PrefixEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes a IPv4 Prefix FEC." 
+ 
+    PIB-INDEX { mplsFecIPv4PrefixPrid } 
+ 
+    ::= { mplsFecIPv4PrefixTable 1 } 
+ 
+MplsFecIPv4PrefixEntry ::= SEQUENCE { 
+        mplsFecIPv4PrefixPrid        InstanceId, 
+        mplsFecIPv4PrefixLength      Unsigned32, 
+        mplsFecIPv4PrefixIpPrefix    InetAddressIPv4 } 
+ 
+mplsFecIPv4PrefixPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsFecIPv4PrefixEntry class." 
+ 
+    ::= { mplsFecIPv4PrefixEntry 1 } 
+ 
+mplsFecIPv4PrefixLength OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Length of IPv4 Prefix in a FEC." 
+ 
+    ::= { mplsFecIPv4PrefixEntry 2 } 
+ 
+mplsFecIPv4PrefixIpPrefix OBJECT-TYPE 
+    SYNTAX         InetAddressIPv4 
+    STATUS         current 
+    DESCRIPTION 
+        "IPv4 Prefix in a FEC." 
+ 
+    ::= { mplsFecIPv4PrefixEntry 3 } 
+ 
+ 
+-- 
+-- IPv6 Prefix FEC Table 
+-- 
+
+ 
+mplsFecIPv6PrefixTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsFecIPv6PrefixEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of MPLS IPv6 Prefix FEC entrees." 
+ 
+    ::= { mplsFecClasses  4 } 
+ 
+mplsFecIPv6PrefixEntry OBJECT-TYPE 
+    SYNTAX         MplsFecIPv6PrefixEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes a IPv6 Prefix FEC." 
+ 
+    PIB-INDEX { mplsFecIPv6PrefixPrid } 
+ 
+    ::= { mplsFecIPv6PrefixTable 1 } 
+ 
+MplsFecIPv6PrefixEntry ::= SEQUENCE { 
+        mplsFecIPv6PrefixPrid        InstanceId, 
+        mplsFecIPv6PrefixLength      Unsigned32, 
+        mplsFecIPv6PrefixIpPrefix    InetAddressIPv6 } 
+ 
+mplsFecIPv6PrefixPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsFecIPv6PrefixEntry class." 
+ 
+    ::= { mplsFecIPv6PrefixEntry 1 } 
+ 
+mplsFecIPv6PrefixLength OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Length of IPv6 Prefix in a FEC." 
+ 
+    ::= { mplsFecIPv6PrefixEntry 2 } 
+ 
+mplsFecIPv6PrefixIpPrefix OBJECT-TYPE 
+    SYNTAX         InetAddressIPv6 
+    STATUS         current 
+    DESCRIPTION 
+        "IPv6 Prefix in a FEC." 
+ 
+    ::= { mplsFecIPv6PrefixEntry 3 } 
+ 
+ 
+-- 
+-- Autonomous System Number FEC Table 
+
+-- 
+ 
+mplsFecASTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsFecASEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of MPLS Autonomous System Number FEC 
+        entrees." 
+ 
+    ::= { mplsFecClasses  5 } 
+ 
+mplsFecASEntry OBJECT-TYPE 
+    SYNTAX         MplsFecASEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes an Autonomous System 
+        Number FEC. " 
+ 
+    PIB-INDEX { mplsFecASPrid } 
+ 
+    ::= { mplsFecASTable 1 } 
+ 
+MplsFecASEntry ::= SEQUENCE { 
+        mplsFecASPrid        InstanceId, 
+        mplsFecASNumber      Unsigned32 } 
+ 
+mplsFecASPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsFecASEntry class." 
+ 
+    ::= { mplsFecASEntry 1 } 
+ 
+mplsFecASNumber OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Autonomous System Number in a FEC." 
+ 
+    ::= { mplsFecASEntry 2 } 
+ 
+ 
+-- 
+-- Label Request Classes 
+-- 
+ 
+mplsLabReqClasses  OBJECT IDENTIFIER ::= { mplsSetupPib 2 } 
+ 
+-- 
+-- Generic Label Request Table 
+
+-- 
+ 
+mplsLabReqGenericTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsLabReqGenericEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of MPLS Generic Label Request Object 
+        entrees." 
+ 
+    ::= { mplsLRClasses  1 } 
+ 
+mplsLabReqGenericEntry OBJECT-TYPE 
+    SYNTAX         MplsLabReqGenericEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes MPLS Generic Label 
+        Request Object. " 
+ 
+    PIB-INDEX { mplsLabReqGenericPrid } 
+ 
+    ::= { mplsLabReqGenericTable 1 } 
+ 
+MplsLabReqGenericEntry ::= SEQUENCE { 
+        mplsLabReqGenericPrid        InstanceId, 
+        mplsLabReqGenericL3Pid       Unsigned32 } 
+ 
+mplsLabReqGenericPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsLabReqGenericEntry class." 
+ 
+    ::= { mplsLabReqGenericEntry 1 } 
+ 
+mplsLabReqGenericL3Pid OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Layer 3 Protocol Id in MPLS Generic Label Request 
+        Object." 
+ 
+    ::= { mplsLabReqGenericEntry 2 } 
+ 
+ 
+-- 
+-- ATM Label Request Table 
+-- 
+ 
+mplsLabReqATMTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsLabReqATMEntry 
+    PIB-ACCESS     install 
+
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of MPLS ATM Label Request Object 
+        entrees." 
+ 
+    ::= { mplsLabReqClasses  1 } 
+ 
+mplsLabReqATMEntry OBJECT-TYPE 
+    SYNTAX         MplsLabReqATMEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes MPLS ATM Label 
+        Request Object. " 
+ 
+    PIB-INDEX { mplsLabReqATMPrid } 
+ 
+    ::= { mplsLabReqATMTable 1 } 
+ 
+MplsLabReqATMEntry ::= SEQUENCE { 
+        mplsLabReqATMPrid        InstanceId, 
+        mplsLabReqATML3Pid       Unsigned32, 
+        mplsLabReqATMMbit        Unsigned32, 
+        mplsLabReqATMMinVpi      Unsigned32, 
+        mplsLabReqATMMaxVpi      Unsigned32, 
+        mplsLabReqATMMinVci      Unsigned32, 
+        mplsLabReqATMMaxVci      Unsigned32 } 
+ 
+mplsLabReqATMPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsLabReqATMEntry class." 
+ 
+    ::= { mplsLabReqATMEntry 1 } 
+ 
+mplsLabReqATML3Pid OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Layer 3 Protocol Id in MPLS ATM Label Request 
+        Object." 
+ 
+    ::= { mplsLabReqATMEntry 2 } 
+ 
+mplsLabReqATMMbit OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Merging Capable Bit in MPLS ATM Label Request Object." 
+ 
+    ::= { mplsLabReqATMEntry 3 } 
+ 
+
+mplsLabReqATMMinVpi OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Minimum value for VPI in MPLS ATM Label Request Object." 
+ 
+    ::= { mplsLabReqATMEntry 4 } 
+ 
+mplsLabReqATMMaxVpi OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Maximum value for VPI in MPLS ATM Label Request Object." 
+ 
+    ::= { mplsLabReqATMEntry 5 } 
+ 
+mplsLabReqATMMinVci OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Minimum value for VCI in MPLS ATM Label Request Object." 
+ 
+    ::= { mplsLabReqATMEntry 6 } 
+ 
+mplsLabReqATMMaxVci OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Maximum value for VCI in MPLS ATM Label Request Object." 
+ 
+    ::= { mplsLabReqATMEntry 7 } 
+ 
+ 
+-- 
+-- Frame Relay Label Request Table 
+-- 
+ 
+mplsLabReqFRTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsLabReqFREntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of MPLS Frame Relay Label Request 
+        Object entrees." 
+ 
+    ::= { mplsLabReqClasses  1 } 
+ 
+mplsLabReqFREntry OBJECT-TYPE 
+    SYNTAX         MplsLabReqFREntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes MPLS Frame Relay 
+        Label Request Object. " 
+
+ 
+    PIB-INDEX { mplsLabReqFRPrid } 
+ 
+    ::= { mplsLabReqFRTable 1 } 
+ 
+MplsLabReqFREntry ::= SEQUENCE { 
+        mplsLabReqFRPrid        InstanceId, 
+        mplsLabReqFRL3Pid       Unsigned32, 
+        mplsLabReqFRDlciLen     Unsigned32, 
+        mplsLabReqFRMinDlci     Unsigned32, 
+        mplsLabReqFRMaxDlci     Unsigned32} 
+ 
+mplsLabReqFRPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsLabReqFREntry class." 
+ 
+    ::= { mplsLabReqFREntry 1 } 
+ 
+mplsLabReqFRL3Pid OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Layer 3 Protocol Id in MPLS Frame Relay Label Request 
+        Object." 
+ 
+    ::= { mplsLabReqFREntry 2 } 
+ 
+mplsLabReqFRDlciLen OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Length of DLCI in MPLS Frame Relay Label Request Object." 
+ 
+    ::= { mplsLabReqFREntry 3 } 
+ 
+mplsLabReqFRMinDlci OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Minimum value DLCI in MPLS Frame Relay Label Request 
+        Object." 
+ 
+    ::= { mplsLabReqFREntry 4 } 
+ 
+mplsLabReqFRMaxDlci OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Maximum value DLCI in MPLS Frame Relay Label Request 
+        Object." 
+
+ 
+    ::= { mplsLabReqFREntry 5 } 
+ 
+ 
+-- 
+-- Flow (Traffic) Specification Classes 
+-- 
+ 
+mplsFlowSpecClasses  OBJECT IDENTIFIER ::= { mplsSetupPib 3 } 
+ 
+-- 
+-- CRLDP Flow Spec Table 
+-- 
+ 
+mplsFlowSpecCRLDPTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsFlowSpecCRLDPEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of CR-LDP Traffic (Flow) Specification  
+        entrees." 
+ 
+    ::= { mplsFlowSpecClasses  1 } 
+ 
+mplsFlowSpecCRLDPEntry OBJECT-TYPE 
+    SYNTAX         MplsFlowSpecCRLDPEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes a CR-LDP Flow 
+        Specification. " 
+ 
+    PIB-INDEX { mplsFlowSpecCRLDPPrid } 
+ 
+    ::= { mplsFlowSpecCRLDPTable 1 } 
+ 
+MplsFlowSpecCRLDPEntry ::= SEQUENCE { 
+        mplsFlowSpecCRLDPPrid    InstanceId, 
+        mplsFlowSpecCRLDPPDR     Unsigned32, 
+        mplsFlowSpecCRLDPPBS     Unsigned32, 
+        mplsFlowSpecCRLDPCDR     Unsigned32, 
+        mplsFlowSpecCRLDPCBS     Unsigned32, 
+        mplsFlowSpecCRLDPEBS     Unsigned32, 
+        mplsFlowSpecCRLDPWeight  Unsigned32 } 
+ 
+mplsFlowSpecCRLDPPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsFlowSpecCRLDPEntry class." 
+ 
+    ::= { mplsFlowSpecCRLDPEntry 1 } 
+ 
+
+mplsFlowSpecCRLDPPDR OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Peak Data Rate in CR-LDP Flow Specification." 
+ 
+    ::= { mplsFlowSpecCRLDPEntry 2 } 
+ 
+mplsFlowSpecCRLDPPBS OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Peak Burst Size in CR-LDP Flow Specification." 
+ 
+    ::= { mplsFlowSpecCRLDPEntry 3 } 
+ 
+mplsFlowSpecCRLDPCDR OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Committed Data Rate in CR-LDP Flow Specification." 
+ 
+    ::= { mplsFlowSpecCRLDPEntry 4 } 
+ 
+mplsFlowSpecCRLDPCBS OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Committed Burst Size in CR-LDP Flow Specification." 
+ 
+ 
+    ::= { mplsFlowSpecCRLDPEntry 5 } 
+ 
+mplsFlowSpecCRLDPEBS OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Excess Burst Size in CR-LDP Flow Specification." 
+ 
+    ::= { mplsFlowSpecCRLDPEntry 6 } 
+ 
+mplsFlowSpecCRLDPWeight OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Weight parameter in CR-LDP Flow Specification." 
+ 
+    ::= { mplsFlowSpecCRLDPEntry 7 } 
+ 
+ 
+-- 
+-- RSVP Controlled Load Service Flow Spec Table 
+-- 
+
+ 
+mplsFlowSpecCLSTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsFlowSpecCLSEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of RSVP-TE Integrated Services 
+        (IntServ) Controlled Load Service Flow Specification 
+        entrees." 
+ 
+    ::= { mplsFlowSpecClasses  2 } 
+ 
+mplsFlowSpecCLSEntry OBJECT-TYPE 
+    SYNTAX         MplsFlowSpecCLSEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes RSVP-TE IntServ 
+        Controlled Load Service Flow Specification. " 
+ 
+    PIB-INDEX { mplsFlowSpecCLSPrid } 
+ 
+    ::= { mplsFlowSpecCLSTable 1 } 
+ 
+MplsFlowSpecCLSEntry ::= SEQUENCE { 
+        mplsFlowSpecCLSPrid        InstanceId, 
+        mplsFlowSpecCLSTokenRate   Unsigned32, 
+        mplsFlowSpecCLSBucketSize  Unsigned32, 
+        mplsFlowSpecCLSPeakRate    Unsigned32, 
+        mplsFlowSpecCLSMinPoliced  Unsigned32, 
+        mplsFlowSpecCLSMaxPktSize  Unsigned32 } 
+ 
+mplsFlowSpecCLSPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsFlowSpecCLSEntry class." 
+ 
+    ::= { mplsFlowSpecCLSEntry 1 } 
+ 
+mplsFlowSpecCLSTokenRate OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Token Rate in RSVP-TE IntServ Controlled Load Service  
+        Flow Specification." 
+ 
+    ::= { mplsFlowSpecCLSEntry 2 } 
+ 
+mplsFlowSpecCLSBucketSize OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+
+        "Token Bucket Size in RSVP-TE IntServ Controlled Load 
+        Service Flow Specification." 
+ 
+    ::= { mplsFlowSpecCLSEntry 3 } 
+ 
+mplsFlowSpecCLSPeakRate OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Peak Rate in RSVP-TE IntServ Controlled Load Service  
+        Flow Specification." 
+ 
+    ::= { mplsFlowSpecCLSEntry 4 } 
+ 
+mplsFlowSpecCLSMinPoliced OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Minimum Policed Packet Size in RSVP-TE IntServ Controlled 
+        Load Service Flow Specification." 
+ 
+    ::= { mplsFlowSpecCLSEntry 5 } 
+ 
+mplsFlowSpecCLSMaxPktSize OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Maximum Packet Size in RSVP-TE IntServ Controlled Load 
+        Service Flow Specification." 
+ 
+    ::= { mplsFlowSpecCLSEntry 6 } 
+ 
+ 
+ 
+-- 
+-- RSVP Guaranteed Service Flow Spec Table 
+-- 
+ 
+mplsFlowSpecGSTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsFlowSpecGSEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of RSVP-TE Integrated Services 
+        (IntServ) Guaranteed Service Flow Specification entrees." 
+ 
+    ::= { mplsFlowSpecClasses  3 } 
+ 
+mplsFlowSpecGSEntry OBJECT-TYPE 
+    SYNTAX         MplsFlowSpecGSEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes RSVP-TE IntServ 
+
+        Guaranteed Service Flow Specification. " 
+ 
+    PIB-INDEX { mplsFlowSpecGSPrid } 
+ 
+    ::= { mplsFlowSpecGSTable 1 } 
+ 
+MplsFlowSpecGSEntry ::= SEQUENCE { 
+        mplsFlowSpecGSPrid        InstanceId, 
+        mplsFlowSpecGSTokenRate   Unsigned32, 
+        mplsFlowSpecGSBucketSize  Unsigned32, 
+        mplsFlowSpecGSPeakRate    Unsigned32, 
+        mplsFlowSpecGSMinPoliced  Unsigned32, 
+        mplsFlowSpecGSMaxPktSize  Unsigned32, 
+        mplsFlowSpecGSRspecRate   Unsigned32, 
+        mplsFlowSpecGSSlackTerm   Unsigned32 } 
+ 
+mplsFlowSpecGSPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsFlowSpecGSEntry class." 
+ 
+    ::= { mplsFlowSpecGSEntry 1 } 
+ 
+mplsFlowSpecGSTokenRate OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Token Rate in RSVP-TE IntServ Guaranteed Service  
+        Flow Specification." 
+ 
+    ::= { mplsFlowSpecGSEntry 2 } 
+ 
+mplsFlowSpecGSBucketSize OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Token Bucket Size in RSVP-TE IntServ Guaranteed 
+        Service Flow Specification." 
+ 
+    ::= { mplsFlowSpecGSEntry 3 } 
+ 
+mplsFlowSpecGSPeakRate OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Peak Rate in RSVP-TE IntServ Guaranteed Service  
+        Flow Specification." 
+ 
+    ::= { mplsFlowSpecGSEntry 4 } 
+ 
+mplsFlowSpecGSMinPoliced OBJECT-TYPE 
+
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Minimum Policed Packet Size in RSVP-TE IntServ Guaranteed 
+        Service Flow Specification." 
+ 
+    ::= { mplsFlowSpecGSEntry 5 } 
+ 
+mplsFlowSpecGSMaxPktSize OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Maximum Packet Size in RSVP-TE IntServ Guaranteed 
+        Service Flow Specification." 
+ 
+    ::= { mplsFlowSpecGSEntry 6 } 
+ 
+mplsFlowSpecGSRspecRate OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Required Rate in RSVP-TE IntServ Guaranteed Service  
+        Flow Specification." 
+ 
+    ::= { mplsFlowSpecGSEntry 7 } 
+ 
+mplsFlowSpecGSSlackTerm OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Slack Term (Delay) in RSVP-TE IntServ Guaranteed Service  
+        Flow Specification." 
+ 
+    ::= { mplsFlowSpecGSEntry 8 } 
+ 
+ 
+-- 
+-- Explicit Route Object (ERO) Classes 
+-- 
+ 
+mplsEroClasses  OBJECT IDENTIFIER ::= { mplsSetupPib 4 } 
+ 
+-- 
+-- IPv4 Address Prefix Subobject Table 
+-- 
+ 
+mplsEroIPv4PrefixTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsEroIPv4PrefixEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of MPLS IPv4 Prefix ERO Subobject 
+        Entrees." 
+
+ 
+    ::= { mplsEroClasses  1 } 
+ 
+mplsEroIPv4PrefixEntry OBJECT-TYPE 
+    SYNTAX         MplsEroIPv4PrefixEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes IPv4 Prefix ERO 
+        Subobject. "                                        
+ 
+    PIB-INDEX { mplsEroIPv4PrefixPrid } 
+ 
+    ::= { mplsEroIPv4PrefixTable 1 } 
+ 
+MplsEroIPv4PrefixEntry ::= SEQUENCE { 
+        mplsEroIPv4PrefixPrid        InstanceId, 
+        mplsEroIPv4PrefixLen         Unsigned32, 
+        mplsEroIPv4PrefixIPv4Addr    InetAddressIPv4 } 
+ 
+mplsEroIPv4PrefixPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsEroIPv4PrefixEntry class." 
+ 
+    ::= { mplsEroIPv4PrefixEntry 1 } 
+ 
+mplsEroIPv4PrefixLen OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Length of Prefix in IPv4 Prefix ERO Subobject." 
+ 
+    ::= { mplsEroIPv4PrefixEntry 2 } 
+ 
+mplsEroIPv4PrefixIPv4Addr OBJECT-TYPE 
+    SYNTAX         InetAddress 
+    STATUS         current 
+    DESCRIPTION 
+        "IPv4 Prefix in IPv4 Prefix ERO Subobject." 
+ 
+    ::= { mplsEroIPv4PrefixEntry 3 } 
+ 
+ 
+-- 
+-- IPv6 Address Prefix Subobject Table 
+-- 
+ 
+mplsEroIPv6PrefixTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsEroIPv6PrefixEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+
+    DESCRIPTION 
+        "This table consists of MPLS IPv6 Prefix ERO Subobject 
+        Entrees." 
+ 
+    ::= { mplsEroClasses  2 } 
+ 
+mplsEroIPv6PrefixEntry OBJECT-TYPE 
+    SYNTAX         MplsEroIPv6PrefixEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes IPv6 Prefix ERO 
+        Subobject. " 
+ 
+    PIB-INDEX { mplsEroIPv6PrefixPrid } 
+ 
+    ::= { mplsEroIPv6PrefixTable 1 } 
+ 
+MplsEroIPv6PrefixEntry ::= SEQUENCE { 
+        mplsEroIPv6PrefixPrid        InstanceId, 
+        mplsEroIPv6PrefixLen         Unsigned32, 
+        mplsEroIPv6PrefixIPv6Addr    InetAddressIPv6 } 
+ 
+mplsEroIPv6PrefixPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsEroIPv6PrefixEntry class." 
+ 
+    ::= { mplsEroIPv6PrefixEntry 1 } 
+ 
+mplsEroIPv6PrefixLen OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Length of Prefix in IPv6 Prefix ERO Subobject." 
+ 
+    ::= { mplsEroIPv6PrefixEntry 2 } 
+ 
+mplsEroIPv6PrefixIPv6Addr OBJECT-TYPE 
+    SYNTAX         InetAddress 
+    STATUS         current 
+    DESCRIPTION 
+        "IPv6 Prefix in IPv6 Prefix ERO Subobject." 
+ 
+    ::= { mplsEroIPv6PrefixEntry 3 } 
+ 
+ 
+-- 
+-- Autonomous System Number Subobject Table 
+-- 
+ 
+mplsEroASNumberTable OBJECT-TYPE 
+
+    SYNTAX         SEQUENCE OF MplsEroASNumberEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of MPLS Autonomous System Number ERO 
+        Subobject Entrees." 
+ 
+    ::= { mplsEroClasses  3 } 
+ 
+mplsEroASNumberEntry OBJECT-TYPE 
+    SYNTAX         MplsEroASNumberEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes Autonomous System 
+        Number ERO Subobject. "                          
+ 
+    PIB-INDEX { mplsEroASNumberPrid } 
+ 
+    ::= { mplsEroASNumberTable 1 } 
+ 
+MplsEroASNumberEntry ::= SEQUENCE { 
+        mplsEroASNumberPrid        InstanceId, 
+        mplsEroASNumberASNumber    Unsigned32} 
+ 
+mplsEroASNumberPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsEroASNumberEntry class." 
+ 
+    ::= { mplsEroASNumberEntry 1 } 
+ 
+mplsEroASNumberASNumber OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Autonomous System Number in Autonomous System Number 
+        Subobject." 
+ 
+    ::= { mplsEroASNumberEntry 2 } 
+ 
+-- 
+-- ERO Table 
+-- 
+ 
+mplsEroTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsEroEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of MPLS ERO Subobject Entrees." 
+ 
+
+    ::= { mplsEroClasses  4 } 
+ 
+mplsEroEntry OBJECT-TYPE 
+    SYNTAX         MplsEroEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes ERO Subobject." 
+ 
+    PIB-INDEX { mplsEroPrid } 
+ 
+    ::= { mplsEroTable 1 } 
+ 
+MplsEroEntry ::= SEQUENCE { 
+        mplsEroPrid        InstanceId, 
+        mplsEroLoose       Unsigned32, 
+        mplsEroSubObject   Prid } 
+ 
+mplsEroPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsEroEntry class." 
+ 
+    ::= { mplsEroEntry 1 } 
+ 
+mplsEroLoose OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Loose Bit in ERO Subobject." 
+ 
+    ::= { mplsEroEntry 2 } 
+ 
+mplsEroSubObject OBJECT-TYPE 
+    SYNTAX         Prid 
+    STATUS         current 
+    DESCRIPTION 
+        "This points to an instance of one type of ERO subobject. It 
+        could be an instance of mplsEroIpv4PrefixEntry,  
+        mplsEroIpv6PrefixEntry or mplsEroASNumberEntry." 
+ 
+    ::= { mplsEroEntry 3 } 
+ 
+ 
+-- 
+-- Ero Group Table 
+-- 
+ 
+mplsEroGroupTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsEroGroupEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+
+    DESCRIPTION 
+        "This table defines ERO Subobject groups. Each group then is 
+        used in an LSP definition. Grouping is done using a TagId  
+        and order of Subobject in a group is provided by using a  
+        precedence number." 
+ 
+    ::= { mplsEroClasses  5 } 
+ 
+mplsEroGroupEntry OBJECT-TYPE 
+    SYNTAX         MplsEroGroupEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of ERO Subobject group." 
+ 
+    PIB-INDEX { mplsEroGroupPrid } 
+ 
+    ::= { mplsEroGroupTable 1 } 
+ 
+MplsEroGroupEntry ::= SEQUENCE { 
+        mplsEroGroupPrid           InstanceId, 
+        mplsEroGroupId             TagId, 
+        mplsEroGroupIdPrecedence   Unsigned32, 
+        mplsEroGroupEroId          ReferenceId } 
+ 
+mplsEroGroupPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsEroGroupEntry class." 
+ 
+    ::= { mplsEroGroupEntry 1 } 
+ 
+mplsEroGroupId OBJECT-TYPE 
+    SYNTAX         TagId 
+    STATUS         current 
+    DESCRIPTION 
+        "Tag Id (number) used to group multiple entries in this 
+        table." 
+ 
+    ::= { mplsEroGroupEntry 2 } 
+ 
+mplsEroGroupIdPrecedence OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "This is used to provide ordering for entries with the same 
+        Tag Id." 
+ 
+    ::= { mplsEroGroupEntry 3 } 
+ 
+mplsEroGroupEroId OBJECT-TYPE 
+    SYNTAX         ReferenceId 
+
+    PIB-REFERENCES { mplsEroEntry }  
+    STATUS         current 
+    DESCRIPTION 
+        "Pointer to an instance of ERO Subobject. The ERO Subobject 
+        with the same Id must be present." 
+ 
+    ::= { mplsEroGroupEntry 4 } 
+ 
+ 
+-- 
+-- Preemption Classes 
+-- 
+ 
+mplsPreemptionClasses  OBJECT IDENTIFIER ::= { mplsSetupPib 5 } 
+ 
+-- 
+-- Preemption Table 
+-- 
+ 
+mplsPreemptionTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsPreemptionEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of LSP Preemption Entrees." 
+ 
+    ::= { mplsFlowSpecClasses  1 } 
+ 
+mplsPreemptionEntry OBJECT-TYPE 
+    SYNTAX         MplsPreemptionEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of this class describes a LSP Preemption 
+        object. " 
+ 
+    PIB-INDEX { mplsPreemptionPrid } 
+ 
+    ::= { mplsPreemptionTable 1 } 
+ 
+MplsPreemptionEntry ::= SEQUENCE { 
+        mplsPreemptionPrid       InstanceId, 
+        mplsPreemptionSetupPrio  Unsigned32, 
+        mplsPreemptionHoldPrio   Unsigned32 } 
+ 
+mplsPreemptionPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsPreemptionEntry class." 
+ 
+    ::= { mplsPreemptionEntry 1 } 
+ 
+
+mplsPreemptionSetupPrio OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Indicates MPLS LSP Setup Priority." 
+ 
+    ::= { mplsPreemptionEntry 2 } 
+ 
+mplsPreemptionHoldPrio OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Indicates MPLS LSP Holding Priority." 
+ 
+    ::= { mplsPreemptionEntry 3 } 
+ 
+ 
+ 
+-- 
+-- LSP Setup Classes 
+-- 
+ 
+mplsLspClasses  OBJECT IDENTIFIER ::= { mplsSetupPib 6 } 
+ 
+ 
+-- 
+-- LSP Table 
+-- 
+ 
+mplsLspTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF MplsLspEntry 
+    PIB-ACCESS     install 
+    STATUS         current 
+    DESCRIPTION 
+        "This table consists of MPLS LSP Entrees. Entries in this 
+        table essentially point to instances of other PRCs such as  
+        FEC, Label Request, ERO, Flow Spec and Preemption to form  
+        complete LSPs." 
+ 
+    ::= { mplsLspClasses  1 } 
+ 
+mplsLspEntry OBJECT-TYPE 
+    SYNTAX         MplsLspEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of MPLS LSP. " 
+ 
+    PIB-INDEX { mplsLspPrid } 
+ 
+    ::= { mplsLspTable 1 } 
+ 
+MplsLspEntry ::= SEQUENCE { 
+        mplsLspPrid        InstanceId, 
+
+        mplsLspFec         Prid, 
+        mplsLspLabReq      Prid, 
+        mplsLspFlowSpec    Prid, 
+        mplsLspPreemption  ReferenceId, 
+        mplsLspEroList     TagReference } 
+ 
+mplsLspPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An integer index that uniquely identifies an instance of 
+        the mplsLspEntry class." 
+ 
+    ::= { mplsLspEntry 1 } 
+ 
+mplsLspFec OBJECT-TYPE 
+    SYNTAX         Prid 
+    STATUS         current 
+    DESCRIPTION 
+        "This points to an instance of one type of FEC. It could be 
+        an instance of mplsFecIPv4HostAddrEntry,  
+        mplsFecIPv6HostAddrEntry, mplsFecIPv4PrefixEntry,  
+        mplsFecIPv6PrefixEntry, mplsFecASEntry." 
+ 
+    ::= { mplsLspEntry 2 } 
+ 
+mplsLspLabReq OBJECT-TYPE 
+    SYNTAX         Prid 
+    STATUS         current 
+    DESCRIPTION 
+        "This points to an instance of one type of Label Request  
+        Object. It could be an instance of mplsLabReqGenericEntry, 
+        mplsLabReqATMEntry, mplsLabReqFREntry." 
+ 
+    ::= { mplsLspEntry 3 } 
+ 
+mplsLspFlowSpec OBJECT-TYPE 
+    SYNTAX         Prid 
+    STATUS         current 
+    DESCRIPTION 
+        "This points to an instance of one type of FlowSpec. It  
+        could be an instance of mplsFlowSpecCRLDPEntry, 
+        mplsFlowSpecCLSEntry, mplsFlowSpecGSEntry." 
+ 
+    ::= { mplsLspEntry 4 } 
+ 
+mplsLspPreemption OBJECT-TYPE 
+    SYNTAX         ReferenceId 
+    PIB-REFERENCES { mplsPreemptionEntry }  
+    STATUS         current 
+    DESCRIPTION 
+        "This points to an instance of mplsPreemptionEntry." 
+ 
+
+    ::= { mplsLspEntry 5 } 
+ 
+mplsLspEroList OBJECT-TYPE 
+    SYNTAX         TagReference 
+    PIB-TAG        { mplsEroGroupId }  
+    STATUS         current 
+    DESCRIPTION 
+        "This references a Tag Id attribute in mplsEroGroup table.  
+        All the entries in mplsEroGroup table that have this Tag Id  
+        form the ERO List that is used for this LSP entry." 
+ 
+    ::= { mplsLspEntry 6 } 
+ 
+END    

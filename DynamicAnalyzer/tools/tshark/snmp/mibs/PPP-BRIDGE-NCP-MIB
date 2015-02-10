@@ -1,0 +1,449 @@
+PPP-BRIDGE-NCP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+     Counter
+          FROM RFC1155-SMI
+     ifIndex
+          FROM RFC1213-MIB
+     OBJECT-TYPE
+          FROM RFC-1212
+     ppp
+          FROM PPP-LCP-MIB;
+
+     pppBridge OBJECT IDENTIFIER ::= { ppp 4 }
+
+--
+-- The PPP Bridge NCP Group.
+-- Implementation of this group is mandatory for all
+-- PPP implementations that support MAC Bridging  over
+-- PPP (RFC1220).
+--
+
+-- The following object reflect the values of the option
+-- parameters used in the PPP Link Control Protocol
+--   pppBridgeLocalToRemoteTinygramCompression
+--   pppBridgeRemoteToLocalTinygramCompression
+--   pppBridgeLocalToRemoteLanId
+--   pppBridgeRemoteToLocalLanId
+--
+-- These values are not available until after the PPP Option
+
+-- negotiation has completed, which is indicated by the link
+-- reaching the open state (i.e. pppBridgeOperStatus is set to
+-- opened).
+--
+-- Therefore, when pppBridgeOperStatus is not opened
+-- the contents of these objects is undefined. The value
+-- returned when accessing the objects is an implementation
+-- dependent issue.
+
+
+pppBridgeTable   OBJECT-TYPE
+     SYNTAX    SEQUENCE OF PppBridgeEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Table containing the parameters and statistics
+               for the local PPP entity that are related to
+               the operation of Bridging over the PPP."
+     ::= { pppBridge 1 }
+
+
+pppBridgeEntry   OBJECT-TYPE
+     SYNTAX    PppBridgeEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Bridging information for a particular PPP
+               link."
+     INDEX     { ifIndex }
+     ::= { pppBridgeTable 1 }
+
+
+PppBridgeEntry ::= SEQUENCE {
+     pppBridgeOperStatus
+          INTEGER,
+     pppBridgeLocalToRemoteTinygramCompression
+          INTEGER,
+     pppBridgeRemoteToLocalTinygramCompression
+          INTEGER,
+     pppBridgeLocalToRemoteLanId
+          INTEGER,
+     pppBridgeRemoteToLocalLanId
+          INTEGER
+}
+
+pppBridgeOperStatus   OBJECT-TYPE
+     SYNTAX    INTEGER {opened(1), not-opened(2)}
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "The operational status of the Bridge network
+               protocol. If the value of this object is up
+               then the finite state machine for the Bridge
+               network protocol has reached the Opened state."
+     ::= { pppBridgeEntry 1 }
+
+
+pppBridgeLocalToRemoteTinygramCompression   OBJECT-TYPE
+     SYNTAX    INTEGER { false(1), true(2) }
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "Indicates whether the local node will perform
+               Tinygram Compression when sending packets to
+               the remote entity. If false then the local
+               entity will not perform Tinygram Compression.
+               If true then the local entity will perform
+               Tinygram Compression. The value of this object
+               is meaningful only when the link has reached
+               the open state (pppBridgeOperStatus is
+               opened)."
+     REFERENCE
+               "Section 6.7, Tinygram Compression Option, of
+               RFC1220"
+     ::= { pppBridgeEntry 2 }
+
+
+pppBridgeRemoteToLocalTinygramCompression   OBJECT-TYPE
+     SYNTAX    INTEGER { false(1), true(2) }
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "If false(1) then the remote entity is not
+               expected to perform Tinygram Compression. If
+               true then the remote entity is expected to
+               perform Tinygram Compression. The value of this
+               object is meaningful only when the link has
+               reached the open state (pppBridgeOperStatus is
+               opened)."
+     REFERENCE
+               "Section 6.7, Tinygram Compression Option, of
+               RFC1220"
+     ::= { pppBridgeEntry 3 }
+
+pppBridgeLocalToRemoteLanId   OBJECT-TYPE
+     SYNTAX    INTEGER { false(1), true(2) }
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "Indicates whether the local node will include
+               the LAN Identification field in transmitted
+               packets or not. If false(1) then the local node
+               will not transmit this field, true(2) means
+               that the field will be transmitted. The value
+               of this object is meaningful only when the link
+               has reached the open state (pppBridgeOperStatus
+               is opened)."
+     REFERENCE
+               "Section 6.8, LAN Identification Option, of
+               RFC1220"
+     ::= { pppBridgeEntry 4 }
+
+
+pppBridgeRemoteToLocalLanId   OBJECT-TYPE
+     SYNTAX    INTEGER { false(1), true(2) }
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "Indicates whether the remote node has
+               indicated that it will include the LAN
+               Identification field in transmitted packets or
+               not. If false(1) then the field will not be
+               transmitted, if true(2) then the field will be
+               transmitted. The value of this object is
+               meaningful only when the link has reached the
+               open state (pppBridgeOperStatus is opened)."
+     REFERENCE
+               "Section 6.8, LAN Identification Option, of
+               RFC1220"
+     ::= { pppBridgeEntry 5 }
+
+
+--
+-- The PPP Bridge Configuration table
+--
+
+pppBridgeConfigTable   OBJECT-TYPE
+     SYNTAX    SEQUENCE OF PppBridgeConfigEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Table containing the parameters and statistics
+               for the local PPP entity that are related to
+               the operation of Bridging over the PPP."
+     ::= { pppBridge 2 }
+
+
+pppBridgeConfigEntry   OBJECT-TYPE
+     SYNTAX    PppBridgeConfigEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Bridging Configuration information for a
+               particular PPP link."
+     INDEX     { ifIndex }
+     ::= { pppBridgeConfigTable 1 }
+
+
+PppBridgeConfigEntry ::= SEQUENCE {
+     pppBridgeConfigAdminStatus
+          INTEGER,
+     pppBridgeConfigTinygram
+          INTEGER,
+     pppBridgeConfigRingId
+          INTEGER,
+     pppBridgeConfigLineId
+          INTEGER,
+     pppBridgeConfigLanId
+          INTEGER
+}
+
+
+pppBridgeConfigAdminStatus   OBJECT-TYPE
+     SYNTAX    INTEGER { open(1), close(2) }
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "The immediate desired status of the Bridging
+               network protocol. Setting this object to open
+               will inject an administrative open event into
+               the Bridging network protocol's finite state
+               machine. Setting this object to close will
+               inject an administrative close event into the
+               Bridging network protocol's finite state
+               machine."
+     ::= { pppBridgeConfigEntry 1 }
+
+
+pppBridgeConfigTinygram   OBJECT-TYPE
+     SYNTAX    INTEGER { false(1), true(2) }
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "If false then the local BNCP entity will not
+               initiate the Tinygram Compression Option
+               Negotiation. If true then the local BNCP entity
+               will initiate negotiation of this option."
+     REFERENCE
+               "Section 6.7, Tinygram Compression Option, of
+               RFC1220"
+     DEFVAL    { true }
+     ::= { pppBridgeConfigEntry 2 }
+
+
+pppBridgeConfigRingId   OBJECT-TYPE
+     SYNTAX    INTEGER { false(1), true(2) }
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "If false then the local PPP Entity will not
+               initiate a Remote Ring Identification Option
+               negotiation. If true then the local PPP entity
+               will intiate this negotiation. This MIB object
+               is relevant only if the interface is for 802.5
+               Token Ring bridging."
+     REFERENCE
+               "Section 6.4, IEEE 802.5 Remote Ring
+               Identification Option, of RFC1220"
+     DEFVAL    { false }
+     ::= { pppBridgeConfigEntry 3 }
+
+
+pppBridgeConfigLineId   OBJECT-TYPE
+     SYNTAX    INTEGER { false(1), true(2) }
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "If false then the local PPP Entity is not to
+               initiate a Line Identification Option
+               negotiation. If true then the local PPP entity
+               will intiate this negotiation. This MIB object
+               is relevant only if the interface is for 802.5
+               Token Ring bridging."
+     REFERENCE
+               "Section 6.5, IEEE 802.5 Line Identification
+               Option, of RFC1220"
+     DEFVAL    { false }
+     ::= { pppBridgeConfigEntry 4 }
+
+pppBridgeConfigLanId   OBJECT-TYPE
+     SYNTAX    INTEGER { false(1), true(2) }
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "If false then the local BNCP entity will not
+               initiate the LAN Identification Option
+               Negotiation. If true then the local BNCP entity
+               will initiate negotiation of this option."
+     REFERENCE
+               "Section 6.8, LAN Identification Option, of
+               RFC1220"
+     DEFVAL    { false }
+     ::= { pppBridgeConfigEntry 5 }
+
+
+--
+-- The PPP Bridge Media Status Table
+--
+
+pppBridgeMediaTable   OBJECT-TYPE
+     SYNTAX    SEQUENCE OF PppBridgeMediaEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Table identifying which MAC media types are
+               enabled for the Bridging NCPs."
+     ::= { pppBridge 3 }
+
+
+pppBridgeMediaEntry   OBJECT-TYPE
+     SYNTAX    PppBridgeMediaEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Status of a specific MAC Type for a specific
+               PPP Link."
+     INDEX     { ifIndex, pppBridgeMediaMacType }
+     ::= { pppBridgeMediaTable 1 }
+
+
+PppBridgeMediaEntry ::= SEQUENCE {
+     pppBridgeMediaMacType
+          INTEGER,
+     pppBridgeMediaLocalStatus
+          INTEGER,
+     pppBridgeMediaRemoteStatus
+          INTEGER
+}
+
+pppBridgeMediaMacType   OBJECT-TYPE
+     SYNTAX    INTEGER(0..2147483647)
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "The MAC type for which this entry in the
+               pppBridgeMediaTable is providing status
+               information. Valid values for this object are
+               defined in Section 6.6 MAC Type Support
+               Selection of RFC1220 (Bridging Point-to-Point
+               Protocol)."
+     REFERENCE
+               "Section 6.6, MAC Type Support Selection, of
+               RFC1212."
+     ::= { pppBridgeMediaEntry 1 }
+
+
+pppBridgeMediaLocalStatus   OBJECT-TYPE
+     SYNTAX    INTEGER { accept(1), dont-accept(2) }
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "Indicates whether the local PPP Bridging
+               Entity will accept packets of the protocol type
+               identified in pppBridgeMediaMacType on the PPP
+               link identified by ifIndex or not. If this
+               object is accept then any packets of the
+               indicated MAC type will be received and
+               properly processed. If this object is dont-
+               accept then received packets of the indicated
+               MAC type will not be properly processed."
+     REFERENCE
+               "Section 6.6, MAC Type Support Selection, of
+               RFC1212."
+     ::= { pppBridgeMediaEntry 2 }
+
+
+pppBridgeMediaRemoteStatus   OBJECT-TYPE
+     SYNTAX    INTEGER { accept(1), dont-accept(2) }
+     ACCESS    read-only
+     STATUS    mandatory
+     DESCRIPTION
+               "Indicates whether the local PPP Bridging
+               Entity believes that the remote PPP Bridging
+               Entity will accept packets of the protocol type
+               identified in pppBridgeMediaMacType on the PPP
+               link identified by ifIndex or not."
+     REFERENCE
+               "Section 6.6, MAC Type Support Selection, of
+               RFC1212."
+     ::= { pppBridgeMediaEntry 3 }
+
+
+--
+-- The PPP Bridge Media Configuration Table
+--
+
+pppBridgeMediaConfigTable   OBJECT-TYPE
+     SYNTAX    SEQUENCE OF PppBridgeMediaConfigEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Table identifying which MAC media types are
+               enabled for the Bridging NCPs."
+     ::= { pppBridge 4 }
+
+
+pppBridgeMediaConfigEntry   OBJECT-TYPE
+     SYNTAX    PppBridgeMediaConfigEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "Status of a specific MAC Type for a specific
+               PPP Link."
+     INDEX     { ifIndex, pppBridgeMediaConfigMacType }
+     ::= { pppBridgeMediaConfigTable 1 }
+
+
+PppBridgeMediaConfigEntry ::= SEQUENCE {
+     pppBridgeMediaConfigMacType
+          INTEGER,
+     pppBridgeMediaConfigLocalStatus
+          INTEGER
+}
+
+
+pppBridgeMediaConfigMacType   OBJECT-TYPE
+     SYNTAX    INTEGER(0..2147483647)
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "The MAC type for which this entry in the
+               pppBridgeMediaConfigTable is providing status
+               information. Valid values for this object are
+               defined in Section 6.6 MAC Type Support
+               Selection of RFC1220 (Bridging Point-to-Point
+               Protocol)."
+     REFERENCE
+               "Section 6.6, MAC Type Support Selection, of
+               RFC1212."
+     ::= { pppBridgeMediaConfigEntry 1 }
+
+
+pppBridgeMediaConfigLocalStatus   OBJECT-TYPE
+     SYNTAX    INTEGER { accept(1), dont-accept(2) }
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "Indicates whether the local PPP Bridging
+               Entity should accept packets of the protocol
+               type identified in pppBridgeMediaConfigMacType
+               on the PPP link identified by ifIndex or not.
+               Setting this object to the value dont-accept
+               has the affect of invalidating the
+               corresponding entry in the
+               pppBridgeMediaConfigTable object. It is an
+               implementation-specific matter as to whether
+               the agent removes an invalidated entry from the
+               table. Accordingly, management stations must be
+               prepared to receive tabular information from
+               agents that corresponds to entries not
+               currently in use. Changing this object will
+               have effect when the link is next restarted."
+     REFERENCE
+               "Section 6.6, MAC Type Support Selection, of
+               RFC1212."
+     ::= { pppBridgeMediaConfigEntry 2 }
+
+
+END

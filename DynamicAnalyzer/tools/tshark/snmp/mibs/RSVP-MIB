@@ -1,0 +1,2812 @@
+RSVP-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS
+                MODULE-IDENTITY, OBJECT-TYPE, Gauge32,
+                NOTIFICATION-TYPE, Integer32, mib-2
+                                                    FROM SNMPv2-SMI
+                TEXTUAL-CONVENTION, TruthValue, RowStatus,
+                TimeStamp, TestAndIncr, TimeInterval
+                                                    FROM SNMPv2-TC
+                MODULE-COMPLIANCE, OBJECT-GROUP,
+                NOTIFICATION-GROUP                  FROM SNMPv2-CONF
+                Port, SessionNumber, SessionType,
+                Protocol, QosService, intSrvFlowStatus,
+                MessageSize, BitRate, BurstSize
+                                            FROM INTEGRATED-SERVICES-MIB
+                ifIndex, InterfaceIndex             FROM IF-MIB;
+
+
+    rsvp MODULE-IDENTITY
+            LAST-UPDATED "9511030500Z" -- Thu Aug 28 09:03:53 PDT 1997
+            ORGANIZATION "IETF RSVP Working Group"
+            CONTACT-INFO
+           "       Fred Baker
+           Postal: Cisco Systems
+                   519 Lado Drive
+                   Santa Barbara, California 93111
+           Tel:    +1 805 681 0115
+           E-Mail: fred@cisco.com
+                   John Krawczyk
+           Postal: ArrowPoint Communications
+                   235 Littleton Road
+                   Westford, Massachusetts 01886
+           Tel:    +1 508 692 5875
+           E-Mail: jjk@tiac.net
+
+                   Arun Sastry
+           Postal: Cisco Systems
+                   210 W. Tasman Drive
+                   San Jose, California 95134
+           Tel:    +1 408 526 7685
+           E-Mail: arun@cisco.com"
+       DESCRIPTION
+          "The MIB module to describe the RSVP Protocol"
+      ::= { mib-2 51 }
+
+  rsvpObjects               OBJECT IDENTIFIER
+                            ::= { rsvp 1 } -- tables
+  rsvpGenObjects            OBJECT IDENTIFIER
+                            ::= { rsvp 2 } -- global objects
+  rsvpNotificationsPrefix   OBJECT IDENTIFIER
+                            ::= { rsvp 3 } -- traps
+  rsvpConformance           OBJECT IDENTIFIER
+                            ::= { rsvp 4 } -- conformance
+
+
+    RsvpEncapsulation ::= TEXTUAL-CONVENTION
+         STATUS   current
+         DESCRIPTION
+           "This indicates the encapsulation that an  RSVP
+           Neighbor is perceived to be using."
+        SYNTAX   INTEGER {
+                   ip (1),   -- IP Protocol 46
+                   udp (2),  -- UDP Encapsulation
+                   both (3)  -- neighbor is using both encapsulations
+                 }
+
+
+    RefreshInterval ::= TEXTUAL-CONVENTION
+         DISPLAY-HINT "d"
+         STATUS   current
+         DESCRIPTION
+           "The number of milliseconds that  are  expected
+           to elapse between refreshes of path or reserva-
+           tion state.  Unrefreshed  Path  or  reservation
+           state is removed after a small multiple of this
+           period."
+        SYNTAX   INTEGER (0..'7FFFFFFF'h)
+
+
+--      The RSVP Session Statistics Database displays statistics
+--      relating to the number of senders and receivers in each
+--      session.
+
+
+    rsvpSessionTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RsvpSessionEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "A table of all sessions seen by a  given  sys-
+           tem."
+       ::= { rsvpObjects 1 }
+
+
+    rsvpSessionEntry OBJECT-TYPE
+        SYNTAX      RsvpSessionEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "A single session seen by a given system."
+       INDEX { rsvpSessionNumber }
+       ::= { rsvpSessionTable 1 }
+
+
+    RsvpSessionEntry ::=
+        SEQUENCE {
+        rsvpSessionNumber           SessionNumber,
+        rsvpSessionType             SessionType,
+        rsvpSessionDestAddr         OCTET STRING,
+        rsvpSessionDestAddrLength   INTEGER,
+        rsvpSessionProtocol         Protocol,
+        rsvpSessionPort             Port,
+        rsvpSessionSenders          Gauge32,
+        rsvpSessionReceivers        Gauge32,
+        rsvpSessionRequests         Gauge32
+        }
+
+
+    rsvpSessionNumber OBJECT-TYPE
+        SYNTAX      SessionNumber
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The number of this session.  This is for  SNMP
+           Indexing  purposes  only and has no relation to
+           any protocol value."
+       ::= { rsvpSessionEntry 1 }
+
+
+    rsvpSessionType OBJECT-TYPE
+        SYNTAX      SessionType
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The type of session (IP4, IP6, IP6  with  flow
+           information, etc)."
+       ::= { rsvpSessionEntry 2 }
+
+
+    rsvpSessionDestAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The destination address used by all senders in
+           this  session.   This object may not be changed
+           when the value of the RowStatus object is  'ac-
+           tive'."
+       ::= { rsvpSessionEntry 3 }
+
+
+    rsvpSessionDestAddrLength OBJECT-TYPE
+        SYNTAX      INTEGER(0..128)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The CIDR prefix length of the session address,
+           which  is  32  for  IP4  host and multicast ad-
+           dresses, and 128 for IP6 addresses.   This  ob-
+           ject  may  not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { rsvpSessionEntry 4 }
+
+
+    rsvpSessionProtocol OBJECT-TYPE
+        SYNTAX      Protocol
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The IP Protocol used by  this  session.   This
+           object may not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { rsvpSessionEntry 5 }
+
+
+    rsvpSessionPort OBJECT-TYPE
+        SYNTAX      Port
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The UDP or TCP port number used as a  destina-
+           tion  port for all senders in this session.  If
+           the IP protocol in use, specified  by  rsvpSen-
+           derProtocol,  is  50  (ESP)  or  51  (AH), this
+           represents a virtual destination  port  number.
+           A  value of zero indicates that the IP protocol
+           in use does not have ports.   This  object  may
+           not  be changed when the value of the RowStatus
+           object is 'active'."
+       ::= { rsvpSessionEntry 6 }
+
+
+    rsvpSessionSenders OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The number of distinct senders currently known
+           to be part of this session."
+       ::= { rsvpSessionEntry 7 }
+
+
+    rsvpSessionReceivers OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The number of reservations being requested  of
+           this system for this session."
+       ::= { rsvpSessionEntry 8 }
+
+
+    rsvpSessionRequests OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The number of reservation requests this system
+           is sending upstream for this session."
+       ::= { rsvpSessionEntry 9 }
+
+    rsvpBadPackets OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "This object keeps a count of the number of bad
+           RSVP packets received."
+       ::= { rsvpGenObjects 1 }
+
+
+--      The RSVP Session Sender Database contains the information
+--      displayed by senders regarding their potential contribution
+--      to session data content. It is in essence a list of the
+--      valid PATH messages that the RSVP Router or Host is receiving.
+
+
+    rsvpSenderNewIndex OBJECT-TYPE
+        SYNTAX      TestAndIncr
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+           "This  object  is  used  to  assign  values  to
+           rsvpSenderNumber  as described in 'Textual Con-
+           ventions  for  SNMPv2'.   The  network  manager
+           reads  the  object,  and  then writes the value
+           back in the SET that creates a new instance  of
+           rsvpSenderEntry.   If  the  SET  fails with the
+           code 'inconsistentValue', then the process must
+           be  repeated; If the SET succeeds, then the ob-
+           ject is incremented, and the  new  instance  is
+           created according to the manager's directions."
+       ::= { rsvpGenObjects 2 }
+
+
+    rsvpSenderTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RsvpSenderEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "Information describing the  state  information
+           displayed by senders in PATH messages."
+       ::= { rsvpObjects 2 }
+
+
+    rsvpSenderEntry OBJECT-TYPE
+        SYNTAX      RsvpSenderEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "Information describing the  state  information
+           displayed by a single sender's PATH message."
+       INDEX { rsvpSessionNumber, rsvpSenderNumber }
+       ::= { rsvpSenderTable 1 }
+
+RsvpSenderEntry ::=
+
+
+    SEQUENCE {
+        rsvpSenderNumber                        SessionNumber,
+        rsvpSenderType                          SessionType,
+        rsvpSenderDestAddr                      OCTET STRING,
+        rsvpSenderAddr                          OCTET STRING,
+        rsvpSenderDestAddrLength                INTEGER,
+        rsvpSenderAddrLength                    INTEGER,
+        rsvpSenderProtocol                      Protocol,
+        rsvpSenderDestPort                      Port,
+        rsvpSenderPort                          Port,
+        rsvpSenderFlowId                        INTEGER,
+        rsvpSenderHopAddr                       OCTET STRING,
+        rsvpSenderHopLih                        Integer32,
+        rsvpSenderInterface                     InterfaceIndex,
+        rsvpSenderTSpecRate                     BitRate,
+        rsvpSenderTSpecPeakRate                 BitRate,
+        rsvpSenderTSpecBurst                    BurstSize,
+        rsvpSenderTSpecMinTU                    MessageSize,
+        rsvpSenderTSpecMaxTU                    MessageSize,
+        rsvpSenderInterval                      RefreshInterval,
+        rsvpSenderRSVPHop                       TruthValue,
+        rsvpSenderLastChange                    TimeStamp,
+        rsvpSenderPolicy                        OCTET STRING,
+        rsvpSenderAdspecBreak                   TruthValue,
+        rsvpSenderAdspecHopCount                INTEGER,
+        rsvpSenderAdspecPathBw                  BitRate,
+        rsvpSenderAdspecMinLatency              Integer32,
+        rsvpSenderAdspecMtu                     INTEGER,
+        rsvpSenderAdspecGuaranteedSvc           TruthValue,
+        rsvpSenderAdspecGuaranteedBreak         TruthValue,
+        rsvpSenderAdspecGuaranteedCtot          Integer32,
+        rsvpSenderAdspecGuaranteedDtot          Integer32,
+        rsvpSenderAdspecGuaranteedCsum          Integer32,
+        rsvpSenderAdspecGuaranteedDsum          Integer32,
+        rsvpSenderAdspecGuaranteedHopCount      INTEGER,
+        rsvpSenderAdspecGuaranteedPathBw        BitRate,
+        rsvpSenderAdspecGuaranteedMinLatency    Integer32,
+        rsvpSenderAdspecGuaranteedMtu           INTEGER,
+        rsvpSenderAdspecCtrlLoadSvc             TruthValue,
+        rsvpSenderAdspecCtrlLoadBreak           TruthValue,
+        rsvpSenderAdspecCtrlLoadHopCount        INTEGER,
+        rsvpSenderAdspecCtrlLoadPathBw          BitRate,
+        rsvpSenderAdspecCtrlLoadMinLatency      Integer32,
+        rsvpSenderAdspecCtrlLoadMtu             INTEGER,
+        rsvpSenderStatus                        RowStatus,
+
+
+        rsvpSenderTTL                           INTEGER
+    }
+
+    rsvpSenderNumber OBJECT-TYPE
+        SYNTAX      SessionNumber
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The number of this sender.  This is  for  SNMP
+           Indexing  purposes  only and has no relation to
+           any protocol value."
+       ::= { rsvpSenderEntry 1 }
+
+
+    rsvpSenderType OBJECT-TYPE
+        SYNTAX      SessionType
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The type of session (IP4, IP6, IP6  with  flow
+           information, etc)."
+       ::= { rsvpSenderEntry 2 }
+
+
+    rsvpSenderDestAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The destination address used by all senders in
+           this  session.   This object may not be changed
+           when the value of the RowStatus object is  'ac-
+           tive'."
+       ::= { rsvpSenderEntry 3 }
+
+
+    rsvpSenderAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The source address used by this sender in this
+           session.   This  object may not be changed when
+           the value of the RowStatus object is 'active'."
+       ::= { rsvpSenderEntry 4 }
+
+
+    rsvpSenderDestAddrLength OBJECT-TYPE
+        SYNTAX      INTEGER(0..128)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The length of the destination address in bits.
+           This  is  the CIDR Prefix Length, which for IP4
+           hosts and multicast addresses is 32 bits.  This
+           object may not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { rsvpSenderEntry 5 }
+
+
+    rsvpSenderAddrLength OBJECT-TYPE
+        SYNTAX      INTEGER(0..128)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The length of the sender's  address  in  bits.
+           This  is  the CIDR Prefix Length, which for IP4
+           hosts and multicast addresses is 32 bits.  This
+           object may not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { rsvpSenderEntry 6 }
+
+
+    rsvpSenderProtocol OBJECT-TYPE
+        SYNTAX      Protocol
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The IP Protocol used by  this  session.   This
+           object may not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { rsvpSenderEntry 7 }
+
+
+    rsvpSenderDestPort OBJECT-TYPE
+        SYNTAX      Port
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The UDP or TCP port number used as a  destina-
+           tion  port for all senders in this session.  If
+           the IP protocol in use, specified  by  rsvpSen-
+           derProtocol,  is  50  (ESP)  or  51  (AH), this
+           represents a virtual destination  port  number.
+           A  value of zero indicates that the IP protocol
+           in use does not have ports.   This  object  may
+           not  be changed when the value of the RowStatus
+           object is 'active'."
+       ::= { rsvpSenderEntry 8 }
+
+
+    rsvpSenderPort OBJECT-TYPE
+        SYNTAX      Port
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The UDP or TCP port number used  as  a  source
+           port  for  this sender in this session.  If the
+           IP protocol in use, specified by rsvpSenderPro-
+           tocol is 50 (ESP) or 51 (AH), this represents a
+           generalized port identifier (GPI).  A value  of
+           zero indicates that the IP protocol in use does
+           not have ports.  This object may not be changed
+           when  the value of the RowStatus object is 'ac-
+           tive'."
+       ::= { rsvpSenderEntry 9 }
+
+
+    rsvpSenderFlowId OBJECT-TYPE
+        SYNTAX      INTEGER (0..16777215)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The flow ID that  this  sender  is  using,  if
+           this  is  an IPv6 session."
+       ::= { rsvpSenderEntry 10 }
+
+
+    rsvpSenderHopAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The address used  by  the  previous  RSVP  hop
+           (which may be the original sender)."
+       ::= { rsvpSenderEntry 11 }
+
+    rsvpSenderHopLih OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The Logical Interface Handle used by the  pre-
+           vious  RSVP  hop  (which  may  be  the original
+           sender)."
+       ::= { rsvpSenderEntry 12 }
+
+
+    rsvpSenderInterface OBJECT-TYPE
+        SYNTAX      InterfaceIndex
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The ifIndex value of the  interface  on  which
+           this PATH message was most recently received."
+       ::= { rsvpSenderEntry 13 }
+
+
+    rsvpSenderTSpecRate OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "bits per second"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The Average Bit  Rate  of  the  sender's  data
+           stream.   Within  a transmission burst, the ar-
+           rival rate may be as fast  as  rsvpSenderTSpec-
+           PeakRate  (if  supported by the service model);
+           however, averaged across two or more burst  in-
+           tervals,  the  rate  should not exceed rsvpSen-
+           derTSpecRate.
+
+           Note that this is a prediction, often based  on
+           the  general  capability  of a type of codec or
+           particular encoding; the measured average  rate
+           may be significantly lower."
+       ::= { rsvpSenderEntry 14 }
+
+
+    rsvpSenderTSpecPeakRate OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "bits per second"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The Peak Bit Rate of the sender's data stream.
+           Traffic  arrival is not expected to exceed this
+           rate at any time, apart  from  the  effects  of
+           jitter in the network.  If not specified in the
+           TSpec, this returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 15 }
+
+
+    rsvpSenderTSpecBurst OBJECT-TYPE
+        SYNTAX      BurstSize
+        UNITS       "bytes"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The size of the largest  burst  expected  from
+           the sender at a time."
+       ::= { rsvpSenderEntry 16 }
+
+
+    rsvpSenderTSpecMinTU OBJECT-TYPE
+        SYNTAX      MessageSize
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The minimum message size for  this  flow.  The
+           policing  algorithm will treat smaller messages
+           as though they are this size."
+       ::= { rsvpSenderEntry 17 }
+
+
+    rsvpSenderTSpecMaxTU OBJECT-TYPE
+        SYNTAX      MessageSize
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The maximum message size for  this  flow.  The
+           admission  algorithm  will  reject TSpecs whose
+           Maximum Transmission Unit, plus  the  interface
+           headers, exceed the interface MTU."
+       ::= { rsvpSenderEntry 18 }
+
+
+    rsvpSenderInterval OBJECT-TYPE
+        SYNTAX      RefreshInterval
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The interval between refresh messages  as  ad-
+           vertised by the Previous Hop."
+       ::= { rsvpSenderEntry 19 }
+
+
+    rsvpSenderRSVPHop OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, the node believes that  the  previous
+           IP  hop is an RSVP hop.  If FALSE, the node be-
+           lieves that the previous IP hop may not  be  an
+           RSVP hop."
+       ::= { rsvpSenderEntry 20 }
+
+
+    rsvpSenderLastChange OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The time of the last change in this PATH  mes-
+           sage;  This is either the first time it was re-
+           ceived or the time of the most recent change in
+           parameters."
+       ::= { rsvpSenderEntry 21 }
+
+
+    rsvpSenderPolicy OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..65536))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The contents of the policy  object,  displayed
+           as an uninterpreted string of octets, including
+           the object header.  In the absence of  such  an
+           object, this should be of zero length."
+       ::= { rsvpSenderEntry 22 }
+
+
+    rsvpSenderAdspecBreak OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The global break bit general  characterization
+           parameter  from  the ADSPEC.  If TRUE, at least
+           one non-IS hop was detected in  the  path.   If
+           FALSE, no non-IS hops were detected."
+       ::= { rsvpSenderEntry 23 }
+
+
+    rsvpSenderAdspecHopCount OBJECT-TYPE
+        SYNTAX      INTEGER (0..65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The hop count general characterization parame-
+           ter  from  the  ADSPEC.   A  return  of zero or
+           noSuchValue indicates one of the following con-
+           ditions:
+
+              the invalid bit was set
+              the parameter was not present"
+       ::= { rsvpSenderEntry 24 }
+
+
+    rsvpSenderAdspecPathBw OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "bits per second"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The path bandwidth estimate general character-
+           ization parameter from the ADSPEC.  A return of
+           zero or noSuchValue indicates one of  the  fol-
+           lowing conditions:
+
+              the invalid bit was set
+              the parameter was not present"
+       ::= { rsvpSenderEntry 25 }
+
+
+    rsvpSenderAdspecMinLatency OBJECT-TYPE
+        SYNTAX      Integer32
+        UNITS       "microseconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The minimum path latency general characteriza-
+           tion  parameter  from  the ADSPEC.  A return of
+           zero or noSuchValue indicates one of  the  fol-
+           lowing conditions:
+
+              the invalid bit was set
+              the parameter was not present"
+       ::= { rsvpSenderEntry 26 }
+
+
+    rsvpSenderAdspecMtu OBJECT-TYPE
+        SYNTAX      INTEGER (0..65535)
+        UNITS       "bytes"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The composed Maximum Transmission Unit general
+           characterization  parameter from the ADSPEC.  A
+           return of zero or noSuchValue indicates one  of
+           the following conditions:
+
+              the invalid bit was set
+              the parameter was not present"
+       ::= { rsvpSenderEntry 27 }
+
+
+    rsvpSenderAdspecGuaranteedSvc OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, the ADSPEC contains a Guaranteed Ser-
+           vice  fragment.   If FALSE, the ADSPEC does not
+           contain a Guaranteed Service fragment."
+       ::= { rsvpSenderEntry 28 }
+
+
+    rsvpSenderAdspecGuaranteedBreak OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, the Guaranteed Service  fragment  has
+           its  'break'  bit  set,  indicating that one or
+           more nodes along the path do  not  support  the
+           guaranteed  service.   If  FALSE,  and rsvpSen-
+           derAdspecGuaranteedSvc is TRUE, the 'break' bit
+           is not set.
+
+           If rsvpSenderAdspecGuaranteedSvc is FALSE, this
+           returns FALSE or noSuchValue."
+       ::= { rsvpSenderEntry 29 }
+
+
+    rsvpSenderAdspecGuaranteedCtot OBJECT-TYPE
+        SYNTAX      Integer32
+        UNITS       "bytes"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+
+           "If rsvpSenderAdspecGuaranteedSvc is TRUE, this
+           is   the  end-to-end  composed  value  for  the
+           guaranteed service 'C' parameter.  A return  of
+           zero  or  noSuchValue indicates one of the fol-
+           lowing conditions:
+
+              the invalid bit was set
+              the parameter was not present
+
+           If rsvpSenderAdspecGuaranteedSvc is FALSE, this
+           returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 30 }
+
+
+    rsvpSenderAdspecGuaranteedDtot OBJECT-TYPE
+        SYNTAX      Integer32
+        UNITS       "microseconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If rsvpSenderAdspecGuaranteedSvc is TRUE, this
+           is   the  end-to-end  composed  value  for  the
+           guaranteed service 'D' parameter.  A return  of
+           zero  or  noSuchValue indicates one of the fol-
+           lowing conditions:
+
+              the invalid bit was set
+              the parameter was not present
+
+           If rsvpSenderAdspecGuaranteedSvc is FALSE, this
+           returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 31 }
+
+
+    rsvpSenderAdspecGuaranteedCsum OBJECT-TYPE
+        SYNTAX      Integer32
+        UNITS       "bytes"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If rsvpSenderAdspecGuaranteedSvc is TRUE, this
+           is  the  composed value for the guaranteed ser-
+           vice 'C' parameter  since  the  last  reshaping
+           point.   A  return of zero or noSuchValue indi-
+           cates one of the following conditions:
+
+              the invalid bit was set
+              the parameter was not present
+
+           If rsvpSenderAdspecGuaranteedSvc is FALSE, this
+           returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 32 }
+
+
+    rsvpSenderAdspecGuaranteedDsum OBJECT-TYPE
+        SYNTAX      Integer32
+        UNITS       "microseconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If rsvpSenderAdspecGuaranteedSvc is TRUE, this
+           is  the  composed value for the guaranteed ser-
+           vice 'D' parameter  since  the  last  reshaping
+           point.   A  return of zero or noSuchValue indi-
+           cates one of the following conditions:
+
+              the invalid bit was set
+              the parameter was not present
+
+           If rsvpSenderAdspecGuaranteedSvc is FALSE, this
+           returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 33 }
+
+
+    rsvpSenderAdspecGuaranteedHopCount OBJECT-TYPE
+        SYNTAX      INTEGER (0..65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+
+           "If rsvpSenderAdspecGuaranteedSvc is TRUE, this
+           is  the  service-specific  override  of the hop
+           count general characterization  parameter  from
+           the  ADSPEC.   A  return of zero or noSuchValue
+           indicates one of the following conditions:
+
+              the invalid bit was set
+              the parameter was not present
+
+           If rsvpSenderAdspecGuaranteedSvc is FALSE, this
+           returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 34 }
+
+
+    rsvpSenderAdspecGuaranteedPathBw OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "bits per second"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If rsvpSenderAdspecGuaranteedSvc is TRUE, this
+           is  the  service-specific  override of the path
+           bandwidth  estimate  general   characterization
+           parameter from the ADSPEC.  A return of zero or
+           noSuchValue indicates one of the following con-
+           ditions:
+
+              the invalid bit was set
+              the parameter was not present
+
+           If rsvpSenderAdspecGuaranteedSvc is FALSE, this
+           returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 35 }
+
+
+    rsvpSenderAdspecGuaranteedMinLatency OBJECT-TYPE
+        SYNTAX      Integer32
+        UNITS       "microseconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If rsvpSenderAdspecGuaranteedSvc is TRUE, this
+           is the service-specific override of the minimum
+           path latency general characterization parameter
+           from  the  ADSPEC.  A return of zero or noSuch-
+           Value indicates one  of  the  following  condi-
+           tions:
+
+              the invalid bit was set
+              the parameter was not present
+
+           If rsvpSenderAdspecGuaranteedSvc is FALSE, this
+           returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 36 }
+
+
+    rsvpSenderAdspecGuaranteedMtu OBJECT-TYPE
+        SYNTAX      INTEGER (0..65535)
+        UNITS       "bytes"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If rsvpSenderAdspecGuaranteedSvc is TRUE, this
+           is  the  service-specific  override of the com-
+           posed Maximum Transmission Unit general charac-
+           terization parameter from the ADSPEC.  A return
+           of zero or noSuchValue  indicates  one  of  the
+           following conditions:
+
+              the invalid bit was set
+              the parameter was not present
+
+           If rsvpSenderAdspecGuaranteedSvc is FALSE, this
+           returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 37 }
+
+
+    rsvpSenderAdspecCtrlLoadSvc OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, the ADSPEC contains a Controlled Load
+           Service  fragment.   If  FALSE, the ADSPEC does
+           not contain a  Controlled  Load  Service  frag-
+           ment."
+       ::= { rsvpSenderEntry 38 }
+
+
+    rsvpSenderAdspecCtrlLoadBreak OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, the Controlled Load Service  fragment
+           has its 'break' bit set, indicating that one or
+           more nodes along the path do  not  support  the
+           controlled   load   service.    If  FALSE,  and
+           rsvpSenderAdspecCtrlLoadSvc   is   TRUE,    the
+           'break' bit is not set.
+
+           If rsvpSenderAdspecCtrlLoadSvc is  FALSE,  this
+           returns FALSE or noSuchValue."
+       ::= { rsvpSenderEntry 39 }
+
+    rsvpSenderAdspecCtrlLoadHopCount OBJECT-TYPE
+        SYNTAX      INTEGER (0..65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+
+           "If rsvpSenderAdspecCtrlLoadSvc is  TRUE,  this
+           is  the  service-specific  override  of the hop
+           count general characterization  parameter  from
+           the  ADSPEC.   A  return of zero or noSuchValue
+           indicates one of the following conditions:
+
+              the invalid bit was set
+              the parameter was not present
+
+           If rsvpSenderAdspecCtrlLoadSvc is  FALSE,  this
+           returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 40 }
+
+
+    rsvpSenderAdspecCtrlLoadPathBw OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "bits per second"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If rsvpSenderAdspecCtrlLoadSvc is  TRUE,  this
+           is  the  service-specific  override of the path
+           bandwidth  estimate  general   characterization
+           parameter from the ADSPEC.  A return of zero or
+           noSuchValue indicates one of the following con-
+           ditions:
+
+              the invalid bit was set
+              the parameter was not present
+
+           If rsvpSenderAdspecCtrlLoadSvc is  FALSE,  this
+           returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 41 }
+
+
+    rsvpSenderAdspecCtrlLoadMinLatency OBJECT-TYPE
+        SYNTAX      Integer32
+        UNITS       "microseconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If rsvpSenderAdspecCtrlLoadSvc is  TRUE,  this
+           is the service-specific override of the minimum
+           path latency general characterization parameter
+           from  the  ADSPEC.  A return of zero or noSuch-
+           Value indicates one  of  the  following  condi-
+           tions:
+
+              the invalid bit was set
+              the parameter was not present
+
+           If rsvpSenderAdspecCtrlLoadSvc is  FALSE,  this
+           returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 42 }
+
+
+    rsvpSenderAdspecCtrlLoadMtu OBJECT-TYPE
+        SYNTAX      INTEGER (0..65535)
+        UNITS       "bytes"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If rsvpSenderAdspecCtrlLoadSvc is  TRUE,  this
+           is  the  service-specific  override of the com-
+           posed Maximum Transmission Unit general charac-
+           terization parameter from the ADSPEC.  A return
+           of zero or noSuchValue  indicates  one  of  the
+           following conditions:
+
+              the invalid bit was set
+              the parameter was not present
+
+           If rsvpSenderAdspecCtrlLoadSvc is  FALSE,  this
+           returns zero or noSuchValue."
+       ::= { rsvpSenderEntry 43 }
+
+
+    rsvpSenderStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "'active' for all active PATH  messages.   This
+           object  may  be used to install static PATH in-
+           formation or delete PATH information."
+       ::= { rsvpSenderEntry 44 }
+
+
+    rsvpSenderTTL OBJECT-TYPE
+        SYNTAX      INTEGER (0..255)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The TTL value in the RSVP header that was last
+           received."
+       ::= { rsvpSenderEntry 45 }
+
+
+    rsvpSenderOutInterfaceTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RsvpSenderOutInterfaceEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "List of outgoing interfaces that PATH messages
+           use.  The  ifIndex  is the ifIndex value of the
+           egress interface."
+       ::= { rsvpObjects 3 }
+
+
+    rsvpSenderOutInterfaceEntry OBJECT-TYPE
+        SYNTAX      RsvpSenderOutInterfaceEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "List of outgoing interfaces that a  particular
+           PATH message has."
+       INDEX { rsvpSessionNumber, rsvpSenderNumber, ifIndex }
+       ::= { rsvpSenderOutInterfaceTable 1 }
+
+RsvpSenderOutInterfaceEntry ::=
+    SEQUENCE {
+        rsvpSenderOutInterfaceStatus            RowStatus
+    }
+
+    rsvpSenderOutInterfaceStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "'active' for all active PATH messages."
+       ::= { rsvpSenderOutInterfaceEntry 1 }
+
+
+--      The RSVP Reservation Requests Received Table contains the
+--      information displayed by receivers regarding their needs with
+--      respect to sessions and senders. It is in essence a list of the
+--      valid RESV messages that the RSVP Router or Host is receiving.
+
+    rsvpResvNewIndex OBJECT-TYPE
+        SYNTAX      TestAndIncr
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+           "This  object  is  used  to  assign  values  to
+           rsvpResvNumber as described in 'Textual Conven-
+           tions for SNMPv2'.  The network  manager  reads
+           the  object,  and then writes the value back in
+           the  SET  that  creates  a  new   instance   of
+           rsvpResvEntry.   If the SET fails with the code
+           'inconsistentValue', then the process  must  be
+           repeated;  If the SET succeeds, then the object
+           is incremented, and the new instance is created
+           according to the manager's directions."
+       ::= { rsvpGenObjects 3 }
+
+
+    rsvpResvTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RsvpResvEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "Information describing the  state  information
+           displayed by receivers in RESV messages."
+       ::= { rsvpObjects 4 }
+
+
+    rsvpResvEntry OBJECT-TYPE
+        SYNTAX      RsvpResvEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "Information describing the  state  information
+           displayed  by  a single receiver's RESV message
+           concerning a single sender."
+       INDEX { rsvpSessionNumber, rsvpResvNumber }
+       ::= { rsvpResvTable 1 }
+
+
+
+    RsvpResvEntry ::=
+        SEQUENCE {
+            rsvpResvNumber                  SessionNumber,
+            rsvpResvType                    SessionType,
+            rsvpResvDestAddr                OCTET STRING,
+            rsvpResvSenderAddr              OCTET STRING,
+            rsvpResvDestAddrLength          INTEGER,
+            rsvpResvSenderAddrLength        INTEGER,
+            rsvpResvProtocol                Protocol,
+            rsvpResvDestPort                Port,
+            rsvpResvPort                    Port,
+            rsvpResvHopAddr                 OCTET STRING,
+            rsvpResvHopLih                  Integer32,
+            rsvpResvInterface               InterfaceIndex,
+            rsvpResvService                 QosService,
+            rsvpResvTSpecRate               BitRate,
+            rsvpResvTSpecPeakRate           BitRate,
+            rsvpResvTSpecBurst              BurstSize,
+            rsvpResvTSpecMinTU              MessageSize,
+            rsvpResvTSpecMaxTU              MessageSize,
+            rsvpResvRSpecRate               BitRate,
+            rsvpResvRSpecSlack              Integer32,
+            rsvpResvInterval                RefreshInterval,
+            rsvpResvScope                   OCTET STRING,
+            rsvpResvShared                  TruthValue,
+            rsvpResvExplicit                TruthValue,
+            rsvpResvRSVPHop                 TruthValue,
+            rsvpResvLastChange              TimeStamp,
+            rsvpResvPolicy                  OCTET STRING,
+            rsvpResvStatus                  RowStatus,
+            rsvpResvTTL                     INTEGER,
+            rsvpResvFlowId                  INTEGER
+        }
+
+
+    rsvpResvNumber OBJECT-TYPE
+        SYNTAX      SessionNumber
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The number of this reservation request.   This
+           is  for  SNMP Indexing purposes only and has no
+           relation to any protocol value."
+       ::= { rsvpResvEntry 1 }
+
+
+    rsvpResvType OBJECT-TYPE
+        SYNTAX      SessionType
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The type of session (IP4, IP6, IP6  with  flow
+           information, etc)."
+       ::= { rsvpResvEntry 2 }
+
+    rsvpResvDestAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The destination address used by all senders in
+           this  session.   This object may not be changed
+           when the value of the RowStatus object is  'ac-
+           tive'."
+       ::= { rsvpResvEntry 3 }
+
+
+    rsvpResvSenderAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The source address of the sender  selected  by
+           this  reservation.  The value of all zeroes in-
+           dicates 'all senders'.  This object may not  be
+           changed  when the value of the RowStatus object
+           is 'active'."
+       ::= { rsvpResvEntry 4 }
+
+
+    rsvpResvDestAddrLength OBJECT-TYPE
+        SYNTAX      INTEGER(0..128)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The length of the destination address in bits.
+           This  is  the CIDR Prefix Length, which for IP4
+           hosts and multicast addresses is 32 bits.  This
+           object may not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { rsvpResvEntry 5 }
+
+
+    rsvpResvSenderAddrLength OBJECT-TYPE
+        SYNTAX      INTEGER(0..128)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The length of the sender's  address  in  bits.
+           This  is  the CIDR Prefix Length, which for IP4
+           hosts and multicast addresses is 32 bits.  This
+           object may not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { rsvpResvEntry 6 }
+
+
+    rsvpResvProtocol OBJECT-TYPE
+        SYNTAX      Protocol
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The IP Protocol used by  this  session.   This
+           object may not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { rsvpResvEntry 7 }
+
+
+    rsvpResvDestPort OBJECT-TYPE
+        SYNTAX      Port
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The UDP or TCP port number used as a  destina-
+           tion  port for all senders in this session.  If
+           the  IP   protocol   in   use,   specified   by
+           rsvpResvProtocol,  is 50 (ESP) or 51 (AH), this
+           represents a virtual destination  port  number.
+           A  value of zero indicates that the IP protocol
+           in use does not have ports.   This  object  may
+           not  be changed when the value of the RowStatus
+           object is 'active'."
+       ::= { rsvpResvEntry 8 }
+
+
+    rsvpResvPort OBJECT-TYPE
+        SYNTAX      Port
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The UDP or TCP port number used  as  a  source
+           port  for  this sender in this session.  If the
+           IP protocol in use, specified by rsvpResvProto-
+           col  is  50 (ESP) or 51 (AH), this represents a
+           generalized port identifier (GPI).  A value  of
+           zero indicates that the IP protocol in use does
+           not have ports.  This object may not be changed
+           when  the value of the RowStatus object is 'ac-
+           tive'."
+       ::= { rsvpResvEntry 9 }
+
+    rsvpResvHopAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The address used by the next RSVP  hop  (which
+           may be the ultimate receiver)."
+       ::= { rsvpResvEntry 10 }
+
+
+    rsvpResvHopLih OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The Logical Interface Handle received from the
+           previous  RSVP  hop  (which may be the ultimate
+           receiver)."
+       ::= { rsvpResvEntry 11 }
+
+
+    rsvpResvInterface OBJECT-TYPE
+        SYNTAX      InterfaceIndex
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The ifIndex value of the  interface  on  which
+           this RESV message was most recently received."
+       ::= { rsvpResvEntry 12 }
+
+
+    rsvpResvService OBJECT-TYPE
+        SYNTAX      QosService
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The QoS Service  classification  requested  by
+           the receiver."
+       ::= { rsvpResvEntry 13 }
+
+
+    rsvpResvTSpecRate OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "bits per second"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The Average Bit  Rate  of  the  sender's  data
+           stream.   Within  a transmission burst, the ar-
+           rival rate may be  as  fast  as  rsvpResvTSpec-
+           PeakRate  (if  supported by the service model);
+           however, averaged across two or more burst  in-
+           tervals,    the    rate   should   not   exceed
+           rsvpResvTSpecRate.
+
+           Note that this is a prediction, often based  on
+           the  general  capability  of a type of codec or
+           particular encoding; the measured average  rate
+           may be significantly lower."
+       ::= { rsvpResvEntry 14 }
+
+
+    rsvpResvTSpecPeakRate OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "bits per second"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The Peak Bit Rate of the sender's data stream.
+           Traffic  arrival is not expected to exceed this
+           rate at any time, apart  from  the  effects  of
+           jitter in the network.  If not specified in the
+           TSpec, this returns zero or noSuchValue."
+       ::= { rsvpResvEntry 15 }
+
+
+    rsvpResvTSpecBurst OBJECT-TYPE
+        SYNTAX      BurstSize
+        UNITS       "bytes"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The size of the largest  burst  expected  from
+           the sender at a time.
+
+           If this is less than  the  sender's  advertised
+           burst  size, the receiver is asking the network
+           to provide flow pacing  beyond  what  would  be
+           provided  under normal circumstances. Such pac-
+           ing is at the network's option."
+       ::= { rsvpResvEntry 16 }
+
+
+    rsvpResvTSpecMinTU OBJECT-TYPE
+        SYNTAX      MessageSize
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The minimum message size for  this  flow.  The
+           policing  algorithm will treat smaller messages
+           as though they are this size."
+       ::= { rsvpResvEntry 17 }
+
+
+    rsvpResvTSpecMaxTU OBJECT-TYPE
+        SYNTAX      MessageSize
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The maximum message size for  this  flow.  The
+           admission  algorithm  will  reject TSpecs whose
+           Maximum Transmission Unit, plus  the  interface
+           headers, exceed the interface MTU."
+       ::= { rsvpResvEntry 18 }
+
+
+    rsvpResvRSpecRate OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "bits per second"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If the requested  service  is  Guaranteed,  as
+           specified   by  rsvpResvService,  this  is  the
+           clearing rate that is being requested.   Other-
+           wise,  it  is  zero,  or  the  agent may return
+           noSuchValue."
+       ::= { rsvpResvEntry 19 }
+
+
+    rsvpResvRSpecSlack OBJECT-TYPE
+        SYNTAX      Integer32
+        UNITS       "microseconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If the requested  service  is  Guaranteed,  as
+           specified by rsvpResvService, this is the delay
+           slack.  Otherwise, it is zero, or the agent may
+           return noSuchValue."
+       ::= { rsvpResvEntry 20 }
+
+
+    rsvpResvInterval OBJECT-TYPE
+        SYNTAX      RefreshInterval
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The interval between refresh messages  as  ad-
+           vertised by the Next Hop."
+       ::= { rsvpResvEntry 21 }
+
+
+    rsvpResvScope OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(0..65536))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+
+           "The contents of the scope object, displayed as
+           an  uninterpreted  string  of octets, including
+           the object header.  In the absence of  such  an
+           object, this should be of zero length.
+
+           If the length  is  non-zero,  this  contains  a
+           series of IP4 or IP6 addresses."
+       ::= { rsvpResvEntry 22 }
+
+
+    rsvpResvShared OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, a reservation shared among senders is
+           requested.  If FALSE, a reservation specific to
+           this sender is requested."
+       ::= { rsvpResvEntry 23 }
+
+
+    rsvpResvExplicit OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, individual senders are  listed  using
+           Filter  Specifications.   If FALSE, all senders
+           are implicitly selected.  The Scope Object will
+           contain  a list of senders that need to receive
+           this reservation request  for  the  purpose  of
+           routing the RESV message."
+       ::= { rsvpResvEntry 24 }
+
+    rsvpResvRSVPHop OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, the node believes that  the  previous
+           IP  hop is an RSVP hop.  If FALSE, the node be-
+           lieves that the previous IP hop may not  be  an
+           RSVP hop."
+       ::= { rsvpResvEntry 25 }
+
+
+    rsvpResvLastChange OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The time of the last change in  this  reserva-
+           tion  request; This is either the first time it
+           was received or the time  of  the  most  recent
+           change in parameters."
+       ::= { rsvpResvEntry 26 }
+
+
+    rsvpResvPolicy OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(0..65536))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The contents of the policy  object,  displayed
+           as an uninterpreted string of octets, including
+           the object header.  In the absence of  such  an
+           object, this should be of zero length."
+       ::= { rsvpResvEntry 27 }
+
+
+    rsvpResvStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "'active' for all active RESV  messages.   This
+           object  may  be used to install static RESV in-
+           formation or delete RESV information."
+       ::= { rsvpResvEntry 28 }
+
+
+    rsvpResvTTL OBJECT-TYPE
+        SYNTAX      INTEGER (0..255)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The TTL value in the RSVP header that was last
+           received."
+       ::= { rsvpResvEntry 29 }
+
+
+    rsvpResvFlowId OBJECT-TYPE
+        SYNTAX      INTEGER (0..16777215)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The flow ID that this receiver  is  using,  if
+           this  is  an IPv6 session."
+       ::= { rsvpResvEntry 30 }
+
+
+--      The RSVP Reservation Requests Forwarded Table contains the
+--      information displayed by receivers regarding their needs with
+--      respect to sessions and senders. It is in essence a list of the
+--      valid RESV messages that the RSVP Router or Host is sending
+--      to its upstream neighbors.
+
+
+    rsvpResvFwdNewIndex OBJECT-TYPE
+        SYNTAX      TestAndIncr
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+           "This  object  is  used  to  assign  values  to
+           rsvpResvFwdNumber as described in 'Textual Con-
+           ventions  for  SNMPv2'.   The  network  manager
+           reads  the  object,  and  then writes the value
+           back in the SET that creates a new instance  of
+           rsvpResvFwdEntry.   If  the  SET fails with the
+           code 'inconsistentValue', then the process must
+           be  repeated; If the SET succeeds, then the ob-
+           ject is incremented, and the  new  instance  is
+           created according to the manager's directions."
+       ::= { rsvpGenObjects 4 }
+
+
+    rsvpResvFwdTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RsvpResvFwdEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "Information describing the  state  information
+           displayed upstream in RESV messages."
+       ::= { rsvpObjects 5 }
+
+
+    rsvpResvFwdEntry OBJECT-TYPE
+        SYNTAX      RsvpResvFwdEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "Information describing the  state  information
+           displayed  upstream in an RESV message concern-
+           ing a single sender."
+       INDEX { rsvpSessionNumber, rsvpResvFwdNumber }
+       ::= { rsvpResvFwdTable 1 }
+
+
+    RsvpResvFwdEntry ::=
+        SEQUENCE {
+            rsvpResvFwdNumber               SessionNumber,
+            rsvpResvFwdType                 SessionType,
+            rsvpResvFwdDestAddr             OCTET STRING,
+            rsvpResvFwdSenderAddr           OCTET STRING,
+            rsvpResvFwdDestAddrLength       INTEGER,
+            rsvpResvFwdSenderAddrLength     INTEGER,
+            rsvpResvFwdProtocol             Protocol,
+            rsvpResvFwdDestPort             Port,
+            rsvpResvFwdPort                 Port,
+            rsvpResvFwdHopAddr              OCTET STRING,
+            rsvpResvFwdHopLih               Integer32,
+            rsvpResvFwdInterface            InterfaceIndex,
+            rsvpResvFwdService              QosService,
+            rsvpResvFwdTSpecRate            BitRate,
+            rsvpResvFwdTSpecPeakRate        BitRate,
+            rsvpResvFwdTSpecBurst           BurstSize,
+            rsvpResvFwdTSpecMinTU           MessageSize,
+            rsvpResvFwdTSpecMaxTU           MessageSize,
+            rsvpResvFwdRSpecRate            BitRate,
+            rsvpResvFwdRSpecSlack           Integer32,
+            rsvpResvFwdInterval             RefreshInterval,
+            rsvpResvFwdScope                OCTET STRING,
+            rsvpResvFwdShared               TruthValue,
+            rsvpResvFwdExplicit             TruthValue,
+            rsvpResvFwdRSVPHop              TruthValue,
+            rsvpResvFwdLastChange           TimeStamp,
+            rsvpResvFwdPolicy               OCTET STRING,
+            rsvpResvFwdStatus               RowStatus,
+            rsvpResvFwdTTL                  INTEGER,
+            rsvpResvFwdFlowId               INTEGER
+        }
+
+
+    rsvpResvFwdNumber OBJECT-TYPE
+        SYNTAX      SessionNumber
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The number of this reservation request.   This
+           is  for  SNMP Indexing purposes only and has no
+           relation to any protocol value."
+       ::= { rsvpResvFwdEntry 1 }
+
+
+    rsvpResvFwdType OBJECT-TYPE
+        SYNTAX      SessionType
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The type of session (IP4, IP6, IP6  with  flow
+           information, etc)."
+       ::= { rsvpResvFwdEntry 2 }
+
+
+    rsvpResvFwdDestAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The destination address used by all senders in
+           this  session.   This object may not be changed
+           when the value of the RowStatus object is  'ac-
+           tive'."
+       ::= { rsvpResvFwdEntry 3 }
+
+
+    rsvpResvFwdSenderAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The source address of the sender  selected  by
+           this  reservation.  The value of all zeroes in-
+           dicates 'all senders'.  This object may not  be
+           changed  when the value of the RowStatus object
+           is 'active'."
+       ::= { rsvpResvFwdEntry 4 }
+
+
+    rsvpResvFwdDestAddrLength OBJECT-TYPE
+        SYNTAX      INTEGER(0..128)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The length of the destination address in bits.
+           This  is  the CIDR Prefix Length, which for IP4
+           hosts and multicast addresses is 32 bits.  This
+           object may not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { rsvpResvFwdEntry 5 }
+
+
+    rsvpResvFwdSenderAddrLength OBJECT-TYPE
+        SYNTAX      INTEGER(0..128)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The length of the sender's  address  in  bits.
+           This  is  the CIDR Prefix Length, which for IP4
+           hosts and multicast addresses is 32 bits.  This
+           object may not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { rsvpResvFwdEntry 6 }
+
+
+    rsvpResvFwdProtocol OBJECT-TYPE
+        SYNTAX      Protocol
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The IP Protocol used by a session. for  secure
+           sessions, this indicates IP Security.  This ob-
+           ject may not be changed when the value  of  the
+           RowStatus object is 'active'."
+       ::= { rsvpResvFwdEntry 7 }
+
+
+    rsvpResvFwdDestPort OBJECT-TYPE
+        SYNTAX      Port
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The UDP or TCP port number used as a  destina-
+           tion  port for all senders in this session.  If
+           the  IP   protocol   in   use,   specified   by
+           rsvpResvFwdProtocol,  is  50  (ESP) or 51 (AH),
+           this  represents  a  virtual  destination  port
+           number.   A value of zero indicates that the IP
+           protocol in use does not have ports.  This  ob-
+           ject  may  not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { rsvpResvFwdEntry 8 }
+
+
+    rsvpResvFwdPort OBJECT-TYPE
+        SYNTAX      Port
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The UDP or TCP port number used  as  a  source
+           port  for  this sender in this session.  If the
+           IP    protocol    in    use,    specified    by
+           rsvpResvFwdProtocol  is  50  (ESP)  or 51 (AH),
+           this represents a generalized  port  identifier
+           (GPI).   A  value of zero indicates that the IP
+           protocol in use does not have ports.  This  ob-
+           ject  may  not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { rsvpResvFwdEntry 9 }
+
+
+    rsvpResvFwdHopAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The address of the (previous) RSVP  that  will
+           receive this message."
+       ::= { rsvpResvFwdEntry 10 }
+
+
+    rsvpResvFwdHopLih OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The Logical Interface Handle sent to the (pre-
+           vious) RSVP that will receive this message."
+       ::= { rsvpResvFwdEntry 11 }
+
+
+    rsvpResvFwdInterface OBJECT-TYPE
+        SYNTAX      InterfaceIndex
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The ifIndex value of the  interface  on  which
+           this RESV message was most recently sent."
+       ::= { rsvpResvFwdEntry 12 }
+
+
+    rsvpResvFwdService OBJECT-TYPE
+        SYNTAX      QosService
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The QoS Service classification requested."
+       ::= { rsvpResvFwdEntry 13 }
+
+
+    rsvpResvFwdTSpecRate OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "bits per second"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The Average Bit  Rate  of  the  sender's  data
+           stream.   Within  a transmission burst, the ar-
+           rival rate may be as fast as  rsvpResvFwdTSpec-
+           PeakRate  (if  supported by the service model);
+           however, averaged across two or more burst  in-
+           tervals,    the    rate   should   not   exceed
+           rsvpResvFwdTSpecRate.
+
+           Note that this is a prediction, often based  on
+           the  general  capability  of a type of codec or
+           particular encoding; the measured average  rate
+           may be significantly lower."
+       ::= { rsvpResvFwdEntry 14 }
+
+
+    rsvpResvFwdTSpecPeakRate OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "bits per second"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The Peak Bit Rate of the sender's data  stream
+           Traffic  arrival is not expected to exceed this
+           rate at any time, apart  from  the  effects  of
+           jitter in the network.  If not specified in the
+           TSpec, this returns zero or noSuchValue."
+       ::= { rsvpResvFwdEntry 15 }
+
+
+    rsvpResvFwdTSpecBurst OBJECT-TYPE
+        SYNTAX      BurstSize
+        UNITS       "bytes"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The size of the largest  burst  expected  from
+           the sender at a time.
+
+           If this is less than  the  sender's  advertised
+           burst  size, the receiver is asking the network
+           to provide flow pacing  beyond  what  would  be
+           provided  under normal circumstances. Such pac-
+           ing is at the network's option."
+       ::= { rsvpResvFwdEntry 16 }
+
+
+    rsvpResvFwdTSpecMinTU OBJECT-TYPE
+        SYNTAX      MessageSize
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The minimum message size for  this  flow.  The
+           policing  algorithm will treat smaller messages
+           as though they are this size."
+       ::= { rsvpResvFwdEntry 17 }
+
+
+    rsvpResvFwdTSpecMaxTU OBJECT-TYPE
+        SYNTAX      MessageSize
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The maximum message size for  this  flow.  The
+           admission  algorithm  will  reject TSpecs whose
+           Maximum Transmission Unit, plus  the  interface
+           headers, exceed the interface MTU."
+       ::= { rsvpResvFwdEntry 18 }
+
+
+    rsvpResvFwdRSpecRate OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "bytes per second"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "If the requested  service  is  Guaranteed,  as
+           specified   by  rsvpResvService,  this  is  the
+           clearing rate that is being requested.   Other-
+           wise,  it  is  zero,  or  the  agent may return
+           noSuchValue."
+       ::= { rsvpResvFwdEntry 19 }
+
+
+    rsvpResvFwdRSpecSlack OBJECT-TYPE
+        SYNTAX      Integer32
+        UNITS       "microseconds"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "If the requested  service  is  Guaranteed,  as
+           specified by rsvpResvService, this is the delay
+           slack.  Otherwise, it is zero, or the agent may
+           return noSuchValue."
+       ::= { rsvpResvFwdEntry 20 }
+
+
+    rsvpResvFwdInterval OBJECT-TYPE
+        SYNTAX      RefreshInterval
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The interval between refresh  messages  adver-
+           tised to the Previous Hop."
+       ::= { rsvpResvFwdEntry 21 }
+
+
+    rsvpResvFwdScope OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(0..65536))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The contents of the scope object, displayed as
+           an  uninterpreted  string  of octets, including
+           the object header.  In the absence of  such  an
+           object, this should be of zero length."
+       ::= { rsvpResvFwdEntry 22 }
+
+
+    rsvpResvFwdShared OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, a reservation shared among senders is
+           requested.  If FALSE, a reservation specific to
+           this sender is requested."
+       ::= { rsvpResvFwdEntry 23 }
+
+
+    rsvpResvFwdExplicit OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, individual senders are  listed  using
+           Filter  Specifications.   If FALSE, all senders
+           are implicitly selected.  The Scope Object will
+           contain  a list of senders that need to receive
+           this reservation request  for  the  purpose  of
+           routing the RESV message."
+       ::= { rsvpResvFwdEntry 24 }
+
+
+    rsvpResvFwdRSVPHop OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, the node believes that  the  next  IP
+           hop  is  an  RSVP  hop.  If FALSE, the node be-
+           lieves that the next IP hop may not be an  RSVP
+           hop."
+       ::= { rsvpResvFwdEntry 25 }
+
+
+    rsvpResvFwdLastChange OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The time of the last change in  this  request;
+           This  is  either  the first time it was sent or
+           the time of the most recent change  in  parame-
+           ters."
+       ::= { rsvpResvFwdEntry 26 }
+
+
+    rsvpResvFwdPolicy OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(0..65536))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The contents of the policy  object,  displayed
+           as an uninterpreted string of octets, including
+           the object header.  In the absence of  such  an
+           object, this should be of zero length."
+       ::= { rsvpResvFwdEntry 27 }
+
+
+    rsvpResvFwdStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+           "'active' for all active RESV  messages.   This
+           object may be used to delete RESV information."
+       ::= { rsvpResvFwdEntry 28 }
+
+
+    rsvpResvFwdTTL OBJECT-TYPE
+        SYNTAX      INTEGER (0..255)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The TTL value in the RSVP header that was last
+           received."
+       ::= { rsvpResvFwdEntry 29 }
+
+
+    rsvpResvFwdFlowId OBJECT-TYPE
+        SYNTAX      INTEGER (0..16777215)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The flow ID that this receiver  is  using,  if
+           this  is  an IPv6 session."
+       ::= { rsvpResvFwdEntry 30 }
+
+
+--      The RSVP Interface Attributes Database contains the
+--      RSVP-specific information for an interface. Information
+--      that is shared with other reservation procedures such
+--      as ST-II is in the Integrated Interface Attributes
+--      Database.
+
+    rsvpIfTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RsvpIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The RSVP-specific attributes of  the  system's
+           interfaces."
+       ::= { rsvpObjects 6 }
+
+
+    rsvpIfEntry OBJECT-TYPE
+        SYNTAX      RsvpIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The RSVP-specific attributes of  the  a  given
+           interface."
+       INDEX { ifIndex }
+       ::= { rsvpIfTable 1 }
+
+RsvpIfEntry ::=
+    SEQUENCE {
+    rsvpIfUdpNbrs                       Gauge32,
+    rsvpIfIpNbrs                        Gauge32,
+    rsvpIfNbrs                          Gauge32,
+    rsvpIfEnabled                       TruthValue,
+    rsvpIfUdpRequired                   TruthValue,
+    rsvpIfRefreshBlockadeMultiple       INTEGER,
+    rsvpIfRefreshMultiple               INTEGER,
+    rsvpIfTTL                           INTEGER,
+    rsvpIfRefreshInterval               TimeInterval,
+    rsvpIfRouteDelay                    TimeInterval,
+    rsvpIfStatus                        RowStatus
+    }
+
+
+    rsvpIfUdpNbrs OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The number of neighbors perceived to be  using
+           only the RSVP UDP Encapsulation."
+       ::= { rsvpIfEntry 1 }
+
+
+    rsvpIfIpNbrs OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The number of neighbors perceived to be  using
+           only the RSVP IP Encapsulation."
+       ::= { rsvpIfEntry 2 }
+
+
+    rsvpIfNbrs OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The number of neighbors  currently  perceived;
+           this  will  exceed rsvpIfIpNbrs + rsvpIfUdpNbrs
+           by the number of neighbors using both  encapsu-
+           lations."
+       ::= { rsvpIfEntry 3 }
+
+
+    rsvpIfRefreshBlockadeMultiple OBJECT-TYPE
+        SYNTAX      INTEGER (1..65536)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The value of the RSVP value 'Kb', Which is the
+           minimum   number   of  refresh  intervals  that
+           blockade state will last once entered."
+       DEFVAL      { 4 }
+       ::= { rsvpIfEntry 4 }
+
+
+    rsvpIfRefreshMultiple OBJECT-TYPE
+        SYNTAX      INTEGER (1..65536)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The value of the RSVP value 'K', which is  the
+           number  of  refresh intervals which must elapse
+           (minimum) before a PATH or RESV  message  which
+           is not being refreshed will be aged out."
+       DEFVAL      { 3 }
+       ::= { rsvpIfEntry 5 }
+
+
+    rsvpIfTTL OBJECT-TYPE
+        SYNTAX      INTEGER (0..255)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The value of SEND_TTL used on  this  interface
+           for  messages  this node originates.  If set to
+           zero, the node determines  the  TTL  via  other
+           means."
+       DEFVAL { 0 } -- which is to say, no override
+       ::= { rsvpIfEntry 6 }
+
+
+    rsvpIfRefreshInterval OBJECT-TYPE
+        SYNTAX      TimeInterval
+        UNITS       "milliseconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The value of the RSVP value 'R', which is  the
+           minimum period between refresh transmissions of
+           a given PATH or RESV message on an interface."
+       DEFVAL      { 3000 }        -- 30 seconds
+       ::= { rsvpIfEntry 7 }
+
+
+    rsvpIfRouteDelay OBJECT-TYPE
+        SYNTAX      TimeInterval
+        UNITS       "hundredths of a second"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The approximate period from the time  a  route
+           is  changed to the time a resulting message ap-
+           pears on the interface."
+       DEFVAL      { 200 } -- 2 seconds
+       ::= { rsvpIfEntry 8 }
+
+
+    rsvpIfEnabled OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, RSVP is enabled  on  this  Interface.
+           If  FALSE,  RSVP  is not enabled on this inter-
+           face."
+       ::= { rsvpIfEntry 9 }
+
+
+    rsvpIfUdpRequired OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If TRUE, manual configuration forces  the  use
+           of  UDP  encapsulation  on  the  interface.  If
+           FALSE, UDP encapsulation is only used if rsvpI-
+           fUdpNbrs is not zero."
+
+       ::= { rsvpIfEntry 10 }
+
+
+    rsvpIfStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "'active' on interfaces that are configured for
+           RSVP."
+       ::= { rsvpIfEntry 11 }
+
+
+--      The RSVP Neighbor Database lists the neighbors the RSVP
+--      process currently is receiving messages from.
+
+
+    rsvpNbrTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RsvpNbrEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "Information describing  the  Neighbors  of  an
+           RSVP system."
+       ::= { rsvpObjects 7 }
+
+
+    rsvpNbrEntry OBJECT-TYPE
+        SYNTAX      RsvpNbrEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "Information describing a  single  RSVP  Neigh-
+           bor."
+       INDEX { ifIndex, rsvpNbrAddress }
+       ::= { rsvpNbrTable 1 }
+
+RsvpNbrEntry ::=
+    SEQUENCE {
+    rsvpNbrAddress      OCTET STRING,
+    rsvpNbrProtocol     RsvpEncapsulation,
+    rsvpNbrStatus       RowStatus
+    }
+
+    rsvpNbrAddress OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The IP4 or IP6 Address used by this  neighbor.
+           This  object  may not be changed when the value
+           of the RowStatus object is 'active'."
+       ::= { rsvpNbrEntry 1 }
+
+
+    rsvpNbrProtocol OBJECT-TYPE
+        SYNTAX      RsvpEncapsulation
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The encapsulation being used  by  this  neigh-
+           bor."
+       ::= { rsvpNbrEntry 2 }
+
+
+    rsvpNbrStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "'active' for all neighbors.  This  object  may
+           be  used  to configure neighbors.  In the pres-
+           ence of configured neighbors,  the  implementa-
+           tion may (but is not required to) limit the set
+           of valid neighbors to those configured."
+       ::= { rsvpNbrEntry 3 }
+
+
+--
+--      Notifications used to signal events
+--
+
+    rsvpNotifications OBJECT IDENTIFIER
+                      ::= { rsvpNotificationsPrefix 0 }
+
+
+    newFlow NOTIFICATION-TYPE
+        OBJECTS {
+                    intSrvFlowStatus, rsvpSessionDestAddr,
+                    rsvpResvFwdStatus, rsvpResvStatus, rsvpSenderStatus
+                }
+        STATUS  current
+        DESCRIPTION
+           "The newFlow trap indicates that the  originat-
+           ing  system  has  installed  a  new flow in its
+           classifier, or (when reservation  authorization
+           is  in view) is prepared to install such a flow
+           in the classifier and is requesting  authoriza-
+           tion.   The objects included with the Notifica-
+           tion may be used to  read  further  information
+           using  the  Integrated  Services and RSVP MIBs.
+           Authorization  or  non-authorization   may   be
+           enacted by a write to the variable intSrvFlowS-
+           tatus."
+       ::= { rsvpNotifications 1 }
+
+
+    lostFlow NOTIFICATION-TYPE
+        OBJECTS {
+                    intSrvFlowStatus, rsvpSessionDestAddr,
+                    rsvpResvFwdStatus, rsvpResvStatus, rsvpSenderStatus
+                }
+        STATUS  current
+        DESCRIPTION
+           "The lostFlow trap indicates that the originat-
+           ing system has removed a flow from its classif-
+           ier."
+       ::= { rsvpNotifications 2 }
+
+
+-- conformance information
+
+
+rsvpGroups      OBJECT IDENTIFIER ::= { rsvpConformance 1 }
+rsvpCompliances OBJECT IDENTIFIER ::= { rsvpConformance 2 }
+
+-- compliance statements
+
+
+    rsvpCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+           "The compliance statement.  Note that  the  im-
+           plementation  of this module requires implemen-
+           tation of the Integrated Services MIB as well."
+       MODULE  -- this module
+       MANDATORY-GROUPS {
+           rsvpSessionGroup, rsvpSenderGroup, rsvpResvGroup,
+           rsvpIfGroup, rsvpNbrGroup
+           }
+
+       GROUP rsvpResvFwdGroup
+         DESCRIPTION
+          "The Reservation Requests table  is  appropriate
+          in  implementations that store upstream reserva-
+          tion messages, but not appropriate in  implemen-
+          tations  which  calculate them on each transmis-
+          sion."
+
+      GROUP rsvpNotificationGroup
+        DESCRIPTION
+         "The notifications in this module may be used  to
+         advise a network management station of changes in
+         flow status, and are required when this use is in
+         view."
+
+     OBJECT       rsvpSessionRequests
+       MIN-ACCESS not-accessible
+       DESCRIPTION
+        "This object is optional."
+
+    OBJECT       rsvpSenderType
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderDestAddr
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderAddr
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderDestAddrLength
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderAddrLength
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderProtocol
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderDestPort
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderPort
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderHopAddr
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderHopLih
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderInterface
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderTSpecRate
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderTSpecPeakRate
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderTSpecBurst
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderTSpecMinTU
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderTSpecMaxTU
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderInterval
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderRSVPHop
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderPolicy
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderAdspecBreak
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderAdspecHopCount
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderAdspecPathBw
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderAdspecMinLatency
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderAdspecMtu
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderAdspecGuaranteedSvc
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Guaranteed Service."
+
+    OBJECT       rsvpSenderAdspecGuaranteedBreak
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Guaranteed Service."
+
+    OBJECT       rsvpSenderAdspecGuaranteedCtot
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Guaranteed Service."
+
+    OBJECT       rsvpSenderAdspecGuaranteedDtot
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Guaranteed Service."
+
+    OBJECT       rsvpSenderAdspecGuaranteedCsum
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Guaranteed Service."
+
+    OBJECT       rsvpSenderAdspecGuaranteedDsum
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Guaranteed Service."
+
+    OBJECT       rsvpSenderAdspecGuaranteedHopCount
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Guaranteed Service."
+
+    OBJECT       rsvpSenderAdspecGuaranteedPathBw
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Guaranteed Service."
+
+    OBJECT       rsvpSenderAdspecGuaranteedMinLatency
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Guaranteed Service."
+
+    OBJECT       rsvpSenderAdspecGuaranteedMtu
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Guaranteed Service."
+
+    OBJECT       rsvpSenderAdspecCtrlLoadSvc
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Controlled Load."
+
+    OBJECT       rsvpSenderAdspecCtrlLoadBreak
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Controlled Load."
+
+    OBJECT       rsvpSenderAdspecCtrlLoadHopCount
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Controlled Load."
+
+    OBJECT       rsvpSenderAdspecCtrlLoadPathBw
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Controlled Load."
+
+    OBJECT       rsvpSenderAdspecCtrlLoadMinLatency
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Controlled Load."
+
+    OBJECT       rsvpSenderAdspecCtrlLoadMtu
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This may be not-accessible if the system does  not
+       support Controlled Load."
+
+    OBJECT       rsvpSenderStatus
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpSenderFlowId
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This object is needed only in a system that imple-
+       ments IPv6."
+
+
+    OBJECT       rsvpResvType
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvDestAddr
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvSenderAddr
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvDestAddrLength
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvSenderAddrLength
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvProtocol
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvDestPort
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvPort
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvHopAddr
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvHopLih
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvInterface
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvService
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvTSpecRate
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvTSpecPeakRate
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvTSpecBurst
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvTSpecMinTU
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvTSpecMaxTU
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvRSpecRate
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvRSpecSlack
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvInterval
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvScope
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvShared
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvExplicit
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvRSVPHop
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvPolicy
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvStatus
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+    OBJECT       rsvpResvFlowId
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This object is needed only in a system that imple-
+       ments IPv6."
+
+    OBJECT       rsvpResvFwdStatus
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       rsvpResvFwdFlowId
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This object is needed only in a system that imple-
+       ments IPv6."
+
+    ::= { rsvpCompliances 1 }
+
+
+    rsvpSessionGroup OBJECT-GROUP
+         OBJECTS {
+            rsvpSessionType, rsvpSessionDestAddr,
+            rsvpSessionDestAddrLength, rsvpSessionProtocol,
+            rsvpSessionPort, rsvpSessionSenders, rsvpSessionReceivers,
+            rsvpSessionRequests
+        }
+        STATUS  current
+        DESCRIPTION
+           "These objects are required for RSVP Systems."
+       ::= { rsvpGroups 1 }
+
+    rsvpSenderGroup OBJECT-GROUP
+         OBJECTS {
+            rsvpSenderType, rsvpSenderDestAddr, rsvpSenderAddr,
+            rsvpSenderDestAddrLength, rsvpSenderAddrLength,
+            rsvpSenderProtocol, rsvpSenderDestPort, rsvpSenderPort,
+            rsvpSenderHopAddr, rsvpSenderHopLih, rsvpSenderInterface,
+            rsvpSenderTSpecRate, rsvpSenderTSpecPeakRate,
+            rsvpSenderTSpecBurst, rsvpSenderTSpecMinTU,
+            rsvpSenderTSpecMaxTU, rsvpSenderInterval,
+            rsvpSenderLastChange, rsvpSenderStatus,
+            rsvpSenderRSVPHop, rsvpSenderPolicy,
+            rsvpSenderAdspecBreak, rsvpSenderAdspecHopCount,
+            rsvpSenderAdspecPathBw, rsvpSenderAdspecMinLatency,
+            rsvpSenderAdspecMtu, rsvpSenderAdspecGuaranteedSvc,
+            rsvpSenderAdspecGuaranteedBreak,
+            rsvpSenderAdspecGuaranteedCtot,
+            rsvpSenderAdspecGuaranteedDtot,
+            rsvpSenderAdspecGuaranteedCsum,
+            rsvpSenderAdspecGuaranteedDsum,
+            rsvpSenderAdspecGuaranteedHopCount,
+            rsvpSenderAdspecGuaranteedPathBw,
+            rsvpSenderAdspecGuaranteedMinLatency,
+            rsvpSenderAdspecGuaranteedMtu, rsvpSenderAdspecCtrlLoadSvc,
+            rsvpSenderAdspecCtrlLoadBreak,
+            rsvpSenderAdspecCtrlLoadHopCount,
+            rsvpSenderAdspecCtrlLoadPathBw,
+            rsvpSenderAdspecCtrlLoadMinLatency,
+            rsvpSenderAdspecCtrlLoadMtu, rsvpSenderNewIndex
+        }
+        STATUS  current
+        DESCRIPTION
+           "These objects are required for RSVP Systems."
+       ::= { rsvpGroups 2 }
+
+
+    rsvpResvGroup OBJECT-GROUP
+         OBJECTS {
+            rsvpResvType, rsvpResvDestAddr, rsvpResvSenderAddr,
+            rsvpResvDestAddrLength, rsvpResvSenderAddrLength,
+            rsvpResvProtocol, rsvpResvDestPort, rsvpResvPort,
+            rsvpResvHopAddr, rsvpResvHopLih, rsvpResvInterface,
+            rsvpResvService, rsvpResvTSpecRate, rsvpResvTSpecBurst,
+            rsvpResvTSpecPeakRate, rsvpResvTSpecMinTU,
+            rsvpResvTSpecMaxTU, rsvpResvRSpecRate,
+            rsvpResvRSpecSlack, rsvpResvInterval,
+            rsvpResvScope, rsvpResvShared, rsvpResvExplicit,
+            rsvpResvRSVPHop, rsvpResvLastChange, rsvpResvPolicy,
+            rsvpResvStatus, rsvpResvNewIndex
+        }
+        STATUS  current
+        DESCRIPTION
+           "These objects are required for RSVP Systems."
+       ::= { rsvpGroups 3 }
+
+
+    rsvpResvFwdGroup OBJECT-GROUP
+         OBJECTS {
+            rsvpResvFwdType, rsvpResvFwdDestAddr, rsvpResvFwdSenderAddr,
+            rsvpResvFwdDestAddrLength, rsvpResvFwdSenderAddrLength,
+            rsvpResvFwdProtocol, rsvpResvFwdDestPort, rsvpResvFwdPort,
+            rsvpResvFwdHopAddr, rsvpResvFwdHopLih, rsvpResvFwdInterface,
+            rsvpResvFwdNewIndex, rsvpResvFwdService,
+            rsvpResvFwdTSpecPeakRate, rsvpResvFwdTSpecMinTU,
+            rsvpResvFwdTSpecMaxTU, rsvpResvFwdTSpecRate,
+            rsvpResvFwdTSpecBurst, rsvpResvFwdRSpecRate,
+            rsvpResvFwdRSpecSlack, rsvpResvFwdInterval,
+            rsvpResvFwdScope, rsvpResvFwdShared, rsvpResvFwdExplicit,
+            rsvpResvFwdRSVPHop, rsvpResvFwdLastChange,
+            rsvpResvFwdPolicy, rsvpResvFwdStatus
+        }
+        STATUS  current
+        DESCRIPTION
+           "These objects are optional, used for some RSVP
+           Systems."
+       ::= { rsvpGroups 4 }
+
+
+    rsvpIfGroup OBJECT-GROUP
+         OBJECTS {
+            rsvpIfUdpNbrs, rsvpIfIpNbrs, rsvpIfNbrs, rsvpIfEnabled,
+            rsvpIfUdpRequired, rsvpIfRefreshBlockadeMultiple,
+            rsvpIfRefreshMultiple, rsvpIfRefreshInterval, rsvpIfTTL,
+            rsvpIfRouteDelay, rsvpIfStatus
+        }
+        STATUS  current
+        DESCRIPTION
+           "These objects are required for RSVP Systems."
+       ::= { rsvpGroups 6 }
+
+
+    rsvpNbrGroup OBJECT-GROUP
+         OBJECTS {
+            rsvpNbrProtocol, rsvpNbrStatus
+        }
+        STATUS  current
+        DESCRIPTION
+           "These objects are required for RSVP Systems."
+       ::= { rsvpGroups 7 }
+
+
+    rsvpNotificationGroup NOTIFICATION-GROUP
+        NOTIFICATIONS { newFlow, lostFlow }
+        STATUS  current
+        DESCRIPTION
+           "This notification is required for Systems sup-
+           porting  the  RSVP  Policy Module using an SNMP
+           interface to the Policy Manager."
+       ::= { rsvpGroups 8 }
+END

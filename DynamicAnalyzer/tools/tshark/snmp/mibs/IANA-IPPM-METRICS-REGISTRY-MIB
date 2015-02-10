@@ -1,0 +1,808 @@
+IANA-IPPM-METRICS-REGISTRY-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       OBJECT-IDENTITY, MODULE-IDENTITY, mib-2
+           FROM SNMPv2-SMI;
+
+   ianaIppmMetricsRegistry MODULE-IDENTITY
+   LAST-UPDATED "201009070000Z"    -- September 7, 2010
+   ORGANIZATION "IANA"
+   CONTACT-INFO "Internet Assigned Numbers Authority
+
+            Postal: ICANN
+                4676 Admiralty Way, Suite 330
+                Marina del Rey, CA 90292
+
+            Tel:    +1 310 823 9358
+            E-Mail: iana&iana.org"
+
+   DESCRIPTION
+
+      "This module defines a registry for IP Performance Metrics.
+
+      Registrations are done sequentially by IANA in the ianaIppmMetrics
+      subtree on the bases of 'Specification Required' as defined in
+      [RFC2434].
+
+      The reference of the specification must point to a stable document
+      including a title, a revision and a date.
+
+      The name always starts with the name of the organization and must
+      respect the SMIv2 rules for descriptors defined in the section 3.1
+      of [RFC2578];
+
+      A document that creates new metrics would have an IANA
+      considerations section in which it would describe new metrics to
+      register.
+
+      An OBJECT IDENTITY assigned to a metric is definitive and cannot
+      be reused.  If a new version of a metric is produced then it is
+      assigned with a new name and a new identifier.
+
+      Copyright (C) The Internet Society (2005).  The initial version of
+      this MIB module was published in RFC 4148; for full legal notices
+      see the RFC itself or see:
+      http://www.ietf.org/copyrights/ianamib.html.  "
+
+    REVISION      "201009070000Z"    -- September 7, 2010
+   DESCRIPTION
+             "Added values 71-83 as published in RFC-ietf-ippm-spatial-composition-16."
+
+    REVISION      "200909020000Z"    -- September 2, 2009
+   DESCRIPTION
+             "Added values 52-70 as published in RFC5644."
+
+    REVISION      "200904200000Z"    -- April 20, 2009
+   DESCRIPTION
+          "Added values 46-51 as published in RFC5560."
+
+    REVISION      "200612040000Z"    -- September 27, 2006
+   DESCRIPTION
+       "Added values 34-45 as published in RFC4737."
+
+
+    REVISION      "200504120000Z"    -- April 12th, 2005
+   DESCRIPTION
+       "Initial version of the IPPM metrics registry module.
+        This version published as RFC 4148."
+   ::= { mib-2 128 }  
+
+   ianaIppmMetrics OBJECT-IDENTITY
+       STATUS       current
+       DESCRIPTION
+           "Registration point for IP Performance Metrics."
+       ::= { ianaIppmMetricsRegistry 1 }
+
+     --
+     -- Registry of the metrics of the IPPM WG RFCs
+     --
+
+     --
+     -- RFC 2678 " IPPM Metrics for Measuring Connectivity"
+     --
+
+   ietfInstantUnidirConnectivity OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-Instantaneous-Unidirectional-Connectivity"
+       REFERENCE "RFC2678, section 2."
+       ::= { ianaIppmMetrics 1}
+
+   ietfInstantBidirConnectivity OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-Instantaneous-Bidirectional-Connectivity"
+       REFERENCE "RFC2678, section 3."
+       ::= { ianaIppmMetrics 2}
+
+   ietfIntervalUnidirConnectivity OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-Interval-Unidirectional-Connectivity"
+       REFERENCE "RFC2678, section 4."
+       ::= { ianaIppmMetrics 3 }
+
+   ietfIntervalBidirConnectivity OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+           "Type-P-Interval-Bidirectional-Connectivity"
+       REFERENCE "RFC2678, section 5."
+       ::= { ianaIppmMetrics 4 }
+
+   ietfIntervalTemporalConnectivity OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P1-P2-Interval-Temporal-Connectivity"
+       REFERENCE "RFC2678, section 6."
+       ::= { ianaIppmMetrics 5 }
+
+
+
+
+   --
+   -- RFC 2679 "A One-way Delay Metric for IPPM"
+   --
+
+   ietfOneWayDelay OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-Delay"
+       REFERENCE "RFC2679, section 3."
+       ::= { ianaIppmMetrics 6 }
+
+   ietfOneWayDelayPoissonStream OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-Delay-Poisson-Stream"
+       REFERENCE "RFC2679, section 4."
+       ::= { ianaIppmMetrics 7 }
+
+   ietfOneWayDelayPercentile OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-Delay-Percentile"
+       REFERENCE "RFC2679, section 5.1."
+       ::= { ianaIppmMetrics 8 }
+
+   ietfOneWayDelayMedian OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-Delay-Median"
+       REFERENCE "RFC2679, section 5.2."
+       ::= { ianaIppmMetrics 9 }
+
+   ietfOneWayDelayMinimum OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-Delay-Minimum"
+       REFERENCE "RFC2679, section 5.3."
+       ::= { ianaIppmMetrics 10 }
+
+   ietfOneWayDelayInversePercentile OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-Delay-Inverse-Percentile"
+       REFERENCE "RFC2679, section 5.4."
+       ::= { ianaIppmMetrics 11 }
+
+   --
+   -- RFC 2680  "One Way Packet Loss Metric for IPPM"
+   --
+
+   ietfOneWayPktLoss OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-Packet-Loss"
+       REFERENCE "RFC2680, section 2."
+       ::= { ianaIppmMetrics 12 }
+
+   ietfOneWayPktLossPoissonStream OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-Packet-Loss-Poisson-Stream"
+       REFERENCE "RFC2680, section 3."
+       ::= { ianaIppmMetrics 13 }
+
+   ietfOneWayPktLossAverage OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-Packet-Loss-Average"
+       REFERENCE "RFC2680, section 4."
+       ::= { ianaIppmMetrics 14 }
+
+
+
+
+   --
+   -- RFC2681 "A Round-trip Delay Metric for IPPM"
+   --
+
+   ietfRoundTripDelay OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-Round-trip-Delay"
+       REFERENCE " section 2 of the rfc2681."
+       ::= { ianaIppmMetrics 15 }
+
+   ietfRoundTripDelayPoissonStream OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-Round-trip-Delay-Poisson-Stream"
+       REFERENCE "RFC2681, section 4."
+       ::= { ianaIppmMetrics 16 }
+
+   ietfRoundTripDelayPercentile OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-Round-trip-Delay-Percentile"
+       REFERENCE "RFC2681, section 4.1."
+       ::= { ianaIppmMetrics 17 }
+
+   ietfRoundTripDelayMedian OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-Round-trip-Delay-Median"
+       REFERENCE "RFC2681, section 4.2."
+       ::= { ianaIppmMetrics 18 }
+
+   ietfRoundTripDelayMinimum OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-Round-trip-Delay-Minimum"
+       REFERENCE "RFC2681, section 4.3."
+       ::= { ianaIppmMetrics 19 }
+
+   ietfRoundTripDelayInvPercentile OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-Round-trip-Inverse-Percentile"
+       REFERENCE "RFC2681, section 4.4."
+       ::= { ianaIppmMetrics 20 }
+
+
+
+
+   --
+   -- RFC3357: "One-way Loss Pattern Sample Metrics"
+   --
+
+   ietfOneWayLossDistanceStream OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-Way-Loss-Distance-Stream"
+       REFERENCE " RFC3357, section 5.4.1."
+       ::={ ianaIppmMetrics 21}
+
+   ietfOneWayLossPeriodStream OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-Way-Loss-Period-Stream"
+       REFERENCE " RFC3357, section 5.4.2."
+       ::={ ianaIppmMetrics 22}
+
+   ietfOneWayLossNoticeableRate OBJECT-IDENTITY
+
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-Way-Loss-Noticeable-Rate"
+       REFERENCE " RFC3357, section 6.1."
+       ::= { ianaIppmMetrics 23 }
+
+   ietfOneWayLossPeriodTotal OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-Way-Loss-Period-Total"
+       REFERENCE " RFC3357, section 6.2."
+       ::= { ianaIppmMetrics 24 }
+
+   ietfOneWayLossPeriodLengths OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-Way-Loss-Period-Lengths"
+       REFERENCE " RFC3357, section 6.3."
+       ::= { ianaIppmMetrics 25 }
+
+   ietfOneWayInterLossPeriodLengths OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-Way-Inter-Loss-Period-Lengths"
+       REFERENCE " RFC3357, section 6.4."
+       ::= { ianaIppmMetrics 26 }
+
+
+
+
+   --
+   -- RFC3393:
+   -- IP Packet Delay Variation Metric for IP Performance Metrics (IPPM)
+
+   ietfOneWayIpdv OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-ipdv"
+       REFERENCE " RFC3393, section 2."
+       ::= { ianaIppmMetrics 27 }
+
+   ietfOneWayIpdvPoissonStream OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-ipdv-Poisson-stream"
+       REFERENCE " RFC3393, section 3."
+       ::= { ianaIppmMetrics 28 }
+
+   ietfOneWayIpdvPercentile OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+         "Type-P-One-way-ipdv-percentile"
+       REFERENCE " RFC3393, section 4.3."
+       ::= { ianaIppmMetrics 29 }
+
+   ietfOneWayIpdvInversePercentile OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-ipdv-inverse-percentile"
+       REFERENCE " RFC3393, section 4.4."
+       ::= { ianaIppmMetrics 30 }
+
+   ietfOneWayIpdvJitter OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-ipdv-jitter"
+       REFERENCE " RFC3393, section 4.5."
+       ::= { ianaIppmMetrics 31 }
+
+   ietfOneWayPeakToPeakIpdv OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-peak-to-peak-ipdv"
+       REFERENCE " RFC3393, section 4.6."
+       ::= { ianaIppmMetrics 32 }
+
+
+
+   --
+   -- RFC3432: "Network performance measurement with periodic streams"
+   --
+
+   ietfOneWayDelayPeriodicStream OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+           "Type-P-One-way-Delay-Periodic-Stream"
+       REFERENCE " RFC3432, section 4."
+       ::= { ianaIppmMetrics 33 }
+
+
+
+   --
+   -- RFC4737 "Packet Reordering Metric for IPPM"
+   --
+
+   ietfReorderedSingleton OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-Reordered" 
+       REFERENCE 
+          "Reference RFC4737, section 3" 
+       ::= { ianaIppmMetrics 34 }  
+    
+   ietfReorderedPacketRatio OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-Reordered-Ratio-Stream" 
+       REFERENCE 
+          "Reference RFC4737, section 4.1" 
+       ::= { ianaIppmMetrics 35 }  
+    
+   ietfReorderingExtent OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-Packet-Reordering-Extent-Stream" 
+       REFERENCE 
+          "Reference RFC4737, section 4.2" 
+       ::= { ianaIppmMetrics 36 }
+    
+   ietfReorderingLateTimeOffset OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-Packet-Late-Time-Stream" 
+       REFERENCE 
+          "Reference RFC4737, section 4.3" 
+       ::= { ianaIppmMetrics 37 } 
+    
+   ietfReorderingByteOffset OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-Packet-Byte-Offset-Stream" 
+       REFERENCE 
+          "Reference RFC4737, section 4.4" 
+       ::= { ianaIppmMetrics 38 } 
+    
+   ietfReorderingGap OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-Packet-Reordering-Gap-Stream" 
+       REFERENCE 
+          "Reference RFC4737, section 4.5" 
+       ::= { ianaIppmMetrics 39 } 
+    
+   ietfReorderingGapTime OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-Packet-Reordering-GapTime-Stream" 
+       REFERENCE 
+          "Reference RFC4737, section 4.5" 
+       ::= { ianaIppmMetrics 40 } 
+    
+   ietfReorderingFreeRunx OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-Packet-Reordering-Free-Run-x-numruns-Stream" 
+       REFERENCE 
+          "Reference RFC4737, section 4.6" 
+       ::= { ianaIppmMetrics 41 }
+    
+   ietfReorderingFreeRunq OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-Packet-Reordering-Free-Run-q-squruns-Stream" 
+       REFERENCE 
+          "Reference RFC4737, section 4.6" 
+       ::= { ianaIppmMetrics 42 } 
+    
+   ietfReorderingFreeRunp OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-Packet-Reordering-Free-Run-p-numpkts-Stream" 
+       REFERENCE 
+          "Reference RFC4737, section 4.6" 
+       ::= { ianaIppmMetrics 43 } 
+    
+   ietfReorderingFreeRuna OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-Packet-Reordering-Free-Run-a-accpkts-Stream" 
+       REFERENCE 
+          "Reference RFC4737, section 4.6" 
+       ::= { ianaIppmMetrics 44 } 
+       
+   ietfnReordering OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-Packet-n-Reordering-Stream" 
+       REFERENCE 
+          "Reference RFC4737, section 5" 
+       ::= { ianaIppmMetrics 45 } 
+
+
+
+   --
+   -- RFC5560:
+   -- A One-Way Packet Duplication Metric
+   
+   ietfOneWayPacketArrivalCount OBJECT-IDENTITY 
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-one-way-packet-arrival-count" 
+       REFERENCE 
+          "Reference RFC5560, section 2" 
+       ::= { ianaIppmMetrics 46 }
+
+   ietfOneWayPacketDuplication OBJECT-IDENTITY
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-one-way-packet-duplication" 
+       REFERENCE 
+          "Reference RFC5560, section 3" 
+       ::= { ianaIppmMetrics 47 }
+
+   ietfOneWayPacketDuplicationPoissonStream OBJECT-IDENTITY
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-one-way-Packet-Duplication-Poisson-Stream"
+       REFERENCE 
+          "Reference RFC5560, section 4.1" 
+       ::= { ianaIppmMetrics 48 }
+
+   ietfOneWayPacketDuplicationPeriodicStream OBJECT-IDENTITY
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-one-way-Duplication-Periodic-Stream"
+       REFERENCE 
+          "Reference RFC5560, section 4.2" 
+       ::= { ianaIppmMetrics 49 }
+
+   ietfOneWayPacketDuplicationFraction OBJECT-IDENTITY
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-one-way-packet-duplication-fraction"
+       REFERENCE 
+          "Reference RFC5560, section 5.1" 
+       ::= { ianaIppmMetrics 50 }
+
+   ietfOneWayReplicatedPacketRate OBJECT-IDENTITY
+       STATUS       current 
+       DESCRIPTION 
+          "Type-P-one-way-replicated-packet-rate"
+       REFERENCE 
+          "Reference RFC5560, section 5.2" 
+       ::= { ianaIppmMetrics 51 }
+
+
+
+       --
+       -- RFC5644:
+       -- IP Performance Metrics (IPPM) for spatial and multicast
+   
+   ietfSpatialOneWayDelayVector OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-Spatial-One-way-Delay-Vector"
+       REFERENCE
+          "Reference "RFC5644, section 5.1."
+       ::= { ianaIppmMetrics 52 }
+
+   ietfSpatialPacketLossVector OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-Spatial-Packet-Loss-Vector"
+       REFERENCE
+          "Reference "RFC5644, section 5.2."
+       ::= { ianaIppmMetrics 53 } 
+
+   ietfSpatialOneWayIpdvVector OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-Spatial-One-way-ipdv-Vector"
+       REFERENCE
+          "Reference "RFC5644, section 5.3."
+       ::= { ianaIppmMetrics 54 }
+      
+   ietfSegmentOneWayDelayStream OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-Segment-One-way-Delay-Stream"
+       REFERENCE
+          "Reference "RFC5644, section 6.1."
+       ::= { ianaIppmMetrics 55 } 
+
+   ietfSegmentPacketLossStream OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-Segment-Packet-Loss-Stream"
+       REFERENCE
+          "Reference "RFC5644, section 6.2."
+       ::= { ianaIppmMetrics 56 }
+
+   ietfSegmentIpdvPrevStream OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-Segment-ipdv-prev-Stream"
+       REFERENCE
+          "Reference "RFC5644, section 6.3."
+       ::= { ianaIppmMetrics 57 } 
+
+   ietfSegmentIpdvMinStream OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-Segment-ipdv-min-Stream"
+       REFERENCE
+          "Reference "RFC5644, section 6.4."
+       ::= { ianaIppmMetrics 58 }
+
+   -- One-to-group metrics
+
+   ietfOneToGroupDelayVector OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-One-to-group-Delay-Vector"
+       REFERENCE
+          "Reference "RFC5644, section 7.1."
+       ::= { ianaIppmMetrics 59 }
+   
+   ietfOneToGroupPacketLossVector OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-One-to-group-Packet-Loss-Vector"
+       REFERENCE
+          "Reference "RFC5644, section 7.2."
+       ::= { ianaIppmMetrics 60 } 
+   
+   ietfOneToGroupIpdvVector OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-One-to-group-ipdv-Vector"
+       REFERENCE
+          "Reference "RFC5644, section 7.3."
+       ::= { ianaIppmMetrics 61 } 
+
+   -- One to group statistics
+
+   --
+
+   ietfOnetoGroupReceiverNMeanDelay OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-One-to-group-Receiver-n-Mean-Delay"
+       REFERENCE
+          "Reference "RFC5644, section 8.3.1."
+       ::= { ianaIppmMetrics 62 } 
+
+   ietfOneToGroupMeanDelay OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-One-to-group-Mean-Delay"
+       REFERENCE
+       "Reference "RFC5644, section 8.3.2."
+       ::= { ianaIppmMetrics 63 } 
+
+   ietfOneToGroupRangeMeanDelay OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-One-to-group-Range-Mean-Delay"
+       REFERENCE
+          "Reference "RFC5644, section 8.3.3."
+       ::= { ianaIppmMetrics 64 } 
+   
+   ietfOneToGroupMaxMeanDelay OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-One-to-group-Max-Mean-Delay"
+       REFERENCE
+          "Reference "RFC5644, section 8.3.4."
+       ::= { ianaIppmMetrics 65 } 
+
+   ietfOneToGroupReceiverNLossRatio OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-One-to-group-Receiver-n-Loss-Ratio"
+       REFERENCE
+          "Reference "RFC5644, section 8.4.1."
+       ::= { ianaIppmMetrics 66 }
+   --
+
+   ietfOneToGroupReceiverNCompLossRatio OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-One-to-group-Receiver-n-Comp-Loss-Ratio"
+       REFERENCE
+          "Reference "RFC5644, section 8.4.2."
+       ::= { ianaIppmMetrics 67 } 
+   
+   ietfOneToGroupLossRatio OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-One-to-group-Loss-Ratio"
+       REFERENCE
+          "Reference "RFC5644, section 8.4.3."
+       ::= { ianaIppmMetrics 68 } 
+   --
+
+   ietfOneToGroupRangeLossRatio OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-One-to-group-Range-Loss-Ratio"
+       REFERENCE
+          "Reference "RFC5644, section 8.4.4."
+       ::= { ianaIppmMetrics 69 } 
+
+   ietfOneToGroupRangeDelayVariation OBJECT-IDENTITY
+       STATUS current
+       DESCRIPTION
+          "Type-P-One-to-group-Range-Delay-Variation"
+       REFERENCE
+          "Reference "RFC5644, section 8.5.1."
+       ::= { ianaIppmMetrics 70 } 
+
+   --
+   -- RFC-ietf-ippm-spatial-composition-16, "Spatial Composition of Metrics"
+   --
+        
+   ietfFiniteOneWayDelayStream OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-Finite-One-way-Delay-Stream"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 4.1."
+      ::= { ianaIppmMetrics 71 }
+
+
+   ietfFiniteOneWayDelayMean OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-Finite-One-way-Delay-Mean"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 4.2.2."
+      ::= { ianaIppmMetrics 72 }
+
+
+
+   ietfCompositeOneWayDelayMean OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-Finite-Composite-One-way-Delay-Mean"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 4.2.5."
+      ::= { ianaIppmMetrics 73 } 
+
+
+
+   ietfFiniteOneWayDelayMinimum OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-Finite-One-way-Delay-Minimum"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 4.3.2."
+      ::= { ianaIppmMetrics 74 } 
+
+
+
+   ietfCompositeOneWayDelayMinimum OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-Finite-Composite-One-way-Delay-Minimum"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 4.3.5."
+      ::= { ianaIppmMetrics 75 } 
+
+
+   ietfOneWayPktLossEmpiricProb OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-One-way-Packet-Loss-Empirical-Probability"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 5.1.4"
+      ::= { ianaIppmMetrics 76 } 
+
+
+   ietfCompositeOneWayPktLossEmpiricProb OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-Composite-One-way-Packet-Loss-Empirical-Probability"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 5.1.5."
+      ::= { ianaIppmMetrics 77 }
+
+
+
+   ietfOneWayPdvRefminStream OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-One-way-pdv-refmin-Stream"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 6.1."
+      ::= { ianaIppmMetrics 78 }
+
+
+   ietfOneWayPdvRefminMean OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-One-way-pdv-refmin-Mean"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 6.1.4."
+      ::= { ianaIppmMetrics 79 } 
+
+
+   ietfOneWayPdvRefminVariance OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-One-way-pdv-refmin-Variance"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 6.1.4."
+      ::= { ianaIppmMetrics 80 } 
+
+
+
+   ietfOneWayPdvRefminSkewness OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-One-way-pdv-refmin-Skewness"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 6.1.4."
+      ::= { ianaIppmMetrics 81 } 
+
+
+
+   ietfCompositeOneWayPdvRefminQtil OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-Composite-One-way-pdv-refmin-quantile-a"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 6.1.5.1."
+      ::= { ianaIppmMetrics 82 }
+
+
+   
+   ietfCompositeOneWayPdvRefminNPA OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+         "Type-P-One-way-Composite-pdv-refmin-NPA"
+      REFERENCE
+         "Reference "RFC-ietf-ippm-spatial-composition-16, section 6.1.5.2."
+      ::= { ianaIppmMetrics 83 } 
+
+
+
+   END
+
+
+

@@ -1,0 +1,2109 @@
+IANA-PRINTER-MIB DEFINITIONS ::= BEGIN
+ -- http://www.iana.org/assignments/ianaprinter-mib
+
+IMPORTS
+    MODULE-IDENTITY,
+        mib-2
+            FROM SNMPv2-SMI                              -- [RFC2578]
+    TEXTUAL-CONVENTION
+            FROM SNMPv2-TC;                              -- [RFC2579]
+
+ianaPrinterMIB MODULE-IDENTITY
+    LAST-UPDATED  "201005150000Z" -- May 17, 2010
+
+    ORGANIZATION  "IANA"
+    CONTACT-INFO  "Internet Assigned Numbers Authority
+                  Postal: ICANN
+                          4676 Admiralty Way, Suite 330
+                          Marina del Rey, CA 90292
+
+                  Tel:    +1 310 823 9358
+                  E-Mail: iana&iana.org"
+
+    DESCRIPTION   "This MIB module defines a set of printing-related
+                  TEXTUAL-CONVENTIONs for use in Printer MIB (RFC 3805),
+                  Finisher MIB (RFC 3806), and other MIBs which need to
+                  specify printing mechanism details.
+
+                  Any additions or changes to the contents of this MIB
+                  module require either publication of an RFC, or
+                  Designated Expert Review as defined in RFC 2434,
+                  Guidelines for Writing an IANA Considerations Section
+                  in RFCs.  The Designated Expert will be selected by
+                  the IESG Area Director(s) of the Applications Area.
+
+                  Copyright (C) The Internet Society (2004). The
+                  initial version of this MIB module was published
+                  in RFC 3805.  For full legal notices see the RFC
+                  itself or see:
+                  http://www.ietf.org/copyrights/ianamib.html"
+
+    REVISION      "201005170000Z" -- May 17, 2010
+    DESCRIPTION   "Added 72-83 in PrtInterpreterLangFamilyTC, 
+                  600+ lines from 30203-31838 in PrtAlertCodeTC."
+
+    REVISION      "201004070000Z" -- April 7, 2010
+    DESCRIPTION   "Added langJDF(68), langJMF(69), langPPML(70), 
+                  and langXHTMLPrint(71)."
+
+    REVISION      "200911230000Z" -- November 23, 2009
+    DESCRIPTION   "Added langXPS(66) and langOpenXPS(67)."
+
+    REVISION      "200910140000Z" -- October 14, 2009
+    DESCRIPTION   "Added references for langPCLXL(47), 
+                  langART(48), and langTIPSI(49)."
+
+    REVISION      "200902060000Z" -- February 6, 2009
+    DESCRIPTION   "Added chWSPrint(46) 'Channel Type' for Web 
+                  Services based printing." 
+
+    REVISION      "200509140000Z"  -- September 14, 2005
+    DESCRIPTION   "Updates to include missing 'unknown' values
+	               for PrtCoverStatusTC, PrtChannelTypeTC, 
+                  PrtAlertGroupTC and removal of comment for
+                  for PrtAlertGroupTC."
+
+    REVISION      "200406020000Z"  -- June 2, 2004
+    DESCRIPTION   "Original version, published in coordination
+                  with Printer MIB (RFC 3805)."
+    ::= { mib-2 109 }
+
+--
+-- Generic TEXTUAL-CONVENTIONs
+--
+
+PrtCoverStatusTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtCoverStatus in RFC 1759.
+    STATUS    current
+    DESCRIPTION
+        "Values for encoding the state of a particular cover or
+        access panel on the printer case or enclosure."
+    SYNTAX    INTEGER {
+                  other(1),
+                  unknown(2),
+                  coverOpen(3),
+                  coverClosed(4),
+                  interlockOpen(5),
+                  interlockClosed(6)
+
+                  }
+
+--
+-- General Group TEXTUAL-CONVENTIONs
+--
+
+PrtGeneralResetTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtGeneralReset in RFC 1759.
+    STATUS    current
+    DESCRIPTION
+        "Values for reading and writing the prtGeneralReset object.
+
+        If a device does not have NVRAM, the device shall none the
+        less respond to a SET with the value resetToNVRAM(5) with a
+        sort of warm reset that resets the device to implementation-
+        defined state that is preferably under control of the system
+        administrator by some means outside the scope of the Printer
+        MIB specification."
+
+    SYNTAX    INTEGER {
+                  notResetting(3),
+                  powerCycleReset(4), -- Cold Start
+                  resetToNVRAM(5), -- Warm Start
+                  resetToFactoryDefaults(6) -- Reset contents of
+                                            -- NVRAM to factory
+                                            -- defaults
+                  }
+--
+-- Channel Group TEXTUAL-CONVENTIONs
+--
+
+PrtChannelTypeTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtChannelType in RFC 1759.
+    STATUS    current
+    DESCRIPTION
+        "This enumeration indicates the type of channel that is
+        receiving jobs."
+    SYNTAX    INTEGER {
+                  other(1),
+                  unknown(2),
+                  chSerialPort(3),
+                  chParallelPort(4),
+                  chIEEE1284Port(5),
+                  chSCSIPort(6),
+                  chAppleTalkPAP(7),
+                      -- AppleTalk Printer
+                      -- Access Protocol (PAP)
+                      --
+                      -- prtChannelInformation entry:
+
+                      --
+                      -- Printer Name
+                      --   Keyword:      Name
+                      --   Syntax:       Name
+                      --   Status:       Optional
+                      --   Multiplicity: Single
+                      --   Description:  The name of the printer
+                      --     within the AppleTalk naming scope
+                  chLPDServer(8),
+                      -- prtChannelInformation entry:
+                      --
+                      -- Printer queue name
+                      --   Keyword:      Queue
+                      --   Syntax:       Name
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description: queue name as
+                      --     defined in [RFC1179].
+                  chNetwareRPrinter(9),
+                      -- Novell, Inc.
+                      -- For each entry of this type, the
+                      -- prtChannelInformation must have a pair of
+                      -- keywords.  For Netware 3.x channels this must
+                      -- be a (PServer, Printer) pair.  For Netware
+                      -- 4.x channels and for IntranetWare channels
+                      -- this must be a (NDSTree, NDSPrinter) pair.
+                      --
+                      -- prtChannelInformation entries:
+
+                      -- Print Server Name
+                      --   Keyword:      PServer
+                      --   Syntax:       Name
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  The Pserver's SAP name
+                      --
+                      -- Printer Number
+                      --   Keyword:      Printer
+                      --   Syntax:       Integer
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  The printer number
+                      --
+                      -- NDSTree
+                      --   Keyword:      NDSTree
+                      --   Syntax:       Name
+                      --   Multiplicity: Single
+                      --   Description:  The tree's SAP name
+
+                      --
+                      -- NDS Printer object
+                      --   Keyword:      NDSPrinter
+                      --   Syntax:       Text (Unicode)
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  The fully qualified
+                      --                 name of the Printer
+                      --
+                      -- In the Netware 3.x environment, the
+                      -- client checks the Bindery object
+                      -- representing the named PServer.  The
+                      -- client then checks for queues which
+                      -- are associated with the numbered
+                      -- printer.  In the 4.x and IntraNetware
+                      -- environment, the client looks up the
+                      -- queues which are associated with the
+                      -- NDS Printer Object in the named Tree.
+                      -- Depending on client access rights to
+                      -- those queues, the client submits jobs
+                      -- to the appropriate queue.
+                  chNetwarePServer(10),
+                      -- Novell,Inc.
+                      -- For each entry of this type, the
+                      -- prtChannelInformation must have a pair
+                      -- of keywords.  For Netware 3.x channels
+                      -- this must be a (Server, PServer) pair.
+                      -- For Netware 4.x and IntranetWare
+                      -- channels, this must be a
+                      -- (NDSTree, NDSPServer) pair.
+                      --
+                      -- prtChannelInformation entries:
+                      --
+                      -- Server Name
+                      --   Keyword:      Server
+                      --   Syntax:       Name
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  The SAP name of the
+                      --   server for which the PServer is defined.
+                      --
+                      -- PServer
+                      --   Keyword:      PServer
+                      --   Syntax:       Name
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  The bindery name of
+                      --                 the PServer
+
+                      --
+                      -- NDS Tree
+                      --   Keyword:      NDSTree
+                      --   Syntax:       Name
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  The NDS Tree name
+                      --
+                      -- PServer
+                      --   Keyword:      NDSPServer
+                      --   Syntax:       Text (Unicode)
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  The fully qualified
+                      --     name of the PServer object in the tree.
+                      --
+                      -- In the 3.x environment, the client
+                      -- checks the bindery object
+                      -- representing the named PServer on the
+                      -- named Server.  In the 4.x and
+                      -- IntranetWare environment,
+                      -- the client checks the NDS object
+                      -- representing the named PServer in the
+                      -- named Tree.  In either case, the
+                      -- client then checks for all queues
+                      -- associated with the Pserver object.
+                      -- Depending on client access rights
+                      -- to those queues, the client submits
+                      -- jobs to the appropriate queue.
+                  chPort9100(11),
+                      -- DEPRECATED
+                      -- (see chPortTCP - 37; chBidirPortTCP - 38)
+                  chAppSocket(12),
+                      -- A bi-directional, LPD-like, protocol using
+                      -- 9101 for control and 9100 for data.
+                      -- Adobe Systems, Inc.
+                  chFTP(13),         -- [RFC959]
+                  chTFTP(14),        -- [RFC1350]
+                  chDLCLLCPort(15),
+                  chIBM3270(16),     -- IBM Coax
+                  chIBM5250(17),     -- IBM Twinax
+                  chFax(18),
+                  chIEEE1394(19),
+                  chTransport1(20),
+                      -- TCP port 35, for reserved TCP port list see
+                      -- [RFC3232].  This RFC should also be
+                      -- referenced for other channel
+                      -- enumerations utilizing TCP port
+
+                      -- numbers 0 through 1024.
+                  chCPAP(21),      -- TCP port 170
+                      -- Digital Equipment Corp.
+                  chDCERemoteProcCall(22), -- OSF
+                      -- DEPRECATED
+                  chONCRemoteProcCall(23), -- SUN Microsystems
+                      -- DEPRECATED
+                  chOLE(24),         -- Microsoft
+                      -- DEPRECATED
+                  chNamedPipe(25),
+                  chPCPrint(26),   -- Banyan
+                  chServerMessageBlock(27),
+                      -- File/Print sharing protocol used by
+                      -- various network operating systems
+                      -- from IBM 3Com, Microsoft and others
+                      --
+                      -- prtChannelInformation entry:
+                      --
+                      -- Service Name
+                      --   Keyword:      Name
+                      --   Syntax:       Name
+                      --   Status:       Optional
+                      --   Multiplicity: Single
+                      --   Description:  The service name of
+                      --                 the printer
+                  chDPMF(28),   -- IBM Infoprint
+                  chDLLAPI(29), -- Microsoft
+                      -- DEPRECATED
+                  chVxDAPI(30), -- Microsoft
+                      -- DEPRECATED
+                  chSystemObjectManager(31), -- IBM
+                  chDECLAT(32),
+                      -- Digital Equipment Corp.
+                      --
+                      -- prtChannelInformation entries:
+                      --
+                      -- Port Name
+                      --   Keyword:      Port
+                      --   Syntax:       Name
+                      --   Status:       Conditionally
+                      --                 Mandatory
+                      --                 (see note below)
+                      --   Multiplicity: Single
+                      --   Description:  LAT port name
+                      --
+                      -- Service Name
+                      --   Keyword:      Service
+                      --   Syntax:       Name
+
+                      --   Status:       Conditionally
+                      --                 Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  LAT service name
+                      --
+                      -- The LAT channel may be
+                      -- identified by either a port or
+                      -- service, so either a
+                      -- Port or Service entry must be
+                      -- specified, but not both.
+                  chNPAP(33),
+                  chUSB(34), -- Not in RFC 1759
+                             -- Universal Serial Bus
+                  chIRDA(35), -- Not in RFC 1759
+                              -- Infrared Data Assoc. Prot.
+                  chPrintXChange(36),  -- Not in RFC 1759
+                                       -- PrintXChange Protocol
+                  chPortTCP(37),  -- Not in RFC 1759
+                      -- A unidirectional "raw" TCP
+                      -- channel that uses an administratively
+                      -- assigned TCP port address.
+                      --
+                      -- prtChannelInformation entry:
+                      --
+                      -- Port Number
+                      --   Keyword:      Port
+                      --   Syntax:       decimal number
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  TCP port number
+                  chBidirPortTCP(38),  -- Not in RFC 1759
+                      -- A bi-directional version of chPortTCP
+                      --
+                      -- prtChannelInformation entries:
+                      -- (See chPortTCP)
+                  chUNPP(39),  -- Not in RFC 1759
+                      -- Universal Network Printing
+                      -- Protocol(UNPP). A bi-directional,
+                      -- multiport network printing
+                      -- application protocol available on
+                      -- multiple transport protocols.
+                      -- Underscore, Inc.
+                      -- Contact: info&underscore.com
+                  chAppleTalkADSP(40),  -- Not in RFC 1759
+                      -- AppleTalk Data Stream Protocol.
+                      -- ADSP is part of the AppleTalk
+                      -- suite of protocols.
+                      -- It is a symmetric, connection-
+
+                      -- oriented protocol that makes
+                      -- possible the establishment
+                      -- and maintenance of full-duplex
+                      -- streams of data bytes between
+                      -- two sockets in an AppleTalk
+                      -- internet.
+                      -- See [APPLEMAC].
+                  chPortSPX(41),  -- Not in RFC 1759
+                      -- Sequenced Packet Exchange (SPX)
+                      -- socket.
+                      -- Novell, Inc. Similar to TCP, a
+                      -- bi-directional data pipe using
+                      -- Novell SPX as a transport.
+                      --
+                      -- prtChannelInformation entries:
+                      --
+                      -- Network Number
+                      --   Keyword:      Net
+                      --   Syntax:       HexString
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  The network number
+                      --
+                      -- Node Number
+                      --   Keyword:      Node
+                      --   Syntax:       HexString
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  The node number
+                      --
+                      -- Socket Number
+                      --   Keyword:      Socket
+                      --   Syntax:       HexString
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  The SPX socket number
+                      --
+                      -- There must be exactly one "Net" and
+                      -- one "Node" and one "Socket" entry.  A
+                      -- HexString is a binary value
+                      -- represented as a string of
+                      -- ASCII characters using hexadecimal
+                      -- notation.
+                  chPortHTTP(42),  -- Not in RFC 1759
+                      -- Hypertext Transfer Protocol. See [RFC1945]
+                      -- and [RFC2616].
+                  chNDPS(43),  -- Not in RFC 1759
+                      -- Novell, Inc.
+
+                      --
+                      -- prtChannelInformation entry:
+                      --
+                      -- Printer Agent Name
+                      --   Keyword:      PA
+                      --   Syntax:       Name
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Description:  The NDPS Printer
+                      --                 Agent Name
+                  chIPP(44),  -- Not in RFC 1759
+                      -- Internet Printing Protocol (IPP),
+                      -- (IPP/1.1 - see [RFC2910] and [RFC2911])
+                      -- also applies to all future versions of IPP.
+                      --
+                      -- IPP Printer URI
+                      --   Keyword:      URI
+                      --   Syntax:       URI (Unicode UTF-8 per
+                      --                 [RFC2396])
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Default:      not applicable
+                      --   Description:  URI of this IPP Printer
+                      --     within Internet naming scope.  Unicode
+                      --     UTF-8 [RFC3629] string with
+                      --     hexadecimal escapes for any non-ASCII
+                      --     characters (per [RFC2396]).
+                      --   Conformance: An IPP Printer shall list all
+                      --     IPP URI it supports (one per IPP Channel
+                      --     entry).  If a URI contains the 'http:'
+                      --     scheme it must have an explicit port.
+                      --   See: [RFC3629], [RFC2396], [RFC2910],
+                     --     [RFC2911].
+                      --
+                      -- IPP Printer Client Authentication
+                      --   Keyword:      Auth
+                      --   Syntax:       Keyword
+                      --   Status:       Optional
+                      --   Multiplicity: Single
+                      --   Default:      'none'
+                      --   Description:  A client authentication
+                      --     mechanism supported for this IPP Printer
+                      --     URI:
+                      --       'none'
+                      --         no client authentication mechanism
+                      --       'requesting-user-name'
+                      --         authenticated user in 'requesting-
+                      --         user-name'
+
+                      --       'basic'
+                      --         authenticated user via HTTP Basic
+                      --         mechanism
+                      --       'digest'
+                      --         authenticated user via HTTP Digest
+                      --         mechanism
+                      --       'certificate'
+                      --         authenticated user via certificate
+                      --         mechanism
+                      --   Conformance: An IPP Printer should list
+                      --     all IPP client authentication mechanisms
+                      --     it supports (one per IPP Channel entry).
+                      --     See: [RFC2911] and [RFC2910].
+                      --
+                      -- IPP Printer Security
+                      --   Keyword:      Security
+                      --   Syntax:       Keyword
+                      --   Status:       Optional
+                      --   Multiplicity: Single
+                      --   Default:      'none'
+                      --   Description:  A security mechanism
+                      --     supported for this IPP Printer URI:
+                      --     'none'
+                      --       no security mechanism
+                      --     'ssl3'
+                      --       SSL3 secure communications channel
+                      --       protocol
+                      --     'tls'
+                      --       TLS secure communications channel
+                      --       protocol
+                      --   Conformance: An IPP Printer should list
+                      --     all IPP security mechanisms it supports
+                      --     (one per IPP Channel entry).
+                      --   See: [RFC2246], [RFC2911].
+                      --
+                      -- IPP Printer Protocol Version
+                      --   Keyword:      Version
+                      --   Syntax:       Keyword
+                      --   Status:       Optional
+                      --   Multiplicity: Multiple
+                      --   Default:      '1.1'
+                      --   Description:  All of the IPP protocol
+                      --     versions (major.minor) supported for
+                      --     this IPP Printer URI:
+                      --     '1.0'
+                      --       IPP/1.0 conforming Printer
+                      --     '1.1'
+                      --       IPP/1.1 conforming Printer
+
+                      --   Conformance:  An IPP Printer should list
+                      --     all IPP versions it supports (all listed
+                      --     in each IPP Channel entry).  An IPP
+                      --     Client should select the highest
+                      --     numbered version the IPP Client supports
+                      --     for use in all IPP Requests (for optimum
+                      --     interworking).
+                      --   See: [RFC2911].
+                  chSMTP(45),
+                      -- Print Job submission via Simple Mail
+                      -- Transfer Protocol (SMTP) - see [RFC2821]
+                      --
+                      -- prtChannelInformation entry:
+                      --
+                      --   Keyword:      Mailto
+                      --   Syntax:       Name
+                      --   Status:       Mandatory
+                      --   Multiplicity: Single
+                      --   Default:      not applicable
+                      --   Description:  The SMTP URL of the printer.
+                  chWSPrint(46) -- Not in RFC 3805
+                      -- Web Services on Devices Printer (WS-Print),
+                      -- (WS-Print 1.0 - see [WS-Print])
+                      -- 
+                      -- WS-Print Service URL
+                      -- Keyword: ServiceURL
+                      -- Syntax: URI (Unicode UTF-8 per
+                      -- [RFC3986])
+                      -- Status: Mandatory
+                      -- Multiplicity: Multiple
+                      -- Default: not applicable
+                      -- Description: URL of this WS-Print Printer
+                      -- within Internet naming scope. Unicode
+                      -- UTF-8 [RFC3629] string with
+                      -- hexadecimal escapes for any non-ASCII
+                      -- characters (per [RFC3986]).
+                      -- Conformance: A WS-Print Printer shall list
+                      -- all URLs it
+                      -- 
+                      -- WS-Print Web Services Target Namespace
+                      -- Keyword: Namespace
+                      -- Syntax: 'URI (Unicode UTF-8 per RFC 3986)
+                      -- Status: Optional
+                      -- Multiplicity: Multiple
+                      -- Default: http://schemas.microsoft.com/windows/2006/08/wdp/print
+                      -- Description: XML Namespace for the Service
+                      -- and associated print service model. Unicode
+                      -- UTF-8 [RFC3629] string with
+                      -- hexadecimal escapes for any non-ASCII
+                      -- characters (per [RFC3986]).
+                      -- Conformance: A WS-Print Printer shall list
+                      -- all interoperable WS-Print namespaces it
+                      -- supports.
+}
+
+--
+-- Interpreter Group TEXTUAL-CONVENTIONs
+--
+
+PrtInterpreterLangFamilyTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtInterpreterLangFamily in RFC 1759.
+    STATUS    current
+    DESCRIPTION
+        "This enumeration indicates the type of interpreter that is
+        receiving jobs."
+    SYNTAX    INTEGER {
+        other(1),
+        unknown(2),          -- Not in RFC 1759
+        langPCL(3),          -- PCL.  Starting with PCL version 5,
+                             -- HP-GL/2 is included as part of the
+                             -- PCL language.
+                             -- PCL and HP-GL/2 are registered
+                             -- trademarks of Hewlett-Packard
+                             -- Company.
+        langHPGL(4),         -- Hewlett-Packard Graphics Language.
+                             -- HP-GL is a registered trademark of
+                             -- Hewlett-Packard Company.
+        langPJL(5),          -- Peripheral Job Language.  Appears in
+                             -- the data stream between data intended
+                             -- for a page description language.
+                             -- Hewlett-Packard Co.
+
+        langPS(6),           -- PostScript (tm) Language
+                             -- Postscript - a trademark of Adobe
+                             -- Systems Incorporated which may be
+                             -- registered in certain jurisdictions
+        langIPDS(7),         -- Intelligent Printer Data Stream
+                             -- Bi-directional print data stream for
+                             -- documents consisting of data objects
+                             -- (text, image, graphics, bar codes),
+                             -- resources (fonts, overlays) and page,
+                             -- form and finishing instructions.
+                             -- Facilitates system level device
+                             -- control, document tracking and error
+                             -- recovery throughout the print
+                             -- process.
+                             -- IBM Corporation.
+        langPPDS(8),         -- IBM Personal Printer Data Stream.
+                             -- Originally called IBM ASCII, the name
+                             -- was changed to PPDS when the Laser
+                             -- Printer was introduced in 1989.
+                             -- Lexmark International, Inc.
+        langEscapeP(9),      -- Epson Corp.
+        langEpson(10),
+        langDDIF(11),        -- Digital Document Interchange Format
+                             -- Digital Equipment Corp., Maynard MA
+        langInterpress(12),
+                             -- Xerox Corp.
+        langISO6429(13),     -- ISO 6429.  Control functions for
+                             -- Coded Character Sets (has ASCII
+                             -- control characters, plus additional
+                             -- controls for
+                             -- character imaging devices.)
+        langLineData(14),    -- line-data:  Lines of data as
+                             -- separate ASCII or EBCDIC records
+                             -- and containing no control functions
+                             -- (no CR, LF, HT, FF, etc.)
+                             -- For use with traditional line
+                             -- printers.  May use CR and/or LF to
+                             -- delimit lines, instead of records.
+                             -- See ISO 10175 Document Printing
+                             -- Application (DPA) [ISO10175].
+        langMODCA(15),       -- Mixed Object Document Content
+                             -- Architecture
+                             -- Definitions that allow the
+                             -- composition, interchange, and
+                             -- presentation of final form
+                             -- documents as a collection of data
+                             -- objects (text, image, graphics, bar
+                             -- codes), resources (fonts, overlays)
+
+                             -- and page, form and finishing
+                             -- instructions.
+                             -- IBM Corporation.
+        langREGIS(16),       -- Remote Graphics Instruction Set,
+                             -- Digital Equipment Corp., Maynard MA
+        langSCS(17),         -- SNA Character String
+                             -- Bi-directional print data stream for
+                             -- SNA LU-1 mode of communication.
+                             -- IBM
+        langSPDL(18),        -- ISO 10180 Standard Page Description
+                             -- Language
+                             -- ISO Standard
+        langTEK4014(19),     -- Tektronix Corp.
+        langPDS(20),
+        langIGP(21),         -- Printronix Corp.
+        langCodeV(22),       -- Magnum Code-V, Image and printer
+                             -- control language used to control
+                             -- impact/dot-matrix printers.
+                             -- QMS, Inc., Mobile AL
+        langDSCDSE(23),      -- DSC-DSE:  Data Stream Compatible and
+                             -- Emulation Bi-directional print data
+                             -- stream for non-SNA (DSC) and SNA LU-3
+                             -- 3270 controller (DSE) communications
+                             -- IBM
+        langWPS(24),         -- Windows Printing System, Resource
+                             -- based command/data stream used by
+                             -- Microsoft At Work Peripherals.
+                             -- Developed by the Microsoft
+                             -- Corporation.
+        langLN03(25),        -- Early DEC-PPL3, Digital Equipment
+                             -- Corp.
+        langCCITT(26),
+        langQUIC(27),        -- QUIC (Quality Information Code), Page
+                             -- Description Language for laser
+                             -- printers.  Included graphics, printer
+                             -- control capability and emulation of
+                             -- other well-known printer.
+                             -- QMS, Inc.
+        langCPAP(28),        -- Common Printer Access Protocol
+                             -- Digital Equipment Corp.
+        langDecPPL(29),      -- Digital ANSI-Compliant Printing
+                             -- Protocol
+                             -- (DEC-PPL)
+                             -- Digital Equipment Corp.
+        langSimpleText(30),
+                             -- simple-text:  character coded data,
+                             -- including NUL, CR , LF, HT, and FF
+                             -- control characters.  See ISO 10175
+
+                             -- Document Printing Application (DPA)
+                             -- [ISO10175].
+        langNPAP(31),        -- Network Printer Alliance Protocol
+                             -- (NPAP).  This protocol has been
+                             -- superseded by the IEEE 1284.1 TIPSI
+                             -- Std (ref. LangTIPSI(49)).
+        langDOC(32),         -- Document Option Commands, Appears in
+                             -- the data stream between data
+                             -- intended for a page description.
+                             -- QMS, Inc.
+        langimPress(33),     -- imPRESS, Page description language
+                             -- originally developed for the
+                             -- ImageServer product line. A binary
+                             -- language providing representations
+                             -- of text, simple graphics, and some
+                             -- large forms (simple
+                             -- bit-map and CCITT group 3/4
+                             -- encoded).The
+                             -- language was intended to be sent over
+                             -- an 8-bit channel and supported early
+                             -- document preparation languages (e.g.,
+                             -- TeX and TROFF).
+                             -- QMS, Inc.
+        langPinwriter(34),
+                             -- 24 wire dot matrix printer  for
+                             -- USA, Europe, and Asia except
+                             -- Japan.
+                             -- More widely used in Germany, and
+                             -- some Asian countries than in US.
+                             -- NEC
+        langNPDL(35),        -- Page printer  for Japanese market.
+                             -- NEC
+        langNEC201PL(36),    -- Serial printer language used in
+                             -- the Japanese market.
+                             -- NEC
+        langAutomatic(37),
+                             -- Automatic PDL sensing.  Automatic
+                             -- sensing of the interpreter
+                             -- language family by the printer
+                             -- examining the document content.
+                             -- Which actual interpreter language
+                             -- families are sensed depends on
+                             -- the printer implementation.
+        langPages(38),       -- Page printer Advanced Graphic
+                             -- Escape Set
+                             -- IBM Japan
+        langLIPS(39),        -- LBP Image Processing System
+        langTIFF(40),        -- Tagged Image File Format (Aldus)
+
+        langDiagnostic(41),
+                             -- A hex dump of the input to the
+                             -- interpreter
+        langPSPrinter(42),
+                             -- The PostScript Language used for
+                             -- control (with any PDLs)
+                             -- Adobe Systems Incorporated
+        langCaPSL(43),       -- Canon Print Systems Language
+        langEXCL(44),        -- Extended Command Language
+                             -- Talaris Systems Inc.
+        langLCDS(45),        -- Line Conditioned Data Stream
+                             -- Xerox Corporation
+        langXES(46),         -- Xerox Escape Sequences
+                             -- Xerox Corporation
+        langPCLXL(47),       -- Not in RFC 1759
+                             -- Printer Control Language. Extended
+                             -- language features for printing, and
+                             -- printer control.
+                             -- Tammy Ferguson (HP)
+                             -- and Binnur Al-Kazily (HP)
+                             -- Technical reference manual: None
+                             -- Hewlett-Packard Co.
+        langART(48),         -- Not in RFC 1759
+                             -- Advanced Rendering Tools (ART).
+                             -- Page Description language
+                             -- originally developed for the Laser
+                             -- Press printers.
+                             -- Norio Iwamoto (Fuji Xerox)
+                             -- and Tom Hastings (Xerox)
+                             -- Technical reference manual: "ART IV
+                             -- Reference Manual", No F33M.
+                             -- Fuji Xerox Co., Ltd.
+        langTIPSI(49),       -- Not in RFC 1759
+                             -- Transport Independent Printer
+                             -- System Interface
+                             -- Don Wright (Lexmark)
+                             -- Technical reference manual: "IEEE
+                             -- 1284.1"
+        langPrescribe(50),   -- Not in RFC 1759
+                             -- Page description and printer
+                             -- control language. It can be
+                             -- described with ordinary ASCII
+                             -- Technical reference manual:
+                             -- "PRESCRIBE II Programming Manual"
+        langLinePrinter(51), -- Not in RFC 1759
+                             -- A simple-text character stream which
+                             -- supports the control codes LF, VT,
+                             -- FF, and plus Centronics or
+                             -- Dataproducts Vertical Format Unit
+                             -- (VFU) language is commonly used on
+                             -- many older model line and matrix
+                             -- printers.
+        langIDP(52),         -- Not in RFC 1759
+                             -- Imaging Device Protocol
+                             -- Apple Computer.
+
+        langXJCL(53),        -- Not in RFC 1759
+                             -- Xerox Job Control Language (JCL).
+                             -- A Job Control language originally
+                             -- developed for the LaserPress printers
+                             -- and is capable of switching PDLs.
+                             -- Technical reference manual:
+                             -- "ART IV Reference Manual", No F33M.
+                             -- Fuji Xerox Co., Ltd.
+        langPDF(54),         -- Not in RFC 1759
+                             -- Adobe Portable Document Format
+                             -- Adobe Systems, Inc.
+        langRPDL(55),        -- Not in RFC 1759
+                             -- Ricoh Page Description Language for
+                             -- printers.
+                             -- Technical manual "RPDL command
+                             -- reference" No.307029
+                             -- RICOH, Co. LTD
+        langIntermecIPL(56), -- Not in RFC 1759
+                             -- Intermec Printer Language for label
+                             -- printers.
+                             -- Technical Manual: "IPL Programmers
+                             -- Reference Manual"
+                             -- Intermec Corporation
+        langUBIFingerprint(57),  -- Not in RFC 1759
+                             -- An intelligent basic-like programming
+                             -- language for label printers.
+                             -- Reference Manual: "UBI Fingerprint
+                             -- 7.1", No. 1-960434-00
+                             -- United Barcode Industries
+        langUBIDirectProtocol(58),  -- Not in RFC 1759
+                             -- An intelligent control language for
+                             -- label printers.
+                             -- Programmers guide: " UBI Direct
+                             -- Protocol", No. 1-960419-00
+                             -- United Barcode Industries
+        langFujitsu(59),     -- Not in RFC 1759
+                             -- Fujitsu Printer Language
+                             -- Reference Manual:
+                             -- "FM Printer Sequence" No. 80HP-0770
+                             -- FUJITSU LIMITED
+        langCGM(60),         -- Not in RFC 1759
+                             -- Computer Graphics Metafile
+                             -- MIME type 'image/cgm'
+        langJPEG(61),        -- Not in RFC 1759
+                             -- Joint Photographic Experts Group
+                             -- MIME type 'image/jpeg'
+        langCALS1(62),       -- Not in RFC 1759
+                             -- US DOD CALS1 (see MIL-STD-1840)
+
+                             -- MIME type 'application/cals-1840'
+        langCALS2(63),       -- Not in RFC 1759
+                             -- US DOD CALS2 (see MIL-STD-1840)
+                             -- MIME type 'application/cals-1840'
+        langNIRS(64),        -- Not in RFC 1759
+                             -- US DOD NIRS (see MIL-STD-1840)
+                             -- MIME type 'application/cals-1840'
+        langC4(65),          -- Not in RFC 1759
+                             -- US DOD C4 (see MIL-STD-1840)
+                             -- MIME type 'application/cals-1840'
+        langXPS(66),         -- Not in RFC 3805
+                             -- Microsoft XML Paper Specification
+                             -- http://www.microsoft.com/whdc/xps/xpsspec
+        langOpenXPS(67),     -- Not in RFC 3805
+                             -- ECMA OpenXPS
+                             -- http://www.ecma-international.org/
+                             --   publications/standards/Ecma-388.htm
+        langJDF(68),         -- Not in RFC 3805
+                             -- CIP4 Job Definition Format
+                             -- http://www.cip4.org/documents/
+                             --   jdf_specifications/JDF1.4a.pdf
+        langJMF(69),         -- Not in RFC 3805
+                             -- CIP4 Job Messaging Format
+                             -- also defined in CIP4 JDF specification
+                             -- http://www.cip4.org/documents/
+                             --   jdf_specifications/JDF1.4a.pdf
+        langPPML(70),        -- Not in RFC 3805
+                             -- PODI Personalized Print Markup Language
+                             -- http://ppml.podi.org/ppml-docs/
+                             --   ppml-specifications.php
+        langXHTMLPrint(71),  -- Not in RFC 3805
+                             -- W3C XHTML-Print
+                             -- http://www.w3.org/TR/xhtml-print/
+        langPDFis(72),       -- Not in RFC 3805
+                             -- PWG PDF Image-Streamable (PWG 5102.3)
+                             -- ftp://pwg.org/pub/pwg/candidates/
+                             --   cs-ifxpdfis10-20040315-5102.3.pdf
+                             -- See also 'langPDF'
+        langPDF13(73),       -- Not in RFC 3805
+                             -- Adobe Portable Document Format v1.3
+                             -- http://www.adobe.com/devnet/
+                             --   pdf/pdfs/PDFReference13.pdf
+                             -- See also 'langPDF'
+        langPDF14(74),       -- Not in RFC 3805
+                             -- Adobe Portable Document Format v1.4
+                             -- http://www.adobe.com/devnet/
+                             --   pdf/pdfs/PDFReference.pdf
+                             -- See also 'langPDF'
+        langPDF15(75),       -- Not in RFC 3805
+                             -- Adobe Portable Document Format v1.5
+                             -- http://www.adobe.com/devnet/
+                             --   pdf/pdfs/PDFReference15_v5.pdf
+                             -- See also 'langPDF'
+        langPDF16(76),       -- Not in RFC 3805
+                             -- Adobe Portable Document Format v1.6
+                             -- http://www.adobe.com/devnet/
+                             --   pdf/pdfs/PDFReference16.pdf
+                             -- See also 'langPDF'
+        langPDF17(77),       -- Not in RFC 3805
+                             -- Adobe Portable Document Format v1.7
+                             -- http://www.adobe.com/devnet/
+                             --   acrobat/pdfs/pdf_reference_1-7.pdf
+                             -- Equivalent to ISO 32000-1:2008
+                             -- See also 'langPDF'
+        langPS2(78),         -- Not in RFC 3805
+                             -- Adobe PostScript Second Edition
+                             -- http://partners.adobe.com/public/
+                             --   developer/en/ps/psrefman.pdf
+                             -- See also 'langPS'
+        langPS3(79),         -- Not in RFC 3805
+                             -- Adobe PostScript Third Edition
+                             -- http://www.adobe.com/products/
+                             --   postscript/pdfs/PLRM.pdf
+                             -- See also 'langPS'
+        langPCL3(80),        -- Not in RFC 3805
+                             -- HP Printer Command Language 3
+                             -- No technical reference manual online
+                             -- See also 'langPCL'
+        langPCL3GUI(81),     -- Not in RFC 3805
+                             -- HP Printer Command Language 3 GUI
+                             -- No technical reference manual online
+                             -- See also 'langPCL'
+        langPCL5e(82),       -- Not in RFC 3805
+                             -- HP Printer Command Language 5 Enhanced
+                             -- http://h20000.www2.hp.com/bc/docs/
+                             --   support/SupportManual/bpl13210/
+                             --   bpl13210.pdf
+                             -- See also 'langPCL'
+        langPCL5c(83)        -- Not in RFC 3805
+                             -- HP Printer Command Language 5 Color
+                             -- http://h20000.www2.hp.com/bc/docs/
+                             --   support/SupportManual/bpl13212/
+                             --   bpl13212.pdf
+                             -- See also 'langPCL'
+}
+
+--
+-- Input/Output Group TEXTUAL-CONVENTIONs
+--
+
+PrtInputTypeTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtInputType in RFC 1759.
+    STATUS    current
+    DESCRIPTION
+        "The type of technology (discriminated primarily according to
+        feeder mechanism type) employed by a specific component or
+        components."
+    SYNTAX    INTEGER {
+                  other(1),
+                  unknown(2),
+                  sheetFeedAutoRemovableTray(3),
+                  sheetFeedAutoNonRemovableTray(4),
+                  sheetFeedManual(5),
+                  continuousRoll(6),
+                  continuousFanFold(7)
+                  }
+
+PrtOutputTypeTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtOutputType in RFC 1759.
+    STATUS    current
+    DESCRIPTION
+        "The Type of technology supported by this output subunit."
+    SYNTAX    INTEGER {
+                  other(1),
+                  unknown(2),
+                  removableBin(3),
+                  unRemovableBin(4),
+                  continuousRollDevice(5),
+                  mailBox(6),
+                  continuousFanFold(7)
+                  }
+
+--
+-- Marker Group TEXTUAL-CONVENTIONs
+--
+
+PrtMarkerMarkTechTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtMarkerMarkTech in RFC 1759.
+    STATUS    current
+    DESCRIPTION
+        "The type of marking technology used for this marking
+        subunit."
+    SYNTAX    INTEGER {
+                  other(1),
+                  unknown(2),
+                  electrophotographicLED(3),
+                  electrophotographicLaser(4),
+                  electrophotographicOther(5),
+                  impactMovingHeadDotMatrix9pin(6),
+                  impactMovingHeadDotMatrix24pin(7),
+                  impactMovingHeadDotMatrixOther(8),
+                  impactMovingHeadFullyFormed(9),
+                  impactBand(10),
+                  impactOther(11),
+                  inkjetAqueous(12),
+                  inkjetSolid(13),
+                  inkjetOther(14),
+                  pen(15),
+                  thermalTransfer(16),
+                  thermalSensitive(17),
+                  thermalDiffusion(18),
+                  thermalOther(19),
+                  electroerosion(20),
+                  electrostatic(21),
+                  photographicMicrofiche(22),
+                  photographicImagesetter(23),
+                  photographicOther(24),
+                  ionDeposition(25),
+                  eBeam(26),
+                  typesetter(27)
+                  }
+
+PrtMarkerSuppliesTypeTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtMarkerSuppliesType in RFC 1759.
+    STATUS    current
+    DESCRIPTION
+        "The type of this supply."
+    SYNTAX    INTEGER {
+                  other(1),
+                  unknown(2),
+
+                -- Values for Printer MIB
+                  toner(3),
+                  wasteToner(4),
+                  ink(5),
+                  inkCartridge(6),
+                  inkRibbon(7),
+                  wasteInk(8),
+                  opc(9),               -- photo conductor
+                  developer(10),
+                  fuserOil(11),
+                  solidWax(12),
+                  ribbonWax(13),
+                  wasteWax(14),
+                  fuser(15),            -- Not in RFC 1759
+                  coronaWire(16),       -- Not in RFC 1759
+                  fuserOilWick(17),     -- Not in RFC 1759
+                  cleanerUnit(18),      -- Not in RFC 1759
+                  fuserCleaningPad(19), -- Not in RFC 1759
+                  transferUnit(20),     -- Not in RFC 1759
+                  tonerCartridge(21),   -- Not in RFC 1759
+                  fuserOiler(22),       -- Not in RFC 1759
+                -- End of values for Printer MIB
+                -- Values for Finisher MIB
+                  water(23),            -- Not in RFC 1759
+                  wasteWater(24),       -- Not in RFC 1759
+                  glueWaterAdditive(25),-- Not in RFC 1759
+                  wastePaper(26),       -- Not in RFC 1759
+                  bindingSupply(27),    -- Not in RFC 1759
+                  bandingSupply(28),    -- Not in RFC 1759
+                  stitchingWire(29),    -- Not in RFC 1759
+                  shrinkWrap(30),       -- Not in RFC 1759
+                  paperWrap(31),        -- Not in RFC 1759
+                  staples(32),          -- Not in RFC 1759
+                  inserts(33),          -- Not in RFC 1759
+                  covers(34)            -- Not in RFC 1759
+                -- End of values for Finisher MIB
+                  }
+
+--
+-- Media Path TEXTUAL-CONVENTIONs
+--
+
+PrtMediaPathTypeTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtMediaPathType in RFC 1759.
+    STATUS    current
+    DESCRIPTION
+        "The type of the media path for this media path."
+    SYNTAX    INTEGER {
+
+                  other(1),
+                  unknown(2),
+                  longEdgeBindingDuplex(3),
+                  shortEdgeBindingDuplex(4),
+                  simplex(5)
+                  }
+
+--
+-- Console Group TEXTUAL-CONVENTIONs
+--
+
+PrtConsoleColorTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtConsoleColor in RFC 1759.
+    STATUS     current
+    DESCRIPTION
+        "The color of this light."
+    SYNTAX    INTEGER {
+                  other(1),
+                  unknown(2),
+                  white(3),
+                  red(4),
+                  green(5),
+                  blue(6),
+                  cyan(7),
+                  magenta(8),
+                  yellow(9),
+                  orange(10)        -- Not in RFC 1759
+                  }
+
+PrtConsoleDisableTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtConsoleDisable in RFC 1759.
+    STATUS     current
+    DESCRIPTION
+        "This value indicates whether or not input is accepted from
+        the operator console.  A value of 'enabled' indicates that
+        input is accepted from the console, and a value of 'disabled'
+        indicates that input is not accepted from the console. "
+    SYNTAX    INTEGER {
+                  enabled(3),
+                  disabled(4)
+                  }
+
+--
+-- Alert Group TEXTUAL-CONVENTIONs
+--
+
+PrtAlertTrainingLevelTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtAlertTrainingLevel in RFC 1759.
+
+    STATUS    current
+    DESCRIPTION
+        "The level of training required to handle this alert, if
+        human intervention is required.  The noInterventionRequired
+        value should be used if the event does not require any human
+        intervention.  The training level is an enumeration that is
+        determined and assigned by the printer manufacturer based on
+        the information or training required to handle this alert.
+        The printer will break alerts into these different training
+        levels.  It is the responsibility of a management application
+        in the system to determine how a particular alert is handled
+        and how and to whom that alert is routed.  The following are
+        the four training levels of alerts:
+
+        Field Service - Alerts that typically require advanced
+            training and technical knowledge of the printer and its
+            subunits.  An example of a technical person would be a
+            manufacturer's Field Service representative, or other
+            person formally trained by the manufacturer or similar
+            representative.
+        Trained - Alerts that require an intermediate or moderate
+            knowledge of the printer and its subunits.  A typical
+            example of such an alert is replacing a toner cartridge.
+        Untrained -     Alerts that can be fixed without prior
+            training either because the action to correct the alert
+            is obvious or the printer can help the untrained person
+            fix the problem.  A typical example of such an alert is
+            reloading paper trays or emptying output bins on a low
+            end printer.
+        Management -    Alerts that have to do with overall operation
+            of and configuration of the printer.  Examples of such
+            management events are configuration change of subunits."
+    SYNTAX    INTEGER {
+                  other(1),
+                  unknown(2),
+                  untrained(3),
+                  trained(4),
+                  fieldService(5),
+                  management(6),
+                  noInterventionRequired(7)  -- Not in RFC 1759
+                 }
+
+PrtAlertGroupTC ::= TEXTUAL-CONVENTION
+    -- Values in the range 1 to 29 must not be IANA-assigned without
+    -- re-publishing Printer MIB.
+    -- Values of 30 and greater are for use in MIBs that augment
+    -- the Printer MIB, such as the Finisher MIB.
+    -- This TC extracted from prtAlertGroup in RFC 1759.
+
+    STATUS    current
+    DESCRIPTION
+        "The type of subunit within the printer model that this alert
+        is related.  Input, output, and markers are examples of
+        printer model groups, i.e., examples of types of subunits.
+        Wherever possible, the enumerations match the sub-identifier
+        that identifies the relevant table in the Printer MIB.
+
+        NOTE: Alert type codes have been added for the Host Resources
+        MIB storage table and device table.  These additional types
+        are for situations in which the printer's storage and device
+        objects must generate alerts (and possibly traps for critical
+        alerts)."
+    SYNTAX    INTEGER {
+                  other(1),
+                  unknown(2),
+                -- Values for Host Resources MIB
+                  hostResourcesMIBStorageTable(3),
+                  hostResourcesMIBDeviceTable(4),
+                -- Values for Printer MIB
+                  generalPrinter(5),
+                  cover(6),
+                  localization(7),
+                  input(8),
+                  output(9),
+                  marker(10),
+                  markerSupplies(11),
+                  markerColorant(12),
+                  mediaPath(13),
+                  channel(14),
+                  interpreter(15),
+                  consoleDisplayBuffer(16),
+                  consoleLights(17),
+                  alert(18),                   -- Not in RFC 1759
+                -- Values (5) to (29) reserved for Printer MIB
+                -- Values for Finisher MIB
+                  finDevice(30),               -- Not in RFC 1759
+                  finSupply(31),               -- Not in RFC 1759
+                  finSupplyMediaInput(32),     -- Not in RFC 1759
+                  finAttribute(33)             -- Not in RFC 1759
+                -- Values (30) to (39) reserved for Finisher MIB
+                  }
+
+PrtAlertCodeTC ::= TEXTUAL-CONVENTION
+    -- This TC was extracted from prtAlertCode in RFC 1759.
+    STATUS    current
+    DESCRIPTION
+        "The code that describes the type of alert for this entry in
+
+        the table.  Binary change event alerts describe states of the
+        subunit while unary change event alerts describe a single
+        event.  The same alert code can be used for a binary change
+        event or a unary change event, depending on implementation.
+        Also, the same alert code can be used to indicate a critical
+        or non-critical (warning) alert, depending on implementation.
+        The value of prtAlertSeverityLevel specifies binary vs. unary
+        and critical vs. non-critical for each event for the
+        implementation.
+
+        While there are some specific codes for many subunits, the
+        generic codes should be used for most subunit alerts.  The
+        network management station can then query the subunit
+        specified by prtAlertGroup to determine further subunit
+        status and other subunit information.
+
+        An agent shall not add two entries to the alert table for the
+        same event, one containing a generic event code and the other
+        containing a specific event code; the agent shall add only
+        one entry in the alert table for each event; either generic
+        (preferred) or specific, not both.
+
+        Implementation of the unary change event
+        alertRemovalOfBinaryChangeEntry(1801) is optional.  When
+        implemented, this alert code shall indicate to network
+        management stations that the trailing edge of a binary change
+        event has occurred and the corresponding alert entry has been
+        removed from the alert table.  As with all events, the
+        alertRemovalOfBinaryChangeEntry(1801) alert shall be placed
+        at the end of the alert table.  Such an alert table entry
+        shall specify the following information:
+
+        prtAlertSeverityLevel   warningUnaryChangeEvent(4)
+        prtAlertTrainingLevel   noInterventionRequired(7)
+        prtAlertGroup           alert(18)
+        prtAlertGroupIndex      the index of the row in the
+                                alert table of the binary
+                                change event that this event
+                                has removed.
+        prtAlertLocation        unknown (-2)
+        prtAlertCode            alertRemovalOfBinaryChangeEntry(1801)
+        prtAlertDescription     <description or null string>
+        prtAlertTime            the value of sysUpTime at
+                                the time of the removal of the
+                                binary change event from the
+                                alert table.
+
+        Optionally, the agent may generate a trap coincident with
+
+        removing the binary change event and placing the unary change
+        event alertRemovalOfBinaryChangeEntry(1801) in the alert
+        table.  For such a trap, the prtAlertIndex sent with the above
+        trap parameters shall be the index of the
+        alertRemovalOfBinaryChangeEvent row that was added to the
+        prtAlertTable; not the index of the row that was removed from
+        the prtAlertTable."
+    SYNTAX    INTEGER {
+                  other(1),
+                      -- an event that is not represented
+                      -- by one of the alert codes
+                      -- specified below.
+                  unknown(2),
+                      -- The following generic codes are common to
+                      -- multiple groups.  The NMS may examine the
+                      -- prtAlertGroup object to determine what group
+                      -- to query for further information.
+                  coverOpen(3),
+                  coverClosed(4),
+                  interlockOpen(5),
+                  interlockClosed(6),
+                  configurationChange(7),
+                  jam(8),
+                  subunitMissing(9),           -- Not in RFC 1759
+                      -- The subunit tray, bin, etc.
+                      -- has been removed.
+                  subunitLifeAlmostOver(10),   -- Not in RFC 1759
+                  subunitLifeOver(11),         -- Not in RFC 1759
+                  subunitAlmostEmpty(12),      -- Not in RFC 1759
+                  subunitEmpty(13),            -- Not in RFC 1759
+                  subunitAlmostFull(14),       -- Not in RFC 1759
+                  subunitFull(15),             -- Not in RFC 1759
+                  subunitNearLimit(16),        -- Not in RFC 1759
+                  subunitAtLimit(17),          -- Not in RFC 1759
+                  subunitOpened(18),           -- Not in RFC 1759
+                  subunitClosed(19),           -- Not in RFC 1759
+                  subunitTurnedOn(20),         -- Not in RFC 1759
+                  subunitTurnedOff(21),        -- Not in RFC 1759
+                  subunitOffline(22),          -- Not in RFC 1759
+                  subunitPowerSaver(23),       -- Not in RFC 1759
+                  subunitWarmingUp(24),        -- Not in RFC 1759
+                  subunitAdded(25),            -- Not in RFC 1759
+                  subunitRemoved(26),          -- Not in RFC 1759
+                  subunitResourceAdded(27),    -- Not in RFC 1759
+                  subunitResourceRemoved(28),  -- Not in RFC 1759
+                  subunitRecoverableFailure(29),
+                                               -- Not in RFC 1759
+                  subunitUnrecoverableFailure(30),
+
+                                               -- Not in RFC 1759
+                  subunitRecoverableStorageError(31),
+                                               -- Not in RFC 1759
+                  subunitUnrecoverableStorageError(32),
+                                               -- Not in RFC 1759
+                  subunitMotorFailure(33),     -- Not in RFC 1759
+                  subunitMemoryExhausted(34),  -- Not in RFC 1759
+                  subunitUnderTemperature(35), -- Not in RFC 1759
+                  subunitOverTemperature(36),  -- Not in RFC 1759
+                  subunitTimingFailure(37),    -- Not in RFC 1759
+                  subunitThermistorFailure(38), -- Not in RFC 1759
+
+                -- General Printer group
+                  doorOpen(501),    -- DEPRECATED
+                                    -- Use coverOpened(3)
+                  doorClosed(502),  -- DEPRECATED
+                                    -- Use coverClosed(4)
+                  powerUp(503),
+                  powerDown(504),
+                  printerNMSReset(505),        -- Not in RFC 1759
+                      -- The printer has been reset by some
+                      -- network management station(NMS)
+                      -- writing into 'prtGeneralReset'.
+                  printerManualReset(506),     -- Not in RFC 1759
+                      -- The printer has been reset manually.
+                  printerReadyToPrint(507),    -- Not in RFC 1759
+                      -- The printer is ready to print. (i.e.,
+                      -- not warming up, not in power save
+                      -- state, not adjusting print quality,
+                      -- etc.).
+
+                -- Input Group
+                  inputMediaTrayMissing(801),
+                  inputMediaSizeChange(802),
+                  inputMediaWeightChange(803),
+                  inputMediaTypeChange(804),
+                  inputMediaColorChange(805),
+                  inputMediaFormPartsChange(806),
+                  inputMediaSupplyLow(807),
+                  inputMediaSupplyEmpty(808),
+                  inputMediaChangeRequest(809), -- Not in RFC 1759
+                      -- An interpreter has detected that a
+                      -- different medium is need in this input
+                      -- tray subunit.  The prtAlertDescription may
+                      -- be used to convey a human readable
+                      -- description of the medium required to
+                      -- satisfy the request.
+                  inputManualInputRequest(810), -- Not in RFC 1759
+
+                      -- An interpreter has detected that manual
+                      -- input is required in this subunit.  The
+                      -- prtAlertDescription may be used to convey
+                      -- a human readable description of the medium
+                      -- required to satisfy the request.
+                  inputTrayPositionFailure(811), -- Not in RFC 1759
+                      -- The input tray failed to position correctly.
+                  inputTrayElevationFailure(812),
+                                        -- Not in RFC 1759
+                  inputCannotFeedSizeSelected(813),
+                                        -- Not in RFC 1759
+                -- Output Group
+                  outputMediaTrayMissing(901),
+                  outputMediaTrayAlmostFull(902),
+                  outputMediaTrayFull(903),
+                  outputMailboxSelectFailure(904),
+                                        -- Not in RFC 1759
+                -- Marker group
+                  markerFuserUnderTemperature(1001),
+                  markerFuserOverTemperature(1002),
+                  markerFuserTimingFailure(1003),
+                                        -- Not in RFC 1759
+                  markerFuserThermistorFailure(1004),
+                                        -- Not in RFC 1759
+                  markerAdjustingPrintQuality(1005),
+                                        -- Not in RFC 1759
+                -- Marker Supplies group
+                  markerTonerEmpty(1101),
+                  markerInkEmpty(1102),
+                  markerPrintRibbonEmpty(1103),
+                  markerTonerAlmostEmpty(1104),
+                  markerInkAlmostEmpty(1105),
+                  markerPrintRibbonAlmostEmpty(1106),
+                  markerWasteTonerReceptacleAlmostFull(1107),
+                  markerWasteInkReceptacleAlmostFull(1108),
+                  markerWasteTonerReceptacleFull(1109),
+                  markerWasteInkReceptacleFull(1110),
+                  markerOpcLifeAlmostOver(1111),
+                  markerOpcLifeOver(1112),
+                  markerDeveloperAlmostEmpty(1113),
+                  markerDeveloperEmpty(1114),
+                  markerTonerCartridgeMissing(1115),
+                                        -- Not in RFC 1759
+                -- Media Path Device Group
+                  mediaPathMediaTrayMissing(1301),
+                  mediaPathMediaTrayAlmostFull(1302),
+                  mediaPathMediaTrayFull(1303),
+                  mediaPathCannotDuplexMediaSelected(1304),
+
+                                        -- Not in RFC 1759
+                -- Interpreter Group
+                  interpreterMemoryIncrease(1501),
+                  interpreterMemoryDecrease(1502),
+                  interpreterCartridgeAdded(1503),
+                  interpreterCartridgeDeleted(1504),
+                  interpreterResourceAdded(1505),
+                  interpreterResourceDeleted(1506),
+                  interpreterResourceUnavailable(1507),
+                  interpreterComplexPageEncountered(1509),
+                                        -- Not in RFC 1759
+                      -- The interpreter has encountered a page
+                      -- that is too complex for the resources that
+                      -- are available.
+                -- Alert Group
+                  alertRemovalOfBinaryChangeEntry(1801),
+                                        -- Not in RFC 1759
+                      -- A binary change event entry has been
+                      -- removed from the alert table.  This unary
+                      -- change alert table entry is added to the
+                      -- end of the alert table.
+                      -- FinDeviceTypeTC = stitcher(3) -> stapler
+                      -- FinStitchingTypeTC = staple... (4,5,6,7, or 10)
+                  staplerCoverOpen(30203),
+                  staplerCoverClosed(30204),
+                  staplerInterlockOpen(30205),
+                  staplerInterlockClosed(30206),
+                  staplerConfigurationChange(30207),
+                  staplerJam(30208),
+                  staplerMissing(30209),
+                  staplerLifeAlmostOver(30210),
+                  staplerLifeOver(30211),
+                  staplerAlmostEmpty(30212),
+                  staplerEmpty(30213),
+                  staplerAlmostFull(30214),
+                  staplerFull(30215),
+                  staplerNearLimit(30216),
+                  staplerAtLimit(30217),
+                  staplerOpened(30218),
+                  staplerClosed(30219),
+                  staplerTurnedOn(30220),
+                  staplerTurnedOff(30221),
+                  staplerOffline(30222),
+                  staplerPowerSaver(30223),
+                  staplerWarmingUp(30224),
+                  staplerAdded(30225),
+                  staplerRemoved(30226),
+                  staplerResourceAdded(30227),
+                  staplerResourceRemoved(30228),
+                  staplerRecoverableFailure(30229),
+                  staplerUnrecoverableFailure(30230),
+                  staplerRecoverableStorageError(30231),
+                  staplerUnrecoverableStorageError(30232),
+                  staplerMotorFailure(30233),
+                  staplerMemoryExhausted(30234),
+                  staplerUnderTemperature(30235),
+                  staplerOverTemperature(30236),
+                  staplerTimingFailure(30237),
+                  staplerThermistorFailure(30238),
+
+                  -- FinDeviceTypeTC = stitcher(3) -> stitcher
+                  -- FinStitchingTypeTC = saddleStitch(8) or edgeStitch(9)
+                  stitcherCoverOpen(30303),
+                  stitcherCoverClosed(30304),
+                  stitcherInterlockOpen(30305),
+                  stitcherInterlockClosed(30306),
+                  stitcherConfigurationChange(30307),
+                  stitcherJam(30308),
+                  stitcherMissing(30309),
+                  stitcherLifeAlmostOver(30310),
+                  stitcherLifeOver(30311),
+                  stitcherAlmostEmpty(30312),
+                  stitcherEmpty(30313),
+                  stitcherAlmostFull(30314),
+                  stitcherFull(30315),
+                  stitcherNearLimit(30316),
+                  stitcherAtLimit(30317),
+                  stitcherOpened(30318),
+                  stitcherClosed(30319),
+                  stitcherTurnedOn(30320),
+                  stitcherTurnedOff(30321),
+                  stitcherOffline(30322),
+                  stitcherPowerSaver(30323),
+                  stitcherWarmingUp(30324),
+                  stitcherAdded(30325),
+                  stitcherRemoved(30326),
+                  stitcherResourceAdded(30327),
+                  stitcherResourceRemoved(30328),
+                  stitcherRecoverableFailure(30329),
+                  stitcherUnrecoverableFailure(30330),
+                  stitcherRecoverableStorageError(30331),
+                  stitcherUnrecoverableStorageError(30332),
+                  stitcherMotorFailure(30333),
+                  stitcherMemoryExhausted(30334),
+                  stitcherUnderTemperature(30335),
+                  stitcherOverTemperature(30336),
+                  stitcherTimingFailure(30337),
+                  stitcherThermistorFailure(30338),
+
+                  -- FinDeviceTypeTC = folder(4)
+                  folderCoverOpen(30403),
+                  folderCoverClosed(30404),
+                  folderInterlockOpen(30405),
+                  folderInterlockClosed(30406),
+                  folderConfigurationChange(30407),
+                  folderJam(30408),
+                  folderMissing(30409),
+                  folderLifeAlmostOver(30410),
+                  folderLifeOver(30411),
+                  folderAlmostEmpty(30412),
+                  folderEmpty(30413),
+                  folderAlmostFull(30414),
+                  folderFull(30415),
+                  folderNearLimit(30416),
+                  folderAtLimit(30417),
+                  folderOpened(30418),
+                  folderClosed(30419),
+                  folderTurnedOn(30420),
+                  folderTurnedOff(30421),
+                  folderOffline(30422),
+                  folderPowerSaver(30423),
+                  folderWarmingUp(30424),
+                  folderAdded(30425),
+                  folderRemoved(30426),
+                  folderResourceAdded(30427),
+                  folderResourceRemoved(30428),
+                  folderRecoverableFailure(30429),
+                  folderUnrecoverableFailure(30430),
+                  folderRecoverableStorageError(30431),
+                  folderUnrecoverableStorageError(30432),
+                  folderMotorFailure(30433),
+                  folderMemoryExhausted(30434),
+                  folderUnderTemperature(30435),
+                  folderOverTemperature(30436),
+                  folderTimingFailure(30437),
+                  folderThermistorFailure(30438),
+
+                  -- FinDeviceTypeTC = binder(5)
+                  binderCoverOpen(30503),
+                  binderCoverClosed(30504),
+                  binderInterlockOpen(30505),
+                  binderInterlockClosed(30506),
+                  binderConfigurationChange(30507),
+                  binderJam(30508),
+                  binderMissing(30509),
+                  binderLifeAlmostOver(30510),
+                  binderLifeOver(30511),
+                  binderAlmostEmpty(30512),
+                  binderEmpty(30513),
+                  binderAlmostFull(30514),
+                  binderFull(30515),
+                  binderNearLimit(30516),
+                  binderAtLimit(30517),
+                  binderOpened(30518),
+                  binderClosed(30519),
+                  binderTurnedOn(30520),
+                  binderTurnedOff(30521),
+                  binderOffline(30522),
+                  binderPowerSaver(30523),
+                  binderWarmingUp(30524),
+                  binderAdded(30525),
+                  binderRemoved(30526),
+                  binderResourceAdded(30527),
+                  binderResourceRemoved(30528),
+                  binderRecoverableFailure(30529),
+                  binderUnrecoverableFailure(30530),
+                  binderRecoverableStorageError(30531),
+                  binderUnrecoverableStorageError(30532),
+                  binderMotorFailure(30533),
+                  binderMemoryExhausted(30534),
+                  binderUnderTemperature(30535),
+                  binderOverTemperature(30536),
+                  binderTimingFailure(30537),
+                  binderThermistorFailure(30538),
+
+                  -- FinDeviceTypeTC = trimmer(6)
+                  trimmerCoverOpen(30603),
+                  trimmerCoverClosed(30604),
+                  trimmerInterlockOpen(30605),
+                  trimmerInterlockClosed(30606),
+                  trimmerConfigurationChange(30607),
+                  trimmerJam(30608),
+                  trimmerMissing(30609),
+                  trimmerLifeAlmostOver(30610),
+                  trimmerLifeOver(30611),
+                  trimmerAlmostEmpty(30612),
+                  trimmerEmpty(30613),
+                  trimmerAlmostFull(30614),
+                  trimmerFull(30615),
+                  trimmerNearLimit(30616),
+                  trimmerAtLimit(30617),
+                  trimmerOpened(30618),
+                  trimmerClosed(30619),
+                  trimmerTurnedOn(30620),
+                  trimmerTurnedOff(30621),
+                  trimmerOffline(30622),
+                  trimmerPowerSaver(30623),
+                  trimmerWarmingUp(30624),
+                  trimmerAdded(30625),
+                  trimmerRemoved(30626),
+                  trimmerResourceAdded(30627),
+                  trimmerResourceRemoved(30628),
+                  trimmerRecoverableFailure(30629),
+                  trimmerUnrecoverableFailure(30630),
+                  trimmerRecoverableStorageError(30631),
+                  trimmerUnrecoverableStorageError(30632),
+                  trimmerMotorFailure(30633),
+                  trimmerMemoryExhausted(30634),
+                  trimmerUnderTemperature(30635),
+                  trimmerOverTemperature(30636),
+                  trimmerTimingFailure(30637),
+                  trimmerThermistorFailure(30638),
+
+                  -- FinDeviceTypeTC = dieCutter(7)
+                  dieCutterCoverOpen(30703),
+                  dieCutterCoverClosed(30704),
+                  dieCutterInterlockOpen(30705),
+                  dieCutterInterlockClosed(30706),
+                  dieCutterConfigurationChange(30707),
+                  dieCutterJam(30708),
+                  dieCutterMissing(30709),
+                  dieCutterLifeAlmostOver(30710),
+                  dieCutterLifeOver(30711),
+                  dieCutterAlmostEmpty(30712),
+                  dieCutterEmpty(30713),
+                  dieCutterAlmostFull(30714),
+                  dieCutterFull(30715),
+                  dieCutterNearLimit(30716),
+                  dieCutterAtLimit(30717),
+                  dieCutterOpened(30718),
+                  dieCutterClosed(30719),
+                  dieCutterTurnedOn(30720),
+                  dieCutterTurnedOff(30721),
+                  dieCutterOffline(30722),
+                  dieCutterPowerSaver(30723),
+                  dieCutterWarmingUp(30724),
+                  dieCutterAdded(30725),
+                  dieCutterRemoved(30726),
+                  dieCutterResourceAdded(30727),
+                  dieCutterResourceRemoved(30728),
+                  dieCutterRecoverableFailure(30729),
+                  dieCutterUnrecoverableFailure(30730),
+                  dieCutterRecoverableStorageError(30731),
+                  dieCutterUnrecoverableStorageError(30732),
+                  dieCutterMotorFailure(30733),
+                  dieCutterMemoryExhausted(30734),
+                  dieCutterUnderTemperature(30735),
+                  dieCutterOverTemperature(30736),
+                  dieCutterTimingFailure(30737),
+                  dieCutterThermistorFailure(30738),
+
+                  -- FinDeviceTypeTC = puncher(8)
+                  puncherCoverOpen(30803),
+                  puncherCoverClosed(30804),
+                  puncherInterlockOpen(30805),
+                  puncherInterlockClosed(30806),
+                  puncherConfigurationChange(30807),
+                  puncherJam(30808),
+                  puncherMissing(30809),
+                  puncherLifeAlmostOver(30810),
+                  puncherLifeOver(30811),
+                  puncherAlmostEmpty(30812),
+                  puncherEmpty(30813),
+                  puncherAlmostFull(30814),
+                  puncherFull(30815),
+                  puncherNearLimit(30816),
+                  puncherAtLimit(30817),
+                  puncherOpened(30818),
+                  puncherClosed(30819),
+                  puncherTurnedOn(30820),
+                  puncherTurnedOff(30821),
+                  puncherOffline(30822),
+                  puncherPowerSaver(30823),
+                  puncherWarmingUp(30824),
+                  puncherAdded(30825),
+                  puncherRemoved(30826),
+                  puncherResourceAdded(30827),
+                  puncherResourceRemoved(30828),
+                  puncherRecoverableFailure(30829),
+                  puncherUnrecoverableFailure(30830),
+                  puncherRecoverableStorageError(30831),
+                  puncherUnrecoverableStorageError(30832),
+                  puncherMotorFailure(30833),
+                  puncherMemoryExhausted(30834),
+                  puncherUnderTemperature(30835),
+                  puncherOverTemperature(30836),
+                  puncherTimingFailure(30837),
+                  puncherThermistorFailure(30838),
+
+                  -- FinDeviceTypeTC = perforater(9)
+                  perforaterCoverOpen(30903),
+                  perforaterCoverClosed(30904),
+                  perforaterInterlockOpen(30905),
+                  perforaterInterlockClosed(30906),
+                  perforaterConfigurationChange(30907),
+                  perforaterJam(30908),
+                  perforaterMissing(30909),
+                  perforaterLifeAlmostOver(30910),
+                  perforaterLifeOver(30911),
+                  perforaterAlmostEmpty(30912),
+                  perforaterEmpty(30913),
+                  perforaterAlmostFull(30914),
+                  perforaterFull(30915),
+                  perforaterNearLimit(30916),
+                  perforaterAtLimit(30917),
+                  perforaterOpened(30918),
+                  perforaterClosed(30919),
+                  perforaterTurnedOn(30920),
+                  perforaterTurnedOff(30921),
+                  perforaterOffline(30922),
+                  perforaterPowerSaver(30923),
+                  perforaterWarmingUp(30924),
+                  perforaterAdded(30925),
+                  perforaterRemoved(30926),
+                  perforaterResourceAdded(30927),
+                  perforaterResourceRemoved(30928),
+                  perforaterRecoverableFailure(30929),
+                  perforaterUnrecoverableFailure(30930),
+                  perforaterRecoverableStorageError(30931),
+                  perforaterUnrecoverableStorageError(30932),
+                  perforaterMotorFailure(30933),
+                  perforaterMemoryExhausted(30934),
+                  perforaterUnderTemperature(30935),
+                  perforaterOverTemperature(30936),
+                  perforaterTimingFailure(30937),
+                  perforaterThermistorFailure(30938),
+
+                  -- FinDeviceTypeTC = slitter(10)
+                  slitterCoverOpen(31003),
+                  slitterCoverClosed(31004),
+                  slitterInterlockOpen(31005),
+                  slitterInterlockClosed(31006),
+                  slitterConfigurationChange(31007),
+                  slitterJam(31008),
+                  slitterMissing(31009),
+                  slitterLifeAlmostOver(31010),
+                  slitterLifeOver(31011),
+                  slitterAlmostEmpty(31012),
+                  slitterEmpty(31013),
+                  slitterAlmostFull(31014),
+                  slitterFull(31015),
+                  slitterNearLimit(31016),
+                  slitterAtLimit(31017),
+                  slitterOpened(31018),
+                  slitterClosed(31019),
+                  slitterTurnedOn(31020),
+                  slitterTurnedOff(31021),
+                  slitterOffline(31022),
+                  slitterPowerSaver(31023),
+                  slitterWarmingUp(31024),
+                  slitterAdded(31025),
+                  slitterRemoved(31026),
+                  slitterResourceAdded(31027),
+                  slitterResourceRemoved(31028),
+                  slitterRecoverableFailure(31029),
+                  slitterUnrecoverableFailure(31030),
+                  slitterRecoverableStorageError(31031),
+                  slitterUnrecoverableStorageError(31032),
+                  slitterMotorFailure(31033),
+                  slitterMemoryExhausted(31034),
+                  slitterUnderTemperature(31035),
+                  slitterOverTemperature(31036),
+                  slitterTimingFailure(31037),
+                  slitterThermistorFailure(31038),
+
+                  -- FinDeviceTypeTC = separationCutter(11)
+                  separationCutterCoverOpen(31103),
+                  separationCutterCoverClosed(31104),
+                  separationCutterInterlockOpen(31105),
+                  separationCutterInterlockClosed(31106),
+                  separationCutterConfigurationChange(31107),
+                  separationCutterJam(31108),
+                  separationCutterMissing(31109),
+                  separationCutterLifeAlmostOver(31110),
+                  separationCutterLifeOver(31111),
+                  separationCutterAlmostEmpty(31112),
+                  separationCutterEmpty(31113),
+                  separationCutterAlmostFull(31114),
+                  separationCutterFull(31115),
+                  separationCutterNearLimit(31116),
+                  separationCutterAtLimit(31117),
+                  separationCutterOpened(31118),
+                  separationCutterClosed(31119),
+                  separationCutterTurnedOn(31120),
+                  separationCutterTurnedOff(31121),
+                  separationCutterOffline(31122),
+                  separationCutterPowerSaver(31123),
+                  separationCutterWarmingUp(31124),
+                  separationCutterAdded(31125),
+                  separationCutterRemoved(31126),
+                  separationCutterResourceAdded(31127),
+                  separationCutterResourceRemoved(31128),
+                  separationCutterRecoverableFailure(31129),
+                  separationCutterUnrecoverableFailure(31130),
+                  separationCutterRecoverableStorageError(31131),
+                  separationCutterUnrecoverableStorageError(31132),
+                  separationCutterMotorFailure(31133),
+                  separationCutterMemoryExhausted(31134),
+                  separationCutterUnderTemperature(31135),
+                  separationCutterOverTemperature(31136),
+                  separationCutterTimingFailure(31137),
+                  separationCutterThermistorFailure(31138),
+
+                  -- FinDeviceTypeTC = imprinter(12)
+                  imprinterCoverOpen(31203),
+                  imprinterCoverClosed(31204),
+                  imprinterInterlockOpen(31205),
+                  imprinterInterlockClosed(31206),
+                  imprinterConfigurationChange(31207),
+                  imprinterJam(31208),
+                  imprinterMissing(31209),
+                  imprinterLifeAlmostOver(31210),
+                  imprinterLifeOver(31211),
+                  imprinterAlmostEmpty(31212),
+                  imprinterEmpty(31213),
+                  imprinterAlmostFull(31214),
+                  imprinterFull(31215),
+                  imprinterNearLimit(31216),
+                  imprinterAtLimit(31217),
+                  imprinterOpened(31218),
+                  imprinterClosed(31219),
+                  imprinterTurnedOn(31220),
+                  imprinterTurnedOff(31221),
+                  imprinterOffline(31222),
+                  imprinterPowerSaver(31223),
+                  imprinterWarmingUp(31224),
+                  imprinterAdded(31225),
+                  imprinterRemoved(31226),
+                  imprinterResourceAdded(31227),
+                  imprinterResourceRemoved(31228),
+                  imprinterRecoverableFailure(31229),
+                  imprinterUnrecoverableFailure(31230),
+                  imprinterRecoverableStorageError(31231),
+                  imprinterUnrecoverableStorageError(31232),
+                  imprinterMotorFailure(31233),
+                  imprinterMemoryExhausted(31234),
+                  imprinterUnderTemperature(31235),
+                  imprinterOverTemperature(31236),
+                  imprinterTimingFailure(31237),
+                  imprinterThermistorFailure(31238),
+
+                  -- FinDeviceTypeTC = wrapper(13)
+                  wrapperCoverOpen(31303),
+                  wrapperCoverClosed(31304),
+                  wrapperInterlockOpen(31305),
+                  wrapperInterlockClosed(31306),
+                  wrapperConfigurationChange(31307),
+                  wrapperJam(31308),
+                  wrapperMissing(31309),
+                  wrapperLifeAlmostOver(31310),
+                  wrapperLifeOver(31311),
+                  wrapperAlmostEmpty(31312),
+                  wrapperEmpty(31313),
+                  wrapperAlmostFull(31314),
+                  wrapperFull(31315),
+                  wrapperNearLimit(31316),
+                  wrapperAtLimit(31317),
+                  wrapperOpened(31318),
+                  wrapperClosed(31319),
+                  wrapperTurnedOn(31320),
+                  wrapperTurnedOff(31321),
+                  wrapperOffline(31322),
+                  wrapperPowerSaver(31323),
+                  wrapperWarmingUp(31324),
+                  wrapperAdded(31325),
+                  wrapperRemoved(31326),
+                  wrapperResourceAdded(31327),
+                  wrapperResourceRemoved(31328),
+                  wrapperRecoverableFailure(31329),
+                  wrapperUnrecoverableFailure(31330),
+                  wrapperRecoverableStorageError(31331),
+                  wrapperUnrecoverableStorageError(31332),
+                  wrapperMotorFailure(31333),
+                  wrapperMemoryExhausted(31334),
+                  wrapperUnderTemperature(31335),
+                  wrapperOverTemperature(31336),
+                  wrapperTimingFailure(31337),
+                  wrapperThermistorFailure(31338),
+
+                  -- FinDeviceTypeTC = bander(14)
+                  banderCoverOpen(31403),
+                  banderCoverClosed(31404),
+                  banderInterlockOpen(31405),
+                  banderInterlockClosed(31406),
+                  banderConfigurationChange(31407),
+                  banderJam(31408),
+                  banderMissing(31409),
+                  banderLifeAlmostOver(31410),
+                  banderLifeOver(31411),
+                  banderAlmostEmpty(31412),
+                  banderEmpty(31413),
+                  banderAlmostFull(31414),
+                  banderFull(31415),
+                  banderNearLimit(31416),
+                  banderAtLimit(31417),
+                  banderOpened(31418),
+                  banderClosed(31419),
+                  banderTurnedOn(31420),
+                  banderTurnedOff(31421),
+                  banderOffline(31422),
+                  banderPowerSaver(31423),
+                  banderWarmingUp(31424),
+                  banderAdded(31425),
+                  banderRemoved(31426),
+                  banderResourceAdded(31427),
+                  banderResourceRemoved(31428),
+                  banderRecoverableFailure(31429),
+                  banderUnrecoverableFailure(31430),
+                  banderRecoverableStorageError(31431),
+                  banderUnrecoverableStorageError(31432),
+                  banderMotorFailure(31433),
+                  banderMemoryExhausted(31434),
+                  banderUnderTemperature(31435),
+                  banderOverTemperature(31436),
+                  banderTimingFailure(31437),
+                  banderThermistorFailure(31438),
+
+                  -- FinDeviceTypeTC = makeEnvelope(15)
+                  makeEnvelopeCoverOpen(31503),
+                  makeEnvelopeCoverClosed(31504),
+                  makeEnvelopeInterlockOpen(31505),
+                  makeEnvelopeInterlockClosed(31506),
+                  makeEnvelopeConfigurationChange(31507),
+                  makeEnvelopeJam(31508),
+                  makeEnvelopeMissing(31509),
+                  makeEnvelopeLifeAlmostOver(31510),
+                  makeEnvelopeLifeOver(31511),
+                  makeEnvelopeAlmostEmpty(31512),
+                  makeEnvelopeEmpty(31513),
+                  makeEnvelopeAlmostFull(31514),
+                  makeEnvelopeFull(31515),
+                  makeEnvelopeNearLimit(31516),
+                  makeEnvelopeAtLimit(31517),
+                  makeEnvelopeOpened(31518),
+                  makeEnvelopeClosed(31519),
+                  makeEnvelopeTurnedOn(31520),
+                  makeEnvelopeTurnedOff(31521),
+                  makeEnvelopeOffline(31522),
+                  makeEnvelopePowerSaver(31523),
+                  makeEnvelopeWarmingUp(31524),
+                  makeEnvelopeAdded(31525),
+                  makeEnvelopeRemoved(31526),
+                  makeEnvelopeResourceAdded(31527),
+                  makeEnvelopeResourceRemoved(31528),
+                  makeEnvelopeRecoverableFailure(31529),
+                  makeEnvelopeUnrecoverableFailure(31530),
+                  makeEnvelopeRecoverableStorageError(31531),
+                  makeEnvelopeUnrecoverableStorageError(31532),
+                  makeEnvelopeMotorFailure(31533),
+                  makeEnvelopeMemoryExhausted(31534),
+                  makeEnvelopeUnderTemperature(31535),
+                  makeEnvelopeOverTemperature(31536),
+                  makeEnvelopeTimingFailure(31537),
+                  makeEnvelopeThermistorFailure(31538),
+
+                  -- FinDeviceTypeTC = stacker(16)
+                  stackerCoverOpen(31603),
+                  stackerCoverClosed(31604),
+                  stackerInterlockOpen(31605),
+                  stackerInterlockClosed(31606),
+                  stackerConfigurationChange(31607),
+                  stackerJam(31608),
+                  stackerMissing(31609),
+                  stackerLifeAlmostOver(31610),
+                  stackerLifeOver(31611),
+                  stackerAlmostEmpty(31612),
+                  stackerEmpty(31613),
+                  stackerAlmostFull(31614),
+                  stackerFull(31615),
+                  stackerNearLimit(31616),
+                  stackerAtLimit(31617),
+                  stackerOpened(31618),
+                  stackerClosed(31619),
+                  stackerTurnedOn(31620),
+                  stackerTurnedOff(31621),
+                  stackerOffline(31622),
+                  stackerPowerSaver(31623),
+                  stackerWarmingUp(31624),
+                  stackerAdded(31625),
+                  stackerRemoved(31626),
+                  stackerResourceAdded(31627),
+                  stackerResourceRemoved(31628),
+                  stackerRecoverableFailure(31629),
+                  stackerUnrecoverableFailure(31630),
+                  stackerRecoverableStorageError(31631),
+                  stackerUnrecoverableStorageError(31632),
+                  stackerMotorFailure(31633),
+                  stackerMemoryExhausted(31634),
+                  stackerUnderTemperature(31635),
+                  stackerOverTemperature(31636),
+                  stackerTimingFailure(31637),
+                  stackerThermistorFailure(31638),
+
+                  -- FinDeviceTypeTC = sheetRotator(17)
+                  sheetRotatorCoverOpen(31703),
+                  sheetRotatorCoverClosed(31704),
+                  sheetRotatorInterlockOpen(31705),
+                  sheetRotatorInterlockClosed(31706),
+                  sheetRotatorConfigurationChange(31707),
+                  sheetRotatorJam(31708),
+                  sheetRotatorMissing(31709),
+                  sheetRotatorLifeAlmostOver(31710),
+                  sheetRotatorLifeOver(31711),
+                  sheetRotatorAlmostEmpty(31712),
+                  sheetRotatorEmpty(31713),
+                  sheetRotatorAlmostFull(31714),
+                  sheetRotatorFull(31715),
+                  sheetRotatorNearLimit(31716),
+                  sheetRotatorAtLimit(31717),
+                  sheetRotatorOpened(31718),
+                  sheetRotatorClosed(31719),
+                  sheetRotatorTurnedOn(31720),
+                  sheetRotatorTurnedOff(31721),
+                  sheetRotatorOffline(31722),
+                  sheetRotatorPowerSaver(31723),
+                  sheetRotatorWarmingUp(31724),
+                  sheetRotatorAdded(31725),
+                  sheetRotatorRemoved(31726),
+                  sheetRotatorResourceAdded(31727),
+                  sheetRotatorResourceRemoved(31728),
+                  sheetRotatorRecoverableFailure(31729),
+                  sheetRotatorUnrecoverableFailure(31730),
+                  sheetRotatorRecoverableStorageError(31731),
+                  sheetRotatorUnrecoverableStorageError(31732),
+                  sheetRotatorMotorFailure(31733),
+                  sheetRotatorMemoryExhausted(31734),
+                  sheetRotatorUnderTemperature(31735),
+                  sheetRotatorOverTemperature(31736),
+                  sheetRotatorTimingFailure(31737),
+                  sheetRotatorThermistorFailure(31738),
+
+                  -- FinDeviceTypeTC = inserter(18)
+                  inserterCoverOpen(31803),
+                  inserterCoverClosed(31804),
+                  inserterInterlockOpen(31805),
+                  inserterInterlockClosed(31806),
+                  inserterConfigurationChange(31807),
+                  inserterJam(31808),
+                  inserterMissing(31809),
+                  inserterLifeAlmostOver(31810),
+                  inserterLifeOver(31811),
+                  inserterAlmostEmpty(31812),
+                  inserterEmpty(31813),
+                  inserterAlmostFull(31814),
+                  inserterFull(31815),
+                  inserterNearLimit(31816),
+                  inserterAtLimit(31817),
+                  inserterOpened(31818),
+                  inserterClosed(31819),
+                  inserterTurnedOn(31820),
+                  inserterTurnedOff(31821),
+                  inserterOffline(31822),
+                  inserterPowerSaver(31823),
+                  inserterWarmingUp(31824),
+                  inserterAdded(31825),
+                  inserterRemoved(31826),
+                  inserterResourceAdded(31827),
+                  inserterResourceRemoved(31828),
+                  inserterRecoverableFailure(31829),
+                  inserterUnrecoverableFailure(31830),
+                  inserterRecoverableStorageError(31831),
+                  inserterUnrecoverableStorageError(31832),
+                  inserterMotorFailure(31833),
+                  inserterMemoryExhausted(31834),
+                  inserterUnderTemperature(31835),
+                  inserterOverTemperature(31836),
+                  inserterTimingFailure(31837),
+                  inserterThermistorFailure(31838)
+                  }
+END
+
+

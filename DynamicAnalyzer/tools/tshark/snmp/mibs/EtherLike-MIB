@@ -1,0 +1,1954 @@
+EtherLike-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, OBJECT-IDENTITY,
+        Integer32, Counter32, Counter64, mib-2, transmission
+            FROM SNMPv2-SMI
+        MODULE-COMPLIANCE, OBJECT-GROUP
+            FROM SNMPv2-CONF
+        TruthValue
+            FROM SNMPv2-TC
+        ifIndex, InterfaceIndex
+            FROM IF-MIB;
+
+    etherMIB MODULE-IDENTITY
+        LAST-UPDATED "200309190000Z"  -- September 19, 2003
+        ORGANIZATION "IETF Ethernet Interfaces and Hub MIB
+                     Working Group"
+        CONTACT-INFO
+            "WG E-mail: hubmib@ietf.org
+          To subscribe: hubmib-request@ietf.org
+
+                 Chair: Dan Romascanu
+                Postal: Avaya Inc.
+                        Atidum Technology Park, Bldg. 3
+                        Tel Aviv 61131
+                        Israel
+                   Tel: +972 3 645 8414
+                E-mail: dromasca@avaya.com
+
+               Editor: John Flick
+               Postal: Hewlett-Packard Company
+                       8000 Foothills Blvd. M/S 5557
+                       Roseville, CA 95747-5557
+                       USA
+                  Tel: +1 916 785 4018
+                  Fax: +1 916 785 1199
+               E-mail: johnf@rose.hp.com"
+
+        DESCRIPTION "The MIB module to describe generic objects for
+                    ethernet-like network interfaces.
+
+                    The following reference is used throughout this
+                    MIB module:
+
+                    [IEEE 802.3 Std] refers to:
+                       IEEE Std 802.3, 2002 Edition: 'IEEE Standard
+
+
+
+                       for Information technology -
+                       Telecommunications and information exchange
+                       between systems - Local and metropolitan
+                       area networks - Specific requirements -
+                       Part 3: Carrier sense multiple access with
+                       collision detection (CSMA/CD) access method
+                       and physical layer specifications', as
+                       amended by IEEE Std 802.3ae-2002:
+                       'Amendment: Media Access Control (MAC)
+                       Parameters, Physical Layer, and Management
+                       Parameters for 10 Gb/s Operation', August,
+                       2002.
+
+                    Of particular interest is Clause 30, '10 Mb/s,
+                    100 Mb/s, 1000 Mb/s, and 10 Gb/s Management'.
+
+                    Copyright (C) The Internet Society (2003).  This
+                    version of this MIB module is part of RFC 3635;
+                    see the RFC itself for full legal notices."
+
+        REVISION    "200309190000Z"  -- September 19, 2003
+        DESCRIPTION "Updated to include support for 10 Gb/sec
+                     interfaces.  This resulted in the following
+                     revisions:
+
+                     - Updated dot3StatsAlignmentErrors and
+                       dot3StatsSymbolErrors DESCRIPTIONs to
+                       reflect behaviour at 10 Gb/s
+                     - Added dot3StatsRateControlAbility and
+                       dot3RateControlStatus for management
+                       of the Rate Control function in 10 Gb/s
+                       WAN applications
+                     - Added 64-bit versions of all counters
+                       that are used on high-speed ethernet
+                       interfaces
+                     - Added object groups to contain the new
+                       objects
+                     - Deprecated etherStatsBaseGroup and
+                       split into etherStatsBaseGroup2 and
+                       etherStatsHalfDuplexGroup, so that
+                       interfaces which can only operate at
+                       full-duplex do not need to implement
+                       half-duplex-only statistics
+                     - Deprecated dot3Compliance and replaced
+                       it with dot3Compliance2, which includes
+                       the compliance information for the new
+                       object groups
+
+
+
+
+                     In addition, the dot3Tests and dot3Errors
+                     object identities have been deprecated,
+                     since there is no longer a standard method
+                     for using them.
+
+                     This version published as RFC 3635."
+
+        REVISION    "199908240400Z"  -- August 24, 1999
+        DESCRIPTION "Updated to include support for 1000 Mb/sec
+                     interfaces and full-duplex interfaces.
+                     This version published as RFC 2665."
+
+        REVISION    "199806032150Z"  -- June 3, 1998
+        DESCRIPTION "Updated to include support for 100 Mb/sec
+                     interfaces.
+                     This version published as RFC 2358."
+
+        REVISION    "199402030400Z"  -- February 3, 1994
+        DESCRIPTION "Initial version, published as RFC 1650."
+        ::= { mib-2 35 }
+
+    etherMIBObjects OBJECT IDENTIFIER ::= { etherMIB 1 }
+
+    dot3    OBJECT IDENTIFIER ::= { transmission 7 }
+
+    -- the Ethernet-like Statistics group
+
+    dot3StatsTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF Dot3StatsEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "Statistics for a collection of ethernet-like
+                    interfaces attached to a particular system.
+                    There will be one row in this table for each
+                    ethernet-like interface in the system."
+        ::= { dot3 2 }
+
+    dot3StatsEntry OBJECT-TYPE
+        SYNTAX     Dot3StatsEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "Statistics for a particular interface to an
+                    ethernet-like medium."
+        INDEX       { dot3StatsIndex }
+        ::= { dot3StatsTable 1 }
+
+    Dot3StatsEntry ::=
+        SEQUENCE {
+
+
+
+            dot3StatsIndex                      InterfaceIndex,
+            dot3StatsAlignmentErrors            Counter32,
+            dot3StatsFCSErrors                  Counter32,
+            dot3StatsSingleCollisionFrames      Counter32,
+            dot3StatsMultipleCollisionFrames    Counter32,
+            dot3StatsSQETestErrors              Counter32,
+            dot3StatsDeferredTransmissions      Counter32,
+            dot3StatsLateCollisions             Counter32,
+            dot3StatsExcessiveCollisions        Counter32,
+            dot3StatsInternalMacTransmitErrors  Counter32,
+            dot3StatsCarrierSenseErrors         Counter32,
+            dot3StatsFrameTooLongs              Counter32,
+            dot3StatsInternalMacReceiveErrors   Counter32,
+            dot3StatsEtherChipSet               OBJECT IDENTIFIER,
+            dot3StatsSymbolErrors               Counter32,
+            dot3StatsDuplexStatus               INTEGER,
+            dot3StatsRateControlAbility         TruthValue,
+            dot3StatsRateControlStatus          INTEGER
+        }
+
+    dot3StatsIndex OBJECT-TYPE
+        SYNTAX      InterfaceIndex
+        MAX-ACCESS  read-only  -- read-only since originally an
+                               -- SMIv1 index
+        STATUS      current
+        DESCRIPTION "An index value that uniquely identifies an
+                    interface to an ethernet-like medium.  The
+                    interface identified by a particular value of
+                    this index is the same interface as identified
+                    by the same value of ifIndex."
+        REFERENCE   "RFC 2863, ifIndex"
+        ::= { dot3StatsEntry 1 }
+
+    dot3StatsAlignmentErrors OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames received on a particular
+                    interface that are not an integral number of
+                    octets in length and do not pass the FCS check.
+
+                    The count represented by an instance of this
+                    object is incremented when the alignmentError
+                    status is returned by the MAC service to the
+                    LLC (or other MAC user). Received frames for
+                    which multiple error conditions pertain are,
+                    according to the conventions of IEEE 802.3
+                    Layer Management, counted exclusively according
+
+
+
+                    to the error status presented to the LLC.
+
+                    This counter does not increment for group
+                    encoding schemes greater than 4 bits per group.
+
+                    For interfaces operating at 10 Gb/s, this
+                    counter can roll over in less than 5 minutes if
+                    it is incrementing at its maximum rate.  Since
+                    that amount of time could be less than a
+                    management station's poll cycle time, in order
+                    to avoid a loss of information, a management
+                    station is advised to poll the
+                    dot3HCStatsAlignmentErrors object for 10 Gb/s
+                    or faster interfaces.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.7,
+                    aAlignmentErrors"
+        ::= { dot3StatsEntry 2 }
+
+    dot3StatsFCSErrors OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames received on a particular
+                    interface that are an integral number of octets
+                    in length but do not pass the FCS check.  This
+                    count does not include frames received with
+                    frame-too-long or frame-too-short error.
+
+                    The count represented by an instance of this
+                    object is incremented when the frameCheckError
+                    status is returned by the MAC service to the
+                    LLC (or other MAC user). Received frames for
+                    which multiple error conditions pertain are,
+                    according to the conventions of IEEE 802.3
+                    Layer Management, counted exclusively according
+                    to the error status presented to the LLC.
+
+                    Note:  Coding errors detected by the physical
+                    layer for speeds above 10 Mb/s will cause the
+                    frame to fail the FCS check.
+
+                    For interfaces operating at 10 Gb/s, this
+                    counter can roll over in less than 5 minutes if
+
+
+
+                    it is incrementing at its maximum rate.  Since
+                    that amount of time could be less than a
+                    management station's poll cycle time, in order
+                    to avoid a loss of information, a management
+                    station is advised to poll the
+                    dot3HCStatsFCSErrors object for 10 Gb/s or
+                    faster interfaces.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.6,
+                    aFrameCheckSequenceErrors."
+        ::= { dot3StatsEntry 3 }
+
+    dot3StatsSingleCollisionFrames OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames that are involved in a single
+                    collision, and are subsequently transmitted
+                    successfully.
+
+                    A frame that is counted by an instance of this
+                    object is also counted by the corresponding
+                    instance of either the ifOutUcastPkts,
+                    ifOutMulticastPkts, or ifOutBroadcastPkts,
+                    and is not counted by the corresponding
+                    instance of the dot3StatsMultipleCollisionFrames
+                    object.
+
+                    This counter does not increment when the
+                    interface is operating in full-duplex mode.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.3,
+                    aSingleCollisionFrames."
+        ::= { dot3StatsEntry 4 }
+
+    dot3StatsMultipleCollisionFrames OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames that are involved in more
+
+
+
+                    than one collision and are subsequently
+                    transmitted successfully.
+
+                    A frame that is counted by an instance of this
+                    object is also counted by the corresponding
+                    instance of either the ifOutUcastPkts,
+                    ifOutMulticastPkts, or ifOutBroadcastPkts,
+                    and is not counted by the corresponding
+                    instance of the dot3StatsSingleCollisionFrames
+                    object.
+
+                    This counter does not increment when the
+                    interface is operating in full-duplex mode.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.4,
+                    aMultipleCollisionFrames."
+        ::= { dot3StatsEntry 5 }
+
+    dot3StatsSQETestErrors OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of times that the SQE TEST ERROR
+                    is received on a particular interface. The
+                    SQE TEST ERROR is set in accordance with the
+                    rules for verification of the SQE detection
+                    mechanism in the PLS Carrier Sense Function as
+                    described in IEEE Std. 802.3, 2000 Edition,
+                    section 7.2.4.6.
+
+                    This counter does not increment on interfaces
+                    operating at speeds greater than 10 Mb/s, or on
+                    interfaces operating in full-duplex mode.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 7.2.4.6, also 30.3.2.1.4,
+                    aSQETestErrors."
+        ::= { dot3StatsEntry 6 }
+
+    dot3StatsDeferredTransmissions OBJECT-TYPE
+        SYNTAX      Counter32
+
+
+
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames for which the first
+                    transmission attempt on a particular interface
+                    is delayed because the medium is busy.
+
+                    The count represented by an instance of this
+                    object does not include frames involved in
+                    collisions.
+
+                    This counter does not increment when the
+                    interface is operating in full-duplex mode.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.9,
+                    aFramesWithDeferredXmissions."
+        ::= { dot3StatsEntry 7 }
+
+    dot3StatsLateCollisions OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "The number of times that a collision is
+                    detected on a particular interface later than
+                    one slotTime into the transmission of a packet.
+
+                    A (late) collision included in a count
+                    represented by an instance of this object is
+                    also considered as a (generic) collision for
+                    purposes of other collision-related
+                    statistics.
+
+                    This counter does not increment when the
+                    interface is operating in full-duplex mode.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.10,
+                    aLateCollisions."
+        ::= { dot3StatsEntry 8 }
+
+    dot3StatsExcessiveCollisions OBJECT-TYPE
+        SYNTAX      Counter32
+
+
+
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames for which transmission on a
+                    particular interface fails due to excessive
+                    collisions.
+
+                    This counter does not increment when the
+                    interface is operating in full-duplex mode.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.11,
+                    aFramesAbortedDueToXSColls."
+        ::= { dot3StatsEntry 9 }
+
+    dot3StatsInternalMacTransmitErrors OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames for which transmission on a
+                    particular interface fails due to an internal
+                    MAC sublayer transmit error. A frame is only
+                    counted by an instance of this object if it is
+                    not counted by the corresponding instance of
+                    either the dot3StatsLateCollisions object, the
+                    dot3StatsExcessiveCollisions object, or the
+                    dot3StatsCarrierSenseErrors object.
+
+                    The precise meaning of the count represented by
+                    an instance of this object is implementation-
+                    specific.  In particular, an instance of this
+                    object may represent a count of transmission
+                    errors on a particular interface that are not
+                    otherwise counted.
+
+                    For interfaces operating at 10 Gb/s, this
+                    counter can roll over in less than 5 minutes if
+                    it is incrementing at its maximum rate.  Since
+                    that amount of time could be less than a
+                    management station's poll cycle time, in order
+                    to avoid a loss of information, a management
+                    station is advised to poll the
+                    dot3HCStatsInternalMacTransmitErrors object for
+                    10 Gb/s or faster interfaces.
+
+                    Discontinuities in the value of this counter can
+
+
+
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.12,
+                    aFramesLostDueToIntMACXmitError."
+        ::= { dot3StatsEntry 10 }
+
+    dot3StatsCarrierSenseErrors OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "The number of times that the carrier sense
+                    condition was lost or never asserted when
+                    attempting to transmit a frame on a particular
+                    interface.
+
+                    The count represented by an instance of this
+                    object is incremented at most once per
+                    transmission attempt, even if the carrier sense
+                    condition fluctuates during a transmission
+                    attempt.
+
+                    This counter does not increment when the
+                    interface is operating in full-duplex mode.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.13,
+                    aCarrierSenseErrors."
+        ::= { dot3StatsEntry 11 }
+
+    -- { dot3StatsEntry 12 } is not assigned
+
+    dot3StatsFrameTooLongs OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames received on a particular
+                    interface that exceed the maximum permitted
+                    frame size.
+
+                    The count represented by an instance of this
+                    object is incremented when the frameTooLong
+                    status is returned by the MAC service to the
+                    LLC (or other MAC user). Received frames for
+                    which multiple error conditions pertain are,
+
+
+
+                    according to the conventions of IEEE 802.3
+                    Layer Management, counted exclusively according
+                    to the error status presented to the LLC.
+
+                    For interfaces operating at 10 Gb/s, this
+                    counter can roll over in less than 80 minutes if
+                    it is incrementing at its maximum rate.  Since
+                    that amount of time could be less than a
+                    management station's poll cycle time, in order
+                    to avoid a loss of information, a management
+                    station is advised to poll the
+                    dot3HCStatsFrameTooLongs object for 10 Gb/s
+                    or faster interfaces.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.25,
+                    aFrameTooLongErrors."
+        ::= { dot3StatsEntry 13 }
+
+    -- { dot3StatsEntry 14 } is not assigned
+
+    -- { dot3StatsEntry 15 } is not assigned
+
+    dot3StatsInternalMacReceiveErrors OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames for which reception on a
+                    particular interface fails due to an internal
+                    MAC sublayer receive error. A frame is only
+                    counted by an instance of this object if it is
+                    not counted by the corresponding instance of
+                    either the dot3StatsFrameTooLongs object, the
+                    dot3StatsAlignmentErrors object, or the
+                    dot3StatsFCSErrors object.
+
+                    The precise meaning of the count represented by
+                    an instance of this object is implementation-
+                    specific.  In particular, an instance of this
+                    object may represent a count of receive errors
+                    on a particular interface that are not
+                    otherwise counted.
+
+                    For interfaces operating at 10 Gb/s, this
+                    counter can roll over in less than 5 minutes if
+
+
+
+                    it is incrementing at its maximum rate.  Since
+                    that amount of time could be less than a
+                    management station's poll cycle time, in order
+                    to avoid a loss of information, a management
+                    station is advised to poll the
+                    dot3HCStatsInternalMacReceiveErrors object for
+                    10 Gb/s or faster interfaces.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.15,
+                    aFramesLostDueToIntMACRcvError."
+        ::= { dot3StatsEntry 16 }
+
+    dot3StatsEtherChipSet OBJECT-TYPE
+        SYNTAX      OBJECT IDENTIFIER
+        MAX-ACCESS  read-only
+        STATUS      deprecated
+        DESCRIPTION "******** THIS OBJECT IS DEPRECATED ********
+
+                    This object contains an OBJECT IDENTIFIER
+                    which identifies the chipset used to
+                    realize the interface. Ethernet-like
+                    interfaces are typically built out of
+                    several different chips. The MIB implementor
+                    is presented with a decision of which chip
+                    to identify via this object. The implementor
+                    should identify the chip which is usually
+                    called the Medium Access Control chip.
+                    If no such chip is easily identifiable,
+                    the implementor should identify the chip
+                    which actually gathers the transmit
+                    and receive statistics and error
+                    indications. This would allow a
+                    manager station to correlate the
+                    statistics and the chip generating
+                    them, giving it the ability to take
+                    into account any known anomalies
+                    in the chip.
+
+                    This object has been deprecated.  Implementation
+                    feedback indicates that it is of limited use for
+                    debugging network problems in the field, and
+                    the administrative overhead involved in
+                    maintaining a registry of chipset OIDs is not
+                    justified."
+
+
+
+        ::= { dot3StatsEntry 17 }
+
+    dot3StatsSymbolErrors OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "For an interface operating at 100 Mb/s, the
+                    number of times there was an invalid data symbol
+                    when a valid carrier was present.
+
+                    For an interface operating in half-duplex mode
+                    at 1000 Mb/s, the number of times the receiving
+                    media is non-idle (a carrier event) for a period
+                    of time equal to or greater than slotTime, and
+                    during which there was at least one occurrence
+                    of an event that causes the PHY to indicate
+                    'Data reception error' or 'carrier extend error'
+                    on the GMII.
+
+                    For an interface operating in full-duplex mode
+                    at 1000 Mb/s, the number of times the receiving
+                    media is non-idle (a carrier event) for a period
+                    of time equal to or greater than minFrameSize,
+                    and during which there was at least one
+                    occurrence of an event that causes the PHY to
+                    indicate 'Data reception error' on the GMII.
+
+                    For an interface operating at 10 Gb/s, the
+                    number of times the receiving media is non-idle
+                    (a carrier event) for a period of time equal to
+                    or greater than minFrameSize, and during which
+                    there was at least one occurrence of an event
+                    that causes the PHY to indicate 'Receive Error'
+                    on the XGMII.
+
+                    The count represented by an instance of this
+                    object is incremented at most once per carrier
+                    event, even if multiple symbol errors occur
+                    during the carrier event.  This count does
+                    not increment if a collision is present.
+
+                    This counter does not increment when the
+                    interface is operating at 10 Mb/s.
+
+                    For interfaces operating at 10 Gb/s, this
+                    counter can roll over in less than 5 minutes if
+                    it is incrementing at its maximum rate.  Since
+                    that amount of time could be less than a
+
+
+
+                    management station's poll cycle time, in order
+                    to avoid a loss of information, a management
+                    station is advised to poll the
+                    dot3HCStatsSymbolErrors object for 10 Gb/s
+                    or faster interfaces.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.2.1.5,
+                    aSymbolErrorDuringCarrier."
+        ::= { dot3StatsEntry 18 }
+
+    dot3StatsDuplexStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        unknown(1),
+                        halfDuplex(2),
+                        fullDuplex(3)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "The current mode of operation of the MAC
+                    entity.  'unknown' indicates that the current
+                    duplex mode could not be determined.
+
+                    Management control of the duplex mode is
+                    accomplished through the MAU MIB.  When
+                    an interface does not support autonegotiation,
+                    or when autonegotiation is not enabled, the
+                    duplex mode is controlled using
+                    ifMauDefaultType.  When autonegotiation is
+                    supported and enabled, duplex mode is controlled
+                    using ifMauAutoNegAdvertisedBits.  In either
+                    case, the currently operating duplex mode is
+                    reflected both in this object and in ifMauType.
+
+                    Note that this object provides redundant
+                    information with ifMauType.  Normally, redundant
+                    objects are discouraged.  However, in this
+                    instance, it allows a management application to
+                    determine the duplex status of an interface
+                    without having to know every possible value of
+                    ifMauType.  This was felt to be sufficiently
+                    valuable to justify the redundancy."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.32,
+                    aDuplexStatus."
+        ::= { dot3StatsEntry 19 }
+
+
+
+    dot3StatsRateControlAbility OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "'true' for interfaces operating at speeds above
+                    1000 Mb/s that support Rate Control through
+                    lowering the average data rate of the MAC
+                    sublayer, with frame granularity, and 'false'
+                    otherwise."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.33,
+                    aRateControlAbility."
+        ::= { dot3StatsEntry 20 }
+
+    dot3StatsRateControlStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        rateControlOff(1),
+                        rateControlOn(2),
+                        unknown(3)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "The current Rate Control mode of operation of
+                    the MAC sublayer of this interface."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.34,
+                    aRateControlStatus."
+        ::= { dot3StatsEntry 21 }
+
+    -- the Ethernet-like Collision Statistics group
+
+    -- Implementation of this group is optional; it is appropriate
+    -- for all systems which have the necessary metering
+
+    dot3CollTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Dot3CollEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION "A collection of collision histograms for a
+                    particular set of interfaces."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.30,
+                    aCollisionFrames."
+        ::= { dot3 5 }
+
+    dot3CollEntry OBJECT-TYPE
+        SYNTAX      Dot3CollEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION "A cell in the histogram of per-frame
+                    collisions for a particular interface.  An
+
+
+
+                    instance of this object represents the
+                    frequency of individual MAC frames for which
+                    the transmission (successful or otherwise) on a
+                    particular interface is accompanied by a
+                    particular number of media collisions."
+        INDEX       { ifIndex, dot3CollCount }
+        ::= { dot3CollTable 1 }
+
+    Dot3CollEntry ::=
+        SEQUENCE {
+            dot3CollCount        Integer32,
+            dot3CollFrequencies  Counter32
+        }
+
+    -- { dot3CollEntry 1 } is no longer in use
+
+    dot3CollCount OBJECT-TYPE
+        SYNTAX      Integer32 (1..16)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION "The number of per-frame media collisions for
+                    which a particular collision histogram cell
+                    represents the frequency on a particular
+                    interface."
+        ::= { dot3CollEntry 2 }
+
+    dot3CollFrequencies OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of individual MAC frames for which the
+                    transmission (successful or otherwise) on a
+                    particular interface occurs after the
+                    frame has experienced exactly the number
+                    of collisions in the associated
+                    dot3CollCount object.
+
+                    For example, a frame which is transmitted
+                    on interface 77 after experiencing
+                    exactly 4 collisions would be indicated
+                    by incrementing only dot3CollFrequencies.77.4.
+                    No other instance of dot3CollFrequencies would
+                    be incremented in this example.
+
+                    This counter does not increment when the
+                    interface is operating in full-duplex mode.
+
+                    Discontinuities in the value of this counter can
+
+
+
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        ::= { dot3CollEntry 3 }
+
+    dot3ControlTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Dot3ControlEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION "A table of descriptive and status information
+                    about the MAC Control sublayer on the
+                    ethernet-like interfaces attached to a
+                    particular system.  There will be one row in
+                    this table for each ethernet-like interface in
+                    the system which implements the MAC Control
+                    sublayer.  If some, but not all, of the
+                    ethernet-like interfaces in the system implement
+                    the MAC Control sublayer, there will be fewer
+                    rows in this table than in the dot3StatsTable."
+        ::= { dot3 9 }
+
+    dot3ControlEntry OBJECT-TYPE
+        SYNTAX      Dot3ControlEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION "An entry in the table, containing information
+                    about the MAC Control sublayer on a single
+                    ethernet-like interface."
+        INDEX       { dot3StatsIndex }
+        ::= { dot3ControlTable 1 }
+
+    Dot3ControlEntry ::=
+        SEQUENCE {
+            dot3ControlFunctionsSupported       BITS,
+            dot3ControlInUnknownOpcodes         Counter32,
+            dot3HCControlInUnknownOpcodes       Counter64
+        }
+
+    dot3ControlFunctionsSupported OBJECT-TYPE
+        SYNTAX      BITS {
+                        pause(0)   -- 802.3 flow control
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A list of the possible MAC Control functions
+                    implemented for this interface."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.3.2,
+                    aMACControlFunctionsSupported."
+
+
+
+        ::= { dot3ControlEntry 1 }
+
+    dot3ControlInUnknownOpcodes OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of MAC Control frames received on this
+                    interface that contain an opcode that is not
+                    supported by this device.
+
+                    For interfaces operating at 10 Gb/s, this
+                    counter can roll over in less than 5 minutes if
+                    it is incrementing at its maximum rate.  Since
+                    that amount of time could be less than a
+                    management station's poll cycle time, in order
+                    to avoid a loss of information, a management
+                    station is advised to poll the
+                    dot3HCControlInUnknownOpcodes object for 10 Gb/s
+                    or faster interfaces.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.3.5,
+                    aUnsupportedOpcodesReceived"
+        ::= { dot3ControlEntry 2 }
+
+    dot3HCControlInUnknownOpcodes OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of MAC Control frames received on this
+                    interface that contain an opcode that is not
+                    supported by this device.
+
+                    This counter is a 64 bit version of
+                    dot3ControlInUnknownOpcodes.  It should be used
+                    on interfaces operating at 10 Gb/s or faster.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.3.5,
+                    aUnsupportedOpcodesReceived"
+        ::= { dot3ControlEntry 3 }
+
+
+
+
+    dot3PauseTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Dot3PauseEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION "A table of descriptive and status information
+                    about the MAC Control PAUSE function on the
+                    ethernet-like interfaces attached to a
+                    particular system. There will be one row in
+                    this table for each ethernet-like interface in
+                    the system which supports the MAC Control PAUSE
+                    function (i.e., the 'pause' bit in the
+                    corresponding instance of
+                    dot3ControlFunctionsSupported is set).  If some,
+                    but not all, of the ethernet-like interfaces in
+                    the system implement the MAC Control PAUSE
+                    function (for example, if some interfaces only
+                    support half-duplex), there will be fewer rows
+                    in this table than in the dot3StatsTable."
+        ::= { dot3 10 }
+
+    dot3PauseEntry OBJECT-TYPE
+        SYNTAX      Dot3PauseEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION "An entry in the table, containing information
+                    about the MAC Control PAUSE function on a single
+                    ethernet-like interface."
+        INDEX       { dot3StatsIndex }
+        ::= { dot3PauseTable 1 }
+
+    Dot3PauseEntry ::=
+
+        SEQUENCE {
+            dot3PauseAdminMode                  INTEGER,
+            dot3PauseOperMode                   INTEGER,
+            dot3InPauseFrames                   Counter32,
+            dot3OutPauseFrames                  Counter32,
+            dot3HCInPauseFrames                 Counter64,
+            dot3HCOutPauseFrames                Counter64
+        }
+
+    dot3PauseAdminMode OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        disabled(1),
+                        enabledXmit(2),
+                        enabledRcv(3),
+                        enabledXmitAndRcv(4)
+                    }
+
+
+
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION "This object is used to configure the default
+                    administrative PAUSE mode for this interface.
+
+                    This object represents the
+                    administratively-configured PAUSE mode for this
+                    interface.  If auto-negotiation is not enabled
+                    or is not implemented for the active MAU
+                    attached to this interface, the value of this
+                    object determines the operational PAUSE mode
+                    of the interface whenever it is operating in
+                    full-duplex mode.  In this case, a set to this
+                    object will force the interface into the
+                    specified mode.
+
+                    If auto-negotiation is implemented and enabled
+                    for the MAU attached to this interface, the
+                    PAUSE mode for this interface is determined by
+                    auto-negotiation, and the value of this object
+                    denotes the mode to which the interface will
+                    automatically revert if/when auto-negotiation is
+                    later disabled.  Note that when auto-negotiation
+                    is running, administrative control of the PAUSE
+                    mode may be accomplished using the
+                    ifMauAutoNegCapAdvertisedBits object in the
+                    MAU-MIB.
+
+                    Note that the value of this object is ignored
+                    when the interface is not operating in
+                    full-duplex mode.
+
+                    An attempt to set this object to
+                    'enabledXmit(2)' or 'enabledRcv(3)' will fail
+                    on interfaces that do not support operation
+                    at greater than 100 Mb/s."
+        ::= { dot3PauseEntry 1 }
+
+    dot3PauseOperMode OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        disabled(1),
+                        enabledXmit(2),
+                        enabledRcv(3),
+                        enabledXmitAndRcv(4)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "This object reflects the PAUSE mode currently
+
+
+
+                    in use on this interface, as determined by
+                    either (1) the result of the auto-negotiation
+                    function or (2) if auto-negotiation is not
+                    enabled or is not implemented for the active MAU
+                    attached to this interface, by the value of
+                    dot3PauseAdminMode.  Interfaces operating at
+                    100 Mb/s or less will never return
+                    'enabledXmit(2)' or 'enabledRcv(3)'.  Interfaces
+                    operating in half-duplex mode will always return
+                    'disabled(1)'.  Interfaces on which
+                    auto-negotiation is enabled but not yet
+                    completed should return the value
+                    'disabled(1)'."
+        ::= { dot3PauseEntry 2 }
+
+    dot3InPauseFrames OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of MAC Control frames received on this
+                    interface with an opcode indicating the PAUSE
+                    operation.
+
+                    This counter does not increment when the
+                    interface is operating in half-duplex mode.
+
+                    For interfaces operating at 10 Gb/s, this
+                    counter can roll over in less than 5 minutes if
+                    it is incrementing at its maximum rate.  Since
+                    that amount of time could be less than a
+                    management station's poll cycle time, in order
+                    to avoid a loss of information, a management
+                    station is advised to poll the
+                    dot3HCInPauseFrames object for 10 Gb/s or
+                    faster interfaces.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.4.3,
+                    aPAUSEMACCtrlFramesReceived."
+        ::= { dot3PauseEntry 3 }
+
+    dot3OutPauseFrames OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+
+
+
+        DESCRIPTION "A count of MAC Control frames transmitted on
+                    this interface with an opcode indicating the
+                    PAUSE operation.
+
+                    This counter does not increment when the
+                    interface is operating in half-duplex mode.
+
+                    For interfaces operating at 10 Gb/s, this
+                    counter can roll over in less than 5 minutes if
+                    it is incrementing at its maximum rate.  Since
+                    that amount of time could be less than a
+                    management station's poll cycle time, in order
+                    to avoid a loss of information, a management
+                    station is advised to poll the
+                    dot3HCOutPauseFrames object for 10 Gb/s or
+                    faster interfaces.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.4.2,
+                    aPAUSEMACCtrlFramesTransmitted."
+        ::= { dot3PauseEntry 4 }
+
+    dot3HCInPauseFrames OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of MAC Control frames received on this
+                    interface with an opcode indicating the PAUSE
+                    operation.
+
+                    This counter does not increment when the
+                    interface is operating in half-duplex mode.
+
+                    This counter is a 64 bit version of
+                    dot3InPauseFrames.  It should be used on
+                    interfaces operating at 10 Gb/s or faster.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.4.3,
+                    aPAUSEMACCtrlFramesReceived."
+        ::= { dot3PauseEntry 5 }
+
+
+
+
+    dot3HCOutPauseFrames OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of MAC Control frames transmitted on
+                    this interface with an opcode indicating the
+                    PAUSE operation.
+
+                    This counter does not increment when the
+                    interface is operating in half-duplex mode.
+
+                    This counter is a 64 bit version of
+                    dot3OutPauseFrames.  It should be used on
+                    interfaces operating at 10 Gb/s or faster.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.4.2,
+                    aPAUSEMACCtrlFramesTransmitted."
+        ::= { dot3PauseEntry 6 }
+
+    dot3HCStatsTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Dot3HCStatsEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION "A table containing 64-bit versions of error
+                    counters from the dot3StatsTable.  The 32-bit
+                    versions of these counters may roll over quite
+                    quickly on higher speed ethernet interfaces.
+                    The counters that have 64-bit versions in this
+                    table are the counters that apply to full-duplex
+                    interfaces, since 10 Gb/s and faster
+                    ethernet-like interfaces do not support
+                    half-duplex, and very few 1000 Mb/s
+                    ethernet-like interfaces support half-duplex.
+
+                    Entries in this table are recommended for
+                    interfaces capable of operating at 1000 Mb/s or
+                    faster, and are required for interfaces capable
+                    of operating at 10 Gb/s or faster.  Lower speed
+                    ethernet-like interfaces do not need entries in
+                    this table, in which case there may be fewer
+                    entries in this table than in the
+                    dot3StatsTable. However, implementations
+                    containing interfaces with a mix of speeds may
+                    choose to implement entries in this table for
+
+
+
+                    all ethernet-like interfaces."
+        ::= { dot3 11 }
+
+    dot3HCStatsEntry OBJECT-TYPE
+        SYNTAX      Dot3HCStatsEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION "An entry containing 64-bit statistics for a
+                    single ethernet-like interface."
+        INDEX       { dot3StatsIndex }
+        ::= { dot3HCStatsTable 1 }
+
+    Dot3HCStatsEntry ::=
+        SEQUENCE {
+            dot3HCStatsAlignmentErrors           Counter64,
+            dot3HCStatsFCSErrors                 Counter64,
+            dot3HCStatsInternalMacTransmitErrors Counter64,
+            dot3HCStatsFrameTooLongs             Counter64,
+            dot3HCStatsInternalMacReceiveErrors  Counter64,
+            dot3HCStatsSymbolErrors              Counter64
+        }
+
+    dot3HCStatsAlignmentErrors OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames received on a particular
+                    interface that are not an integral number of
+                    octets in length and do not pass the FCS check.
+
+                    The count represented by an instance of this
+                    object is incremented when the alignmentError
+                    status is returned by the MAC service to the
+                    LLC (or other MAC user). Received frames for
+                    which multiple error conditions pertain are,
+                    according to the conventions of IEEE 802.3
+                    Layer Management, counted exclusively according
+                    to the error status presented to the LLC.
+
+                    This counter does not increment for group
+                    encoding schemes greater than 4 bits per group.
+
+                    This counter is a 64 bit version of
+                    dot3StatsAlignmentErrors.  It should be used
+                    on interfaces operating at 10 Gb/s or faster.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+
+
+
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.7,
+                    aAlignmentErrors"
+        ::= { dot3HCStatsEntry 1 }
+
+    dot3HCStatsFCSErrors OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames received on a particular
+                    interface that are an integral number of octets
+                    in length but do not pass the FCS check.  This
+                    count does not include frames received with
+                    frame-too-long or frame-too-short error.
+
+                    The count represented by an instance of this
+                    object is incremented when the frameCheckError
+                    status is returned by the MAC service to the
+                    LLC (or other MAC user). Received frames for
+                    which multiple error conditions pertain are,
+                    according to the conventions of IEEE 802.3
+                    Layer Management, counted exclusively according
+                    to the error status presented to the LLC.
+
+                    Note:  Coding errors detected by the physical
+                    layer for speeds above 10 Mb/s will cause the
+                    frame to fail the FCS check.
+
+                    This counter is a 64 bit version of
+                    dot3StatsFCSErrors.  It should be used on
+                    interfaces operating at 10 Gb/s or faster.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.6,
+                    aFrameCheckSequenceErrors."
+        ::= { dot3HCStatsEntry 2 }
+
+    dot3HCStatsInternalMacTransmitErrors OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames for which transmission on a
+                    particular interface fails due to an internal
+                    MAC sublayer transmit error. A frame is only
+
+
+
+                    counted by an instance of this object if it is
+                    not counted by the corresponding instance of
+                    either the dot3StatsLateCollisions object, the
+                    dot3StatsExcessiveCollisions object, or the
+                    dot3StatsCarrierSenseErrors object.
+
+                    The precise meaning of the count represented by
+                    an instance of this object is implementation-
+                    specific.  In particular, an instance of this
+                    object may represent a count of transmission
+                    errors on a particular interface that are not
+                    otherwise counted.
+
+                    This counter is a 64 bit version of
+                    dot3StatsInternalMacTransmitErrors.  It should
+                    be used on interfaces operating at 10 Gb/s or
+                    faster.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.12,
+                    aFramesLostDueToIntMACXmitError."
+        ::= { dot3HCStatsEntry 3 }
+
+    dot3HCStatsFrameTooLongs OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames received on a particular
+                    interface that exceed the maximum permitted
+                    frame size.
+
+                    The count represented by an instance of this
+                    object is incremented when the frameTooLong
+                    status is returned by the MAC service to the
+                    LLC (or other MAC user). Received frames for
+                    which multiple error conditions pertain are,
+                    according to the conventions of IEEE 802.3
+                    Layer Management, counted exclusively according
+                    to the error status presented to the LLC.
+
+                    This counter is a 64 bit version of
+                    dot3StatsFrameTooLongs.  It should be used on
+                    interfaces operating at 10 Gb/s or faster.
+
+                    Discontinuities in the value of this counter can
+
+
+
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.25,
+                    aFrameTooLongErrors."
+        ::= { dot3HCStatsEntry 4 }
+
+    dot3HCStatsInternalMacReceiveErrors OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "A count of frames for which reception on a
+                    particular interface fails due to an internal
+                    MAC sublayer receive error. A frame is only
+                    counted by an instance of this object if it is
+                    not counted by the corresponding instance of
+                    either the dot3StatsFrameTooLongs object, the
+                    dot3StatsAlignmentErrors object, or the
+                    dot3StatsFCSErrors object.
+
+                    The precise meaning of the count represented by
+                    an instance of this object is implementation-
+                    specific.  In particular, an instance of this
+                    object may represent a count of receive errors
+                    on a particular interface that are not
+                    otherwise counted.
+
+                    This counter is a 64 bit version of
+                    dot3StatsInternalMacReceiveErrors.  It should be
+                    used on interfaces operating at 10 Gb/s or
+                    faster.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.1.1.15,
+                    aFramesLostDueToIntMACRcvError."
+        ::= { dot3HCStatsEntry 5 }
+
+    dot3HCStatsSymbolErrors OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "For an interface operating at 100 Mb/s, the
+                    number of times there was an invalid data symbol
+                    when a valid carrier was present.
+
+
+
+
+                    For an interface operating in half-duplex mode
+                    at 1000 Mb/s, the number of times the receiving
+                    media is non-idle (a carrier event) for a period
+                    of time equal to or greater than slotTime, and
+                    during which there was at least one occurrence
+                    of an event that causes the PHY to indicate
+                    'Data reception error' or 'carrier extend error'
+                    on the GMII.
+
+                    For an interface operating in full-duplex mode
+                    at 1000 Mb/s, the number of times the receiving
+                    media is non-idle (a carrier event) for a period
+                    of time equal to or greater than minFrameSize,
+                    and during which there was at least one
+                    occurrence of an event that causes the PHY to
+                    indicate 'Data reception error' on the GMII.
+
+                    For an interface operating at 10 Gb/s, the
+                    number of times the receiving media is non-idle
+                    (a carrier event) for a period of time equal to
+                    or greater than minFrameSize, and during which
+                    there was at least one occurrence of an event
+                    that causes the PHY to indicate 'Receive Error'
+                    on the XGMII.
+
+                    The count represented by an instance of this
+                    object is incremented at most once per carrier
+                    event, even if multiple symbol errors occur
+                    during the carrier event.  This count does
+                    not increment if a collision is present.
+
+                    This counter is a 64 bit version of
+                    dot3StatsSymbolErrors.  It should be used on
+                    interfaces operating at 10 Gb/s or faster.
+
+                    Discontinuities in the value of this counter can
+                    occur at re-initialization of the management
+                    system, and at other times as indicated by the
+                    value of ifCounterDiscontinuityTime."
+        REFERENCE   "[IEEE 802.3 Std.], 30.3.2.1.5,
+                    aSymbolErrorDuringCarrier."
+        ::= { dot3HCStatsEntry 6 }
+
+
+    --  802.3 Tests
+
+    dot3Tests   OBJECT IDENTIFIER ::= { dot3 6 }
+
+
+
+
+    dot3Errors  OBJECT IDENTIFIER ::= { dot3 7 }
+
+    --  TDR Test
+
+    dot3TestTdr OBJECT-IDENTITY
+        STATUS      deprecated
+        DESCRIPTION "******** THIS IDENTITY IS DEPRECATED *******
+
+                    The Time-Domain Reflectometry (TDR) test is
+                    specific to ethernet-like interfaces of type
+                    10Base5 and 10Base2.  The TDR value may be
+                    useful in determining the approximate distance
+                    to a cable fault.  It is advisable to repeat
+                    this test to check for a consistent resulting
+                    TDR value, to verify that there is a fault.
+
+                    A TDR test returns as its result the time
+                    interval, measured in 10 MHz ticks or 100 nsec
+                    units, between the start of TDR test
+                    transmission and the subsequent detection of a
+                    collision or deassertion of carrier.  On
+                    successful completion of a TDR test, the result
+                    is stored as the value of an appropriate
+                    instance of an appropriate vendor specific MIB
+                    object, and the OBJECT IDENTIFIER of that
+                    instance is stored in the appropriate instance
+                    of the appropriate test result code object
+                    (thereby indicating where the result has been
+                    stored).
+
+                    This object identity has been deprecated, since
+                    the ifTestTable in the IF-MIB was deprecated,
+                    and there is no longer a standard mechanism for
+                    initiating an interface test.  This left no
+                    standard way of using this object identity."
+        ::= { dot3Tests 1 }
+
+    -- Loopback Test
+
+    dot3TestLoopBack OBJECT-IDENTITY
+        STATUS      deprecated
+        DESCRIPTION "******** THIS IDENTITY IS DEPRECATED *******
+
+                    This test configures the MAC chip and executes
+                    an internal loopback test of memory, data paths,
+                    and the MAC chip logic.  This loopback test can
+                    only be executed if the interface is offline.
+                    Once the test has completed, the MAC chip should
+
+
+
+                    be reinitialized for network operation, but it
+                    should remain offline.
+
+                    If an error occurs during a test, the
+                    appropriate test result object will be set
+                    to indicate a failure.  The two OBJECT
+                    IDENTIFIER values dot3ErrorInitError and
+                    dot3ErrorLoopbackError may be used to provided
+                    more information as values for an appropriate
+                    test result code object.
+
+                    This object identity has been deprecated, since
+                    the ifTestTable in the IF-MIB was deprecated,
+                    and there is no longer a standard mechanism for
+                    initiating an interface test.  This left no
+                    standard way of using this object identity."
+        ::= { dot3Tests 2 }
+
+    dot3ErrorInitError OBJECT-IDENTITY
+        STATUS      deprecated
+        DESCRIPTION "******** THIS IDENTITY IS DEPRECATED *******
+
+                    Couldn't initialize MAC chip for test.
+
+                    This object identity has been deprecated, since
+                    the ifTestTable in the IF-MIB was deprecated,
+                    and there is no longer a standard mechanism for
+                    initiating an interface test.  This left no
+                    standard way of using this object identity."
+        ::= { dot3Errors 1 }
+
+    dot3ErrorLoopbackError OBJECT-IDENTITY
+        STATUS      deprecated
+        DESCRIPTION "******** THIS IDENTITY IS DEPRECATED *******
+
+                    Expected data not received (or not received
+                    correctly) in loopback test.
+
+                    This object identity has been deprecated, since
+                    the ifTestTable in the IF-MIB was deprecated,
+                    and there is no longer a standard mechanism for
+                    initiating an interface test.  This left no
+                    standard way of using this object identity."
+        ::= { dot3Errors 2 }
+
+    -- { dot3 8 }, the dot3ChipSets tree, is defined in [RFC2666]
+
+    -- conformance information
+
+
+
+    etherConformance OBJECT IDENTIFIER ::= { etherMIB 2 }
+
+    etherGroups      OBJECT IDENTIFIER ::= { etherConformance 1 }
+    etherCompliances OBJECT IDENTIFIER ::= { etherConformance 2 }
+
+    -- compliance statements
+
+    etherCompliance MODULE-COMPLIANCE
+        STATUS      deprecated
+        DESCRIPTION "******** THIS COMPLIANCE IS DEPRECATED ********
+
+                    The compliance statement for managed network
+                    entities which have ethernet-like network
+                    interfaces.
+
+                    This compliance is deprecated and replaced by
+                    dot3Compliance."
+
+        MODULE  -- this module
+            MANDATORY-GROUPS { etherStatsGroup }
+
+            GROUP       etherCollisionTableGroup
+            DESCRIPTION "This group is optional. It is appropriate
+                        for all systems which have the necessary
+                        metering. Implementation in such systems is
+                        highly recommended."
+        ::= { etherCompliances 1 }
+
+    ether100MbsCompliance MODULE-COMPLIANCE
+        STATUS      deprecated
+        DESCRIPTION "******** THIS COMPLIANCE IS DEPRECATED ********
+
+                    The compliance statement for managed network
+                    entities which have 100 Mb/sec ethernet-like
+                    network interfaces.
+
+                    This compliance is deprecated and replaced by
+                    dot3Compliance."
+
+        MODULE  -- this module
+            MANDATORY-GROUPS { etherStats100MbsGroup }
+
+            GROUP       etherCollisionTableGroup
+            DESCRIPTION "This group is optional. It is appropriate
+                        for all systems which have the necessary
+                        metering. Implementation in such systems is
+                        highly recommended."
+        ::= { etherCompliances 2 }
+
+
+
+    dot3Compliance MODULE-COMPLIANCE
+        STATUS      deprecated
+        DESCRIPTION "******** THIS COMPLIANCE IS DEPRECATED ********
+
+                    The compliance statement for managed network
+                    entities which have ethernet-like network
+                    interfaces.
+
+                    This compliance is deprecated and replaced by
+                    dot3Compliance2."
+
+        MODULE  -- this module
+            MANDATORY-GROUPS { etherStatsBaseGroup }
+
+            GROUP       etherDuplexGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces which are
+                        capable of operating in full-duplex mode.
+                        It is highly recommended for all
+                        ethernet-like network interfaces."
+
+            GROUP       etherStatsLowSpeedGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces which are
+                        capable of operating at 10 Mb/s or slower in
+                        half-duplex mode."
+
+            GROUP       etherStatsHighSpeedGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces which are
+                        capable of operating at 100 Mb/s or faster."
+
+            GROUP       etherControlGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces that
+                        support the MAC Control sublayer."
+
+            GROUP       etherControlPauseGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces that
+                        support the MAC Control PAUSE function."
+
+            GROUP       etherCollisionTableGroup
+            DESCRIPTION "This group is optional. It is appropriate
+                        for all ethernet-like network interfaces
+                        which are capable of operating in
+                        half-duplex mode and have the necessary
+                        metering. Implementation in systems with
+
+
+
+                        such interfaces is highly recommended."
+        ::= { etherCompliances 3 }
+
+        dot3Compliance2 MODULE-COMPLIANCE
+            STATUS      current
+            DESCRIPTION "The compliance statement for managed network
+                        entities which have ethernet-like network
+                        interfaces.
+
+                        Note that compliance with this MIB module
+                        requires compliance with the ifCompliance3
+                        MODULE-COMPLIANCE statement of the IF-MIB
+                        (RFC2863).  In addition, compliance with this
+                        MIB module requires compliance  with the
+                        mauModIfCompl3 MODULE-COMPLIANCE statement of
+                        the MAU-MIB (RFC3636)."
+
+        MODULE  -- this module
+            MANDATORY-GROUPS { etherStatsBaseGroup2 }
+
+            GROUP       etherDuplexGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces which are
+                        capable of operating in full-duplex mode.
+                        It is highly recommended for all
+                        ethernet-like network interfaces."
+
+            GROUP       etherRateControlGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces which are
+                        capable of operating at speeds faster than
+                        1000 Mb/s. It is highly recommended for all
+                        ethernet-like network interfaces."
+
+            GROUP       etherStatsLowSpeedGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces which are
+                        capable of operating at 10 Mb/s or slower in
+                        half-duplex mode."
+
+            GROUP       etherStatsHighSpeedGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces which are
+                        capable of operating at 100 Mb/s or faster."
+
+            GROUP       etherStatsHalfDuplexGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces which are
+
+
+
+                        capable of operating in half-duplex mode."
+
+            GROUP       etherHCStatsGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces which are
+                        capable of operating at 10 Gb/s or faster.
+                        It is recommended for all ethernet-like
+                        network interfaces which are capable of
+                        operating at 1000 Mb/s or faster."
+
+            GROUP       etherControlGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces that
+                        support the MAC Control sublayer."
+
+            GROUP       etherHCControlGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces that
+                        support the MAC Control sublayer and are
+                        capable of operating at 10 Gb/s or faster."
+
+            GROUP       etherControlPauseGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces that
+                        support the MAC Control PAUSE function."
+
+            GROUP       etherHCControlPauseGroup
+            DESCRIPTION "This group is mandatory for all
+                        ethernet-like network interfaces that
+                        support the MAC Control PAUSE function and
+                        are capable of operating at 10 Gb/s or
+                        faster."
+
+            GROUP       etherCollisionTableGroup
+            DESCRIPTION "This group is optional. It is appropriate
+                        for all ethernet-like network interfaces
+                        which are capable of operating in
+                        half-duplex mode and have the necessary
+                        metering. Implementation in systems with
+                        such interfaces is highly recommended."
+        ::= { etherCompliances 4 }
+
+    -- units of conformance
+
+    etherStatsGroup OBJECT-GROUP
+        OBJECTS     { dot3StatsIndex,
+                      dot3StatsAlignmentErrors,
+                      dot3StatsFCSErrors,
+
+
+
+                      dot3StatsSingleCollisionFrames,
+                      dot3StatsMultipleCollisionFrames,
+                      dot3StatsSQETestErrors,
+                      dot3StatsDeferredTransmissions,
+                      dot3StatsLateCollisions,
+                      dot3StatsExcessiveCollisions,
+                      dot3StatsInternalMacTransmitErrors,
+                      dot3StatsCarrierSenseErrors,
+                      dot3StatsFrameTooLongs,
+                      dot3StatsInternalMacReceiveErrors,
+                      dot3StatsEtherChipSet
+                    }
+        STATUS      deprecated
+        DESCRIPTION "********* THIS GROUP IS DEPRECATED **********
+
+                    A collection of objects providing information
+                    applicable to all ethernet-like network
+                    interfaces.
+
+                    This object group has been deprecated and
+                    replaced by etherStatsBaseGroup and
+                    etherStatsLowSpeedGroup."
+        ::= { etherGroups 1 }
+
+    etherCollisionTableGroup OBJECT-GROUP
+        OBJECTS     { dot3CollFrequencies
+                    }
+        STATUS      current
+        DESCRIPTION "A collection of objects providing a histogram
+                    of packets successfully transmitted after
+                    experiencing exactly N collisions."
+        ::= { etherGroups 2 }
+
+    etherStats100MbsGroup OBJECT-GROUP
+        OBJECTS     { dot3StatsIndex,
+                      dot3StatsAlignmentErrors,
+                      dot3StatsFCSErrors,
+                      dot3StatsSingleCollisionFrames,
+                      dot3StatsMultipleCollisionFrames,
+                      dot3StatsDeferredTransmissions,
+                      dot3StatsLateCollisions,
+                      dot3StatsExcessiveCollisions,
+                      dot3StatsInternalMacTransmitErrors,
+                      dot3StatsCarrierSenseErrors,
+                      dot3StatsFrameTooLongs,
+                      dot3StatsInternalMacReceiveErrors,
+                      dot3StatsEtherChipSet,
+                      dot3StatsSymbolErrors
+
+
+
+                    }
+        STATUS      deprecated
+        DESCRIPTION "********* THIS GROUP IS DEPRECATED **********
+
+                    A collection of objects providing information
+                    applicable to 100 Mb/sec ethernet-like network
+                    interfaces.
+
+                    This object group has been deprecated and
+                    replaced by etherStatsBaseGroup and
+                    etherStatsHighSpeedGroup."
+        ::= { etherGroups 3 }
+
+    etherStatsBaseGroup OBJECT-GROUP
+        OBJECTS     { dot3StatsIndex,
+                      dot3StatsAlignmentErrors,
+                      dot3StatsFCSErrors,
+                      dot3StatsSingleCollisionFrames,
+                      dot3StatsMultipleCollisionFrames,
+                      dot3StatsDeferredTransmissions,
+                      dot3StatsLateCollisions,
+                      dot3StatsExcessiveCollisions,
+                      dot3StatsInternalMacTransmitErrors,
+                      dot3StatsCarrierSenseErrors,
+                      dot3StatsFrameTooLongs,
+                      dot3StatsInternalMacReceiveErrors
+                    }
+        STATUS      deprecated
+        DESCRIPTION "********* THIS GROUP IS DEPRECATED **********
+
+                    A collection of objects providing information
+                    applicable to all ethernet-like network
+                    interfaces.
+
+                    This object group has been deprecated and
+                    replaced by etherStatsBaseGroup2 and
+                    etherStatsHalfDuplexGroup, to separate
+                    objects which must be implemented by all
+                    ethernet-like network interfaces from
+                    objects that need only be implemented on
+                    ethernet-like network interfaces that are
+                    capable of half-duplex operation."
+        ::= { etherGroups 4 }
+
+    etherStatsLowSpeedGroup OBJECT-GROUP
+        OBJECTS     { dot3StatsSQETestErrors }
+        STATUS      current
+        DESCRIPTION "A collection of objects providing information
+
+
+
+                    applicable to ethernet-like network interfaces
+                    capable of operating at 10 Mb/s or slower in
+                    half-duplex mode."
+        ::= { etherGroups 5 }
+
+    etherStatsHighSpeedGroup OBJECT-GROUP
+        OBJECTS     { dot3StatsSymbolErrors }
+        STATUS      current
+        DESCRIPTION "A collection of objects providing information
+                    applicable to ethernet-like network interfaces
+                    capable of operating at 100 Mb/s or faster."
+        ::= { etherGroups 6 }
+
+    etherDuplexGroup OBJECT-GROUP
+        OBJECTS     { dot3StatsDuplexStatus }
+        STATUS      current
+        DESCRIPTION "A collection of objects providing information
+                    about the duplex mode of an ethernet-like
+                    network interface."
+        ::= { etherGroups 7 }
+
+    etherControlGroup OBJECT-GROUP
+        OBJECTS     { dot3ControlFunctionsSupported,
+                      dot3ControlInUnknownOpcodes
+                    }
+        STATUS      current
+        DESCRIPTION "A collection of objects providing information
+                    about the MAC Control sublayer on ethernet-like
+                    network interfaces."
+        ::= { etherGroups 8 }
+
+    etherControlPauseGroup OBJECT-GROUP
+        OBJECTS     { dot3PauseAdminMode,
+                      dot3PauseOperMode,
+                      dot3InPauseFrames,
+                      dot3OutPauseFrames
+                    }
+        STATUS      current
+        DESCRIPTION "A collection of objects providing information
+                    about and control of the MAC Control PAUSE
+                    function on ethernet-like network interfaces."
+        ::= { etherGroups 9 }
+
+    etherStatsBaseGroup2 OBJECT-GROUP
+        OBJECTS     { dot3StatsIndex,
+                      dot3StatsAlignmentErrors,
+                      dot3StatsFCSErrors,
+                      dot3StatsInternalMacTransmitErrors,
+
+
+
+                      dot3StatsFrameTooLongs,
+                      dot3StatsInternalMacReceiveErrors
+                    }
+        STATUS      current
+        DESCRIPTION "A collection of objects providing information
+                    applicable to all ethernet-like network
+                    interfaces."
+        ::= { etherGroups 10 }
+
+    etherStatsHalfDuplexGroup OBJECT-GROUP
+        OBJECTS     { dot3StatsSingleCollisionFrames,
+                      dot3StatsMultipleCollisionFrames,
+                      dot3StatsDeferredTransmissions,
+                      dot3StatsLateCollisions,
+                      dot3StatsExcessiveCollisions,
+                      dot3StatsCarrierSenseErrors
+                    }
+        STATUS      current
+        DESCRIPTION "A collection of objects providing information
+                    applicable only to half-duplex ethernet-like
+                    network interfaces."
+        ::= { etherGroups 11 }
+
+    etherHCStatsGroup OBJECT-GROUP
+        OBJECTS     { dot3HCStatsAlignmentErrors,
+                      dot3HCStatsFCSErrors,
+                      dot3HCStatsInternalMacTransmitErrors,
+                      dot3HCStatsFrameTooLongs,
+                      dot3HCStatsInternalMacReceiveErrors,
+                      dot3HCStatsSymbolErrors
+                    }
+        STATUS      current
+        DESCRIPTION "A collection of objects providing high-capacity
+                    statistics applicable to higher-speed
+                    ethernet-like network interfaces."
+        ::= { etherGroups 12 }
+
+    etherHCControlGroup OBJECT-GROUP
+        OBJECTS     { dot3HCControlInUnknownOpcodes }
+        STATUS      current
+        DESCRIPTION "A collection of objects providing high-capacity
+                    statistics for the MAC Control sublayer on
+                    higher-speed ethernet-like network interfaces."
+        ::= { etherGroups 13 }
+
+    etherHCControlPauseGroup OBJECT-GROUP
+        OBJECTS     { dot3HCInPauseFrames,
+                      dot3HCOutPauseFrames
+
+
+
+                    }
+        STATUS      current
+        DESCRIPTION "A collection of objects providing high-capacity
+                    statistics for the MAC Control PAUSE function on
+                    higher-speed ethernet-like network interfaces."
+        ::= { etherGroups 14 }
+
+    etherRateControlGroup OBJECT-GROUP
+        OBJECTS     { dot3StatsRateControlAbility,
+                      dot3StatsRateControlStatus
+                    }
+        STATUS      current
+        DESCRIPTION "A collection of objects providing information
+                    about the Rate Control function on ethernet-like
+                    interfaces."
+        ::= { etherGroups 15 }
+
+END

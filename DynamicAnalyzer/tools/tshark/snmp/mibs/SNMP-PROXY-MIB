@@ -1,0 +1,305 @@
+SNMP-PROXY-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    snmpModules
+        FROM SNMPv2-SMI
+
+    RowStatus,
+    StorageType
+        FROM SNMPv2-TC
+
+    SnmpEngineID,
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB
+
+    SnmpTagValue
+        FROM SNMP-TARGET-MIB
+
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+        FROM SNMPv2-CONF;
+
+snmpProxyMIB MODULE-IDENTITY
+    LAST-UPDATED "200210140000Z"
+    ORGANIZATION "IETF SNMPv3 Working Group"
+    CONTACT-INFO
+        "WG-email:   snmpv3@lists.tislabs.com
+         Subscribe:  majordomo@lists.tislabs.com
+                     In message body:  subscribe snmpv3
+
+         Co-Chair:   Russ Mundy
+                     Network Associates Laboratories
+         Postal:     15204 Omega Drive, Suite 300
+                     Rockville, MD 20850-4601
+                     USA
+         EMail:      mundy@tislabs.com
+         Phone:      +1 301-947-7107
+
+
+         Co-Chair:   David Harrington
+                     Enterasys Networks
+         Postal:     35 Industrial Way
+                     P. O. Box 5004
+                     Rochester, New Hampshire 03866-5005
+                     USA
+         EMail:      dbh@enterasys.com
+         Phone:      +1 603-337-2614
+
+         Co-editor:  David B. Levi
+                     Nortel Networks
+         Postal:     3505 Kesterwood Drive
+                     Knoxville, Tennessee 37918
+         EMail:      dlevi@nortelnetworks.com
+         Phone:      +1 865 686 0432
+
+         Co-editor:  Paul Meyer
+                     Secure Computing Corporation
+         Postal:     2675 Long Lake Road
+                     Roseville, Minnesota 55113
+         EMail:      paul_meyer@securecomputing.com
+         Phone:      +1 651 628 1592
+
+         Co-editor:  Bob Stewart
+                     Retired"
+    DESCRIPTION
+        "This MIB module defines MIB objects which provide
+         mechanisms to remotely configure the parameters
+         used by a proxy forwarding application.
+
+         Copyright (C) The Internet Society (2002). This
+         version of this MIB module is part of RFC 3413;
+         see the RFC itself for full legal notices.
+        "
+    REVISION    "200210140000Z"             -- 14 October 2002
+    DESCRIPTION "Clarifications, published as
+                 RFC 3413."
+    REVISION    "199808040000Z"             -- 4 August 1998
+    DESCRIPTION "Clarifications, published as
+                 RFC 2573."
+    REVISION    "199707140000Z"             -- 14 July 1997
+    DESCRIPTION "The initial revision, published as RFC2273."
+    ::= { snmpModules 14 }
+
+snmpProxyObjects        OBJECT IDENTIFIER ::= { snmpProxyMIB 1 }
+snmpProxyConformance    OBJECT IDENTIFIER ::= { snmpProxyMIB 3 }
+
+--
+
+
+--
+-- The snmpProxyObjects group
+--
+--
+
+snmpProxyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SnmpProxyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table of translation parameters used by proxy forwarder
+         applications for forwarding SNMP messages."
+    ::= { snmpProxyObjects 2 }
+
+snmpProxyEntry OBJECT-TYPE
+    SYNTAX      SnmpProxyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A set of translation parameters used by a proxy forwarder
+         application for forwarding SNMP messages.
+
+         Entries in the snmpProxyTable are created and deleted
+         using the snmpProxyRowStatus object."
+    INDEX { IMPLIED snmpProxyName }
+    ::= { snmpProxyTable 1 }
+
+SnmpProxyEntry ::= SEQUENCE {
+    snmpProxyName               SnmpAdminString,
+    snmpProxyType               INTEGER,
+    snmpProxyContextEngineID    SnmpEngineID,
+    snmpProxyContextName        SnmpAdminString,
+    snmpProxyTargetParamsIn     SnmpAdminString,
+    snmpProxySingleTargetOut    SnmpAdminString,
+    snmpProxyMultipleTargetOut  SnmpTagValue,
+    snmpProxyStorageType        StorageType,
+    snmpProxyRowStatus          RowStatus
+}
+
+snmpProxyName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(1..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The locally arbitrary, but unique identifier associated
+         with this snmpProxyEntry."
+    ::= { snmpProxyEntry 1 }
+
+
+
+snmpProxyType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    read(1),
+                    write(2),
+                    trap(3),
+                    inform(4)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of message that may be forwarded using
+         the translation parameters defined by this entry."
+    ::= { snmpProxyEntry 2 }
+
+snmpProxyContextEngineID OBJECT-TYPE
+    SYNTAX      SnmpEngineID
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The contextEngineID contained in messages that
+         may be forwarded using the translation parameters
+         defined by this entry."
+    ::= { snmpProxyEntry 3 }
+
+snmpProxyContextName OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The contextName contained in messages that may be
+         forwarded using the translation parameters defined
+         by this entry.
+
+         This object is optional, and if not supported, the
+         contextName contained in a message is ignored when
+         selecting an entry in the snmpProxyTable."
+    ::= { snmpProxyEntry 4 }
+
+snmpProxyTargetParamsIn OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object selects an entry in the snmpTargetParamsTable.
+         The selected entry is used to determine which row of the
+         snmpProxyTable to use for forwarding received messages."
+    ::= { snmpProxyEntry 5 }
+
+
+
+
+snmpProxySingleTargetOut OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object selects a management target defined in the
+         snmpTargetAddrTable (in the SNMP-TARGET-MIB).  The
+         selected target is defined by an entry in the
+         snmpTargetAddrTable whose index value (snmpTargetAddrName)
+         is equal to this object.
+
+         This object is only used when selection of a single
+         target is required (i.e. when forwarding an incoming
+         read or write request)."
+    ::= { snmpProxyEntry 6 }
+
+snmpProxyMultipleTargetOut OBJECT-TYPE
+    SYNTAX      SnmpTagValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object selects a set of management targets defined
+         in the snmpTargetAddrTable (in the SNMP-TARGET-MIB).
+
+         This object is only used when selection of multiple
+         targets is required (i.e. when forwarding an incoming
+         notification)."
+    ::= { snmpProxyEntry 7 }
+
+snmpProxyStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The storage type of this conceptual row.
+         Conceptual rows having the value 'permanent' need not
+         allow write-access to any columnar objects in the row."
+    DEFVAL { nonVolatile }
+    ::= { snmpProxyEntry 8 }
+
+snmpProxyRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this conceptual row.
+
+         To create a row in this table, a manager must
+
+
+         set this object to either createAndGo(4) or
+         createAndWait(5).
+
+         The following objects may not be modified while the
+         value of this object is active(1):
+             - snmpProxyType
+             - snmpProxyContextEngineID
+             - snmpProxyContextName
+             - snmpProxyTargetParamsIn
+             - snmpProxySingleTargetOut
+             - snmpProxyMultipleTargetOut"
+    ::= { snmpProxyEntry 9 }
+
+--
+--
+-- Conformance information
+--
+--
+
+snmpProxyCompliances OBJECT IDENTIFIER ::=
+                                         { snmpProxyConformance 1 }
+snmpProxyGroups      OBJECT IDENTIFIER ::=
+                                         { snmpProxyConformance 2 }
+
+--
+--
+-- Compliance statements
+--
+--
+
+snmpProxyCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for SNMP entities which include
+         a proxy forwarding application."
+    MODULE SNMP-TARGET-MIB
+        MANDATORY-GROUPS { snmpTargetBasicGroup,
+                           snmpTargetResponseGroup }
+    MODULE -- This Module
+        MANDATORY-GROUPS { snmpProxyGroup }
+    ::= { snmpProxyCompliances 1 }
+
+snmpProxyGroup OBJECT-GROUP
+    OBJECTS {
+        snmpProxyType,
+        snmpProxyContextEngineID,
+        snmpProxyContextName,
+        snmpProxyTargetParamsIn,
+
+
+
+        snmpProxySingleTargetOut,
+        snmpProxyMultipleTargetOut,
+        snmpProxyStorageType,
+        snmpProxyRowStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing remote configuration of
+         management target translation parameters for use by
+         proxy forwarder applications."
+    ::= { snmpProxyGroups 3 }
+
+END

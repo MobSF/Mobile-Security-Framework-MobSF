@@ -1,0 +1,87 @@
+TUBS-IBR-PROC-MIB DEFINITIONS ::= BEGIN
+
+-- @(#) $Id: TUBS-IBR-PROC-MIB 807 2000-02-12 11:52:35Z strauss $
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32
+    	FROM SNMPv2-SMI
+    DisplayString, DateAndTime
+        FROM SNMPv2-TC
+    ibr
+	FROM TUBS-SMI;
+
+procMIB MODULE-IDENTITY
+    LAST-UPDATED "200002090000Z"
+    ORGANIZATION "TU Braunschweig"
+    CONTACT-INFO
+	"Juergen Schoenwaelder
+	 TU Braunschweig
+	 Bueltenweg 74/75
+	 38106 Braunschweig
+	 Germany
+
+	 Tel: +49 531 391 3283
+	 Fax: +49 531 391 5936
+	 E-mail: schoenw@ibr.cs.tu-bs.de"
+    DESCRIPTION
+	"Experimental MIB module for listing processes."
+    REVISION	"200002090000Z"
+    DESCRIPTION
+	"Updated IMPORTS and minor stylistic fixes."
+    REVISION	"9702141023Z"
+    DESCRIPTION
+	"Various cleanups to make the module conforming to SNMPv2 SMI."
+    REVISION	"9411152024Z"
+    DESCRIPTION
+	"The initial revision of this module."
+    ::= { ibr 3 }
+
+procReload OBJECT-TYPE
+    SYNTAX	DateAndTime
+    MAX-ACCESS	read-write
+    STATUS	current
+    DESCRIPTION
+	"Any set operation will reload the process table.
+	 It contains a time stamp when the proc table
+	 was reloaded the last time."
+    ::= { procMIB 1 }
+
+procTable OBJECT-TYPE
+    SYNTAX     	SEQUENCE OF ProcEntry
+    MAX-ACCESS 	not-accessible
+    STATUS     	current
+    DESCRIPTION
+	"The process table."
+    ::= { procMIB 2 }
+
+procEntry OBJECT-TYPE
+    SYNTAX     	ProcEntry
+    MAX-ACCESS 	not-accessible
+    STATUS     	current
+    DESCRIPTION
+	"An entry for a process in the processes table."
+    INDEX { procID }
+    ::= { procTable 1 }
+
+ProcEntry ::= SEQUENCE {
+    procID	Integer32,
+    procCmd	DisplayString
+}
+
+procID OBJECT-TYPE
+    SYNTAX	Integer32 (1..'7fffffff'h)
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The unique process ID."
+    ::= { procEntry 1 }
+
+procCmd OBJECT-TYPE
+    SYNTAX	DisplayString
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The command name used to start this process."
+    ::= { procEntry 2 }
+
+END

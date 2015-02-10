@@ -1,0 +1,260 @@
+# -*- text -*-
+#
+# dictionary.acc
+#		Dictionary for Acc/Newbridge, models Tigris, Amazon, etc.
+#		Written by Stephane Marzloff <smarzloff@carif-idf.org>
+#		based on specifications available through ftp and the web.
+#
+# Version:	@(#)dictionary.acc  1.00  smarzloff  21-Jun-1999
+#
+#		$Id$
+#
+VENDOR		Acc				5
+
+#
+# Acc specific
+BEGIN-VENDOR	Acc
+
+ATTRIBUTE	Acc-Reason-Code				1	integer
+ATTRIBUTE	Acc-Ccp-Option				2	integer
+ATTRIBUTE	Acc-Input-Errors			3	integer
+ATTRIBUTE	Acc-Output-Errors			4	integer
+ATTRIBUTE	Acc-Access-Partition			5	string
+ATTRIBUTE	Acc-Customer-Id				6	string
+ATTRIBUTE	Acc-Ip-Gateway-Pri			7	ipaddr
+ATTRIBUTE	Acc-Ip-Gateway-Sec			8	ipaddr
+ATTRIBUTE	Acc-Route-Policy			9	integer
+ATTRIBUTE	Acc-ML-MLX-Admin-State			10	integer
+ATTRIBUTE	Acc-ML-Call-Threshold			11	integer
+ATTRIBUTE	Acc-ML-Clear-Threshold			12	integer
+ATTRIBUTE	Acc-ML-Damping-Factor			13	integer
+ATTRIBUTE	Acc-Tunnel-Secret			14	string
+ATTRIBUTE	Acc-Clearing-Cause			15	integer
+ATTRIBUTE	Acc-Clearing-Location			16	integer
+ATTRIBUTE	Acc-Service-Profile			17	string
+ATTRIBUTE	Acc-Request-Type			18	integer
+ATTRIBUTE	Acc-Bridging-Support			19	integer
+ATTRIBUTE	Acc-Apsm-Oversubscribed			20	integer
+ATTRIBUTE	Acc-Acct-On-Off-Reason			21	integer
+ATTRIBUTE	Acc-Tunnel-Port				22	integer
+ATTRIBUTE	Acc-Dns-Server-Pri			23	ipaddr
+ATTRIBUTE	Acc-Dns-Server-Sec			24	ipaddr
+ATTRIBUTE	Acc-Nbns-Server-Pri			25	ipaddr
+ATTRIBUTE	Acc-Nbns-Server-Sec			26	ipaddr
+ATTRIBUTE	Acc-Dial-Port-Index			27	integer
+ATTRIBUTE	Acc-Ip-Compression			28	integer
+ATTRIBUTE	Acc-Ipx-Compression			29	integer
+ATTRIBUTE	Acc-Connect-Tx-Speed			30	integer
+ATTRIBUTE	Acc-Connect-Rx-Speed			31	integer
+ATTRIBUTE	Acc-Modem-Modulation-Type		32	string
+ATTRIBUTE	Acc-Modem-Error-Protocol		33	string
+ATTRIBUTE	Acc-Callback-Delay			34	integer
+ATTRIBUTE	Acc-Callback-Num-Valid			35	string
+ATTRIBUTE	Acc-Callback-Mode			36	integer
+ATTRIBUTE	Acc-Callback-CBCP-Type			37	integer
+ATTRIBUTE	Acc-Dialout-Auth-Mode			38	integer
+ATTRIBUTE	Acc-Dialout-Auth-Password		39	string
+ATTRIBUTE	Acc-Dialout-Auth-Username		40	string
+ATTRIBUTE	Acc-Access-Community			42	integer
+ATTRIBUTE	Acc-Vpsm-Reject-Cause			43	integer
+ATTRIBUTE	Acc-Ace-Token				44	string
+ATTRIBUTE	Acc-Ace-Token-Ttl			45	integer
+ATTRIBUTE	Acc-Ip-Pool-Name			46	string
+ATTRIBUTE	Acc-Igmp-Admin-State			47	integer
+ATTRIBUTE	Acc-Igmp-Version			48	integer
+ATTRIBUTE	Acc-MN-HA-Secret			73	string
+ATTRIBUTE	Acc-Location-Id				98	string
+ATTRIBUTE	Acc-Calling-Station-Category		99	integer
+
+VALUE	Acc-Reason-Code			No-reason-No-Failure	0
+VALUE	Acc-Reason-Code			Resource-shortage	1
+VALUE	Acc-Reason-Code			Session-already-open	2
+VALUE	Acc-Reason-Code			Too-many-RADIUS-users	3
+VALUE	Acc-Reason-Code			No-authentification-server 4
+VALUE	Acc-Reason-Code			No-authentification-response 5
+VALUE	Acc-Reason-Code			No-accounting-server	6
+VALUE	Acc-Reason-Code			No-accounting-response	7
+VALUE	Acc-Reason-Code			Access-Denied		8
+VALUE	Acc-Reason-Code			Temporary-buffer-shortage 9
+VALUE	Acc-Reason-Code			Protocol-error		10
+VALUE	Acc-Reason-Code			Invalid-attribute	11
+VALUE	Acc-Reason-Code			Invalid-service-type	12
+VALUE	Acc-Reason-Code			Invalid-framed-protocol	13
+VALUE	Acc-Reason-Code			Invalid-attribute-value	14
+VALUE	Acc-Reason-Code			Invalid-user-information 15
+VALUE	Acc-Reason-Code			Invalid-IP-address	16
+VALUE	Acc-Reason-Code			Invalid-integer-syntax	17
+VALUE	Acc-Reason-Code			Invalid-NAS-port	18
+VALUE	Acc-Reason-Code			Requested-by-user	19
+VALUE	Acc-Reason-Code			Network-disconnect	20
+VALUE	Acc-Reason-Code			Service-interruption	21
+VALUE	Acc-Reason-Code			Physical-port-error	22
+VALUE	Acc-Reason-Code			Idle-timeout		23
+VALUE	Acc-Reason-Code			Session-timeout		24
+VALUE	Acc-Reason-Code			Administrative-reset	25
+VALUE	Acc-Reason-Code			NAS-reload-or-reset	26
+VALUE	Acc-Reason-Code			NAS-error		27
+VALUE	Acc-Reason-Code			NAS-request		28
+VALUE	Acc-Reason-Code			Undefined-reason-given	29
+VALUE	Acc-Reason-Code			Conflicting-attributes	30
+VALUE	Acc-Reason-Code			Port-limit-exceeded	31
+VALUE	Acc-Reason-Code			Facility-not-available	32
+VALUE	Acc-Reason-Code			Internal-config-error	33
+VALUE	Acc-Reason-Code			Bad-route-specification	34
+VALUE	Acc-Reason-Code			Access-Partition-bind-failure 35
+VALUE	Acc-Reason-Code			Security-violation	36
+VALUE	Acc-Reason-Code			Request-type-conflict	37
+VALUE	Acc-Reason-Code			Configuration-disallowed 38
+VALUE	Acc-Reason-Code			Missing-attribute	39
+VALUE	Acc-Reason-Code			Invalid-request		40
+VALUE	Acc-Reason-Code			Missing-parameter	41
+VALUE	Acc-Reason-Code			Invalid-parameter	42
+VALUE	Acc-Reason-Code			Call-cleared-with-cause	43
+VALUE	Acc-Reason-Code			Inopportune-config-request 44
+VALUE	Acc-Reason-Code			Invalid-config-parameter 45
+VALUE	Acc-Reason-Code			Missing-config-parameter 46
+VALUE	Acc-Reason-Code			Incompatible-service-profile 47
+VALUE	Acc-Reason-Code			Administrative-reset-2	48
+VALUE	Acc-Reason-Code			Administrative-reload	49
+VALUE	Acc-Reason-Code			Port-unneeded		50
+VALUE	Acc-Reason-Code			Port-preempted		51
+VALUE	Acc-Reason-Code			Port-suspended		52
+VALUE	Acc-Reason-Code			Service-unavailable	53
+VALUE	Acc-Reason-Code			Callback		54
+VALUE	Acc-Reason-Code			User-error		55
+VALUE	Acc-Reason-Code			Host-request		56
+
+VALUE	Acc-Ccp-Option			Disabled		1
+VALUE	Acc-Ccp-Option			Enabled			2
+
+VALUE	Acc-Route-Policy		Funnel			1
+VALUE	Acc-Route-Policy		Direct			2
+
+VALUE	Acc-ML-MLX-Admin-State		Enabled			1
+VALUE	Acc-ML-MLX-Admin-State		Disabled		2
+
+VALUE	Acc-Clearing-Cause		Cause-unspecified	0
+VALUE	Acc-Clearing-Cause		Unassigned-number	1
+VALUE	Acc-Clearing-Cause		No-route-to-transit-network 2
+VALUE	Acc-Clearing-Cause		No-route-to-destination	3
+VALUE	Acc-Clearing-Cause		Channel-unacceptable	6
+VALUE	Acc-Clearing-Cause		Call-awarded-being-delivered 7
+VALUE	Acc-Clearing-Cause		Normal-clearing		16
+VALUE	Acc-Clearing-Cause		User-busy		17
+VALUE	Acc-Clearing-Cause		No-user-responding	18
+VALUE	Acc-Clearing-Cause		User-alerted-no-answer	19
+VALUE	Acc-Clearing-Cause		Call-rejected		21
+VALUE	Acc-Clearing-Cause		Number-changed		22
+VALUE	Acc-Clearing-Cause		Non-selected-user-clearing 26
+VALUE	Acc-Clearing-Cause		Destination-out-of-order 27
+VALUE	Acc-Clearing-Cause		Invalid-or-incomplete-number 28
+VALUE	Acc-Clearing-Cause		Facility-rejected	29
+VALUE	Acc-Clearing-Cause		Response-to-status-inquiry 30
+VALUE	Acc-Clearing-Cause		Normal-unspecified-cause 31
+VALUE	Acc-Clearing-Cause		No-circuit-or-channel-available 34
+VALUE	Acc-Clearing-Cause		Network-out-of-order	38
+VALUE	Acc-Clearing-Cause		Temporary-failure	41
+VALUE	Acc-Clearing-Cause		Switching-equipment-congestion 42
+VALUE	Acc-Clearing-Cause		Access-information-discarded 43
+VALUE	Acc-Clearing-Cause		Circuit-or-channel-unavailable 44
+VALUE	Acc-Clearing-Cause		Circuit-or-channed-preempted 45
+VALUE	Acc-Clearing-Cause		Resources-unavailable	47
+VALUE	Acc-Clearing-Cause		Quality-of-service-unavailable 49
+VALUE	Acc-Clearing-Cause		Facility-not-subscribed	50
+VALUE	Acc-Clearing-Cause		Outgoing-calls-barred	52
+VALUE	Acc-Clearing-Cause		Incoming-calls-barred	54
+VALUE	Acc-Clearing-Cause		Bearer-capability-unauthorized 57
+VALUE	Acc-Clearing-Cause		Bearer-capability-not-available 58
+VALUE	Acc-Clearing-Cause		Service-not-available	63
+VALUE	Acc-Clearing-Cause		Bearer-capablity-not-implmented 65
+VALUE	Acc-Clearing-Cause		Channel-type-not-implemented 66
+VALUE	Acc-Clearing-Cause		Facility-not-implemented 69
+VALUE	Acc-Clearing-Cause		Restrcted-digtal-infrmtion-only 70
+VALUE	Acc-Clearing-Cause		Service-not-implemented	79
+VALUE	Acc-Clearing-Cause		Invalid-call-reference	81
+VALUE	Acc-Clearing-Cause		Identified-channel-doesnt-exist 82
+VALUE	Acc-Clearing-Cause		Call-identify-in-use	84
+VALUE	Acc-Clearing-Cause		No-call-suspended	85
+VALUE	Acc-Clearing-Cause		Suspended-call-cleared	86
+VALUE	Acc-Clearing-Cause		Incompatible-destination 88
+VALUE	Acc-Clearing-Cause		Invalid-transit-network-selctin 91
+VALUE	Acc-Clearing-Cause		Invalid-message		95
+VALUE	Acc-Clearing-Cause		Mandtory-infrmtion-elment-miss 96
+VALUE	Acc-Clearing-Cause		Message-not-implemented	97
+VALUE	Acc-Clearing-Cause		Inopportune-message	98
+VALUE	Acc-Clearing-Cause		Infrmtion-elemnt-not-implmented 99
+VALUE	Acc-Clearing-Cause		Invlid-infrmtion-element-contnt 100
+VALUE	Acc-Clearing-Cause		Message-incompatible-with-state 101
+VALUE	Acc-Clearing-Cause		Recovery-on-timer-expiration 102
+VALUE	Acc-Clearing-Cause		Mndtry-infrmtion-elmnt-lngt-err 103
+VALUE	Acc-Clearing-Cause		Protocol-error		111
+VALUE	Acc-Clearing-Cause		Interworking		127
+
+VALUE	Acc-Clearing-Location		Local-or-remote-user	0
+VALUE	Acc-Clearing-Location		Prvte-ntwork-serving-local-user 1
+VALUE	Acc-Clearing-Location		Pblic-ntwork-serving-local-user 2
+VALUE	Acc-Clearing-Location		Transit-network		3
+VALUE	Acc-Clearing-Location		Prvte-ntwork-serv-remote-user 4
+VALUE	Acc-Clearing-Location		Pblic-ntwork-serv-remote-user 5
+VALUE	Acc-Clearing-Location		International-network	6
+VALUE	Acc-Clearing-Location		Beyond-interworking-point 10
+
+VALUE	Acc-Request-Type		Ring-Indication		1
+VALUE	Acc-Request-Type		Dial-Request		2
+VALUE	Acc-Request-Type		User-Authentification	3
+VALUE	Acc-Request-Type		Tunnel-Authentification	4
+
+VALUE	Acc-Bridging-Support		Disabled		1
+VALUE	Acc-Bridging-Support		Enabled			2
+
+VALUE	Acc-Apsm-Oversubscribed		False			1
+VALUE	Acc-Apsm-Oversubscribed		True			2
+
+VALUE	Acc-Acct-On-Off-Reason		NAS-Reset		0
+VALUE	Acc-Acct-On-Off-Reason		NAS-Reload		1
+VALUE	Acc-Acct-On-Off-Reason		Configuration-Reset	2
+VALUE	Acc-Acct-On-Off-Reason		Configuration-Reload	3
+VALUE	Acc-Acct-On-Off-Reason		Enabled			4
+VALUE	Acc-Acct-On-Off-Reason		Disabled		5
+
+VALUE	Acc-Ip-Compression		Disabled		1
+VALUE	Acc-Ip-Compression		Enabled			2
+
+VALUE	Acc-Ipx-Compression		Disabled		1
+VALUE	Acc-Ipx-Compression		Enabled			2
+
+VALUE	Acc-Callback-Mode		User-Auth		0
+VALUE	Acc-Callback-Mode		User-Specified-E-164	3
+VALUE	Acc-Callback-Mode		CBCP-Callback		6
+VALUE	Acc-Callback-Mode		CLI-Callback		7
+
+VALUE	Acc-Callback-CBCP-Type		CBCP-None		1
+VALUE	Acc-Callback-CBCP-Type		CBCP-User-Specified	2
+VALUE	Acc-Callback-CBCP-Type		CBCP-Pre-Specified	3
+
+VALUE	Acc-Dialout-Auth-Mode		PAP			1
+VALUE	Acc-Dialout-Auth-Mode		CHAP			2
+VALUE	Acc-Dialout-Auth-Mode		CHAP-PAP		3
+VALUE	Acc-Dialout-Auth-Mode		NONE			4
+
+VALUE	Acc-Access-Community		PUBLIC			1
+VALUE	Acc-Access-Community		NETMAN			2
+
+#	Acc-Vpsm-Reject-Cause values (available in access-reject packets only)
+VALUE	Acc-Vpsm-Reject-Cause		No-Access-Partition	1
+VALUE	Acc-Vpsm-Reject-Cause		Access-Partition-Disabled 2
+VALUE	Acc-Vpsm-Reject-Cause		Partition-Portlimit-Exceeded 3
+VALUE	Acc-Vpsm-Reject-Cause		License-Portlimit-Exceeded 4
+VALUE	Acc-Vpsm-Reject-Cause		Home-Server-Down	5
+VALUE	Acc-Vpsm-Reject-Cause		Rejected-By-Home-Server	6
+VALUE	Acc-Vpsm-Reject-Cause		NAS-Administratively-Disabled 7
+
+#	Acc-Igmp-Admin-State values
+VALUE	Acc-Igmp-Admin-State		Enabled			1
+VALUE	Acc-Igmp-Admin-State		Disabled		2
+
+#	Acc-Igmp-Version values
+VALUE	Acc-Igmp-Version		V1			1
+VALUE	Acc-Igmp-Version		V2			2
+
+END-VENDOR	Acc

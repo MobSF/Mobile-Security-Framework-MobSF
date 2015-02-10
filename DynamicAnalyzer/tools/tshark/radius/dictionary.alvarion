@@ -1,0 +1,310 @@
+# -*- text -*-
+##############################################################################
+#
+#	Alvarion VSAs, also known as Breezecom / Breezenet.
+#
+#
+#	These are retarded beyond belief.  The only VSA's it sends in
+#	accounting packets are text strings for accounting.  And, it
+#	doesn't use the same VSA numbers consistently.  WTF?
+#
+#	Here's what it does, and we'll let you decide if this is:
+#
+#		a) Sane
+#		b) Easier than doing it the way everyone else does
+#		c) none of the above.
+#
+#	* The NAS sends up to 11 VSA's in each accounting packet.
+#	* The VSA numbers start off at 1, 2, 3, ... 11.  This part is
+#	  somewhat sane.
+#	* The *next* packet has up to 11 VSA's, but the NAS remembers
+#	  that it sent the first packet, and starts the VSA numbers
+#	  off at 12, 13, 14, ... 22.  Huh?
+#	* This process continues with the next packet, at 23, 24,... 33.
+#	* eventually the numbers space wraps at 256 modulo 11, and it
+#	  keeps going.
+#
+#	Why anyone thought this was a good idea is beyond rational
+#	understanding.
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR		Alvarion			12394
+
+BEGIN-VENDOR	Alvarion
+
+ATTRIBUTE	Alvariaon-VSA-1				1	string
+ATTRIBUTE	Alvariaon-VSA-2				2	string
+ATTRIBUTE	Alvariaon-VSA-3				3	string
+ATTRIBUTE	Alvariaon-VSA-4				4	string
+ATTRIBUTE	Alvariaon-VSA-5				5	string
+ATTRIBUTE	Alvariaon-VSA-6				6	string
+ATTRIBUTE	Alvariaon-VSA-7				7	string
+ATTRIBUTE	Alvariaon-VSA-8				8	string
+ATTRIBUTE	Alvariaon-VSA-9				9	string
+ATTRIBUTE	Alvariaon-VSA-10			10	string
+ATTRIBUTE	Alvariaon-VSA-11			11	string
+ATTRIBUTE	Alvariaon-VSA-12			12	string
+ATTRIBUTE	Alvariaon-VSA-13			13	string
+ATTRIBUTE	Alvariaon-VSA-14			14	string
+ATTRIBUTE	Alvariaon-VSA-15			15	string
+ATTRIBUTE	Alvariaon-VSA-16			16	string
+ATTRIBUTE	Alvariaon-VSA-17			17	string
+ATTRIBUTE	Alvariaon-VSA-18			18	string
+ATTRIBUTE	Alvariaon-VSA-19			19	string
+ATTRIBUTE	Alvariaon-VSA-20			20	string
+ATTRIBUTE	Alvariaon-VSA-21			21	string
+ATTRIBUTE	Alvariaon-VSA-22			22	string
+ATTRIBUTE	Alvariaon-VSA-23			23	string
+ATTRIBUTE	Alvariaon-VSA-24			24	string
+ATTRIBUTE	Alvariaon-VSA-25			25	string
+ATTRIBUTE	Alvariaon-VSA-26			26	string
+ATTRIBUTE	Alvariaon-VSA-27			27	string
+ATTRIBUTE	Alvariaon-VSA-28			28	string
+ATTRIBUTE	Alvariaon-VSA-29			29	string
+ATTRIBUTE	Alvariaon-VSA-30			30	string
+ATTRIBUTE	Alvariaon-VSA-31			31	string
+ATTRIBUTE	Alvariaon-VSA-32			32	string
+ATTRIBUTE	Alvariaon-VSA-33			33	string
+ATTRIBUTE	Alvariaon-VSA-34			34	string
+ATTRIBUTE	Alvariaon-VSA-35			35	string
+ATTRIBUTE	Alvariaon-VSA-36			36	string
+ATTRIBUTE	Alvariaon-VSA-37			37	string
+ATTRIBUTE	Alvariaon-VSA-38			38	string
+ATTRIBUTE	Alvariaon-VSA-39			39	string
+ATTRIBUTE	Alvariaon-VSA-40			40	string
+ATTRIBUTE	Alvariaon-VSA-41			41	string
+ATTRIBUTE	Alvariaon-VSA-42			42	string
+ATTRIBUTE	Alvariaon-VSA-43			43	string
+ATTRIBUTE	Alvariaon-VSA-44			44	string
+ATTRIBUTE	Alvariaon-VSA-45			45	string
+ATTRIBUTE	Alvariaon-VSA-46			46	string
+ATTRIBUTE	Alvariaon-VSA-47			47	string
+ATTRIBUTE	Alvariaon-VSA-48			48	string
+ATTRIBUTE	Alvariaon-VSA-49			49	string
+ATTRIBUTE	Alvariaon-VSA-50			50	string
+ATTRIBUTE	Alvariaon-VSA-51			51	string
+ATTRIBUTE	Alvariaon-VSA-52			52	string
+ATTRIBUTE	Alvariaon-VSA-53			53	string
+ATTRIBUTE	Alvariaon-VSA-54			54	string
+ATTRIBUTE	Alvariaon-VSA-55			55	string
+ATTRIBUTE	Alvariaon-VSA-56			56	string
+ATTRIBUTE	Alvariaon-VSA-57			57	string
+ATTRIBUTE	Alvariaon-VSA-58			58	string
+ATTRIBUTE	Alvariaon-VSA-59			59	string
+ATTRIBUTE	Alvariaon-VSA-60			60	string
+ATTRIBUTE	Alvariaon-VSA-61			61	string
+ATTRIBUTE	Alvariaon-VSA-62			62	string
+ATTRIBUTE	Alvariaon-VSA-63			63	string
+ATTRIBUTE	Alvariaon-VSA-64			64	string
+ATTRIBUTE	Alvariaon-VSA-65			65	string
+ATTRIBUTE	Alvariaon-VSA-66			66	string
+ATTRIBUTE	Alvariaon-VSA-67			67	string
+ATTRIBUTE	Alvariaon-VSA-68			68	string
+ATTRIBUTE	Alvariaon-VSA-69			69	string
+ATTRIBUTE	Alvariaon-VSA-70			70	string
+ATTRIBUTE	Alvariaon-VSA-71			71	string
+ATTRIBUTE	Alvariaon-VSA-72			72	string
+ATTRIBUTE	Alvariaon-VSA-73			73	string
+ATTRIBUTE	Alvariaon-VSA-74			74	string
+ATTRIBUTE	Alvariaon-VSA-75			75	string
+ATTRIBUTE	Alvariaon-VSA-76			76	string
+ATTRIBUTE	Alvariaon-VSA-77			77	string
+ATTRIBUTE	Alvariaon-VSA-78			78	string
+ATTRIBUTE	Alvariaon-VSA-79			79	string
+ATTRIBUTE	Alvariaon-VSA-80			80	string
+ATTRIBUTE	Alvariaon-VSA-81			81	string
+ATTRIBUTE	Alvariaon-VSA-82			82	string
+ATTRIBUTE	Alvariaon-VSA-83			83	string
+ATTRIBUTE	Alvariaon-VSA-84			84	string
+ATTRIBUTE	Alvariaon-VSA-85			85	string
+ATTRIBUTE	Alvariaon-VSA-86			86	string
+ATTRIBUTE	Alvariaon-VSA-87			87	string
+ATTRIBUTE	Alvariaon-VSA-88			88	string
+ATTRIBUTE	Alvariaon-VSA-89			89	string
+ATTRIBUTE	Alvariaon-VSA-90			90	string
+ATTRIBUTE	Alvariaon-VSA-91			91	string
+ATTRIBUTE	Alvariaon-VSA-92			92	string
+ATTRIBUTE	Alvariaon-VSA-93			93	string
+ATTRIBUTE	Alvariaon-VSA-94			94	string
+ATTRIBUTE	Alvariaon-VSA-95			95	string
+ATTRIBUTE	Alvariaon-VSA-96			96	string
+ATTRIBUTE	Alvariaon-VSA-97			97	string
+ATTRIBUTE	Alvariaon-VSA-98			98	string
+ATTRIBUTE	Alvariaon-VSA-99			99	string
+ATTRIBUTE	Alvariaon-VSA-100			100	string
+ATTRIBUTE	Alvariaon-VSA-101			101	string
+ATTRIBUTE	Alvariaon-VSA-102			102	string
+ATTRIBUTE	Alvariaon-VSA-103			103	string
+ATTRIBUTE	Alvariaon-VSA-104			104	string
+ATTRIBUTE	Alvariaon-VSA-105			105	string
+ATTRIBUTE	Alvariaon-VSA-106			106	string
+ATTRIBUTE	Alvariaon-VSA-107			107	string
+ATTRIBUTE	Alvariaon-VSA-108			108	string
+ATTRIBUTE	Alvariaon-VSA-109			109	string
+ATTRIBUTE	Alvariaon-VSA-110			110	string
+ATTRIBUTE	Alvariaon-VSA-111			111	string
+ATTRIBUTE	Alvariaon-VSA-112			112	string
+ATTRIBUTE	Alvariaon-VSA-113			113	string
+ATTRIBUTE	Alvariaon-VSA-114			114	string
+ATTRIBUTE	Alvariaon-VSA-115			115	string
+ATTRIBUTE	Alvariaon-VSA-116			116	string
+ATTRIBUTE	Alvariaon-VSA-117			117	string
+ATTRIBUTE	Alvariaon-VSA-118			118	string
+ATTRIBUTE	Alvariaon-VSA-119			119	string
+ATTRIBUTE	Alvariaon-VSA-120			120	string
+ATTRIBUTE	Alvariaon-VSA-121			121	string
+ATTRIBUTE	Alvariaon-VSA-122			122	string
+ATTRIBUTE	Alvariaon-VSA-123			123	string
+ATTRIBUTE	Alvariaon-VSA-124			124	string
+ATTRIBUTE	Alvariaon-VSA-125			125	string
+ATTRIBUTE	Alvariaon-VSA-126			126	string
+ATTRIBUTE	Alvariaon-VSA-127			127	string
+ATTRIBUTE	Alvariaon-VSA-128			128	string
+ATTRIBUTE	Alvariaon-VSA-129			129	string
+ATTRIBUTE	Alvariaon-VSA-130			130	string
+ATTRIBUTE	Alvariaon-VSA-131			131	string
+ATTRIBUTE	Alvariaon-VSA-132			132	string
+ATTRIBUTE	Alvariaon-VSA-133			133	string
+ATTRIBUTE	Alvariaon-VSA-134			134	string
+ATTRIBUTE	Alvariaon-VSA-135			135	string
+ATTRIBUTE	Alvariaon-VSA-136			136	string
+ATTRIBUTE	Alvariaon-VSA-137			137	string
+ATTRIBUTE	Alvariaon-VSA-138			138	string
+ATTRIBUTE	Alvariaon-VSA-139			139	string
+ATTRIBUTE	Alvariaon-VSA-140			140	string
+ATTRIBUTE	Alvariaon-VSA-141			141	string
+ATTRIBUTE	Alvariaon-VSA-142			142	string
+ATTRIBUTE	Alvariaon-VSA-143			143	string
+ATTRIBUTE	Alvariaon-VSA-144			144	string
+ATTRIBUTE	Alvariaon-VSA-145			145	string
+ATTRIBUTE	Alvariaon-VSA-146			146	string
+ATTRIBUTE	Alvariaon-VSA-147			147	string
+ATTRIBUTE	Alvariaon-VSA-148			148	string
+ATTRIBUTE	Alvariaon-VSA-149			149	string
+ATTRIBUTE	Alvariaon-VSA-150			150	string
+ATTRIBUTE	Alvariaon-VSA-151			151	string
+ATTRIBUTE	Alvariaon-VSA-152			152	string
+ATTRIBUTE	Alvariaon-VSA-153			153	string
+ATTRIBUTE	Alvariaon-VSA-154			154	string
+ATTRIBUTE	Alvariaon-VSA-155			155	string
+ATTRIBUTE	Alvariaon-VSA-156			156	string
+ATTRIBUTE	Alvariaon-VSA-157			157	string
+ATTRIBUTE	Alvariaon-VSA-158			158	string
+ATTRIBUTE	Alvariaon-VSA-159			159	string
+ATTRIBUTE	Alvariaon-VSA-160			160	string
+ATTRIBUTE	Alvariaon-VSA-161			161	string
+ATTRIBUTE	Alvariaon-VSA-162			162	string
+ATTRIBUTE	Alvariaon-VSA-163			163	string
+ATTRIBUTE	Alvariaon-VSA-164			164	string
+ATTRIBUTE	Alvariaon-VSA-165			165	string
+ATTRIBUTE	Alvariaon-VSA-166			166	string
+ATTRIBUTE	Alvariaon-VSA-167			167	string
+ATTRIBUTE	Alvariaon-VSA-168			168	string
+ATTRIBUTE	Alvariaon-VSA-169			169	string
+ATTRIBUTE	Alvariaon-VSA-170			170	string
+ATTRIBUTE	Alvariaon-VSA-171			171	string
+ATTRIBUTE	Alvariaon-VSA-172			172	string
+ATTRIBUTE	Alvariaon-VSA-173			173	string
+ATTRIBUTE	Alvariaon-VSA-174			174	string
+ATTRIBUTE	Alvariaon-VSA-175			175	string
+ATTRIBUTE	Alvariaon-VSA-176			176	string
+ATTRIBUTE	Alvariaon-VSA-177			177	string
+ATTRIBUTE	Alvariaon-VSA-178			178	string
+ATTRIBUTE	Alvariaon-VSA-179			179	string
+ATTRIBUTE	Alvariaon-VSA-180			180	string
+ATTRIBUTE	Alvariaon-VSA-181			181	string
+ATTRIBUTE	Alvariaon-VSA-182			182	string
+ATTRIBUTE	Alvariaon-VSA-183			183	string
+ATTRIBUTE	Alvariaon-VSA-184			184	string
+ATTRIBUTE	Alvariaon-VSA-185			185	string
+ATTRIBUTE	Alvariaon-VSA-186			186	string
+ATTRIBUTE	Alvariaon-VSA-187			187	string
+ATTRIBUTE	Alvariaon-VSA-188			188	string
+ATTRIBUTE	Alvariaon-VSA-189			189	string
+ATTRIBUTE	Alvariaon-VSA-190			190	string
+ATTRIBUTE	Alvariaon-VSA-191			191	string
+ATTRIBUTE	Alvariaon-VSA-192			192	string
+ATTRIBUTE	Alvariaon-VSA-193			193	string
+ATTRIBUTE	Alvariaon-VSA-194			194	string
+ATTRIBUTE	Alvariaon-VSA-195			195	string
+ATTRIBUTE	Alvariaon-VSA-196			196	string
+ATTRIBUTE	Alvariaon-VSA-197			197	string
+ATTRIBUTE	Alvariaon-VSA-198			198	string
+ATTRIBUTE	Alvariaon-VSA-199			199	string
+ATTRIBUTE	Alvariaon-VSA-200			200	string
+ATTRIBUTE	Alvariaon-VSA-201			201	string
+ATTRIBUTE	Alvariaon-VSA-202			202	string
+ATTRIBUTE	Alvariaon-VSA-203			203	string
+ATTRIBUTE	Alvariaon-VSA-204			204	string
+ATTRIBUTE	Alvariaon-VSA-205			205	string
+ATTRIBUTE	Alvariaon-VSA-206			206	string
+ATTRIBUTE	Alvariaon-VSA-207			207	string
+ATTRIBUTE	Alvariaon-VSA-208			208	string
+ATTRIBUTE	Alvariaon-VSA-209			209	string
+ATTRIBUTE	Alvariaon-VSA-210			210	string
+ATTRIBUTE	Alvariaon-VSA-211			211	string
+ATTRIBUTE	Alvariaon-VSA-212			212	string
+ATTRIBUTE	Alvariaon-VSA-213			213	string
+ATTRIBUTE	Alvariaon-VSA-214			214	string
+ATTRIBUTE	Alvariaon-VSA-215			215	string
+ATTRIBUTE	Alvariaon-VSA-216			216	string
+ATTRIBUTE	Alvariaon-VSA-217			217	string
+ATTRIBUTE	Alvariaon-VSA-218			218	string
+ATTRIBUTE	Alvariaon-VSA-219			219	string
+ATTRIBUTE	Alvariaon-VSA-220			220	string
+ATTRIBUTE	Alvariaon-VSA-221			221	string
+ATTRIBUTE	Alvariaon-VSA-222			222	string
+ATTRIBUTE	Alvariaon-VSA-223			223	string
+ATTRIBUTE	Alvariaon-VSA-224			224	string
+ATTRIBUTE	Alvariaon-VSA-225			225	string
+ATTRIBUTE	Alvariaon-VSA-226			226	string
+ATTRIBUTE	Alvariaon-VSA-227			227	string
+ATTRIBUTE	Alvariaon-VSA-228			228	string
+ATTRIBUTE	Alvariaon-VSA-229			229	string
+ATTRIBUTE	Alvariaon-VSA-230			230	string
+ATTRIBUTE	Alvariaon-VSA-231			231	string
+ATTRIBUTE	Alvariaon-VSA-232			232	string
+ATTRIBUTE	Alvariaon-VSA-233			233	string
+ATTRIBUTE	Alvariaon-VSA-234			234	string
+ATTRIBUTE	Alvariaon-VSA-235			235	string
+ATTRIBUTE	Alvariaon-VSA-236			236	string
+ATTRIBUTE	Alvariaon-VSA-237			237	string
+ATTRIBUTE	Alvariaon-VSA-238			238	string
+ATTRIBUTE	Alvariaon-VSA-239			239	string
+ATTRIBUTE	Alvariaon-VSA-240			240	string
+ATTRIBUTE	Alvariaon-VSA-241			241	string
+ATTRIBUTE	Alvariaon-VSA-242			242	string
+ATTRIBUTE	Alvariaon-VSA-243			243	string
+ATTRIBUTE	Alvariaon-VSA-244			244	string
+ATTRIBUTE	Alvariaon-VSA-245			245	string
+ATTRIBUTE	Alvariaon-VSA-246			246	string
+ATTRIBUTE	Alvariaon-VSA-247			247	string
+ATTRIBUTE	Alvariaon-VSA-248			248	string
+ATTRIBUTE	Alvariaon-VSA-249			249	string
+ATTRIBUTE	Alvariaon-VSA-250			250	string
+ATTRIBUTE	Alvariaon-VSA-251			251	string
+ATTRIBUTE	Alvariaon-VSA-252			252	string
+ATTRIBUTE	Alvariaon-VSA-253			253	string
+ATTRIBUTE	Alvariaon-VSA-254			254	string
+ATTRIBUTE	Alvariaon-VSA-255			255	string
+
+#
+#	And these are what the above attributes should get mapped to,
+#	once we get around to caring.
+#
+ATTRIBUTE	Breezecom-Attr1				1	string
+ATTRIBUTE	Breezecom-Attr2				2	string
+ATTRIBUTE	Breezecom-Attr3				3	string
+ATTRIBUTE	Breezecom-Attr4				4	string
+ATTRIBUTE	Breezecom-Attr5				5	string
+ATTRIBUTE	Breezecom-Attr6				6	string
+ATTRIBUTE	Breezecom-Attr7				7	string
+ATTRIBUTE	Breezecom-Attr8				8	string
+ATTRIBUTE	Breezecom-Attr9				9	string
+ATTRIBUTE	Breezecom-Attr10			10	string
+ATTRIBUTE	Breezecom-Attr11			11	string
+
+END-VENDOR	Alvarion

@@ -1,0 +1,396 @@
+   TIME-AGGREGATE-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+      MODULE-IDENTITY,  experimental,
+      OBJECT-TYPE,      Opaque, Integer32
+                 FROM SNMPv2-SMI
+      OwnerString
+                 FROM RMON-MIB
+      RowStatus, StorageType, TEXTUAL-CONVENTION
+                 FROM SNMPv2-TC
+      MODULE-COMPLIANCE, OBJECT-GROUP
+                 FROM SNMPv2-CONF
+      SnmpAdminString
+                 FROM SNMP-FRAMEWORK-MIB;
+
+  tAggrMIB MODULE-IDENTITY
+       LAST-UPDATED "200604270000Z"        --  27 April 2006
+       ORGANIZATION "Cyber Solutions Inc. NetMan Working Group"
+       CONTACT-INFO
+      "                      Glenn Mansfield Keeni
+                     Postal: Cyber Solutions Inc.
+                             6-6-3, Minami Yoshinari
+                             Aoba-ku, Sendai, Japan 989-3204.
+                        Tel: +81-22-303-4012
+                        Fax: +81-22-303-4015
+                     E-mail: glenn@cysols.com
+
+          Support Group E-mail: mibsupport@cysols.com"
+
+          DESCRIPTION
+
+
+
+                  "The MIB for servicing Time-Based aggregate
+                    objects.
+
+                    Copyright (C) The Internet Society (2006).  This
+                    version of this MIB module is part of RFC 4498;
+                    see the RFC itself for full legal notices.
+                  "
+          REVISION    "200604270000Z"      -- 27th April, 2006
+          DESCRIPTION "Initial version, published as RFC 4498."
+               ::= { experimental 124 }
+
+   TAggrMOErrorStatus ::= TEXTUAL-CONVENTION
+     STATUS       current
+     DESCRIPTION
+       "This data type is used to model the error status of the
+        sampled MO instance.  The error status for a sampled MO
+        instance is given in terms of two elements:
+          o The moIndex, which indicates the sample number of the MO
+            instance (starting at 1) in the value of the time-
+            aggregated MO instance.
+          o The moError, which indicates the error that was
+            encountered in sampling that MO instance.
+        The syntax in ASN.1 Notation will be
+        ErrorStatus :: = SEQUENCE {
+           moIndex  Integer32,
+           moError  SnmpPduErrorStatus
+        }
+        TAggrMOErrorStatus ::= SEQUENCE OF {
+           ErrorStatus
+        }
+        Note1: The command responder will supply values for all
+               the samples of the MO instance.  If an error is
+               encountered for a sample, then the corresponding
+               value will have an ASN.1 value NULL, and an error
+               will be flagged in the corresponding
+               TAggrMOErrorStatus object.
+               Only MOs for which errors have been encountered will
+               the corresponding moIndex and moError values be set.
+        Note2: The error code for the component MO instances will be
+               in accordance with the SnmpPduErrorStatus TC defined
+               in the DISMAN-SCHEDULE-MIB[RFC3231].
+       "
+     SYNTAX      Opaque (SIZE (0..1024))
+
+   TimeAggrMOValue ::= TEXTUAL-CONVENTION
+     STATUS       current
+     DESCRIPTION
+       "This data type is used to model the time-aggregated MOs.  It
+
+
+        will be a sequence of values.  The syntax in ASN.1 Notation
+        will be
+        MOSampleValue :: = SEQUENCE {
+             value ObjectSyntax
+        }
+        TimeAggrMOValue ::= SEQUENCE OF {
+             MOSampleValue
+        }
+        where the first MOSampleValue, if any, will always be the
+        timestamp of the first sample in the aggregated object.  The
+        subsequent values are the values of the MO instance sampled
+        at the specified intervals for the specified number of times.
+        Note: The command generator will need to know the
+              constituent MO instance and the sampling interval to
+              correctly interpret TimeAggrMOValue.
+       "
+     SYNTAX      Opaque (SIZE (0..1024))
+
+   CompressedTimeAggrMOValue ::= TEXTUAL-CONVENTION
+     STATUS       current
+     DESCRIPTION
+       "This data type is used to model the compressed
+        TAgMOs."
+     SYNTAX      Opaque (SIZE (0..1024))
+
+--
+-- The Time-Based aggregation control table
+--
+   tAggrCtlTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF TAggrCtlEntry
+        MAX-ACCESS  not-accessible
+        STATUS current
+        DESCRIPTION
+           "The Time-Based aggregation control table.  It controls
+            the aggregation of the samples of MO instances.  There
+            will be a row for each TAgMO.
+           "
+        ::= {tAggrMIB 1}
+
+    tAggrCtlEntry OBJECT-TYPE
+        SYNTAX  TAggrCtlEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+          "A row of the control table that defines one Time-Based
+           aggregate MO (TAgMO)."
+        INDEX {tAggrCtlEntryID }
+        ::= {tAggrCtlTable 1 }
+
+
+    TAggrCtlEntry ::= SEQUENCE {
+       tAggrCtlEntryID
+                     SnmpAdminString,
+       tAggrCtlMOInstance
+                     OBJECT IDENTIFIER,
+       tAggrCtlAgMODescr
+                     SnmpAdminString,
+       tAggrCtlInterval
+                     Integer32,
+       tAggrCtlSamples
+                     Integer32,
+       tAggrCtlCompressionAlgorithm
+                     INTEGER,
+       tAggrCtlEntryOwner
+                     OwnerString,
+       tAggrCtlEntryStorageType
+                     StorageType,
+       tAggrCtlEntryStatus
+                     RowStatus
+    }
+
+   tAggrCtlEntryID OBJECT-TYPE
+        SYNTAX SnmpAdminString (SIZE(1..32))
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+          "A locally unique, administratively assigned name
+            for this aggregated MO.  It is used as an index to
+            uniquely identify this row in the table."
+        ::= { tAggrCtlEntry 1 }
+
+   tAggrCtlMOInstance OBJECT-TYPE
+        SYNTAX OBJECT IDENTIFIER
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "The sampled values of this MO instance will be
+            aggregated by the TAgMO.
+            "
+        ::= { tAggrCtlEntry 2 }
+
+   tAggrCtlAgMODescr OBJECT-TYPE
+        SYNTAX SnmpAdminString (SIZE(0..64))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "A textual description of the aggregate object."
+        ::= {tAggrCtlEntry 3}
+
+
+   tAggrCtlInterval OBJECT-TYPE
+        SYNTAX Integer32
+        UNITS  "micro seconds"
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "The interval, in microseconds, at which the MO instance
+            pointed at by tAggrInstance will be sampled for
+            Time-Based aggregation.
+          "
+        ::= {tAggrCtlEntry 4}
+
+   tAggrCtlSamples OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "The number of times at which the MO instance referred
+            to by tAggrInstance will be sampled for Time-Based
+            aggregation."
+        ::= {tAggrCtlEntry 5}
+
+   -- only one compression algorithm is defined as of now.
+   tAggrCtlCompressionAlgorithm OBJECT-TYPE
+        SYNTAX INTEGER {
+               none      (1),
+               deflate   (2)
+        }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "The compression algorithm that will be used by
+            the agent to compress the value of the TAgMO.
+            The deflate algorithm and corresponding data format
+            specification is described in RFC 1951.  It is
+            compatible with the widely used gzip utility.
+          "
+        REFERENCE
+          "RFC1951 : DEFLATE Compressed Data Format Specification
+           version 1.3
+          "
+        DEFVAL { none }
+        ::= {tAggrCtlEntry 6}
+
+   tAggrCtlEntryOwner OBJECT-TYPE
+        SYNTAX OwnerString
+        MAX-ACCESS read-create
+        STATUS current
+
+
+
+        DESCRIPTION
+           "A textual description of the entity that created
+            this entry.
+          "
+        ::= {tAggrCtlEntry 7}
+
+
+   tAggrCtlEntryStorageType OBJECT-TYPE
+        SYNTAX StorageType
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "This object defines whether the parameters defined in
+            this row are kept in volatile storage and lost upon
+            reboot or backed up by non-volatile (permanent)
+            storage.
+            Conceptual rows having the value 'permanent' need not
+            allow write-access to any columnar objects in the row.
+           "
+        ::= {tAggrCtlEntry 8}
+
+   tAggrCtlEntryStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+           "The row status variable, used according to row
+            installation and removal conventions.
+            Objects in a row can be modified only when the value of
+            this object in the corresponding conceptual row is not
+            'active'.
+            Thus, to modify one or more of the objects in this
+            conceptual row,
+              a. change the row status to 'notInService',
+              b. change the values of the row, and
+              c. change the row status to 'active'.
+            The tAggrCtlEntryStatus may be changed to 'active' iff
+            all the MOs in the conceptual row have been assigned
+            valid values.
+           "
+        ::= {tAggrCtlEntry 9}
+
+
+   --
+   -- tAggrDataTable: The data table.
+   --
+   tAggrDataTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF TAggrDataEntry
+
+
+
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "This is the data table.  Each row of this table contains
+            information about a TAgMO indexed by tAggrCtlEntryID.
+            tAggrCtlEntryID is the key to the table.  It is used to
+            identify instances of the TAgMO that are present in the
+            table.
+          "
+        ::= {tAggrMIB 2}
+
+   tAggrDataEntry OBJECT-TYPE
+        SYNTAX  TAggrDataEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+          "Entry containing information pertaining
+            to a TAgMO."
+        INDEX {tAggrCtlEntryID}
+        ::= {tAggrDataTable 1 }
+
+   TAggrDataEntry ::= SEQUENCE {
+      tAggrDataRecord
+                 TimeAggrMOValue,
+      tAggrDataRecordCompressed
+                 CompressedTimeAggrMOValue,
+      tAggrDataErrorRecord
+                 TAggrMOErrorStatus
+      }
+
+   tAggrDataRecord OBJECT-TYPE
+        SYNTAX TimeAggrMOValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+          "The snapshot value of the TAgMO."
+        ::= { tAggrDataEntry 1}
+
+   tAggrDataRecordCompressed OBJECT-TYPE
+        SYNTAX CompressedTimeAggrMOValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+          "The compressed value of the TAgMO.
+           The compression algorithm will depend on the
+           tAggrCtlCompressionAlgorithm given in the corresponding
+           tAggrCtlEntry.  If the value of the corresponding
+           tAggrCtlCompressionAlgorithm is (1) 'none', then the
+
+
+
+           value of all instances of this object will be a string
+           of zero length.
+           Note that the access privileges to this object will be
+           governed by the access privileges of the corresponding MO
+           instance.  Thus, an entity attempting to access an
+           instance of this MO MUST have access rights to the
+           instance object pointed at by tAggrCtlMOInstance and this
+           MO instance.
+          "
+        ::= { tAggrDataEntry 2}
+
+   tAggrDataErrorRecord OBJECT-TYPE
+        SYNTAX TAggrMOErrorStatus
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+           "The error status corresponding to the MO instance
+            samples aggregated in tAggrDataRecord (and
+            tAggrDataRecordCompressed)."
+        ::= { tAggrDataEntry 3}
+
+
+    -- Conformance information
+   tAggrConformance OBJECT IDENTIFIER ::= { tAggrMIB 3 }
+   tAggrGroups      OBJECT IDENTIFIER ::= { tAggrConformance 1 }
+   tAggrCompliances OBJECT IDENTIFIER ::= { tAggrConformance 2 }
+
+    -- Compliance statements
+   tAggrMibCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for SNMP entities
+                 that implement the TIME-AGGREGATE-MIB."
+        MODULE  -- this module
+            MANDATORY-GROUPS { tAggrMibBasicGroup }
+        ::= { tAggrCompliances 1 }
+
+    -- Units of conformance
+   tAggrMibBasicGroup    OBJECT-GROUP
+        OBJECTS {
+                   tAggrCtlMOInstance,
+                   tAggrCtlAgMODescr,
+                   tAggrCtlInterval,
+                   tAggrCtlSamples,
+                   tAggrCtlCompressionAlgorithm,
+                   tAggrCtlEntryOwner,
+                   tAggrCtlEntryStorageType,
+                   tAggrCtlEntryStatus,
+
+
+
+                   tAggrDataRecord,
+                   tAggrDataRecordCompressed,
+                   tAggrDataErrorRecord
+       }
+        STATUS  current
+        DESCRIPTION
+                 "A collection of objects for Time-Based aggregation
+                  of MOs."
+        ::= { tAggrGroups 1 }
+   END

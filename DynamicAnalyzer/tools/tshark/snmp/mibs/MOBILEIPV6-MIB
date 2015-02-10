@@ -1,0 +1,4964 @@
+   MOBILEIPV6-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+      MODULE-IDENTITY, mib-2, Unsigned32, Integer32, Counter32,
+      Gauge32, Counter64,
+      OBJECT-TYPE, NOTIFICATION-TYPE
+                 FROM SNMPv2-SMI
+      TEXTUAL-CONVENTION,
+      TruthValue, DateAndTime, TimeStamp
+                 FROM SNMPv2-TC
+      MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+                 FROM SNMPv2-CONF
+      InetAddressType, InetAddress
+                 FROM INET-ADDRESS-MIB
+      ipv6InterfaceIfIndex
+                 FROM IP-MIB
+      ;
+
+  mip6MIB MODULE-IDENTITY
+       LAST-UPDATED "200602010000Z"        --  1st February 2006
+       ORGANIZATION "IETF mip6 Working Group"
+       CONTACT-INFO
+      "                      Glenn Mansfield Keeni
+                     Postal: Cyber Solutions Inc.
+                             6-6-3, Minami Yoshinari
+                             Aoba-ku, Sendai, Japan 989-3204.
+                        Tel: +81-22-303-4012
+                        Fax: +81-22-303-4015
+                     E-mail: glenn@cysols.com
+
+                             Kenichi Nagami
+                     Postal: INTEC NetCore Inc.
+                             1-3-3, Shin-suna
+                             Koto-ku, Tokyo, 135-0075
+                             Japan
+
+                        Tel: +81-3-5665-5069
+                     E-mail: nagami@inetcore.com
+
+                             Kazuhide Koide
+                     Postal: Tohoku University
+                             2-1-1, Katahira
+                             Aoba-ku, Sendai, 980-8577
+                             Japan
+
+                        Tel: +81-22-217-5454
+                     E-mail: koide@shiratori.riec.tohoku.ac.jp
+
+
+
+                             Sri Gundavelli
+                     Postal: Cisco Systems
+                             170 W.Tasman Drive,
+                             San Jose, CA 95134
+                             USA
+
+                        Tel: +1-408-527-6109
+                     E-mail: sgundave@cisco.com
+
+          Support Group E-mail: mip6@ietf.org"
+
+          DESCRIPTION
+                  "The MIB module for monitoring Mobile-IPv6
+                   entities.
+
+                   Copyright (C) The Internet Society 2006.  This
+                   version of this MIB module is part of RFC 4295;
+                   see the RFC itself for full legal notices.
+                  "
+
+          REVISION    "200602010000Z"      -- 1st February 2006
+          DESCRIPTION "Initial version, published as RFC 4295."
+
+               ::= { mib-2 133 }
+
+
+    -- The major groups
+
+    mip6Notifications        OBJECT IDENTIFIER ::= { mip6MIB 0 }
+    mip6Objects              OBJECT IDENTIFIER ::= { mip6MIB 1 }
+    mip6Conformance          OBJECT IDENTIFIER ::= { mip6MIB 2 }
+    mip6Core                 OBJECT IDENTIFIER ::= { mip6Objects 1 }
+    mip6Mn                   OBJECT IDENTIFIER ::= { mip6Objects 2 }
+    mip6Cn                   OBJECT IDENTIFIER ::= { mip6Objects 3 }
+    mip6Ha                   OBJECT IDENTIFIER ::= { mip6Objects 4 }
+
+    -- The sub groups
+
+    mip6System               OBJECT IDENTIFIER ::= { mip6Core 1 }
+    mip6Bindings             OBJECT IDENTIFIER ::= { mip6Core 2 }
+    mip6Stats                OBJECT IDENTIFIER ::= { mip6Core 3 }
+
+    mip6MnSystem             OBJECT IDENTIFIER ::= { mip6Mn 1 }
+    mip6MnConf               OBJECT IDENTIFIER ::= { mip6Mn 2 }
+    mip6MnRegistration       OBJECT IDENTIFIER ::= { mip6Mn 3 }
+
+    mip6CnSystem             OBJECT IDENTIFIER ::= { mip6Cn 1 }
+
+
+
+    mip6CnStats              OBJECT IDENTIFIER ::= { mip6Cn 2 }
+
+    mip6HaAdvertisement      OBJECT IDENTIFIER ::= { mip6Ha 1 }
+    mip6HaStats              OBJECT IDENTIFIER ::= { mip6Ha 2 }
+
+
+
+   -- Textual Conventions
+    Mip6BURequestRejectionCode ::= TEXTUAL-CONVENTION
+           STATUS        current
+           DESCRIPTION
+                   "The value of the status field in the Binding
+                    Acknowledgment message when the Binding Update
+                    was rejected.
+                   "
+           REFERENCE
+                   "RFC 3775 : Section 6.1.8"
+           SYNTAX  INTEGER {
+                   reasonUnspecified               (1),  --(Code 128)
+                   admProhibited                   (2),  --(Code 129)
+                   insufficientResource            (3),  --(Code 130)
+                   homeRegistrationNotSupported    (4),  --(Code 131)
+                   notHomeSubnet                   (5),  --(Code 132)
+                   notHomeAgentForThisMobileNode   (6),  --(Code 133)
+                   duplicateAddressDetectionFailed (7),  --(Code 134)
+                   sequenceNumberOutOfWindow       (8),  --(Code 135)
+                   expiredHomeNonceIndex           (9),  --(Code 136)
+                   expiredCareofNonceIndex         (10), --(Code 137)
+                   expiredNonces                   (11), --(Code 138)
+                   registrationTypeChangeDisallowed(12)  --(Code 139)
+                  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6Capabilities OBJECT-TYPE
+        SYNTAX      BITS {
+                         mobileNode         (0),
+                         homeAgent          (1),
+                         correspondentNode  (2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "This object indicates the Mobile IPv6 functions that
+                 are supported by this managed entity.  Multiple
+                 Mobile IPv6 functions may be supported by a single
+                 entity.
+                "
+        REFERENCE
+                "RFC 3775 : Section 3.2, 4.1"
+        ::= { mip6System 1 }
+
+    mip6Status OBJECT-TYPE
+        SYNTAX      INTEGER { enabled(1), disabled(2) }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+                "This object indicates whether the Mobile IPv6
+                 function is enabled for the managed entity.  If it
+                 is enabled, the agent discovery and registration
+                 functions will be operational.
+                 Changing the status from enabled(1) to disabled(2)
+                 will terminate the agent discovery and registration
+                 functions.  On the other hand, changing the status
+                 from disabled(2) to enabled(1) will start the agent
+                 discovery and registration functions.
+
+                 The value of this object SHOULD remain unchanged
+                 across reboots of the managed entity.
+                "
+        ::= { mip6System 2 }
+
+
+    -- mip6BindingCache
+
+
+
+
+
+
+
+
+
+
+
+     mip6BindingCacheTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Mip6BindingCacheEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "This table models the Binding Cache on the
+                 managed entity.  The cache is maintained by home
+                 agents and correspondent nodes.  It contains
+                 both correspondent registration entries and home
+                 registration entries.
+
+                 Entries in this table are not required to survive
+                 a reboot of the managed entity.
+                "
+        REFERENCE
+                "RFC 3775 : Section 4.5, 9.1, 10.1"
+        ::= { mip6Bindings 1 }
+
+     mip6BindingCacheEntry OBJECT-TYPE
+        SYNTAX      Mip6BindingCacheEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "This entry represents a conceptual row in the
+                 binding cache table.  It represents a single Binding
+                 Update.
+
+                 Implementors need to be aware that if the total
+                 number of octets in mip6BindingHomeAddress
+                 exceeds 113, then OIDs of column
+                 instances in this row will have more than 128
+                 sub-identifiers and cannot be accessed using
+                 SNMPv1, SNMPv2c, or SNMPv3.
+                "
+        INDEX  { mip6BindingHomeAddressType, mip6BindingHomeAddress }
+        ::= { mip6BindingCacheTable 1 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Mip6BindingCacheEntry ::=
+        SEQUENCE {
+         mip6BindingHomeAddressType   InetAddressType,
+         mip6BindingHomeAddress       InetAddress,
+         mip6BindingCOAType           InetAddressType,
+         mip6BindingCOA               InetAddress,
+         mip6BindingTimeRegistered    DateAndTime,
+         mip6BindingTimeGranted       Gauge32,
+         mip6BindingTimeRemaining     Gauge32,
+         mip6BindingHomeRegn          TruthValue,
+         mip6BindingMaxSeq            Unsigned32,
+         mip6BindingUsageTS           DateAndTime,
+         mip6BindingUsageCount        Gauge32,
+         mip6BindingAdminStatus       INTEGER
+        }
+
+    mip6BindingHomeAddressType OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The InetAddressType of the mip6BindingHomeAddress
+                 that follows.
+                "
+        ::= { mip6BindingCacheEntry 1 }
+
+    mip6BindingHomeAddress OBJECT-TYPE
+        SYNTAX      InetAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The home address of the mobile node corresponding
+                 to the Binding Cache entry.  This field is used as
+                 the key for searching the mobile node's current
+                 care-of address in the Binding Cache.
+
+                 The type of the address represented by this object
+                 is specified by the corresponding
+                 mip6BindingHomeAddressType object.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.1"
+        ::= { mip6BindingCacheEntry 2 }
+
+
+
+
+
+
+
+
+    mip6BindingCOAType   OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The InetAddressType of the mip6BindingCOA that
+                 follows.
+                "
+        ::= { mip6BindingCacheEntry 3 }
+
+    mip6BindingCOA   OBJECT-TYPE
+        SYNTAX      InetAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The care-of address of the mobile node indicated by
+                 the home address field (mip6BindingHomeAddress) in
+                 this Binding Cache entry.
+
+                 The type of the address represented by this object
+                 is specified by the corresponding mip6BindingCOAType
+                 object.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.1"
+        ::= { mip6BindingCacheEntry 4 }
+
+     mip6BindingTimeRegistered OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The timestamp when this Binding Cache entry was
+                 created.
+                "
+        ::= { mip6BindingCacheEntry 5 }
+
+     mip6BindingTimeGranted OBJECT-TYPE
+        SYNTAX      Gauge32
+        UNITS       "seconds"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The lifetime in seconds granted to the mobile node
+                 for this registration.
+                "
+        ::= { mip6BindingCacheEntry 6 }
+
+
+
+
+    mip6BindingTimeRemaining OBJECT-TYPE
+        SYNTAX      Gauge32
+        UNITS       "seconds"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The lifetime in seconds remaining for this
+                 registration.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.1"
+        ::= { mip6BindingCacheEntry 7 }
+
+     mip6BindingHomeRegn OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "This object indicates whether or not this Binding
+                 Cache entry is a home registration entry (applicable
+                 only on nodes that support home agent
+                 functionality).
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.1"
+        ::= { mip6BindingCacheEntry 8 }
+
+     mip6BindingMaxSeq OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..65536)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The maximum value of the Sequence Number field
+                 received in previous Binding Updates for this home
+                 address (mip6BindingHomeAddress).
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.1, 9.5.1"
+        ::= { mip6BindingCacheEntry 9 }
+
+
+
+
+
+
+
+
+
+
+
+
+     mip6BindingUsageTS OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The timestamp when this entry was last looked up.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.1"
+        ::= { mip6BindingCacheEntry 10 }
+
+     mip6BindingUsageCount OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of times this entry was looked up.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.1"
+        ::= { mip6BindingCacheEntry 11 }
+
+     mip6BindingAdminStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        active     (1),
+                        inactive   (2)
+                    }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+                "This is an administrative object used to control
+                 the status of a binding cache entry.  By default
+                 the value will be 'active'(1).
+                 A value of 'inactive'(2) will indicate that the
+                 validity of the entry is suspended.  It does not
+                 exist in the binding cache for all practical
+                 purposes.
+                 The state can be changed from 'active' to
+                 'inactive' by operator intervention.
+                 Causing the state to change to 'inactive' results
+                 in the entry being deleted from the cache.
+                 Attempts to change the status from 'inactive'
+                 to 'active' will be rejected.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.1"
+        ::= { mip6BindingCacheEntry 12 }
+
+
+
+
+    -- mip6BindingHistory
+    -- Once the lifetime expires an entry will be removed from the
+    -- Binding Cache.
+    -- For monitoring purposes it will be useful to have access to
+    -- the history of the Binding Cache.  BindingHistoryTable serves
+    -- this purpose.  It records the history of the Bindings.
+    -- The size of the table will be left to implementors.
+
+     mip6BindingHistoryTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Mip6BindingHistoryEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "A table containing a record of the bindings.
+                "
+        ::= { mip6Bindings 2 }
+
+     mip6BindingHistoryEntry OBJECT-TYPE
+        SYNTAX      Mip6BindingHistoryEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The record of a binding.
+
+                 Implementors need to be aware that if the total
+                 number of octets in mip6BindingHstHomeAddress
+                 exceeds 112, then OIDs of column
+                 instances in this row will have more than 128
+                 sub-identifiers and cannot be accessed using
+                 SNMPv1, SNMPv2c, or SNMPv3.
+                "
+        INDEX   { mip6BindingHstHomeAddressType,
+                  mip6BindingHstHomeAddress ,
+                  mip6BindingHstIndex}
+        ::= { mip6BindingHistoryTable 1 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Mip6BindingHistoryEntry ::=
+        SEQUENCE {
+         mip6BindingHstHomeAddressType   InetAddressType,
+         mip6BindingHstHomeAddress       InetAddress,
+         mip6BindingHstIndex             Unsigned32,
+         mip6BindingHstCOAType           InetAddressType,
+         mip6BindingHstCOA               InetAddress,
+         mip6BindingHstTimeRegistered    DateAndTime,
+         mip6BindingHstTimeExpired       DateAndTime,
+         mip6BindingHstHomeRegn          TruthValue,
+         mip6BindingHstUsageTS           DateAndTime,
+         mip6BindingHstUsageCount        Gauge32
+        }
+
+    mip6BindingHstHomeAddressType OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The InetAddressType of the
+                 mip6BindingHstHomeAddress that follows.
+                "
+        ::= { mip6BindingHistoryEntry 1 }
+
+    mip6BindingHstHomeAddress OBJECT-TYPE
+        SYNTAX      InetAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "Mobile node's home address.
+
+                 The type of the address represented by this object
+                 is specified by the corresponding
+                 mip6BindingHstHomeAddressType object.
+                "
+        ::= { mip6BindingHistoryEntry 2 }
+
+    mip6BindingHstIndex OBJECT-TYPE
+        SYNTAX      Unsigned32 (1..4294967295)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The index to uniquely identify this record along
+                 with the mobile node's HomeAddress type and
+                 HomeAddress.  It should be monotonically increasing.
+                 It may wrap after reaching its max value."
+        ::= { mip6BindingHistoryEntry 3 }
+
+
+
+
+    mip6BindingHstCOAType   OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The InetAddressType of the mip6BindingHstCOA that
+                 follows.
+                "
+        ::= { mip6BindingHistoryEntry 4 }
+
+    mip6BindingHstCOA   OBJECT-TYPE
+        SYNTAX      InetAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Mobile node's care-of address.  One mobile node can
+                 have multiple bindings with different
+                 care-of addresses.
+                 The type of the address represented by this object
+                 is specified by the corresponding
+                 mip6BindingHstCOAType object.
+                "
+        ::= { mip6BindingHistoryEntry 5 }
+
+     mip6BindingHstTimeRegistered OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The timestamp when this Binding Cache entry was
+                 created.
+                "
+        ::= { mip6BindingHistoryEntry 6 }
+
+     mip6BindingHstTimeExpired OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The timestamp when this Binding Cache entry expired.
+                "
+        ::= { mip6BindingHistoryEntry 7 }
+
+
+
+
+
+
+
+
+
+     mip6BindingHstHomeRegn OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "This object indicates whether or not this Binding
+                 Cache entry is a home registration entry (applicable
+                 only on nodes that support home agent
+                 functionality).
+                "
+        ::= { mip6BindingHistoryEntry 8 }
+
+     mip6BindingHstUsageTS OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The timestamp when this entry was last looked up.
+                "
+        ::= { mip6BindingHistoryEntry 9 }
+
+     mip6BindingHstUsageCount OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of times this entry was looked up.
+                "
+        ::= { mip6BindingHistoryEntry 10 }
+
+    -- mip6TrafficCounters
+
+    -- MIPv6 Traffic will be characterized by
+    -- IPv6 datagrams which satisfy at least one of the following
+    -- conditions
+    --   - the datagrams are tunneled to the mobile node by the HA
+    --   - the datagrams are reverse tunneled by the MN to the HA
+    --   - the datagrams have the Routing header type 2 set.
+    --   - the datagrams have the Home Address option set in the
+    --     Destination Option extension header
+    --   - the datagrams have the mobility header
+
+     mip6TotalTraffic OBJECT IDENTIFIER ::= { mip6Stats 1 }
+    --  REFERENCE
+    --             "RFC 3775 : Section 4.1, 6.3, 6.4"
+
+
+
+
+
+
+     mip6InOctets  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "The total number of octets in the MIPv6 datagrams
+                received by the MIPv6 entity.  This will include
+                datagrams with the Mobility Header, the Home Address
+                option in the Destination Option extension header
+                (Next Header value = 60), or the type 2 Routing
+                Header.  It will also include the IPv6 datagrams that
+                are reverse tunneled to a home agent from a mobile
+                node's home address.
+                Discontinuities in the value of this counter can
+                occur at re-initialization of the management system,
+                and at other times as indicated by the value of
+                mip6CounterDiscontinuityTime.
+               "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6TotalTraffic 1 }
+
+     mip6HCInOctets  OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "The total number of octets in the MIPv6 datagrams
+                received by the MIPv6 entity.  This will include
+                datagrams with the Mobility Header, the Home Address
+                option in the Destination Option extension header
+                (Next Header value = 60), or the type 2 Routing
+                Header.  It will also include the IPv6 datagrams that
+                are reverse tunneled to a home agent from a mobile
+                node's home address.
+                This object is a 64-bit version of mip6InOctets.
+                Discontinuities in the value of this counter can
+                occur at re-initialization of the management system,
+                and at other times as indicated by the value of
+                mip6CounterDiscontinuityTime.
+               "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6TotalTraffic 2 }
+
+
+
+
+
+
+
+     mip6InPkts    OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of MIPv6 datagrams received by the MIPv6
+                 entity.  This will include datagrams with the
+                 Mobility Header, the Home Address option in the
+                 Destination Option extension header (Next Header
+                 value = 60), or the type 2 Routing Header.
+                 It will also include the IPv6 datagrams that are
+                 reverse tunneled to a home agent from a mobile
+                 node's home address.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6TotalTraffic 3 }
+
+     mip6HCInPkts    OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of MIPv6 datagrams received by the MIPv6
+                 entity.  This will include datagrams with the
+                 Mobility Header, the Home Address option in the
+                 Destination Option extension header (Next Header
+                 value = 60), or the type 2 Routing Header.  It will
+                 also include the IPv6 datagrams that are reverse
+                 tunneled to a home agent from a mobile node's home
+                 address.
+                 This object is a 64-bit version of mip6InPkts.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6TotalTraffic 4 }
+
+
+
+
+
+
+
+     mip6OutOctets  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "The total number of octets in the MIPv6 datagrams
+                sent by the MIPv6 entity.  This will include
+                datagrams with the Mobility Header, the Home Address
+                option in the Destination Option extension header
+                (Next Header value = 60), or the type 2 Routing
+                Header.  It will also include the IPv6 datagrams that
+                are reverse tunneled to a home agent from a mobile
+                node's home address.
+                Discontinuities in the value of this counter can
+                occur at re-initialization of the management system,
+                and at other times as indicated by the value of
+                mip6CounterDiscontinuityTime.
+               "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6TotalTraffic 5 }
+
+     mip6HCOutOctets  OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "The total number of octets in the MIPv6 datagrams
+                sent by the MIPv6 entity.  This will include
+                datagrams with the Mobility Header, the Home Address
+                option in the Destination Option extension header
+                (Next Header value = 60), or the type 2 Routing
+                Header.  It will also include the IPv6 datagrams that
+                are reverse tunneled to a home agent from a mobile
+                node's home address.
+                This object is a 64-bit version of mip6OutOctets.
+                Discontinuities in the value of this counter can
+                occur at re-initialization of the management system,
+                and at other times as indicated by the value of
+                mip6CounterDiscontinuityTime.
+               "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6TotalTraffic 6 }
+
+
+
+
+
+
+
+     mip6OutPkts    OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of MIPv6 datagrams sent by the MIPv6
+                 entity.  This will include the datagrams with
+                 Mobility Header, the Home Address option in the
+                 Destination Option extension header (Next Header
+                 value = 60), or the type 2 Routing Header.  It will
+                 also include the IPv6 datagrams that are reverse
+                 tunneled to a home agent from a mobile node's home
+                 address.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6TotalTraffic 7 }
+
+     mip6HCOutPkts    OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of MIPv6 datagrams sent by the MIPv6
+                 entity.  This will include datagrams with the
+                 Mobility Header, the Home Address option in the
+                 Destination Option extension header (Next Header
+                 value = 60), or the type 2 Routing Header.  It will
+                 also include the IPv6 datagrams that are reverse
+                 tunneled to a home agent from a mobile node's home
+                 address.
+                 This object is a 64-bit version of mip6OutPkts.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6TotalTraffic 8 }
+
+
+
+
+
+
+
+     mip6CounterDiscontinuityTime OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The value of sysUpTime on the most recent occasion
+                 at which any one or more of this MIPv6 entities
+                 global counters, viz., counters with OID prefix
+                 'mip6TotalTraffic' or 'mip6CnGlobalStats' or
+                 'mip6HaGlobalStats' suffered a discontinuity.
+                 If no such discontinuities have occurred since the
+                 last re-initialization of the local management
+                 subsystem, then this object will have a zero value.
+                "
+        ::= { mip6TotalTraffic 9 }
+
+
+    -- mip6NodeTrafficCounters
+
+     mip6NodeTrafficTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Mip6NodeTrafficEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "A table containing MIPv6 traffic counters per mobile
+                 node.
+                "
+        ::= { mip6Stats 2 }
+
+     mip6NodeTrafficEntry OBJECT-TYPE
+        SYNTAX      Mip6NodeTrafficEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The MIPv6 traffic statistics for a mobile node.
+
+                 Implementors need to be aware that if the total
+                 number of octets in mip6BindingHomeAddress
+                 exceeds 113, then OIDs of column
+                 instances in this row will have more than 128
+                 sub-identifiers and cannot be accessed using
+                 SNMPv1, SNMPv2c, or SNMPv3.
+                "
+        INDEX  { mip6BindingHomeAddressType, mip6BindingHomeAddress }
+        ::= { mip6NodeTrafficTable 1 }
+
+
+
+
+
+
+     Mip6NodeTrafficEntry ::=
+        SEQUENCE {
+              mip6NodeInOctets             Counter32,
+              mip6HCNodeInOctets           Counter64,
+              mip6NodeInPkts               Counter32,
+              mip6HCNodeInPkts             Counter64,
+              mip6NodeOutOctets            Counter32,
+              mip6HCNodeOutOctets          Counter64,
+              mip6NodeOutPkts              Counter32,
+              mip6HCNodeOutPkts            Counter64,
+              mip6NodeCtrDiscontinuityTime TimeStamp
+        }
+
+     mip6NodeInOctets  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of octets in the MIPv6 datagrams
+                 received from the mobile node by the MIPv6 entity.
+                 This will include datagrams with the Mobility
+                 Header or the Home Address option in the Destination
+                 Option extension header (Next Header value = 60).
+                 It will also include the IPv6 datagrams that are
+                 reverse tunneled to a home agent from the mobile
+                 node's home address.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6NodeCtrDiscontinuityTime.
+                "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6NodeTrafficEntry 1 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     mip6HCNodeInOctets  OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of octets in the MIPv6 datagrams
+                 received from the mobile node by the MIPv6 entity.
+                 This will include datagrams with the Mobility
+                 Header or the Home Address option in the Destination
+                 Option extension header (Next Header value = 60).
+                 It will also include the IPv6 datagrams that are
+                 reverse tunneled to a home agent from the mobile
+                 node's home address.
+                 This object is a 64-bit version of mip6NodeInOctets.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6NodeCtrDiscontinuityTime.
+                "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6NodeTrafficEntry 2 }
+
+     mip6NodeInPkts    OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of MIPv6 datagrams received from the
+                 mobile node by the MIPv6 entity.  This will include
+                 the datagrams with the Mobility Header or
+                 the Home Address option in the Destination
+                 Option extension header (Next Header value = 60).
+                 It will also include the IPv6 datagrams that are
+                 reverse tunneled to a home agent from the mobile
+                 node's home address.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6NodeCtrDiscontinuityTime.
+                "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6NodeTrafficEntry 3 }
+
+
+
+
+
+
+
+     mip6HCNodeInPkts    OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of MIPv6 datagrams received from the
+                 mobile node by the MIPv6 entity.  This will include
+                 datagrams with the Mobility Header or the Home
+                 Address option in the Destination Option extension
+                 header (Next Header value = 60).  It will also
+                 include the IPv6 datagrams that are reverse tunneled
+                 to a home agent from the mobile node's home address.
+                 This object is a 64-bit version of mip6NodeInPkts.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6NodeCtrDiscontinuityTime.
+                "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6NodeTrafficEntry 4 }
+
+     mip6NodeOutOctets  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of octets in the MIPv6 datagrams
+                 sent to the mobile node by the MIPv6 entity.  This
+                 will include datagrams with the Mobility Header
+                 or the type 2 Routing Header.  It will also include
+                 the IPv6 datagrams that are tunneled by a home agent
+                 to the mobile node.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6NodeCtrDiscontinuityTime.
+                "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6NodeTrafficEntry 5 }
+
+
+
+
+
+
+
+
+
+
+     mip6HCNodeOutOctets  OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "The total number of octets in the MIPv6 datagrams
+                sent to the mobile node by the MIPv6 entity.  This
+                will include datagrams with the Mobility Header
+                or the type 2 Routing Header.  It will also include
+                the IPv6 datagrams that are tunneled by a home agent
+                to the mobile node.
+                This object is a 64-bit version of mip6NodeOutOctets.
+                Discontinuities in the value of this counter can
+                occur at re-initialization of the management system,
+                and at other times as indicated by the value of
+                mip6NodeCtrDiscontinuityTime.
+               "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6NodeTrafficEntry 6 }
+
+     mip6NodeOutPkts    OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of MIPv6 datagrams sent to the mobile
+                 node by the MIPv6 entity.  This will include
+                 datagrams with the Mobility Header or the type 2
+                 Routing Header.  It will also include the IPv6
+                 datagrams that are tunneled by a home agent to the
+                 mobile node.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6NodeCtrDiscontinuityTime.
+                "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6NodeTrafficEntry 7 }
+
+
+
+
+
+
+
+
+
+
+
+     mip6HCNodeOutPkts    OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "The number of MIPv6 datagrams sent to the mobile
+                node by the MIPv6 entity.  This will include
+                datagrams with the Mobility Header or the type 2
+                Routing Header.  It will also include the IPv6
+                datagrams that are tunneled by a home agent to the
+                mobile node.
+                This object is a 64-bit version of mip6NodeOutOctets.
+                Discontinuities in the value of this counter can
+                occur at re-initialization of the management system,
+                and at other times as indicated by the value of
+                mip6NodeCtrDiscontinuityTime.
+               "
+        REFERENCE
+                   "RFC 3775 : Section 6.1, 6.3, 6.4, 10.4.5"
+        ::= { mip6NodeTrafficEntry 8 }
+
+     mip6NodeCtrDiscontinuityTime OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The value of sysUpTime on the most recent occasion
+                 at which any one or more of the counters in this row
+                 suffered a discontinuity.  The relevant counters are
+                 the specific instances of any Counter32 or Counter64
+                 objects in this row.
+                 If no such discontinuities have occurred since the
+                 last re-initialization of the local management
+                 subsystem, then this object contains a zero value.
+                "
+        ::= { mip6NodeTrafficEntry 9 }
+
+    -- mip6MnSystem Group
+
+    mip6MnHomeAddressTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Mip6MnHomeAddressEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "A table containing registration status for all the
+                 home addresses pertaining to the mobile node.
+                "
+        ::= { mip6MnSystem 1 }
+
+
+
+     mip6MnHomeAddressEntry OBJECT-TYPE
+        SYNTAX      Mip6MnHomeAddressEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The registration status for a home address.
+
+                 Implementors need to be aware that if the total
+                 number of octets in mip6MnHomeAddress
+                 exceeds 113, then OIDs of column instances in
+                 this row will have more than 128 sub-identifiers and
+                 cannot be accessed using SNMPv1, SNMPv2c, or SNMPv3.
+                "
+        INDEX   { mip6MnHomeAddressType, mip6MnHomeAddress }
+        ::= { mip6MnHomeAddressTable 1 }
+
+     Mip6MnHomeAddressEntry ::=
+        SEQUENCE {
+              mip6MnHomeAddressType            InetAddressType,
+              mip6MnHomeAddress                InetAddress,
+              mip6MnHomeAddressState           INTEGER
+        }
+
+    mip6MnHomeAddressType OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The InetAddressType of the mip6MnHomeAddress that
+                 follows.
+                "
+        ::= { mip6MnHomeAddressEntry 1 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6MnHomeAddress OBJECT-TYPE
+        SYNTAX      InetAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+               "A unicast routable address assigned to the mobile
+                node.  This is used as the 'permanent address' of the
+                mobile node in the sense that it remains unchanged
+                regardless of the mobile node's current point of
+                attachment.  If mobile node doesn't have a home
+                address assigned yet, then this object will take the
+                default 'unspecified' value ::0.
+
+                The type of the address represented by this object
+                is specified by the corresponding
+                mip6MnHomeAddressType object.
+               "
+        REFERENCE
+                "RFC 3775 : Section 3.2"
+        ::= { mip6MnHomeAddressEntry 2 }
+
+    mip6MnHomeAddressState OBJECT-TYPE
+        SYNTAX      INTEGER {
+                            unknown(1),
+                            home(2),
+                            registered(3),
+                            pending(4),
+                            isolated(5)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "This object indicates the state of the mobile node:
+                 unknown     -- The state of the mobile node
+                                cannot be determined.
+                 home        -- mobile node is on the home network.
+                 registered  -- mobile node is on a foreign network
+                                and is registered with the home
+                                agent.
+                 pending     -- mobile node has sent registration
+                                request to the home agent and is
+                                waiting for the reply.
+                 isolated    -- mobile node is isolated from network,
+                                i.e., it is not in its home network,
+                                it is not registered, and no
+                                registration ack is pending.
+                "
+        ::= { mip6MnHomeAddressEntry 3 }
+
+
+
+    -- Mobile Node Discovery and Advertisement Group Counters
+
+    mip6MnDiscoveryRequests OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of ICMP Dynamic Home Agent Address
+                 Discovery Requests sent by the mobile node.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 10.5, 11.4.1"
+           ::= { mip6MnConf 1 }
+
+    mip6MnDiscoveryReplies OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of ICMP Dynamic Home Agent Address
+                 Discovery Replies received by the mobile node.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 10.5, 11.4.1"
+           ::= { mip6MnConf 2 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6MnDiscoveryTimeouts OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of ICMP Dynamic Home Agent Address
+                 Discovery Requests that timed out.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 10.5, 11.4.1, 12"
+           ::= { mip6MnConf 3 }
+
+    mip6MnPrefixSolicitationsSent OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of ICMP Mobile Prefix Solicitations
+                 sent by the mobile node.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 10.5, 11.4.2"
+           ::= { mip6MnConf 4 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6MnPrefixAdvsRecd OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of ICMP Mobile Prefix Advertisements
+                 received by the mobile node.  This will include the
+                 ICMP Mobile Prefix Advertisements that failed the
+                 validity checks.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 10.6, 11.4.3"
+        ::= { mip6MnConf 5 }
+
+    mip6MnPrefixAdvsIgnored OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Mobile Prefix Advertisements
+                 discarded by the validity check.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 10.6, 11.4.3"
+        ::= { mip6MnConf 6 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6MnMovedToFN OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Number of times the mobile node has detected
+                 movement to a foreign network from another
+                 foreign network or from the home network, has
+                 reconstructed its care-of address and has initiated
+                 the care-of address registration process.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.5.1"
+        ::= { mip6MnConf 7 }
+
+    mip6MnMovedToHN OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Number of times the mobile node has detected
+                 movement from a foreign network to its home
+                 network.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.5.4"
+        ::= { mip6MnConf 8 }
+
+    -- Mobile Node Registration Group
+
+    -- Registration table of mobile node
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6MnBLTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Mip6MnBLEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+               "This table corresponds to the Binding Update List
+                (BL) that is maintained by the mobile node.  The list
+                holds an item for every binding that the mobile node
+                has established or is trying to establish.  Both
+                correspondent and home registrations are included in
+                this table.  Entries from the table are deleted as
+                the lifetime of the binding expires.
+               "
+        REFERENCE
+                "RFC 3775 : Section 4.5, 11.1"
+        ::= { mip6MnRegistration 1 }
+
+    mip6MnBLEntry OBJECT-TYPE
+        SYNTAX      Mip6MnBLEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "Information about a Binding Update sent by the
+                 mobile node either to its home agent or to one of
+                 its correspondent nodes.
+
+                 Implementors need to be aware that if the total
+                 number of octets in mip6MnHomeAddress and
+                 mip6MnBLNodeAddress exceeds 111, then OIDs of column
+                 instances in this row will have more than 128
+                 sub-identifiers and cannot be accessed using
+                 SNMPv1, SNMPv2c, or SNMPv3.
+                "
+        INDEX { mip6MnHomeAddressType,
+                mip6MnHomeAddress,
+                mip6MnBLNodeAddressType,
+                mip6MnBLNodeAddress
+              }
+        ::= { mip6MnBLTable 1 }
+
+
+
+
+
+
+
+
+
+
+
+
+    Mip6MnBLEntry ::= SEQUENCE {
+        mip6MnBLNodeAddressType   InetAddressType,
+        mip6MnBLNodeAddress       InetAddress,
+        mip6MnBLCOAType           InetAddressType,
+        mip6MnBLCOA               InetAddress,
+        mip6MnBLLifeTimeRequested Unsigned32,
+        mip6MnBLLifeTimeGranted   Unsigned32,
+        mip6MnBLMaxSeq            Unsigned32,
+        mip6MnBLTimeSent          DateAndTime,
+        mip6MnBLAccepted          TruthValue,
+        mip6MnBLAcceptedTime      DateAndTime,
+        mip6MnBLRetransmissions   Gauge32,
+        mip6MnBLDontSendBUFlag    TruthValue
+        }
+
+    mip6MnBLNodeAddressType OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                 "The InetAddressType of the mip6MnBLNodeAddress
+                  that follows.
+                 "
+        ::= { mip6MnBLEntry 1 }
+
+    mip6MnBLNodeAddress OBJECT-TYPE
+        SYNTAX      InetAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The address of the agent as used in the destination
+                 address of the Binding Update.  The agent
+                 may be a home agent or a correspondent node.
+
+                 The type of the address represented by this object
+                 is specified by the corresponding
+                 mip6MnBLNodeAddressType object.
+
+                 "
+        REFERENCE
+                "RFC 3775 : Section 11.1"
+        ::= { mip6MnBLEntry 2 }
+
+
+
+
+
+
+
+
+
+    mip6MnBLCOAType OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The InetAddressType of the mip6MnBLCOA that follows.
+                "
+        ::= { mip6MnBLEntry 3 }
+
+    mip6MnBLCOA OBJECT-TYPE
+        SYNTAX      InetAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Care-of address that the mobile node intends to
+                 register in the Binding Update request.
+
+                 The type of the address represented by this object
+                 is specified by the corresponding mip6MnBLCOAType
+                 object.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.1"
+        ::= { mip6MnBLEntry 4 }
+
+    mip6MnBLLifeTimeRequested OBJECT-TYPE
+        SYNTAX      Unsigned32
+        UNITS       "seconds"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The lifetime requested by the mobile node (in
+                 seconds) in the Binding Update.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.1"
+        ::= { mip6MnBLEntry 5 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6MnBLLifeTimeGranted OBJECT-TYPE
+        SYNTAX      Unsigned32
+        UNITS       "seconds"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The lifetime granted to the mobile node for this
+                 binding.  This field will be inaccessible if the
+                 Binding Update request has not been accepted.
+                 The lifetime remaining (lR) can be calculated using
+                 the current time (cT), mip6MnBLAcceptedTime (aT) and
+                 mip6MnBLLifeTimeGranted (lG) as follows:
+                         lR  = lG - (cT - aT).
+                 When lR is zero, this entry will be deleted from the
+                 Binding Update List and consequently from this
+                 table.
+                "
+        ::= { mip6MnBLEntry 6 }
+
+    mip6MnBLMaxSeq OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..65536)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The maximum value of the Sequence Number field sent
+                 in previous Binding Updates to this destination.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.1"
+        ::= { mip6MnBLEntry 7 }
+
+    mip6MnBLTimeSent OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The time when the last (re-)transmission occurred."
+        REFERENCE
+                "RFC 3775 : Section 11.1"
+        ::= { mip6MnBLEntry 8 }
+
+
+
+
+
+
+
+
+
+
+
+    mip6MnBLAccepted OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "true(1) if the mobile node has received a
+                 binding acknowledgment indicating that service has
+                 been accepted (status code 0 or 1); false(2)
+                 otherwise.  false(2) implies that the registration
+                 is still pending.
+                "
+        ::= { mip6MnBLEntry 9 }
+
+    mip6MnBLAcceptedTime OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The time at which the mobile node receives a binding
+                 acknowledgment indicating that Binding Update has
+                 been accepted (status code 0 or 1);
+                 This object will be inaccessible if the Binding
+                 Update request is still pending.
+                "
+        ::= { mip6MnBLEntry 10 }
+
+
+    mip6MnBLRetransmissions  OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of Binding Update retransmissions.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.1"
+        ::= { mip6MnBLEntry 11 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6MnBLDontSendBUFlag OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "true(1) indicates that future binding updates
+                 will not be sent to mip6MnBLNodeAddress.
+                 false(2) implies that binding updates will be
+                 sent to mip6MnBLNodeAddress.
+                 The mobile node sets this flag in the when it
+                 receives an ICMP Parameter Problem, Code 1,
+                 error message in response to a return
+                 routability message or Binding Update sent to
+                 mip6MnBLNodeAddress.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.1"
+        ::= { mip6MnBLEntry 12 }
+
+
+    -- Mobile Node Registration Group Counters
+
+    mip6MnRegnCounters OBJECT IDENTIFIER ::= { mip6MnRegistration 2 }
+
+    mip6MnMobilityMessagesSent OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of mobility messages, i.e., IPv6
+                 datagrams with Mobility Header, sent by the mobile
+                 node.  There are 3 types of mobility messages, viz.,
+                 Home Test Init, Care-of Test Init, and Binding
+                 Updates, that are sent by mobile nodes.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 4.2, 6.1"
+        ::= {  mip6MnRegnCounters 1 }
+
+
+
+
+
+
+
+
+
+    mip6MnMobilityMessagesRecd OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of mobility messages, i.e., IPv6
+                 datagrams with Mobility Header, received by the
+                 mobile node.  There are 5 types of mobility
+                 messages, viz., Home Test, Care-of Test, Binding
+                 Acknowledgment, Binding Refresh Request, and Binding
+                 Error, that are sent to mobile nodes.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 4.2, 6.1"
+        ::= {  mip6MnRegnCounters 2 }
+
+    mip6MnBUsToHA  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Updates sent to the mobile
+                 node's home agent(s).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.7.1"
+        ::= {  mip6MnRegnCounters 3 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6MnBUAcksFromHA  OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of valid binding acknowledgments
+                 received from the mobile node's home agent(s).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.7.3"
+        ::= {  mip6MnRegnCounters 4 }
+
+    mip6MnBUsToCN OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Updates sent to
+                 correspondent nodes by the mobile node.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.7.2"
+        ::= {  mip6MnRegnCounters 5 }
+
+    mip6MnBUAcksFromCN OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of valid Binding Update acks
+                 received from all the correspondent nodes.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.7.3"
+        ::= {  mip6MnRegnCounters 6 }
+
+
+
+
+    mip6MnBindingErrorsFromCN OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Error messages received
+                 by mobile node from CN.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        ::= {  mip6MnRegnCounters 7 }
+
+    mip6MnICMPErrorsRecd OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of ICMP Error messages of type ICMP
+                 Parameter Problem, Code 1 or Code 2, received by
+                 the mobile node from a correspondent node in
+                 response to a return routability procedure, a
+                 Binding Update, or a packet with the Home Address
+                 option.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.3.5"
+        ::= {  mip6MnRegnCounters 8 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6MnBRRequestsRecd OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of Binding Refresh requests
+                 received by the mobile node from correspondent
+                 nodes.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 11.7.4"
+        ::= {  mip6MnRegnCounters 9 }
+
+    -- Registration Group counters used for Correspondent Node
+    mip6CnGlobalStats OBJECT IDENTIFIER ::= { mip6CnStats 1 }
+
+
+    mip6CnHomeTestInitsRecd     OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Home Test Init messages received.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.4.1"
+        ::= { mip6CnGlobalStats 1 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6CnHomeTestsSent      OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Home Test messages sent.  If a Home
+                 Test Init message is found to be valid, a Home Test
+                 message will be generated and sent.  Otherwise the
+                 Home Test message is silently discarded.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.4.3"
+        ::= { mip6CnGlobalStats 2 }
+
+    mip6CnCareOfTestInitsRecd     OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Care-of Test Init messages received.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.4.2"
+        ::= { mip6CnGlobalStats 3 }
+
+    mip6CnCareOfTestsSent            OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Care-of Test messages sent.  If a
+                 Care-of Test Init message is found to be valid, a
+                 Care-of Test message will be generated and sent.
+                 Otherwise the Care-of Test message is silently
+                 discarded.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.4.4"
+        ::= { mip6CnGlobalStats 4 }
+
+
+
+
+    mip6CnBUsRecd     OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Updates received by the
+                 correspondent node from mobile nodes.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.5.1"
+        ::= { mip6CnGlobalStats 5 }
+
+    mip6CnBUAcksSent    OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of acknowledgments sent by the
+                 correspondent node for the Binding Updates received.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.5.4"
+        ::= { mip6CnGlobalStats 6 }
+
+
+    mip6CnBRsSent     OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Refresh Request messages
+                 sent by the correspondent node.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.5.5"
+        ::= { mip6CnGlobalStats 7 }
+
+
+
+     mip6CnBindingErrors OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Error messages sent by the
+                 correspondent node to the mobile node.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.3.3"
+        ::= { mip6CnGlobalStats 8 }
+
+    mip6CnBUsAccepted   OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Updates accepted by the
+                 correspondent node.  If a Binding Acknowledgment
+                 message is sent for the Binding Update request,
+                 the Status code field in the message will have
+                 a value less than 128.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.5.1, 9.5.4"
+        ::= { mip6CnGlobalStats 9 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6CnBUsRejected   OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected
+                 by the correspondent node.  If a Binding
+                 Acknowledgment message has been sent for the Binding
+                 Update request, the Status code field in the
+                 message will have a value greater than or equal to
+                 128.  Otherwise the Binding Update request will be
+                 silently discarded.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 9.5.1, 9.5.4"
+        ::= { mip6CnGlobalStats 10 }
+
+    mip6CnReasonUnspecified OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected by
+                 the correspondent node with status code in the
+                 Binding Acknowledgment message indicating 'reason
+                 unspecified' (Code 128).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 6.1.8"
+        ::= { mip6CnGlobalStats 11 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6CnInsufficientResource OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected by
+                 the correspondent node with status code in the
+                 Binding Acknowledgment message indicating
+                 'insufficient resources' (Code 130).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 6.1.8"
+        ::= { mip6CnGlobalStats 12 }
+
+    mip6CnHomeRegnNotSupported OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "Total number of Binding Update requests rejected by
+                correspondent node with status code in the Binding
+                Acknowledgment message indicating 'home registration
+                not supported' (Code 131).
+                Discontinuities in the value of this counter can
+                occur at re-initialization of the management system,
+                and at other times as indicated by the value of
+                mip6CounterDiscontinuityTime.
+               "
+        REFERENCE
+                "RFC 3775 : Section 10.3.1"
+        ::= { mip6CnGlobalStats 13 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6CnSeqNumberOutOfWindow OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Updates rejected by
+                 correspondent node with status code in the Binding
+                 Acknowledgment message indicating 'sequence number
+                 out of window' (Code 135).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 6.1.8, 9.5.1"
+        ::= { mip6CnGlobalStats 14 }
+
+    mip6CnExpiredHomeNonceIndex OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of Binding Updates rejected by
+                 correspondent node with status code in the Binding
+                 Acknowledgment message indicating 'expired home
+                 nonce index' (Code 136).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 6.1.8, 9.5.1"
+        ::= { mip6CnGlobalStats 15 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6CnExpiredCareOfNonceIndex OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of Binding Updates rejected by
+                 correspondent node with status code in the Binding
+                 Acknowledgment message indicating 'expired
+                 care-of nonce index' (Code 137).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 6.1.8, 9.5.1"
+        ::= { mip6CnGlobalStats 16 }
+
+    mip6CnExpiredNonce OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of Binding Updates rejected by
+                 correspondent node with status code in the Binding
+                 Acknowledgment message indicating 'expired nonces'
+                 (Code 138), i.e., the correspondent node no longer
+                 recognizes the Home Nonce Index value and the
+                 Care-of Nonce Index value.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 6.1.8, 9.5.1"
+        ::= { mip6CnGlobalStats 17 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6CnRegTypeChangeDisallowed OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of Binding Updates rejected by
+                 correspondent node with status code in the Binding
+                 Acknowledgment message indicating 'registration
+                 type change disallowed' (Code 139), i.e., a binding
+                 already exists for the given home address and the
+                 home registration flag has a different value than
+                 the Home Registration (H) bit in the Binding Update.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 6.1.8, 9.5.1"
+        ::= { mip6CnGlobalStats 18 }
+
+
+
+    -- The Correspondent Node statistics by mobile node
+
+    mip6CnCounterTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Mip6CnCounterEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "A table containing each mobile ."
+        ::= { mip6CnStats 2 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6CnCounterEntry OBJECT-TYPE
+        SYNTAX      Mip6CnCounterEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The set of correspondent node counters for a mobile
+                 node.
+
+                 Implementors need to be aware that if the total
+                 number of octets in mip6BindingHomeAddress
+                 exceeds 113, then OIDs of column instances in
+                 this row will have more than 128 sub-identifiers and
+                 cannot be accessed using SNMPv1, SNMPv2c, or SNMPv3.
+                "
+        INDEX   {    mip6BindingHomeAddressType,
+                     mip6BindingHomeAddress
+                }
+        ::= { mip6CnCounterTable 1 }
+
+    Mip6CnCounterEntry ::=
+        SEQUENCE {
+           mip6CnBURequestsAccepted       Counter32,
+           mip6CnBURequestsRejected       Counter32,
+           mip6CnBCEntryCreationTime      DateAndTime,
+           mip6CnBUAcceptedTime           DateAndTime,
+           mip6CnBURejectionTime          DateAndTime,
+           mip6CnBURejectionCode          Mip6BURequestRejectionCode,
+           mip6CnCtrDiscontinuityTime     TimeStamp
+        }
+
+    mip6CnBURequestsAccepted OBJECT-TYPE   --(Code 0,1)
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests from the
+                 mobile node accepted by the correspondent node.
+                 If Binding Acknowledgment messages are sent, then
+                 the status code in the message will have a value
+                 less than 128.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CnCtrDiscontinuityTime.
+                "
+        ::= { mip6CnCounterEntry 1 }
+
+
+
+
+
+    mip6CnBURequestsRejected     OBJECT-TYPE
+                                      -- (Code 128 through Code 159)
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "Total number of Binding Update requests from the
+                mobile node that have been rejected by the
+                correspondent node.  This includes the Binding Update
+                requests for which a Binding Acknowledgment message
+                has been sent with status code value greater than or
+                equal to 128 and the Binding Acknowledgment requests
+                that have been silently discarded.
+                Discontinuities in the value of this counter can
+                occur at re-initialization of the management system,
+                and at other times as indicated by the value of
+                mip6CnCtrDiscontinuityTime.
+               "
+        ::= { mip6CnCounterEntry 2 }
+
+    mip6CnBCEntryCreationTime        OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The time when the current Binding Cache entry was
+                 created for the mobile node.
+                "
+        ::= { mip6CnCounterEntry 3 }
+
+    mip6CnBUAcceptedTime OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The time at which the last Binding Update was
+                 accepted by the correspondent node and the
+                 corresponding Binding Cache entry was updated.
+                "
+        ::= { mip6CnCounterEntry 4 }
+
+
+
+
+
+
+
+
+
+
+
+    mip6CnBURejectionTime   OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The time at which the last Binding Update message
+                 was rejected by the correspondent node.
+                 If there have been no rejections, then this object
+                 will be inaccessible.
+                "
+        ::= { mip6CnCounterEntry 5 }
+
+    mip6CnBURejectionCode  OBJECT-TYPE
+           SYNTAX      Mip6BURequestRejectionCode
+           MAX-ACCESS  read-only
+           STATUS      current
+           DESCRIPTION
+                  "If a Binding Acknowledgment is sent to the mobile
+                   node, this is the status code (> 128) that is
+                   returned in the Binding Acknowledgment.
+                   In case a Binding Acknowledgment is not sent to
+                   the mobile node, then this will be the value
+                   of the Status code that corresponds to the reason
+                   of the rejection.  If there have been no
+                   rejections, then this object will be inaccessible.
+                  "
+        REFERENCE
+                "RFC 3775 : Section 6.1.8"
+
+           ::= { mip6CnCounterEntry 6 }
+
+     mip6CnCtrDiscontinuityTime OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "The value of sysUpTime on the most recent occasion
+                at which any one or more of counters in this row,
+                viz., instances of 'mip6CnBURequestsAccepted' and
+                'mip6CnBURequestsRejected', suffered a discontinuity.
+                If no such discontinuities have occurred since the
+                last re-initialization of the local management
+                subsystem, then this object will have a zero value.
+               "
+        ::= { mip6CnCounterEntry 7 }
+
+    -- Home agent group
+
+
+
+
+    mip6HaAdvsRecd OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of valid Router Advertisements
+                 received with the Home Agent (H) bit set, on
+                 all the links on which it is serving as a Home
+                 Agent.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 7"
+        ::= { mip6HaAdvertisement 1 }
+
+
+    mip6HaAdvsSent OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of unsolicited multicast Router
+                 Advertisements sent with the Home Agent (H) bit set,
+                 on all the links on which the router is serving as
+                 a Home Agent.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+        REFERENCE
+                "RFC 3775 : Section 7"
+        ::= { mip6HaAdvertisement 2 }
+
+
+    mip6HaConfTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Mip6HaConfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+               "A table containing configurable advertisement
+                parameters for all interfaces on which the
+                home agent service is advertised.
+                It is RECOMMENDED that the last written values
+                of the objects in the conceptual rows of this
+
+
+
+                table will remain unchanged across reboots of
+                the managed entity provided that the interfaces
+                have not been renumbered after the reboot.
+               "
+        ::= { mip6HaAdvertisement 3 }
+
+    mip6HaConfEntry OBJECT-TYPE
+        SYNTAX      Mip6HaConfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+               "Advertisement parameters for an interface.
+                The instances of the columnar objects in this entry
+                pertain to the interface that is uniquely identified
+                by the ipv6InterfaceIfIndex of the interface.  The
+                same ipv6InterfaceIfIndex object is used to uniquely
+                identify instances of the columnar objects of this
+                conceptual row.
+               "
+        INDEX   { ipv6InterfaceIfIndex }
+        ::= { mip6HaConfTable 1 }
+
+    Mip6HaConfEntry    ::= SEQUENCE {
+          mip6HaAdvPreference               Integer32,
+          mip6HaAdvLifetime                 Integer32,
+          mip6HaPrefixAdv                   INTEGER,
+          mip6HaPrefixSolicitation          INTEGER,
+          mip6HaMCastCtlMsgSupport          INTEGER
+        }
+
+    mip6HaAdvPreference OBJECT-TYPE
+        SYNTAX      Integer32 (0..65536)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+               "The preference value for the home agent to
+                be used in the Router Advertisements.  Higher
+                value denotes greater preference.
+               "
+        REFERENCE
+                "RFC 3775 : Section 7.4, 8.4"
+        ::= { mip6HaConfEntry 1 }
+
+
+
+
+
+
+
+
+
+    mip6HaAdvLifetime   OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        UNITS       "seconds"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+               "The lifetime value for the home agent to be
+                used in the Router Advertisements.
+               "
+        REFERENCE
+                "RFC 3775 : Section 7.4"
+        ::= { mip6HaConfEntry 2 }
+
+    mip6HaPrefixAdv    OBJECT-TYPE
+        SYNTAX      INTEGER { enabled(1), disabled(2) }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+                "Indicates whether the home agent should support
+                 sending of the ICMP Mobile Prefix Advertisements.
+                 If it is disabled(2), the home agent will not
+                 send ICMP Mobile Prefix Advertisements to the
+                 mobile nodes.
+                 The state can be changed from enabled(1) to
+                 disabled(2) and vice versa by operator
+                 intervention.
+                 Causing the state to change from enabled(1) to
+                 disabled(2) will result in the home agent
+                 disabling the Prefix advertisement function.
+                 On the other hand, changing the status from
+                 disabled(2) to enabled(1) will start the prefix
+                 advertisement function.
+                "
+        REFERENCE
+                "RFC 3775 : Section 8.4"
+        ::= { mip6HaConfEntry 3}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6HaPrefixSolicitation   OBJECT-TYPE
+        SYNTAX      INTEGER { enabled(1), disabled(2) }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+                "Indicates whether the home agent should respond
+                 to ICMP Mobile Prefix Solicitation messages it
+                 receives from the mobile nodes.  By default, the
+                 value will be set to enabled(1).  If it is
+                 disabled(2), the home agent will not respond to
+                 any ICMP Mobile Prefix Solicitation messages.
+                 The state can be changed from enabled(1) to
+                 disabled(2), by operator intervention.  Causing
+                 the state to change from enabled(1) to
+                 disabled(2) will result in the home agent not
+                 responding to any ICMP Mobile Prefix
+                 Solicitation messages it receives from the
+                 mobile nodes.
+                "
+        REFERENCE
+                "RFC 3775 : Section 8.4"
+        ::= { mip6HaConfEntry 4}
+
+
+   mip6HaMCastCtlMsgSupport OBJECT-TYPE
+        SYNTAX      INTEGER { enabled(1), disabled(2) }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+                "Indicates whether the home agent should enable
+                 support for the processing of the multicast
+                 group membership control messages it receives
+                 from the mobile nodes.  By default, the value
+                 will be set to enabled(1).  If it is
+                 disabled(2), the home agent will not process
+                 any multicast group control messages it receives
+                 from the mobile nodes.
+                 The state can be changed from enabled(1) to
+                 disabled(2), by operator intervention.  Causing
+                 the state to change from enabled(1) to
+                 disabled(2) will result in the home agent
+                 disabling the processing of the multicast group
+                 control messages it received from the mobile
+                 nodes.
+                "
+        REFERENCE
+                "RFC 3775 : Section 10.4.3"
+        ::= { mip6HaConfEntry 5}
+
+
+
+
+    -- Registration Group counters HA
+
+    mip6HaGlobalStats OBJECT IDENTIFIER ::= { mip6HaStats 1 }
+
+    mip6HaHomeTestInitsRecd     OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Home Test Init messages received by
+                 the home agent.  This will include Home Test Init
+                 messages that failed the validity checks.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+          REFERENCE
+                   "RFC 3775 : Section 5.2.5"
+        ::= { mip6HaGlobalStats 1 }
+
+    mip6HaHomeTestsSent      OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Home Test messages sent by the
+                 home agent.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+         REFERENCE
+                   "RFC 3775 : Section 5.2.5"
+        ::= { mip6HaGlobalStats 2 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6HaBUsRecd     OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Updates received by the
+                 home agent.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.1"
+        ::= { mip6HaGlobalStats 3 }
+
+    mip6HaBUAcksSent    OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Acknowledgments sent
+                 by the home agent.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.1"
+        ::= { mip6HaGlobalStats 4 }
+
+    mip6HaBRAdviceSent OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Acknowledgments sent
+                 by the home agent with Binding Refresh Advice
+                 mobility option included.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.1"
+        ::= { mip6HaGlobalStats 5 }
+
+
+
+    mip6HaBUsAccepted   OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Updates accepted by this HA.
+                 Binding Acknowledgment with status code of 0 or 1.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.1"
+        ::= { mip6HaGlobalStats 6 }
+
+    mip6HaPrefDiscoverReqd OBJECT-TYPE        -- (Code 1)
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total number of Binding Acknowledgments sent by
+                 the home agent with status code indicating 'accepted
+                 but prefix discovery necessary'  (Code 1).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.1"
+        ::= { mip6HaGlobalStats 7 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6HaReasonUnspecified OBJECT-TYPE               -- (Code 128)
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected by
+                 the home agent with status code in the Binding
+                 Acknowledgment message indicating 'reason
+                 unspecified' (Code 128).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.1"
+        ::= { mip6HaGlobalStats 8 }
+
+    mip6HaAdmProhibited OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected by
+                 the home agent with status code in the Binding
+                 Acknowledgment message indicating 'administratively
+                 prohibited' (Code 129).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.1"
+        ::= { mip6HaGlobalStats 9 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6HaInsufficientResource OBJECT-TYPE            -- (Code 130)
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected by
+                 the home agent with status code in the Binding
+                 Acknowledgment message indicating 'insufficient
+                 resources' (Code 130).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 9.5.2"
+        ::= { mip6HaGlobalStats 10 }
+
+    mip6HaHomeRegnNotSupported OBJECT-TYPE    -- (Code 131)
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected by
+                 the home agent with status code in the Binding
+                 Acknowledgment message indicating 'home
+                 registration not supported' (Code 131).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.1"
+        ::= { mip6HaGlobalStats 11 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6HaNotHomeSubnet OBJECT-TYPE                   -- (Code 132)
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected by
+                 the home agent with status code in the Binding
+                 Acknowledgment message indicating 'not home subnet'
+                 (Code 132).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.1"
+        ::= { mip6HaGlobalStats 12 }
+
+    mip6HaNotHomeAgentForThisMN OBJECT-TYPE           -- (Code 133)
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected by
+                 the home agent with status code in the Binding
+                 Acknowledgment message indicating 'not home agent
+                 for this mobile node' (Code 133).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.2"
+        ::= { mip6HaGlobalStats 13 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6HaDupAddrDetectionFailed OBJECT-TYPE       -- (Code 134)
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected by
+                 the home agent with status code in the Binding
+                 Acknowledgment message indicating 'Duplicate
+                 Address Detection failed' (Code 134).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.1"
+        ::= { mip6HaGlobalStats 14 }
+
+    mip6HaSeqNumberOutOfWindow OBJECT-TYPE            -- (Code 135)
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected by
+                 the home agent with status code in the Binding
+                 Acknowledgment message indicating 'sequence number
+                 out of window' (Code 135).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 9.5.1"
+        ::= { mip6HaGlobalStats 15 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6HaExpiredHomeNonceIndex OBJECT-TYPE           -- (Code 136)
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected by
+                 the home agent with status code in the Binding
+                 Acknowledgment message indicating 'expired home
+                 nonce index' (Code 136).
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 9.5.1"
+        ::= { mip6HaGlobalStats 16 }
+
+    mip6HaRegTypeChangeDisallowed OBJECT-TYPE         -- (Code 139)
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of Binding Update requests rejected by
+                 the home agent with status code in the Binding
+                 Acknowledgment message indicating 'registration
+                 type change disallowed' (Code 139), i.e., a binding
+                 already exists for the given home address and the
+                 home registration flag has a different value than
+                 the Home Registration (H) bit in the Binding Update.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6CounterDiscontinuityTime.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 9.5.1"
+        ::= { mip6HaGlobalStats 17 }
+
+    -- Home agent registration Counters per node
+
+
+
+
+
+
+
+
+
+
+
+    mip6HaCounterTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Mip6HaCounterEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "A table containing registration statistics for all
+                 mobile nodes registered with the home agent.
+                "
+        ::= { mip6HaStats 2 }
+
+    mip6HaCounterEntry  OBJECT-TYPE
+        SYNTAX      Mip6HaCounterEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "Home agent registration statistics for a mobile
+                 node.
+
+                 Implementors need to be aware that if the total
+                 number of octets in mip6BindingHomeAddress
+                 exceeds 113, then OIDs of column instances in
+                 this row will have more than 128 sub-identifiers and
+                 cannot be accessed using SNMPv1, SNMPv2c, or SNMPv3.
+                "
+        INDEX   { mip6BindingHomeAddressType,
+                  mip6BindingHomeAddress
+                }
+        ::= { mip6HaCounterTable 1 }
+
+    Mip6HaCounterEntry      ::= SEQUENCE {
+        mip6HaBURequestsAccepted       Counter32,
+        mip6HaBURequestsDenied         Counter32,
+        mip6HaBCEntryCreationTime      DateAndTime,
+        mip6HaBUAcceptedTime           DateAndTime,
+        mip6HaBURejectionTime          DateAndTime,
+        mip6HaRecentBURejectionCode    Mip6BURequestRejectionCode,
+        mip6HaCtrDiscontinuityTime     TimeStamp
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6HaBURequestsAccepted OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of service requests for the mobile node
+                 accepted by the home agent.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6HaCtrDiscontinuityTime.
+                "
+        ::= { mip6HaCounterEntry 1 }
+
+    mip6HaBURequestsDenied   OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Total number of service requests for the mobile node
+                 rejected by the home agent.
+                 Discontinuities in the value of this counter can
+                 occur at re-initialization of the management system,
+                 and at other times as indicated by the value of
+                 mip6HaCtrDiscontinuityTime.
+                "
+        ::= { mip6HaCounterEntry 2 }
+
+    mip6HaBCEntryCreationTime   OBJECT-TYPE
+        SYNTAX      DateAndTime
+        UNITS       "seconds"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The time when the current Binding Cache entry was
+                 created for the mobile node.
+                "
+        ::= { mip6HaCounterEntry 3 }
+
+    mip6HaBUAcceptedTime  OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The time at which the last Binding Update was
+                 accepted by the home agent for this mobile node.
+                "
+        ::= { mip6HaCounterEntry 4 }
+
+
+
+    mip6HaBURejectionTime  OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The time at which the last Binding Update was
+                 rejected by the home agent for this mobile node.
+                 If there have been no rejections, then this object
+                 will be inaccessible.
+                "
+        ::= { mip6HaCounterEntry 5 }
+
+    mip6HaRecentBURejectionCode  OBJECT-TYPE
+        SYNTAX      Mip6BURequestRejectionCode
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "If a Binding Acknowledgment is sent to the mobile
+                 node, this is the status code (> 128) that is
+                 returned in the Binding Acknowledgment.
+                 In case a Binding Acknowledgment is not sent to the
+                 mobile node, then this will be the value of the
+                 status code that corresponds to the reason of the
+                 rejection.
+                 If there have been no rejections, then this object
+                 will be inaccessible.
+                "
+        ::= { mip6HaCounterEntry 6 }
+
+     mip6HaCtrDiscontinuityTime OBJECT-TYPE
+        SYNTAX      TimeStamp
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+               "The value of sysUpTime on the most recent occasion
+                at which any one or more of counters in this row,
+                viz., instances of 'mip6HaBURequestsAccepted' and
+                'mip6HaBURequestsRejected', suffered a discontinuity.
+                If no such discontinuities have occurred since the
+                last re-initialization of the local management
+                subsystem, then this object will have a zero value.
+               "
+        ::= { mip6HaCounterEntry 7 }
+
+    -- Home Agent List Table
+
+
+
+
+
+
+    mip6HaListTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Mip6HaListEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "This table models the Home Agents List that contains
+                 the list of all routers that are acting as home
+                 agents on each of the interfaces on which the home
+                 agent service is offered by this router.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.1"
+        ::= { mip6HaAdvertisement 4 }
+
+    mip6HaListEntry  OBJECT-TYPE
+        SYNTAX      Mip6HaListEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+               "Information about a router that is offering home
+                agent service.
+                The instances of the columnar objects in this entry
+                pertain to an interface for a particular value of
+                mip6HaLinkLocalAddressType and
+                mip6HaLinkLocalAddress.  The interface is uniquely
+                identified by its ipv6InterfaceIfIndex.  The same
+                ipv6InterfaceIfIndex object is used in conjunction
+                with the mip6HaLinkLocalAddressType and
+                mip6HaLinkLocalAddress to uniquely identify
+                instances of the columnar objects of this row.
+
+                Implementors need to be aware that if the total
+                number of octets in mip6HaLinkLocalAddress
+                exceeds 112, then OIDs of column instances in
+                this row will have more than 128 sub-identifiers and
+                cannot be accessed using SNMPv1, SNMPv2c, or SNMPv3.
+               "
+        INDEX   { ipv6InterfaceIfIndex, mip6HaLinkLocalAddressType,
+                                        mip6HaLinkLocalAddress }
+        ::= { mip6HaListTable 1 }
+
+    Mip6HaListEntry      ::= SEQUENCE {
+        mip6HaLinkLocalAddressType      InetAddressType,
+        mip6HaLinkLocalAddress          InetAddress,
+        mip6HaPreference                Integer32,
+        mip6HaRecvLifeTime              Gauge32,
+        mip6HaRecvTimeStamp             DateAndTime
+        }
+
+
+
+    mip6HaLinkLocalAddressType  OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The address type for the link-local address
+                 of the home agent that follows.
+                "
+        REFERENCE
+                "RFC 3775 : Section 10.1"
+        ::= { mip6HaListEntry 1 }
+
+    mip6HaLinkLocalAddress  OBJECT-TYPE
+        SYNTAX      InetAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The link local address of the home agent.
+
+                 The type of the address represented by this object
+                 is specified by the corresponding
+                 mip6HaLinkLocalAddressType object.
+                "
+        REFERENCE
+                "RFC 3775 : Section 10.1"
+        ::= { mip6HaListEntry 2 }
+
+   mip6HaPreference     OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The preference value of this home agent.
+                 Higher values indicate a more preferable home
+                 agent.  The preference value is obtained from
+                 the preference field of the received Router
+                 Advertisement.
+                "
+        REFERENCE
+                "RFC 3775 : Section 10.1"
+        ::= { mip6HaListEntry 3 }
+
+
+
+
+
+
+
+
+
+
+   mip6HaRecvLifeTime       OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The lifetime for this home agent.
+                "
+        REFERENCE
+                "RFC 3775 : Section 10.1"
+        ::= { mip6HaListEntry 4 }
+
+   mip6HaRecvTimeStamp  OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The time when the home agent advertisement was
+                 received.
+                "
+        ::= { mip6HaListEntry 5 }
+
+   --
+   -- The list of global addresses of a home agent in the
+   -- home agent list
+   --
+
+   mip6HaGlAddrTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Mip6HaGlAddrEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "This table contains the global addresses of the home
+                 agents in the Home Agents List.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.1"
+        ::= { mip6HaAdvertisement 5 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6HaGlAddrEntry  OBJECT-TYPE
+        SYNTAX      Mip6HaGlAddrEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+               "A global address for a home agent in the Home Agents
+                List.
+                The instances of the columnar objects in this entry
+                pertain to an interface for a particular value of
+                mip6HaLinkLocalAddressType, mip6HaLinkLocalAddress
+                and mip6HaGaAddrSeqNo.
+                The mip6HaGaAddrSeqNo object is used to distinguish
+                between multiple instances of the home agent global
+                addresses on the same interface for the same set of
+                mip6HaLinkLocalAddressType, mip6HaLinkLocalAddress,
+                values.
+                There is no upper-bound on the maximum number of
+                global addresses on an interface but, for practical
+                purposes, the upper-bound of the value
+                mip6HaGaAddrSeqNo is set to 1024.
+                The interface is uniquely identified by its
+                ipv6InterfaceIfIndex.  The same ipv6InterfaceIfIndex
+                object is used in conjunction with the
+                mip6HaLinkLocalAddressType, mip6HaLinkLocalAddress,
+                and mip6HaGaAddrSeqNo to uniquely identify instances
+                of the columnar objects of this row.
+
+                Implementors need to be aware that if the total
+                number of octets in mip6HaLinkLocalAddress
+                exceeds 111, then OIDs of column instances in
+                this row will have more than 128 sub-identifiers and
+                cannot be accessed using SNMPv1, SNMPv2c, or SNMPv3.
+               "
+        INDEX   { ipv6InterfaceIfIndex,   mip6HaLinkLocalAddressType,
+                  mip6HaLinkLocalAddress, mip6HaGaAddrSeqNo }
+        ::= { mip6HaGlAddrTable 1 }
+
+    Mip6HaGlAddrEntry      ::= SEQUENCE {
+        mip6HaGaAddrSeqNo              Integer32,
+        mip6HaGaGlobalAddressType      InetAddressType,
+        mip6HaGaGlobalAddress          InetAddress
+    }
+
+
+
+
+
+
+
+
+
+    mip6HaGaAddrSeqNo  OBJECT-TYPE
+        SYNTAX      Integer32 (1..1024)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The index that along with ipv6InterfaceIfIndex,
+                 mip6HaLinkLocalAddressType, and
+                 mip6HaLinkLocalAddress uniquely identifies this row.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.1"
+        ::= { mip6HaGlAddrEntry 1 }
+
+    mip6HaGaGlobalAddressType  OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The address type for the global address of the
+                 home agent that follows.
+                "
+        ::= { mip6HaGlAddrEntry 2 }
+
+    mip6HaGaGlobalAddress  OBJECT-TYPE
+        SYNTAX      InetAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "A global address of the home agent.
+
+                 The type of the address represented by this object
+                 is specified by the corresponding
+                 mip6HaGaGlobalAddressType object.
+                "
+        ::= { mip6HaGlAddrEntry 3 }
+
+--
+-- Notifications
+--
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6MnRegistered NOTIFICATION-TYPE
+        OBJECTS   {
+                    mip6BindingTimeRegistered,
+                    mip6BindingCOAType,
+                    mip6BindingCOA
+                  }
+        STATUS    current
+        DESCRIPTION
+                "This notification is sent by a home agent when
+                 a mobile node registers with the home agent
+                 for the first time.
+                 Notifications will not be sent for subsequent
+                 updates and/or refreshes.
+                 The MO instances in the notifications will be
+                 identified by the mip6BindingHomeAddressType
+                 and mip6BindingHomeAddress for the mobile node
+                 in the mip6BindingCacheTable.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.1"
+        ::= { mip6Notifications 1 }
+
+    mip6MnDeRegistered NOTIFICATION-TYPE
+        OBJECTS   {
+                    mip6BindingTimeRegistered,
+                    mip6BindingCOAType,
+                    mip6BindingCOA
+                  }
+        STATUS    current
+        DESCRIPTION
+                "This notification is sent by a home agent every
+                 time a mobile node de-registers with the home
+                 agent by sending a Binding Update that requests
+                 the home agent to delete a binding.
+                 The MO instances in the notifications will be
+                 identified by the mip6BindingHomeAddressType
+                 and mip6BindingHomeAddress for the mobile node
+                 in the mip6BindingCacheTable.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.2"
+        ::= { mip6Notifications 2 }
+
+
+
+
+
+
+
+
+
+    mip6MnCOAChanged NOTIFICATION-TYPE
+        OBJECTS   {
+                    mip6BindingTimeRegistered,
+                    mip6BindingCOAType,
+                    mip6BindingCOA
+                  }
+        STATUS    current
+        DESCRIPTION
+                "This notification is sent by a home agent every
+                 time a mobile node sends a Binding Update with
+                 a new care-of address (for an existing Binding
+                 Cache entry).
+                 Notifications will not be sent for subsequent
+                 updates and/or refreshes for the same Care-of
+                 address.
+                 The registration of a new care-of address may
+                 indicate that the mobile node has moved or that
+                 the primary care-of address of the mobile node
+                 has become deprecated.
+                 The MO instances in the notifications will be
+                 identified by the mip6BindingHomeAddressType
+                 and mip6BindingHomeAddress for the mobile node
+                 in the mip6BindingCacheTable.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 11.5.2, 11.7.1"
+        ::= { mip6Notifications 3 }
+
+    mip6MnBindingExpiredAtHA NOTIFICATION-TYPE
+        OBJECTS   {
+                    mip6BindingTimeRegistered,
+                    mip6BindingCOAType,
+                    mip6BindingCOA
+                  }
+        STATUS    current
+        DESCRIPTION
+                "This notification is sent by a home agent when a
+                 binding for the mobile node at the home agent
+                 expired (no timely Binding Updates were received).
+                 The MO instances in the notifications will be
+                 identified by the mip6BindingHomeAddressType
+                 and mip6BindingHomeAddress for the mobile node
+                 in the mip6BindingCacheTable.
+                "
+           REFERENCE
+                   "RFC 3775 : Section 10.3.2"
+        ::= { mip6Notifications 4 }
+
+
+
+
+    mip6MnBindingExpiredAtCN NOTIFICATION-TYPE
+        OBJECTS   {
+                    mip6BindingTimeRegistered,
+                    mip6BindingCOAType,
+                    mip6BindingCOA
+                  }
+        STATUS    current
+        DESCRIPTION
+                "This notification is sent by a correspondent node
+                 when a binding for the mobile node at the
+                 correspondent node expired (no timely Binding
+                 Updates were received).
+                 The MO instances in the notifications will be
+                 identified by the mip6BindingHomeAddressType
+                 and mip6BindingHomeAddress for the mobile node
+                 in the mip6BindingCacheTable.
+                "
+        ::= { mip6Notifications 5 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    -- Conformance information
+   mip6Groups      OBJECT IDENTIFIER ::= { mip6Conformance 1 }
+   mip6Compliances OBJECT IDENTIFIER ::= { mip6Conformance 2 }
+
+    -- Units of conformance
+   mip6SystemGroup    OBJECT-GROUP
+        OBJECTS {
+                  mip6Capabilities,
+                  mip6Status
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for basic MIPv6
+                  monitoring."
+        ::= { mip6Groups 1 }
+
+   mip6BindingCacheGroup    OBJECT-GROUP
+        OBJECTS {
+                  mip6BindingCOAType,
+                  mip6BindingCOA,
+                  mip6BindingTimeRegistered,
+                  mip6BindingTimeGranted,
+                  mip6BindingTimeRemaining,
+                  mip6BindingMaxSeq,
+                  mip6BindingHomeRegn,
+                  mip6BindingUsageTS,
+                  mip6BindingUsageCount,
+                  mip6BindingAdminStatus
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for monitoring the
+                  Binding Cache.
+                "
+        ::= { mip6Groups 2 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   mip6BindingHstGroup    OBJECT-GROUP
+        OBJECTS {
+                  mip6BindingHstCOAType,
+                  mip6BindingHstCOA,
+                  mip6BindingHstTimeRegistered,
+                  mip6BindingHstTimeExpired,
+                  mip6BindingHstHomeRegn,
+                  mip6BindingHstUsageTS,
+                  mip6BindingHstUsageCount
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for monitoring the
+                  Binding History.  This can be used to monitor
+                  the movement of the mobile node.
+                "
+        ::= { mip6Groups 3 }
+
+   mip6TotalTrafficGroup    OBJECT-GROUP
+        OBJECTS {
+                  mip6InOctets,
+                  mip6HCInOctets,
+                  mip6InPkts,
+                  mip6HCInPkts,
+                  mip6OutOctets,
+                  mip6HCOutOctets,
+                  mip6OutPkts,
+                  mip6HCOutPkts,
+                  mip6CounterDiscontinuityTime
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for monitoring the
+                  total MIPv6 traffic.
+                "
+        ::= { mip6Groups 4 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   mip6NodeTrafficGroup    OBJECT-GROUP
+        OBJECTS {
+                  mip6NodeInOctets,
+                  mip6HCNodeInOctets,
+                  mip6NodeInPkts,
+                  mip6HCNodeInPkts,
+                  mip6NodeOutOctets,
+                  mip6HCNodeOutOctets,
+                  mip6NodeOutPkts,
+                  mip6HCNodeOutPkts,
+                  mip6NodeCtrDiscontinuityTime
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for monitoring the
+                  MIPv6 traffic due to a mobile node.
+                "
+        ::= { mip6Groups 5 }
+
+   mip6MnSystemGroup    OBJECT-GROUP
+        OBJECTS {
+                  mip6MnHomeAddressState
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for basic monitoring
+                  of the mobile node.
+                "
+        ::= { mip6Groups 6 }
+
+   mip6MnConfGroup   OBJECT-GROUP
+        OBJECTS {
+                  mip6MnDiscoveryRequests,
+                  mip6MnDiscoveryReplies,
+                  mip6MnDiscoveryTimeouts,
+                  mip6MnPrefixSolicitationsSent,
+                  mip6MnPrefixAdvsRecd,
+                  mip6MnPrefixAdvsIgnored,
+                  mip6MnMovedToFN,
+                  mip6MnMovedToHN
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for monitoring
+                  the advertisement-related info on the
+                  mobile node.
+                "
+        ::= { mip6Groups 7 }
+
+
+
+   mip6MnRegistrationGroup  OBJECT-GROUP
+        OBJECTS {
+                  mip6MnBLCOAType,
+                  mip6MnBLCOA,
+                  mip6MnBLLifeTimeRequested,
+                  mip6MnBLLifeTimeGranted,
+                  mip6MnBLMaxSeq,
+                  mip6MnBLTimeSent,
+                  mip6MnBLAccepted,
+                  mip6MnBLAcceptedTime,
+                  mip6MnBLRetransmissions,
+                  mip6MnBLDontSendBUFlag,
+               --
+               -- Binding Update List
+               --
+                  mip6MnMobilityMessagesSent,
+                  mip6MnMobilityMessagesRecd,
+                  mip6MnBUsToHA,
+                  mip6MnBUAcksFromHA,
+                  mip6MnBUsToCN,
+                  mip6MnBUAcksFromCN,
+                  mip6MnBindingErrorsFromCN,
+                  mip6MnICMPErrorsRecd,
+                  mip6MnBRRequestsRecd
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for monitoring
+                  the registration statistics for the mobile node.
+                "
+        ::= { mip6Groups 8 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   mip6CnStatsGroup   OBJECT-GROUP
+        OBJECTS {
+                  mip6CnBURequestsAccepted,
+                  mip6CnBURequestsRejected,
+                  mip6CnBCEntryCreationTime,
+                  mip6CnBUAcceptedTime,
+                  mip6CnBURejectionTime,
+                  mip6CnBURejectionCode,
+                  mip6CnCtrDiscontinuityTime
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for monitoring
+                  the control messages and corresponding
+                  statistics for each mobile node
+                  communicating with the correspondent
+                  node.
+                "
+        ::= { mip6Groups 9 }
+
+   mip6HaSystemGroup   OBJECT-GROUP
+        OBJECTS {
+                  mip6HaAdvsRecd,
+                  mip6HaAdvsSent,
+                  mip6HaAdvPreference,
+                  mip6HaAdvLifetime,
+                  mip6HaPrefixAdv,
+                  mip6HaPrefixSolicitation,
+                  mip6HaMCastCtlMsgSupport
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for monitoring
+                  the advertisement-related parameters and
+                  statistics for the home agent.
+                "
+        ::= { mip6Groups 10 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6HaListGroup   OBJECT-GROUP
+        OBJECTS {
+                  mip6HaPreference,
+                  mip6HaRecvLifeTime,
+                  mip6HaRecvTimeStamp,
+                  mip6HaGaGlobalAddressType,
+                  mip6HaGaGlobalAddress
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for monitoring
+                  the Home Agent List on the home agent.
+                "
+        ::= { mip6Groups 11 }
+
+    mip6HaStatsGroup   OBJECT-GROUP
+        OBJECTS {
+                  mip6HaBURequestsAccepted,
+                  mip6HaBURequestsDenied,
+                  mip6HaBCEntryCreationTime,
+                  mip6HaBUAcceptedTime,
+                  mip6HaBURejectionTime,
+                  mip6HaRecentBURejectionCode,
+                  mip6HaCtrDiscontinuityTime
+
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for monitoring
+                  registration-related statistics on the home agent.
+                "
+        ::= { mip6Groups 12 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6CnGlobalStatsGroup   OBJECT-GROUP
+        OBJECTS {
+                  mip6CnHomeTestInitsRecd,
+                  mip6CnHomeTestsSent,
+                  mip6CnCareOfTestInitsRecd,
+                  mip6CnCareOfTestsSent,
+                  mip6CnBUsRecd,
+                  mip6CnBUAcksSent,
+                  mip6CnBRsSent,
+                  mip6CnBindingErrors,
+                  mip6CnBUsAccepted,
+                  mip6CnBUsRejected,
+                  mip6CnReasonUnspecified,
+                  mip6CnInsufficientResource,
+                  mip6CnHomeRegnNotSupported,
+                  mip6CnSeqNumberOutOfWindow,
+                  mip6CnExpiredHomeNonceIndex,
+                  mip6CnExpiredCareOfNonceIndex,
+                  mip6CnExpiredNonce,
+                  mip6CnRegTypeChangeDisallowed
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for monitoring
+                  advertisement and registration statistics on
+                  a correspondent node.
+                "
+        ::= { mip6Groups 13 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6HaGlobalStatsGroup   OBJECT-GROUP
+        OBJECTS {
+                  mip6HaHomeTestInitsRecd,
+                  mip6HaHomeTestsSent,
+                  mip6HaBUsRecd,
+                  mip6HaBUAcksSent,
+                  mip6HaBRAdviceSent,
+                  mip6HaBUsAccepted,
+                  mip6HaPrefDiscoverReqd,
+                  mip6HaReasonUnspecified,
+                  mip6HaAdmProhibited,
+                  mip6HaInsufficientResource,
+                  mip6HaHomeRegnNotSupported,
+                  mip6HaNotHomeSubnet,
+                  mip6HaNotHomeAgentForThisMN,
+                  mip6HaDupAddrDetectionFailed,
+                  mip6HaSeqNumberOutOfWindow,
+                  mip6HaExpiredHomeNonceIndex,
+                  mip6HaRegTypeChangeDisallowed
+
+       }
+        STATUS  current
+        DESCRIPTION
+                " A collection of objects for monitoring
+                  advertisement and registration statistics on
+                  a home agent.
+                "
+        ::= { mip6Groups 14 }
+
+    mip6BindingCacheCtlGroup    OBJECT-GROUP
+        OBJECTS {
+                  mip6BindingAdminStatus
+       }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects for controlling the
+                 Binding Cache.
+                "
+        ::= { mip6Groups 15 }
+
+
+
+
+
+
+
+
+
+
+
+
+    mip6NotificationGroup   NOTIFICATION-GROUP
+        NOTIFICATIONS {
+                 mip6MnRegistered,
+                 mip6MnDeRegistered,
+                 mip6MnCOAChanged,
+                 mip6MnBindingExpiredAtHA,
+                 mip6MnBindingExpiredAtCN
+       }
+        STATUS  current
+        DESCRIPTION
+                "A collection of notifications from a home agent
+                 or correspondent node to the Manager about the
+                 status of a mobile node.
+                "
+        ::= { mip6Groups 16 }
+
+
+
+    -- Compliance statements
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   mip6CoreCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB.
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6SystemGroup }
+
+        ::= { mip6Compliances 1 }
+
+   mip6Compliance2 MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB and support
+                monitoring of the Binding Cache and the Total
+                Traffic.
+                There are a number of INDEX objects that cannot be
+                represented in the form of OBJECT clauses in SMIv2,
+                but for which there are compliance requirements,
+                expressed in OBJECT clause form in this description:
+                -- OBJECT      mip6BindingHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6BindingHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6SystemGroup,
+                               mip6BindingCacheGroup,
+                               mip6TotalTrafficGroup
+                                }
+        ::= { mip6Compliances 2 }
+
+
+
+
+
+
+
+
+   mip6Compliance3 MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB and
+                support monitoring of the Binding Cache,
+                the Binding History, the total traffic, and
+                the mobile node-wide traffic.
+                There are a number of INDEX objects that cannot be
+                represented in the form of OBJECT clauses in SMIv2,
+                but for which there are compliance requirements,
+                expressed in OBJECT clause form in this description:
+                -- OBJECT      mip6BindingHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6BindingHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6BindingHstHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the
+                --     mip6BindingHstHomeAddress object.
+                --
+                -- OBJECT      mip6BindingHstHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the
+                --     mip6BindingHstHomeAddress object.
+                --
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6SystemGroup,
+                               mip6BindingCacheGroup,
+                               mip6BindingHstGroup,
+                               mip6TotalTrafficGroup,
+                               mip6NodeTrafficGroup
+                              }
+
+
+
+        ::= { mip6Compliances 3 }
+
+
+   mip6CoreReadOnlyCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB without support
+                for read-write (i.e., in read-only mode).
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6SystemGroup }
+
+        OBJECT      mip6Status
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        ::= { mip6Compliances 4 }
+
+   mip6ReadOnlyCompliance2 MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB without support
+                for read-write (i.e., in read-only mode) and
+                support monitoring of the Binding Cache and Total
+                Traffic.
+                There are a number of INDEX objects that cannot be
+                represented in the form of OBJECT clauses in SMIv2,
+                but for which there are compliance requirements,
+                expressed in OBJECT clause form in this description:
+                -- OBJECT      mip6BindingHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6BindingHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+               "
+        MODULE  -- this module
+
+
+
+            MANDATORY-GROUPS { mip6SystemGroup,
+                               mip6BindingCacheGroup,
+                               mip6TotalTrafficGroup
+                                }
+        OBJECT      mip6Status
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6BindingAdminStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+        ::= { mip6Compliances 5 }
+
+   mip6ReadOnlyCompliance3 MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB without support
+                for read-write (i.e., in read-only mode) and support
+                monitoring of the Binding Cache, the Binding History,
+                the total traffic, and the mobile node-wide traffic.
+                There are a number of INDEX objects that cannot be
+                represented in the form of OBJECT clauses in SMIv2,
+                but for which there are compliance requirements,
+                expressed in OBJECT clause form in this description:
+                -- OBJECT      mip6BindingHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6BindingHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6BindingHstHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the
+                --     mip6BindingHstHomeAddress object.
+                --
+
+
+
+                -- OBJECT      mip6BindingHstHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the
+                --     mip6BindingHstHomeAddress object.
+                --
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6SystemGroup,
+                               mip6BindingCacheGroup,
+                               mip6BindingHstGroup,
+                               mip6TotalTrafficGroup,
+                               mip6NodeTrafficGroup
+                              }
+        OBJECT      mip6Status
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6BindingAdminStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+        ::= { mip6Compliances 6 }
+
+   mip6MnCoreCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB and
+                support monitoring of the basic mobile node
+                functionality.
+                There are a number of INDEX objects that cannot be
+                represented in the form of OBJECT clauses in SMIv2,
+                but for which there are compliance requirements,
+                expressed in OBJECT clause form in this description:
+                -- OBJECT      mip6MnHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6MnHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6MnHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+
+
+
+                --     ipv6 addresses for the mip6MnHomeAddress
+                --     object.
+                --
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6MnSystemGroup
+                              }
+        ::= { mip6Compliances 7 }
+
+   mip6MnCompliance2 MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB and
+                support monitoring of the mobile node
+                functionality specifically the Discovery- and
+                Registration-related statistics,
+                There are a number of INDEX objects that cannot be
+                represented in the form of OBJECT clauses in SMIv2,
+                but for which there are compliance requirements,
+                expressed in OBJECT clause form in this description:
+                -- OBJECT      mip6MnHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6MnHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6MnHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6MnHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6MnBLNodeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6MnBLNodeAddress
+                --     object.
+                --
+                -- OBJECT      mip6MnBLNodeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6MnBLNodeAddress
+                --     object.
+
+
+
+                --
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6MnSystemGroup,
+                               mip6MnConfGroup,
+                               mip6MnRegistrationGroup,
+                               mip6TotalTrafficGroup
+                              }
+        ::= { mip6Compliances 8 }
+
+   mip6CnCoreCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for SNMP entities
+                 that implement the MOBILEIPV6-MIB and
+                 support monitoring of the basic correspondent node
+                 functionality.
+                "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6CnGlobalStatsGroup,
+                               mip6TotalTrafficGroup
+                              }
+        ::= { mip6Compliances 9 }
+
+   mip6CnCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB and
+                support monitoring of the basic correspondent node
+                functionality.
+                There are a number of INDEX objects that cannot be
+                represented in the form of OBJECT clauses in SMIv2,
+                but for which there are compliance requirements,
+                expressed in OBJECT clause form in this description:
+                -- OBJECT      mip6BindingHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6BindingHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+
+
+
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6CnGlobalStatsGroup,
+                               mip6CnStatsGroup,
+                               mip6TotalTrafficGroup
+                              }
+        ::= { mip6Compliances 10 }
+
+   mip6HaCoreCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for SNMP entities
+                 that implement the MOBILEIPV6-MIB and
+                 support monitoring of the basic home agent
+                 functionality.
+                "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6HaSystemGroup
+                              }
+        ::= { mip6Compliances 11 }
+
+   mip6HaCompliance2 MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB and
+                support monitoring of the home agent
+                functionality specifically the Home Agent List
+                and the home-agent-registration-related statistics,
+                There are a number of INDEX objects that cannot be
+                represented in the form of OBJECT clauses in SMIv2,
+                but for which there are compliance requirements,
+                expressed in OBJECT clause form in this description:
+                -- OBJECT      mip6BindingHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6BindingHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6HaLinkLocalAddressType
+
+
+
+                -- SYNTAX      InetAddressType { ipv6z(4) }
+                -- DESCRIPTION
+                --     This MIB module requires support for local
+                --     ipv6 addresses for the mip6HaLinkLocalAddress
+                --     object.
+                --
+                -- OBJECT      mip6HaLinkLocalAddress
+                -- SYNTAX      InetAddress (SIZE(20))
+                -- DESCRIPTION
+                --     This MIB module requires support for local
+                --     ipv6 addresses for the mip6HaLinkLocalAddress
+                --     object.
+                --
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6HaSystemGroup,
+                               mip6HaListGroup,
+                               mip6HaStatsGroup,
+                               mip6HaGlobalStatsGroup,
+                               mip6TotalTrafficGroup
+                              }
+        ::= { mip6Compliances 12 }
+
+   mip6HaCompliance3 MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB and
+                support monitoring and control of the home agent
+                functionality specifically the Home Agent List
+                and the home-agent-registration-related statistics,
+
+                There are a number of INDEX objects that cannot be
+                represented in the form of OBJECT clauses in SMIv2,
+                but for which there are compliance requirements,
+                expressed in OBJECT clause form in this description:
+                -- OBJECT      mip6BindingHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6BindingHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+
+
+
+                --     object.
+                --
+                -- OBJECT      mip6HaLinkLocalAddressType
+                -- SYNTAX      InetAddressType { ipv6z(4) }
+                -- DESCRIPTION
+                --     This MIB module requires support for local
+                --     ipv6 addresses for the mip6HaLinkLocalAddress
+                --     object.
+                --
+                -- OBJECT      mip6HaLinkLocalAddress
+                -- SYNTAX      InetAddress (SIZE(20))
+                -- DESCRIPTION
+                --     This MIB module requires support for local
+                --     ipv6 addresses for the mip6HaLinkLocalAddress
+                --     object.
+                --
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6HaSystemGroup,
+                               mip6HaListGroup,
+                               mip6HaStatsGroup,
+                               mip6HaGlobalStatsGroup,
+                               mip6BindingCacheCtlGroup,
+                               mip6TotalTrafficGroup
+                              }
+        ::= { mip6Compliances 13 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   mip6HaCoreReadOnlyCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB without support
+                for read-write (i.e., in read-only mode) and
+                support monitoring of the basic home agent
+                functionality.
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6HaSystemGroup
+                              }
+        OBJECT      mip6HaAdvPreference
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6HaAdvLifetime
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6HaPrefixAdv
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6HaPrefixSolicitation
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6HaMCastCtlMsgSupport
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        ::= { mip6Compliances 14 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+   mip6HaReadOnlyCompliance2 MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB without support
+                for read-write (i.e., in read-only mode) and
+                support monitoring of the home agent
+                functionality specifically the Home Agent List
+                and the home-agent-registration-related statistics.
+
+                There are a number of INDEX objects that cannot be
+                represented in the form of OBJECT clauses in SMIv2,
+                but for which there are compliance requirements,
+                expressed in OBJECT clause form in this description:
+                -- OBJECT      mip6BindingHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6BindingHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6HaLinkLocalAddressType
+                -- SYNTAX      InetAddressType { ipv6z(4) }
+                -- DESCRIPTION
+                --     This MIB module requires support for local
+                --     ipv6 addresses for the mip6HaLinkLocalAddress
+                --     object.
+                --
+                -- OBJECT      mip6HaLinkLocalAddress
+                -- SYNTAX      InetAddress (SIZE(20))
+                -- DESCRIPTION
+                --     This MIB module requires support for local
+                --     ipv6 addresses for the mip6HaLinkLocalAddress
+                --     object.
+                --
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6HaSystemGroup,
+                               mip6HaListGroup,
+                               mip6HaStatsGroup,
+                               mip6HaGlobalStatsGroup,
+
+
+
+                               mip6TotalTrafficGroup
+                              }
+
+        OBJECT      mip6HaAdvPreference
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6HaAdvLifetime
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6HaPrefixAdv
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6HaPrefixSolicitation
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6HaMCastCtlMsgSupport
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        ::= { mip6Compliances 15 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   mip6HaReadOnlyCompliance3 MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB without support
+                for read-write (i.e., in read-only mode) and
+                support monitoring and control of the home agent
+                functionality specifically the Home Agent List
+                and the home-agent-registration-related statistics,
+
+                There are a number of INDEX objects that cannot be
+                represented in the form of OBJECT clauses in SMIv2,
+                but for which there are compliance requirements,
+                expressed in OBJECT clause form in this description:
+                -- OBJECT      mip6BindingHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6BindingHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6HaLinkLocalAddressType
+                -- SYNTAX      InetAddressType { ipv6z(4) }
+                -- DESCRIPTION
+                --     This MIB module requires support for local
+                --     ipv6 addresses for the mip6HaLinkLocalAddress
+                --     object.
+                --
+                -- OBJECT      mip6HaLinkLocalAddress
+                -- SYNTAX      InetAddress (SIZE(20))
+                -- DESCRIPTION
+                --     This MIB module requires support for local
+                --     ipv6 addresses for the mip6HaLinkLocalAddress
+                --     object.
+                --
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6HaSystemGroup,
+                               mip6HaListGroup,
+                               mip6HaStatsGroup,
+                               mip6HaGlobalStatsGroup,
+
+
+
+                               mip6BindingCacheCtlGroup,
+                               mip6TotalTrafficGroup
+                              }
+
+        OBJECT      mip6HaAdvPreference
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6HaAdvLifetime
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6HaPrefixAdv
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6HaPrefixSolicitation
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6HaMCastCtlMsgSupport
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT      mip6BindingAdminStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        ::= { mip6Compliances 16 }
+
+    mip6NotificationCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+               "The compliance statement for SNMP entities
+                that implement the MOBILEIPV6-MIB and
+                support Notification from home agent or
+                correspondent node to management stations
+                about the mobile node status.
+                There are a number of INDEX objects that cannot be
+                represented in the form of OBJECT clauses in SMIv2,
+                but for which there are compliance requirements,
+                expressed in OBJECT clause form in this description:
+
+
+
+                -- OBJECT      mip6BindingHomeAddressType
+                -- SYNTAX      InetAddressType { ipv6(2) }
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+                --
+                -- OBJECT      mip6BindingHomeAddress
+                -- SYNTAX      InetAddress (SIZE(16))
+                -- DESCRIPTION
+                --     This MIB module requires support for global
+                --     ipv6 addresses for the mip6BindingHomeAddress
+                --     object.
+               "
+        MODULE  -- this module
+            MANDATORY-GROUPS { mip6NotificationGroup
+                              }
+        ::= { mip6Compliances 17 }
+
+   END

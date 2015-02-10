@@ -1,0 +1,2625 @@
+RFC1382-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        Counter, Gauge, TimeTicks
+                FROM RFC1155-SMI
+        OBJECT-TYPE
+                FROM RFC-1212
+        DisplayString, transmission
+                FROM RFC1213-MIB
+        TRAP-TYPE
+                FROM RFC-1215
+        EntryStatus
+                FROM RFC1271-MIB
+        PositiveInteger,
+        IfIndexType
+                FROM RFC1381-MIB;
+
+x25     OBJECT IDENTIFIER ::= { transmission 5 }
+
+
+-- Support of the X25 subtree and all subtrees under it
+-- is mandatory for all agents of system that implement X.25.
+
+X121Address ::= OCTET STRING (SIZE(0..17))
+ -- 0 to 17 bytes in length containing the ASCII
+ -- characters [0-9], each octet contains one digit
+ -- of the address.
+
+
+-- ###########################################################
+--            X.25 Administration Table
+-- ###########################################################
+
+x25AdmnTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF X25AdmnEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "This table contains the administratively
+                set configuration parameters for an X.25
+                Packet Level Entity (PLE).
+
+               Most of the objects in this table have
+                corresponding objects in the x25OperTable.
+                This table contains the values as last set
+                by the administrator.  The x25OperTable
+                contains the values actually in use by an
+                X.25 PLE.
+
+                Changing an administrative value may or may
+                not change a current operating value.  The
+                operating value may not change until the
+                interface is restarted.  Some
+                implementations may change the values
+                immediately upon changing the administrative
+                table.  All implementations are required to
+                load the values from the administrative
+                table when initializing a PLE."
+        ::= { x25 1 }
+
+x25AdmnEntry OBJECT-TYPE
+        SYNTAX  X25AdmnEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "Entries of x25AdmnTable."
+        INDEX { x25AdmnIndex }
+        ::= { x25AdmnTable 1 }
+
+X25AdmnEntry ::= SEQUENCE {
+        x25AdmnIndex
+                IfIndexType,
+        x25AdmnInterfaceMode
+                INTEGER,
+        x25AdmnMaxActiveCircuits
+                INTEGER,
+        x25AdmnPacketSequencing
+                INTEGER,
+        x25AdmnRestartTimer
+                PositiveInteger,
+     x25AdmnCallTimer
+                PositiveInteger,
+        x25AdmnResetTimer
+                PositiveInteger,
+        x25AdmnClearTimer
+                PositiveInteger,
+        x25AdmnWindowTimer
+                PositiveInteger,
+        x25AdmnDataRxmtTimer
+                PositiveInteger,
+        x25AdmnInterruptTimer
+                PositiveInteger,
+        x25AdmnRejectTimer
+                PositiveInteger,
+        x25AdmnRegistrationRequestTimer
+                PositiveInteger,
+        x25AdmnMinimumRecallTimer
+                PositiveInteger,
+        x25AdmnRestartCount
+                INTEGER,
+        x25AdmnResetCount
+                INTEGER,
+        x25AdmnClearCount
+                INTEGER,
+        x25AdmnDataRxmtCount
+                INTEGER,
+        x25AdmnRejectCount
+                INTEGER,
+        x25AdmnRegistrationRequestCount
+                INTEGER,
+        x25AdmnNumberPVCs
+                INTEGER,
+        x25AdmnDefCallParamId
+                OBJECT IDENTIFIER,
+        x25AdmnLocalAddress
+                X121Address,
+        x25AdmnProtocolVersionSupported
+                OBJECT IDENTIFIER
+        }
+
+x25AdmnIndex OBJECT-TYPE
+        SYNTAX  IfIndexType
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+        "The ifIndex value for the X.25 Interface."
+        ::= { x25AdmnEntry 1 }
+
+x25AdmnInterfaceMode OBJECT-TYPE
+        SYNTAX  INTEGER {
+                        dte (1),
+                        dce (2),
+                        dxe (3)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "Identifies DCE/DTE mode in which the
+                interface operates.  A value of dxe
+                indicates the mode will be determined by XID
+                negotiation."
+        REFERENCE "10733 5.9 interfaceMode"
+        ::= { x25AdmnEntry 2 }
+
+x25AdmnMaxActiveCircuits        OBJECT-TYPE
+        SYNTAX  INTEGER (0..4096)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The maximum number of circuits this PLE can
+                support; including PVCs."
+        REFERENCE "10733 5.9 maxActiveCircuits;
+                See ISO 8208, Section 3.7"
+        ::= { x25AdmnEntry 3 }
+
+x25AdmnPacketSequencing OBJECT-TYPE
+        SYNTAX  INTEGER {
+                        modulo8 (1),
+                        modulo128 (2)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The modulus of the packet sequence number
+                space."
+        REFERENCE "10733 extendedPacketSequencing;
+                See ISO 8208 Section 7.1.1"
+        ::= { x25AdmnEntry 4 }
+
+x25AdmnRestartTimer OBJECT-TYPE
+     SYNTAX     PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The T20 restart timer in milliseconds."
+        REFERENCE "10733 5.9 restartTime
+                See ISO 8208 Section 4.1, table 26"
+        ::= { x25AdmnEntry 5 }
+
+x25AdmnCallTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The T21 Call timer in milliseconds."
+        REFERENCE "10733 callTime;
+                See ISO 8208 Section 5.2.1, table 26"
+        ::= { x25AdmnEntry 6 }
+
+x25AdmnResetTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The T22 Reset timer in milliseconds."
+        REFERENCE "10733 resetTime;
+                See ISO 8208 Section 8.1, table 26"
+        ::= { x25AdmnEntry 7 }
+
+x25AdmnClearTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The T23 Clear timer in milliseconds."
+        REFERENCE "10733 clearTime;
+                See ISO 8208 Section 5.5.1, table 26"
+        ::= { x25AdmnEntry 8 }
+
+x25AdmnWindowTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The T24 window status transmission timer in
+                milliseconds.  A value of 2147483647
+                indicates no window timer in use."
+        REFERENCE "10733 5.10.1 windowTime (opt);
+                See ISO 8208 Section 11.2.2, table 26"
+        ::= { x25AdmnEntry 9 }
+
+x25AdmnDataRxmtTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The T25 data retransmission timer in
+                milliseconds.  A value of 2147483647
+                indicates no data retransmission timer in
+                use."
+        REFERENCE "10733 5.10.1 dataRetransmissionTime (opt);
+                See ISO 8208 Section 11.2.1, table 26"
+        ::= { x25AdmnEntry 10 }
+
+x25AdmnInterruptTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The T26 interrupt timer in milliseconds.  A
+                value of 2147483647 indicates no interrupt
+                timer in use."
+        REFERENCE "10733 interruptTime;
+                See ISO 8208 Section 6.8.1, table 26"
+        ::= { x25AdmnEntry 11 }
+
+x25AdmnRejectTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The T27 Reject retransmission timer in
+                milliseconds.  A value of 2147483647
+                indicates no reject timer in use."
+        REFERENCE "10733 5.10.1 dataRejectTime (opt);
+                See ISO 8208 Section 13.4.1, table 26"
+        ::= { x25AdmnEntry 12 }
+
+x25AdmnRegistrationRequestTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The T28 registration timer in milliseconds.
+                A value of 2147483647 indicates no
+                registration timer in use."
+        REFERENCE "10733 5.8.1 registrationRequestTime (opt)
+                See ISO 8208    Section 13.1.1.1, table 26"
+        ::= { x25AdmnEntry 13 }
+
+x25AdmnMinimumRecallTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "Minimum time interval between unsuccessful
+                call attempts in milliseconds."
+        REFERENCE "10733 5.9 minimum RecallTimer"
+        ::= { x25AdmnEntry 14 }
+
+x25AdmnRestartCount OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The R20 restart retransmission count."
+        REFERENCE "10733 5.9 restartCount;
+                See ISO 8208    Section 4.1, table 27"
+        ::= { x25AdmnEntry 15 }
+
+x25AdmnResetCount OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The r22 Reset retransmission count."
+        REFERENCE "10733 resetCount;
+                See section ISO 8208 8.1, table 27"
+        ::= { x25AdmnEntry 16 }
+
+x25AdmnClearCount OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+        "The r23 Clear retransmission count."
+        REFERENCE "10733 clearCount;
+                See ISO 8208 Section 5.5.1, table 27"
+        ::= { x25AdmnEntry 17 }
+
+x25AdmnDataRxmtCount OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The R25 Data retransmission count.  This
+                value is irrelevant if the
+                x25AdmnDataRxmtTimer indicates no timer in
+                use."
+        REFERENCE "10733 5.10.1 dataRetransmissionCount (opt)
+                See ISO 8208 Section 11.2.1, table 27"
+        ::= { x25AdmnEntry 18 }
+
+x25AdmnRejectCount OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The R27 reject retransmission count.  This
+                value is irrelevant if the
+                x25AdmnRejectTimer indicates no timer in
+                use."
+        REFERENCE "10733 5.10.1 dataRejectCount (opt)"
+        ::= { x25AdmnEntry 19 }
+
+x25AdmnRegistrationRequestCount OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The R28 Registration retransmission Count.
+                This value is irrelevant if the
+                x25AdmnRegistrationRequestTimer indicates no
+                timer in use."
+        REFERENCE "10733 5.8.1 registrationRequestCount (opt);
+                See ISO 8208    Section 13.1.1.1, table 27"
+        ::= { x25AdmnEntry 20 }
+
+x25AdmnNumberPVCs OBJECT-TYPE
+        SYNTAX  INTEGER (0..4096)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of PVC configured for this PLE.
+                The PVCs use channel numbers from 1 to this
+                number."
+        ::= { x25AdmnEntry 21 }
+
+x25AdmnDefCallParamId OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "This identifies the instance of the
+                x25CallParmIndex for the entry in the
+                x25CallParmTable which contains the default
+                call parameters for this PLE."
+        ::= { x25AdmnEntry 22 }
+
+x25AdmnLocalAddress OBJECT-TYPE
+        SYNTAX  X121Address
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The local address for this PLE subnetwork.
+                A zero length address maybe returned by PLEs
+                that only support PVCs."
+        REFERENCE "10733 5.9 localDTEAddress"
+        ::= { x25AdmnEntry 23 }
+
+x25AdmnProtocolVersionSupported OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "Identifies the version of the X.25 protocol
+                this interface should support.  Object
+                identifiers for common versions are defined
+                below in the x25ProtocolVersion subtree."
+        REFERENCE "10733 5.9 protocolVersionSupported"
+        ::= { x25AdmnEntry 24 }
+
+
+-- ###########################################################
+--            X.25 Operational Table
+-- ###########################################################
+
+x25OperTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF X25OperEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "The operation parameters in use by the X.25
+                PLE."
+        ::= { x25 2 }
+
+x25OperEntry OBJECT-TYPE
+        SYNTAX  X25OperEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "Entries of x25OperTable."
+        INDEX { x25OperIndex }
+        ::= { x25OperTable 1 }
+
+X25OperEntry ::= SEQUENCE {
+        x25OperIndex
+                IfIndexType,
+        x25OperInterfaceMode
+                INTEGER,
+        x25OperMaxActiveCircuits
+                INTEGER,
+        x25OperPacketSequencing
+                INTEGER,
+        x25OperRestartTimer
+                PositiveInteger,
+        x25OperCallTimer
+                PositiveInteger,
+        x25OperResetTimer
+                PositiveInteger,
+        x25OperClearTimer
+                PositiveInteger,
+        x25OperWindowTimer
+                PositiveInteger,
+        x25OperDataRxmtTimer
+                PositiveInteger,
+        x25OperInterruptTimer
+                PositiveInteger,
+        x25OperRejectTimer
+                PositiveInteger,
+     x25OperRegistrationRequestTimer
+                PositiveInteger,
+        x25OperMinimumRecallTimer
+                PositiveInteger,
+        x25OperRestartCount
+                INTEGER,
+        x25OperResetCount
+                INTEGER,
+        x25OperClearCount
+                INTEGER,
+        x25OperDataRxmtCount
+                INTEGER,
+        x25OperRejectCount
+                INTEGER,
+        x25OperRegistrationRequestCount
+                INTEGER,
+        x25OperNumberPVCs
+                INTEGER,
+        x25OperDefCallParamId
+                OBJECT IDENTIFIER,
+        x25OperLocalAddress
+                X121Address,
+        x25OperDataLinkId
+                OBJECT IDENTIFIER,
+        x25OperProtocolVersionSupported
+                OBJECT IDENTIFIER
+        }
+
+x25OperIndex OBJECT-TYPE
+        SYNTAX  IfIndexType
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The ifIndex value for the X.25 interface."
+        ::= { x25OperEntry 1 }
+
+x25OperInterfaceMode OBJECT-TYPE
+        SYNTAX  INTEGER {
+                        dte (1),
+                        dce (2),
+                        dxe (3)
+                }
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+        "Identifies DCE/DTE mode in which the
+                interface operates.  A value of dxe
+                indicates the role will be determined by XID
+                negotiation at the Link Layer and that
+                negotiation has not yet taken place."
+        REFERENCE "10733 5.9 interfaceMode"
+        ::= { x25OperEntry 2 }
+
+x25OperMaxActiveCircuits        OBJECT-TYPE
+        SYNTAX  INTEGER (0..4096)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "Maximum number of circuits this PLE can
+                support."
+        REFERENCE "10733 5.9 maxActiveCircuits
+                See ISO 8208, Section 3.7"
+        ::= { x25OperEntry 3 }
+
+x25OperPacketSequencing OBJECT-TYPE
+        SYNTAX  INTEGER {
+                        modulo8 (1),
+                        modulo128 (2)
+                }
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The modulus of the packet sequence number
+                space."
+        REFERENCE "10733 extendedPacketSequencing;
+                See ISO 8208    Section 7.1.1"
+        ::= { x25OperEntry 4 }
+
+x25OperRestartTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The T20 restart timer in milliseconds."
+        REFERENCE "10733 5.9 restartTime;
+                See ISO 8208    Section 4.1, table 26"
+        ::= { x25OperEntry 5 }
+
+x25OperCallTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The T21 Call timer in milliseconds."
+        REFERENCE "10733 callTime;
+                See ISO 8208 Section 5.2.1, table 26"
+        ::= { x25OperEntry 6 }
+
+x25OperResetTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The T22 Reset timer in milliseconds."
+        REFERENCE "10733 resetTime;
+                See ISO 8208    Section 8.1, table 26"
+        ::= { x25OperEntry 7 }
+
+x25OperClearTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The T23 Clear timer in milliseconds."
+        REFERENCE "10733 clearTime;
+                See ISO 8208 Section 5.5.1, table 26"
+        ::= { x25OperEntry 8 }
+
+x25OperWindowTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The T24 window status transmission timer
+                milliseconds.  A value of 2147483647
+                indicates no window timer in use."
+        REFERENCE "10733 5.10.1 windowTime (opt);
+                See ISO 8208 Section 11.2.2, table 26"
+        ::= { x25OperEntry 9 }
+
+x25OperDataRxmtTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The T25 Data Retransmission timer in
+                milliseconds.  A value of 2147483647
+                indicates no data retransmission timer in
+                use."
+        REFERENCE "10733 5.10.1 dataRetransmissionTime (opt);
+                See ISO 8208 Section 11.2.1, table 26"
+        ::= { x25OperEntry 10 }
+
+x25OperInterruptTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The T26 Interrupt timer in milliseconds.  A
+                value of 2147483647 indicates interrupts are
+                not being used."
+        REFERENCE "10733 interruptTime;
+                See ISO 8208 Section 6.8.1, table 26"
+        ::= { x25OperEntry 11 }
+
+x25OperRejectTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The T27 Reject retransmission timer in
+                milliseconds.  A value of 2147483647
+                indicates no reject timer in use."
+        REFERENCE "10733 5.10.1 dataRejectTime (opt);
+                See ISO 8208 Section 13.4.1, table 26"
+        ::= { x25OperEntry 12 }
+
+x25OperRegistrationRequestTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The T28 registration timer in milliseconds.
+                A value of 2147483647 indicates no
+                registration timer in use."
+        REFERENCE "10733 5.8.1 registrationRequestTime (opt);
+                See ISO 8208    Section 13.1.1.1, table 26"
+        ::= { x25OperEntry 13 }
+
+x25OperMinimumRecallTimer OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "Minimum time interval between unsuccessful
+                call attempts in milliseconds."
+        REFERENCE "10733 5.9 minimum RecallTimer"
+        ::= { x25OperEntry 14 }
+
+x25OperRestartCount OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The R20 restart retransmission count."
+        REFERENCE "10733 5.9 restartCount
+                See ISO 8208    Section 4.1, table 27"
+        ::= { x25OperEntry 15 }
+
+x25OperResetCount OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The r22 Reset retransmission count."
+        REFERENCE "10733 resetCount;
+                See section ISO 8208 8.1, table 27"
+        ::= { x25OperEntry 16 }
+
+x25OperClearCount OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The r23 Clear retransmission count."
+        REFERENCE "10733 clearCount;
+                See ISO 8208 Section 5.5.1, table 27"
+        ::= { x25OperEntry 17 }
+
+x25OperDataRxmtCount OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The R25 Data retransmission count.  This
+                value is undefined if the
+                x25OperDataRxmtTimer indicates no timer in
+                use."
+        REFERENCE "10733 5.10.1 dataRetransmissionCount (opt);
+                See ISO 8208 Section 11.2.1, table 27"
+        ::= { x25OperEntry 18 }
+
+x25OperRejectCount OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The R27 reject retransmission count.  This
+                value is undefined if the x25OperRejectTimer
+                indicates no timer in use."
+        REFERENCE "10733 5.10.1 dataRejectCount (opt)"
+        ::= { x25OperEntry 19 }
+
+x25OperRegistrationRequestCount OBJECT-TYPE
+        SYNTAX  INTEGER (0..65535)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The R28 Registration retransmission Count.
+                This value is undefined if the
+                x25OperREgistrationRequestTimer indicates no
+                timer in use."
+        REFERENCE "10733 5.8.1 registrationRequestCount (opt);
+                See ISO 8208    Section 13.1.1.1, table 27"
+        ::= { x25OperEntry 20 }
+
+x25OperNumberPVCs OBJECT-TYPE
+        SYNTAX  INTEGER (0..4096)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of PVC configured for this PLE.
+                The PVCs use channel numbers from 1 to this
+                number."
+        ::= { x25OperEntry 21 }
+
+x25OperDefCallParamId OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "This identifies the instance of the
+                x25CallParmIndex for the entry in the
+                x25CallParmTable that contains the default
+                call parameters for this PLE."
+        ::= { x25OperEntry 22 }
+
+x25OperLocalAddress OBJECT-TYPE
+        SYNTAX  X121Address
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The local address for this PLE subnetwork.
+                A zero length address maybe returned by PLEs
+                that only support PVCs."
+        REFERENCE "10733 5.9 localDTEAddress"
+        ::= { x25OperEntry 23 }
+
+x25OperDataLinkId OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "This identifies the instance of the index
+                object in the first table of the most device
+                specific MIB for the interface used by this
+                PLE."
+        ::= { x25OperEntry 24 }
+
+x25OperProtocolVersionSupported OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "Identifies the version of the X.25 protocol
+                this interface supports.  Object identifiers
+                for common versions are defined below in the
+                x25ProtocolVersion subtree."
+        REFERENCE "10733 5.9 protocolVersionSupported"
+        ::= { x25OperEntry 25 }
+
+
+--      MIB-II also provides:
+
+-- ifDescr:
+-- On an X.25 interface this must include sufficient
+
+-- information to enable the system's administrator
+-- to determine the appropriate configuration
+-- information on a system having multiple X.25
+-- subnetworks.
+
+-- ifType: ddn-x25 or rfc877-x25
+--      an interface of type ddn-x25 will use an algorithm to
+--      translate between X.121 address and IP addresses.
+--      An interface of type rfc877-x25 will use a
+--      configuration table to translate between X.121
+--      addresses and IP addresses.
+
+-- ifMtu: the maximum PDU a higher layer can pass to X.25 or
+-- receive from X.25
+
+-- ifSpeed:
+-- This will be the value of the local clock for this line.
+-- A value of zero indicates external clocking.
+
+-- ifAdminStatus:
+
+-- ifOperStatus
+
+-- ifLastChange
+
+
+-- ###########################################################
+--            X.25 Statistics Table
+-- ###########################################################
+
+x25StatTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF X25StatEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "Statistics information about this X.25
+                PLE."
+        ::= { x25 3 }
+
+x25StatEntry OBJECT-TYPE
+        SYNTAX  X25StatEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                 "Entries of the x25StatTable."
+                 INDEX { x25StatIndex }
+        ::= { x25StatTable 1 }
+
+X25StatEntry ::= SEQUENCE {
+        x25StatIndex
+                IfIndexType,
+        x25StatInCalls
+                Counter,
+        x25StatInCallRefusals
+                Counter,
+        x25StatInProviderInitiatedClears
+                Counter,
+        x25StatInRemotelyInitiatedResets
+                Counter,
+        x25StatInProviderInitiatedResets
+                Counter,
+        x25StatInRestarts
+                Counter,
+        x25StatInDataPackets
+                Counter,
+        x25StatInAccusedOfProtocolErrors
+                Counter,
+        x25StatInInterrupts
+                Counter,
+        x25StatOutCallAttempts
+                Counter,
+        x25StatOutCallFailures
+                Counter,
+        x25StatOutInterrupts
+                Counter,
+        x25StatOutDataPackets
+                Counter,
+        x25StatOutgoingCircuits
+                Gauge,
+        x25StatIncomingCircuits
+                Gauge,
+        x25StatTwowayCircuits
+                Gauge,
+        x25StatRestartTimeouts
+                Counter,
+        x25StatCallTimeouts
+                Counter,
+        x25StatResetTimeouts
+                Counter,
+        x25StatClearTimeouts
+                Counter,
+        x25StatDataRxmtTimeouts
+                Counter,
+        x25StatInterruptTimeouts
+                Counter,
+        x25StatRetryCountExceededs
+                Counter,
+        x25StatClearCountExceededs
+                Counter
+        }
+
+x25StatIndex OBJECT-TYPE
+        SYNTAX  IfIndexType
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The ifIndex value for the X.25 interface."
+        ::= { x25StatEntry 1 }
+
+x25StatInCalls OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of incoming calls received."
+        ::= { x25StatEntry 2 }
+
+x25StatInCallRefusals OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of incoming calls refused.  This
+                includes calls refused by the PLE and by
+                higher layers.  This also includes calls
+                cleared because of restricted fast select."
+        ::= { x25StatEntry 3 }
+
+x25StatInProviderInitiatedClears        OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of clear requests with a cause
+                code other than DTE initiated."
+                REFERENCE "10733 providerInitiatedDisconnect"
+        ::= { x25StatEntry 4 }
+
+x25StatInRemotelyInitiatedResets        OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of reset requests received with
+                cause code DTE initiated."
+        REFERENCE "10733 remotelyInitiatedResets"
+        ::= { x25StatEntry 5 }
+
+x25StatInProviderInitiatedResets        OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of reset requests received with
+                cause code other than DTE initiated."
+        REFERENCE "10733 ProviderInitiatedResets"
+        ::= { x25StatEntry 6 }
+
+x25StatInRestarts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of remotely initiated (including
+                provider initiated) restarts experienced by
+                the PLE excluding the restart associated
+                with bringing up the PLE interface.  This
+                only counts restarts received when the PLE
+                already has an established connection with
+                the remove PLE."
+        REFERENCE "10733 5.9 remotelyInitiatedRestarts"
+        ::= { x25StatEntry 7 }
+
+x25StatInDataPackets    OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of data packets received."
+                REFERENCE "10733 5.9 dataPacketsReceived."
+        ::= { x25StatEntry 8 }
+
+x25StatInAccusedOfProtocolErrors        OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of packets received containing a
+                procedure error cause code.  These include
+                clear, reset, restart, or diagnostic
+                packets."
+        REFERENCE "CD 10733 5.9 accusedOfProtocolError"
+        ::= { x25StatEntry 9 }
+
+x25StatInInterrupts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of interrupt packets received by
+                the PLE or over the PVC/VC."
+        REFERENCE "10733 interruptPacketsReceived"
+        ::= { x25StatEntry 10 }
+
+x25StatOutCallAttempts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of calls attempted."
+        REFERENCE "10733 5.9 callAttempts"
+        ::= { x25StatEntry 11 }
+
+x25StatOutCallFailures OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of call attempts which failed.
+                This includes calls that were cleared
+                because of restrictive fast select."
+        ::= { x25StatEntry 12 }
+
+x25StatOutInterrupts    OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of interrupt packets send by the
+                PLE or over the PVC/VC."
+        REFERENCE "10733 InterruptPacketsSent"
+        ::= { x25StatEntry 13 }
+
+x25StatOutDataPackets   OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of data packets sent by this
+                PLE."
+        REFERENCE "10733 dataPacketSent"
+        ::= { x25StatEntry 14 }
+
+x25StatOutgoingCircuits OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of active outgoing circuits.
+                This includes call requests sent but not yet
+                confirmed.  This does not count PVCs."
+        ::= { x25StatEntry 15 }
+
+x25StatIncomingCircuits OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of active Incoming Circuits.
+                This includes call indications received but
+                not yet acknowledged.  This does not count
+                PVCs."
+        ::= { x25StatEntry 16 }
+
+x25StatTwowayCircuits   OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+        "The number of active two-way Circuits.
+                This includes call requests sent but not yet
+                confirmed.  This does not count PVCs."
+        ::= { x25StatEntry 17 }
+
+x25StatRestartTimeouts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times the T20 restart timer
+                expired."
+        REFERENCE "10733 5.9 restartTimeouts"
+        ::= { x25StatEntry 18 }
+
+x25StatCallTimeouts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times the T21 call timer
+                expired."
+        REFERENCE "10733 5.9 callTimeouts"
+        ::= { x25StatEntry 19 }
+
+x25StatResetTimeouts    OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times the T22 reset timer
+                expired."
+        REFERENCE "10733 5.9 resetTimeouts"
+        ::= { x25StatEntry 20 }
+
+x25StatClearTimeouts    OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times the T23 clear timer
+                expired."
+        REFERENCE "10733 5.9 clearTimeouts"
+        ::= { x25StatEntry 21 }
+
+x25StatDataRxmtTimeouts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times the T25 data timer
+                expired."
+        REFERENCE "10733 5.9 dataRetransmissionsTimerExpiries"
+        ::= { x25StatEntry 22 }
+
+x25StatInterruptTimeouts        OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times the T26 interrupt timer
+                expired."
+        REFERENCE "10733 5.9 interruptTimerExpires"
+        ::= { x25StatEntry 23 }
+
+x25StatRetryCountExceededs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times a retry counter was
+                exhausted."
+        REFERENCE "10733 5.9 retryCountsExceeded"
+        ::= { x25StatEntry 24 }
+
+x25StatClearCountExceededs OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times the R23 clear count was
+                exceeded."
+        REFERENCE "10733 5.9 clearCountsExceeded"
+        ::= { x25StatEntry 25 }
+
+
+--      MIB-II also contains:
+
+-- ifInOctets: Number of data octets delivered to upper
+-- layer entities.
+
+-- ifInUcastPkts: Number of packets with a clear M-bit
+-- delivered to higher layer entities.
+
+-- ifDiscards: Number of packets dropped for lack of buffering
+
+-- ifInErrors: Number of packets received containing errors
+  -- REFERENCE ProtocolErrorsDetectedLocally
+
+-- ifInUnknownProtos: Number of packets with unknown circuit
+-- identifier.
+
+-- ifOutOctets: Number of data octets delivered by
+--      X.25 to upper layers.
+
+-- ifOutUcastPkts: Number of packets with a clear M-bit
+-- received from higher layer entities.
+
+
+-- ###########################################################
+--                    X.25 Channel Table
+-- ###########################################################
+
+x25ChannelTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF X25ChannelEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "These objects contain information about the
+                channel number configuration in an X.25 PLE.
+                These values are the configured values.
+                changes in these values after the interfaces
+                has started may not be reflected in the
+                operating PLE."
+        REFERENCE "See ISO 8208, Section 3.7"
+        ::= { x25 4 }
+
+x25ChannelEntry OBJECT-TYPE
+        SYNTAX  X25ChannelEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "Entries of x25ChannelTable."
+        REFERENCE "This provides the information available
+                in 10733 logicalChannelAssignments."
+        INDEX { x25ChannelIndex }
+        ::= { x25ChannelTable 1    }
+
+X25ChannelEntry ::= SEQUENCE {
+        x25ChannelIndex
+                IfIndexType,
+        x25ChannelLIC
+                INTEGER,
+        x25ChannelHIC
+                INTEGER,
+        x25ChannelLTC
+                INTEGER,
+        x25ChannelHTC
+                INTEGER,
+        x25ChannelLOC
+                INTEGER,
+        x25ChannelHOC
+                INTEGER
+        }
+
+x25ChannelIndex OBJECT-TYPE
+        SYNTAX  IfIndexType
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The ifIndex value for the X.25 Interface."
+        ::= { x25ChannelEntry 1 }
+
+x25ChannelLIC OBJECT-TYPE
+        SYNTAX  INTEGER (0..4095)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "Lowest Incoming channel."
+        ::= { x25ChannelEntry 2 }
+
+x25ChannelHIC OBJECT-TYPE
+        SYNTAX  INTEGER (0..4095)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "Highest Incoming channel.  A value of zero
+                indicates no channels in this range."
+        ::= { x25ChannelEntry 3 }
+
+x25ChannelLTC OBJECT-TYPE
+        SYNTAX  INTEGER (0..4095)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "Lowest Two-way channel."
+        ::= { x25ChannelEntry 4 }
+
+x25ChannelHTC OBJECT-TYPE
+        SYNTAX  INTEGER (0..4095)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "Highest Two-way channel.  A value of zero
+                indicates no channels in this range."
+        ::= { x25ChannelEntry 5 }
+
+x25ChannelLOC OBJECT-TYPE
+        SYNTAX  INTEGER (0..4095)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "Lowest outgoing channel."
+        ::= { x25ChannelEntry 6 }
+
+x25ChannelHOC OBJECT-TYPE
+        SYNTAX  INTEGER (0..4095)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "Highest outgoing channel.  A value of zero
+                indicates no channels in this range."
+        ::= { x25ChannelEntry 7 }
+
+
+
+
+-- ###########################################################
+--          X25 Per Circuits Information Table
+-- ###########################################################
+
+x25CircuitTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF X25CircuitEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "These objects contain general information
+                about a specific circuit of an X.25 PLE."
+        ::= { x25 5 }
+
+x25CircuitEntry OBJECT-TYPE
+        SYNTAX  X25CircuitEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "Entries of x25CircuitTable."
+        INDEX { x25CircuitIndex,
+                x25CircuitChannel }
+        ::= { x25CircuitTable 1 }
+
+X25CircuitEntry ::= SEQUENCE {
+        x25CircuitIndex
+                IfIndexType,
+        x25CircuitChannel
+                INTEGER,
+        x25CircuitStatus
+                INTEGER,
+        x25CircuitEstablishTime
+                TimeTicks,
+        x25CircuitDirection
+                INTEGER,
+        x25CircuitInOctets
+                Counter,
+        x25CircuitInPdus
+                Counter,
+        x25CircuitInRemotelyInitiatedResets
+                Counter,
+        x25CircuitInProviderInitiatedResets
+                Counter,
+        x25CircuitInInterrupts
+                Counter,
+        x25CircuitOutOctets
+                Counter,
+        x25CircuitOutPdus
+                Counter,
+        x25CircuitOutInterrupts
+                Counter,
+        x25CircuitDataRetransmissionTimeouts
+                Counter,
+        x25CircuitResetTimeouts
+                Counter,
+        x25CircuitInterruptTimeouts
+                Counter,
+        x25CircuitCallParamId
+                OBJECT IDENTIFIER,
+        x25CircuitCalledDteAddress
+                X121Address,
+        x25CircuitCallingDteAddress
+                X121Address,
+        x25CircuitOriginallyCalledAddress
+                X121Address,
+        x25CircuitDescr
+                DisplayString
+        }
+
+x25CircuitIndex OBJECT-TYPE
+        SYNTAX  IfIndexType
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The ifIndex value for the X.25 Interface."
+        ::= { x25CircuitEntry 1 }
+
+x25CircuitChannel OBJECT-TYPE
+        SYNTAX  INTEGER (0..4095)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The channel number for this circuit."
+        ::= { x25CircuitEntry 2 }
+
+x25CircuitStatus OBJECT-TYPE
+        SYNTAX  INTEGER {               -- state table states
+                        invalid (1),
+                        closed (2),             -- (p1)
+                        calling (3),            -- (p2,p3,p5)
+                        open (4),               -- (p4)
+                        clearing (5),           -- (p6,p7)
+                        pvc (6),
+                        pvcResetting (7),
+                        startClear (8),         -- Close cmd
+                        startPvcResetting (9),  -- Reset cmd
+                        other (10)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "This object reports the current status of
+                the circuit.
+
+                An existing instance of this object can only
+                be set to startClear, startPvcResetting, or
+                invalid.  An instance with the value calling
+                or open can only be set to startClear and
+                that action will start clearing the circuit.
+                An instance with the value PVC can only be
+                set to startPvcResetting or invalid and that
+                action resets the PVC or deletes the circuit
+                respectively.  The values startClear or
+                startPvcResetting will never be returned by
+                an agent.  An attempt to set the status of
+                an existing instance to a value other than
+                one of these values will result in an error.
+
+                A non-existing instance can be set to PVC to
+                create a PVC if the implementation supports
+                dynamic creation of PVCs.  Some
+                implementations may only allow creation and
+                deletion of PVCs if the interface is down.
+                Since the instance identifier will supply
+                the PLE index and the channel number,
+                setting this object alone supplies
+                sufficient information to create the
+                instance.  All the DEFVAL clauses for the
+                other objects of this table are appropriate
+                for creating a PVC; PLEs creating entries
+                for placed or accepted calls will use values
+                appropriate for the call rather than the
+                value of the DEFVAL clause.  Two managers
+                trying to create the same PVC can determine
+                from the return code which manager succeeded
+                and which failed (the failing manager fails
+                because it can not set a value of PVC for an
+                existing object).
+                An entry in the closed or invalid state may
+                be deleted or reused at the agent's
+                convence.  If the entry is kept in the
+                closed state, the values of the parameters
+                associated with the entry must be correct.
+                Closed implies the values in the circuit
+                table are correct.
+
+                The value of invalid indicates the other
+                values in the table are invalid.  Many
+                agents may never return a value of invalid
+                because they dynamically allocate and free
+                unused table entries.  An agent for a
+                statically configured systems can return
+                invalid to indicate the entry has not yet
+                been used so the counters contain no
+                information."
+        REFERENCE "See ISO 8208,
+                        table 33 for (p<n>) state table"
+        ::= { x25CircuitEntry 3 }
+
+x25CircuitEstablishTime OBJECT-TYPE
+        SYNTAX  TimeTicks
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The value of sysUpTime when the channel was
+                associated with this circuit.  For outgoing
+                SVCs, this is the time the first call packet
+                was sent.  For incoming SVCs, this is the
+                time the call indication was received.  For
+                PVCs this is the time the PVC was able to
+                pass data to a higher layer entity without
+                loss of data."
+        ::= { x25CircuitEntry 4 }
+
+x25CircuitDirection OBJECT-TYPE
+        SYNTAX  INTEGER {
+                        incoming (1),
+                        outgoing (2),
+                        pvc (3)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The direction of the call that established
+                this circuit."
+        REFERENCE "10733 direction"
+        DEFVAL { pvc }
+        ::= { x25CircuitEntry 5 }
+
+                -- X25 Circuit data flow statistics
+
+x25CircuitInOctets OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of octets of user data delivered
+                to upper layer."
+        REFERENCE "5.11 octetsReceivedCounter"
+        ::= { x25CircuitEntry 6 }
+
+x25CircuitInPdus OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of PDUs received for this
+                circuit."
+        REFERENCE "10733 5.11 dataPacketsReceived"
+        ::= { x25CircuitEntry 7 }
+
+x25CircuitInRemotelyInitiatedResets OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of Resets received for this
+                circuit with cause code of DTE initiated."
+        REFERENCE "10733 remotelyInitiatedResets"
+        ::= { x25CircuitEntry 8 }
+
+x25CircuitInProviderInitiatedResets OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of Resets received for this
+                circuit with cause code other than DTE
+                initiated."
+        REFERENCE "10733 ProviderInitiatedResets"
+        ::= { x25CircuitEntry 9 }
+
+x25CircuitInInterrupts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of interrupt packets received
+                for this circuit."
+        REFERENCE "10733 interruptPacketsReceived"
+        ::= { x25CircuitEntry 10 }
+
+x25CircuitOutOctets OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of octets of user data sent for
+                this circuit."
+        REFERENCE "10733 5.11 octetsSentCounter"
+        ::= { x25CircuitEntry 11 }
+
+x25CircuitOutPdus OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of PDUs sent for this circuit."
+        REFERENCE "10733 5.11 dataPacketsSent"
+        ::= { x25CircuitEntry 12 }
+
+x25CircuitOutInterrupts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of interrupt packets sent on
+                this circuit."
+        REFERENCE "10733 interruptPacketsSent"
+        ::= { x25CircuitEntry 13 }
+
+
+                -- X25 circuit timer statistics
+
+x25CircuitDataRetransmissionTimeouts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times the T25 data
+                retransmission timer expired for this
+                circuit."
+        REFERENCE "10733 5.11 dataRetransmissionTimerExpiries"
+        ::= { x25CircuitEntry 14 }
+
+x25CircuitResetTimeouts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times the T22 reset timer
+                expired for this circuit."
+        REFERENCE "10733 5.11 resetTimeouts"
+        ::= { x25CircuitEntry 15 }
+
+x25CircuitInterruptTimeouts OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of times the T26 Interrupt timer
+                expired for this circuit."
+        REFERENCE "10733 interruptTimerExpiries"
+        ::= { x25CircuitEntry 16 }
+
+x25CircuitCallParamId OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "This identifies the instance of the
+                x25CallParmIndex for the entry in the
+                x25CallParmTable which contains the call
+                parameters in use with this circuit.  The
+                entry referenced must contain the values
+                that are currently in use by the circuit
+                rather than proposed values.  A value of
+                NULL indicates the circuit is a PVC or is
+                using all the default parameters."
+        DEFVAL { {0 0} }
+        ::= { x25CircuitEntry 17 }
+
+x25CircuitCalledDteAddress OBJECT-TYPE
+        SYNTAX  X121Address
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "For incoming calls, this is the called
+                address from the call indication packet.
+                For outgoing calls, this is the called
+                address from the call confirmation packet.
+                This will be zero length for PVCs."
+        REFERENCE "10733 calledDTEAddress"
+        DEFVAL { ''h }
+        ::= { x25CircuitEntry 18 }
+
+x25CircuitCallingDteAddress OBJECT-TYPE
+        SYNTAX  X121Address
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "For incoming calls, this is the calling
+                address from the call indication packet.
+                For outgoing calls, this is the calling
+                address from the call confirmation packet.
+                This will be zero length for PVCs."
+        REFERENCE "10733 callingDTEAddress"
+        DEFVAL { ''h }
+        ::= { x25CircuitEntry 19 }
+
+x25CircuitOriginallyCalledAddress OBJECT-TYPE
+        SYNTAX  X121Address
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "For incoming calls, this is the address in
+                the call Redirection or Call Deflection
+                Notification facility if the call was
+                deflected or redirected, otherwise it will
+                be called address from the call indication
+                packet.  For outgoing calls, this is the
+                address from the call request packet.  This
+                will be zero length for PVCs."
+        REFERENCE "10733 originallyCalledAddress"
+        DEFVAL { ''h }
+        ::= { x25CircuitEntry 20 }
+
+x25CircuitDescr OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (0..255))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "A descriptive string associated with this
+                circuit.  This provides a place for the
+                agent to supply any descriptive information
+                it knows about the use or owner of the
+                circuit.  The agent may return the process
+                identifier and user name for the process
+                using the circuit.  Alternative the agent
+                may return the name of the configuration
+                entry that caused a bridge to establish the
+                circuit.  A zero length value indicates the
+                agent doesn't have any additional
+                information."
+        DEFVAL { ''h }
+        ::= { x25CircuitEntry 21 }
+
+
+
+-- ###########################################################
+--              The Cleared Circuit Table
+-- ###########################################################
+
+x25ClearedCircuitEntriesRequested OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The requested number of entries for the
+                agent to keep in the x25ClearedCircuit
+                table."
+        ::= { x25 6 }
+
+x25ClearedCircuitEntriesGranted OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The actual number of entries the agent will
+                keep in the x25ClearedCircuit Table."
+        ::= { x25 7 }
+
+x25ClearedCircuitTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF      X25ClearedCircuitEntry
+        ACCESS not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "A table of entries about closed circuits.
+                Entries must be made in this table whenever
+                circuits are closed and the close request or
+                close indication packet contains a clearing
+                cause other than DTE Originated or a
+                Diagnostic code field other than Higher
+                Layer Initiated disconnection-normal.  An
+                agent may optionally make entries for normal
+                closes (to record closing facilities or
+                other information).
+
+                Agents will delete the oldest entry in the
+                table when adding a new entry would exceed
+                agent resources.  Agents are required to
+                keep the last entry put in the table and may
+                keep more entries.  The object
+                x25OperClearEntriesGranted returns the
+                maximum number of entries kept in the
+                table."
+        REFERENCE "See ISO 8208 Section 12.2.3.1.1
+                        and 12.2.3.1.2"
+        ::= { x25 8 }
+
+x25ClearedCircuitEntry  OBJECT-TYPE
+        SYNTAX  X25ClearedCircuitEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "Information about a cleared circuit."
+        INDEX { x25ClearedCircuitIndex }
+        ::= { x25ClearedCircuitTable 1 }
+
+X25ClearedCircuitEntry ::= SEQUENCE {
+        x25ClearedCircuitIndex
+                PositiveInteger,
+        x25ClearedCircuitPleIndex
+                IfIndexType,
+        x25ClearedCircuitTimeEstablished
+                TimeTicks,
+        x25ClearedCircuitTimeCleared
+                TimeTicks,
+        x25ClearedCircuitChannel
+                INTEGER,
+        x25ClearedCircuitClearingCause
+                INTEGER,
+        x25ClearedCircuitDiagnosticCode
+                INTEGER,
+        x25ClearedCircuitInPdus
+                Counter,
+        x25ClearedCircuitOutPdus
+                Counter,
+        x25ClearedCircuitCalledAddress
+                X121Address,
+        x25ClearedCircuitCallingAddress
+                X121Address,
+        x25ClearedCircuitClearFacilities
+                OCTET STRING
+        }
+
+x25ClearedCircuitIndex OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "An index that uniquely distinguishes one
+                entry in the clearedCircuitTable from
+                another.  This index will start at
+                2147483647 and will decrease by one for each
+                new entry added to the table.  Upon reaching
+                one, the index will reset to 2147483647.
+                Because the index starts at 2147483647 and
+                decreases, a manager may do a getnext on
+                entry zero and obtain the most recent entry.
+                When the index has the value of 1, the next
+                entry will delete all entries in the table
+                and that entry will be numbered 2147483647."
+        ::= { x25ClearedCircuitEntry 1 }
+
+x25ClearedCircuitPleIndex OBJECT-TYPE
+        SYNTAX  IfIndexType
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The value of ifIndex for the PLE which
+                cleared the circuit that created the entry."
+        ::= { x25ClearedCircuitEntry 2 }
+
+x25ClearedCircuitTimeEstablished OBJECT-TYPE
+        SYNTAX  TimeTicks
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The value of sysUpTime when the circuit was
+                established.  This will be the same value
+                that was in the x25CircuitEstablishTime for
+                the circuit."
+        ::= { x25ClearedCircuitEntry 3 }
+
+x25ClearedCircuitTimeCleared OBJECT-TYPE
+        SYNTAX  TimeTicks
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The value of sysUpTime when the circuit was
+                cleared.  For locally initiated clears, this
+                will be the time when the clear confirmation
+                was received.  For remotely initiated
+                clears, this will be the time when the clear
+                indication was received."
+        ::= { x25ClearedCircuitEntry 4 }
+
+x25ClearedCircuitChannel OBJECT-TYPE
+        SYNTAX  INTEGER (0..4095)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The channel number for the circuit that was
+                cleared."
+        ::= { x25ClearedCircuitEntry 5 }
+
+x25ClearedCircuitClearingCause OBJECT-TYPE
+        SYNTAX  INTEGER (0..255)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The Clearing Cause from the clear request
+                or clear indication packet that cleared the
+                circuit."
+        REFERENCE "See ISO 8208 Section 12.2.3.1.1"
+        ::= { x25ClearedCircuitEntry 6 }
+
+x25ClearedCircuitDiagnosticCode OBJECT-TYPE
+        SYNTAX  INTEGER (0..255)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The Diagnostic Code from the clear request
+                or clear indication packet that cleared the
+                circuit."
+        REFERENCE "See ISO 8208 Section 12.2.3.1.2"
+        ::= { x25ClearedCircuitEntry 7 }
+
+x25ClearedCircuitInPdus OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of PDUs received on the
+                circuit."
+        ::= { x25ClearedCircuitEntry 8 }
+
+x25ClearedCircuitOutPdus OBJECT-TYPE
+        SYNTAX  Counter
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of PDUs transmitted on the
+                circuit."
+        ::= { x25ClearedCircuitEntry 9 }
+
+x25ClearedCircuitCalledAddress OBJECT-TYPE
+        SYNTAX  X121Address
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The called address from the cleared
+                circuit."
+        ::= { x25ClearedCircuitEntry 10 }
+
+x25ClearedCircuitCallingAddress OBJECT-TYPE
+        SYNTAX  X121Address
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The calling address from the cleared
+                circuit."
+        ::= { x25ClearedCircuitEntry 11 }
+
+x25ClearedCircuitClearFacilities OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..109))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The facilities field from the clear request
+                or clear indication packet that cleared the
+                circuit.  A size of zero indicates no
+                facilities were present."
+        ::= { x25ClearedCircuitEntry 12 }
+
+
+
+
+-- ###########################################################
+--                The Call Parameter Table
+-- ###########################################################
+
+x25CallParmTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF X25CallParmEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "These objects contain the parameters that
+                can be varied between X.25 calls.  The
+                entries in this table are independent of the
+                PLE.  There exists only one of these tables
+                for the entire system.  The indexes for the
+                entries are independent of any PLE or any
+                circuit.  Other tables reference entries in
+                this table.  Entries in this table can be
+                used for default PLE parameters, for
+                parameters to use to place/answer a call,
+                for the parameters currently in use for a
+                circuit, or parameters that were used by a
+                circuit.
+
+                The number of references to a given set of
+                parameters can be found in the
+                x25CallParmRefCount object sharing the same
+                instance identifier with the parameters.
+                The value of this reference count also
+                affects the access of the objects in this
+                table.  An object in this table with the
+                same instance identifier as the instance
+                identifier of an x25CallParmRefCount must be
+                consider associated with that reference
+                count.  An object with an associated
+                reference count of zero can be written (if
+                its ACCESS clause allows it).  An object
+                with an associated reference count greater
+                than zero can not be written (regardless of
+                the ACCESS clause).  This ensures that a set
+                of call parameters being referenced from
+                another table can not be modified or changed
+                in a ways inappropriate for continued use by
+                that table."
+        ::= { x25 9 }
+
+x25CallParmEntry OBJECT-TYPE
+        SYNTAX  X25CallParmEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "Entries of x25CallParmTable."
+        INDEX { x25CallParmIndex }
+        ::= { x25CallParmTable 1 }
+
+X25CallParmEntry ::= SEQUENCE {
+        x25CallParmIndex
+                PositiveInteger,
+        x25CallParmStatus
+                EntryStatus,
+        x25CallParmRefCount
+                PositiveInteger,
+        x25CallParmInPacketSize
+                INTEGER,
+        x25CallParmOutPacketSize
+                INTEGER,
+        x25CallParmInWindowSize
+                INTEGER,
+        x25CallParmOutWindowSize
+                INTEGER,
+        x25CallParmAcceptReverseCharging
+                INTEGER,
+        x25CallParmProposeReverseCharging
+                INTEGER,
+        x25CallParmFastSelect
+                INTEGER,
+        x25CallParmInThruPutClasSize
+                INTEGER,
+        x25CallParmOutThruPutClasSize
+                INTEGER,
+        x25CallParmCug
+                DisplayString,
+        x25CallParmCugoa
+                DisplayString,
+        x25CallParmBcug
+                DisplayString,
+        x25CallParmNui
+                OCTET STRING,
+        x25CallParmChargingInfo
+                INTEGER,
+        x25CallParmRpoa
+                DisplayString,
+        x25CallParmTrnstDly
+                INTEGER,
+        x25CallParmCallingExt
+                DisplayString,
+        x25CallParmCalledExt
+                DisplayString,
+        x25CallParmInMinThuPutCls
+                INTEGER,
+        x25CallParmOutMinThuPutCls
+                INTEGER,
+        x25CallParmEndTrnsDly
+                OCTET STRING,
+        x25CallParmPriority
+                OCTET STRING,
+        x25CallParmProtection
+                DisplayString,
+        x25CallParmExptData
+                INTEGER,
+        x25CallParmUserData
+                OCTET STRING,
+        x25CallParmCallingNetworkFacilities
+                OCTET STRING,
+        x25CallParmCalledNetworkFacilities
+                OCTET STRING
+        }
+
+x25CallParmIndex OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "A value that distinguishes this entry from
+                another entry.  Entries in this table are
+                referenced from other objects which identify
+                call parameters.
+
+                It is impossible to know which other objects
+                in the MIB reference entries in the table by
+                looking at this table.  Because of this,
+                changes to parameters must be accomplished
+                by creating a new entry in this table and
+                then changing the referencing table to
+                identify the new entry.
+
+                Note that an agent will only use the values
+                in this table when another table is changed
+                to reference those values.  The number of
+                other tables that reference an index object
+                in this table can be found in
+                x25CallParmRefCount.  The value of the
+                reference count will affect the writability
+                of the objects as explained above.
+
+                Entries in this table which have a reference
+                count of zero maybe deleted at the convence
+                of the agent.  Care should be taken by the
+                agent to give the NMS sufficient time to
+                create a reference to newly created entries.
+
+                Should a Management Station not find a free
+                index with which to create a new entry, it
+                may feel free to delete entries with a
+                reference count of zero.  However in doing
+                so the Management Station much realize it
+                may impact other Management Stations."
+        ::= { x25CallParmEntry 1 }
+
+x25CallParmStatus OBJECT-TYPE
+        SYNTAX  EntryStatus
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The status of this call parameter entry.
+                See RFC 1271 for details of usage."
+        ::= { x25CallParmEntry 2 }
+
+x25CallParmRefCount OBJECT-TYPE
+        SYNTAX  PositiveInteger
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The number of references know by a
+                management station to exist to this set of
+                call parameters.  This is the number of
+                other objects that have returned a value of,
+                and will return a value of, the index for
+                this set of call parameters.  Examples of
+                such objects are the x25AdmnDefCallParamId,
+                x25OperDataLinkId, or x25AdmnDefCallParamId
+                objects defined above."
+        ::= { x25CallParmEntry 3 }
+
+x25CallParmInPacketSize OBJECT-TYPE
+        SYNTAX  INTEGER (0..4096)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The maximum receive packet size in octets
+                for a circuit.  A size of zero for a circuit
+                means use the PLE default size.  A size of
+                zero for the PLE means use a default size of
+                128."
+        REFERENCE "10733 proposedPacketSize;
+                See ISO 8208 Section 15.2.2.1.1"
+        DEFVAL { 128 }
+        ::= { x25CallParmEntry 4 }
+
+x25CallParmOutPacketSize OBJECT-TYPE
+        SYNTAX  INTEGER (0..4096)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The maximum transmit packet size in octets
+                for a circuit.  A size of zero for a circuit
+                means use the PLE default size.  A size of
+                zero for the PLE default means use a default
+                size of 128."
+        REFERENCE "10733 proposedPacketSize;
+                See ISO 8208 Section 15.2.2.1.1"
+        DEFVAL { 128 }
+        ::= { x25CallParmEntry 5 }
+
+x25CallParmInWindowSize OBJECT-TYPE
+        SYNTAX  INTEGER (0..127)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The receive window size for a circuit.  A
+                size of zero for a circuit means use the PLE
+                default size.  A size of zero for the PLE
+                default means use 2."
+        REFERENCE "10733 proposedWindowSize;
+                See ISO 8208 Section 15.2.2.1.2"
+        DEFVAL { 2 }
+        ::= { x25CallParmEntry 6 }
+
+x25CallParmOutWindowSize OBJECT-TYPE
+        SYNTAX  INTEGER (0..127)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The transmit window size for a circuit.  A
+                size of zero for a circuit means use the PLE
+                default size.  A size of zero for the PLE
+                default means use 2."
+        REFERENCE "10733 proposedWindowSize;
+                See ISO 8208 Section 15.2.2.1.2"
+        DEFVAL { 2 }
+        ::= { x25CallParmEntry 7 }
+
+x25CallParmAcceptReverseCharging OBJECT-TYPE
+        SYNTAX  INTEGER {
+                        default (1),
+                        accept (2),
+                        refuse (3),
+                        neverAccept (4)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "An enumeration defining if the PLE will
+                accept or refuse charges.  A value of
+                default for a circuit means use the PLE
+                default value.  A value of neverAccept is
+                only used for the PLE default and indicates
+                the PLE will never accept reverse charging.
+                A value of default for a PLE default means
+                refuse."
+        REFERENCE "10733 acceptReverseCharging"
+        DEFVAL { refuse }
+        ::= { x25CallParmEntry 8 }
+
+x25CallParmProposeReverseCharging OBJECT-TYPE
+        SYNTAX  INTEGER {
+                        default (1),
+                        reverse (2),
+                        local (3)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "An enumeration defining if the PLE should
+                propose reverse or local charging.  The
+                value of default for a circuit means use the
+                PLE default.  The value of default for the
+                PLE default means use local."
+        REFERENCE "10733 proposedPacketSize;
+                See ISO 8208 Section 15.2.2.6"
+        DEFVAL { local }
+        ::= { x25CallParmEntry 9 }
+
+x25CallParmFastSelect OBJECT-TYPE
+        SYNTAX  INTEGER {
+                        default (1),
+                        notSpecified (2),
+                        fastSelect (3),
+                        restrictedFastResponse (4),
+                        noFastSelect (5),
+                        noRestrictedFastResponse (6)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "Expresses preference for use of fast select
+                facility.  The value of default for a
+                circuit is the PLE default.  A value of
+                default for the PLE means noFastSelect.  A
+                value of noFastSelect or
+                noRestrictedFastResponse indicates a circuit
+                may not use fast select or restricted fast
+                response."
+        REFERENCE "10733 fastSelect;
+        Sec ISO 8208 Section 15.2.2.6"
+        DEFVAL { noFastSelect }
+        ::= { x25CallParmEntry 10 }
+
+x25CallParmInThruPutClasSize    OBJECT-TYPE
+        SYNTAX  INTEGER {
+                        tcReserved1 (1),
+                        tcReserved2 (2),
+                        tc75 (3),
+                        tc150 (4),
+                        tc300 (5),
+                        tc600 (6),
+                        tc1200  (7),
+                        tc2400  (8),
+                        tc4800  (9),
+                        tc9600  (10),
+                        tc19200 (11),
+                        tc48000 (12),
+                        tc64000 (13),
+                        tcReserved14 (14),
+                        tcReserved15 (15),
+                        tcReserved0 (16),
+                        tcNone  (17),
+                        tcDefault (18)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The incoming throughput class to negotiate.
+                A value of tcDefault for a circuit means use
+                the PLE default.  A value of tcDefault for
+                the PLE default means tcNone.  A value of
+                tcNone means do not negotiate throughtput
+                class."
+        REFERENCE "See ISO 8208 Section 15.2.2.2, table 18"
+        DEFVAL { tcNone }
+        ::= { x25CallParmEntry 11 }
+
+x25CallParmOutThruPutClasSize   OBJECT-TYPE
+        SYNTAX  INTEGER {
+                        tcReserved1 (1),
+                        tcReserved2 (2),
+                        tc75 (3),
+                        tc150 (4),
+                        tc300 (5),
+                tc600 (6),
+                        tc1200  (7),
+                        tc2400  (8),
+                        tc4800  (9),
+                        tc9600  (10),
+                        tc19200 (11),
+                        tc48000 (12),
+                        tc64000 (13),
+                        tcReserved14 (14),
+                        tcReserved15 (15),
+                        tcReserved0 (16),
+                        tcNone  (17),
+                        tcDefault (18)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The outgoing throughput class to negotiate.
+                A value of tcDefault for a circuit means use
+                the PLE default.  A value of tcDefault for
+                the PLE default means use tcNone.  A value
+                of tcNone means do not negotiate throughtput
+                class."
+        REFERENCE "See ISO 8208 Section 15.2.2.2, table 18"
+        DEFVAL { tcNone }
+        ::= { x25CallParmEntry 12 }
+
+x25CallParmCug  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..4))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The Closed User Group to specify.  This
+                consists of two or four octets containing
+                the characters 0 through 9.  A zero length
+                string indicates no facility requested.  A
+                string length of three containing the
+                characters DEF for a circuit means use the
+                PLE default, (the PLE default parameter may
+                not reference an entry of DEF.)"
+        REFERENCE "See ISO 8208 Section 15.2.2.3"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 13 }
+
+x25CallParmCugoa        OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..4))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The Closed User Group with Outgoing Access
+                to specify.  This consists of two or four
+                octets containing the characters 0 through
+                9.  A string length of three containing the
+                characters DEF for a circuit means use the
+                PLE default (the PLE default parameters may
+                not reference an entry of DEF).  A zero
+                length string indicates no facility
+                requested."
+        REFERENCE "See ISO 8208 Section 15.2.2.4"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 14 }
+
+x25CallParmBcug OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..3))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The Bilateral Closed User Group to specify.
+                This consists of two octets containing the
+                characters 0 through 9.  A string length of
+                three containing the characters DEF for a
+                circuit means use the PLE default (the PLE
+                default parameter may not reference an entry
+                of DEF).  A zero length string indicates no
+                facility requested."
+        REFERENCE "See ISO 8208 Section 15.2.2.5"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 15 }
+
+x25CallParmNui  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..108))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The Network User Identifier facility.  This
+                is binary value to be included immediately
+                after the length field.  The PLE will supply
+                the length octet.  A zero length string
+                indicates no facility requested.  This value
+                is ignored for the PLE default parameters
+                entry."
+        REFERENCE "See ISO 8208 Section 15.2.2.7"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 16 }
+
+x25CallParmChargingInfo OBJECT-TYPE
+        SYNTAX INTEGER {
+                        default (1),
+                        noFacility (2),
+                        noChargingInfo (3),
+                        chargingInfo (4)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The charging Information facility.  A value
+                of default for a circuit means use the PLE
+                default.  The value of default for the
+                default PLE parameters means use noFacility.
+                The value of noFacility means do not include
+                a facility."
+        REFERENCE "See ISO 8208 Section 15.2.2.8"
+        DEFVAL { noFacility }
+        ::= { x25CallParmEntry 17 }
+
+x25CallParmRpoa OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..108))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The RPOA facility.  The octet string
+                contains n * 4 sequences of the characters
+                0-9 to specify a facility with n entries.
+                The octet string containing the 3 characters
+                DEF for a circuit specifies use of the PLE
+                default (the entry for the PLE default may
+                not contain DEF).  A zero length string
+                indicates no facility requested."
+        REFERENCE "See ISO 8208, section 15.2.2.9"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 18 }
+
+x25CallParmTrnstDly     OBJECT-TYPE
+        SYNTAX  INTEGER (0..65537)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The Transit Delay Selection and Indication
+                value.  A value of 65536 indicates no
+                facility requested.  A value of 65537 for a
+                circuit means use the PLE default (the PLE
+                default parameters entry may not use the
+                value 65537).  The value 65535 may only be
+                used to indicate the value in use by a
+                circuit."
+        REFERENCE "See ISO 8208, Section 15.2.2.13"
+        DEFVAL { 65536 }
+        ::= { x25CallParmEntry 19 }
+
+
+        -- The following parameters are for CCITT facilities.
+
+x25CallParmCallingExt OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..40))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The Calling Extension facility.  This
+                contains one of the following:
+
+                A sequence of hex digits with the value to
+                be put in the facility. These digits will be
+                converted to binary by the agent and put in
+                the facility.  These octets do not include
+                the length octet.
+
+                A value containing the three character DEF
+                for a circuit means use the PLE default,
+                (the entry for the PLE default parameters
+                may not use the value DEF).
+
+                A zero length string indicates no facility
+                requested."
+        REFERENCE "See ISO 8208 Section 15.3.2.1"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 20 }
+
+x25CallParmCalledExt OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..40))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The Called Extension facility.  This
+                contains one of the following:
+
+                A sequence of hex digits with the value to
+                be put in the facility.  These digits will be
+                converted to binary by the agent and put in
+                the facility.  These octets do not include
+                the length octet.
+
+                A value containing the three character DEF
+                for a circuit means use the PLE default,
+                (the entry for the PLE default parameters
+                may not use the value DEF).
+
+                A zero length string indicates no facility
+                requested."
+        REFERENCE "See ISO 8208 Section 15.3.2.2"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 21 }
+
+x25CallParmInMinThuPutCls       OBJECT-TYPE
+        SYNTAX  INTEGER (0..17)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The minimum input throughput Class.  A
+                value of 16 for a circuit means use the PLE
+                default (the PLE parameters entry may not
+                use this value).  A value of 17 indicates no
+                facility requested."
+        REFERENCE "See ISO 8208 Section 15.3.2.3"
+        DEFVAL { 17 }
+        ::= { x25CallParmEntry 22 }
+
+x25CallParmOutMinThuPutCls OBJECT-TYPE
+        SYNTAX  INTEGER (0..17)
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The minimum output throughput Class.  A
+                value of 16 for a circuit means use the PLE
+                default (the PLE parameters entry may not
+                use this value).  A value of 17 indicates no
+                facility requested."
+        REFERENCE "See ISO 8208 Section 15.3.2.3"
+        DEFVAL { 17 }
+        ::= { x25CallParmEntry 23 }
+
+x25CallParmEndTrnsDly OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..6))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The End-to-End Transit Delay to negotiate.
+                An octet string of length 2, 4, or 6
+                contains the facility encoded as specified
+                in ISO/IEC 8208 section 15.3.2.4.  An octet
+                string of length 3 containing the three
+                character DEF for a circuit means use the
+                PLE default (the entry for the PLE default
+                can not contain the characters DEF).  A zero
+                length string indicates no facility
+                requested."
+        REFERENCE "See ISO 8208 Section 15.3.2.4"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 24 }
+
+x25CallParmPriority OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..6))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The priority facility to negotiate.  The
+                octet string encoded as specified in ISO/IEC
+                8208 section 15.3.2.5.  A zero length string
+                indicates no facility requested.  The entry
+                for the PLE default parameters must be zero
+                length."
+        REFERENCE "See ISO 8208 Section 15.3.2.5"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 25 }
+
+x25CallParmProtection OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..108))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "A string contains the following:
+                A hex string containing the value for the
+                protection facility.  This will be converted
+                from hex to the octets actually in the
+                packet by the agent.  The agent will supply
+                the length field and the length octet is not
+                contained in this string.
+
+                An string containing the 3 characters DEF
+                for a circuit means use the PLE default (the
+                entry for the PLE default parameters may not
+                use the value DEF).
+
+                A zero length string mean no facility
+                requested."
+        REFERENCE "See ISO 8208 Section 15.3.2.5"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 26 }
+
+x25CallParmExptData OBJECT-TYPE
+        SYNTAX  INTEGER {
+                        default (1),
+                        noExpeditedData (2),
+                        expeditedData (3)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The Expedited Data facility to negotiate.
+                A value of default for a circuit means use
+                the PLE default value.  The entry for the
+                PLE default parameters may not have the
+                value default."
+        REFERENCE "See ISO 8208 Section 15.3.2.7"
+        DEFVAL { noExpeditedData }
+        ::= { x25CallParmEntry 27 }
+
+x25CallParmUserData     OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..128))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The call user data as placed in the packet.
+                A zero length string indicates no call user
+                data.  If both the circuit call parameters
+                and the PLE default have call user data
+                defined, the data from the circuit call
+                parameters will be used.  If only the PLE
+                has data defined, the PLE entry will be
+                used.  If neither the circuit call
+                parameters or the PLE default entry has a
+                value, no call user data will be sent."
+        REFERENCE "See ISO 8208 Section 12.2.1.1.6, 12.2.1.2"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 28 }
+
+x25CallParmCallingNetworkFacilities     OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..108))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The calling network facilities.  The
+                facilities are encoded here exactly as
+                encoded in the call packet.  These
+                facilities do not include the marker
+                facility code.
+
+                A zero length string in the entry for the
+                parameter to use when establishing a circuit
+                means use the PLE default.  A zero length
+                string in the entry for PLE default
+                parameters indicates no default facilities."
+        REFERENCE "See ISO 8206 Section 15.1, category b"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 29 }
+
+x25CallParmCalledNetworkFacilities      OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..108))
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                "The called network facilities.  The
+                facilities are encoded here exactly as
+                encoded in the call packet.  These
+                facilities do not include the marker
+                facility code.
+
+                A zero length string in the entry for the
+                parameter to use when establishing a circuit
+                means use the PLE default.  A zero length
+                string in the entry for PLE default
+                parameters indicates no default facilities."
+        REFERENCE "See ISO 8206 Section 15.1, category c"
+        DEFVAL { ''h }
+        ::= { x25CallParmEntry 30 }
+
+-- ###########################################################
+--              X.25 Traps
+-- ###########################################################
+
+x25Restart      TRAP-TYPE
+        ENTERPRISE  x25
+        VARIABLES { x25OperIndex }
+        DESCRIPTION
+                "This trap means the X.25 PLE sent or
+                received a restart packet.  The restart that
+                brings up the link should not send a
+                x25Restart trap so the interface should send
+                a linkUp trap.  Sending this trap means the
+                agent does not send a linkDown and linkUp
+                trap."
+        ::= 1
+
+x25Reset        TRAP-TYPE
+        ENTERPRISE  x25
+        VARIABLES { x25CircuitIndex,
+                x25CircuitChannel }
+        DESCRIPTION
+                "If the PLE sends or receives a reset, the
+                agent should send an x25Reset trap."
+        ::= 2
+
+
+-- ###########################################################
+--              X.25 Protocol Version Identifiers
+-- ###########################################################
+
+x25ProtocolVersion OBJECT IDENTIFIER
+        ::= { x25 10 }
+
+        -- X.25 CCITT 1976 version.
+x25protocolCcittV1976 OBJECT IDENTIFIER
+        ::= { x25ProtocolVersion 1 }
+
+        -- X.25 CCITT 1980 version.
+x25protocolCcittV1980 OBJECT IDENTIFIER
+        ::= { x25ProtocolVersion 2 }
+
+        -- X.25 CCITT 1984 version.
+x25protocolCcittV1984 OBJECT IDENTIFIER
+        ::= { x25ProtocolVersion 3 }
+
+        -- X.25 CCITT 1988 version.
+x25protocolCcittV1988 OBJECT IDENTIFIER
+        ::= { x25ProtocolVersion 4 }
+
+        -- X.25 1987 version of ISO 8208.
+x25protocolIso8208V1987 OBJECT IDENTIFIER
+        ::= { x25ProtocolVersion 5 }
+
+        -- X.25 1989 version of ISO 8208.
+x25protocolIso8208V1989 OBJECT IDENTIFIER
+        ::= { x25ProtocolVersion 6 }
+
+-- ###########################################################
+
+END

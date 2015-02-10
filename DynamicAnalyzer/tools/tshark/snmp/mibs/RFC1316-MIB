@@ -1,0 +1,513 @@
+        RFC1316-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS
+                Counter, TimeTicks, Gauge
+                        FROM RFC1155-SMI
+                DisplayString, mib-2
+                        FROM RFC1213-MIB
+                OBJECT-TYPE
+                        FROM RFC-1212;
+
+-- this is the MIB module for character stream devices
+
+char    OBJECT IDENTIFIER ::= { mib-2 19 }
+
+-- Textual Conventions
+
+    AutonomousType    ::= OBJECT IDENTIFIER
+
+-- The object identifier is an independently extensible type
+-- identification value.  It may, for example indicate a
+-- particular sub-tree with further MIB definitions, or
+-- define something like a protocol type or type of
+-- hardware.
+
+    InstancePointer   ::= OBJECT IDENTIFIER
+
+-- The object identifier is a pointer to a specific instance
+-- of a MIB object in this agent's implemented MIB.  By
+-- convention, it is the first object in the conceptual row
+-- for the instance.
+
+-- the generic Character group
+
+-- Implementation of this group is mandatory for all
+-- systems that offer character ports
+
+charNumber OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The number of entries in charPortTable, regardless
+        of their current state."
+    ::= { char 1 }
+
+
+-- the Character Port table
+
+charPortTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF CharPortEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "A list of port entries.  The number of entries is
+        given by the value of charNumber."
+    ::= { char 2 }
+
+charPortEntry OBJECT-TYPE
+    SYNTAX CharPortEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Status and parameter values for a character port."
+    INDEX { charPortIndex }
+    ::= { charPortTable 1 }
+
+CharPortEntry ::=
+    SEQUENCE {
+        charPortIndex
+            INTEGER,
+        charPortName
+            DisplayString,
+        charPortType
+            INTEGER,
+        charPortHardware
+            AutonomousType,
+        charPortReset
+            INTEGER,
+        charPortAdminStatus
+            INTEGER,
+        charPortOperStatus
+            INTEGER,
+        charPortLastChange
+            TimeTicks,
+        charPortInFlowType
+            INTEGER,
+        charPortOutFlowType
+            INTEGER,
+        charPortInFlowState
+            INTEGER,
+        charPortOutFlowState
+            INTEGER,
+        charPortInCharacters
+            Counter,
+        charPortOutCharacters
+            Counter,
+        charPortAdminOrigin
+            INTEGER,
+        charPortSessionMaximum
+            INTEGER,
+        charPortSessionNumber
+            Gauge,
+        charPortSessionIndex
+            INTEGER
+    }
+
+charPortIndex OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "A unique value for each character port.  Its value
+        ranges between 1 and the value of charNumber.  By
+        convention and if possible, hardware port numbers
+        come first, with a simple, direct mapping.  The
+        value for each port must remain constant at least
+        from one re-initialization of the network management
+        agent to the next."
+    ::= { charPortEntry 1 }
+
+charPortName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..32))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "An administratively assigned name for the port,
+        typically with some local significance."
+    ::= { charPortEntry 2 }
+
+charPortType OBJECT-TYPE
+    SYNTAX INTEGER { physical(1), virtual(2) }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The port's type, 'physical' if the port represents
+        an external hardware connector, 'virtual' if it does
+        not."
+    ::= { charPortEntry 3 }
+
+charPortHardware OBJECT-TYPE
+    SYNTAX AutonomousType
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "A reference to hardware MIB definitions specific to
+        a physical port's external connector.  For example,
+        if the connector is RS-232, then the value of this
+        object refers to a MIB sub-tree defining objects
+        specific to RS-232.  If an agent is not configured
+        to have such values, the agent returns the object
+        identifier:
+
+            nullHardware OBJECT IDENTIFIER ::= { 0 0 }
+        "
+    ::= { charPortEntry 4 }
+
+charPortReset OBJECT-TYPE
+    SYNTAX INTEGER { ready(1), execute(2) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A control to force the port into a clean, initial
+        state, both hardware and software, disconnecting all
+        the port's existing sessions.  In response to a
+        get-request or get-next-request, the agent always
+        returns 'ready' as the value.  Setting the value to
+        'execute' causes a reset."
+    ::= { charPortEntry 5 }
+
+charPortAdminStatus OBJECT-TYPE
+    SYNTAX INTEGER { enabled(1), disabled(2), off(3),
+                     maintenance(4) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The port's desired state, independent of flow
+        control.  'enabled' indicates that the port is
+        allowed to pass characters and form new sessions.
+        'disabled' indicates that the port is allowed to
+        pass characters but not form new sessions.  'off'
+        indicates that the port is not allowed to pass
+        characters or have any sessions. 'maintenance'
+        indicates a maintenance mode, exclusive of normal
+        operation, such as running a test."
+    ::= { charPortEntry 6 }
+
+charPortOperStatus OBJECT-TYPE
+    SYNTAX INTEGER { up(1), down(2),
+                     maintenance(3), absent(4), active(5) }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The port's actual, operational state, independent
+        of flow control.  'up' indicates able to function
+        normally.  'down' indicates inability to function
+        for administrative or operational reasons.
+        'maintenance' indicates a maintenance mode,
+        exclusive of normal operation, such as running a
+        test.  'absent' indicates that port hardware is not
+        present.  'active' indicates up with a user present
+        (e.g. logged in)."
+    ::= { charPortEntry 7 }
+
+charPortLastChange OBJECT-TYPE
+    SYNTAX TimeTicks
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The value of sysUpTime at the time the port entered
+        its current operational state.  If the current state
+        was entered prior to the last reinitialization of
+        the local network management subsystem, then this
+        object contains a zero value."
+    ::= { charPortEntry 8 }
+
+charPortInFlowType OBJECT-TYPE
+    SYNTAX INTEGER { none(1), xonXoff(2), hardware(3),
+                     ctsRts(4), dsrDtr(5) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The port's type of input flow control.  'none'
+        indicates no flow control at this level or below.
+        'xonXoff' indicates software flow control by
+        recognizing XON and XOFF characters.  'hardware'
+        indicates flow control delegated to the lower level,
+        for example a parallel port.
+
+        'ctsRts' and 'dsrDtr' are specific to RS-232-like
+        ports.  Although not architecturally pure, they are
+        included here for simplicity's sake."
+    ::= { charPortEntry 9 }
+
+charPortOutFlowType OBJECT-TYPE
+    SYNTAX INTEGER { none(1), xonXoff(2), hardware(3),
+                     ctsRts(4), dsrDtr(5) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The port's type of output flow control.  'none'
+        indicates no flow control at this level or below.
+        'xonXoff' indicates software flow control by
+        recognizing XON and XOFF characters.  'hardware'
+        indicates flow control delegated to the lower level,
+        for example a parallel port.
+
+        'ctsRts' and 'dsrDtr' are specific to RS-232-like
+        ports.  Although not architecturally pure, they are
+        included here for simplicy's sake."
+    ::= { charPortEntry 10 }
+
+charPortInFlowState OBJECT-TYPE
+    SYNTAX INTEGER { none(1), unknown(2), stop(3), go(4) }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The current operational state of input flow control
+        on the port.  'none' indicates not applicable.
+        'unknown' indicates this level does not know.
+        'stop' indicates flow not allowed.  'go' indicates
+        flow allowed."
+    ::= { charPortEntry 11 }
+
+charPortOutFlowState OBJECT-TYPE
+    SYNTAX INTEGER { none(1), unknown(2), stop(3), go(4) }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The current operational state of output flow
+        control on the port.  'none' indicates not
+        applicable.  'unknown' indicates this level does not
+        know.  'stop' indicates flow not allowed.  'go'
+        indicates flow allowed."
+    ::= { charPortEntry 12 }
+
+charPortInCharacters OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Total number of characters detected as input from
+        the port since system re-initialization and while
+        the port operational state was 'up', 'active', or
+        'maintenance', including, for example, framing, flow
+        control (i.e. XON and XOFF), each occurrence of a
+        BREAK condition, locally-processed input, and input
+        sent to all sessions."
+    ::= { charPortEntry 13 }
+
+charPortOutCharacters OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Total number of characters detected as output to
+        the port since system re-initialization and while
+        the port operational state was 'up', 'active', or
+        'maintenance', including, for example, framing, flow
+        control (i.e. XON and XOFF), each occurrence of a
+        BREAK condition, locally-created output, and output
+        received from all sessions."
+    ::= { charPortEntry 14 }
+
+charPortAdminOrigin OBJECT-TYPE
+    SYNTAX INTEGER { dynamic(1), network(2), local(3),
+                     none(4) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The administratively allowed origin for
+        establishing session on the port.  'dynamic' allows
+        'network' or 'local' session establishment. 'none'
+        disallows session establishment."
+    ::= { charPortEntry 15 }
+
+charPortSessionMaximum OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The maximum number of concurrent sessions allowed
+        on the port.  A value of -1 indicates no maximum.
+        Setting the maximum to less than the current number
+        of sessions has unspecified results."
+    ::= { charPortEntry 16 }
+
+charPortSessionNumber OBJECT-TYPE
+    SYNTAX Gauge
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The number of open sessions on the port that are in
+        the connecting, connected, or disconnecting state."
+    ::= { charPortEntry 17 }
+
+charPortSessionIndex OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The value of charSessIndex for the port's first or
+        only active session.  If the port has no active
+        session, the agent returns the value zero."
+    ::= { charPortEntry 18 }
+
+
+-- the Character Session table
+
+charSessTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF CharSessEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "A list of port session entries."
+    ::= { char 3 }
+
+charSessEntry OBJECT-TYPE
+    SYNTAX CharSessEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Status and parameter values for a character port
+        session."
+    INDEX { charSessPortIndex, charSessIndex }
+    ::= { charSessTable 1 }
+
+CharSessEntry ::=
+    SEQUENCE {
+        charSessPortIndex
+            INTEGER,
+        charSessIndex
+            INTEGER,
+        charSessKill
+            INTEGER,
+        charSessState
+            INTEGER,
+        charSessProtocol
+            AutonomousType,
+        charSessOperOrigin
+            INTEGER,
+        charSessInCharacters
+            Counter,
+        charSessOutCharacters
+            Counter,
+        charSessConnectionId
+            InstancePointer,
+        charSessStartTime
+            TimeTicks
+    }
+
+charSessPortIndex OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The value of charPortIndex for the port to which
+        this session belongs."
+    ::= { charSessEntry 1 }
+
+charSessIndex OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The session index in the context of the port, a
+        non-zero positive integer.  Session indexes within a
+        port need not be sequential.  Session indexes may be
+        reused for different ports.  For example, port 1 and
+        port 3 may both have a session 2 at the same time.
+        Session indexes may have any valid integer value,
+        with any meaning convenient to the agent
+        implementation."
+    ::= { charSessEntry 2 }
+
+charSessKill OBJECT-TYPE
+    SYNTAX INTEGER { ready(1), execute(2) }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A control to terminate the session.  In response to
+        a get-request or get-next-request, the agent always
+        returns 'ready' as the value.  Setting the value to
+        'execute' causes termination."
+    ::= { charSessEntry 3 }
+
+charSessState OBJECT-TYPE
+    SYNTAX INTEGER { connecting(1), connected(2),
+                     disconnecting(3) }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The current operational state of the session,
+        disregarding flow control.  'connected' indicates
+        that character data could flow on the network side
+        of session.  'connecting' indicates moving from
+        nonexistent toward 'connected'.  'disconnecting'
+        indicates moving from 'connected' or 'connecting' to
+        nonexistent."
+    ::= { charSessEntry 4 }
+
+charSessProtocol OBJECT-TYPE
+    SYNTAX AutonomousType
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The network protocol over which the session is
+        running.  Other OBJECT IDENTIFIER values may be
+        defined elsewhere, in association with specific
+        protocols.  However, this document assigns those of
+        known interest as of this writing."
+    ::= { charSessEntry 5 }
+
+wellKnownProtocols OBJECT IDENTIFIER ::= { char 4 }
+
+protocolOther  OBJECT IDENTIFIER ::= {wellKnownProtocols 1}
+protocolTelnet OBJECT IDENTIFIER ::= {wellKnownProtocols 2}
+protocolRlogin OBJECT IDENTIFIER ::= {wellKnownProtocols 3}
+protocolLat    OBJECT IDENTIFIER ::= {wellKnownProtocols 4}
+protocolX29    OBJECT IDENTIFIER ::= {wellKnownProtocols 5}
+protocolVtp    OBJECT IDENTIFIER ::= {wellKnownProtocols 6}
+
+charSessOperOrigin OBJECT-TYPE
+    SYNTAX INTEGER { unknown(1), network(2), local(3) }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The session's source of establishment."
+    ::= { charSessEntry 6 }
+
+charSessInCharacters OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This session's subset of charPortInCharacters."
+    ::= { charSessEntry 7 }
+
+charSessOutCharacters OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This session's subset of charPortOutCharacters."
+    ::= { charSessEntry 8 }
+
+charSessConnectionId OBJECT-TYPE
+    SYNTAX InstancePointer
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "A reference to additional local MIB information.
+        This should be the highest available related MIB,
+        corresponding to charSessProtocol, such as Telnet.
+        For example, the value for a TCP connection (in the
+        absence of a Telnet MIB) is the object identifier of
+        tcpConnState.  If an agent is not configured to have
+        such values, the agent returns the object
+        identifier:
+
+            nullConnectionId OBJECT IDENTIFIER ::= { 0 0 }
+        "
+    ::= { charSessEntry 9 }
+
+charSessStartTime OBJECT-TYPE
+    SYNTAX TimeTicks
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The value of sysUpTime in MIB-2 when the session
+        entered connecting state."
+    ::= { charSessEntry 10 }
+
+END

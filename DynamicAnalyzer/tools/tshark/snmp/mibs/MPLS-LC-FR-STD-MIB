@@ -1,0 +1,275 @@
+MPLS-LC-FR-STD-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+   MODULE-IDENTITY, OBJECT-TYPE
+      FROM SNMPv2-SMI
+   MODULE-COMPLIANCE, OBJECT-GROUP
+      FROM SNMPv2-CONF
+   RowStatus, StorageType
+      FROM SNMPv2-TC
+   mplsInterfaceIndex
+      FROM MPLS-LSR-STD-MIB
+   DLCI
+      FROM FRAME-RELAY-DTE-MIB
+   mplsStdMIB
+      FROM MPLS-TC-STD-MIB
+   ;
+mplsLcFrStdMIB MODULE-IDENTITY
+
+   LAST-UPDATED "200601120000Z"  -- 12 January 2006
+   ORGANIZATION "Multiprotocol Label Switching (MPLS) Working Group"
+   CONTACT-INFO
+       "        Thomas D. Nadeau
+                Cisco Systems, Inc.
+        Email:  tnadeau@cisco.com
+
+                Subrahmanya Hegde
+        Email:  subrah@cisco.com
+
+        General comments should be sent to mpls@uu.net
+       "
+   DESCRIPTION
+       "This MIB module contains managed object definitions for
+        MPLS Label-Controlled Frame-Relay interfaces as defined
+        in (RFC3034).
+
+        Copyright (C) The Internet Society (2006).  This
+        version of this MIB module is part of RFC 4368; see
+        the RFC itself for full legal notices."
+
+
+
+   -- Revision history.
+   REVISION
+        "200601120000Z"  -- 12 January 2006
+   DESCRIPTION
+       "Initial revision, published as part of RFC 4368."
+   ::= { mplsStdMIB 10 }
+
+-- Top level components of this MIB module.
+-- Tables, Scalars, Notifications, Conformance
+
+mplsLcFrStdNotifications OBJECT IDENTIFIER ::= { mplsLcFrStdMIB 0 }
+mplsLcFrStdObjects       OBJECT IDENTIFIER ::= { mplsLcFrStdMIB 1 }
+mplsLcFrStdConformance   OBJECT IDENTIFIER ::= { mplsLcFrStdMIB 2 }
+
+-- MPLS LC-FR Interface Configuration Table.
+mplsLcFrStdInterfaceConfTable  OBJECT-TYPE
+   SYNTAX        SEQUENCE OF MplsLcFrStdInterfaceConfEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This table specifies per-interface MPLS LC-FR
+        capability and associated information.  In particular,
+        this table sparsely extends the MPLS-LSR-STD-MIB's
+        mplsInterfaceConfTable."
+   ::= { mplsLcFrStdObjects 1 }
+
+mplsLcFrStdInterfaceConfEntry OBJECT-TYPE
+   SYNTAX        MplsLcFrStdInterfaceConfEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "An entry in this table is created by an LSR for
+        every interface capable of supporting MPLS LC-FR.
+        Each entry in this table will exist only if a
+        corresponding entry in ifTable and mplsInterfaceConfTable
+        exists.  If the associated entries in ifTable and
+        mplsInterfaceConfTable are deleted, the corresponding
+        entry in this table must also be deleted shortly
+        thereafter."
+   INDEX       { mplsInterfaceIndex }
+      ::= { mplsLcFrStdInterfaceConfTable 1 }
+
+MplsLcFrStdInterfaceConfEntry ::= SEQUENCE {
+   mplsLcFrStdTrafficMinDlci           DLCI,
+   mplsLcFrStdTrafficMaxDlci           DLCI,
+   mplsLcFrStdCtrlMinDlci              DLCI,
+   mplsLcFrStdCtrlMaxDlci              DLCI,
+   mplsLcFrStdInterfaceConfRowStatus   RowStatus,
+
+
+   mplsLcFrStdInterfaceConfStorageType StorageType
+}
+
+mplsLcFrStdTrafficMinDlci OBJECT-TYPE
+   SYNTAX        DLCI
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This is the minimum DLCI value over which this
+        LSR is willing to accept traffic on this
+        interface."
+   ::= { mplsLcFrStdInterfaceConfEntry 1 }
+
+mplsLcFrStdTrafficMaxDlci OBJECT-TYPE
+   SYNTAX        DLCI
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This is the max DLCI value over which this
+        LSR is willing to accept traffic on this
+        interface."
+   ::= { mplsLcFrStdInterfaceConfEntry 2 }
+
+mplsLcFrStdCtrlMinDlci OBJECT-TYPE
+   SYNTAX        DLCI
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This is the min DLCI value over which this
+        LSR is willing to accept control traffic
+        on this interface."
+   ::= { mplsLcFrStdInterfaceConfEntry 3 }
+
+mplsLcFrStdCtrlMaxDlci OBJECT-TYPE
+   SYNTAX        DLCI
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This is the max DLCI value over which this
+        LSR is willing to accept control traffic
+        on this interface."
+   ::= { mplsLcFrStdInterfaceConfEntry 4 }
+
+mplsLcFrStdInterfaceConfRowStatus OBJECT-TYPE
+   SYNTAX        RowStatus
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+
+
+       "This object is used to create and
+        delete entries in this table.  When configuring
+        entries in this table, the corresponding ifEntry and
+        mplsInterfaceConfEntry MUST exist beforehand.  If a manager
+        attempts to create an entry for a corresponding
+        mplsInterfaceConfEntry that does not support LC-FR,
+        the agent MUST return an inconsistentValue error.
+        If this table is implemented read-only, then the
+        agent must set this object to active(1) when this
+        row is made active.  If this table is implemented
+        writable, then an agent MUST not allow modification
+        to its objects once this value is set to active(1),
+        except to mplsLcFrStdInterfaceConfRowStatus and
+        mplsLcFrStdInterfaceConfStorageType."
+   ::= { mplsLcFrStdInterfaceConfEntry 5 }
+
+ mplsLcFrStdInterfaceConfStorageType OBJECT-TYPE
+   SYNTAX        StorageType
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The storage type for this conceptual row.
+        Conceptual rows having the value 'permanent(4)'
+        need not allow write-access to any columnar
+        objects in the row."
+   DEFVAL { nonVolatile }
+   ::= { mplsLcFrStdInterfaceConfEntry 6 }
+
+-- End of mplsLcFrStdInterfaceConfTable
+
+-- Module compliance.
+
+mplsLcFrStdCompliances
+   OBJECT IDENTIFIER ::= { mplsLcFrStdConformance 1 }
+
+mplsLcFrStdGroups
+   OBJECT IDENTIFIER ::= { mplsLcFrStdConformance 2 }
+
+
+-- Compliance requirement for full compliance
+
+mplsLcFrStdModuleFullCompliance MODULE-COMPLIANCE
+   STATUS current
+   DESCRIPTION
+       "Compliance statement for agents that provide
+        full support for MPLS-LC-FR-STD-MIB.  Such
+        devices can be monitored and also be configured
+        using this MIB module."
+
+
+   MODULE -- this module
+      MANDATORY-GROUPS {
+         mplsLcFrStdIfGroup
+      }
+
+      OBJECT       mplsLcFrStdInterfaceConfRowStatus
+      SYNTAX       RowStatus { active(1), notInService(2) }
+      WRITE-SYNTAX RowStatus { active(1), notInService(2),
+                               createAndGo(4), destroy(6)
+                             }
+      DESCRIPTION "Support for createAndWait and notReady is
+                   not required."
+
+   ::= { mplsLcFrStdCompliances 1 }
+
+
+-- Compliance requirement for read-only implementations.
+
+mplsLcFrStdModuleReadOnlyCompliance MODULE-COMPLIANCE
+   STATUS current
+   DESCRIPTION
+       "Compliance requirement for implementations that only
+        provide read-only support for MPLS-LC-FR-STD-MIB.
+        Such devices can be monitored but cannot be configured
+        using this MIB module.
+       "
+
+   MODULE -- this module
+      MANDATORY-GROUPS {
+         mplsLcFrStdIfGroup
+      }
+
+      -- mplsLcFrStdInterfaceConfTable
+
+      OBJECT     mplsLcFrStdTrafficMinDlci
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT     mplsLcFrStdTrafficMaxDlci
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      mplsLcFrStdCtrlMinDlci
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+
+      OBJECT      mplsLcFrStdCtrlMaxDlci
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT       mplsLcFrStdInterfaceConfRowStatus
+      SYNTAX       RowStatus { active(1) }
+      MIN-ACCESS   read-only
+      DESCRIPTION "Write access is not required."
+
+      OBJECT      mplsLcFrStdInterfaceConfStorageType
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+   ::= { mplsLcFrStdCompliances 2 }
+
+-- Units of conformance.
+
+mplsLcFrStdIfGroup OBJECT-GROUP
+   OBJECTS {
+        mplsLcFrStdTrafficMinDlci,
+        mplsLcFrStdTrafficMaxDlci,
+        mplsLcFrStdCtrlMinDlci,
+        mplsLcFrStdCtrlMaxDlci,
+        mplsLcFrStdInterfaceConfRowStatus,
+        mplsLcFrStdInterfaceConfStorageType
+    }
+   STATUS  current
+
+   DESCRIPTION
+          "Collection of objects needed for MPLS LC-FR
+           interface configuration."
+   ::= { mplsLcFrStdGroups 1 }
+
+END

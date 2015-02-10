@@ -1,0 +1,30 @@
+# -*- text -*-
+#
+#	Avaya P330 dictionary file
+#	$Id$
+#
+#	http://support.avaya.com/elmodocs2/p330/P330/Configuring%20FreeRadius.pdf
+#
+
+VENDOR		Cajun_p330			2167
+BEGIN-VENDOR	Cajun_p330
+
+ATTRIBUTE	Cajun-Service-Type			1	integer
+
+VALUE	Cajun-Service-Type		Cajun-Read-Only-User	1
+VALUE	Cajun-Service-Type		Cajun-Read-Write-User	2
+VALUE	Cajun-Service-Type		Cajun-Admin-User	3
+
+ATTRIBUTE	Avaya-StaticVlan-Type			12	string
+ATTRIBUTE	Avaya-PortPriority-Type			13	integer
+
+VALUE	Avaya-PortPriority-Type		Type-0			0
+VALUE	Avaya-PortPriority-Type		Type-1			1
+VALUE	Avaya-PortPriority-Type		Type-2			2
+VALUE	Avaya-PortPriority-Type		Type-3			3
+VALUE	Avaya-PortPriority-Type		Type-4			4
+VALUE	Avaya-PortPriority-Type		Type-5			5
+VALUE	Avaya-PortPriority-Type		Type-6			6
+VALUE	Avaya-PortPriority-Type		Type-7			7
+
+END-VENDOR	Cajun_p330

@@ -1,0 +1,1837 @@
+MAU-MIB DEFINITIONS ::= BEGIN
+
+  IMPORTS
+    Counter32, Integer32, Counter64,
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, mib-2
+      FROM SNMPv2-SMI         -- RFC 2578
+    TruthValue, AutonomousType, TEXTUAL-CONVENTION
+      FROM SNMPv2-TC          -- RFC 2579
+    OBJECT-GROUP, MODULE-COMPLIANCE, NOTIFICATION-GROUP
+      FROM SNMPv2-CONF        -- RFC 2580
+    InterfaceIndex
+      FROM IF-MIB             -- RFC 2863
+    IANAifMauTypeListBits, IANAifMauMediaAvailable,
+    IANAifMauAutoNegCapBits, IANAifJackType
+      FROM IANA-MAU-MIB
+                       -- http://www.iana.org/assignments/ianamau-mib
+    ;
+
+  mauMod MODULE-IDENTITY
+    LAST-UPDATED "200704210000Z"  -- April 21, 2007
+    ORGANIZATION "IETF Ethernet Interfaces and Hub MIB Working Group"
+    CONTACT-INFO
+      "WG charter:
+        http://www.ietf.org/html.charters/hubmib-charter.html
+
+      Mailing Lists:
+        General Discussion: hubmib@ietf.org
+        To Subscribe: hubmib-request@ietf.org
+        In Body: subscribe your_email_address
+
+
+
+       Chair: Bert Wijnen
+      Postal: Alcatel-Lucent
+              Schagen 33
+              3461 GL Linschoten
+              Netherlands
+       Phone: +31-348-407-775
+       EMail: bwijnen@alcatel-lucent.com
+
+      Editor: Edward Beili
+      Postal: Actelis Networks Inc.
+              25 Bazel St., P.O.B. 10173
+              Petach-Tikva 10173
+              Israel
+         Tel: +972-3-924-3491
+       EMail: edward.beili@actelis.com"
+
+    DESCRIPTION
+      "Management information for 802.3 MAUs.
+
+      The following reference is used throughout this MIB module:
+
+      [IEEE802.3] refers to:
+         IEEE Std 802.3, 2005 Edition: 'IEEE Standard for Information
+         technology - Telecommunications and information exchange
+         between systems - Local and metropolitan area networks -
+         Specific requirements - Part 3: Carrier sense multiple
+         access with collision detection (CSMA/CD) access method and
+         physical layer specifications'.
+
+         Of particular interest is Clause 30, 'Management'.
+
+      Copyright (C) The IETF Trust (2007).
+      This version of this MIB module is part of RFC 4836;
+      see the RFC itself for full legal notices."
+
+    REVISION    "200704210000Z"  -- April 21, 2007
+    DESCRIPTION "Updated to reference IANA maintaned textual
+                conventions for MAU types, Media Availability state,
+                Auto Negotiation capabilities, and jack types,
+                instead of using internally defined values.
+
+                This version is published as RFC 4836."
+
+    REVISION    "200309190000Z"  -- September 19, 2003
+    DESCRIPTION "Updated to include support for 10 Gb/s MAUs.
+                This resulted in the following revisions:
+                - Added OBJECT-IDENTITY definitions for
+                  10 gigabit MAU types
+
+
+
+                - Added fiberLC jack type to JackType TC
+                - Extended ifMauTypeListBits with bits for
+                  the 10 gigabit MAU types
+                - Added enumerations to ifMauMediaAvailable,
+                  and updated its DESCRIPTION to reflect
+                  behaviour at 10 Gb/s
+                - Added 64-bit version of ifMauFalseCarriers
+                  and added mauIfGrpHCStats object group to
+                  contain the new object
+                - Deprecated mauModIfCompl2 and replaced it
+                  with mauModIfCompl3, which includes the new
+                  object group
+
+                 This version published as RFC 3636."
+
+    REVISION    "199908240400Z" -- August 24, 1999
+    DESCRIPTION "This version published as RFC 2668.  Updated
+                to include support for 1000 Mb/sec
+                MAUs and flow control negotiation."
+
+    REVISION    "199710310000Z" -- October 31, 1997
+    DESCRIPTION "Version published as RFC 2239."
+
+    REVISION    "199309300000Z" -- September 30, 1993
+    DESCRIPTION "Initial version, published as RFC 1515."
+
+    ::= { snmpDot3MauMgt 6 }
+
+   snmpDot3MauMgt OBJECT IDENTIFIER ::= { mib-2 26 }
+
+   -- Textual Conventions
+
+   JackType ::= TEXTUAL-CONVENTION
+     STATUS      deprecated
+     DESCRIPTION "********* THIS TC IS DEPRECATED **********
+
+                 This TC has been deprecated in favour of
+                 IANAifJackType.
+
+                 Common enumeration values for repeater
+                 and interface MAU jack types."
+     SYNTAX      INTEGER {
+                           other(1),
+                           rj45(2),
+                           rj45S(3), -- rj45 shielded
+                           db9(4),
+                           bnc(5),
+                           fAUI(6),  -- female aui
+
+
+
+                           mAUI(7),  -- male aui
+                           fiberSC(8),
+                           fiberMIC(9),
+                           fiberST(10),
+                           telco(11),
+                           mtrj(12),  -- fiber MT-RJ
+                           hssdc(13), -- fiber channel style-2
+                           fiberLC(14)
+                       }
+
+   dot3RpMauBasicGroup
+       OBJECT IDENTIFIER ::= { snmpDot3MauMgt 1 }
+   dot3IfMauBasicGroup
+       OBJECT IDENTIFIER ::= { snmpDot3MauMgt 2 }
+   dot3BroadMauBasicGroup
+       OBJECT IDENTIFIER ::= { snmpDot3MauMgt 3 }
+
+   -- OIDs under the following branch are reserved for
+   -- the IANA-MAU-MIB to assign as MAU type values:
+   --                        { snmpDot3MauMgt 4 }
+
+   dot3IfMauAutoNegGroup
+       OBJECT IDENTIFIER ::= { snmpDot3MauMgt 5 }
+
+   -- the following OID is the MODULE-IDENTITY value
+   -- for this MIB module:   { snmpDot3MauMgt 6 }
+
+   --
+   -- The Basic Repeater MAU Table
+   --
+
+   rpMauTable OBJECT-TYPE
+     SYNTAX      SEQUENCE OF RpMauEntry
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION "Table of descriptive and status information
+                 about the MAU(s) attached to the ports of a
+                 repeater."
+     ::= { dot3RpMauBasicGroup 1 }
+
+   rpMauEntry OBJECT-TYPE
+     SYNTAX      RpMauEntry
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION "An entry in the table, containing information
+                 about a single MAU."
+     INDEX       { rpMauGroupIndex,
+                   rpMauPortIndex,
+
+
+
+                   rpMauIndex
+                 }
+     ::= { rpMauTable 1 }
+
+   RpMauEntry ::=
+     SEQUENCE {
+         rpMauGroupIndex                     Integer32,
+         rpMauPortIndex                      Integer32,
+         rpMauIndex                          Integer32,
+         rpMauType                           AutonomousType,
+         rpMauStatus                         INTEGER,
+         rpMauMediaAvailable                 IANAifMauMediaAvailable,
+         rpMauMediaAvailableStateExits       Counter32,
+         rpMauJabberState                    INTEGER,
+         rpMauJabberingStateEnters           Counter32,
+         rpMauFalseCarriers                  Counter32
+   }
+
+   rpMauGroupIndex OBJECT-TYPE
+     SYNTAX      Integer32 (1..2147483647)
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS      current
+     DESCRIPTION "This variable uniquely identifies the group
+                 containing the port to which the MAU described
+                 by this entry is connected.
+
+                 Note:  In practice, a group will generally be
+                 a field-replaceable unit (i.e., module, card,
+                 or board) that can fit in the physical system
+                 enclosure, and the group number will correspond
+                 to a number marked on the physical enclosure.
+
+                 The group denoted by a particular value of this
+                 object is the same as the group denoted by the
+                 same value of rptrGroupIndex."
+     REFERENCE   "RFC 2108, rptrGroupIndex."
+     ::= { rpMauEntry 1 }
+
+   rpMauPortIndex OBJECT-TYPE
+     SYNTAX      Integer32 (1..2147483647)
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS      current
+     DESCRIPTION "This variable uniquely identifies the repeater
+                 port within group rpMauGroupIndex to which the
+                 MAU described by this entry is connected."
+     REFERENCE   "RFC 2108, rptrPortIndex."
+
+
+
+     ::= { rpMauEntry 2 }
+
+   rpMauIndex OBJECT-TYPE
+     SYNTAX      Integer32 (1..2147483647)
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS      current
+     DESCRIPTION "This variable uniquely identifies the MAU
+                 described by this entry from among other
+                 MAUs connected to the same port
+                 (rpMauPortIndex)."
+     REFERENCE   "[IEEE802.3], 30.5.1.1.1, aMAUID."
+     ::= { rpMauEntry 3 }
+
+   rpMauType OBJECT-TYPE
+     SYNTAX      AutonomousType
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION "This object identifies the MAU type.  Values for
+                 standard IEEE 802.3 MAU types are defined in the
+                 IANA maintained IANA-MAU-MIB module, as
+                 OBJECT-IDENTITIES of dot3MauType.
+                 If the MAU type is unknown, the object identifier
+                 zeroDotZero is returned."
+     REFERENCE   "[IEEE802.3], 30.5.1.1.2, aMAUType."
+     ::= { rpMauEntry 4 }
+
+   rpMauStatus OBJECT-TYPE
+       SYNTAX      INTEGER {
+                       other(1),
+                       unknown(2),
+                       operational(3),
+                       standby(4),
+                       shutdown(5),
+                       reset(6)
+                   }
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION "The current state of the MAU.  This object MAY
+                   be implemented as a read-only object by those
+                   agents and MAUs that do not implement software
+                   control of the MAU state.  Some agents may not
+                   support setting the value of this object to some
+                   of the enumerated values.
+
+                   The value other(1) is returned if the MAU is in
+                   a state other than one of the states 2 through
+                   6.
+
+
+
+                   The value unknown(2) is returned when the MAU's
+                   true state is unknown; for example, when it is
+                   being initialized.
+
+                   A MAU in the operational(3) state is fully
+                   functional; it operates, and passes signals to its
+                   attached DTE or repeater port in accordance to
+                   its specification.
+
+                   A MAU in standby(4) state forces DI and CI to
+                   idle, and the media transmitter to idle or fault,
+                   if supported.  Standby(4) mode only applies to
+                   link type MAUs.  The state of
+                   rpMauMediaAvailable is unaffected.
+
+                   A MAU in shutdown(5) state assumes the same
+                   condition on DI, CI, and the media transmitter,
+                   as though it were powered down or not connected.
+                   The MAU MAY return other(1) value for the
+                   rpMauJabberState and rpMauMediaAvailable objects
+                   when it is in this state.  For an AUI, this
+                   state will remove power from the AUI.
+
+                   Setting this variable to the value reset(6)
+                   resets the MAU in the same manner as a
+                   power-off, power-on cycle of at least one-half
+                   second would.  The agent is not required to
+                   return the value reset(6).
+
+                   Setting this variable to the value
+                   operational(3), standby(4), or shutdown(5)
+                   causes the MAU to assume the respective state,
+                   except that setting a mixing-type MAU or an AUI
+                   to standby(4) will cause the MAU to enter the
+                   shutdown state."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.7, aMAUAdminState,
+                   30.5.1.2.2, acMAUAdminControl, and 30.5.1.2.1,
+                   acResetMAU."
+       ::= { rpMauEntry 5 }
+
+   rpMauMediaAvailable OBJECT-TYPE
+       SYNTAX      IANAifMauMediaAvailable
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "This object identifies Media Available state of
+                   the MAU, complementary to the rpMauStatus.  Values
+                   for the standard IEEE 802.3 Media Available states
+                   are defined in the IANA maintained IANA-MAU-MIB
+
+
+
+                   module, as IANAifMauMediaAvailable TC."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.4, aMediaAvailable."
+       ::= { rpMauEntry 6 }
+
+   rpMauMediaAvailableStateExits OBJECT-TYPE
+       SYNTAX      Counter32
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "A count of the number of times that
+                   rpMauMediaAvailable for this MAU instance leaves
+                   the state available(3).
+
+                   Discontinuities in the value of this counter can
+                   occur at re-initialization of the management
+                   system and at other times, as indicated by the
+                   value of rptrMonitorPortLastChange."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.5, aLoseMediaCounter.
+                   RFC 2108, rptrMonitorPortLastChange"
+       ::= { rpMauEntry 7 }
+
+   rpMauJabberState OBJECT-TYPE
+       SYNTAX      INTEGER {
+                       other(1),
+                       unknown(2),
+                       noJabber(3),
+                       jabbering(4)
+                   }
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "The value other(1) is returned if the jabber
+                   state is not 2, 3, or 4.  The agent MUST always
+                   return other(1) for MAU type dot3MauTypeAUI.
+
+                   The value unknown(2) is returned when the MAU's
+                   true state is unknown; for example, when it is
+                   being initialized.
+
+                   If the MAU is not jabbering the agent returns
+                   noJabber(3).  This is the 'normal' state.
+
+                   If the MAU is in jabber state the agent returns
+                   the jabbering(4) value."
+       REFERENCE "[IEEE802.3], 30.5.1.1.6, aJabber.jabberFlag."
+       ::= { rpMauEntry 8 }
+
+   rpMauJabberingStateEnters OBJECT-TYPE
+       SYNTAX      Counter32
+       MAX-ACCESS  read-only
+
+
+
+       STATUS      current
+       DESCRIPTION "A count of the number of times that
+                   mauJabberState for this MAU instance enters the
+                   state jabbering(4).  For MAUs of type
+                   dot3MauTypeAUI, dot3MauType100BaseT4,
+                   dot3MauType100BaseTX, dot3MauType100BaseFX, and
+                   all 1000Mbps types, this counter will always
+                   indicate zero.
+
+                   Discontinuities in the value of this counter can
+                   occur at re-initialization of the management
+                   system and at other times, as indicated by the
+                   value of rptrMonitorPortLastChange."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.6, aJabber.jabberCounter.
+                   RFC 2108, rptrMonitorPortLastChange"
+       ::= { rpMauEntry 9 }
+
+   rpMauFalseCarriers OBJECT-TYPE
+       SYNTAX      Counter32
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "A count of the number of false carrier events
+                   during IDLE in 100BASE-X links.  This counter
+                   does not increment at the symbol rate.  It can
+                   increment after a valid carrier completion at a
+                   maximum rate of once per 100 ms until the next
+                   carrier event.
+
+                   This counter increments only for MAUs of type
+                   dot3MauType100BaseT4, dot3MauType100BaseTX,
+                   dot3MauType100BaseFX, and all 1000Mbps types.
+
+                   For all other MAU types, this counter will
+                   always indicate zero.
+
+                   The approximate minimum time for rollover of
+                   this counter is 7.4 hours.
+
+                   Discontinuities in the value of this counter can
+                   occur at re-initialization of the management
+                   system and at other times, as indicated by the
+                   value of rptrMonitorPortLastChange."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.10, aFalseCarriers.
+                   RFC 2108, rptrMonitorPortLastChange"
+       ::= { rpMauEntry 10 }
+
+   -- The rpJackTable applies to MAUs attached to repeaters
+   -- which have one or more external jacks (connectors).
+
+
+
+   rpJackTable OBJECT-TYPE
+       SYNTAX      SEQUENCE OF RpJackEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION "Information about the external jacks attached
+                   to MAUs attached to the ports of a repeater."
+       ::= { dot3RpMauBasicGroup 2 }
+
+   rpJackEntry OBJECT-TYPE
+       SYNTAX      RpJackEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION "An entry in the table, containing information
+                   about a particular jack."
+       INDEX       { rpMauGroupIndex,
+                     rpMauPortIndex,
+                     rpMauIndex,
+                     rpJackIndex
+                   }
+       ::= { rpJackTable 1 }
+
+   RpJackEntry ::=
+       SEQUENCE {
+           rpJackIndex                         Integer32,
+           rpJackType                          IANAifJackType
+       }
+
+   rpJackIndex OBJECT-TYPE
+       SYNTAX      Integer32 (1..2147483647)
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION "This variable uniquely identifies the jack
+                   described by this entry from among other jacks
+                   attached to the same MAU (rpMauIndex)."
+       ::= { rpJackEntry 1 }
+
+   rpJackType OBJECT-TYPE
+       SYNTAX      IANAifJackType
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "The jack connector type, as it appears on the
+                   outside of the system."
+       ::= { rpJackEntry 2 }
+
+   --
+   -- The Basic Interface MAU Table
+   --
+
+
+
+
+   ifMauTable OBJECT-TYPE
+       SYNTAX      SEQUENCE OF IfMauEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION "Table of descriptive and status information
+                   about MAU(s) attached to an interface."
+       ::= { dot3IfMauBasicGroup 1 }
+
+   ifMauEntry OBJECT-TYPE
+       SYNTAX      IfMauEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION "An entry in the table, containing information
+                   about a single MAU."
+       INDEX       { ifMauIfIndex,
+                     ifMauIndex
+                   }
+       ::= { ifMauTable 1 }
+
+   IfMauEntry ::=
+       SEQUENCE {
+           ifMauIfIndex                      InterfaceIndex,
+           ifMauIndex                        Integer32,
+           ifMauType                         AutonomousType,
+           ifMauStatus                       INTEGER,
+           ifMauMediaAvailable               IANAifMauMediaAvailable,
+           ifMauMediaAvailableStateExits     Counter32,
+           ifMauJabberState                  INTEGER,
+           ifMauJabberingStateEnters         Counter32,
+           ifMauFalseCarriers                Counter32,
+           ifMauTypeList                     Integer32,
+           ifMauDefaultType                  AutonomousType,
+           ifMauAutoNegSupported             TruthValue,
+           ifMauTypeListBits                 IANAifMauTypeListBits,
+           ifMauHCFalseCarriers              Counter64
+       }
+
+   ifMauIfIndex OBJECT-TYPE
+       SYNTAX      InterfaceIndex
+       MAX-ACCESS  read-only  -- read-only since originally an
+                              -- SMIv1 index
+       STATUS      current
+       DESCRIPTION "This variable uniquely identifies the interface
+                   to which the MAU described by this entry is
+                   connected."
+       REFERENCE   "RFC 2863, ifIndex"
+       ::= { ifMauEntry 1 }
+
+
+
+
+   ifMauIndex OBJECT-TYPE
+       SYNTAX      Integer32 (1..2147483647)
+       MAX-ACCESS  read-only  -- read-only since originally an
+                              -- SMIv1 index
+       STATUS      current
+       DESCRIPTION "This variable uniquely identifies the MAU
+                   described by this entry from among other MAUs
+                   connected to the same interface (ifMauIfIndex)."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.1, aMAUID."
+       ::= { ifMauEntry 2 }
+
+   ifMauType OBJECT-TYPE
+     SYNTAX      AutonomousType
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION "This object identifies the MAU type.  Values for
+                 standard IEEE 802.3 MAU types are defined in the
+                 IANA maintained IANA-MAU-MIB module, as
+                 OBJECT-IDENTITIES of dot3MauType.
+                 If the MAU type is unknown, the object identifier
+                 zeroDotZero is returned.
+
+                 This object represents the operational type of
+                 the MAU, as determined by either 1) the result
+                 of the auto-negotiation function or 2) if
+                 auto-negotiation is not enabled or is not
+                 implemented for this MAU, by the value of the
+                 object ifMauDefaultType.  In case 2), a set to
+                 the object ifMauDefaultType will force the MAU
+                 into the new operating mode."
+     REFERENCE   "[IEEE802.3], 30.5.1.1.2, aMAUType."
+     ::= { ifMauEntry 3 }
+
+   ifMauStatus OBJECT-TYPE
+       SYNTAX      INTEGER {
+                       other(1),
+                       unknown(2),
+                       operational(3),
+                       standby(4),
+                       shutdown(5),
+                       reset(6)
+                   }
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION "The current state of the MAU.  This object MAY
+                   be implemented as a read-only object by those
+                   agents and MAUs that do not implement software
+                   control of the MAU state.  Some agents may not
+
+
+
+                   support setting the value of this object to some
+                   of the enumerated values.
+
+                   The value other(1) is returned if the MAU is in
+                   a state other than one of the states 2 through
+                   6.
+
+                   The value unknown(2) is returned when the MAU's
+                   true state is unknown; for example, when it is
+                   being initialized.
+
+                   A MAU in the operational(3) state is fully
+                   functional; it operates, and passes signals to its
+                   attached DTE or repeater port in accordance to
+                   its specification.
+
+                   A MAU in standby(4) state forces DI and CI to
+                   idle and the media transmitter to idle or fault,
+                   if supported.  Standby(4) mode only applies to
+                   link type MAUs.  The state of
+                   ifMauMediaAvailable is unaffected.
+
+                   A MAU in shutdown(5) state assumes the same
+                   condition on DI, CI, and the media transmitter,
+                   as though it were powered down or not connected.
+                   The MAU MAY return other(1) value for the
+                   ifMauJabberState and ifMauMediaAvailable objects
+                   when it is in this state.  For an AUI, this
+                   state will remove power from the AUI.
+
+                   Setting this variable to the value reset(6)
+                   resets the MAU in the same manner as a
+                   power-off, power-on cycle of at least one-half
+                   second would.  The agent is not required to
+                   return the value reset(6).
+
+                   Setting this variable to the value
+                   operational(3), standby(4), or shutdown(5)
+                   causes the MAU to assume the respective state,
+                   except that setting a mixing-type MAU or an AUI
+                   to standby(4) will cause the MAU to enter the
+                   shutdown state."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.7, aMAUAdminState,
+                   30.5.1.2.2, acMAUAdminControl, and 30.5.1.2.1,
+                   acResetMAU."
+       ::= { ifMauEntry 4 }
+
+   ifMauMediaAvailable OBJECT-TYPE
+
+
+
+       SYNTAX      IANAifMauMediaAvailable
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "This object identifies Media Available state of
+                   the MAU, complementary to the ifMauStatus.  Values
+                   for the standard IEEE 802.3 Media Available states
+                   are defined in the IANA maintained IANA-MAU-MIB
+                   module, as IANAifMauMediaAvailable TC."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.4, aMediaAvailable."
+       ::= { ifMauEntry 5 }
+
+   ifMauMediaAvailableStateExits OBJECT-TYPE
+       SYNTAX      Counter32
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "A count of the number of times that
+                   ifMauMediaAvailable for this MAU instance leaves
+                   the state available(3).
+
+                   Discontinuities in the value of this counter can
+                   occur at re-initialization of the management
+                   system and at other times, as indicated by the
+                   value of ifCounterDiscontinuityTime."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.5, aLoseMediaCounter.
+                   RFC 2863, ifCounterDiscontinuityTime."
+       ::= { ifMauEntry 6 }
+
+   ifMauJabberState OBJECT-TYPE
+       SYNTAX      INTEGER {
+                       other(1),
+                       unknown(2),
+                       noJabber(3),
+                       jabbering(4)
+                   }
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "The value other(1) is returned if the jabber
+                   state is not 2, 3, or 4.  The agent MUST always
+                   return other(1) for MAU type dot3MauTypeAUI.
+
+                   The value unknown(2) is returned when the MAU's
+                   true state is unknown; for example, when it is
+                   being initialized.
+
+                   If the MAU is not jabbering the agent returns
+                   noJabber(3).  This is the 'normal' state.
+
+                   If the MAU is in jabber state the agent returns
+
+
+
+                   the jabbering(4) value."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.6, aJabber.jabberFlag."
+       ::= { ifMauEntry 7 }
+
+   ifMauJabberingStateEnters OBJECT-TYPE
+       SYNTAX      Counter32
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "A count of the number of times that
+                   mauJabberState for this MAU instance enters the
+                   state jabbering(4).  This counter will always
+                   indicate zero for MAUs of type dot3MauTypeAUI
+                   and those of speeds above 10Mbps.
+
+                   Discontinuities in the value of this counter can
+                   occur at re-initialization of the management
+                   system and at other times, as indicated by the
+                   value of ifCounterDiscontinuityTime."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.6, aJabber.jabberCounter.
+                   RFC 2863, ifCounterDiscontinuityTime."
+       ::= { ifMauEntry 8 }
+
+   ifMauFalseCarriers OBJECT-TYPE
+       SYNTAX      Counter32
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "A count of the number of false carrier events
+                   during IDLE in 100BASE-X and 1000BASE-X links.
+
+                   For all other MAU types, this counter will
+                   always indicate zero.  This counter does not
+                   increment at the symbol rate.
+
+                   It can increment after a valid carrier
+                   completion at a maximum rate of once per 100 ms
+                   for 100BASE-X and once per 10us for 1000BASE-X
+                   until the next CarrierEvent.
+
+                   This counter can roll over very quickly.  A
+                   management station is advised to poll the
+                   ifMauHCFalseCarriers instead of this counter in
+                   order to avoid loss of information.
+
+                   Discontinuities in the value of this counter can
+                   occur at re-initialization of the management
+                   system and at other times, as indicated by the
+                   value of ifCounterDiscontinuityTime."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.10, aFalseCarriers.
+
+
+
+                   RFC 2863, ifCounterDiscontinuityTime."
+       ::= { ifMauEntry 9 }
+
+   ifMauTypeList OBJECT-TYPE
+       SYNTAX      Integer32
+       MAX-ACCESS  read-only
+       STATUS      deprecated
+       DESCRIPTION "********* THIS OBJECT IS DEPRECATED **********
+
+                   This object has been deprecated in favour of
+                   ifMauTypeListBits.
+
+                   A value that uniquely identifies the set of
+                   possible IEEE 802.3 types that the MAU could be.
+                   The value is a sum that initially takes the
+                   value zero.  Then, for each type capability of
+                   this MAU, 2 raised to the power noted below is
+                   added to the sum.  For example, a MAU that has
+                   the capability to be only 10BASE-T would have a
+                   value of 512 (2**9).  In contrast, a MAU that
+                   supports both 10Base-T (full duplex) and
+                   100BASE-TX (full duplex) would have a value of
+                   ((2**11) + (2**16)), or 67584.
+
+                   The powers of 2 assigned to the capabilities are
+                   these:
+
+                   Power  Capability
+                     0      other or unknown
+                     1      AUI
+                     2      10BASE-5
+                     3      FOIRL
+                     4      10BASE-2
+                     5      10BASE-T duplex mode unknown
+                     6      10BASE-FP
+                     7      10BASE-FB
+                     8      10BASE-FL duplex mode unknown
+                     9      10BROAD36
+                    10      10BASE-T  half duplex mode
+                    11      10BASE-T  full duplex mode
+                    12      10BASE-FL half duplex mode
+                    13      10BASE-FL full duplex mode
+                    14      100BASE-T4
+                    15      100BASE-TX half duplex mode
+                    16      100BASE-TX full duplex mode
+                    17      100BASE-FX half duplex mode
+                    18      100BASE-FX full duplex mode
+                    19      100BASE-T2 half duplex mode
+
+
+
+                    20      100BASE-T2 full duplex mode
+
+                   If auto-negotiation is present on this MAU, this
+                   object will map to ifMauAutoNegCapability."
+       ::= { ifMauEntry 10 }
+
+   ifMauDefaultType OBJECT-TYPE
+       SYNTAX      AutonomousType
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION "This object identifies the default
+                   administrative baseband MAU type to be used in
+                   conjunction with the operational MAU type
+                   denoted by ifMauType.
+
+                   The set of possible values for this object is
+                   the same as the set defined for the ifMauType
+                   object.
+
+                   This object represents the
+                   administratively-configured type of the MAU.  If
+                   auto-negotiation is not enabled or is not
+                   implemented for this MAU, the value of this
+                   object determines the operational type of the
+                   MAU.  In this case, a set to this object will
+                   force the MAU into the specified operating mode.
+
+                   If auto-negotiation is implemented and enabled
+                   for this MAU, the operational type of the MAU
+                   is determined by auto-negotiation, and the value
+                   of this object denotes the type to which the MAU
+                   will automatically revert if/when
+                   auto-negotiation is later disabled.
+
+                   NOTE TO IMPLEMENTORS:  It may be necessary to
+                   provide for underlying hardware implementations
+                   which do not follow the exact behavior specified
+                   above.  In particular, when
+                   ifMauAutoNegAdminStatus transitions from enabled
+                   to disabled, the agent implementation MUST
+                   ensure that the operational type of the MAU (as
+                   reported by ifMauType) correctly transitions to
+                   the value specified by this object, rather than
+                   continuing to operate at the value earlier
+                   determined by the auto-negotiation function."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.1, aMAUID, and 22.2.4.1.4."
+       ::= { ifMauEntry 11 }
+
+
+
+
+   ifMauAutoNegSupported OBJECT-TYPE
+       SYNTAX      TruthValue
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "This object indicates whether or not
+                   auto-negotiation is supported on this MAU."
+       ::= { ifMauEntry 12 }
+
+   ifMauTypeListBits OBJECT-TYPE
+       SYNTAX      IANAifMauTypeListBits
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "A value that uniquely identifies the set of
+                   possible IEEE 802.3 types that the MAU could be.
+                   If auto-negotiation is present on this MAU, this
+                   object will map to ifMauAutoNegCapabilityBits.
+
+                   Note that this MAU may be capable of operating
+                   as a MAU type that is beyond the scope of this
+                   MIB.  This is indicated by returning the
+                   bit value bOther in addition to any bit values
+                   for standard capabilities that are listed in the
+                   IANAifMauTypeListBits TC."
+       ::= { ifMauEntry 13 }
+
+   ifMauHCFalseCarriers OBJECT-TYPE
+       SYNTAX      Counter64
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "A count of the number of false carrier events
+                   during IDLE in 100BASE-X and 1000BASE-X links.
+
+                   For all other MAU types, this counter will
+                   always indicate zero.  This counter does not
+                   increment at the symbol rate.
+
+                   This counter is a 64-bit version of
+                   ifMauFalseCarriers.  Since the 32-bit version of
+                   this counter can roll over very quickly,
+                   management stations are advised to poll the
+                   64-bit version instead, in order to avoid loss
+                   of information.
+
+                   Discontinuities in the value of this counter can
+                   occur at re-initialization of the management
+                   system and at other times, as indicated by the
+                   value of ifCounterDiscontinuityTime."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.10, aFalseCarriers.
+
+
+
+                   RFC 2863, ifCounterDiscontinuityTime."
+       ::= { ifMauEntry 14 }
+
+   -- The ifJackTable applies to MAUs attached to interfaces
+   -- which have one or more external jacks (connectors).
+
+   ifJackTable OBJECT-TYPE
+       SYNTAX      SEQUENCE OF IfJackEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION "Information about the external jacks attached
+                   to MAUs attached to an interface."
+       ::= { dot3IfMauBasicGroup 2 }
+
+   ifJackEntry OBJECT-TYPE
+       SYNTAX      IfJackEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION "An entry in the table, containing information
+                   about a particular jack."
+       INDEX       { ifMauIfIndex,
+                     ifMauIndex,
+                     ifJackIndex
+                   }
+       ::= { ifJackTable 1 }
+
+   IfJackEntry ::=
+       SEQUENCE {
+           ifJackIndex                         Integer32,
+           ifJackType                          IANAifJackType
+       }
+
+   ifJackIndex OBJECT-TYPE
+       SYNTAX      Integer32 (1..2147483647)
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION "This variable uniquely identifies the jack
+                   described by this entry from among other jacks
+                   attached to the same MAU."
+       ::= { ifJackEntry 1 }
+
+   ifJackType OBJECT-TYPE
+       SYNTAX      IANAifJackType
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "The jack connector type, as it appears on the
+                   outside of the system."
+       ::= { ifJackEntry 2 }
+
+
+
+   --
+   -- The MAU Auto-Negotiation Table
+   --
+
+   ifMauAutoNegTable OBJECT-TYPE
+       SYNTAX      SEQUENCE OF IfMauAutoNegEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION "Configuration and status objects for the
+                   auto-negotiation function of MAUs attached to
+                   interfaces.
+
+                   The ifMauAutoNegTable applies to systems in
+                   which auto-negotiation is supported on one or
+                   more MAUs attached to interfaces.  Note that if
+                   auto-negotiation is present and enabled, the
+                   ifMauType object reflects the result of the
+                   auto-negotiation function."
+       ::= { dot3IfMauAutoNegGroup 1 }
+
+   ifMauAutoNegEntry OBJECT-TYPE
+       SYNTAX      IfMauAutoNegEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION "An entry in the table, containing configuration
+                   and status information for the auto-negotiation
+                   function of a particular MAU."
+       INDEX       { ifMauIfIndex,
+                     ifMauIndex
+                   }
+       ::= { ifMauAutoNegTable 1 }
+
+   IfMauAutoNegEntry ::=
+       SEQUENCE {
+           ifMauAutoNegAdminStatus           INTEGER,
+           ifMauAutoNegRemoteSignaling       INTEGER,
+           ifMauAutoNegConfig                INTEGER,
+           ifMauAutoNegCapability            Integer32,
+           ifMauAutoNegCapAdvertised         Integer32,
+           ifMauAutoNegCapReceived           Integer32,
+           ifMauAutoNegRestart               INTEGER,
+           ifMauAutoNegCapabilityBits        IANAifMauAutoNegCapBits,
+           ifMauAutoNegCapAdvertisedBits     IANAifMauAutoNegCapBits,
+           ifMauAutoNegCapReceivedBits       IANAifMauAutoNegCapBits,
+           ifMauAutoNegRemoteFaultAdvertised INTEGER,
+           ifMauAutoNegRemoteFaultReceived   INTEGER
+       }
+
+
+
+
+   ifMauAutoNegAdminStatus OBJECT-TYPE
+       SYNTAX      INTEGER {
+                       enabled(1),
+                       disabled(2)
+                   }
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION "Setting this object to enabled(1) will cause
+                   the interface that has the auto-negotiation
+                   signaling ability to be enabled.
+
+                   If the value of this object is disabled(2) then
+                   the interface will act as it would if it had no
+                   auto-negotiation signaling.  Under these
+                   conditions, an IEEE 802.3 MAU will immediately
+                   be forced to the state indicated by the value of
+                   the object ifMauDefaultType.
+
+                   NOTE TO IMPLEMENTORS:  When
+                   ifMauAutoNegAdminStatus transitions from enabled
+                   to disabled, the agent implementation MUST
+                   ensure that the operational type of the MAU (as
+                   reported by ifMauType) correctly transitions to
+                   the value specified by the ifMauDefaultType
+                   object, rather than continuing to operate at the
+                   value earlier determined by the auto-negotiation
+                   function."
+       REFERENCE   "[IEEE802.3], 30.6.1.1.2, aAutoNegAdminState,
+                   and 30.6.1.2.2, acAutoNegAdminControl."
+       ::= { ifMauAutoNegEntry 1 }
+
+   ifMauAutoNegRemoteSignaling OBJECT-TYPE
+       SYNTAX      INTEGER {
+                       detected(1),
+                       notdetected(2)
+                   }
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "A value indicating whether the remote end of
+                   the link is using auto-negotiation signaling.  It
+                   takes the value detected(1) if and only if,
+                   during the previous link negotiation, FLP Bursts
+                   were received."
+       REFERENCE   "[IEEE802.3], 30.6.1.1.3,
+                   aAutoNegRemoteSignaling."
+       ::= { ifMauAutoNegEntry 2 }
+
+   ifMauAutoNegConfig OBJECT-TYPE
+
+
+
+       SYNTAX      INTEGER {
+                       other(1),
+                       configuring(2),
+                       complete(3),
+                       disabled(4),
+                       parallelDetectFail(5)
+                   }
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "A value indicating the current status of the
+                   auto-negotiation process.  The enumeration
+                   parallelDetectFail(5) maps to a failure in
+                   parallel detection as defined in 28.2.3.1 of
+                   [IEEE802.3]."
+       REFERENCE   "[IEEE802.3], 30.6.1.1.4, aAutoNegAutoConfig."
+       ::= { ifMauAutoNegEntry 4 }
+
+   ifMauAutoNegCapability OBJECT-TYPE
+       SYNTAX      Integer32
+       MAX-ACCESS  read-only
+       STATUS      deprecated
+       DESCRIPTION "********* THIS OBJECT IS DEPRECATED **********
+
+                   This object has been deprecated in favour of
+                   ifMauAutoNegCapabilityBits.
+
+                   A value that uniquely identifies the set of
+                   capabilities of the local auto-negotiation
+                   entity.  The value is a sum that initially
+                   takes the value zero.  Then, for each capability
+                   of this interface, 2 raised to the power noted
+                   below is added to the sum.  For example, an
+                   interface that has the capability to support
+                   only 100Base-TX half duplex would have a value
+                   of 32768 (2**15).  In contrast, an interface
+                   that supports both 100Base-TX half duplex and
+                   100Base-TX full duplex would have a value of
+                   98304 ((2**15) + (2**16)).
+
+                   The powers of 2 assigned to the capabilities are
+                   these:
+
+                   Power   Capability
+                     0       other or unknown
+                    (1-9)    (reserved)
+                    10       10BASE-T  half duplex mode
+                    11       10BASE-T  full duplex mode
+                    12       (reserved)
+
+
+
+                    13       (reserved)
+                    14       100BASE-T4
+                    15       100BASE-TX half duplex mode
+                    16       100BASE-TX full duplex mode
+                    17       (reserved)
+                    18       (reserved)
+                    19      100BASE-T2 half duplex mode
+                    20      100BASE-T2 full duplex mode
+
+                   Note that interfaces that support this MIB may
+                   have capabilities that extend beyond the scope
+                   of this MIB."
+       REFERENCE   "[IEEE802.3], 30.6.1.1.5,
+                   aAutoNegLocalTechnologyAbility."
+       ::= { ifMauAutoNegEntry 5 }
+
+   ifMauAutoNegCapAdvertised OBJECT-TYPE
+       SYNTAX      Integer32
+       MAX-ACCESS  read-write
+       STATUS      deprecated
+       DESCRIPTION "********* THIS OBJECT IS DEPRECATED **********
+
+                   This object has been deprecated in favour of
+                   ifMauAutoNegCapAdvertisedBits.
+
+                   A value that uniquely identifies the set of
+                   capabilities advertised by the local
+                   auto-negotiation entity. Refer to
+                   ifMauAutoNegCapability for a description of the
+                   possible values of this object.
+
+                   Capabilities in this object that are not
+                   available in ifMauAutoNegCapability cannot be
+                   enabled."
+       REFERENCE   "[IEEE802.3], 30.6.1.1.6,
+                   aAutoNegAdvertisedTechnologyAbility."
+       ::= { ifMauAutoNegEntry 6 }
+
+   ifMauAutoNegCapReceived OBJECT-TYPE
+       SYNTAX      Integer32
+       MAX-ACCESS  read-only
+       STATUS      deprecated
+       DESCRIPTION "********* THIS OBJECT IS DEPRECATED **********
+
+                   This object has been deprecated in favour of
+                   ifMauAutoNegCapReceivedBits.
+
+                   A value that uniquely identifies the set of
+
+
+
+                   capabilities received from the remote
+                   auto-negotiation entity. Refer to
+                   ifMauAutoNegCapability for a description of the
+                   possible values of this object.
+
+                   Note that interfaces that support this MIB may
+                   be attached to remote auto-negotiation entities
+                   that have capabilities beyond the scope of this
+                   MIB."
+       REFERENCE   "[IEEE802.3], 30.6.1.1.7,
+                   aAutoNegReceivedTechnologyAbility."
+       ::= { ifMauAutoNegEntry 7 }
+
+   ifMauAutoNegRestart OBJECT-TYPE
+       SYNTAX      INTEGER {
+                       restart(1),
+                       norestart(2)
+                   }
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION "If the value of this object is set to
+                   restart(1) then this will force auto-negotiation
+                   to begin link renegotiation.  If auto-negotiation
+                   signaling is disabled, a write to this object
+                   has no effect.
+                   Setting the value of this object to norestart(2)
+                   has no effect."
+       REFERENCE   "[IEEE802.3], 30.6.1.2.1,
+                   acAutoNegRestartAutoConfig."
+       ::= { ifMauAutoNegEntry 8 }
+
+   ifMauAutoNegCapabilityBits OBJECT-TYPE
+       SYNTAX      IANAifMauAutoNegCapBits
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "A value that uniquely identifies the set of
+                   capabilities of the local auto-negotiation
+                   entity.  Note that interfaces that support this
+                   MIB may have capabilities that extend beyond the
+                   scope of this MIB.
+
+                   Note that the local auto-negotiation entity may
+                   support some capabilities beyond the scope of
+                   this MIB.  This is indicated by returning the
+                   bit value bOther in addition to any bit values
+                   for standard capabilities that are listed in the
+                   IANAifMauAutoNegCapBits TC."
+
+
+
+
+       REFERENCE   "[IEEE802.3], 30.6.1.1.5,
+                   aAutoNegLocalTechnologyAbility."
+       ::= { ifMauAutoNegEntry 9 }
+
+   ifMauAutoNegCapAdvertisedBits OBJECT-TYPE
+       SYNTAX      IANAifMauAutoNegCapBits
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION "A value that uniquely identifies the set of
+                   capabilities advertised by the local
+                   auto-negotiation entity.
+
+                   Capabilities in this object that are not
+                   available in ifMauAutoNegCapabilityBits cannot
+                   be enabled.
+
+                   Note that the local auto-negotiation entity may
+                   advertise some capabilities beyond the scope of
+                   this MIB.  This is indicated by returning the
+                   bit value bOther in addition to any bit values
+                   for standard capabilities that are listed in the
+                   IANAifMauAutoNegCapBits TC."
+       REFERENCE   "[IEEE802.3], 30.6.1.1.6,
+                   aAutoNegAdvertisedTechnologyAbility."
+       ::= { ifMauAutoNegEntry 10 }
+
+   ifMauAutoNegCapReceivedBits OBJECT-TYPE
+       SYNTAX      IANAifMauAutoNegCapBits
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "A value that uniquely identifies the set of
+                   capabilities received from the remote
+                   auto-negotiation entity.
+                   Note that interfaces that support this MIB may
+                   be attached to remote auto-negotiation entities
+                   that have capabilities beyond the scope of this
+                   MIB.  This is indicated by returning the bit
+                   value bOther in addition to any bit values for
+                   standard capabilities that are listed in the
+                   IANAifMauAutoNegCapBits TC."
+       REFERENCE   "[IEEE802.3], 30.6.1.1.7,
+                   aAutoNegReceivedTechnologyAbility."
+       ::= { ifMauAutoNegEntry 11 }
+
+   ifMauAutoNegRemoteFaultAdvertised OBJECT-TYPE
+       SYNTAX      INTEGER {
+                       noError(1),
+                       offline(2),
+
+
+
+                       linkFailure(3),
+                       autoNegError(4)
+                   }
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION "A value that identifies any local fault
+                   indications that this MAU has detected and will
+                   advertise at the next auto-negotiation
+                   interaction for 1000Mbps MAUs."
+       REFERENCE   "[IEEE802.3], 30.6.1.1.6,
+                   aAutoNegAdvertisedTechnologyAbility."
+       ::= { ifMauAutoNegEntry 12 }
+
+   ifMauAutoNegRemoteFaultReceived OBJECT-TYPE
+       SYNTAX      INTEGER {
+                       noError(1),
+                       offline(2),
+                       linkFailure(3),
+                       autoNegError(4)
+                   }
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION "A value that identifies any fault indications
+                   received from the far end of a link by the
+                   local auto-negotiation entity for 1000Mbps
+                   MAUs."
+       REFERENCE   "[IEEE802.3], 30.6.1.1.7,
+                   aAutoNegReceivedTechnologyAbility."
+       ::= { ifMauAutoNegEntry 13 }
+
+
+   --
+   -- The Basic Broadband MAU Table
+   --
+
+   broadMauBasicTable OBJECT-TYPE
+       SYNTAX      SEQUENCE OF BroadMauBasicEntry
+       MAX-ACCESS  not-accessible
+       STATUS      deprecated
+       DESCRIPTION "********* THIS OBJECT IS DEPRECATED **********
+
+                   This entire table has been deprecated.  There
+                   have been no reported implementations of this
+                   table, and it is unlikely that there ever will
+                   be.  IEEE recommends that broadband MAU types
+                   should not be used for new installations.
+
+                   Table of descriptive and status information
+
+
+
+                   about the broadband MAUs connected to
+                   interfaces."
+       ::= { dot3BroadMauBasicGroup 1 }
+
+   broadMauBasicEntry OBJECT-TYPE
+       SYNTAX      BroadMauBasicEntry
+       MAX-ACCESS  not-accessible
+       STATUS      deprecated
+       DESCRIPTION "********* THIS OBJECT IS DEPRECATED **********
+
+                   An entry in the table, containing information
+                   about a single broadband MAU."
+       INDEX       { broadMauIfIndex,
+                     broadMauIndex
+                   }
+       ::= { broadMauBasicTable 1 }
+
+   BroadMauBasicEntry ::=
+       SEQUENCE {
+           broadMauIfIndex                     InterfaceIndex,
+           broadMauIndex                       Integer32,
+           broadMauXmtRcvSplitType             INTEGER,
+           broadMauXmtCarrierFreq              Integer32,
+           broadMauTranslationFreq             Integer32
+       }
+
+   broadMauIfIndex OBJECT-TYPE
+       SYNTAX      InterfaceIndex
+       MAX-ACCESS  read-only  -- read-only since originally an
+                              -- SMIv1 index
+       STATUS      deprecated
+       DESCRIPTION "********* THIS OBJECT IS DEPRECATED **********
+
+                   This variable uniquely identifies the interface
+                   to which the MAU described by this entry is
+                   connected."
+       REFERENCE   "RFC 2863, ifIndex."
+       ::= { broadMauBasicEntry 1 }
+
+   broadMauIndex OBJECT-TYPE
+       SYNTAX      Integer32 (1..2147483647)
+       MAX-ACCESS  read-only  -- read-only since originally an
+                              -- SMIv1 index
+       STATUS      deprecated
+       DESCRIPTION "********* THIS OBJECT IS DEPRECATED **********
+
+                   This variable uniquely identifies the MAU
+                   connected to interface broadMauIfIndex that is
+
+
+
+                   described by this entry."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.1, aMAUID."
+       ::= { broadMauBasicEntry 2 }
+
+   broadMauXmtRcvSplitType OBJECT-TYPE
+       SYNTAX      INTEGER {
+                       other(1),
+                       single(2),
+                       dual(3)
+                   }
+       MAX-ACCESS  read-only
+       STATUS      deprecated
+       DESCRIPTION "********* THIS OBJECT IS DEPRECATED **********
+
+                   This object indicates the type of frequency
+                   multiplexing/cabling system used to separate the
+                   transmit and receive paths for the 10BROAD36
+                   MAU.
+
+                   The value other(1) is returned if the split type
+                   is not either single or dual.
+
+                   The value single(2) indicates a single cable
+                   system.  The value dual(3) indicates a dual
+                   cable system, offset normally zero."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.8, aBbMAUXmitRcvSplitType."
+       ::= { broadMauBasicEntry 3 }
+
+   broadMauXmtCarrierFreq OBJECT-TYPE
+       SYNTAX      Integer32
+       MAX-ACCESS  read-only
+       STATUS      deprecated
+       DESCRIPTION "********* THIS OBJECT IS DEPRECATED **********
+
+                   This variable indicates the transmit carrier
+                   frequency of the 10BROAD36 MAU in MHz/4; that
+                   is, in units of 250 kHz."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.9,
+                   aBroadbandFrequencies.xmitCarrierFrequency."
+       ::= { broadMauBasicEntry 4 }
+
+   broadMauTranslationFreq OBJECT-TYPE
+       SYNTAX      Integer32
+       MAX-ACCESS  read-only
+       STATUS      deprecated
+       DESCRIPTION "********* THIS OBJECT IS DEPRECATED **********
+
+                   This variable indicates the translation offset
+
+
+
+                   frequency of the 10BROAD36 MAU in MHz/4; that
+                   is, in units of 250 kHz."
+       REFERENCE   "[IEEE802.3], 30.5.1.1.9,
+                   aBroadbandFrequencies.translationFrequency."
+       ::= { broadMauBasicEntry 5 }
+
+   -- Notifications for use by 802.3 MAUs
+
+   snmpDot3MauTraps OBJECT IDENTIFIER ::= { snmpDot3MauMgt 0 }
+
+   rpMauJabberTrap NOTIFICATION-TYPE
+       OBJECTS     { rpMauJabberState }
+       STATUS      current
+       DESCRIPTION "This trap is sent whenever a managed repeater
+                   MAU enters the jabber state.
+
+                   The agent MUST throttle the generation of
+                   consecutive rpMauJabberTraps so that there is at
+                   least a five-second gap between them."
+       REFERENCE   "[IEEE802.3], 30.5.1.3.1, nJabber notification."
+       ::= { snmpDot3MauTraps 1 }
+
+   ifMauJabberTrap NOTIFICATION-TYPE
+       OBJECTS     { ifMauJabberState }
+       STATUS      current
+       DESCRIPTION "This trap is sent whenever a managed interface
+                   MAU enters the jabber state.
+
+                   The agent MUST throttle the generation of
+                   consecutive ifMauJabberTraps so that there is at
+                   least a five-second gap between them."
+
+       REFERENCE   "[IEEE802.3], 30.5.1.3.1, nJabber notification."
+       ::= { snmpDot3MauTraps 2 }
+
+   -- Conformance information
+
+   mauModConf
+           OBJECT IDENTIFIER ::= { mauMod 1 }
+     mauModCompls
+           OBJECT IDENTIFIER ::= { mauModConf 1 }
+     mauModObjGrps
+           OBJECT IDENTIFIER ::= { mauModConf 2 }
+     mauModNotGrps
+           OBJECT IDENTIFIER ::= { mauModConf 3 }
+
+   -- Object groups
+
+
+
+
+   mauRpGrpBasic OBJECT-GROUP
+       OBJECTS     { rpMauGroupIndex,
+                     rpMauPortIndex,
+                     rpMauIndex,
+                     rpMauType,
+                     rpMauStatus,
+                     rpMauMediaAvailable,
+                     rpMauMediaAvailableStateExits,
+                     rpMauJabberState,
+                     rpMauJabberingStateEnters
+                   }
+       STATUS      current
+       DESCRIPTION "Basic conformance group for MAUs attached to
+                   repeater ports.  This group is also the
+                   conformance specification for RFC 1515
+                   implementations."
+       ::= { mauModObjGrps 1 }
+
+   mauRpGrp100Mbs OBJECT-GROUP
+       OBJECTS     { rpMauFalseCarriers }
+       STATUS      current
+       DESCRIPTION "Conformance group for MAUs attached to
+                   repeater ports with 100 Mb/s or greater
+                   capability."
+       ::= { mauModObjGrps 2 }
+
+   mauRpGrpJack OBJECT-GROUP
+       OBJECTS     { rpJackType }
+       STATUS      current
+       DESCRIPTION "Conformance group for MAUs attached to
+                   repeater ports with managed jacks."
+       ::= { mauModObjGrps 3 }
+
+   mauIfGrpBasic OBJECT-GROUP
+       OBJECTS     { ifMauIfIndex,
+                     ifMauIndex,
+                     ifMauType,
+                     ifMauStatus,
+                     ifMauMediaAvailable,
+                     ifMauMediaAvailableStateExits,
+                     ifMauJabberState,
+                     ifMauJabberingStateEnters
+                   }
+       STATUS      current
+       DESCRIPTION "Basic conformance group for MAUs attached to
+                   interfaces.  This group also provides a
+                   conformance specification for RFC 1515
+                   implementations."
+
+
+
+       ::= { mauModObjGrps 4 }
+
+   mauIfGrp100Mbs OBJECT-GROUP
+       OBJECTS     { ifMauFalseCarriers,
+                     ifMauTypeList,
+                     ifMauDefaultType,
+                     ifMauAutoNegSupported
+                   }
+
+       STATUS      deprecated
+       DESCRIPTION "********* THIS GROUP IS DEPRECATED **********
+
+                   Conformance group for MAUs attached to
+                   interfaces with 100 Mb/s capability.
+
+                   This object group has been deprecated in favor
+                   of mauIfGrpHighCapacity."
+       ::= { mauModObjGrps 5 }
+
+   mauIfGrpJack OBJECT-GROUP
+       OBJECTS     { ifJackType }
+       STATUS      current
+       DESCRIPTION "Conformance group for MAUs attached to
+                   interfaces with managed jacks."
+       ::= { mauModObjGrps 6 }
+
+   mauIfGrpAutoNeg OBJECT-GROUP
+       OBJECTS     { ifMauAutoNegAdminStatus,
+                     ifMauAutoNegRemoteSignaling,
+                     ifMauAutoNegConfig,
+                     ifMauAutoNegCapability,
+                     ifMauAutoNegCapAdvertised,
+                     ifMauAutoNegCapReceived,
+                     ifMauAutoNegRestart
+                   }
+       STATUS      deprecated
+       DESCRIPTION "********* THIS GROUP IS DEPRECATED **********
+
+                   Conformance group for MAUs attached to
+                   interfaces with managed auto-negotiation.
+
+                   This object group has been deprecated in favor
+                   of mauIfGrpAutoNeg2."
+       ::= { mauModObjGrps 7 }
+
+   mauBroadBasic OBJECT-GROUP
+       OBJECTS     { broadMauIfIndex,
+                     broadMauIndex,
+
+
+
+                     broadMauXmtRcvSplitType,
+                     broadMauXmtCarrierFreq,
+                     broadMauTranslationFreq
+                   }
+       STATUS      deprecated
+       DESCRIPTION "********* THIS GROUP IS DEPRECATED **********
+                   Conformance group for broadband MAUs attached
+                   to interfaces.
+
+                   This object group is deprecated.  There have
+                   been no reported implementations of this group,
+                   and it was felt to be unlikely that there will
+                   be any future implementations."
+       ::= { mauModObjGrps 8 }
+
+   mauIfGrpHighCapacity OBJECT-GROUP
+       OBJECTS     { ifMauFalseCarriers,
+                     ifMauTypeListBits,
+                     ifMauDefaultType,
+                     ifMauAutoNegSupported
+                   }
+       STATUS      current
+       DESCRIPTION "Conformance group for MAUs attached to
+                   interfaces with 100 Mb/s or greater capability."
+       ::= { mauModObjGrps 9 }
+
+   mauIfGrpAutoNeg2 OBJECT-GROUP
+       OBJECTS     { ifMauAutoNegAdminStatus,
+                     ifMauAutoNegRemoteSignaling,
+                     ifMauAutoNegConfig,
+                     ifMauAutoNegCapabilityBits,
+                     ifMauAutoNegCapAdvertisedBits,
+                     ifMauAutoNegCapReceivedBits,
+                     ifMauAutoNegRestart
+                   }
+       STATUS      current
+       DESCRIPTION "Conformance group for MAUs attached to
+                   interfaces with managed auto-negotiation."
+       ::= { mauModObjGrps 10 }
+
+   mauIfGrpAutoNeg1000Mbps OBJECT-GROUP
+       OBJECTS     { ifMauAutoNegRemoteFaultAdvertised,
+                     ifMauAutoNegRemoteFaultReceived
+                   }
+       STATUS      current
+       DESCRIPTION "Conformance group for 1000Mbps MAUs attached to
+                   interfaces with managed auto-negotiation."
+       ::= { mauModObjGrps 11 }
+
+
+
+   mauIfGrpHCStats OBJECT-GROUP
+       OBJECTS     { ifMauHCFalseCarriers }
+       STATUS      current
+       DESCRIPTION "Conformance for high capacity statistics for
+                   MAUs attached to interfaces."
+       ::= { mauModObjGrps 12 }
+
+   -- Notification groups
+
+   rpMauNotifications NOTIFICATION-GROUP
+       NOTIFICATIONS { rpMauJabberTrap }
+       STATUS      current
+       DESCRIPTION "Notifications for repeater MAUs."
+       ::= { mauModNotGrps 1 }
+
+   ifMauNotifications NOTIFICATION-GROUP
+       NOTIFICATIONS { ifMauJabberTrap }
+       STATUS      current
+       DESCRIPTION "Notifications for interface MAUs."
+       ::= { mauModNotGrps 2 }
+
+   -- Compliances
+
+   mauModRpCompl MODULE-COMPLIANCE
+       STATUS      deprecated
+       DESCRIPTION "******** THIS COMPLIANCE IS DEPRECATED ********
+                   Compliance for MAUs attached to repeater
+                   ports.
+
+                   This compliance is deprecated and replaced by
+                   mauModRpCompl2, which corrects an oversight by
+                   allowing rpMauStatus to be implemented
+                   read-only."
+
+       MODULE -- this module
+           MANDATORY-GROUPS { mauRpGrpBasic }
+
+           GROUP       mauRpGrp100Mbs
+           DESCRIPTION "Implementation of this optional group is
+                       recommended for MAUs that have 100Mb/s or
+                       greater capability."
+
+           GROUP       mauRpGrpJack
+           DESCRIPTION "Implementation of this optional group is
+                       recommended for MAUs that have one or more
+                       external jacks."
+
+           GROUP       rpMauNotifications
+
+
+
+           DESCRIPTION "Implementation of this group is recommended
+                       for MAUs attached to repeater ports."
+       ::= { mauModCompls 1 }
+
+   mauModIfCompl MODULE-COMPLIANCE
+       STATUS      deprecated
+       DESCRIPTION "******** THIS COMPLIANCE IS DEPRECATED ********
+
+                   Compliance for MAUs attached to interfaces.
+                   This compliance is deprecated and replaced by
+                   mauModIfCompl2."
+
+       MODULE -- this module
+           MANDATORY-GROUPS { mauIfGrpBasic }
+
+           GROUP       mauIfGrp100Mbs
+           DESCRIPTION "Implementation of this optional group is
+                       recommended for MAUs that have 100Mb/s
+                       capability."
+
+           GROUP       mauIfGrpJack
+           DESCRIPTION "Implementation of this optional group is
+                       recommended for MAUs that have one or more
+                       external jacks."
+
+           GROUP       mauIfGrpAutoNeg
+           DESCRIPTION "Implementation of this group is mandatory
+                       for MAUs that support managed
+                       auto-negotiation."
+
+           GROUP       mauBroadBasic
+           DESCRIPTION "Implementation of this group is mandatory
+                       for broadband MAUs."
+
+           GROUP       ifMauNotifications
+           DESCRIPTION "Implementation of this group is recommended
+                       for MAUs attached to interfaces."
+       ::= { mauModCompls 2 }
+
+   mauModIfCompl2 MODULE-COMPLIANCE
+       STATUS      deprecated
+       DESCRIPTION "******** THIS COMPLIANCE IS DEPRECATED ********
+
+                   Compliance for MAUs attached to interfaces.
+
+                   This compliance is deprecated and replaced by
+                   mauModIfCompl3."
+
+
+
+
+       MODULE -- this module
+           MANDATORY-GROUPS { mauIfGrpBasic }
+
+           GROUP       mauIfGrpHighCapacity
+           DESCRIPTION "Implementation of this optional group is
+                       recommended for MAUs that have 100Mb/s
+                       or greater capability."
+
+           GROUP       mauIfGrpJack
+
+           DESCRIPTION "Implementation of this optional group is
+                       recommended for MAUs that have one or more
+                       external jacks."
+
+           GROUP       mauIfGrpAutoNeg2
+           DESCRIPTION "Implementation of this group is mandatory
+                       for MAUs that support managed
+                       auto-negotiation."
+
+           GROUP       mauIfGrpAutoNeg1000Mbps
+           DESCRIPTION "Implementation of this group is mandatory
+                       for MAUs that have 1000Mb/s or greater
+                       capability and support managed
+                       auto-negotiation."
+
+           GROUP       ifMauNotifications
+           DESCRIPTION "Implementation of this group is recommended
+                       for MAUs attached to interfaces."
+
+           OBJECT      ifMauStatus
+           MIN-ACCESS  read-only
+           DESCRIPTION "Write access is not required."
+       ::= { mauModCompls 3 }
+
+   mauModRpCompl2 MODULE-COMPLIANCE
+       STATUS      current
+       DESCRIPTION "Compliance for MAUs attached to repeater
+                   ports.
+
+                   Note that compliance with this compliance
+                   statement requires compliance with the
+                   snmpRptrModCompl MODULE-COMPLIANCE statement of
+                   the SNMP-REPEATER-MIB (RFC 2108)."
+
+       MODULE -- this module
+           MANDATORY-GROUPS { mauRpGrpBasic }
+
+           GROUP       mauRpGrp100Mbs
+
+
+
+           DESCRIPTION "Implementation of this optional group is
+                       recommended for MAUs that have 100Mb/s or
+                       greater capability."
+
+           GROUP       mauRpGrpJack
+           DESCRIPTION "Implementation of this optional group is
+                       recommended for MAUs that have one or more
+                       external jacks."
+
+           GROUP       rpMauNotifications
+
+           DESCRIPTION "Implementation of this group is recommended
+                       for MAUs attached to repeater ports."
+
+           OBJECT      rpMauStatus
+           MIN-ACCESS  read-only
+           DESCRIPTION "Write access is not required."
+       ::= { mauModCompls 4 }
+
+   mauModIfCompl3 MODULE-COMPLIANCE
+       STATUS      current
+       DESCRIPTION "Compliance for MAUs attached to interfaces.
+
+                   Note that compliance with this compliance
+                   statement requires compliance with the
+                   ifCompliance3 MODULE-COMPLIANCE statement of the
+                   IF-MIB (RFC 2863) and the dot3Compliance2
+                   MODULE-COMPLIANCE statement of the
+                   EtherLike-MIB (RFC3635)."
+
+       MODULE -- this module
+           MANDATORY-GROUPS { mauIfGrpBasic }
+
+           GROUP       mauIfGrpHighCapacity
+           DESCRIPTION "Implementation of this optional group is
+                       recommended for MAUs that have 100Mb/s
+                       or greater capability."
+
+           GROUP       mauIfGrpHCStats
+           DESCRIPTION "Implementation of this group is mandatory
+                       for MAUs that have 1000Mb/s capacity, and
+                       is recommended for MAUs that have 100Mb/s
+                       capacity."
+
+           GROUP       mauIfGrpJack
+           DESCRIPTION "Implementation of this optional group is
+                       recommended for MAUs that have one or more
+                       external jacks."
+
+
+
+           GROUP       mauIfGrpAutoNeg2
+           DESCRIPTION "Implementation of this group is mandatory
+                       for MAUs that support managed
+                       auto-negotiation."
+           GROUP       mauIfGrpAutoNeg1000Mbps
+           DESCRIPTION "Implementation of this group is mandatory
+                       for MAUs that have 1000Mb/s or greater
+                       capability and support managed
+                       auto-negotiation."
+
+           GROUP       ifMauNotifications
+           DESCRIPTION "Implementation of this group is recommended
+                       for MAUs attached to interfaces."
+
+           OBJECT      ifMauStatus
+           MIN-ACCESS  read-only
+           DESCRIPTION "Write access is not required."
+       ::= { mauModCompls 5 }
+
+END

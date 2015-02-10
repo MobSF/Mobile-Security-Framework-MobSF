@@ -1,0 +1,287 @@
+IANA-FINISHER-MIB DEFINITIONS ::= BEGIN
+ -- http://www.iana.org/assignments/ianafinisher-mib
+
+IMPORTS
+    MODULE-IDENTITY,
+        mib-2
+            FROM SNMPv2-SMI                              -- [RFC2578]
+    TEXTUAL-CONVENTION
+            FROM SNMPv2-TC;                              -- [RFC2579]
+
+ianafinisherMIB MODULE-IDENTITY
+    LAST-UPDATED  "200911030000Z" -- November 3, 2009
+    ORGANIZATION  "IANA"
+    CONTACT-INFO  "Internet Assigned Numbers Authority
+
+                  Postal: ICANN
+                          4676 Admiralty Way, Suite 330
+                          Marina del Rey, CA 90292
+
+                  Tel:    +1 310 823 9358
+                  E-Mail: iana&iana.org"
+
+    DESCRIPTION   "This MIB module defines a set of finishing-related
+                  TEXTUAL-CONVENTIONs for use in Finisher MIB (RFC 3806)
+                  and other MIBs which need to specify finishing
+                  mechanism details.
+
+                  Any additions or changes to the contents of this MIB
+                  module require either publication of an RFC, or
+                  Designated Expert Review as defined in RFC 2434,
+                  Guidelines for Writing an IANA Considerations Section
+                  in RFCs.  The Designated Expert will be selected by
+                  the IESG Area Director(s) of the Applications Area.
+
+                  Copyright (C) The Internet Society (2004). The
+
+                  initial version of this MIB module was published
+                  in RFC 3806. For full legal notices see the RFC
+                  itself or see:
+                  http://www.ietf.org/copyrights/ianamib.html"
+
+    REVISION      "200911030000Z" -- November 3, 2009
+    DESCRIPTION   "Added plasticMultiRing(12)."
+
+    REVISION      "200406020000Z"  -- June 2, 2004
+    DESCRIPTION   "Original version, published in coordination
+                  with Finisher MIB (RFC 3806)."
+
+    ::= { mib-2 110 }
+
+-- TEXTUAL-CONVENTIONs for this MIB module
+
+FinDeviceTypeTC ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+      "The defined finishing device subunit process
+       enumerations."
+    SYNTAX       INTEGER {
+         other(1),
+         unknown(2),
+         stitcher(3),
+         folder(4),
+         binder(5),
+         trimmer(6),
+         dieCutter(7),
+         puncher(8),
+         perforater(9),
+         slitter(10),
+         separationCutter(11),
+         imprinter(12),
+         wrapper(13),
+         bander(14),
+         makeEnvelope(15),
+         stacker(16),
+         sheetRotator(17),
+         inserter(18)
+        }
+
+FinAttributeTypeTC  ::= TEXTUAL-CONVENTION
+    STATUS     current
+    DESCRIPTION
+        "This TEXTUAL-CONVENTION defines the set of enums for use in
+         the finDeviceAttributeTable.  See section 5.7 for the complete
+         specification of each attribute."
+    SYNTAX       INTEGER {
+         other(1),
+         deviceName(3),
+
+         deviceVendorName(4),
+         deviceModel(5),
+         deviceVersion(6),
+         deviceSerialNumber(7),
+         maximumSheets(8),
+         finProcessOffsetUnits(9),
+         finReferenceEdge(10),
+         finAxisOffset(11),
+         finJogEdge(12),
+         finHeadLocation(13),
+         finOperationRestrictions(14),
+         finNumberOfPositions(15),
+         namedConfiguration(16),
+         finMediaTypeRestriction(17),
+         finPrinterInputTraySupported(18),
+         finPreviousFinishingOperation(19),
+         finNextFinishingOperation(20),
+         stitchingType(30),
+         stitchingDirection(31),
+         foldingType(40),
+         bindingType(50),
+         punchHoleType(80),
+         punchHoleSizeLongDim(81),
+         punchHoleSizeShortDim(82),
+         punchPattern(83),
+         slittingType(100),
+         wrappingType(130),
+         stackOutputType(160),
+         stackOffset(161),
+         stackRotation(162)
+        }
+
+FinEdgeTC ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+      "Specifies an edge for a Finishing Process."
+    SYNTAX       INTEGER {
+         topEdge(3),
+         bottomEdge(4),
+         leftEdge(5),
+         rightEdge(6)
+        }
+
+FinStitchingTypeTC ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+      "The defined stitching type enumerations.  For the edgeStitch and
+       stapleDual enums, the finReferenceEdge attribute is recommended
+
+       to define the edge to which the operation applies."
+    SYNTAX       INTEGER {
+         other(1),         -- More information in other attributes
+         unknown(2),
+         stapleTopLeft(4),
+         stapleBottomLeft(5),
+         stapleTopRight(6),
+         stapleBottomRight(7),
+         saddleStitch(8),
+         edgeStitch(9),
+         stapleDual(10)
+        }
+
+FinStitchingDirTypeTC ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+      "Defines the direction, relative to the top sheet in the output
+       subunit, that the stitching operation was performed.  For a
+       topDown(3) process, the staple will be clinched on the bottom
+       of the stack.  This parameter can be used to determine what
+       order the pages of a booklet are to be printed such that the
+       staple clinch will be on the inside of the resulting booklet."
+    SYNTAX       INTEGER {
+         unknown(2),
+         topDown(3),
+         bottomUp(4)
+        }
+
+FinStitchingAngleTypeTC ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+      "This enumeration provides a description of the angular
+       orientation of each stitch in a single or multiple stitching
+       operation, relative to the 'X' axis.  As with all finishing
+       operations, the 'X' axis is always relative to the portrait
+       orientation of the document regardless of the orientation
+       of the printed image.  This enum is primarily applicable to
+       corner stitching operations."
+    SYNTAX       INTEGER {
+         unknown(2),
+         horizontal(3),
+         vertical(4),
+         slanted(5)
+        }
+
+FinFoldingTypeTC ::= TEXTUAL-CONVENTION
+   STATUS       current
+   DESCRIPTION
+
+     "The defined folding device process enumerations."
+   SYNTAX       INTEGER {
+         other(1),        -- More information in other attributes
+         unknown(2),
+         zFold(3),
+         halfFold(4),
+         letterFold(5)
+        }
+
+FinBindingTypeTC ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+      "The defined binding type enumerations."
+    SYNTAX       INTEGER {
+         other(1),          -- More information in other attributes
+         unknown(2),
+         tape(4),
+         plastic(5),
+         velo(6),
+         perfect(7),
+         spiral(8),
+         adhesive(9),
+         comb(10),
+         padding(11),
+         plasticMultiRing(12)
+        }
+
+FinPunchHoleTypeTC ::= TEXTUAL-CONVENTION
+   STATUS       current
+   DESCRIPTION
+     "The defined hole type punch process enumerations."
+   SYNTAX       INTEGER {
+         other(1),        -- More information in other attributes
+         unknown(2),
+         round(3),
+         oblong(4),
+         square(5),
+         rectangular(6),
+         star(7)
+        }
+
+FinPunchPatternTC ::= TEXTUAL-CONVENTION
+   STATUS       current
+   DESCRIPTION
+     "The defined hole pattern punch process enumerations."
+   SYNTAX       INTEGER {
+         other(1),           --Pattern to be defined in other attributes
+         unknown(2),
+         twoHoleUSTop(4),    --Letter/legal, 8.5 inch edge
+
+         threeHoleUS(5),     --Letter/ledger, 11 inch edge
+         twoHoleDIN(6),      --A4/A3, 297 mm edge
+         fourHoleDIN(7),     --A4/A3, 297 mm edge
+         twentyTwoHoleUS(8), --Letter/ledger, 11 inch edge
+         nineteenHoleUS(9),  --Letter/ledger, 11 inch edge
+         twoHoleMetric(10),  --B5/B4, 257 mm edge
+         swedish4Hole(11),   --A4/A3, 297 mm edge
+         twoHoleUSSide(12),  --Letter/ledger, 11 inch edge
+         fiveHoleUS(13),     --Letter/ledger, 11 inch edge
+         sevenHoleUS(14),    --Letter/ledger, 11 inch edge
+         mixed7H4S(15),      --A4/A3, 297 mm edge
+         norweg6Hole(16),    --A4/A3, 297 mm edge
+         metric26Hole(17),   --B5/B4, 257 mm edge
+         metric30Hole(18)    --A4/A3, 297 mm edge
+        }
+
+FinSlittingTypeTC ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+      "The defined slitting type enumerations."
+    SYNTAX       INTEGER {
+         other(1),         -- More information in other attributes
+         unknown(2),
+         slitAndSeparate(4),
+         slitAndMerge(5)
+        }
+
+FinWrappingTypeTC ::= TEXTUAL-CONVENTION
+   STATUS       current
+   DESCRIPTION
+     "The defined wrapping device process enumerations."
+   SYNTAX       INTEGER {
+         other(1),        -- More information in other attributes
+         unknown(2),
+         shrinkWrap(4),
+         paperWrap(5)
+        }
+
+FinStackOutputTypeTC ::= TEXTUAL-CONVENTION
+   STATUS       current
+   DESCRIPTION
+     "The defined stack output type enumerations."
+   SYNTAX       INTEGER {
+         other(1),        -- More information in other attributes
+         unknown(2),
+         straight(4),     -- No offset, one on top of another
+         offset(5),
+         crissCross(6)    -- Rotated
+
+        }
+END

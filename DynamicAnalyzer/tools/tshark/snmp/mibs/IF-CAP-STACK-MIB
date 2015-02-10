@@ -1,0 +1,305 @@
+IF-CAP-STACK-MIB DEFINITIONS ::= BEGIN
+
+  IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, mib-2
+      FROM SNMPv2-SMI         -- [RFC2578]
+    TruthValue
+      FROM SNMPv2-TC          -- [RFC2579]
+    MODULE-COMPLIANCE, OBJECT-GROUP
+      FROM SNMPv2-CONF        -- [RFC2580]
+    ifStackGroup2, ifStackHigherLayer, ifStackLowerLayer
+      FROM IF-MIB             -- [RFC2863]
+    ifInvStackGroup
+      FROM IF-INVERTED-STACK-MIB -- [RFC2864]
+    ;
+
+  ifCapStackMIB MODULE-IDENTITY
+    LAST-UPDATED "200711070000Z"  -- November 07, 2007
+    ORGANIZATION "IETF Ethernet Interfaces and Hub MIB Working Group"
+    CONTACT-INFO
+      "WG charter:
+        http://www.ietf.org/html.charters/OLD/hubmib-charter.html
+
+      Mailing Lists:
+        General Discussion: hubmib@ietf.org
+
+
+
+        To Subscribe: hubmib-request@ietf.org
+        In Body: subscribe your_email_address
+
+      Chair:  Bert Wijnen
+      Postal: Alcatel-Lucent
+              Schagen 33
+              3461 GL Linschoten
+              Netherlands
+       Phone: +31-348-407-775
+       EMail: bwijnen@alcatel-lucent.com
+
+      Editor: Edward Beili
+      Postal: Actelis Networks Inc.
+              25 Bazel St., P.O.B. 10173
+              Petach-Tikva 10173
+              Israel
+       Phone: +972-3-924-3491
+       EMail: edward.beili@actelis.com"
+
+    DESCRIPTION
+      "The objects in this MIB module are used to describe
+      cross-connect capabilities of stacked (layered) interfaces,
+      complementing ifStackTable and ifInvStackTable defined in
+      IF-MIB and IF-INVERTED-STACK-MIB, respectively.
+
+      Copyright (C) The IETF Trust (2007).  This version
+      of this MIB module is part of RFC 5066;  see the RFC
+      itself for full legal notices."
+
+    REVISION    "200711070000Z"  -- November 07, 2007
+    DESCRIPTION "Initial version, published as RFC 5066."
+
+    ::= { mib-2 166 }
+
+   -- Sections of the module
+   -- Structured as recommended by [RFC4181], see
+   -- Appendix D: Suggested OID Layout
+
+   ifCapStackObjects     OBJECT IDENTIFIER ::= { ifCapStackMIB 1 }
+
+   ifCapStackConformance OBJECT IDENTIFIER ::= { ifCapStackMIB 2 }
+
+   -- Groups in the module
+
+   --
+   -- ifCapStackTable group
+   --
+
+
+
+
+   ifCapStackTable  OBJECT-TYPE
+     SYNTAX      SEQUENCE OF IfCapStackEntry
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+       "This table, modeled after ifStackTable from IF-MIB,
+       contains information on the possible 'on-top-of'
+       relationships between the multiple sub-layers of network
+       interfaces (as opposed to actual relationships described in
+       ifStackTable).  In particular, it contains information on
+       which sub-layers MAY possibly run 'on top of' which other
+       sub-layers, as determined by cross-connect capability of the
+       device, where each sub-layer corresponds to a conceptual row
+       in the ifTable.  For example, when the sub-layer with ifIndex
+       value x can be connected to run on top of the sub-layer with
+       ifIndex value y, then this table contains:
+
+         ifCapStackStatus.x.y=true
+
+       The ifCapStackStatus.x.y row does not exist if it is
+       impossible to connect between the sub-layers x and y.
+
+       Note that for most stacked interfaces (e.g., 2BASE-TL)
+       there's always at least one higher-level interface (e.g., PCS
+       port) for each lower-level interface (e.g., PME) and at
+       least one lower-level interface for each higher-level
+       interface, that is, there is at least a single row with a
+       'true' status for any such existing value of x or y.
+
+       This table is read-only as it describes device capabilities."
+     REFERENCE
+       "IF-MIB, ifStackTable"
+     ::= { ifCapStackObjects 1 }
+
+   ifCapStackEntry  OBJECT-TYPE
+     SYNTAX      IfCapStackEntry
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+       "Information on a particular relationship between two
+       sub-layers, specifying that one sub-layer MAY possibly run
+       on 'top' of the other sub-layer.  Each sub-layer corresponds
+       to a conceptual row in the ifTable (interface index for
+       lower and higher layer, respectively)."
+     INDEX {
+       ifStackHigherLayer,
+       ifStackLowerLayer
+     }
+
+
+
+     ::= { ifCapStackTable 1 }
+
+   IfCapStackEntry ::= SEQUENCE {
+        ifCapStackStatus       TruthValue
+      }
+
+   ifCapStackStatus  OBJECT-TYPE
+     SYNTAX      TruthValue
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+       "The status of the 'cross-connect capability' relationship
+       between two sub-layers.  The following values can be returned:
+         true(1)         - indicates that the sub-layer interface,
+                           identified by the ifStackLowerLayer MAY
+                           be connected to run 'below' the sub-layer
+                           interface, identified by the
+                           ifStackHigherLayer index.
+         false(2)        - the sub-layer interfaces cannot be
+                           connected temporarily due to
+                           unavailability of the interface(s), e.g.,
+                           one of the interfaces is located on an
+                           absent pluggable module.
+
+       Note that lower-layer interface availability per higher-layer,
+       indicated by the value of 'true', can be constrained by
+       other parameters, for example, by the aggregation capacity of
+       a higher-layer interface or by the lower-layer interface in
+       question being already connected to another higher-layer
+       interface.  In order to ensure that a particular sub-layer can
+       be connected to another sub-layer, all respective objects
+       (e.g., ifCapStackTable, ifStackTable, and efmCuPAFCapacity for
+       EFMCu interfaces) SHALL be inspected.
+
+       This object is read-only, unlike ifStackStatus, as it
+       describes a cross-connect capability."
+     ::= { ifCapStackEntry 1 }
+
+   ifInvCapStackTable  OBJECT-TYPE
+     SYNTAX        SEQUENCE OF IfInvCapStackEntry
+     MAX-ACCESS    not-accessible
+     STATUS        current
+     DESCRIPTION
+       "A table containing information on the possible relationships
+       between the multiple sub-layers of network interfaces.  This
+       table, modeled after ifInvStackTable from
+       IF-INVERTED-STACK-MIB, is an inverse of the ifCapStackTable
+       defined in this MIB module.
+
+
+
+       In particular, this table contains information on which
+       sub-layers MAY run 'underneath' which other sub-layers, where
+       each sub-layer corresponds to a conceptual row in the ifTable.
+       For example, when the sub-layer with ifIndex value x MAY be
+       connected to run underneath the sub-layer with ifIndex value
+       y, then this table contains:
+
+          ifInvCapStackStatus.x.y=true
+
+       This table contains exactly the same number of rows as the
+       ifCapStackTable, but the rows appear in a different order.
+
+       This table is read-only as it describes a cross-connect
+       capability."
+     REFERENCE
+        "IF-INVERTED-STACK-MIB, ifInvStackTable"
+     ::= { ifCapStackObjects 2 }
+
+   ifInvCapStackEntry  OBJECT-TYPE
+     SYNTAX        IfInvCapStackEntry
+     MAX-ACCESS    not-accessible
+     STATUS        current
+     DESCRIPTION
+        "Information on a particular relationship between two sub-
+        layers, specifying that one sub-layer MAY run underneath the
+        other sub-layer.  Each sub-layer corresponds to a conceptual
+        row in the ifTable."
+     INDEX { ifStackLowerLayer, ifStackHigherLayer }
+     ::= { ifInvCapStackTable 1 }
+
+    IfInvCapStackEntry ::= SEQUENCE {
+      ifInvCapStackStatus       TruthValue
+    }
+
+   ifInvCapStackStatus  OBJECT-TYPE
+     SYNTAX         TruthValue
+     MAX-ACCESS     read-only
+     STATUS         current
+     DESCRIPTION
+        "The status of the possible 'cross-connect capability'
+        relationship between two sub-layers.
+
+        An instance of this object exists for each instance of the
+        ifCapStackStatus object, and vice versa.  For example, if the
+        variable ifCapStackStatus.H.L exists, then the variable
+        ifInvCapStackStatus.L.H must also exist, and vice versa.  In
+        addition, the two variables always have the same value.
+
+
+
+
+        The ifInvCapStackStatus object is read-only, as it describes
+        a cross-connect capability."
+     REFERENCE
+        "ifCapStackStatus"
+     ::= { ifInvCapStackEntry 1 }
+
+  --
+  -- Conformance Statements
+  --
+
+   ifCapStackGroups      OBJECT IDENTIFIER ::=
+        { ifCapStackConformance 1 }
+
+   ifCapStackCompliances OBJECT IDENTIFIER ::=
+        { ifCapStackConformance 2 }
+
+   -- Units of Conformance
+
+   ifCapStackGroup OBJECT-GROUP
+     OBJECTS {
+       ifCapStackStatus,
+       ifInvCapStackStatus
+     }
+     STATUS  current
+     DESCRIPTION
+       "A collection of objects providing information on the
+       cross-connect capability of multi-layer (stacked) network
+       interfaces."
+     ::= { ifCapStackGroups 1 }
+
+
+  -- Compliance Statements
+
+   ifCapStackCompliance MODULE-COMPLIANCE
+     STATUS      current
+     DESCRIPTION
+       "The compliance statement for SNMP entities, which provide
+       information on the cross-connect capability of multi-layer
+       (stacked) network interfaces, with flexible cross-connect
+       between the sub-layers."
+
+
+     MODULE  -- this module
+       MANDATORY-GROUPS {
+         ifCapStackGroup
+       }
+
+       OBJECT       ifCapStackStatus
+
+
+
+       SYNTAX       TruthValue { true(1) }
+       DESCRIPTION
+         "Support for the false(2) value is OPTIONAL for
+         implementations supporting pluggable interfaces."
+
+       OBJECT       ifInvCapStackStatus
+       SYNTAX       TruthValue { true(1) }
+       DESCRIPTION
+         "Support for the false(2) value is OPTIONAL for
+         implementations supporting pluggable interfaces."
+
+     MODULE  IF-MIB
+       MANDATORY-GROUPS {
+         ifStackGroup2
+       }
+
+     MODULE  IF-INVERTED-STACK-MIB
+       MANDATORY-GROUPS {
+         ifInvStackGroup
+       }
+
+     ::= { ifCapStackCompliances 1 }
+END

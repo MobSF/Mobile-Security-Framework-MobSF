@@ -1,0 +1,612 @@
+BLDG-HVAC-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, Counter32,
+    Gauge32, OBJECT-TYPE, Unsigned32, experimental
+        FROM SNMPv2-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP
+       FROM SNMPv2-CONF
+    TEXTUAL-CONVENTION,
+    TimeStamp, RowStatus, StorageType
+        FROM SNMPv2-TC
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB;
+
+
+bldgHVACMIB MODULE-IDENTITY
+    LAST-UPDATED "200303270000Z"
+    ORGANIZATION "SNMPCONF working group
+                  E-mail: snmpconf@snmp.com"
+    CONTACT-INFO
+        "Jon Saperia
+        Postal:     JDS Consulting
+                    174 Chapman Street
+                    Watertown, MA 02472
+                    U.S.A.
+        Phone:      +1 617 744 1079
+        E-mail:     saperia@jdscons.com
+
+        Wayne Tackabury
+        Postal:     Gold Wire Technology
+                    411 Waverley Oaks Rd.
+                    Waltham, MA 02452
+                    U.S.A.
+        Phone:      +1 781 398 8800
+        E-mail:     wayne@goldwiretech.com
+
+
+
+        Michael MacFaden
+        Postal:     Riverstone Networks
+                    5200 Great America Pkwy.
+                    Santa Clara, CA 95054
+                    U.S.A.
+        Phone:      +1 408 878 6500
+        E-mail:     mrm@riverstonenet.com
+
+        David Partain
+        Postal:     Ericsson AB
+                    P.O. Box 1248
+                    SE-581 12  Linkoping
+                    Sweden
+        E-mail:     David.Partain@ericsson.com"
+    DESCRIPTION
+        "This example MIB module defines a set of management objects
+        for heating ventilation and air conditioning systems.  It
+        also includes objects that can be used to create policies
+        that are applied to rooms.  This eliminates the need to send
+        per-instance configuration commands to the system.
+
+        Copyright (C) The Internet Society (2003).  This version of
+        this MIB module is part of RFC 3512; see the RFC itself for
+        full legal notices."
+
+    REVISION "200303270000Z"
+    DESCRIPTION
+        "Initial version of BLDG-HVAC-MIB as published in RFC 3512."
+    ::= { experimental 122 }
+
+bldgHVACObjects         OBJECT IDENTIFIER ::= { bldgHVACMIB 1 }
+bldgConformance         OBJECT IDENTIFIER ::= { bldgHVACMIB 2 }
+
+--
+-- Textual Conventions
+--
+
+BldgHvacOperation  ::= TEXTUAL-CONVENTION
+    STATUS             current
+    DESCRIPTION
+        "Operations supported by a heating and cooling system.
+        A reference to underlying general systems would go here."
+    SYNTAX      INTEGER {
+                         heat(1),
+                         cool(2)
+                }
+--
+-- HVAC Objects Group
+
+
+
+--
+
+bldgHVACTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF BldgHVACEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is the representation and data control
+        for building HVAC by each individual office.
+        The table has rows for, and is indexed by a specific
+        floor and office number.  Each such row includes
+        HVAC statistical and current status information for
+        the associated office.  The row also contains a
+        bldgHVACCfgTemplate columnar object that relates the
+        bldgHVACTable row to a row in the bldgHVACCfgTemplateTable.
+        If this value is nonzero, then the instance in the row
+        that has a value for how the HVAC has been configured
+        in the associated template (bldgHVACCfgTeplateTable row).
+        Hence, the bldgHVACCfgTeplateTable row contains the
+        specific configuration values for the offices as described
+        in this table."
+    ::= { bldgHVACObjects 1 }
+
+bldgHVACEntry  OBJECT-TYPE
+    SYNTAX       BldgHVACEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "A row in the bldgHVACTable.  Each row represents a particular
+        office in the building, qualified by its floor and office
+        number.  A given row instance can be created or deleted by
+        set operations  upon its bldgHVACStatus columnar
+        object instance."
+    INDEX { bldgHVACFloor, bldgHVACOffice }
+        ::= { bldgHVACTable 1 }
+
+BldgHVACEntry ::= SEQUENCE {
+        bldgHVACFloor             Unsigned32,
+        bldgHVACOffice            Unsigned32,
+        bldgHVACCfgTemplate       Unsigned32,
+        bldgHVACFanSpeed          Gauge32,
+        bldgHVACCurrentTemp       Gauge32,
+        bldgHVACCoolOrHeatMins    Counter32,
+        bldgHVACDiscontinuityTime TimeStamp,
+        bldgHVACOwner             SnmpAdminString,
+        bldgHVACStorageType       StorageType,
+        bldgHVACStatus            RowStatus
+        }
+
+
+
+bldgHVACFloor    OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..1000)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This portion of the index indicates the floor of the
+         building.  The ground floor is considered the
+         first floor.  For the purposes of this example,
+         floors under the ground floor cannot be
+         controlled using this MIB module."
+    ::= { bldgHVACEntry 1 }
+
+bldgHVACOffice    OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This second component of the index specifies the
+        office number."
+    ::= { bldgHVACEntry 2 }
+
+bldgHVACCfgTemplate  OBJECT-TYPE
+    SYNTAX          Unsigned32
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The index (bldgHVACCfgTemplateIndex instance)
+        of an entry in the 'bldgHVACCfgTemplateTable'.
+        The bldgHVACCfgTable row instance referenced
+        is a pre-made configuration 'template'
+        that represents the configuration described
+        by the bldgHVACCfgTemplateInfoDescr object.  Note
+        that not all configurations will be under a
+        defined template.  As a result, a row in this
+        bldgHVACTable may point to an entry in the
+        bldgHVACCfgTemplateTable that does not in turn
+        have a reference (bldgHVACCfgTemplateInfo) to an
+        entry in the bldgHVACCfgTemplateInfoTable.  The
+        benefit of this approach is that all
+        configuration information is available in one
+        table whether all elements in the system are
+        derived from configured templates or not.
+
+        Where the instance value for this colunmar object
+        is zero, this row represents data for an office
+        whose HVAC status can be monitored using the
+        read-only columnar object instances of this
+        row, but is not under the configuration control
+
+
+
+        of the agent."
+    ::= { bldgHVACEntry 3 }
+
+bldgHVACFanSpeed  OBJECT-TYPE
+    SYNTAX            Gauge32
+    UNITS             "revolutions per minute"
+    MAX-ACCESS        read-only
+    STATUS            current
+    DESCRIPTION
+        "Shows the revolutions per minute of the fan.  Fan speed
+        will vary based on the difference between
+        bldgHVACCfgTemplateDesiredTemp and bldgHVACCurrentTemp.  The
+        speed is measured in revolutions of the fan blade per minute."
+    ::= { bldgHVACEntry 4 }
+
+bldgHVACCurrentTemp  OBJECT-TYPE
+    SYNTAX            Gauge32
+    UNITS             "degrees in celsius"
+    MAX-ACCESS        read-only
+    STATUS            current
+    DESCRIPTION
+        "The current measured temperature in the office.  Should
+        the current temperature be measured at a value of less
+        than zero degrees celsius, a read of the instance
+        for this object will return a value of zero."
+    ::= { bldgHVACEntry 5 }
+
+bldgHVACCoolOrHeatMins  OBJECT-TYPE
+    SYNTAX            Counter32
+    UNITS             "minutes"
+    MAX-ACCESS        read-only
+    STATUS            current
+    DESCRIPTION
+        "The total number of heating or cooling minutes that have
+        been consumed since the row was activated.  Notice that
+        whether the minutes represent heating or cooling is a
+        function of the configuration of this row.  If the system
+        is re-initialized from a cooling to heating function or
+        vice versa, then the counter would start over again.  This
+        effect is similar to a reconfiguration of some network
+        interface cards.  When parameters that impact
+        configuration are changed, the subsystem must be
+        re-initialized.  Discontinuities in the value of this counter
+        can occur at re-initialization of the management system,
+        and at other times as indicated by the value of
+        bldgHVACDiscontinuityTime."
+    ::= { bldgHVACEntry 6 }
+
+
+
+
+bldgHVACDiscontinuityTime OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of sysUpTime on the most recent occasion at which
+        any heating or cooling operation for the office designated
+        by this row instance experienced a discontinuity.  If
+        no such discontinuities have occurred since the last re-
+        initialization of the this row, then this object contains a
+        zero value."
+    ::= { bldgHVACEntry 7 }
+
+bldgHVACOwner  OBJECT-TYPE
+    SYNTAX            SnmpAdminString
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+        "The identity of the operator/system that
+        last modified this entry.  When a new entry
+        is created, a valid SnmpAdminString must
+        be supplied.  If, on the other hand, this
+        entry is populated by the agent 'discovering'
+        unconfigured rooms, the empty string is a valid
+        value for this object."
+    ::= { bldgHVACEntry 8 }
+
+bldgHVACStorageType  OBJECT-TYPE
+    SYNTAX            StorageType
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+        "The persistence of this row of the table in system storage,
+        as it pertains to permanence across system resets.  A columnar
+        instance of this object with value 'permanent' need not allow
+        write-access to any of the columnar object instances in the
+        containing row."
+    ::= { bldgHVACEntry 9  }
+
+bldgHVACStatus  OBJECT-TYPE
+    SYNTAX            RowStatus
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+        "Controls and reflects the creation and activation status of
+        a row in this table.
+
+        No attempt to modify a row columnar object instance value in
+
+
+
+        the bldgHVACTable should be issued while the value of
+        bldgHVACStatus is active(1).  Should an agent receive a SET
+        PDU attempting such a modification in this state, an
+        inconsistentValue error should be returned as a result of
+        the SET attempt."
+    ::= { bldgHVACEntry 10 }
+--
+-- HVAC Configuration Template Table
+--
+
+bldgHVACCfgTemplateInfoTable  OBJECT-TYPE
+    SYNTAX      SEQUENCE OF BldgHVACCfgTemplateInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table provides unique string identification for
+        HVAC templates in a network.  If it were necessary to
+        configure rooms to deliver a particular quality of climate
+        control with regard to cooling or heating, the index string
+        of a row in this table could be the template name.
+        The bldgHVACCfgCfgTemplateInfoDescription
+        contains a brief description of the template service objective
+        such as: provides summer cooling settings for executive
+        offices.  The bldgHVACCfgTemplateInfo in the
+        bldgHVACCfgTemplateTable will contain the pointer to the
+        relevant row in this table if it is intended that items
+        that point to a row in the bldgHVACCfgTemplateInfoTable be
+        identifiable as being under template control though this
+        mechanism."
+
+    ::= { bldgHVACObjects 2 }
+
+bldgHVACCfgTemplateInfoEntry  OBJECT-TYPE
+    SYNTAX       BldgHVACCfgTemplateInfoEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Each row represents a particular template and
+        description.  A given row instance can be created or
+        deleted by set operations upon its
+        bldgHVACCfgTemplateInfoStatus columnar object
+        instance."
+    INDEX { bldgHVACCfgTemplateInfoIndex }
+    ::= { bldgHVACCfgTemplateInfoTable 1 }
+
+BldgHVACCfgTemplateInfoEntry ::= SEQUENCE {
+        bldgHVACCfgTemplateInfoIndex          Unsigned32,
+        bldgHVACCfgTemplateInfoID             SnmpAdminString,
+
+
+
+        bldgHVACCfgTemplateInfoDescr          SnmpAdminString,
+        bldgHVACCfgTemplateInfoOwner          SnmpAdminString,
+        bldgHVACCfgTemplateInfoStatus         RowStatus,
+        bldgHVACCfgTemplateInfoStorType       StorageType
+        }
+
+bldgHVACCfgTemplateInfoIndex   OBJECT-TYPE
+       SYNTAX       Unsigned32 (1..2147483647)
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+           "The unique index to a row in this table."
+        ::= { bldgHVACCfgTemplateInfoEntry 1 }
+
+bldgHVACCfgTemplateInfoID  OBJECT-TYPE
+    SYNTAX       SnmpAdminString
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "Textual identifier for this table row, and, consequently
+        the template.  This should be a unique name within
+        an administrative domain for a particular template so that
+        all systems in a network that are under the same template
+        can have the same 'handle' (e.g., 'Executive Offices',
+        'Lobby Areas')."
+    ::= { bldgHVACCfgTemplateInfoEntry 2 }
+
+
+bldgHVACCfgTemplateInfoDescr   OBJECT-TYPE
+    SYNTAX       SnmpAdminString
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "A general description of the template.  One example might
+        be - Controls the cooling for offices on higher floors
+        during the summer."
+    ::= { bldgHVACCfgTemplateInfoEntry 3 }
+
+bldgHVACCfgTemplateInfoOwner  OBJECT-TYPE
+    SYNTAX            SnmpAdminString
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+        "The identity of the operator/system that last modified
+        this entry."
+    ::= { bldgHVACCfgTemplateInfoEntry 4 }
+
+bldgHVACCfgTemplateInfoStatus  OBJECT-TYPE
+
+
+
+    SYNTAX            RowStatus
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+        "The activation status of this row.
+
+        No attempt to modify a row columnar object instance value in
+        the bldgHVACCfgTemplateInfo Table should be issued while the
+        value of bldgHVACCfgTemplateInfoStatus is active(1).
+        Should an agent receive a SET PDU attempting such a modification
+        in this state, an inconsistentValue error should be returned as
+        a result of the SET attempt."
+    ::= { bldgHVACCfgTemplateInfoEntry 5 }
+
+bldgHVACCfgTemplateInfoStorType   OBJECT-TYPE
+    SYNTAX            StorageType
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+        "The persistence of this row of the table in system storage,
+         as it pertains to permanence across system resets.  A columnar
+        instance of this object with value 'permanent' need not allow
+        write-access to any of the columnar object instances in the
+        containing row."
+    ::= { bldgHVACCfgTemplateInfoEntry 6  }
+
+--
+-- HVAC Configuration Template Table
+--
+bldgHVACCfgTemplateTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF BldgHVACCfgTemplateEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains the templates, which
+        can be used to set defaults that will
+        be applied to specific offices.  The application
+        of those values is accomplished by having a row
+        instance of the bldgHVACTable reference a row of
+        this table (by the value of the former's
+        bldgHVACCfgTemplate columnar instance).  Identifying
+        information concerning a row instance of this table
+        can be found in the columnar data of the row instance
+        of the bldgHVACCfgTemplateInfoTable entry referenced
+        by the bldgHVACCfgTemplateInfo columnar object of
+        this table."
+    ::= { bldgHVACObjects 3 }
+
+
+
+
+bldgHVACCfgTemplateEntry  OBJECT-TYPE
+    SYNTAX       BldgHVACCfgTemplateEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Each row represents a single set of template parameters
+        that can be applied to selected instances - in this case
+        offices.  These policies will be turned on and off by the
+        policy module through its scheduling facilities.
+
+        A given row instance can be created or
+        deleted by set operations upon its
+        bldgHVACCfgTemplateStatus columnar object instance."
+    INDEX { bldgHVACCfgTemplateIndex }
+    ::= { bldgHVACCfgTemplateTable 1 }
+
+BldgHVACCfgTemplateEntry ::= SEQUENCE {
+        bldgHVACCfgTemplateIndex           Unsigned32,
+        bldgHVACCfgTemplateDesiredTemp     Gauge32,
+        bldgHVACCfgTemplateCoolOrHeat      BldgHvacOperation,
+        bldgHVACCfgTemplateInfo            Unsigned32,
+        bldgHVACCfgTemplateOwner           SnmpAdminString,
+        bldgHVACCfgTemplateStorage         StorageType,
+        bldgHVACCfgTemplateStatus          RowStatus
+}
+
+bldgHVACCfgTemplateIndex    OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A unique value for each defined template in this
+        table.  This value can be referenced as a row index
+        by any MIB module that needs access to this information.
+        The bldgHVACCfgTemplate will point to entries in this
+        table."
+    ::= { bldgHVACCfgTemplateEntry 1 }
+
+bldgHVACCfgTemplateDesiredTemp OBJECT-TYPE
+    SYNTAX            Gauge32
+    UNITS             "degrees in celsius"
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+        "This is the desired temperature setting.  It might be
+        changed at different times of the day or based on
+        seasonal conditions.  It is permitted to change this value
+        by first moving the row to an inactive state, making the
+
+
+
+        change and then reactivating the row."
+    ::= { bldgHVACCfgTemplateEntry 2 }
+
+bldgHVACCfgTemplateCoolOrHeat  OBJECT-TYPE
+    SYNTAX             BldgHvacOperation
+    MAX-ACCESS         read-create
+    STATUS             current
+    DESCRIPTION
+        "This controls the heating and cooling mechanism and is
+        set-able by building maintenance.  It is permitted to
+        change this value by first moving the row to an inactive
+        state, making the change and then reactivating the row."
+    ::= { bldgHVACCfgTemplateEntry 3 }
+
+bldgHVACCfgTemplateInfo OBJECT-TYPE
+    SYNTAX             Unsigned32
+    MAX-ACCESS         read-create
+    STATUS             current
+    DESCRIPTION
+        "This object points to a row in the
+        bldgHVACCfgTemplateInfoTable.  This controls the
+        heating and cooling mechanism and is set-able by
+        building maintenance.  It is permissible to change
+        this value by first moving the row to an inactive
+        state, making the change and then reactivating
+        the row.  A value of zero means that this entry
+        is not associated with a named template found
+        in the bldgHVACCfgTemplateInfoTable."
+    ::= { bldgHVACCfgTemplateEntry 4 }
+
+bldgHVACCfgTemplateOwner  OBJECT-TYPE
+    SYNTAX            SnmpAdminString
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+        "The identity of the administrative entity
+        that created this row of the table."
+    ::= { bldgHVACCfgTemplateEntry 5 }
+
+bldgHVACCfgTemplateStorage  OBJECT-TYPE
+    SYNTAX            StorageType
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+        "The persistence of this row of the table across
+         system resets.  A columnar instance of this object with
+         value 'permanent' need not allow write-access to any
+         of the columnar object instances in the containing row."
+
+
+
+    ::= { bldgHVACCfgTemplateEntry 6 }
+
+bldgHVACCfgTemplateStatus  OBJECT-TYPE
+    SYNTAX            RowStatus
+    MAX-ACCESS        read-create
+    STATUS            current
+    DESCRIPTION
+        "The activation status of this row of the table.
+
+        No attempt to modify a row columnar object instance value in
+        the bldgHVACCfgTemplateTable should be issued while the
+        value of bldgHVACCfgTemplateStatus is active(1).
+        Should an agent receive a SET PDU attempting such a modification
+        in this state, an inconsistentValue error should be returned as
+        a result of the SET attempt."
+    ::= { bldgHVACCfgTemplateEntry 7 }
+
+--
+-- Conformance Information
+--
+
+bldgCompliances  OBJECT IDENTIFIER ::= { bldgConformance 1 }
+bldgGroups       OBJECT IDENTIFIER ::= { bldgConformance 2 }
+
+-- Compliance Statements
+
+bldgCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+        "The requirements for conformance to the BLDG-HVAC-MIB.  The
+         bldgHVACObjects group must be implemented to conform to the
+         BLDG-HVAC-MIB."
+    MODULE -- this module
+
+    GROUP bldgHVACObjectsGroup
+    DESCRIPTION
+        "The bldgHVACObjects is mandatory for all systems that
+        support HVAC systems."
+    ::= { bldgCompliances 1 }
+
+bldgHVACObjectsGroup OBJECT-GROUP
+    OBJECTS {
+        bldgHVACCfgTemplate,
+        bldgHVACFanSpeed, bldgHVACCurrentTemp,
+        bldgHVACCoolOrHeatMins, bldgHVACDiscontinuityTime,
+        bldgHVACOwner, bldgHVACStatus,
+        bldgHVACStorageType, bldgHVACCfgTemplateInfoID,
+        bldgHVACCfgTemplateInfoDescr, bldgHVACCfgTemplateInfoOwner,
+
+
+
+        bldgHVACCfgTemplateInfoStatus,
+        bldgHVACCfgTemplateInfoStorType,
+        bldgHVACCfgTemplateDesiredTemp,
+        bldgHVACCfgTemplateCoolOrHeat,
+        bldgHVACCfgTemplateInfo,
+        bldgHVACCfgTemplateOwner,bldgHVACCfgTemplateStorage,
+        bldgHVACCfgTemplateStatus
+    }
+    STATUS current
+    DESCRIPTION
+        "The bldgHVACObjects Group."
+    ::= { bldgGroups 1 }
+
+END

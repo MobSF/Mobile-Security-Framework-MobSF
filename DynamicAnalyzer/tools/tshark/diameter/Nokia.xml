@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+<!-- Nokia verndor-specific AVPs. Simple encoding, by old (oleksandr.darchuk[AT]gmail.com). 02.03.2009 -->
+
+<application id="4" name="Diameter Credit Control Application" uri="http://www.ietf.org/rfc/rfc4006.txt">
+
+	<avp name="Nokia-IMS-Media-Component-Id" code="5101" vendor-id="Nokia">
+		<type type-name="Unsigned32"/>
+	</avp>
+
+	<avp name="Time-Of-First-Usage" code="5103" vendor-id="Nokia">
+		<type type-name="Time"/>
+	</avp>
+
+	<avp name="Time-Of-Last-Usage" code="5104" vendor-id="Nokia">
+		<type type-name="Time"/>
+	</avp>
+
+	<avp name="Session-Start-Indicator" code="5105" vendor-id="Nokia">
+		<type type-name="OctetString"/>
+	</avp>
+
+	<avp name="Rulebase-Id" code="5106" vendor-id="Nokia">
+		<type type-name="UTF8String"/>
+	</avp>
+
+	<avp name="Quota-Consumption-Time" code="5109" vendor-id="Nokia">
+		<type type-name="Unsigned32"/>
+	</avp>
+
+	<avp name="Quota-Holding-Time" code="5110" vendor-id="Nokia">
+		<type type-name="Unsigned32"/>
+	</avp>
+
+	<avp name="Default-Quota" code="5111" vendor-id="Nokia">
+		<grouped>
+			<gavp name="CC-Time"/>
+			<gavp name="CC-Total-Octets"/>
+			<gavp name="CC-Input-Octets"/>
+			<gavp name="CC-Output-Octets"/>
+			<gavp name="CC-Service-Specific-Units"/>
+		</grouped>
+	</avp>
+
+	<avp name="Nokia-URI" code="5112" vendor-id="Nokia">
+		<type type-name="UTF8String"/>
+	</avp>
+
+	<avp name="NSN-Token-Value" code="5113" vendor-id="Nokia">
+		<type type-name="OctetString"/>
+	</avp>
+
+</application>

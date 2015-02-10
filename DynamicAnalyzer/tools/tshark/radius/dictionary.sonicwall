@@ -1,0 +1,62 @@
+# -*- text -*-
+#
+#	Sonicwall Firewall dictionary
+#
+#	$Id$
+#
+
+VENDOR		SonicWall			8741
+
+#  Backwards compatibility.
+BEGIN-VENDOR	SonicWall
+
+ATTRIBUTE	SS3-Firewall-User-Privilege		1	integer
+
+#  New names.
+ATTRIBUTE	SonicWall-User-Privilege		1	integer
+VALUE	SonicWall-User-Privilege	Remote-Access		1 # deprecated
+VALUE	SonicWall-User-Privilege	Bypass-Filters		2
+VALUE	SonicWall-User-Privilege	VPN-Client-Access	3 # standard
+VALUE	SonicWall-User-Privilege	Access-To-VPN		4 # standard
+VALUE	SonicWall-User-Privilege	Limited-Management	5
+VALUE	SonicWall-User-Privilege	L2TP-Client-Access	6 # standard
+VALUE	SonicWall-User-Privilege	Wireless-Guest		7 # standard
+VALUE	SonicWall-User-Privilege	Wireless-Add-ACL	8
+VALUE	SonicWall-User-Privilege	Internet-Access		9 # standard
+
+# Those values indicated as "standard" are applicable only on a SonicWall
+# firewall running standard firmware and not on one running enhanced firmware.
+
+#
+# This attribute is to use in place of SonicWall-User-Privilege with RADIUS
+# servers that allow only one instance of a Vendor-Specific attribute to be
+# set (such as the ACE Server from RSA). Note that it is commented out in this
+# file because it is not needed in any servers that support multiple VSA's.
+#
+# The value of this attribute is a text string giving a comma-separated list
+# of one or more privileges, each corresponding to a value of the
+# SonicWall-User-Privilege attribute above (and note that some are applicable
+# only on a SonicWall firewall running standard firmware as indicated above):
+#   "BF,VC,VA,LM,LA,WG,WA,IA"
+#   "RA" for "Remote-Access" is now deprecated.
+# ATTRIBUTE	SonicWall-User-Privileges   	2	string	SonicWall
+
+# Multiple of these can be set for a user, each specifying the name of a
+# user group to which that user has membership. Note that this can
+# alternatively be achieved by use of the Filter-Id attribute.
+# This is applicable only on a SonicWall firewall running enhanced firmware.
+#
+ATTRIBUTE	SonicWall-User-Group			3	string
+
+# This attribute is to use in place of SonicWall-User-Group with RADIUS
+# servers that allow only one instance of a Vendor-Specific attribute to be
+# set (such as the ACE Server from RSA). Note that it is commented out in this
+# file because it is not needed in any servers that support multiple VSA's.
+#
+# The value of this attribute is a text string giving a comma-separated list
+# of the names of one or more user groups to which that user has membership.
+# This is applicable only on a SonicWall firewall running enhanced firmware.
+#
+# ATTRIBUTE SonicWall-User-Groups		4	string	SonicWall.
+
+END-VENDOR	SonicWall

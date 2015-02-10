@@ -1,0 +1,906 @@
+IPMROUTE-STD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, mib-2,
+    Integer32, Counter32, Counter64, Gauge32,
+    IpAddress, TimeTicks             FROM SNMPv2-SMI
+    RowStatus, TEXTUAL-CONVENTION,
+    TruthValue                       FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP  FROM SNMPv2-CONF
+    SnmpAdminString                  FROM SNMP-FRAMEWORK-MIB
+    InterfaceIndexOrZero,
+    InterfaceIndex                   FROM IF-MIB
+    IANAipRouteProtocol,
+    IANAipMRouteProtocol             FROM IANA-RTPROTO-MIB;
+
+ipMRouteStdMIB MODULE-IDENTITY
+    LAST-UPDATED "200009220000Z" -- September 22, 2000
+    ORGANIZATION "IETF IDMR Working Group"
+    CONTACT-INFO
+            " Dave Thaler
+              Microsoft Corporation
+              One Microsoft Way
+              Redmond, WA  98052-6399
+              US
+
+              Phone: +1 425 703 8835
+              EMail: dthaler@microsoft.com"
+    DESCRIPTION
+            "The MIB module for management of IP Multicast routing, but
+            independent of the specific multicast routing protocol in
+            use."
+    REVISION     "200009220000Z" -- September 22, 2000
+    DESCRIPTION
+            "Initial version, published as RFC 2932."
+    ::= { mib-2 83 }
+
+-- Textual Conventions
+
+LanguageTag ::= TEXTUAL-CONVENTION
+
+   DISPLAY-HINT "100a"
+   STATUS       current
+   DESCRIPTION
+            "An RFC 1766-style language tag, with all alphabetic
+            characters converted to lowercase.  This restriction is
+            intended to make the lexical ordering imposed by SNMP useful
+
+
+            when applied to language tags.  Note that it is
+            theoretically possible for a valid language tag to exceed
+            the allowed length of this syntax, and thus be impossible to
+            represent with this syntax.  Sampling of language tags in
+            current use on the Internet suggests that this limit does
+            not pose a serious problem in practice."
+   SYNTAX       OCTET STRING (SIZE (1..100))
+
+
+-- Top-level structure of the MIB
+
+ipMRouteMIBObjects OBJECT IDENTIFIER ::= { ipMRouteStdMIB 1 }
+
+ipMRoute      OBJECT IDENTIFIER ::= { ipMRouteMIBObjects 1 }
+
+-- the IP Multicast Routing MIB-Group
+--
+-- a collection of objects providing information about
+-- IP Multicast Groups
+
+
+ipMRouteEnable OBJECT-TYPE
+    SYNTAX     INTEGER { enabled(1), disabled(2) }
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "The enabled status of IP Multicast routing on this router."
+    ::= { ipMRoute 1 }
+
+ipMRouteEntryCount OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of rows in the ipMRouteTable.  This can be used
+            to monitor the multicast routing table size."
+    ::= { ipMRoute 7 }
+
+ipMRouteTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table containing multicast routing
+            information for IP datagrams sent by particular sources to
+            the IP multicast groups known to this router."
+    ::= { ipMRoute 2 }
+
+
+
+ipMRouteEntry OBJECT-TYPE
+    SYNTAX     IpMRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) containing the multicast routing
+            information for IP datagrams from a particular source and
+            addressed to a particular IP multicast group address.
+            Discontinuities in counters in this entry can be detected by
+            observing the value of ipMRouteUpTime."
+    INDEX      { ipMRouteGroup,
+                 ipMRouteSource,
+                 ipMRouteSourceMask }
+    ::= { ipMRouteTable 1 }
+
+IpMRouteEntry ::= SEQUENCE {
+    ipMRouteGroup                 IpAddress,
+    ipMRouteSource                IpAddress,
+    ipMRouteSourceMask            IpAddress,
+    ipMRouteUpstreamNeighbor      IpAddress,
+    ipMRouteInIfIndex             InterfaceIndexOrZero,
+    ipMRouteUpTime                TimeTicks,
+    ipMRouteExpiryTime            TimeTicks,
+    ipMRoutePkts                  Counter32,
+    ipMRouteDifferentInIfPackets  Counter32,
+    ipMRouteOctets                Counter32,
+    ipMRouteProtocol              IANAipMRouteProtocol,
+    ipMRouteRtProto               IANAipRouteProtocol,
+    ipMRouteRtAddress             IpAddress,
+    ipMRouteRtMask                IpAddress,
+    ipMRouteRtType                INTEGER,
+    ipMRouteHCOctets              Counter64
+}
+
+ipMRouteGroup OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The IP multicast group address for which this entry
+            contains multicast routing information."
+    ::= { ipMRouteEntry 1 }
+
+ipMRouteSource OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+
+
+            "The network address which when combined with the
+            corresponding value of ipMRouteSourceMask identifies the
+            sources for which this entry contains multicast routing
+            information."
+    ::= { ipMRouteEntry 2 }
+
+ipMRouteSourceMask OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The network mask which when combined with the corresponding
+            value of ipMRouteSource identifies the sources for which
+            this entry contains multicast routing information."
+    ::= { ipMRouteEntry 3 }
+
+ipMRouteUpstreamNeighbor OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The address of the upstream neighbor (e.g., RPF neighbor)
+            from which IP datagrams from these sources to this multicast
+            address are received, or 0.0.0.0 if the upstream neighbor is
+            unknown (e.g., in CBT)."
+    ::= { ipMRouteEntry 4 }
+
+ipMRouteInIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndexOrZero
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of ifIndex for the interface on which IP
+            datagrams sent by these sources to this multicast address
+            are received.  A value of 0 indicates that datagrams are not
+            subject to an incoming interface check, but may be accepted
+            on multiple interfaces (e.g., in CBT)."
+    ::= { ipMRouteEntry 5 }
+
+ipMRouteUpTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The time since the multicast routing information
+            represented by this entry was learned by the router."
+    ::= { ipMRouteEntry 6 }
+
+
+
+ipMRouteExpiryTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The minimum amount of time remaining before this entry will
+            be aged out.  The value 0 indicates that the entry is not
+            subject to aging."
+    ::= { ipMRouteEntry 7 }
+
+ipMRoutePkts OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of packets which this router has received from
+            these sources and addressed to this multicast group
+            address."
+    ::= { ipMRouteEntry 8 }
+
+ipMRouteDifferentInIfPackets OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of packets which this router has received from
+            these sources and addressed to this multicast group address,
+            which were dropped because they were not received on the
+            interface indicated by ipMRouteInIfIndex.  Packets which are
+            not subject to an incoming interface check (e.g., using CBT)
+            are not counted."
+    ::= { ipMRouteEntry 9 }
+
+ipMRouteOctets OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets contained in IP datagrams which were
+            received from these sources and addressed to this multicast
+            group address, and which were forwarded by this router."
+    ::= { ipMRouteEntry 10 }
+
+ipMRouteProtocol OBJECT-TYPE
+    SYNTAX     IANAipMRouteProtocol
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+
+
+            "The multicast routing protocol via which this multicast
+            forwarding entry was learned."
+    ::= { ipMRouteEntry 11 }
+
+ipMRouteRtProto OBJECT-TYPE
+    SYNTAX     IANAipRouteProtocol
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The routing mechanism via which the route used to find the
+            upstream or parent interface for this multicast forwarding
+            entry was learned.  Inclusion of values for routing
+            protocols is not intended to imply that those protocols need
+            be supported."
+    ::= { ipMRouteEntry 12 }
+
+ipMRouteRtAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The address portion of the route used to find the upstream
+            or parent interface for this multicast forwarding entry."
+    ::= { ipMRouteEntry 13 }
+
+ipMRouteRtMask OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The mask associated with the route used to find the upstream
+            or parent interface for this multicast forwarding entry."
+    ::= { ipMRouteEntry 14 }
+
+ipMRouteRtType OBJECT-TYPE
+    SYNTAX     INTEGER {
+                unicast (1),  -- Unicast route used in multicast RIB
+                multicast (2) -- Multicast route
+               }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The reason the given route was placed in the (logical)
+            multicast Routing Information Base (RIB).  A value of
+            unicast means that the route would normally be placed only
+            in the unicast RIB, but was placed in the multicast RIB
+            (instead or in addition) due to local configuration, such as
+            when running PIM over RIP.  A value of multicast means that
+
+
+            the route was explicitly added to the multicast RIB by the
+            routing protocol, such as DVMRP or Multiprotocol BGP."
+    ::= { ipMRouteEntry 15 }
+
+ipMRouteHCOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets contained in IP datagrams which were
+            received from these sources and addressed to this multicast
+            group address, and which were forwarded by this router.
+            This object is a 64-bit version of ipMRouteOctets."
+    ::= { ipMRouteEntry 16 }
+
+--
+--  The IP Multicast Routing Next Hop Table
+--
+
+ipMRouteNextHopTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMRouteNextHopEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table containing information on the next-
+            hops on outgoing interfaces for routing IP multicast
+            datagrams.  Each entry is one of a list of next-hops on
+            outgoing interfaces for particular sources sending to a
+            particular multicast group address."
+    ::= { ipMRoute 3 }
+
+ipMRouteNextHopEntry OBJECT-TYPE
+    SYNTAX     IpMRouteNextHopEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) in the list of next-hops on
+            outgoing interfaces to which IP multicast datagrams from
+            particular sources to a IP multicast group address are
+            routed.  Discontinuities in counters in this entry can be
+            detected by observing the value of ipMRouteUpTime."
+    INDEX      { ipMRouteNextHopGroup, ipMRouteNextHopSource,
+                 ipMRouteNextHopSourceMask, ipMRouteNextHopIfIndex,
+                 ipMRouteNextHopAddress }
+    ::= { ipMRouteNextHopTable 1 }
+
+IpMRouteNextHopEntry ::= SEQUENCE {
+    ipMRouteNextHopGroup              IpAddress,
+
+
+    ipMRouteNextHopSource             IpAddress,
+    ipMRouteNextHopSourceMask         IpAddress,
+    ipMRouteNextHopIfIndex            InterfaceIndex,
+    ipMRouteNextHopAddress            IpAddress,
+    ipMRouteNextHopState              INTEGER,
+    ipMRouteNextHopUpTime             TimeTicks,
+    ipMRouteNextHopExpiryTime         TimeTicks,
+    ipMRouteNextHopClosestMemberHops  Integer32,
+    ipMRouteNextHopProtocol           IANAipMRouteProtocol,
+    ipMRouteNextHopPkts               Counter32
+}
+
+ipMRouteNextHopGroup OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The IP multicast group for which this entry specifies a
+            next-hop on an outgoing interface."
+    ::= { ipMRouteNextHopEntry 1 }
+
+ipMRouteNextHopSource OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The network address which when combined with the
+            corresponding value of ipMRouteNextHopSourceMask identifies
+            the sources for which this entry specifies a next-hop on an
+            outgoing interface."
+    ::= { ipMRouteNextHopEntry 2 }
+
+ipMRouteNextHopSourceMask OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The network mask which when combined with the corresponding
+            value of ipMRouteNextHopSource identifies the sources for
+            which this entry specifies a next-hop on an outgoing
+            interface."
+    ::= { ipMRouteNextHopEntry 3 }
+
+ipMRouteNextHopIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+
+
+            "The ifIndex value of the interface for the outgoing
+            interface for this next-hop."
+    ::= { ipMRouteNextHopEntry 4 }
+
+ipMRouteNextHopAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The address of the next-hop specific to this entry.  For
+            most interfaces, this is identical to ipMRouteNextHopGroup.
+            NBMA interfaces, however, may have multiple next-hop
+            addresses out a single outgoing interface."
+    ::= { ipMRouteNextHopEntry 5 }
+
+ipMRouteNextHopState OBJECT-TYPE
+    SYNTAX     INTEGER { pruned(1), forwarding(2) }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "An indication of whether the outgoing interface and next-
+            hop represented by this entry is currently being used to
+            forward IP datagrams.  The value 'forwarding' indicates it
+            is currently being used; the value 'pruned' indicates it is
+            not."
+    ::= { ipMRouteNextHopEntry 6 }
+
+ipMRouteNextHopUpTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The time since the multicast routing information
+            represented by this entry was learned by the router."
+    ::= { ipMRouteNextHopEntry 7 }
+
+ipMRouteNextHopExpiryTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The minimum amount of time remaining before this entry will
+            be aged out.  If ipMRouteNextHopState is pruned(1), the
+            remaining time until the prune expires and the state reverts
+            to forwarding(2).  Otherwise, the remaining time until this
+            entry is removed from the table.  The time remaining may be
+            copied from ipMRouteExpiryTime if the protocol in use for
+            this entry does not specify next-hop timers.  The value 0
+
+
+            indicates that the entry is not subject to aging."
+    ::= { ipMRouteNextHopEntry 8 }
+
+ipMRouteNextHopClosestMemberHops OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The minimum number of hops between this router and any
+            member of this IP multicast group reached via this next-hop
+            on this outgoing interface.  Any IP multicast datagrams for
+            the group which have a TTL less than this number of hops
+            will not be forwarded to this next-hop."
+    ::= { ipMRouteNextHopEntry 9 }
+
+ipMRouteNextHopProtocol OBJECT-TYPE
+    SYNTAX     IANAipMRouteProtocol
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The routing mechanism via which this next-hop was learned."
+    ::= { ipMRouteNextHopEntry 10 }
+
+ipMRouteNextHopPkts OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of packets which have been forwarded using this
+            route."
+    ::= { ipMRouteNextHopEntry 11 }
+
+--
+--  The Multicast Routing Interface Table
+--
+
+ipMRouteInterfaceTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMRouteInterfaceEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table containing multicast routing
+            information specific to interfaces."
+    ::= { ipMRoute 4 }
+
+ipMRouteInterfaceEntry OBJECT-TYPE
+    SYNTAX     IpMRouteInterfaceEntry
+    MAX-ACCESS not-accessible
+
+
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) containing the multicast routing
+            information for a particular interface."
+    INDEX      { ipMRouteInterfaceIfIndex }
+    ::= { ipMRouteInterfaceTable 1 }
+
+IpMRouteInterfaceEntry ::= SEQUENCE {
+    ipMRouteInterfaceIfIndex          InterfaceIndex,
+    ipMRouteInterfaceTtl              Integer32,
+    ipMRouteInterfaceProtocol         IANAipMRouteProtocol,
+    ipMRouteInterfaceRateLimit        Integer32,
+    ipMRouteInterfaceInMcastOctets    Counter32,
+    ipMRouteInterfaceOutMcastOctets   Counter32,
+    ipMRouteInterfaceHCInMcastOctets  Counter64,
+    ipMRouteInterfaceHCOutMcastOctets Counter64
+}
+
+ipMRouteInterfaceIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The ifIndex value of the interface for which this entry
+            contains information."
+    ::= { ipMRouteInterfaceEntry 1 }
+
+ipMRouteInterfaceTtl OBJECT-TYPE
+    SYNTAX     Integer32 (0..255)
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "The datagram TTL threshold for the interface. Any IP
+            multicast datagrams with a TTL less than this threshold will
+            not be forwarded out the interface. The default value of 0
+            means all multicast packets are forwarded out the
+            interface."
+    ::= { ipMRouteInterfaceEntry 2 }
+
+ipMRouteInterfaceProtocol OBJECT-TYPE
+    SYNTAX     IANAipMRouteProtocol
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The routing protocol running on this interface."
+    ::= { ipMRouteInterfaceEntry 3 }
+
+ipMRouteInterfaceRateLimit OBJECT-TYPE
+
+
+    SYNTAX     Integer32
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "The rate-limit, in kilobits per second, of forwarded
+            multicast traffic on the interface.  A rate-limit of 0
+            indicates that no rate limiting is done."
+    DEFVAL     { 0 }
+    ::= { ipMRouteInterfaceEntry 4 }
+
+ipMRouteInterfaceInMcastOctets OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets of multicast packets that have arrived
+            on the interface, including framing characters.  This object
+            is similar to ifInOctets in the Interfaces MIB, except that
+            only multicast packets are counted."
+    ::= { ipMRouteInterfaceEntry 5 }
+
+ipMRouteInterfaceOutMcastOctets OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets of multicast packets that have been
+            sent on the interface."
+    ::= { ipMRouteInterfaceEntry 6 }
+
+ipMRouteInterfaceHCInMcastOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets of multicast packets that have arrived
+            on the interface, including framing characters.  This object
+            is a 64-bit version of ipMRouteInterfaceInMcastOctets.  It
+            is similar to ifHCInOctets in the Interfaces MIB, except
+            that only multicast packets are counted."
+    ::= { ipMRouteInterfaceEntry 7 }
+
+ipMRouteInterfaceHCOutMcastOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of octets of multicast packets that have been
+
+
+            sent on the interface.  This object is a 64-bit version of
+            ipMRouteInterfaceOutMcastOctets."
+    ::= { ipMRouteInterfaceEntry 8 }
+
+--
+--  The IP Multicast Scope Boundary Table
+--
+
+ipMRouteBoundaryTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMRouteBoundaryEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table listing the router's scoped
+            multicast address boundaries."
+    ::= { ipMRoute 5 }
+
+ipMRouteBoundaryEntry OBJECT-TYPE
+    SYNTAX     IpMRouteBoundaryEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) in the ipMRouteBoundaryTable
+            representing a scoped boundary."
+    INDEX      { ipMRouteBoundaryIfIndex, ipMRouteBoundaryAddress,
+                 ipMRouteBoundaryAddressMask }
+    ::= { ipMRouteBoundaryTable 1 }
+
+IpMRouteBoundaryEntry ::= SEQUENCE {
+    ipMRouteBoundaryIfIndex            InterfaceIndex,
+    ipMRouteBoundaryAddress            IpAddress,
+    ipMRouteBoundaryAddressMask        IpAddress,
+    ipMRouteBoundaryStatus             RowStatus
+}
+
+ipMRouteBoundaryIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The IfIndex value for the interface to which this boundary
+            applies.  Packets with a destination address in the
+            associated address/mask range will not be forwarded out this
+            interface."
+    ::= { ipMRouteBoundaryEntry 1 }
+
+ipMRouteBoundaryAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+
+
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The group address which when combined with the
+            corresponding value of ipMRouteBoundaryAddressMask
+            identifies the group range for which the scoped boundary
+            exists.  Scoped addresses must come from the range 239.x.x.x
+            as specified in RFC 2365."
+    ::= { ipMRouteBoundaryEntry 2 }
+
+ipMRouteBoundaryAddressMask OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The group address mask which when combined with the
+            corresponding value of ipMRouteBoundaryAddress identifies
+            the group range for which the scoped boundary exists."
+    ::= { ipMRouteBoundaryEntry 3 }
+
+ipMRouteBoundaryStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+    ::= { ipMRouteBoundaryEntry 4 }
+
+--
+--  The IP Multicast Scope Name Table
+--
+
+ipMRouteScopeNameTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMRouteScopeNameEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table listing the multicast scope names."
+    ::= { ipMRoute 6 }
+
+ipMRouteScopeNameEntry OBJECT-TYPE
+    SYNTAX     IpMRouteScopeNameEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) in the ipMRouteScopeNameTable
+            representing a multicast scope name."
+
+
+    INDEX      { ipMRouteScopeNameAddress,
+                 ipMRouteScopeNameAddressMask,
+                 IMPLIED ipMRouteScopeNameLanguage }
+    ::= { ipMRouteScopeNameTable 1 }
+
+IpMRouteScopeNameEntry ::= SEQUENCE {
+    ipMRouteScopeNameAddress            IpAddress,
+    ipMRouteScopeNameAddressMask        IpAddress,
+    ipMRouteScopeNameLanguage           LanguageTag,
+    ipMRouteScopeNameString             SnmpAdminString,
+    ipMRouteScopeNameDefault            TruthValue,
+    ipMRouteScopeNameStatus             RowStatus
+}
+
+ipMRouteScopeNameAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The group address which when combined with the
+            corresponding value of ipMRouteScopeNameAddressMask
+            identifies the group range associated with the multicast
+            scope.  Scoped addresses must come from the range
+            239.x.x.x."
+    ::= { ipMRouteScopeNameEntry 1 }
+
+ipMRouteScopeNameAddressMask OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The group address mask which when combined with the
+            corresponding value of ipMRouteScopeNameAddress identifies
+            the group range associated with the multicast scope."
+    ::= { ipMRouteScopeNameEntry 2 }
+
+ipMRouteScopeNameLanguage OBJECT-TYPE
+    SYNTAX     LanguageTag
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The RFC 1766-style language tag associated with the scope
+            name."
+    ::= { ipMRouteScopeNameEntry 3 }
+
+ipMRouteScopeNameString OBJECT-TYPE
+    SYNTAX     SnmpAdminString
+    MAX-ACCESS read-create
+
+
+    STATUS     current
+    DESCRIPTION
+            "The textual name associated with the multicast scope.  The
+            value of this object should be suitable for displaying to
+            end-users, such as when allocating a multicast address in
+            this scope.  When no name is specified, the default value of
+            this object should be the string 239.x.x.x/y with x and y
+            replaced appropriately to describe the address and mask
+            length associated with the scope."
+    ::= { ipMRouteScopeNameEntry 4 }
+
+ipMRouteScopeNameDefault OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "If true, indicates a preference that the name in the
+            following language should be used by applications if no name
+            is available in a desired language."
+    DEFVAL { false }
+    ::= { ipMRouteScopeNameEntry 5 }
+
+ipMRouteScopeNameStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+    ::= { ipMRouteScopeNameEntry 6 }
+
+
+-- conformance information
+
+ipMRouteMIBConformance
+                  OBJECT IDENTIFIER ::= { ipMRouteStdMIB 2 }
+ipMRouteMIBCompliances
+                  OBJECT IDENTIFIER ::= { ipMRouteMIBConformance 1 }
+ipMRouteMIBGroups  OBJECT IDENTIFIER ::= { ipMRouteMIBConformance 2 }
+
+-- compliance statements
+
+ipMRouteMIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for the IP Multicast MIB."
+    MODULE  -- this module
+    MANDATORY-GROUPS { ipMRouteMIBBasicGroup,
+
+
+                       ipMRouteMIBRouteGroup}
+
+        GROUP   ipMRouteMIBBoundaryGroup
+        DESCRIPTION
+            "This group is mandatory if the router supports
+            administratively-scoped multicast address boundaries."
+
+        OBJECT      ipMRouteBoundaryStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      ipMRouteScopeNameStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        GROUP   ipMRouteMIBHCInterfaceGroup
+        DESCRIPTION
+            "This group is mandatory only for those network interfaces
+            for which the value of the corresponding instance of ifSpeed
+            is greater than 20,000,000 bits/second."
+
+    ::= { ipMRouteMIBCompliances 1 }
+
+-- units of conformance
+
+ipMRouteMIBBasicGroup OBJECT-GROUP
+    OBJECTS { ipMRouteEnable, ipMRouteEntryCount,
+              ipMRouteUpstreamNeighbor, ipMRouteInIfIndex,
+              ipMRouteUpTime, ipMRouteExpiryTime,
+              ipMRouteNextHopState,
+              ipMRouteNextHopUpTime,
+              ipMRouteNextHopExpiryTime,
+              ipMRouteNextHopProtocol,
+              ipMRouteNextHopPkts,
+              ipMRouteInterfaceTtl,
+              ipMRouteInterfaceProtocol, ipMRouteInterfaceRateLimit,
+              ipMRouteInterfaceInMcastOctets,
+              ipMRouteInterfaceOutMcastOctets,
+              ipMRouteProtocol
+            }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support basic management of IP
+            Multicast routing."
+    ::= { ipMRouteMIBGroups 1 }
+
+
+
+ipMRouteMIBHopCountGroup OBJECT-GROUP
+    OBJECTS { ipMRouteNextHopClosestMemberHops }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support management of the use of
+            hop counts in IP Multicast routing."
+    ::= { ipMRouteMIBGroups 2 }
+
+ipMRouteMIBBoundaryGroup OBJECT-GROUP
+    OBJECTS { ipMRouteBoundaryStatus, ipMRouteScopeNameString,
+              ipMRouteScopeNameDefault, ipMRouteScopeNameStatus }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support management of scoped
+            multicast address boundaries."
+    ::= { ipMRouteMIBGroups 3 }
+
+ipMRouteMIBPktsOutGroup OBJECT-GROUP
+    OBJECTS { ipMRouteNextHopPkts }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support management of packet
+            counters for each outgoing interface entry of a route."
+    ::= { ipMRouteMIBGroups 4 }
+
+ipMRouteMIBHCInterfaceGroup OBJECT-GROUP
+    OBJECTS { ipMRouteInterfaceHCInMcastOctets,
+              ipMRouteInterfaceHCOutMcastOctets,
+              ipMRouteHCOctets }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing information specific to
+            high speed (greater than 20,000,000 bits/second) network
+            interfaces."
+    ::= { ipMRouteMIBGroups 5 }
+
+ipMRouteMIBRouteGroup OBJECT-GROUP
+    OBJECTS { ipMRouteRtProto, ipMRouteRtAddress,
+              ipMRouteRtMask, ipMRouteRtType }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing information on the
+            relationship between multicast routing information, and the
+            IP Forwarding Table."
+    ::= { ipMRouteMIBGroups 6 }
+
+ipMRouteMIBPktsGroup OBJECT-GROUP
+    OBJECTS { ipMRoutePkts, ipMRouteDifferentInIfPackets,
+
+
+              ipMRouteOctets }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects to support management of packet
+            counters for each forwarding entry."
+    ::= { ipMRouteMIBGroups 7 }
+
+END

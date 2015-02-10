@@ -1,0 +1,138 @@
+# -*- text -*-
+#
+#	The FreeRADIUS Vendor-Specific dictionary.
+#
+# Version:	$Id$
+#
+#	For a complete list of Private Enterprise Codes, see:
+#
+#	http://www.isi.edu/in-notes/iana/assignments/enterprise-numbers
+#
+
+VENDOR		FreeRADIUS			11344
+
+BEGIN-VENDOR	FreeRADIUS
+
+ATTRIBUTE	FreeRADIUS-Proxied-To			1	ipaddr
+ATTRIBUTE	FreeRADIUS-Acct-Session-Start-Time	2	date
+
+
+#
+#  This attribute is really a bitmask.
+#
+ATTRIBUTE	FreeRADIUS-Statistics-Type		127	integer
+
+VALUE	FreeRADIUS-Statistics-Type	None			0
+VALUE	FreeRADIUS-Statistics-Type	Authentication		1
+VALUE	FreeRADIUS-Statistics-Type	Accounting		2
+VALUE	FreeRADIUS-Statistics-Type	Proxy-Authentication	4
+VALUE	FreeRADIUS-Statistics-Type	Proxy-Accounting	8
+VALUE	FreeRADIUS-Statistics-Type	Internal		0x10
+VALUE	FreeRADIUS-Statistics-Type	Client			0x20
+VALUE	FreeRADIUS-Statistics-Type	Server			0x40
+VALUE	FreeRADIUS-Statistics-Type	Home-Server		0x80
+
+VALUE	FreeRADIUS-Statistics-Type	Auth-Acct		0x03
+VALUE	FreeRADIUS-Statistics-Type	Proxy-Auth-Acct		0x0c
+
+VALUE	FreeRADIUS-Statistics-Type	All			0x1f
+
+#
+#  Global authentication statistics for packets received by the server.
+#
+ATTRIBUTE	FreeRADIUS-Total-Access-Requests	128	integer
+ATTRIBUTE	FreeRADIUS-Total-Access-Accepts		129	integer
+ATTRIBUTE	FreeRADIUS-Total-Access-Rejects		130	integer
+ATTRIBUTE	FreeRADIUS-Total-Access-Challenges	131	integer
+ATTRIBUTE	FreeRADIUS-Total-Auth-Responses		132	integer
+ATTRIBUTE	FreeRADIUS-Total-Auth-Duplicate-Requests 133	integer
+ATTRIBUTE	FreeRADIUS-Total-Auth-Malformed-Requests 134	integer
+ATTRIBUTE	FreeRADIUS-Total-Auth-Invalid-Requests	135	integer
+ATTRIBUTE	FreeRADIUS-Total-Auth-Dropped-Requests	136	integer
+ATTRIBUTE	FreeRADIUS-Total-Auth-Unknown-Types	137	integer
+
+#
+#  Global statistics for auth packets sent by the server to all home servers
+#
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Access-Requests	138	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Access-Accepts	139	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Access-Rejects	140	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Access-Challenges 141	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Auth-Responses	142	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Auth-Duplicate-Requests 143	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Auth-Malformed-Requests 144	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Auth-Invalid-Requests 145	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Auth-Dropped-Requests 146	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Auth-Unknown-Types 147	integer
+
+#
+#  Global accounting statistics for packets received by the server.
+#
+ATTRIBUTE	FreeRADIUS-Total-Accounting-Requests	148	integer
+ATTRIBUTE	FreeRADIUS-Total-Accounting-Responses	149	integer
+ATTRIBUTE	FreeRADIUS-Total-Acct-Duplicate-Requests 150	integer
+ATTRIBUTE	FreeRADIUS-Total-Acct-Malformed-Requests 151	integer
+ATTRIBUTE	FreeRADIUS-Total-Acct-Invalid-Requests	152	integer
+ATTRIBUTE	FreeRADIUS-Total-Acct-Dropped-Requests	153	integer
+ATTRIBUTE	FreeRADIUS-Total-Acct-Unknown-Types	154	integer
+
+#
+#  Global statistics for acct packets sent by the server to all home servers
+#
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Accounting-Requests 155	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Accounting-Responses 156	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Acct-Duplicate-Requests 157	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Acct-Malformed-Requests 158	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Acct-Invalid-Requests 159	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Acct-Dropped-Requests 160	integer
+ATTRIBUTE	FreeRADIUS-Total-Proxy-Acct-Unknown-Types 161	integer
+
+#
+#  Internal queues.  Different packet types are put into different queues.
+#
+ATTRIBUTE	FreeRADIUS-Queue-Len-Internal		162	integer
+ATTRIBUTE	FreeRADIUS-Queue-Len-Proxy		163	integer
+ATTRIBUTE	FreeRADIUS-Queue-Len-Auth		164	integer
+ATTRIBUTE	FreeRADIUS-Queue-Len-Acct		165	integer
+ATTRIBUTE	FreeRADIUS-Queue-Len-Detail		166	integer
+
+ATTRIBUTE	FreeRADIUS-Stats-Client-IP-Address	167	ipaddr
+ATTRIBUTE	FreeRADIUS-Stats-Client-Number		168	integer
+ATTRIBUTE	FreeRADIUS-Stats-Client-Netmask		169	integer
+
+ATTRIBUTE	FreeRADIUS-Stats-Server-IP-Address	170	ipaddr
+ATTRIBUTE	FreeRADIUS-Stats-Server-Port		171	integer
+
+ATTRIBUTE	FreeRADIUS-Stats-Server-Outstanding-Requests	172	integer
+ATTRIBUTE	FreeRADIUS-Stats-Server-State		173	integer
+
+VALUE	FreeRADIUS-Stats-Server-State	Alive	0
+VALUE	FreeRADIUS-Stats-Server-State	Zombie	1
+VALUE	FreeRADIUS-Stats-Server-State	Dead	2
+
+#
+#  When a home server is marked "dead" or "alive"
+#
+ATTRIBUTE	FreeRADIUS-Stats-Server-Time-Of-Death	174	date
+ATTRIBUTE	FreeRADIUS-Stats-Server-Time-Of-Life	175	date
+
+#
+#  When this server was started.  If start == hup, it hasn't been
+#  hup'd yet.  This is friendlier than having hup == 0 on start.
+#
+ATTRIBUTE	FreeRADIUS-Stats-Start-Time		176	date
+ATTRIBUTE	FreeRADIUS-Stats-HUP-Time		177	date
+
+#
+#  Exponential moving average of home server response time
+#  Window-1 is the average is calculated over "window" packets.
+#  Window-10 is the average is calculated over "10 * window" packets.
+#
+#  Both Window-1 and Window-10 are times in microseconds
+#  (1/1000000 of a second).
+#
+ATTRIBUTE	FreeRADIUS-Server-EMA-Window		178	integer
+ATTRIBUTE	FreeRADIUS-Server-EMA-USEC-Window-1	179	integer
+ATTRIBUTE	FreeRADIUS-Server-EMA-USEC-Window-10	180	integer
+
+END-VENDOR FreeRADIUS

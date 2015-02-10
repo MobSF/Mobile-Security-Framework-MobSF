@@ -1,0 +1,399 @@
+UMTS-PIB  PIB-DEFINITIONS ::= BEGIN 
+
+IMPORTS 
+    ibrpib FROM TUBS-SMI
+    Unsigned32, Integer32, MODULE-IDENTITY, 
+    MODULE-COMPLIANCE, OBJECT-TYPE, OBJECT-GROUP 
+            FROM COPS-PR-SPPI 
+    InstanceId, Prid 
+            FROM COPS-PR-SPPI-TC  
+    RoleCombination
+            FROM FRAMEWORK-TC-PIB 
+    InetAddress, InetAddressType 
+            FROM INET-ADDRESS-MIB 
+    TruthValue, PhysAddress 
+            FROM SNMPv2-TC            
+    zeroDotZero
+            FROM SNMPv2-SMI
+    SnmpAdminString 
+            FROM SNMP-FRAMEWORK-MIB; 
+
+uMTSPib  MODULE-IDENTITY 
+    SUBJECT-CATEGORIES   { umts(1) } 
+    LAST-UPDATED "200111010800Z" 
+    ORGANIZATION "IETF RAP WG" 
+    CONTACT-INFO "Kwok Ho Chan 
+                  Nortel Networks 
+                  600 Technology Park Drive 
+                  Billerica, MA 01821 USA 
+                  Phone: +1 978 288 8175 
+                  Email: khchan@nortelnetworks.com 
+
+                  Louis-Nicolas Hamer 
+                  Nortel Networks 
+                  100 Constellation Crescent 
+                  Ottawa, Ontario 
+                  Canada, K2G 6J8 
+                  Phone: +1 613 768 3409 
+                  Email: nhamer@nortelnetworks.com" 
+    DESCRIPTION 
+            "A PIB module containing the set of provisioning  
+            classes that are required for support of policies for  
+            UMTS subject-categories." 
+
+    ::= { ibrpib 3 } 
+
+
+-- 
+-- The root OID for PRCs in the UMTS PIB 
+-- 
+
+uMTSCapabilityClasses   OBJECT IDENTIFIER ::= { uMTSPib 1 } 
+uMTSEventPolicyClasses  OBJECT IDENTIFIER ::= { uMTSPib 2 } 
+uMTSEventClasses        OBJECT IDENTIFIER ::= { uMTSPib 3 } 
+uMTSConformance         OBJECT IDENTIFIER ::= { uMTSPib 4 } 
+
+-- 
+-- Capability and Limitation Policy Rule Classes 
+-- 
+
+-- 
+-- UMTS Capability Base Table 
+-- 
+
+uMTSBaseCapsTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF UMTSBaseCapsEntry 
+    PIB-ACCESS     notify  
+    STATUS         current 
+    DESCRIPTION 
+        "" 
+
+    ::= { uMTSCapabilityClasses 1 } 
+
+
+
+uMTSBaseCapsEntry OBJECT-TYPE 
+    SYNTAX         UMTSBaseCapsEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of the uMTSBaseCaps class that identifies a 
+        specific PRC and associated attributes as supported 
+        by the device." 
+
+    PIB-INDEX { uMTSBaseCapsPrid } 
+    UNIQUENESS { uMTSBaseCapsX }   
+
+    ::= { uMTSBaseCapsTable 1 } 
+
+
+UMTSBaseCapsEntry ::= SEQUENCE { 
+        uMTSBaseCapsPrid             InstanceId, 
+        uMTSBaseCapsX                Unsigned32 
+} 
+
+
+uMTSBaseCapsPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An arbitrary integer index that uniquely identifies an 
+        instance of the uMTSBaseCaps class." 
+
+    ::= { uMTSBaseCapsEntry 1 } 
+
+
+uMTSBaseCapsX OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "" 
+
+    ::= { uMTSBaseCapsEntry 2 } 
+
+
+-- 
+-- Component Limitations Table 
+-- 
+
+-- This table supports the ability to export information 
+-- detailing provisioning class/attribute implementation limitations 
+-- to the policy management system. 
+
+-- 
+-- UMTS Event Policy Classes 
+-- 
+
+-- 
+-- UMTS Event Policy Base Table 
+-- 
+
+uMTSBaseEventPolicyTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF UMTSBaseEventPolicyEntry 
+    PIB-ACCESS     notify  
+    STATUS         current 
+    DESCRIPTION 
+        "" 
+
+    ::= { uMTSEventPolicyClasses 1 } 
+
+
+uMTSBaseEventPolicyEntry OBJECT-TYPE 
+    SYNTAX         UMTSBaseEventPolicyEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of the uMTSBaseCaps class that identifies a 
+        specific PRC and associated attributes as supported 
+        by the device." 
+
+    PIB-INDEX { uMTSBaseEventPolicyPrid } 
+    UNIQUENESS { uMTSBaseEventPolicyPrid }   
+
+    ::= { uMTSBaseEventPolicyTable 1 } 
+
+
+UMTSBaseEventPolicyEntry ::= SEQUENCE { 
+        uMTSBaseEventPolicyPrid      InstanceId, 
+        uMTSBaseEventPolicyIfName    SnmpAdminString, 
+        uMTSBaseEventPolicyRoles     RoleCombination 
+} 
+
+
+uMTSBaseEventPolicyPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An arbitrary integer index that uniquely identifies an 
+        instance of the uMTSBaseCaps class." 
+
+    ::= { uMTSBaseEventPolicyEntry 1 } 
+
+
+uMTSBaseEventPolicyIfName OBJECT-TYPE 
+    SYNTAX         SnmpAdminString 
+    STATUS         current 
+    DESCRIPTION 
+        "The interface capability set to which this event handler 
+        provisioning entry applies.   
+        The interface capability name specified by this attribute 
+        must exist in the frwkIfCapSetTable (of the Framework PIB) 
+        prior to association with an instance of this class." 
+    ::= { uMTSBaseEventPolicyEntry 2 } 
+
+
+uMTSBaseEventPolicyRoles OBJECT-TYPE 
+    SYNTAX         RoleCombination 
+    STATUS         current 
+    DESCRIPTION 
+        "The interfaces to which this entry applies, specified in 
+        terms of roles. 
+        There must exist an entry in the frwkIfCapSetRoleComboTable 
+        (of the Framework PIB) specifying this role combination, 
+        together with the interface capability set specified by 
+        uMTSBaseEventPolicyIfName, prior to association with an 
+        instance of this class." 
+    ::= { uMTSBaseEventPolicyEntry 3 } 
+
+
+
+-- 
+-- UMTS PDP Context Event Handler Provisioning Table 
+--  
+
+uMTSPdpContextPolicyTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF UMTSPdpContextPolicyEntry 
+    PIB-ACCESS     notify  
+    STATUS         current 
+    DESCRIPTION 
+        "" 
+
+    ::= { uMTSEventPolicyClasses 2 } 
+
+
+uMTSPdpContextPolicyEntry OBJECT-TYPE 
+    SYNTAX         UMTSPdpContextPolicyEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "An instance of the uMTSBaseCaps class that identifies a 
+        specific PRC and associated attributes as supported 
+        by the device." 
+
+    EXTENDS { uMTSBaseEventPolicyEntry } 
+    UNIQUENESS { uMTSPdpContextPolicyEnable, 
+                 uMTSPdpContextPolicyFlowIds 
+               }   
+    ::= { uMTSPdpContextPolicyTable 1 } 
+
+
+UMTSPdpContextPolicyEntry ::= SEQUENCE { 
+        uMTSPdpContextPolicyEnable   Integer32, 
+        uMTSPdpContextPolicyFlowIds  Unsigned32 
+} 
+
+
+uMTSPdpContextPolicyEnable OBJECT-TYPE 
+    SYNTAX         INTEGER { 
+                        disable(1), 
+                        enable(2) 
+                   } 
+    STATUS         current 
+    DESCRIPTION 
+        "Controls the usage of UMTS PDP Context Events to trigger 
+        requests to PCF on the go interface." 
+    DEFVAL { disable } 
+    ::= { uMTSPdpContextPolicyEntry 1 } 
+
+
+uMTSPdpContextPolicyFlowIds OBJECT-TYPE 
+    SYNTAX         Unsigned32 
+    STATUS         current 
+    DESCRIPTION 
+        "Indication of the maximum number of FlowIds a Token can  
+        be associated with 
+        The value of zero indicates policy control does not impose 
+        any limit.  The limitation is based on GGSN capabilities." 
+    DEFVAL  { 0 } 
+    ::= { uMTSPdpContextPolicyEntry 2 } 
+
+
+
+-- 
+-- RSVP Event Handler Provisioning Table 
+-- 
+
+-- 
+-- UMTS Event Classes 
+-- 
+
+
+-- 
+-- UMTS PDP Context Event Table 
+-- 
+
+uMTSPdpContextEventTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF UMTSPdpContextEventEntry 
+    PIB-ACCESS     notify  
+    STATUS         current 
+    DESCRIPTION 
+        "" 
+    ::= { uMTSEventClasses 1 } 
+
+
+uMTSPdpContextEventEntry OBJECT-TYPE 
+    SYNTAX         UMTSPdpContextEventEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "" 
+    PIB-INDEX { uMTSPdpContextEventPrid } 
+    UNIQUENESS { uMTSPdpContextEventToken }   
+    ::= { uMTSPdpContextEventTable 1 } 
+
+
+UMTSPdpContextEventEntry ::= SEQUENCE { 
+        uMTSPdpContextEventPrid      InstanceId, 
+        uMTSPdpContextEventToken     OCTET STRING, 
+        uMTSPdpContextEventFlowIds   Prid 
+} 
+
+
+uMTSPdpContextEventPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An arbitrary integer index that uniquely identifies an 
+        instance of the uMTSPdpContextEvent class." 
+
+    ::= { uMTSPdpContextEventEntry 1 } 
+
+
+uMTSPdpContextEventToken OBJECT-TYPE 
+    SYNTAX         OCTET STRING
+    STATUS         current 
+    DESCRIPTION 
+        "The token associated with this PDP Context event." 
+    ::= { uMTSPdpContextEventEntry 2 } 
+
+
+uMTSPdpContextEventFlowIds OBJECT-TYPE 
+    SYNTAX         Prid 
+    STATUS         current 
+    DESCRIPTION 
+        "References the FlowIds associated with the Token indicated 
+        in this PDP Context event. 
+        This is the anchor of a list of uMTSPdpContextFlowIdEntry 
+        Instances. 
+        A value of zeroDotZero indicates an empty list." 
+    DEFVAL  { zeroDotZero } 
+    ::= { uMTSPdpContextEventEntry 3 } 
+
+
+
+-- 
+-- UMTS PDP Context FlowID Table 
+-- 
+
+uMTSPdpContextFlowIdTable OBJECT-TYPE 
+    SYNTAX         SEQUENCE OF UMTSPdpContextFlowIdEntry 
+    PIB-ACCESS     notify  
+    STATUS         current 
+    DESCRIPTION 
+        "" 
+    ::= { uMTSEventClasses 2 } 
+
+
+uMTSPdpContextFlowIdEntry OBJECT-TYPE 
+    SYNTAX         UMTSPdpContextFlowIdEntry 
+    STATUS         current 
+    DESCRIPTION 
+        "" 
+    PIB-INDEX { uMTSPdpContextFlowIdPrid } 
+    UNIQUENESS { uMTSPdpContextFlowIdId }   
+    ::= { uMTSPdpContextFlowIdTable 1 } 
+
+
+UMTSPdpContextFlowIdEntry ::= SEQUENCE { 
+        uMTSPdpContextFlowIdPrid  InstanceId, 
+        uMTSPdpContextFlowIdId    OCTET STRING, 
+        uMTSPdpContextFlowIdNext  Prid 
+} 
+
+
+uMTSPdpContextFlowIdPrid OBJECT-TYPE 
+    SYNTAX         InstanceId 
+    STATUS         current 
+    DESCRIPTION 
+        "An arbitrary integer index that uniquely identifies an 
+        instance of the uMTSPdpContextFlowId class." 
+
+    ::= { uMTSPdpContextFlowIdEntry 1 } 
+
+
+uMTSPdpContextFlowIdId OBJECT-TYPE 
+    SYNTAX         OCTET STRING
+    STATUS         current 
+    DESCRIPTION 
+        "The FlowId itself." 
+    ::= { uMTSPdpContextFlowIdEntry 2 } 
+
+
+uMTSPdpContextFlowIdNext OBJECT-TYPE 
+    SYNTAX         Prid
+    STATUS         current 
+    DESCRIPTION 
+        "References the next FlowId in the list associated with the 
+        same Token of a PDP Context event. 
+        This points to a list of uMTSPdpContextFlowIdEntry 
+        Instances. 
+        A value of zeroDotZero indicates end of the list." 
+    DEFVAL  { zeroDotZero } 
+    ::= { uMTSPdpContextFlowIdEntry 3 } 
+
+-- 
+-- Conformance Section 
+-- 
+
+uMTSCompliances         OBJECT IDENTIFIER ::= { uMTSConformance 1 } 
+uMTSGroups              OBJECT IDENTIFIER ::= { uMTSConformance 2 } 
+
+
+
+END 

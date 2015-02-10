@@ -1,0 +1,26 @@
+<? wireshark:protocol
+   proto_name="watcherinfo"
+   description="watcherinfo XML doc (RFC 3858)"
+   hierarchy="yes" ?>
+<!--
+$Id$
+-->
+
+
+<!ELEMENT watcherinfo (watcher-list)* >
+<!ATTLIST watcherinfo xmlns CDATA #IMPLIED
+                      version CDATA #REQUIRED
+                      state CDATA #REQUIRED>
+
+<!ELEMENT watcher-list (watcher?)* >
+<!ATTLIST watcher-list resource CDATA #REQUIRED
+                       package CDATA #REQUIRED>
+
+<!ELEMENT watcher (#PCDATA)>
+<!ATTLIST watcher    display-name        CDATA #IMPLIED
+                     status              CDATA #REQUIRED
+                     event               CDATA #REQUIRED
+                     expiration          CDATA #IMPLIED
+                     id                  CDATA #REQUIRED
+                     duration-subscribed CDATA #IMPLIED>
+

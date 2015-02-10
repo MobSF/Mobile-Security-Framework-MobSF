@@ -1,0 +1,1076 @@
+IFCP-MGMT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Gauge32,
+    Integer32,
+    Unsigned32,
+    transmission
+         FROM SNMPv2-SMI
+
+    OBJECT-GROUP,
+    MODULE-COMPLIANCE
+         FROM SNMPv2-CONF
+
+    TEXTUAL-CONVENTION,
+    TimeStamp,
+    TruthValue,
+    StorageType
+         FROM SNMPv2-TC
+
+--  From RFC 2021
+    ZeroBasedCounter32
+         FROM RMON2-MIB
+
+--  From RFC 2856
+    ZeroBasedCounter64
+         FROM HCNUM-TC
+
+--  From RFC 2863
+    InterfaceIndexOrZero
+         FROM IF-MIB
+
+--  From RFC 3411
+    SnmpAdminString
+         FROM SNMP-FRAMEWORK-MIB
+
+--  From RFC 4001
+    InetAddressType,
+    InetAddress,
+    InetPortNumber
+         FROM INET-ADDRESS-MIB
+
+--  From RFC 4044
+    FcNameIdOrZero,
+    FcAddressIdOrZero
+
+
+
+         FROM FC-MGMT-MIB
+
+--  From RFC 4133
+    PhysicalIndexOrZero
+         FROM ENTITY-MIB
+      ;
+
+ifcpMgmtMIB   MODULE-IDENTITY
+      LAST-UPDATED "200601170000Z"
+      ORGANIZATION "IETF IPS Working Group"
+      CONTACT-INFO "
+        Attn: Kevin Gibbons
+              McDATA Corporation
+              4555 Great America Pkwy
+              Santa Clara, CA 95054-1208 USA
+              Phone: (408) 567-5765
+              EMail: kevin.gibbons@mcdata.com
+
+              Charles Monia
+              Consultant
+              7553 Morevern Circle
+              San Jose, CA 95135 USA
+              EMail: charles_monia@yahoo.com
+
+              Josh Tseng
+              Riverbed Technology
+              501 2nd Street, Suite 410
+              San Francisco, CA 94107 USA
+              Phone: (650) 274-2109
+              EMail: joshtseng@yahoo.com
+
+              Franco Travostino
+              Nortel
+              600 Technology Park Drive
+              Billerica, MA 01821 USA
+              Phone: (978) 288-7708
+              EMail: travos@nortel.com"
+
+      DESCRIPTION
+              "This module defines management information specific
+               to internet Fibre Channel Protocol (iFCP) gateway
+               management.
+
+               Copyright (C) The Internet Society 2006.  This
+               version of this MIB module is part of RFC 4369; see
+               the RFC itself for full legal notices."
+          REVISION    "200601170000Z"
+      DESCRIPTION
+
+
+
+               "Initial version of iFCP Management Module.
+                This MIB published as RFC 4369."
+      ::=  { transmission 230 }
+
+--
+--  Textual Conventions
+--
+
+  IfcpIpTOVorZero ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT   "d"
+    STATUS         current
+    DESCRIPTION    "The maximum propagation delay, in seconds,
+                    for an encapsulated FC frame to traverse the
+                    IP network.  A value of 0 implies fibre
+                    channel frame lifetime limits will not be
+                    enforced."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    SYNTAX         Unsigned32 (0..3600)
+
+  IfcpLTIorZero ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT   "d"
+    STATUS         current
+    DESCRIPTION    "The value for the Liveness Test Interval
+                    (LTI) being used in an iFCP connection, in
+                    seconds.  A value of 0 implies no Liveness
+                    Test Interval will be used."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    SYNTAX         Unsigned32 (0..65535)
+
+  IfcpSessionStates ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "The value for an iFCP session state."
+    SYNTAX         INTEGER {down(1), openPending(2), open(3)}
+
+  IfcpAddressMode ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "The values for iFCP Address Translation
+                    Mode."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    SYNTAX         INTEGER {addressTransparent(1),
+                            addressTranslation(2)}
+
+--
+-- Internet Fibre Channel Protocol (iFCP)
+--
+
+ifcpGatewayObjects      OBJECT IDENTIFIER ::= {ifcpMgmtMIB 1}
+ifcpGatewayConformance  OBJECT IDENTIFIER ::= {ifcpMgmtMIB 2}
+
+
+
+
+--
+-- Local iFCP Gateway Instance Information ==================
+--
+
+ifcpLclGatewayInfo OBJECT IDENTIFIER ::= {ifcpGatewayObjects 1}
+
+ifcpLclGtwyInstTable OBJECT-TYPE
+    SYNTAX           SEQUENCE OF IfcpLclGtwyInstEntry
+    MAX-ACCESS       not-accessible
+    STATUS           current
+    DESCRIPTION
+"Information about all local iFCP Gateway instances that can
+ be monitored and controlled.  This table contains an entry
+ for each local iFCP Gateway instance that is being managed."
+    ::= {ifcpLclGatewayInfo 1}
+
+ifcpLclGtwyInstEntry OBJECT-TYPE
+    SYNTAX           IfcpLclGtwyInstEntry
+    MAX-ACCESS       not-accessible
+    STATUS           current
+    DESCRIPTION
+"An entry in the local iFCP Gateway Instance table.
+ Parameters and settings for the gateway are found here."
+    INDEX { ifcpLclGtwyInstIndex }
+    ::= {ifcpLclGtwyInstTable 1}
+
+IfcpLclGtwyInstEntry ::= SEQUENCE {
+    ifcpLclGtwyInstIndex             Unsigned32,
+    ifcpLclGtwyInstPhyIndex          PhysicalIndexOrZero,
+    ifcpLclGtwyInstVersionMin        Unsigned32,
+    ifcpLclGtwyInstVersionMax        Unsigned32,
+    ifcpLclGtwyInstAddrTransMode     IfcpAddressMode,
+    ifcpLclGtwyInstFcBrdcstSupport   TruthValue,
+    ifcpLclGtwyInstDefaultIpTOV      IfcpIpTOVorZero,
+    ifcpLclGtwyInstDefaultLTInterval IfcpLTIorZero,
+    ifcpLclGtwyInstDescr             SnmpAdminString,
+    ifcpLclGtwyInstNumActiveSessions Gauge32,
+    ifcpLclGtwyInstStorageType       StorageType
+                                  }
+
+ifcpLclGtwyInstIndex  OBJECT-TYPE
+    SYNTAX            Unsigned32 (1..2147483647)
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+"An arbitrary integer value to uniquely identify this iFCP
+ Gateway from other local Gateway instances."
+
+
+
+    ::= {ifcpLclGtwyInstEntry      1}
+
+ifcpLclGtwyInstPhyIndex OBJECT-TYPE
+    SYNTAX            PhysicalIndexOrZero
+    MAX-ACCESS        read-only
+    STATUS            current
+    DESCRIPTION
+"An index indicating the location of this local gateway within
+ a larger entity, if one exists.  If supported, this is the
+ entPhysicalIndex from the Entity MIB (Version 3), for this
+ iFCP Gateway.  If not supported, or if not related to a
+ physical entity, then the value of this object is 0."
+    REFERENCE      "Entity MIB (Version 3)"
+    ::= {ifcpLclGtwyInstEntry      2}
+
+ifcpLclGtwyInstVersionMin OBJECT-TYPE
+    SYNTAX            Unsigned32 (0..255)
+    MAX-ACCESS        read-only
+    STATUS            current
+    DESCRIPTION
+"The minimum iFCP protocol version supported by the local iFCP
+ gateway instance."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    ::= {ifcpLclGtwyInstEntry      3}
+
+ifcpLclGtwyInstVersionMax OBJECT-TYPE
+    SYNTAX            Unsigned32 (0..255)
+    MAX-ACCESS        read-only
+    STATUS            current
+    DESCRIPTION
+"The maximum iFCP protocol version supported by the local iFCP
+ gateway instance."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    ::= {ifcpLclGtwyInstEntry      4}
+
+ifcpLclGtwyInstAddrTransMode OBJECT-TYPE
+    SYNTAX            IfcpAddressMode
+    MAX-ACCESS        read-write
+    STATUS            current
+    DESCRIPTION
+"The local iFCP gateway operating mode.  Changing this value
+ may cause existing sessions to be disrupted."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    DEFVAL            { addressTranslation }
+    ::= {ifcpLclGtwyInstEntry      5}
+
+ifcpLclGtwyInstFcBrdcstSupport OBJECT-TYPE
+    SYNTAX            TruthValue
+
+
+
+    MAX-ACCESS        read-write
+    STATUS            current
+    DESCRIPTION
+"Whether the local iFCP gateway supports FC Broadcast.
+ Changing this value may cause existing sessions to be
+ disrupted."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    DEFVAL            { false }
+    ::= {ifcpLclGtwyInstEntry      6}
+
+ifcpLclGtwyInstDefaultIpTOV OBJECT-TYPE
+    SYNTAX            IfcpIpTOVorZero
+    MAX-ACCESS        read-write
+    STATUS            current
+    DESCRIPTION
+"The default IP_TOV used for iFCP sessions at this gateway.
+ This is the default maximum propagation delay that will be
+ used for an iFCP session.  The value can be changed on a
+ per-session basis.  The valid range is 0 - 3600 seconds.
+ A value of 0 implies that fibre channel frame lifetime limits
+ will not be enforced."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    DEFVAL            { 6 }
+    ::= {ifcpLclGtwyInstEntry      7}
+
+ifcpLclGtwyInstDefaultLTInterval OBJECT-TYPE
+    SYNTAX            IfcpLTIorZero
+    MAX-ACCESS        read-write
+    STATUS            current
+    DESCRIPTION
+"The default Liveness Test Interval (LTI), in seconds, used
+ for iFCP sessions at this gateway.  This is the default
+ value for an iFCP session and can be changed on a
+ per-session basis.  The valid range is 0 - 65535 seconds.
+ A value of 0 implies no Liveness Test Interval will be
+ performed on a session."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    DEFVAL            { 10 }
+    ::= {ifcpLclGtwyInstEntry      8}
+
+ifcpLclGtwyInstDescr  OBJECT-TYPE
+    SYNTAX            SnmpAdminString (SIZE (0..64))
+    MAX-ACCESS        read-write
+    STATUS            current
+    DESCRIPTION
+"A user-entered description for this iFCP Gateway."
+    DEFVAL            { "" }
+    ::= {ifcpLclGtwyInstEntry      9}
+
+
+
+
+ifcpLclGtwyInstNumActiveSessions OBJECT-TYPE
+    SYNTAX            Gauge32 (0..4294967295)
+    MAX-ACCESS        read-only
+    STATUS            current
+    DESCRIPTION
+"The current total number of iFCP sessions in the open or
+ open-pending state."
+    ::= {ifcpLclGtwyInstEntry      10}
+
+ifcpLclGtwyInstStorageType OBJECT-TYPE
+    SYNTAX            StorageType
+    MAX-ACCESS        read-only
+    STATUS            current
+    DESCRIPTION
+"The storage type for this row.  Parameter values defined
+ for a gateway are usually non-volatile, but may be volatile
+ or permanent in some configurations.  If permanent, then
+ the following parameters must have read-write access:
+ ifcpLclGtwyInstAddrTransMode, ifcpLclGtwyInstDefaultIpTOV,
+ and ifcpLclGtwyInstDefaultLTInterval."
+    DEFVAL            { nonVolatile }
+    ::= {ifcpLclGtwyInstEntry      11}
+
+--
+-- iFCP N Port Session Information ============================
+--
+
+ifcpNportSessionInfo
+           OBJECT IDENTIFIER ::= {ifcpGatewayObjects 2}
+
+ifcpSessionAttributesTable OBJECT-TYPE
+    SYNTAX                         SEQUENCE OF
+                                    IfcpSessionAttributesEntry
+    MAX-ACCESS                     not-accessible
+    STATUS                         current
+    DESCRIPTION
+"An iFCP session consists of the pair of N_PORTs comprising
+ the session endpoints joined by a single TCP/IP connection.
+ This table provides information on each iFCP session
+ currently using a local iFCP Gateway instance.  iFCP sessions
+ are created and removed by the iFCP Gateway instances, which
+ are reflected in this table."
+    ::= {ifcpNportSessionInfo 1}
+
+ifcpSessionAttributesEntry OBJECT-TYPE
+    SYNTAX                         IfcpSessionAttributesEntry
+    MAX-ACCESS                     not-accessible
+
+
+
+    STATUS                         current
+    DESCRIPTION
+"Each entry contains information about one iFCP session consisting
+ of a pair of N_PORTs joined by a single TCP/IP connection.  This
+ table's INDEX includes ifcpLclGtwyInstIndex, which identifies the
+ local iFCP Gateway instance that created the session for the
+ entry.
+
+ Soon after an entry is created in this table for an iFCP session, it
+ will correspond to an entry in the tcpConnectionTable of the TCP-MIB
+ (RFC 4022).  The corresponding entry might represent a preexisting
+ TCP connection, or it might be a newly-created entry.  (Note that if
+ IPv4 is being used, an entry in RFC 2012's tcpConnTable may also
+ correspond.)  The values of ifcpSessionLclPrtlAddrType and
+ ifcpSessionRmtPrtlIfAddrType in this table and the values of
+ tcpConnectionLocalAddressType and tcpConnectionRemAddressType used
+ as INDEX values for the corresponding entry in the
+ tcpConnectionTable should be the same; this makes it simpler to
+ locate a session's TCP connection in the TCP-MIB.  (Of course, all
+ four values need to be 'ipv4' if there's a corresponding entry in
+ the tcpConnTable.)
+
+ If an entry is created in this table for a session, prior to
+ knowing which local and/or remote port numbers will be used for
+ the TCP connection, then ifcpSessionLclPrtlTcpPort and/or
+ ifcpSessionRmtPrtlTcpPort have the value zero until such time as
+ they can be updated to the port numbers (to be) used for the
+ connection.  (Thus, a port value of zero should not be used to
+ locate a session's TCP connection in the TCP-MIB.)
+
+ When the TCP connection terminates, the entry in the
+ tcpConnectionTable and the entry in this table both get deleted
+ (and, if applicable, so does the entry in the tcpConnTable)."
+    INDEX { ifcpLclGtwyInstIndex, ifcpSessionIndex }
+    ::= {ifcpSessionAttributesTable 1}
+
+IfcpSessionAttributesEntry ::= SEQUENCE {
+    ifcpSessionIndex               Integer32,
+    ifcpSessionLclPrtlIfIndex      InterfaceIndexOrZero,
+    ifcpSessionLclPrtlAddrType     InetAddressType,
+    ifcpSessionLclPrtlAddr         InetAddress,
+    ifcpSessionLclPrtlTcpPort      InetPortNumber,
+    ifcpSessionLclNpWwun           FcNameIdOrZero,
+    ifcpSessionLclNpFcid           FcAddressIdOrZero,
+    ifcpSessionRmtNpWwun           FcNameIdOrZero,
+    ifcpSessionRmtPrtlIfAddrType   InetAddressType,
+    ifcpSessionRmtPrtlIfAddr       InetAddress,
+    ifcpSessionRmtPrtlTcpPort      InetPortNumber,
+
+
+
+    ifcpSessionRmtNpFcid           FcAddressIdOrZero,
+    ifcpSessionRmtNpFcidAlias      FcAddressIdOrZero,
+    ifcpSessionIpTOV               IfcpIpTOVorZero,
+    ifcpSessionLclLTIntvl          IfcpLTIorZero,
+    ifcpSessionRmtLTIntvl          IfcpLTIorZero,
+    ifcpSessionBound               TruthValue,
+    ifcpSessionStorageType         StorageType
+                                       }
+
+ifcpSessionIndex                   OBJECT-TYPE
+    SYNTAX                         Integer32 (1..2147483647)
+    MAX-ACCESS                     not-accessible
+    STATUS                         current
+    DESCRIPTION
+"The iFCP session index is a unique value used as an index
+ to the table, along with a specific local iFCP Gateway
+ instance.  This index is used because the local N Port and
+ remote N Port information would create an complex index that
+ would be difficult to implement."
+    ::= {ifcpSessionAttributesEntry 1}
+
+ifcpSessionLclPrtlIfIndex          OBJECT-TYPE
+    SYNTAX                         InterfaceIndexOrZero
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"This is the interface index in the IF-MIB ifTable being used
+ as the local portal in this session, as described in the
+ IF-MIB.  If the local portal is not associated with an entry
+ in the ifTable, then the value is 0.  The ifType of the
+ interface will generally be a type that supports IP, but an
+ implementation may support iFCP using other protocols.  This
+ object can be used to obtain additional information about the
+ interface."
+    REFERENCE     "RFC 2863, The Interfaces Group MIB (IF-MIB)"
+    ::= {ifcpSessionAttributesEntry 2}
+
+ifcpSessionLclPrtlAddrType         OBJECT-TYPE
+    SYNTAX                         InetAddressType
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The type of address in ifcpSessionLclIfAddr."
+    ::= {ifcpSessionAttributesEntry 3}
+
+ifcpSessionLclPrtlAddr             OBJECT-TYPE
+    SYNTAX                         InetAddress
+    MAX-ACCESS                     read-only
+
+
+
+    STATUS                         current
+    DESCRIPTION
+"This is the external IP address of the interface being used
+ for the iFCP local portal in this session.  The address type
+ is defined in ifcpSessionLclPrtlAddrType.  If the value is a
+ DNS name, then the name is resolved once, during the initial
+ session instantiation."
+    ::= {ifcpSessionAttributesEntry 4}
+
+ifcpSessionLclPrtlTcpPort          OBJECT-TYPE
+    SYNTAX                         InetPortNumber
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"This is the TCP port number that is being used for the iFCP
+ local portal in this session.  This is normally an ephemeral
+ port number selected by the gateway.  The value may be 0
+ during an initial setup period."
+    ::= {ifcpSessionAttributesEntry 5}
+
+ifcpSessionLclNpWwun               OBJECT-TYPE
+    SYNTAX                         FcNameIdOrZero
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"World Wide Unique Name of the local N Port.  For an unbound
+ session, this variable will be a zero-length string."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    DEFVAL                         { "" }
+    ::= {ifcpSessionAttributesEntry 6}
+
+ifcpSessionLclNpFcid               OBJECT-TYPE
+    SYNTAX                         FcAddressIdOrZero
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"Fibre Channel Identifier of the local N Port.  For an unbound
+ session, this variable will be a zero-length string."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    ::= {ifcpSessionAttributesEntry 7}
+
+ifcpSessionRmtNpWwun               OBJECT-TYPE
+    SYNTAX                         FcNameIdOrZero
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"World Wide Unique Name of the remote N Port.  For an unbound
+ session, this variable will be a zero-length string."
+
+
+
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    DEFVAL                         { "" }
+    ::= {ifcpSessionAttributesEntry 8}
+
+ifcpSessionRmtPrtlIfAddrType       OBJECT-TYPE
+    SYNTAX                         InetAddressType
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The type of address in ifcpSessionRmtPrtlIfAddr."
+    ::= {ifcpSessionAttributesEntry 9}
+
+ifcpSessionRmtPrtlIfAddr           OBJECT-TYPE
+    SYNTAX                         InetAddress
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"This is the remote gateway IP address being used for the
+ portal on the remote iFCP gateway.  The address type is
+ defined in ifcpSessionRmtPrtlIfAddrType.  If the value is a
+ DNS name, then the name is resolved once, during the initial
+ session instantiation."
+    ::= {ifcpSessionAttributesEntry 10}
+
+ifcpSessionRmtPrtlTcpPort          OBJECT-TYPE
+    SYNTAX                         InetPortNumber
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"This is the TCP port number being used for the portal on the
+ remote iFCP gateway.  Generally, this will be the iFCP
+ canonical port.  The value may be 0 during an initial setup
+ period."
+    DEFVAL                         { 3420 }
+    ::= {ifcpSessionAttributesEntry 11}
+
+ifcpSessionRmtNpFcid               OBJECT-TYPE
+    SYNTAX                         FcAddressIdOrZero
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"Fibre Channel Identifier of the remote N Port.  For an
+ unbound session, this variable will be a zero-length string."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    ::= {ifcpSessionAttributesEntry 12}
+
+ifcpSessionRmtNpFcidAlias          OBJECT-TYPE
+    SYNTAX                         FcAddressIdOrZero
+
+
+
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"Fibre Channel Identifier Alias assigned by the local gateway
+ for the remote N Port.  For an unbound session, this variable
+ will be a zero-length string."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    ::= {ifcpSessionAttributesEntry 13}
+
+ifcpSessionIpTOV                   OBJECT-TYPE
+    SYNTAX                         IfcpIpTOVorZero
+    MAX-ACCESS                     read-write
+    STATUS                         current
+    DESCRIPTION
+"The IP_TOV being used for this iFCP session.  This is the
+ maximum propagation delay that will be used for the iFCP
+ session.  The value can be changed on a per-session basis
+ and initially defaults to ifcpLclGtwyInstDefaultIpTOV for
+ the local gateway instance.  The valid range is 0 - 3600
+ seconds.  A value of 0 implies fibre channel frame lifetime
+ limits will not be enforced."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    ::= {ifcpSessionAttributesEntry 14}
+
+ifcpSessionLclLTIntvl              OBJECT-TYPE
+    SYNTAX                         IfcpLTIorZero
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The Liveness Test Interval (LTI) used for this iFCP session.
+ The value can be changed on a per-session basis and initially
+ defaults to ifcpLclGtwyInstDefaultLTInterval for the local
+ gateway instance.  The valid range is 0 - 65535 seconds.
+ A value of 0 implies that the gateway will not originate
+ Liveness Test messages for the session."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    ::= {ifcpSessionAttributesEntry 15}
+
+ifcpSessionRmtLTIntvl              OBJECT-TYPE
+    SYNTAX                         IfcpLTIorZero
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The Liveness Test Interval (LTI) as requested by the remote
+ gateway instance to use for this iFCP session.  This value may
+ change over the life of the session.  The valid range is 0 -
+ 65535 seconds.  A value of 0 implies that the remote gateway
+ has not been requested to originate Liveness Test messages for
+
+
+
+ the session."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    ::= {ifcpSessionAttributesEntry 16}
+
+ifcpSessionBound                   OBJECT-TYPE
+    SYNTAX                         TruthValue
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"This value indicates whether this session is bound to a
+ specific local and remote N Port.  Sessions by default are
+ unbound and ready for future assignment to a local and remote
+ N Port."
+    REFERENCE      "RFC 4172, iFCP Protocol Specification"
+    ::= {ifcpSessionAttributesEntry 17}
+
+ifcpSessionStorageType             OBJECT-TYPE
+    SYNTAX                         StorageType
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The storage type for this row.  Parameter values defined
+ for a session are usually non-volatile, but may be volatile
+ or permanent in some configurations.  If permanent, then
+ ifcpSessionIpTOV must have read-write access."
+    DEFVAL            { nonVolatile }
+    ::= {ifcpSessionAttributesEntry 18}
+
+--
+-- Local iFCP Gateway Instance Session Statistics =============
+--
+
+ifcpSessionStatsTable              OBJECT-TYPE
+    SYNTAX                         SEQUENCE OF
+                                      IfcpSessionStatsEntry
+    MAX-ACCESS                     not-accessible
+    STATUS                         current
+    DESCRIPTION
+"This table provides statistics on an iFCP session."
+    ::= {ifcpNportSessionInfo 2}
+
+ifcpSessionStatsEntry              OBJECT-TYPE
+    SYNTAX                         IfcpSessionStatsEntry
+    MAX-ACCESS                     not-accessible
+    STATUS                         current
+    DESCRIPTION
+"Provides iFCP-specific statistics per session."
+    AUGMENTS {ifcpSessionAttributesEntry}
+
+
+
+    ::= {ifcpSessionStatsTable 1}
+
+IfcpSessionStatsEntry ::= SEQUENCE {
+    ifcpSessionState               IfcpSessionStates,
+    ifcpSessionDuration            Unsigned32,
+    ifcpSessionTxOctets            ZeroBasedCounter64,
+    ifcpSessionRxOctets            ZeroBasedCounter64,
+    ifcpSessionTxFrames            ZeroBasedCounter64,
+    ifcpSessionRxFrames            ZeroBasedCounter64,
+    ifcpSessionStaleFrames         ZeroBasedCounter64,
+    ifcpSessionHeaderCRCErrors     ZeroBasedCounter64,
+    ifcpSessionFcPayloadCRCErrors  ZeroBasedCounter64,
+    ifcpSessionOtherErrors         ZeroBasedCounter64,
+    ifcpSessionDiscontinuityTime   TimeStamp
+                                   }
+
+ifcpSessionState                   OBJECT-TYPE
+    SYNTAX                         IfcpSessionStates
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The current session operating state."
+    ::= {ifcpSessionStatsEntry 1}
+
+ifcpSessionDuration                OBJECT-TYPE
+    SYNTAX                         Unsigned32 (0..4294967295)
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"This indicates, in seconds, how long the iFCP session has
+ been in an open or open-pending state.  When a session is
+ down, the value is reset to 0."
+    ::= {ifcpSessionStatsEntry 2}
+
+ifcpSessionTxOctets                OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter64
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of octets transmitted by the iFCP gateway
+ for this session.  Discontinuities in the value of this
+ counter can occur at reinitialization of the management
+ system, and at other times as indicated by the value of
+ ifcpSessionDiscontinuityTime."
+    ::= {ifcpSessionStatsEntry 3}
+
+ifcpSessionRxOctets                OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter64
+
+
+
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of octets received by the iFCP gateway for
+ this session.  Discontinuities in the value of this
+ counter can occur at reinitialization of the management
+ system, and at other times as indicated by the value of
+ ifcpSessionDiscontinuityTime."
+    ::= {ifcpSessionStatsEntry 4}
+
+ifcpSessionTxFrames                OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter64
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of iFCP frames transmitted by the gateway
+ for this session.  Discontinuities in the value of this
+ counter can occur at reinitialization of the management
+ system, and at other times as indicated by the value of
+ ifcpSessionDiscontinuityTime."
+    ::= {ifcpSessionStatsEntry 5}
+
+ifcpSessionRxFrames                OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter64
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of iFCP frames received by the gateway
+ for this session.  Discontinuities in the value of this
+ counter can occur at reinitialization of the management
+ system, and at other times as indicated by the value of
+ ifcpSessionDiscontinuityTime."
+    ::= {ifcpSessionStatsEntry 6}
+
+ifcpSessionStaleFrames             OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter64
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of received iFCP frames that were stale and
+ discarded by the gateway for this session.  Discontinuities
+ in the value of this counter can occur at reinitialization
+ of the management system, and at other times as indicated by
+ the value of ifcpSessionDiscontinuityTime."
+    ::= {ifcpSessionStatsEntry 7}
+
+ifcpSessionHeaderCRCErrors         OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter64
+
+
+
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of CRC errors that occurred in the frame
+ header, detected by the gateway for this session.  Usually,
+ a single Header CRC error is sufficient to terminate an
+ iFCP session.  Discontinuities in the value of this
+ counter can occur at reinitialization of the management
+ system, and at other times as indicated by the value of
+ ifcpSessionDiscontinuityTime."
+    ::= {ifcpSessionStatsEntry 8}
+
+ifcpSessionFcPayloadCRCErrors      OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter64
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of CRC errors that occurred in the Fibre
+ Channel frame payload, detected by the gateway for this
+ session.  Discontinuities in the value of this counter can
+ occur at reinitialization of the management system, and
+ at other times as indicated by the value of
+ ifcpSessionDiscontinuityTime."
+    ::= {ifcpSessionStatsEntry 9}
+
+ifcpSessionOtherErrors             OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter64
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of errors, other than errors explicitly
+ measured, detected by the gateway for this session.
+ Discontinuities in the value of this counter can occur at
+ reinitialization of the management system, and at other
+ times as indicated by the value of
+ ifcpSessionDiscontinuityTime."
+    ::= {ifcpSessionStatsEntry 10}
+
+ifcpSessionDiscontinuityTime       OBJECT-TYPE
+    SYNTAX                         TimeStamp
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The value of sysUpTime on the most recent occasion at which
+ any one (or more) of the ifcpSessionStatsTable counters
+ suffered a discontinuity.  The relevant counters are the
+ specific Counter64-based instances associated with the
+ ifcpSessionStatsTable: ifcpSessionTxOctets,
+
+
+
+ ifcpSessionRxOctets, ifcpSessionTxFrames,
+ ifcpSessionRxFrames, ifcpSessionStaleFrames,
+ ifcpSessionHeaderCRCErrors, ifcpSessionFcPayloadCRCErrors,
+ and ifcpSessionOtherErrors.  If no such discontinuities have
+ occurred since the last reinitialization of the local
+ management subsystem, then this object contains a zero value."
+    ::= {ifcpSessionStatsEntry 11}
+
+--
+-- Low Capacity Statistics
+--
+
+ifcpSessionLcStatsTable            OBJECT-TYPE
+    SYNTAX                         SEQUENCE OF
+                                     IfcpSessionLcStatsEntry
+    MAX-ACCESS                     not-accessible
+    STATUS                         current
+    DESCRIPTION
+"This table provides low capacity statistics for an iFCP
+ session.  These are provided for backward compatibility with
+ systems that do not support Counter64-based objects.  At
+ 1-Gbps rates, a Counter32-based object can wrap as often as
+ every 34 seconds.  Counter32-based objects can be sufficient
+ for many situations.  However, when possible, it is
+ recommended to use the high capacity statistics in
+ ifcpSessionStatsTable based on Counter64 objects."
+    ::= {ifcpNportSessionInfo 3}
+
+ifcpSessionLcStatsEntry            OBJECT-TYPE
+    SYNTAX                         IfcpSessionLcStatsEntry
+    MAX-ACCESS                     not-accessible
+    STATUS                         current
+    DESCRIPTION
+"Provides iFCP-specific statistics per session."
+    AUGMENTS {ifcpSessionAttributesEntry}
+    ::= {ifcpSessionLcStatsTable 1}
+
+IfcpSessionLcStatsEntry ::= SEQUENCE {
+    ifcpSessionLcTxOctets            ZeroBasedCounter32,
+    ifcpSessionLcRxOctets            ZeroBasedCounter32,
+    ifcpSessionLcTxFrames            ZeroBasedCounter32,
+    ifcpSessionLcRxFrames            ZeroBasedCounter32,
+    ifcpSessionLcStaleFrames         ZeroBasedCounter32,
+    ifcpSessionLcHeaderCRCErrors     ZeroBasedCounter32,
+    ifcpSessionLcFcPayloadCRCErrors  ZeroBasedCounter32,
+    ifcpSessionLcOtherErrors         ZeroBasedCounter32
+                                   }
+
+
+
+
+ifcpSessionLcTxOctets              OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter32
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of octets transmitted by the iFCP gateway
+ for this session."
+    ::= {ifcpSessionLcStatsEntry 1}
+
+ifcpSessionLcRxOctets              OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter32
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of octets received by the iFCP gateway for
+ this session."
+    ::= {ifcpSessionLcStatsEntry 2}
+
+ifcpSessionLcTxFrames              OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter32
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of iFCP frames transmitted by the gateway
+ for this session."
+    ::= {ifcpSessionLcStatsEntry 3}
+
+ifcpSessionLcRxFrames              OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter32
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of iFCP frames received by the gateway
+ for this session."
+    ::= {ifcpSessionLcStatsEntry 4}
+
+ifcpSessionLcStaleFrames           OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter32
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of received iFCP frames that were stale and
+ discarded by the gateway for this session."
+    ::= {ifcpSessionLcStatsEntry 5}
+
+ifcpSessionLcHeaderCRCErrors       OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter32
+    MAX-ACCESS                     read-only
+
+
+
+    STATUS                         current
+    DESCRIPTION
+"The total number of CRC errors that occurred in the frame
+ header, detected by the gateway for this session.  Usually,
+ a single Header CRC error is sufficient to terminate an
+ iFCP session."
+    ::= {ifcpSessionLcStatsEntry 6}
+
+ifcpSessionLcFcPayloadCRCErrors    OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter32
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of CRC errors that occurred in the Fibre
+ Channel frame payload, detected by the gateway for this
+ session."
+    ::= {ifcpSessionLcStatsEntry 7}
+
+ifcpSessionLcOtherErrors           OBJECT-TYPE
+    SYNTAX                         ZeroBasedCounter32
+    MAX-ACCESS                     read-only
+    STATUS                         current
+    DESCRIPTION
+"The total number of errors, other than errors explicitly
+ measured, detected by the gateway for this session."
+    ::= {ifcpSessionLcStatsEntry 8}
+
+--==========================================================
+
+ifcpCompliances
+        OBJECT IDENTIFIER ::= {ifcpGatewayConformance 1}
+
+ifcpGatewayCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+"Implementation requirements for iFCP MIB compliance."
+    MODULE       -- this module
+    MANDATORY-GROUPS {
+        ifcpLclGatewayGroup,
+        ifcpLclGatewaySessionGroup,
+        ifcpLclGatewaySessionStatsGroup,
+        ifcpLclGatewaySessionLcStatsGroup
+                     }
+
+        OBJECT      ifcpSessionLclPrtlAddrType
+        SYNTAX      InetAddressType { ipv4(1), ipv6(2) }
+        DESCRIPTION
+               "Support is only required for global IPv4
+
+
+
+               and IPv6 address types."
+
+        OBJECT      ifcpSessionRmtPrtlIfAddrType
+        SYNTAX      InetAddressType { ipv4(1), ipv6(2) }
+        DESCRIPTION
+               "Support is only required for global IPv4
+               and IPv6 address types."
+
+    ::= {ifcpCompliances 1}
+
+ifcpGroups OBJECT IDENTIFIER ::= {ifcpGatewayConformance 2}
+
+ifcpLclGatewayGroup OBJECT-GROUP
+    OBJECTS {
+    ifcpLclGtwyInstPhyIndex,
+    ifcpLclGtwyInstVersionMin,
+    ifcpLclGtwyInstVersionMax,
+    ifcpLclGtwyInstAddrTransMode,
+    ifcpLclGtwyInstFcBrdcstSupport,
+    ifcpLclGtwyInstDefaultIpTOV,
+    ifcpLclGtwyInstDefaultLTInterval,
+    ifcpLclGtwyInstDescr,
+    ifcpLclGtwyInstNumActiveSessions,
+    ifcpLclGtwyInstStorageType
+           }
+    STATUS current
+    DESCRIPTION
+"iFCP local device info group.  This group provides
+ information about each gateway."
+    ::= {ifcpGroups 1}
+
+ifcpLclGatewaySessionGroup OBJECT-GROUP
+    OBJECTS {
+    ifcpSessionLclPrtlIfIndex,
+    ifcpSessionLclPrtlAddrType,
+    ifcpSessionLclPrtlAddr,
+    ifcpSessionLclPrtlTcpPort,
+    ifcpSessionLclNpWwun,
+    ifcpSessionLclNpFcid,
+    ifcpSessionRmtNpWwun,
+    ifcpSessionRmtPrtlIfAddrType,
+    ifcpSessionRmtPrtlIfAddr,
+    ifcpSessionRmtPrtlTcpPort,
+    ifcpSessionRmtNpFcid,
+    ifcpSessionRmtNpFcidAlias,
+    ifcpSessionIpTOV,
+    ifcpSessionLclLTIntvl,
+    ifcpSessionRmtLTIntvl,
+
+
+
+    ifcpSessionBound,
+    ifcpSessionStorageType
+           }
+    STATUS current
+    DESCRIPTION
+"iFCP Session group.  This group provides information
+ about each iFCP session currently active between iFCP
+ gateways."
+    ::= {ifcpGroups 4}
+
+ifcpLclGatewaySessionStatsGroup OBJECT-GROUP
+    OBJECTS {
+    ifcpSessionState,
+    ifcpSessionDuration,
+    ifcpSessionTxOctets,
+    ifcpSessionRxOctets,
+    ifcpSessionTxFrames,
+    ifcpSessionRxFrames,
+    ifcpSessionStaleFrames,
+    ifcpSessionHeaderCRCErrors,
+    ifcpSessionFcPayloadCRCErrors,
+    ifcpSessionOtherErrors,
+    ifcpSessionDiscontinuityTime
+           }
+    STATUS current
+    DESCRIPTION
+"iFCP Session Statistics group.  This group provides
+ statistics with 64-bit counters for each iFCP session
+ currently active between iFCP gateways.  This group
+ is only required for agents that can support Counter64-
+ based data types."
+    ::= {ifcpGroups 5}
+
+ifcpLclGatewaySessionLcStatsGroup OBJECT-GROUP
+    OBJECTS {
+    ifcpSessionLcTxOctets,
+    ifcpSessionLcRxOctets,
+    ifcpSessionLcTxFrames,
+    ifcpSessionLcRxFrames,
+    ifcpSessionLcStaleFrames,
+    ifcpSessionLcHeaderCRCErrors,
+    ifcpSessionLcFcPayloadCRCErrors,
+    ifcpSessionLcOtherErrors
+           }
+    STATUS current
+    DESCRIPTION
+"iFCP Session Low Capacity Statistics group.  This group
+ provides statistics with low-capacity 32-bit counters
+
+
+
+ for each iFCP session currently active between iFCP
+ gateways.  This group is only required for agents that
+ do not support Counter64-based data types, or that need
+ to support SNMPv1 applications."
+    ::= {ifcpGroups 6}
+
+END

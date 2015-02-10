@@ -1,0 +1,255 @@
+SNMPv2-USEC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Counter32, Unsigned32,
+    snmpModules
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF;
+
+
+usecMIB MODULE-IDENTITY
+    LAST-UPDATED "9601120000Z"
+    ORGANIZATION "IETF SNMPv2 Working Group"
+    CONTACT-INFO
+            "        Glenn W. Waters
+
+             Postal: Bell-Northern Research, Ltd.
+                     P.O. Box 3511, Station C
+                     Ottawa, ON, K1Y 4H7
+                     Canada
+
+                Tel: +1 613 763 3933
+
+             E-mail: gwaters@bnr.ca"
+    DESCRIPTION
+            "The MIB module for SNMPv2 entities implementing the user-
+            based security model."
+    ::= { snmpModules 6 }
+
+
+usecMIBObjects OBJECT IDENTIFIER ::= { usecMIB 1 }
+
+
+-- Textual Conventions
+
+AgentID ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "An agent's administratively-unique identifier.
+
+            The value for this object may not be all zeros or all 'ff'H.
+
+            The initial value for this object may be configured via an
+            operator console entry or via an algorithmic function.  In
+
+
+            the later case, the following guidelines are recommended:
+
+              1) The first four octets are set to the binary equivalent
+                 of the agent's SNMP network management private
+                 enterprise number as assigned by the Internet Assigned
+                 Numbers Authority (IANA).  For example, if Acme
+                 Networks has been assigned { enterprises 696 }, the
+                 first four octets would be assigned '000002b8'H.
+
+              2) The remaining eight octets are the cookie whose
+                 contents are determined via one or more enterprise-
+                 specific methods.  Such methods must be designed so as
+                 to maximize the possibility that the value of this
+                 object will be unique in the agent's administrative
+                 domain.  For example, the cookie may be the IP address
+                 of the agent, or the MAC address of one of the
+                 interfaces, with each address suitably padded with
+                 random octets.  If multiple methods are defined, then
+                 it is recommended that the cookie be further divided
+                 into one octet that indicates the method being used and
+                 seven octets which are a function of the method."
+    SYNTAX     OCTET STRING (SIZE (12))
+
+
+-- the USEC Basic group
+--
+-- a collection of objects providing basic instrumentation of
+-- the SNMPv2 entity implementing the user-based security model
+
+
+usecAgent       OBJECT IDENTIFIER ::= { usecMIBObjects 1 }
+
+agentID OBJECT-TYPE
+    SYNTAX     AgentID
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The agent's administratively-unique identifier."
+    ::= { usecAgent 1 }
+
+agentBoots OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of times that the agent has re-initialized
+            itself since its initial configuration."
+    ::= { usecAgent 2 }
+
+
+agentTime OBJECT-TYPE
+    SYNTAX     Unsigned32 (0..2147483647)
+    UNITS      "seconds"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of seconds since the agent last incremented the
+            agentBoots object."
+    ::= { usecAgent 3 }
+
+agentSize OBJECT-TYPE
+    SYNTAX     INTEGER (484..65507)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The maximum length in octets of an SNMPv2 message which
+            this agent will accept using any transport mapping."
+    ::= { usecAgent 4 }
+
+
+-- USEC statistics
+--
+-- a collection of objects providing basic instrumentation of
+-- the SNMPv2 entity implementing the user-based security model
+
+usecStats      OBJECT IDENTIFIER ::= { usecMIBObjects 2 }
+
+
+usecStatsUnsupportedQoS OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of packets received by the SNMPv2 entity
+            which were dropped because they requested a quality-of-
+            service that was unknown to the agent or otherwise
+            unavailable."
+    ::= { usecStats 1 }
+
+usecStatsNotInWindows OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of packets received by the SNMPv2 entity
+            which were dropped because they appeared outside of the
+            agent's window."
+    ::= { usecStats 2 }
+
+
+usecStatsUnknownUserNames OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of packets received by the SNMPv2 entity
+            which were dropped because they referenced a user that was
+            not known to the agent."
+    ::= { usecStats 3 }
+
+usecStatsWrongDigestValues OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of packets received by the SNMPv2 entity
+            which were dropped because they didn't contain the expected
+            digest value."
+    ::= { usecStats 4 }
+
+usecStatsUnknownContexts OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of packets received by the SNMPv2 entity
+            which were dropped because they referenced a context that
+            was not known to the agent."
+    ::= { usecStats 5 }
+
+usecStatsBadParameters OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of packets received by the SNMPv2 entity
+            which were dropped because the <parameters> field was
+            improperly encoded or had invalid syntax."
+    ::= { usecStats 6 }
+
+usecStatsUnauthorizedOperations OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of packets received by the SNMPv2 entity
+            which were dropped because the PDU type referred to an
+            operation that is invalid or not authorized."
+
+
+    ::= { usecStats 7 }
+
+
+-- conformance information
+
+usecMIBConformance
+               OBJECT IDENTIFIER ::= { usecMIB 2 }
+
+usecMIBCompliances
+               OBJECT IDENTIFIER ::= { usecMIBConformance 1 }
+usecMIBGroups  OBJECT IDENTIFIER ::= { usecMIBConformance 2 }
+
+
+-- compliance statements
+
+usecMIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for SNMPv2 entities which
+            implement the SNMPv2 USEC model."
+    MODULE  -- this module
+        MANDATORY-GROUPS { usecBasicGroup,
+                          usecStatsGroup }
+    ::= { usecMIBCompliances 1 }
+
+
+-- units of conformance
+
+usecBasicGroup OBJECT-GROUP
+    OBJECTS { agentID,
+              agentBoots,
+              agentTime,
+              agentSize }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing identification, clocks,
+            and capabilities of an SNMPv2 entity which implements the
+            SNMPv2 USEC model."
+    ::= { usecMIBGroups 1 }
+
+usecStatsGroup OBJECT-GROUP
+    OBJECTS { usecStatsUnsupportedQoS,
+              usecStatsNotInWindows,
+              usecStatsUnknownUserNames,
+              usecStatsWrongDigestValues,
+              usecStatsUnknownContexts,
+              usecStatsBadParameters,
+              usecStatsUnauthorizedOperations }
+
+
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing basic error statistics of
+            an SNMPv2 entity which implements the SNMPv2 USEC model."
+    ::= { usecMIBGroups 2 }
+
+END

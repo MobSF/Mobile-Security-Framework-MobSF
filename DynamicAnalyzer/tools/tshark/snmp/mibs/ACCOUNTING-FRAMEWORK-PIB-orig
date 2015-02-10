@@ -1,0 +1,291 @@
+ACCOUNTING-FRAMEWORK-PIB PIB-DEFINITIONS ::= BEGIN   
+
+   IMPORTS   
+       ExtUTCTime, Unsigned32, Unsigned64,     
+       Integer32, MODULE-IDENTITY, OBJECT-TYPE   
+               FROM COPS-PR-SPPI   
+       TruthValue, TEXTUAL-CONVENTION   
+               FROM SNMPv2-TC   
+       PolicyInstanceId, PolicyReferenceId   
+
+
+               FROM COPS-PR-SPPI-TC
+       RoleCombination   
+               FROM POLICY-DEVICE-AUX-MIB;   
+
+   acctPolFrameworkPib  MODULE-IDENTITY   
+       SUBJECT-CATEGORIES  { all }  
+       LAST-UPDATED "200011171000Z"   
+       ORGANIZATION "IETF RAP WG"   
+       CONTACT-INFO "   
+                     Diana Rawlins   
+                     WorldCom   
+                     901 International Parkway   
+                     Richardson, TX 75081   
+                     Phone: 972 729 1044   
+                     Email: diana.rawlins@wcom.com   
+
+                    Amol Kulkarni   
+                    JF3-206            
+                    2111 NE 25th Ave   
+                    Hillsboro, Oregon 97124   
+                    Phone: 503-712-1168  
+                    Email: amol.kulkarni@intel.com   
+
+                    Kwok Ho Chan  
+                    Nortel Networks, Inc.  
+                    600 Technology Park Drive  
+                    Billerica, MA 01821 USA  
+                    Phone: 978-288-8175  
+                    Email: khchan@nortelnetworks.com "  
+
+
+   DESCRIPTION   
+           "The PIB module containing the base set of policy rule  
+           classes that are required for support of all accounting  
+           and reporting policies"  
+
+         ::= { tbd }  
+--   
+-- The accounting type report group  
+--   
+
+frwkAtRptGroupClasses    
+               OBJECT IDENTIFIER ::= { acctPolFrameworkPib  2 }   
+
+--   
+-- Textual Conventions   
+--   
+Count ::= TEXTUAL-CONVENTION   
+       STATUS       current   
+       DESCRIPTION   
+           "A count represents a value used by attributes that   
+            record policy usage. A count is of value zero or   
+            greater and is incremented according to defined   
+
+
+            policy usage. When the maximum value is reached, the  
+            value sticks. The value is reset to zero upon   
+            reporting the value to the PDP."  
+
+SYNTAX Unsigned64 ( 0..18446744073709551615)  
+
+--  
+--  resume reporting indicator  
+--  
+
+frwkAtRptResumeTable OBJECT-TYPE   
+     SYNTAX          SEQUENCE OF FrwkAtRptResumeEntry   
+     PIB-ACCESS      install   
+     STATUS          current   
+     DESCRIPTION   
+              "This class contains a single PRI that indicates   
+              that the PEP is to resume the sending of   
+              accounting type reports."  
+
+        ::= { frwkAtRptGroupClasses  1}   
+
+frwkAtRptResumeEntry OBJECT-TYPE   
+     SYNTAX  FrwkAtRptResumeEntry   
+     STATUS  current   
+     DESCRIPTION   
+                "An instance of this class can indicate when to    
+                 resume sending accounting type reports  
+                 by the PEP."   
+     PIB-INDEX { frwkAtRptResumeId} 
+
+        ::= { frwkAtRptResumeTable 1}   
+
+FrwkAtRptResumeEntry ::= SEQUENCE {   
+        frwkAtRptResumeId         InstanceId,   
+        frwkAtRptResumeIndicator  INTEGER   
+     }   
+
+frwkAtRptResumeId  OBJECT-TYPE  
+     SYNTAX        InstanceID  
+     STATUS        current  
+     DESCRIPTION  
+        " An arbitrary integer index that uniquely identifies an   
+         instance of the frwkAtRptResumeTable class."  
+
+     ::= { frwkAtRptResumeEntry 1}  
+
+frwkAtRptResumeIndicator OBJECT-TYPE   
+     SYNTAX  INTEGER {  
+                 NO_REPORTS(0),  
+                 SEND_REPORTS(1)  
+             }   
+     STATUS  current   
+     DESCRIPTION   
+
+
+               "The value indicates if the PEP is to send cached   
+                usage policies via accounting type report messages.  
+                The enumeration values are:   
+                (0)  DonËt send accounting type report messages  
+                (1)  Resume accounting type report messages. Send  
+                     cached usage policies now "   
+
+       ::= { frwkAtRptResumeEntry 2 }   
+
+--   
+-- The Accounting Type Report Linkage Table  
+--   
+
+frwkAtRptLinkTable OBJECT-TYPE   
+     SYNTAX          SEQUENCE OF FrwkAtRptLinkEntry   
+     PIB-ACCESS      notify   
+     STATUS          current   
+     DESCRIPTION   
+              "This class associates the selection criteria with the  
+               usage policy. It also permit the defining of the max  
+               interval used for reporting the usage instance."  
+
+     ::= { frwkAtRptGroupClasses  2}   
+
+frwkAtRptLinkEntry OBJECT-TYPE   
+     SYNTAX          FrwkAtRptLinkEntry   
+     STATUS          current   
+     DESCRIPTION   
+              "This class associates the selection criteria with the  
+               usage policy. It also permit the defining of the max  
+               interval used for reporting the usage instance."  
+     PIB-INDEX {frwkAtRptLinkId}  
+     UNIQUENESS { frwkAtRptLinkId,   
+                 frwkAtRptLinkSel,  
+                 frwkAtRptLinkUsage }  
+     ::= {frwkAtRptLinkTable 1}   
+
+FrwkAtRptLinkEntry ::= SEQUENCE {  
+       frwkAtRptLinkId         InstanceID,  
+       frwkAtRptLinkSel        Prid,  
+       frwkAtRptLinkUsage      OBJECT IDENTIFIER,  
+       frwkAtRptLinkInterval   Integer32    
+}  
+
+frwkAtRptLinkId OBJECT-TYPE  
+     SYNTAX        InstanceID  
+     STATUS        current  
+     DESCRIPTION  
+        " An arbitrary integer index that uniquely identifies an   
+          instance of the frwkAtRptLinkTable class."  
+     ::= { frwkAtRptLinkEntry 1}  
+
+frwkAtRptLinkSel OBJECT-TYPE  
+
+
+     SYNTAX       Prid  
+     STATUS       current  
+     DESCRIPTION  
+         "The PRID of the selection criteria instance that   
+          defines the conditions to use by the PEP for   
+          monitoring the usage."  
+
+     ::= { frwkAtRptLinkEntry 2}  
+
+frwkAtRptLinkUsage OBJECT-TYPE  
+     SYNTAX      OBJECT IDENTIFIER  
+     STATUS      current  
+     DESCRIPTION  
+          "The PRC of the usage policy class that the PEP uses to  
+          monitor,record and report."  
+
+     ::= { frwkAtRptLinkEntry 3}  
+
+frwkAtRptInterval  OBJECT-TYPE       
+     SYNTAX   Integer32  
+     STATUS   current  
+     DESCRIPTION   
+             "Maximum interval in units of the value of the 
+             Accounting Timer specificed by the PDP in the client 
+             accept message. A frwkAtRptInterval of 1 is equal to 
+             the value of the Accounting Timer. This value must be 1 
+             or greater. "  
+
+     ::= { frwkAtRptLinkEntry 4}  
+
+--   
+-- The filter statistics usage   
+--   
+
+frwkAtRptFilterStatsUsageTable OBJECT-TYPE   
+     SYNTAX          SEQUENCE OF FrwkAtRptFilterStatsUsageEntry   
+     PIB-ACCESS      report-only   
+     STATUS          current   
+     DESCRIPTION   
+              "This class defines the usage attributes that the PEP   
+               is to monitor, record and report. It contains the  
+               of the PRID of the linkage instance associating  
+               the selection criteria instance with the usage   
+               instance."  
+
+     ::= { frwkAtRptGroupClasses  3}   
+
+frwkAtRptFilterStatsUsageEntry OBJECT-TYPE   
+     SYNTAX          FrwkAtRptFilterStatsUsageEntry   
+     STATUS          current   
+     DESCRIPTION   
+              "Defines the attributes the PEP is to monitor,  
+               record and report."  
+
+
+     PIB-INDEX {frwkAtRptFilterStatsUsageId}  
+     UNIQUENESS { frwkAtRptFilterStatsUsageLinkPRID }  
+
+     ::= {frwkAtRptFilterStatsUsageTable 1}   
+
+FrwkAtRptFilterStatsUsageEntry ::= SEQUENCE {  
+      frwkAtRptFilterStatsUsageId          InstanceID,  
+      frwkAtRptFilterStatsUsageLinkPRID        Prid,  
+      frwkAtRptFilterStatsUsagePacketCount Counts,    
+      frwkAtRptFilterStatsUsageByteCount   Counts,    
+      fwkAtRptFilterStatsUsageTimeStamp    ExtUTCTime    
+
+}  
+
+frwkAtRptFilterStatsUsageId   OBJECT-TYPE  
+     SYNTAX       InstanceId  
+     STATUS       current  
+     DESCRIPTION  
+               "Arbitrary integer index that uniquely identifies  
+                an instance of the class."  
+     ::= { frwkAtRptFilterStatsUsageEntry 1 }  
+
+frwkAtRptFilterStatsUsageLinkPRID  OBJECT-TYPE  
+     SYNTAX      Prid  
+     STATUS       current  
+     DESCRIPTION  
+               "The PRID of the Linkage policy instance used to base 
+                this usage policy instance upon."  
+
+     ::= { frwkAtRptFilterStatsUsageEntry 2 }  
+
+frwkAtRptFilterStatsUsagePacketCount OBJECT-TYPE    
+     SYNTAX       Unsigned32    
+     STATUS       current    
+     DESCRIPTION    
+               "The count of packets matching the specified filter   
+                during the reporting interval."    
+
+     ::= {frwkAtRptFilterStatsUsageEntry 3}    
+
+frwkAtRptFilterStatsUsageByteCount OBJECT-TYPE    
+     SYNTAX       Unsigned64    
+     STATUS       current    
+     DESCRIPTION    
+                "The byte count of packets matching the   
+                 specified filter during the reporting interval."    
+
+     ::= { frwkAtRptFilterStatsUsageEntry 4}    
+
+frwkAtRptFilterStatsSelectTimeStamp OBJECT-TYPE    
+     SYNTAX   ExtUTCTime    
+     STATUS       current    
+     DESCRIPTION    
+
+
+                "The last timestamp when a packet was received."    
+
+     ::= { frwkAtRptFilterStatsSelectEntry 5}    
+
+END 

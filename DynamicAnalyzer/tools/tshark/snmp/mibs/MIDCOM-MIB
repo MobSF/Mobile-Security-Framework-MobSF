@@ -1,0 +1,2386 @@
+MIDCOM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    NOTIFICATION-TYPE, Unsigned32,
+    Counter32, Gauge32, mib-2
+        FROM SNMPv2-SMI                  -- RFC 2578
+
+    TEXTUAL-CONVENTION, TruthValue,
+    StorageType, RowStatus
+        FROM SNMPv2-TC                   -- RFC 2579
+
+    MODULE-COMPLIANCE, OBJECT-GROUP,
+    NOTIFICATION-GROUP
+        FROM SNMPv2-CONF                 -- RFC 2580
+
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB          -- RFC 3411
+
+    InetAddressType, InetAddress,
+    InetPortNumber,
+    InetAddressPrefixLength
+        FROM INET-ADDRESS-MIB            -- RFC 4001
+
+
+
+
+
+    InterfaceIndexOrZero
+        FROM IF-MIB                      -- RFC 2863
+
+    NatBindIdOrZero
+        FROM NAT-MIB;                    -- RFC 4008
+
+midcomMIB MODULE-IDENTITY
+    LAST-UPDATED "200708091011Z"  -- August 09, 2007
+    ORGANIZATION "IETF Middlebox Communication Working Group"
+    CONTACT-INFO
+       "WG charter:
+          http://www.ietf.org/html.charters/midcom-charter.html
+
+        Mailing Lists:
+          General Discussion: midcom@ietf.org
+          To Subscribe: midcom-request@ietf.org
+          In Body: subscribe your_email_address
+
+        Co-editor:
+          Juergen Quittek
+          NEC Europe Ltd.
+          Kurfuersten-Anlage 36
+          69115 Heidelberg
+          Germany
+          Tel: +49 6221 4342-115
+          Email: quittek@nw.neclab.eu
+
+        Co-editor:
+          Martin Stiemerling
+          NEC Europe Ltd.
+          Kurfuersten-Anlage 36
+          69115 Heidelberg
+          Germany
+          Tel: +49 6221 4342-113
+          Email: stiemerling@nw.neclab.eu
+
+        Co-editor:
+          Pyda Srisuresh
+          Kazeon Systems, Inc.
+          1161 San Antonio Rd.
+          Mountain View, CA 94043
+          U.S.A.
+          Tel: +1 408 836-4773
+          Email: srisuresh@yahoo.com"
+
+    DESCRIPTION
+        "This MIB module defines a set of basic objects for
+         configuring middleboxes, such as firewalls and network
+
+
+
+         address translators, in order to enable communication
+         across these devices.
+
+         Managed objects defined in this MIB module are structured
+         in three kinds of objects:
+           - transaction objects required according to the MIDCOM
+             protocol requirements defined in RFC 3304 and according
+             to the MIDCOM protocol semantics defined in RFC 3989,
+           - configuration objects that can be used for retrieving or
+             setting parameters of the implementation of transaction
+             objects,
+           - optional monitoring objects that provide information
+             about used resource and statistics
+
+         The transaction objects are organized in two subtrees:
+           - objects modeling MIDCOM policy rules in the
+             midcomRuleTable
+           - objects modeling MIDCOM policy rule groups in the
+             midcomGroupTable
+
+         Note that typically, configuration objects are not intended
+         to be written by MIDCOM clients.  In general, write access
+         to these objects needs to be restricted more strictly than
+         write access to objects in the transaction subtrees.
+
+         Copyright (C) The Internet Society (2008).  This version
+         of this MIB module is part of RFC 5190;  see the RFC
+         itself for full legal notices."
+
+    REVISION    "200708091011Z"  -- August 09, 2007
+    DESCRIPTION "Initial version, published as RFC 5190."
+    ::= { mib-2 171 }
+
+--
+-- main components of this MIB module
+--
+
+midcomNotifications   OBJECT IDENTIFIER ::= { midcomMIB 0 }
+midcomObjects         OBJECT IDENTIFIER ::= { midcomMIB 1 }
+midcomConformance     OBJECT IDENTIFIER ::= { midcomMIB 2 }
+
+--  Transaction objects required according to the MIDCOM
+--  protocol requirements defined in RFC 3304 and according to
+--  the MIDCOM protocol semantics defined in RFC 3989
+midcomTransaction     OBJECT IDENTIFIER ::= { midcomObjects 1 }
+
+--  Configuration objects that can be used for retrieving
+--  middlebox capability information (mandatory) and for
+
+
+
+--  setting parameters of the implementation of transaction
+--  objects (optional)
+midcomConfig   OBJECT IDENTIFIER ::= { midcomObjects 2 }
+
+--  Optional monitoring objects that provide information about
+--  used resource and statistics
+midcomMonitoring      OBJECT IDENTIFIER ::= { midcomObjects 3 }
+
+--
+-- Transaction Objects
+--
+-- Transaction objects are structured according to the MIDCOM
+-- protocol semantics into two groups:
+--   - objects modeling MIDCOM policy rules in the midcomRuleTable
+--   - objects modeling MIDCOM policy rule groups in the
+--     midcomGroupTable
+
+--
+-- Policy rule subtree
+--
+-- The midcomRuleTable lists policy rules
+-- including policy reserve rules and policy enable rules.
+--
+
+midcomRuleTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MidcomRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists policy rules.
+
+         It is indexed by the midcomRuleOwner, the
+         midcomGroupIndex, and the midcomRuleIndex.
+         This implies that a rule is a member of exactly
+         one group and that group membership cannot
+         be changed.
+
+         Entries can be deleted by writing to
+         midcomGroupLifetime or midcomRuleLifetime
+         and potentially also to midcomRuleStorageTime."
+    ::= { midcomTransaction 3 }
+
+midcomRuleEntry OBJECT-TYPE
+    SYNTAX      MidcomRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular MIDCOM policy rule."
+
+
+
+    INDEX { midcomRuleOwner, midcomGroupIndex, midcomRuleIndex }
+    ::= { midcomRuleTable 1 }
+
+MidcomRuleEntry ::= SEQUENCE {
+    midcomRuleOwner                   SnmpAdminString,
+    midcomRuleIndex                   Unsigned32,
+    midcomRuleAdminStatus             INTEGER,
+    midcomRuleOperStatus              INTEGER,
+    midcomRuleStorageType             StorageType,
+    midcomRuleStorageTime             Unsigned32,
+    midcomRuleError                   SnmpAdminString,
+    midcomRuleInterface               InterfaceIndexOrZero,
+    midcomRuleFlowDirection           INTEGER,
+    midcomRuleMaxIdleTime             Unsigned32,
+    midcomRuleTransportProtocol       Unsigned32,
+    midcomRulePortRange               INTEGER,
+    midcomRuleInternalIpVersion       InetAddressType,
+    midcomRuleExternalIpVersion       InetAddressType,
+    midcomRuleInternalIpAddr          InetAddress,
+    midcomRuleInternalIpPrefixLength  InetAddressPrefixLength,
+    midcomRuleInternalPort            InetPortNumber,
+    midcomRuleExternalIpAddr          InetAddress,
+    midcomRuleExternalIpPrefixLength  InetAddressPrefixLength,
+    midcomRuleExternalPort            InetPortNumber,
+    midcomRuleInsideIpAddr            InetAddress,
+    midcomRuleInsidePort              InetPortNumber,
+    midcomRuleOutsideIpAddr           InetAddress,
+    midcomRuleOutsidePort             InetPortNumber,
+    midcomRuleLifetime                Unsigned32,
+    midcomRuleRowStatus               RowStatus
+}
+
+midcomRuleOwner OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The manager who owns this row in the midcomRuleTable.
+
+         This object SHOULD uniquely identify an authenticated
+         MIDCOM client.  This object is part of the table index to
+         allow for the use of the SNMPv3 View-based Access Control
+         Model (VACM, RFC 3415)."
+    ::= { midcomRuleEntry 1 }
+
+midcomRuleIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+
+
+
+    STATUS      current
+    DESCRIPTION
+        "The value of this object must be unique in
+         combination with the values of the objects
+         midcomRuleOwner and midcomGroupIndex in this row."
+    ::= { midcomRuleEntry 3 }
+
+midcomRuleAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    reserve(1),
+                    enable(2),
+                    notSet(3)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the desired status of
+         the policy rule.  See the definition of midcomRuleOperStatus
+         for a description of the values.
+
+         When a midcomRuleEntry is created without explicitly setting
+         this object, its value will be notSet(3).
+
+         However, a SET request can only set this object to either
+         reserve(1) or enable(2).  Attempts to set this object to
+         notSet(3) will always fail with an 'inconsistentValue'
+         error.  Note that this error code is SNMP specific.  If the
+         MIB module is used with other protocols than SNMP, errors
+         with similar semantics specific to those protocols should
+         be returned.
+
+         When the midcomRuleAdminStatus object is set, then the
+         MIDCOM-MIB implementation will try to read the respective
+         relevant objects of the entry and try to achieve the
+         corresponding midcomRuleOperStatus.
+
+         Setting midcomRuleAdminStatus to value reserve(1) when
+         object midcomRuleOperStatus has a value of reserved(7)
+         does not have any effect on the policy rule.
+         Setting midcomRuleAdminStatus to value enable(2) when
+         object midcomRuleOperStatus has a value of enabled(8)
+         does not have any effect on the policy rule.
+
+         Depending on whether the midcomRuleAdminStatus is set to
+         reserve(1) or enable(2), several objects must be set in
+         advance.  They serve as parameters of the policy rule to be
+         established.
+
+
+
+
+         When object midcomRuleAdminStatus is set to reserve(1),
+         then the following objects in the same entry are of
+         relevance:
+             - midcomRuleInterface
+             - midcomRuleTransportProtocol
+             - midcomRulePortRange
+             - midcomRuleInternalIpVersion
+             - midcomRuleExternalIpVersion
+             - midcomRuleInternalIpAddr
+             - midcomRuleInternalIpPrefixLength
+             - midcomRuleInternalPort
+             - midcomRuleLifetime
+
+         MIDCOM-MIB implementation may also consider the value
+         of object midcomRuleMaxIdleTime when establishing
+         a reserve rule.
+
+         When object midcomRuleAdminStatus is set to enable(2),
+         then the following objects in the same entry are of
+         relevance:
+             - midcomRuleInterface
+             - midcomRuleFlowDirection
+             - midcomRuleMaxIdleTime
+             - midcomRuleTransportProtocol
+             - midcomRulePortRange
+             - midcomRuleInternalIpVersion
+             - midcomRuleExternalIpVersion
+             - midcomRuleInternalIpAddr
+             - midcomRuleInternalIpPrefixLength
+             - midcomRuleInternalPort
+             - midcomRuleExternalIpAddr
+             - midcomRuleExternalIpPrefixLength
+             - midcomRuleExternalPort
+             - midcomRuleLifetime
+
+         When retrieved, the object returns the last set value.
+         If no value has been set, it returns the default value
+         notSet(3)."
+    DEFVAL { notSet }
+    ::= { midcomRuleEntry 4 }
+
+midcomRuleOperStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    newEntry(1),
+                    setting(2),
+                    checkingRequest(3),
+                    incorrectRequest(4),
+                    processingRequest(5),
+
+
+
+                    requestRejected(6),
+                    reserved(7),
+                    enabled(8),
+                    timedOut(9),
+                    terminatedOnRequest(10),
+                    terminated(11),
+                    genericError(12)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The actual status of the policy rule.  The
+         midcomRuleOperStatus object may have the following values:
+
+         - newEntry(1) indicates that the entry in the
+           midcomRuleTable was created, but not modified yet.
+           Such an entry needs to be filled with values specifying
+           a request first.
+
+         - setting(2) indicates that the entry has been already
+           modified after generating it, but no request was made
+           yet.
+
+         - checkingRequest(3) indicates that midcomRuleAdminStatus
+           has recently been set and that the MIDCOM-MIB
+           implementation is currently checking the parameters of
+           the request.  This is a transient state.  The value of
+           this object will change to either incorrectRequest(4)
+           or processingRequest(5) without any external
+           interaction.  A MIDCOM-MIB implementation MAY return
+           this value while checking request parameters.
+
+         - incorrectRequest(4) indicates that checking a request
+           resulted in detecting an incorrect value in one of the
+           objects containing request parameters.  The failure
+           reason is indicated by the value of midcomRuleError.
+
+         - processingRequest(5) indicates that
+           midcomRuleAdminStatus has recently been set and that
+           the MIDCOM-MIB implementation is currently processing
+           the request and trying to configure the middlebox
+           accordingly.  This is a transient state.  The value of
+           this object will change to either requestRejected(6),
+           reserved(7), or enabled(8) without any external
+           interaction.  A MIDCOM-MIB implementation MAY return
+           this value while processing a request.
+
+         - requestRejected(6) indicates that a request to establish
+
+
+
+           a policy rule specified by the entry was rejected.  The
+           reason for rejection is indicated by the value of
+           midcomRuleError.
+
+         - reserved(7) indicates that the entry describes an
+           established policy reserve rule.
+           These values of MidcomRuleEntry are meaningful
+           for a reserved policy rule:
+               - midcomRuleMaxIdleTime
+               - midcomRuleInterface
+               - midcomRuleTransportProtocol
+               - midcomRulePortRange
+               - midcomRuleInternalIpVersion
+               - midcomRuleExternalIpVersion
+               - midcomRuleInternalIpAddr
+               - midcomRuleInternalIpPrefixLength
+               - midcomRuleInternalPort
+               - midcomRuleOutsideIpAddr
+               - midcomRuleOutsidePort
+               - midcomRuleLifetime
+
+         - enabled(8) indicates that the entry describes an
+           established policy enable rule.
+           These values of MidcomRuleEntry are meaningful
+           for an enabled policy rule:
+
+               - midcomRuleFlowDirection
+               - midcomRuleInterface
+               - midcomRuleMaxIdleTime
+               - midcomRuleTransportProtocol
+               - midcomRulePortRange
+               - midcomRuleInternalIpVersion
+               - midcomRuleExternalIpVersion
+               - midcomRuleInternalIpAddr
+               - midcomRuleInternalIpPrefixLength
+               - midcomRuleInternalPort
+               - midcomRuleExternalIpAddr
+               - midcomRuleExternalIpPrefixLength
+               - midcomRuleExternalPort
+               - midcomRuleInsideIpAddr
+               - midcomRuleInsidePort
+               - midcomRuleOutsideIpAddr
+               - midcomRuleOutsidePort
+               - midcomRuleLifetime
+
+         - timedOut(9) indicates that the lifetime of a previously
+           established policy rule has expired and that the policy
+           rule is terminated for this reason.
+
+
+
+         - terminatedOnRequest(10) indicates that a previously
+           established policy rule was terminated by an SNMP
+           manager setting the midcomRuleLifetime to 0 or
+           setting midcomGroupLifetime to 0.
+
+         - terminated(11) indicates that a previously established
+           policy rule was terminated by the MIDCOM-MIB
+           implementation for a reason other than lifetime
+           expiration or an explicit request from a MIDCOM client.
+
+         - genericError(12) indicates that the policy rule
+           specified by the entry is not established due to
+           an error condition not listed above.
+
+         The states timedOut(9), terminatedOnRequest(10), and
+         terminated(11) are referred to as termination states.
+
+         The states incorrectRequest(4), requestRejected(6),
+         and genericError(12) are referred to as error states.
+
+         The checkingRequest(3) and processingRequest(5)
+         states are transient states, which will lead to either
+         one of the error states or the reserved(7) state or the
+         enabled(8) state.  MIDCOM-MIB implementations MAY return
+         these values when checking or processing requests."
+    DEFVAL { newEntry }
+    ::= { midcomRuleEntry 5 }
+
+midcomRuleStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "When retrieved, this object returns the storage
+         type of the policy rule.  Writing to this object can
+         change the storage type of the particular row from
+         volatile(2) to nonVolatile(3) or vice versa.
+
+         Attempts to set this object to permanent will always
+         fail with an 'inconsistentValue' error.  Note that this
+         error code is SNMP specific.  If the MIB module is used
+         with other protocols than SNMP, errors with similar
+         semantics specific to those protocols should be
+         returned.
+
+         If midcomRuleStorageType has the value permanent(4),
+         then all objects in this row whose MAX-ACCESS value
+         is read-create must be read-only."
+
+
+
+    DEFVAL { volatile }
+    ::= { midcomRuleEntry 6 }
+
+midcomRuleStorageTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of this object specifies how long this row
+         can exist in the midcomRuleTable after the
+         midcomRuleOperStatus switched to a termination state or
+         to an error state.  This object returns the remaining
+         time that the row may exist before it is aged out.
+
+         After expiration or termination of the context, the value
+         of this object ticks backwards.  The entry in the
+         midcomRuleTable is destroyed when the value reaches 0.
+
+         The value of this object may be set in order to increase
+         or reduce the remaining time that the row may exist.
+         Setting the value to 0 will destroy this entry as soon as
+         the midcomRuleOperStatus switched to a termination state
+         or to an error state.
+
+         Note that there is no guarantee that the row is stored as
+         long as this object indicates.  At any time, the MIDCOM-
+         MIB implementation may decide to remove a row describing
+         a terminated policy rule before the storage time of the
+         corresponding row in the midcomRuleTable reaches the
+         value of 0.  In this case, the information stored in this
+         row is not available anymore.
+
+         If object midcomRuleStorageType indicates that the policy
+         rule has the storage type permanent(4), then this object has
+         a constant value of 4294967295."
+    DEFVAL { 0 }
+    ::= { midcomRuleEntry 7 }
+
+midcomRuleError OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object contains a descriptive error message if
+         the transition into the operational status reserved(7)
+         or enabled(8) failed.  Implementations must reset the
+         error message to a zero-length string when a new
+
+
+
+         attempt to change the policy rule status to reserved(7)
+         or enabled(8) is started.
+
+         RECOMMENDED values to be returned in particular cases
+         include
+           - 'lack of IP addresses'
+           - 'lack of port numbers'
+           - 'lack of resources'
+           - 'specified NAT interface does not exist'
+           - 'specified NAT interface does not support NAT'
+           - 'conflict with already existing policy rule'
+           - 'no internal IP wildcarding allowed'
+           - 'no external IP wildcarding allowed'
+
+         The semantics of these error messages and the corresponding
+         behavior of the MIDCOM-MIB implementation are specified
+         in sections 2.3.9 and 2.3.10 of RFC 3989."
+    REFERENCE
+        "RFC 3989, sections 2.3.9 and 2.3.10"
+    DEFVAL { ''H }
+    ::= { midcomRuleEntry 8 }
+
+midcomRuleInterface OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the IP interface for which
+         enforcement of a policy rule is requested or performed,
+         respectively.
+
+         The interface is identified by its index in the ifTable
+         (see IF-MIB in RFC 2863).  If the object has a value of 0,
+         then no particular interface is indicated.
+
+         This object is used as input to a request for establishing
+         a policy rule as well as for indicating the properties of
+         an established policy rule.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value newEntry(1) or setting(2), then this object can be
+         written by a manager in order to request its preference
+         concerning the interface at which it requests NAT service.
+         The default value of 0 indicates that the manager does not
+         have a preferred interface or does not have sufficient
+         topology information for specifying one.  Writing to this
+         object in any state other than newEntry(1) or setting(2)
+         will always fail with an 'inconsistentValue' error.
+
+
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value reserved(7) or enabled(8), then this object indicates
+         the interface at which NAT service for this rule is
+         performed.  If NAT service is not required for enforcing
+         the policy rule, then the value of this object is 0.  Also,
+         if the MIDCOM-MIB implementation cannot indicate an
+         interface, because it does not have this information or
+         because NAT service is not offered at a particular single
+         interface, then the value of the object is 0.
+
+         Note that the index of a particular interface in the
+         ifTable may change after a re-initialization of the
+         middlebox, for example, after adding another interface to
+         it.  In such a case, the value of this object may change,
+         but the interface referred to by the MIDCOM-MIB MUST still
+         be the same.  If, after a re-initialization of the
+         middlebox, the interface referred to before
+         re-initialization cannot be uniquely mapped anymore to a
+         particular entry in the ifTable, then the value of object
+         midcomRuleOperStatus of the same entry MUST be changed to
+         terminated(11).
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7), or
+         enabled(8), then the value of this object is irrelevant."
+    DEFVAL { 0 }
+    ::= { midcomRuleEntry 9 }
+
+midcomRuleFlowDirection OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    inbound(1),
+                    outbound(2),
+                    biDirectional(3)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This parameter specifies the direction of enabled
+         communication, either inbound(1), outbound(2), or
+         biDirectional(3).
+
+         The semantics of this object depends on the protocol
+         the rule relates to.  If the rule is independent of
+
+
+
+         the transport protocol (midcomRuleTransportProtocol
+         has a value of 0) or if the transport protocol is UDP,
+         then the value of midcomRuleFlowDirection indicates
+         the direction of packets traversing the middlebox.
+
+         In this case, value inbound(1) indicates that packets
+         are traversing from outside to inside, value outbound(2)
+         indicates that packets are traversing from inside to
+         outside.  For both values, inbound(1) and outbound(2)
+         packets can traverse the middlebox only unidirectional.
+         A bidirectional flow is indicated by value
+         biDirectional(3).
+
+         If the transport protocol is TCP, the packet flow is
+         always bidirectional, but the value of
+         midcomRuleFlowDirection indicates that:
+
+           - inbound(1): bidirectional TCP packet flow.
+             First packet, with TCP SYN flag set, must arrive
+             at an outside interface of the middlebox.
+
+           - outbound(2): bidirectional TCP packet flow.
+             First packet, with TCP SYN flag set, must arrive
+             at an inside interface of the middlebox.
+
+           - biDirectional(3): bidirectional TCP packet flow.
+             First packet, with TCP SYN flag set, may arrive
+             at an inside or an outside interface of the middlebox.
+
+         This object is used as input to a request for
+         establishing a policy enable rule as well as for
+         indicating the properties of an established policy rule.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value of either newEntry(1), setting(2), or reserved(7),
+         then this object can be written by a manager in order to
+         specify a requested direction to be enabled by a policy
+         rule.  Writing to this object in any state other than
+         newEntry(1), setting(2), or reserved(7) will always fail
+         with an 'inconsistentValue' error.
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value enabled(8), then this object indicates the enabled
+
+
+
+         flow direction.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7), or
+         enabled(8), then the value of this object is irrelevant."
+    DEFVAL { outbound }
+    ::= { midcomRuleEntry 10 }
+
+midcomRuleMaxIdleTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Maximum idle time of the policy rule in seconds.
+
+         If no packet to which the policy rule applies passes the
+         middlebox for the specified midcomRuleMaxIdleTime, then
+         the policy rule enters the termination state timedOut(9).
+
+         A value of 0 indicates that the policy does not require
+         an individual idle time and that instead, a default idle
+         time chosen by the middlebox is used.
+
+         A value of 4294967295 ( = 2^32 - 1 ) indicates that the
+         policy does not time out if it is idle.
+
+         This object is used as input to a request for
+         establishing a policy enable rule as well as for
+         indicating the properties of an established policy rule.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value of either newEntry(1), setting(2), or reserved(7),
+         then this object can be written by a manager in order to
+         specify a maximum idle time for the policy rule to be
+         requested.  Writing to this object in any state others
+         than newEntry(1), setting(2), or reserved(7) will always
+         fail with an 'inconsistentValue' error.
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value enabled(8), then this object indicates the maximum
+         idle time of the policy rule.  Note that even if a maximum
+         idle time greater than zero was requested, the middlebox
+
+
+
+         may not be able to support maximum idle times and set the
+         value of this object to zero when entering state
+         enabled(8).
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7), or
+         enabled(8), then the value of this object is irrelevant."
+    DEFVAL { 0 }
+    ::= { midcomRuleEntry 11 }
+
+midcomRuleTransportProtocol OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The transport protocol.
+
+         Valid values for midcomRuleTransportProtocol
+         other than zero are defined at:
+         http://www.iana.org/assignments/protocol-numbers
+
+         This object is used as input to a request for establishing
+         a policy rule as well as for indicating the properties of
+         an established policy rule.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value of either newEntry(1) or setting(2), then this
+         object can be written by a manager in order to specify a
+         requested transport protocol.  If translation of an IP
+         address only is requested, then this object must have the
+         default value 0.  Writing to this object in any state
+         other than newEntry(1) or setting(2) will always fail
+         with an 'inconsistentValue' error.
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value reserved(7) or enabled(8), then this object
+         indicates which transport protocol is enforced by this
+         policy rule.  A value of 0 indicates a rule acting on IP
+         addresses only.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7), or
+         enabled(8), then the value of this object is irrelevant."
+
+
+
+    DEFVAL { 0 }
+    ::= { midcomRuleEntry 12 }
+
+midcomRulePortRange OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    single(1),
+                    pair(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The range of port numbers.
+
+         This object is used as input to a request for establishing
+         a policy rule as well as for indicating the properties of
+         an established policy rule.  It is relevant to the
+         operation of the MIDCOM-MIB implementation only if the
+         value of object midcomTransportProtocol in the same entry
+         has a value other than 0.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value newEntry(1) or setting(2), then this object can be
+         written by a manager in order to specify the requested
+         size of the port range.  With single(1) just a single
+         port number is requested, with pair(2) a consecutive pair
+         of port numbers is requested with the lower number being
+         even.  Requesting a consecutive pair of port numbers may
+         be used by RTP [RFC3550] and may even be required to
+         support older RTP applications.
+
+         Writing to this object in any state other than
+         newEntry(1), setting(2) or reserved(7) will always fail
+         with an 'inconsistentValue' error.
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value of either reserved(7) or enabled(8), then this
+         object will have the value that it had before the
+         transition to this state.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7), or
+         enabled(8), then the value of this object is irrelevant."
+    DEFVAL { single }
+
+
+
+    ::= { midcomRuleEntry 13}
+
+midcomRuleInternalIpVersion OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "IP version of the internal address (A0) and the inside
+         address (A1).  Allowed values are ipv4(1), ipv6(2),
+         ipv4z(3), and ipv6z(4).
+
+         This object is used as input to a request for establishing
+         a policy rule as well as for indicating the properties of
+         an established policy rule.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value newEntry(1) or setting(2), then this object can be
+         written by a manager in order to specify the IP version
+         required at the inside of the middlebox.  Writing to this
+         object in any state other than newEntry(1) or setting(2)
+         will always fail with an 'inconsistentValue' error.
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value reserved(7) or enabled(8), then this object
+         indicates the internal/inside IP version.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7), or
+         enabled(8), then the value of this object is irrelevant."
+    DEFVAL { ipv4 }
+    ::= { midcomRuleEntry 14 }
+
+midcomRuleExternalIpVersion OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "IP version of the external address (A3) and the outside
+         address (A2).  Allowed values are ipv4(1) and ipv6(2).
+
+         This object is used as input to a request for establishing
+         a policy rule as well as for indicating the properties of
+         an established policy rule.
+
+
+
+         If object midcomRuleOperStatus of the same entry has the
+         value newEntry(1) or setting(2), then this object can be
+         written by a manager in order to specify the IP version
+         required at the outside of the middlebox.  Writing to
+         this object in any state other than newEntry(1) or
+         setting(2) will always fail with an 'inconsistentValue'
+         error.
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value reserved(7) or enabled(8), then this object
+         indicates the external/outside IP version.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7) or
+         enabled(8), then the value of this object is irrelevant."
+    DEFVAL { ipv4 }
+    ::= { midcomRuleEntry 15 }
+
+midcomRuleInternalIpAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The internal IP address (A0).
+
+         This object is used as input to a request for establishing
+         a policy rule as well as for indicating the properties of
+         an established policy rule.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value newEntry(1) or setting(2), then this object can be
+         written by a manager in order to specify the internal IP
+         address for which a reserve policy rule or a enable policy
+         rule is requested to be established.  Writing to this
+         object in any state other than newEntry(1) or setting(2)
+         will always fail with an 'inconsistentValue' error.
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value reserved(7) or enabled(8), then this object will
+         have the value which it had before the transition to this
+
+
+
+         state.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7) or
+         enabled(8), then the value of this object is irrelevant."
+    ::= { midcomRuleEntry 16 }
+
+midcomRuleInternalIpPrefixLength OBJECT-TYPE
+    SYNTAX      InetAddressPrefixLength
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The prefix length of the internal IP address used for
+         wildcarding.  A value of 0 indicates a full wildcard;
+         in this case, the value of midcomRuleInternalIpAddr is
+         irrelevant.  If midcomRuleInternalIpVersion has a value
+         of ipv4(1), then a value > 31 indicates no wildcarding
+         at all.  If midcomRuleInternalIpVersion has a value
+         of ipv4(2), then a value > 127 indicates no wildcarding
+         at all.  A MIDCOM-MIB implementation that does not
+         support IP address wildcarding MUST implement this object
+         as read-only with a value of 128.  A MIDCOM that does
+         not support wildcarding based on prefix length MAY
+         restrict allowed values for this object to 0 and 128.
+
+         This object is used as input to a request for establishing
+         a policy rule as well as for indicating the properties of
+         an established policy rule.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value newEntry(1) or setting(2), then this object can be
+         written by a manager in order to specify the prefix length
+         of the internal IP address for which a reserve policy rule
+         or an enable policy rule is requested to be established.
+         Writing to this object in any state other than newEntry(1)
+         or setting(2) will always fail with an 'inconsistentValue'
+         error.
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value reserved(7) or enabled(8), then this object will
+         have the value which it had before the transition to this
+         state.
+
+
+
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7), or
+         enabled(8), then the value of this object is irrelevant."
+    DEFVAL { 128 }
+    ::= { midcomRuleEntry 17 }
+
+midcomRuleInternalPort OBJECT-TYPE
+    SYNTAX      InetPortNumber
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The internal port number.  A value of 0 is a wildcard.
+
+         This object is used as input to a request for establishing
+         a policy rule as well as for indicating the properties of
+         an established policy rule.  It is relevant to the
+         operation of the MIDCOM-MIB implementation only if the
+         value of object midcomTransportProtocol in the same entry
+         has a value other than 0.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value newEntry(1) or setting(2), then this object can be
+         written by a manager in order to specify the internal port
+         number for which a reserve policy rule or an enable policy
+         rule is requested to be established.  Writing to this
+         object in any state other than newEntry(1) or setting(2)
+         will always fail with an 'inconsistentValue' error.
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value reserved(7) or enabled(8), then this object will
+         have the value that it had before the transition to this
+         state.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7), or
+         enabled(8), then the value of this object is irrelevant."
+    DEFVAL { 0 }
+    ::= { midcomRuleEntry 18 }
+
+midcomRuleExternalIpAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+
+
+
+    DESCRIPTION
+        "The external IP address (A3).
+
+         This object is used as input to a request for establishing
+         a policy rule as well as for indicating the properties of
+         an established policy rule.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value newEntry(1), setting(2), or reserved(7), then this
+         object can be written by a manager in order to specify the
+         external IP address for which an enable policy rule is
+         requested to be established.  Writing to this object in
+         any state other than newEntry(1), setting(2), or reserved(7)
+         will always fail with an 'inconsistentValue' error.
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value enabled(8), then this object will have the value
+         that it had before the transition to this state.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7), or
+         enabled(8), then the value of this object is irrelevant."
+    ::= { midcomRuleEntry 19 }
+
+midcomRuleExternalIpPrefixLength OBJECT-TYPE
+    SYNTAX      InetAddressPrefixLength
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The prefix length of the external IP address used for
+         wildcarding.  A value of 0 indicates a full wildcard;
+         in this case, the value of midcomRuleExternalIpAddr is
+         irrelevant.  If midcomRuleExternalIpVersion has a value
+         of ipv4(1), then a value > 31 indicates no wildcarding
+         at all.  If midcomRuleExternalIpVersion has a value
+         of ipv4(2), then a value > 127 indicates no wildcarding
+         at all.  A MIDCOM-MIB implementation that does not
+         support IP address wildcarding MUST implement this object
+         as read-only with a value of 128.  A MIDCOM that does
+         not support wildcarding based on prefix length MAY
+         restrict allowed values for this object to 0 and 128.
+
+         This object is used as input to a request for establishing
+
+
+
+         a policy rule as well as for indicating the properties of
+         an established policy rule.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value newEntry(1), setting(2), or reserved(7), then this
+         object can be written by a manager in order to specify the
+         prefix length of the external IP address for which an
+         enable policy rule is requested to be established.
+         Writing to this object in any state other than
+         newEntry(1), setting(2), or reserved(7) will always fail
+         with an 'inconsistentValue' error.
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value enabled(8), then this object will have the value
+         that it had before the transition to this state.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7), or
+         enabled(8), then the value of this object is irrelevant."
+    DEFVAL { 128 }
+    ::= { midcomRuleEntry 20 }
+
+midcomRuleExternalPort OBJECT-TYPE
+    SYNTAX      InetPortNumber
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The external port number.  A value of 0 is a wildcard.
+
+         This object is used as input to a request for establishing
+         a policy rule as well as for indicating the properties of
+         an established policy rule.  It is relevant to the
+         operation of the MIDCOM-MIB implementation only if the
+         value of object midcomTransportProtocol in the same entry
+         has a value other than 0.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value newEntry(1), setting(2) or reserved(7), then this
+         object can be written by a manager in order to specify the
+         external port number for which an enable policy rule is
+         requested to be established.  Writing to this object in
+         any state other than newEntry(1), setting(2) or reserved(7)
+         will always fail with an 'inconsistentValue' error.
+
+
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has the
+         value enabled(8), then this object will have the value
+         which it had before the transition to this state.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7) or
+         enabled(8), then the value of this object is irrelevant."
+    DEFVAL { 0 }
+    ::= { midcomRuleEntry 21 }
+
+midcomRuleInsideIpAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The inside IP address at the middlebox (A1).
+
+         The value of this object is relevant only if
+         object midcomRuleOperStatus of the same entry has
+         a value of either reserved(7) or enabled(8)."
+    ::= { midcomRuleEntry 22 }
+
+midcomRuleInsidePort OBJECT-TYPE
+    SYNTAX      InetPortNumber
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The inside port number at the middlebox.
+         A value of 0 is a wildcard.
+
+         The value of this object is relevant only if
+         object midcomRuleOperStatus of the same entry has
+         a value of either reserved(7) or enabled(8)."
+    ::= { midcomRuleEntry 23 }
+
+midcomRuleOutsideIpAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The outside IP address at the middlebox (A2).
+
+         The value of this object is relevant only if
+
+
+
+         object midcomRuleOperStatus of the same entry has
+         a value of either reserved(7) or enabled(8)."
+    ::= { midcomRuleEntry 24 }
+
+midcomRuleOutsidePort OBJECT-TYPE
+    SYNTAX      InetPortNumber
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The outside port number at the middlebox.
+         A value of 0 is a wildcard.
+
+         The value of this object is relevant only if
+         object midcomRuleOperStatus of the same entry has
+         a value of either reserved(7) or enabled(8)."
+    ::= { midcomRuleEntry 25 }
+
+midcomRuleLifetime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The remaining lifetime in seconds of this policy rule.
+
+         Lifetime of a policy rule starts when object
+         midcomRuleOperStatus in the same entry enters either
+         state reserved(7) or state enabled(8).
+
+         This object is used as input to a request for establishing
+         a policy rule as well as for indicating the properties of
+         an established policy rule.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value of either newEntry(1) or setting(2), then this
+         object can be written by a manager in order to specify
+         the requested lifetime of a policy rule to be established.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value of either reserved(7) or enabled(8), then this
+         object indicates the (continuously decreasing) remaining
+         lifetime of the established policy rule.  Note that when
+         entering state reserved(7) or enabled(8), the MIDCOM-MIB
+         implementation can choose a lifetime shorter than the one
+         requested.
+
+         Unlike other parameters of the policy rule, this parameter
+         can still be written in state reserved(7) and enabled(8).
+
+
+
+         Writing to this object is processed by the MIDCOM-MIB
+         implementation by choosing a lifetime value that is
+         greater than 0 and less than or equal to the minimum of
+         the requested value and the value specified by object
+         midcomConfigMaxLifetime:
+
+          0 <= lt_granted <= MINIMUM(lt_requested, lt_maximum)
+
+         where:
+            - lt_granted is the actually granted lifetime by the
+              MIDCOM-MIB implementation
+            - lt_requested is the requested lifetime of the MIDCOM
+              client
+            - lt_maximum is the value of object
+              midcomConfigMaxLifetime
+
+         SNMP SET requests to this object may be rejected or the
+         value of the object after an accepted SET operation may be
+         less than the value that was contained in the SNMP SET
+         request.
+
+         Successfully writing a value of 0 terminates the policy
+         rule.  Note that after a policy rule is terminated, still
+         the entry will exist as long as indicated by the value of
+         midcomRuleStorageTime.
+
+         Writing to this object in any state other than
+         newEntry(1), setting(2), reserved(7), or enabled(7)
+         will always fail with an 'inconsistentValue' error.
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         If object midcomRuleOperStatus of the same entry has a
+         value other than newEntry(1), setting(2), reserved(7), or
+         enabled(8), then the value of this object is irrelevant."
+    DEFVAL { 180 }
+    ::= { midcomRuleEntry 26 }
+
+midcomRuleRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "A control that allows entries to be added and removed from
+         this table.
+
+
+
+         Entries can also be removed from this table by setting
+         objects midcomRuleLifetime and midcomRuleStorageTime of
+         an entry to 0.
+
+         Attempts to set a row notInService(2) where the value
+         of the midcomRuleStorageType object is permanent(4) or
+         readOnly(5) will result in an 'notWritable' error.
+
+         Note that this error code is SNMP specific.  If the MIB
+         module is used with other protocols than SNMP, errors with
+         similar semantics specific to those protocols should be
+         returned.
+
+         The value of this object has no effect on whether other
+         objects in this conceptual row can be modified."
+    ::= { midcomRuleEntry 27 }
+
+--
+-- Policy rule group subtree
+--
+-- The midcomGroupTable lists all current policy rule groups.
+--
+
+midcomGroupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MidcomGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists all current policy rule groups.
+
+         Entries in this table are created or removed
+         implicitly when entries in the midcomRuleTable are
+         created or removed, respectively.  A group entry
+         in this table only exists as long as there are
+         member rules of this group in the midcomRuleTable.
+
+         The table serves for listing the existing groups and
+         their remaining lifetimes and for changing lifetimes
+         of groups and implicitly of all group members.
+         Groups and all their member policy rules can only be
+         deleted by deleting all member policies in the
+         midcomRuleTable.
+
+         Setting midcomGroupLifetime will result in setting
+         the lifetime of all policy members to the same value."
+    ::= { midcomTransaction 4 }
+
+midcomGroupEntry OBJECT-TYPE
+
+
+
+    SYNTAX      MidcomGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing properties of a particular
+         MIDCOM policy rule group."
+    INDEX { midcomRuleOwner, midcomGroupIndex }
+    ::= { midcomGroupTable 1 }
+
+MidcomGroupEntry ::= SEQUENCE {
+    midcomGroupIndex      Unsigned32,
+    midcomGroupLifetime   Unsigned32
+}
+
+midcomGroupIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index of this group for the midcomRuleOwner.
+         A group is identified by the combination of
+         midcomRuleOwner and midcomGroupIndex.
+
+         The value of this index must be unique per
+         midcomRuleOwner."
+    ::= { midcomGroupEntry 2 }
+
+midcomGroupLifetime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When retrieved, this object delivers the maximum
+         lifetime in seconds of all member rules of this group,
+         i.e., of all rows in the midcomRuleTable that have the
+         same values for midcomRuleOwner and midcomGroupIndex.
+
+         Successfully writing to this object modifies the
+         lifetime of all member policies.  Successfully
+         writing a value of 0 terminates all member policies
+         and implicitly deletes the group as soon as all member
+         entries are removed from the midcomRuleTable.
+
+         Note that after a group's lifetime is expired or is
+         set to 0, still the corresponding entry in the
+         midcomGroupTable will exist as long as terminated
+         member policy rules are stored as entries in the
+
+
+
+         midcomRuleTable.
+
+         Writing to this object is processed by the MIDCOM-MIB
+         implementation by choosing a lifetime value that is
+         greater than 0 and less than or equal to the minimum of
+         the requested value and the value specified by object
+         midcomConfigMaxLifetime:
+
+          0 <= lt_granted <= MINIMUM(lt_requested, lt_maximum)
+
+         where:
+            - lt_granted is the actually granted lifetime by the
+              MIDCOM-MIB implementation
+            - lt_requested is the requested lifetime of the MIDCOM
+              client
+            - lt_maximum is the value of object
+              midcomConfigMaxLifetime
+
+         SNMP SET requests to this object may be rejected or the
+         value of the object after an accepted SET operation may be
+         less than the value that was contained in the SNMP SET
+         request."
+    ::= { midcomGroupEntry 3 }
+
+--
+-- Configuration Objects
+--
+--  Configuration objects that can be used for retrieving
+--  middlebox capability information (mandatory) and for
+--  setting parameters of the implementation of transaction
+--  objects (optional).
+--
+--  Note that typically configuration objects are not intended
+--  to be written by MIDCOM clients.  In general, write access
+--  to these objects needs to be restricted more strictly than
+--  write access to transaction objects.
+--
+
+--
+-- Capabilities subtree
+--
+-- This subtree contains objects to which MIDCOM clients should
+-- have read access.
+--
+
+midcomConfigMaxLifetime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    UNITS       "seconds"
+
+
+
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When retrieved, this object returns the maximum lifetime,
+         in seconds, that this middlebox allows policy rules to
+         have."
+    ::= { midcomConfig 1 }
+
+midcomConfigPersistentRules OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When retrieved, this object returns true(1) if the
+         MIDCOM-MIB implementation can store policy rules
+         persistently.  Otherwise, it returns false(2).
+
+         A value of true(1) indicates that there may be
+         entries in the midcomRuleTable with object
+         midcomRuleStorageType set to value nonVolatile(3)."
+    ::= { midcomConfig 2 }
+
+midcomConfigIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MidcomConfigIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table indicates capabilities of the MIDCOM-MIB
+         implementation per IP interface.
+
+         The table is indexed by the object midcomConfigIfIndex.
+
+         For indexing a single interface, this object contains
+         the value of the ifIndex object that is associated
+         with the interface.  If an entry with
+         midcomConfigIfIndex = 0 occurs, then bits set in
+         objects of this entry apply to all interfaces for which
+         there is no entry in this table with the interface's
+         index."
+    ::= { midcomConfig 3 }
+
+midcomConfigIfEntry OBJECT-TYPE
+    SYNTAX      MidcomConfigIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing the capabilities of a middlebox
+         with respect to the indexed IP interface."
+
+
+
+    INDEX { midcomConfigIfIndex }
+    ::= { midcomConfigIfTable 1 }
+
+MidcomConfigIfEntry ::= SEQUENCE {
+    midcomConfigIfIndex          InterfaceIndexOrZero,
+    midcomConfigIfBits           BITS,
+    midcomConfigIfEnabled        TruthValue
+}
+
+midcomConfigIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index of an entry in the midcomConfigIfTable.
+
+         For values different from zero, this object
+         identifies an IP interface by containing the same
+         value as the ifIndex object associated with the
+         interface.
+
+         Note that the index of a particular interface in the
+         ifTable may change after a re-initialization of the
+         middlebox, for example, after adding another interface to
+         it.  In such a case, the value of this object may change,
+         but the interface referred to by the MIDCOM-MIB MUST still
+         be the same.  If, after a re-initialization of the
+         middlebox, the interface referred to before
+         re-initialization cannot be uniquely mapped anymore to a
+         particular entry in the ifTable, then the value of object
+         midcomConfigIfEnabled of the same entry MUST be changed to
+         false(2).
+
+         If the object has a value of 0, then values
+         specified by further objects of the same entry
+         apply to all interfaces for which there is no
+         explicit entry in the midcomConfigIfTable."
+    ::= { midcomConfigIfEntry 1 }
+
+midcomConfigIfBits OBJECT-TYPE
+    SYNTAX      BITS {
+                    ipv4(0),
+                    ipv6(1),
+                    addressWildcards(2),
+                    portWildcards(3),
+                    firewall(4),
+                    nat(5),
+                    portTranslation(6),
+
+
+
+                    protocolTranslation(7),
+                    twiceNat(8),
+                    inside(9)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "When retrieved, this object returns a set of bits
+         indicating the capabilities (or configuration) of
+         the middlebox with respect to the referenced IP interface.
+         If the index equals 0, then all set bits apply to all
+         interfaces.
+
+         If the ipv4(0) bit is set, then the middlebox supports
+         IPv4 at the indexed IP interface.
+
+         If the ipv6(1) bit is set, then the middlebox supports
+         IPv6 at the indexed IP interface.
+
+         If the addressWildcards(2) bit is set, then the
+         middlebox supports IP address wildcarding at the indexed
+         IP interface.
+
+         If the portWildcards(3) bit is set, then the
+         middlebox supports port wildcarding at the indexed
+         IP interface.
+
+         If the firewall(4) bit is set, then the middlebox offers
+         firewall functionality at the indexed interface.
+
+         If the nat(5) bit is set, then the middlebox offers
+         network address translation service at the indexed
+         interface.
+
+         If the portTranslation(6) bit is set, then the middlebox
+         offers port translation service at the indexed interface.
+         This bit is only relevant if nat(5) is set.
+
+         If the protocolTranslation(7) bit is set, then the
+         middlebox offers protocol translation service between
+         IPv4 and IPv6 at the indexed interface.  This bit is only
+         relevant if nat(5) is set.
+
+         If the twiceNat(8) bit is set, then the middlebox offers
+         twice network address translation service at the indexed
+         interface.  This bit is only relevant if nat(5) is set.
+
+         If the inside(9) bit is set, then the indexed interface is
+
+
+
+         an inside interface with respect to NAT functionality.
+         Otherwise, it is an outside interface.  This bit is only
+         relevant if nat(5) is set.  An SNMP agent supporting both
+         the MIDCOM-MIB module and the NAT-MIB module SHOULD ensure
+         that the value of this object is consistent with the values
+         of corresponding objects in the NAT-MIB module."
+    ::= { midcomConfigIfEntry 2 }
+
+midcomConfigIfEnabled OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of this object indicates the availability of
+         the middlebox service described by midcomConfigIfBits
+         at the indexed IP interface.
+
+         By writing to this object, the MIDCOM support for the
+         entire IP interface can be switched on or off.  Setting
+         this object to false(2) immediately stops middlebox
+         support at the indexed IP interface.  This implies that
+         all policy rules that use NAT or firewall resources at
+         the indexed IP interface are terminated immediately.
+         In this case, the MIDCOM agent MUST send
+         midcomUnsolicitedRuleEvent to all MIDCOM clients that
+         have access to one of the terminated rules."
+    DEFVAL { true }
+    ::= { midcomConfigIfEntry 3 }
+
+--
+-- Firewall subtree
+--
+-- This subtree contains the firewall configuration table
+--
+
+midcomConfigFirewallTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MidcomConfigFirewallEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This table lists the firewall configuration per IP interface.
+
+        It can be used for configuring how policy rules created by
+        MIDCOM clients are realized as firewall rules of a firewall
+        implementation.  Particularly, the priority used for MIDCOM
+        policy rules can be configured.  For a single firewall
+        implementation at a particular IP interface, all MIDCOM
+        policy rules are realized as firewall rules with the same
+
+
+
+        priority.  Also, a firewall rule group name can be
+        configured.
+
+        The table is indexed by the object midcomConfigFirewallIndex.
+        For indexing a single interface, this object contains the
+        value of the ifIndex object that is associated with the
+        interface.  If an entry with midcomConfigFirewallIndex = 0
+        occurs, then bits set in objects of this entry apply to all
+        interfaces for which there is no entry in this table for the
+        interface's index."
+    ::= { midcomConfig 4 }
+
+midcomConfigFirewallEntry OBJECT-TYPE
+    SYNTAX      MidcomConfigFirewallEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "An entry describing a particular set of
+        firewall resources."
+    INDEX { midcomConfigFirewallIndex }
+    ::= { midcomConfigFirewallTable 1 }
+
+MidcomConfigFirewallEntry ::= SEQUENCE {
+    midcomConfigFirewallIndex      InterfaceIndexOrZero,
+    midcomConfigFirewallGroupId    SnmpAdminString,
+    midcomConfigFirewallPriority   Unsigned32
+}
+
+midcomConfigFirewallIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index of an entry in the midcomConfigFirewallTable.
+
+         For values different from 0, this object identifies an
+         IP interface by containing the same value as the ifIndex
+         object associated with the interface.
+
+         Note that the index of a particular interface in the
+         ifTable may change after a re-initialization of the
+         middlebox, for example, after adding another interface to
+         it.  In such a case, the value of this object may change,
+         but the interface referred to by the MIDCOM-MIB MUST still
+         be the same.  If, after a re-initialization of the
+         middlebox, the interface referred to before
+         re-initialization cannot be uniquely mapped anymore to a
+         particular entry in the ifTable, then the entry in the
+
+
+
+         midcomConfigFirewallTable MUST be deleted.
+
+         If the object has a value of 0, then values specified by
+         further objects of the same entry apply to all interfaces
+         for which there is no explicit entry in the
+         midcomConfigFirewallTable."
+    ::= { midcomConfigFirewallEntry 1 }
+
+midcomConfigFirewallGroupId OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "The firewall rule group to which all firewall rules are
+        assigned that the MIDCOM server creates for the interface
+        indicated by object midcomConfigFirewallIndex.  If the
+        value of object midcomConfigFirewallIndex is 0, then all
+        firewall rules of the MIDCOM server that are created for
+        interfaces with no specific entry in the
+        midcomConfigFirewallTable are assigned to the firewall
+        rule group indicated by the value of this object."
+    ::= { midcomConfigFirewallEntry 2 }
+
+midcomConfigFirewallPriority OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "The priority assigned to all firewall rules that the
+        MIDCOM server creates for the interface indicated by
+        object midcomConfigFirewallIndex.  If the value of object
+        midcomConfigFirewallIndex is 0, then this priority is
+        assigned to all firewall rules of the MIDCOM server that
+        are created for interfaces for which there is no specific
+        entry in the midcomConfigFirewallTable."
+    ::= { midcomConfigFirewallEntry 3 }
+
+--
+-- Monitoring Objects
+--
+-- Monitoring objects are structured into two groups,
+-- the midcomResourceGroup providing information about used
+-- resources and the midcomStatisticsGroup providing information
+-- about MIDCOM transaction statistics.
+
+--
+-- Resources subtree
+--
+
+
+
+-- The MIDCOM resources subtree contains a set of managed
+-- objects describing the currently used resources of NAT
+-- and firewall implementations.
+--
+
+--
+-- Textual conventions for objects of the resource subtree
+--
+
+MidcomNatBindMode ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+       "An indicator of the kind of NAT resources used by a policy
+        rule.  This definition corresponds to the definition of
+        NatBindMode in the NAT-MIB (RFC 4008).  Value none(3) can
+        be used to indicate that the policy rule does not use
+        any NAT binding.
+        "
+    SYNTAX      INTEGER {
+                    addressBind(1),
+                    addressPortBind(2),
+                    none(3)
+                }
+
+MidcomNatSessionIdOrZero ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS      current
+    DESCRIPTION
+       "A unique ID that is assigned to each NAT session by
+        a NAT implementation.  This definition corresponds to
+        the definition of NatSessionId in the NAT-MIB (RFC 4008).
+        Value 0 can be used to indicate that the policy rule does
+        not use any NAT binding."
+    SYNTAX      Unsigned32
+
+--
+-- The MIDCOM resource table
+--
+
+midcomResourceTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MidcomResourceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This table lists all used middlebox resources per
+        MIDCOM policy rule.
+
+        The midcomResourceTable augments the
+
+
+
+        midcomRuleTable."
+    ::= { midcomMonitoring 1 }
+
+midcomResourceEntry OBJECT-TYPE
+    SYNTAX      MidcomResourceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "An entry describing a particular set of middlebox
+        resources."
+    AUGMENTS { midcomRuleEntry }
+    ::= { midcomResourceTable 1 }
+
+MidcomResourceEntry ::= SEQUENCE {
+    midcomRscNatInternalAddrBindMode   MidcomNatBindMode,
+    midcomRscNatInternalAddrBindId     NatBindIdOrZero,
+    midcomRscNatInsideAddrBindMode     MidcomNatBindMode,
+    midcomRscNatInsideAddrBindId       NatBindIdOrZero,
+    midcomRscNatSessionId1             MidcomNatSessionIdOrZero,
+    midcomRscNatSessionId2             MidcomNatSessionIdOrZero,
+    midcomRscFirewallRuleId            Unsigned32
+}
+
+midcomRscNatInternalAddrBindMode OBJECT-TYPE
+    SYNTAX      MidcomNatBindMode
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "An indication of whether this policy rule uses an address
+        NAT bind or an address-port NAT bind for binding the
+        internal address.
+
+        If the MIDCOM-MIB module is operated together with
+        the NAT-MIB module (RFC 4008) then object
+        midcomRscNatInternalAddrBindMode contains the same
+        value as the corresponding object
+        natSessionPrivateSrcEPBindMode of the NAT-MIB module."
+    ::= { midcomResourceEntry 4 }
+
+midcomRscNatInternalAddrBindId OBJECT-TYPE
+    SYNTAX      NatBindIdOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object references to the allocated internal NAT
+        bind that is used by this policy rule.  A NAT bind
+        describes the mapping of internal addresses to
+        outside addresses.  MIDCOM-MIB implementations can
+
+
+
+        read this object to learn the corresponding NAT bind
+        resource for this particular policy rule.
+
+        If the MIDCOM-MIB module is operated together with
+        the NAT-MIB module (RFC 4008) then object
+        midcomRscNatInternalAddrBindId contains the same
+        value as the corresponding object
+        natSessionPrivateSrcEPBindId of the NAT-MIB module."
+    ::= { midcomResourceEntry 5 }
+
+midcomRscNatInsideAddrBindMode OBJECT-TYPE
+    SYNTAX      MidcomNatBindMode
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "An indication of whether this policy rule uses an address
+        NAT bind or an address-port NAT bind for binding the
+        external address.
+
+        If the MIDCOM-MIB module is operated together with
+        the NAT-MIB module (RFC 4008), then object
+        midcomRscNatInsideAddrBindMode contains the same
+        value as the corresponding object
+        natSessionPrivateDstEPBindMode of the NAT-MIB module."
+    ::= { midcomResourceEntry 6 }
+
+midcomRscNatInsideAddrBindId OBJECT-TYPE
+    SYNTAX      NatBindIdOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object refers to the allocated external NAT
+        bind that is used by this policy rule.  A NAT bind
+        describes the mapping of external addresses to
+        inside addresses.  MIDCOM-MIB implementations can
+        read this object to learn the corresponding NAT bind
+        resource for this particular policy rule.
+
+        If the MIDCOM-MIB module is operated together with the
+        NAT-MIB module (RFC 4008), then object
+        midcomRscNatInsideAddrBindId contains the same
+        value as the corresponding object
+        natSessionPrivateDstEPBindId of the NAT-MIB module."
+    ::= { midcomResourceEntry 7 }
+
+midcomRscNatSessionId1 OBJECT-TYPE
+    SYNTAX      MidcomNatSessionIdOrZero
+    MAX-ACCESS  read-only
+
+
+
+    STATUS      current
+    DESCRIPTION
+       "This object refers to the first allocated NAT session for
+        this policy rule.  MIDCOM-MIB implementations can read this
+        object to learn whether or not a NAT session for a
+        particular policy rule is used.  A value of 0 means that no
+        NAT session is allocated for this policy rule.  A value
+        other than 0 refers to the NAT session."
+   ::= { midcomResourceEntry 8 }
+
+midcomRscNatSessionId2 OBJECT-TYPE
+    SYNTAX      MidcomNatSessionIdOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object refers to the second allocated NAT session for
+        this policy rule.  MIDCOM-MIB implementations can read this
+        object to learn whether or not a NAT session for a
+        particular policy rule is used.  A value of 0 means that no
+        NAT session is allocated for this policy rule.  A value
+        other than 0 refers to the NAT session."
+    ::= { midcomResourceEntry 9 }
+
+midcomRscFirewallRuleId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object refers to the allocated firewall
+        rule in the firewall engine for this policy rule.
+        MIDCOM-MIB implementations can read this value to
+        learn whether a firewall rule for this particular
+        policy rule is used or not.  A value of 0 means that
+        no firewall rule is allocated for this policy rule.
+        A value other than 0 refers to the firewall rule
+        number within the firewall engine."
+    ::= { midcomResourceEntry 10 }
+
+--
+-- Statistics subtree
+--
+-- The MIDCOM statistics subtree contains a set of managed
+-- objects providing statistics about the usage of transaction
+-- objects.
+--
+
+midcomStatistics      OBJECT IDENTIFIER ::= { midcomMonitoring 2 }
+
+
+
+
+midcomCurrentOwners OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The number of different values for midcomRuleOwner
+        for all current entries in the midcomRuleTable."
+    ::= { midcomStatistics 1 }
+
+midcomTotalRejectedRuleEntries OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total number of failed attempts to create an entry
+        in the midcomRuleTable."
+    ::= { midcomStatistics 2 }
+
+midcomCurrentRulesIncomplete OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The current number of policy rules that are incomplete.
+
+        Policy rules are loaded via row entries in the
+        midcomRuleTable.  This object counts policy rules that are
+        loaded but not fully specified, i.e., they are in state
+        newEntry(1) or setting(2)."
+    ::= { midcomStatistics 3 }
+
+midcomTotalIncorrectReserveRules OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total number of policy reserve rules that failed
+        parameter check and entered state incorrectRequest(4)."
+    ::= { midcomStatistics 4 }
+
+midcomTotalRejectedReserveRules OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total number of policy reserve rules that failed
+        while being processed and entered state requestRejected(6)."
+    ::= { midcomStatistics 5 }
+
+
+
+midcomCurrentActiveReserveRules OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The number of currently active policy reserve rules."
+    ::= { midcomStatistics 6 }
+
+midcomTotalExpiredReserveRules OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total number of expired policy reserve rules
+        (entered termination state timedOut(9))."
+    ::= { midcomStatistics 7 }
+
+midcomTotalTerminatedOnRqReserveRules OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total number of policy reserve rules that were
+        terminated on request (entered termination state
+        terminatedOnRequest(10))."
+    ::= { midcomStatistics 8 }
+
+midcomTotalTerminatedReserveRules OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total number of policy reserve rules that were
+        terminated, but not on request (entered termination state
+        terminated(11))."
+    ::= { midcomStatistics 9 }
+
+midcomTotalIncorrectEnableRules OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total number of policy enable rules that failed
+        parameter check and entered state incorrectRequest(4)."
+    ::= { midcomStatistics 10 }
+
+midcomTotalRejectedEnableRules OBJECT-TYPE
+    SYNTAX      Counter32
+
+
+
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total number of policy enable rules that failed
+        while being processed and entered state requestRejected(6)."
+    ::= { midcomStatistics 11 }
+midcomCurrentActiveEnableRules OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The number of currently active policy enable rules."
+    ::= { midcomStatistics 12 }
+
+midcomTotalExpiredEnableRules OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total number of expired policy enable rules
+        (entered termination state timedOut(9))."
+    ::= { midcomStatistics 13 }
+
+midcomTotalTerminatedOnRqEnableRules OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total number of policy enable rules that were
+        terminated on request (entered termination state
+        terminatedOnRequest(10))."
+    ::= { midcomStatistics 14 }
+
+midcomTotalTerminatedEnableRules OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total number of policy enable rules that were
+        terminated, but not on request (entered termination state
+        terminated(11))."
+    ::= { midcomStatistics 15 }
+
+--
+-- Notifications.
+--
+
+midcomUnsolicitedRuleEvent NOTIFICATION-TYPE
+
+
+
+    OBJECTS     { midcomRuleOperStatus, midcomRuleLifetime }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated whenever the value of
+         midcomRuleOperStatus enters any error state or any
+         termination state without an explicit trigger by a
+         MIDCOM client."
+    ::= { midcomNotifications 1 }
+
+midcomSolicitedRuleEvent NOTIFICATION-TYPE
+    OBJECTS     { midcomRuleOperStatus, midcomRuleLifetime }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated whenever the value
+         of midcomRuleOperStatus enters one of the states
+         {reserved, enabled, any error state, any termination state}
+         as a result of a MIDCOM agent writing successfully to
+         object midcomRuleAdminStatus.
+
+         In addition, it is generated when the lifetime of
+         a rule was changed by successfully writing to object
+         midcomRuleLifetime."
+    ::= { midcomNotifications 2 }
+
+midcomSolicitedGroupEvent NOTIFICATION-TYPE
+    OBJECTS     { midcomGroupLifetime }
+    STATUS      current
+    DESCRIPTION
+        "This notification is generated for indicating that the
+         lifetime of all member rules of the group was changed by
+         successfully writing to object midcomGroupLifetime.
+
+         Note that this notification is only sent if the lifetime
+         of a group was changed by successfully writing to object
+         midcomGroupLifetime.  No notification is sent
+           - if a group's lifetime is changed by writing to object
+             midcomRuleLifetime of any of its member policies,
+           - if a group's lifetime expires (in this case,
+             notifications are sent for all member policies), or
+           - if the group is terminated by terminating the last
+             of its member policies without writing to object
+             midcomGroupLifetime."
+    ::= { midcomNotifications 3 }
+
+--
+-- Conformance information
+--
+
+
+
+
+midcomCompliances OBJECT IDENTIFIER ::= { midcomConformance 1 }
+midcomGroups      OBJECT IDENTIFIER ::= { midcomConformance 2 }
+
+--
+-- compliance statements
+--
+
+-- This is the MIDCOM compliance definition ...
+
+--
+
+midcomCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for implementations of the
+         MIDCOM-MIB module.
+
+         Note that compliance with this compliance
+         statement requires compliance with the
+         ifCompliance3 MODULE-COMPLIANCE statement of the
+         IF-MIB [RFC2863]."
+    MODULE      -- this module
+    MANDATORY-GROUPS {
+            midcomRuleGroup,
+            midcomNotificationsGroup,
+            midcomCapabilitiesGroup,
+            midcomStatisticsGroup
+    }
+    GROUP   midcomConfigFirewallGroup
+    DESCRIPTION
+       "A compliant implementation does not have to implement
+        the midcomConfigFirewallGroup."
+    GROUP   midcomResourceGroup
+    DESCRIPTION
+       "A compliant implementation does not have to implement
+        the midcomResourceGroup."
+    OBJECT midcomRuleInternalIpPrefixLength
+    MIN-ACCESS  read-only
+    DESCRIPTION
+       "Write access is not required.  When write access is
+        not supported, return 128 as the value of this object.
+        A value of 128 means that the function represented by
+        this option is not supported."
+    OBJECT midcomRuleExternalIpPrefixLength
+    MIN-ACCESS  read-only
+    DESCRIPTION
+       "Write access is not required.  When write access is
+        not supported, return 128 as the value of this object.
+
+
+
+        A value of 128 means that the function represented by
+        this option is not supported."
+    OBJECT midcomRuleMaxIdleTime
+    MIN-ACCESS  read-only
+    DESCRIPTION
+       "Write access is not required.  When write access is
+        not supported, return 0 as the value of this object.
+        A value of 0 means that the function represented by
+        this option is not supported."
+    OBJECT midcomRuleInterface
+    MIN-ACCESS  read-only
+    DESCRIPTION
+       "Write access is not required."
+    OBJECT midcomConfigMaxLifetime
+    MIN-ACCESS  read-only
+    DESCRIPTION
+       "Write access is not required."
+    OBJECT midcomConfigPersistentRules
+    MIN-ACCESS  read-only
+    DESCRIPTION
+       "Write access is not required."
+    OBJECT midcomConfigIfEnabled
+    MIN-ACCESS  read-only
+    DESCRIPTION
+       "Write access is not required."
+    OBJECT midcomConfigFirewallGroupId
+    MIN-ACCESS  read-only
+    DESCRIPTION
+       "Write access is not required."
+    OBJECT midcomConfigFirewallPriority
+    MIN-ACCESS  read-only
+    DESCRIPTION
+       "Write access is not required."
+    ::= { midcomCompliances 1 }
+
+midcomRuleGroup OBJECT-GROUP
+    OBJECTS {
+        midcomRuleAdminStatus,
+        midcomRuleOperStatus,
+        midcomRuleStorageType,
+        midcomRuleStorageTime,
+        midcomRuleError,
+        midcomRuleInterface,
+        midcomRuleFlowDirection,
+        midcomRuleMaxIdleTime,
+        midcomRuleTransportProtocol,
+        midcomRulePortRange,
+        midcomRuleInternalIpVersion,
+
+
+
+        midcomRuleExternalIpVersion,
+        midcomRuleInternalIpAddr,
+        midcomRuleInternalIpPrefixLength,
+        midcomRuleInternalPort,
+        midcomRuleExternalIpAddr,
+        midcomRuleExternalIpPrefixLength,
+        midcomRuleExternalPort,
+        midcomRuleInsideIpAddr,
+        midcomRuleInsidePort,
+        midcomRuleOutsideIpAddr,
+        midcomRuleOutsidePort,
+        midcomRuleLifetime,
+        midcomRuleRowStatus,
+        midcomGroupLifetime
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+         policy rules and policy rule groups."
+    ::= { midcomGroups 1 }
+
+midcomCapabilitiesGroup OBJECT-GROUP
+    OBJECTS {
+        midcomConfigMaxLifetime,
+        midcomConfigPersistentRules,
+        midcomConfigIfBits,
+        midcomConfigIfEnabled
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+         the capabilities of a middlebox."
+    ::= { midcomGroups 2 }
+
+midcomConfigFirewallGroup OBJECT-GROUP
+    OBJECTS {
+        midcomConfigFirewallGroupId,
+        midcomConfigFirewallPriority
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+         the firewall rule group and firewall rule priority to
+         be used by firewalls loaded through MIDCOM."
+    ::= { midcomGroups 3 }
+
+midcomResourceGroup OBJECT-GROUP
+    OBJECTS {
+
+
+
+        midcomRscNatInternalAddrBindMode,
+        midcomRscNatInternalAddrBindId,
+        midcomRscNatInsideAddrBindMode,
+        midcomRscNatInsideAddrBindId,
+        midcomRscNatSessionId1,
+        midcomRscNatSessionId2,
+        midcomRscFirewallRuleId
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+         the used NAT and firewall resources."
+    ::= { midcomGroups 4 }
+
+midcomStatisticsGroup OBJECT-GROUP
+    OBJECTS {
+        midcomCurrentOwners,
+        midcomTotalRejectedRuleEntries,
+        midcomCurrentRulesIncomplete,
+        midcomTotalIncorrectReserveRules,
+        midcomTotalRejectedReserveRules,
+        midcomCurrentActiveReserveRules,
+        midcomTotalExpiredReserveRules,
+        midcomTotalTerminatedOnRqReserveRules,
+        midcomTotalTerminatedReserveRules,
+        midcomTotalIncorrectEnableRules,
+        midcomTotalRejectedEnableRules,
+        midcomCurrentActiveEnableRules,
+        midcomTotalExpiredEnableRules,
+        midcomTotalTerminatedOnRqEnableRules,
+        midcomTotalTerminatedEnableRules
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing statistical
+         information about the MIDCOM server."
+    ::= { midcomGroups 5 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+midcomNotificationsGroup NOTIFICATION-GROUP
+     NOTIFICATIONS {
+         midcomUnsolicitedRuleEvent,
+         midcomSolicitedRuleEvent,
+         midcomSolicitedGroupEvent
+     }
+     STATUS    current
+     DESCRIPTION
+         "The notifications emitted by the midcomMIB."
+     ::= { midcomGroups 6 }
+
+END

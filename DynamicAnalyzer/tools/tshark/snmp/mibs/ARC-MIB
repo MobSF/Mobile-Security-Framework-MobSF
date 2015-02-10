@@ -1,0 +1,423 @@
+ARC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  MODULE-IDENTITY, OBJECT-TYPE, Unsigned32, mib-2
+          FROM SNMPv2-SMI                           -- [RFC2578]
+  TEXTUAL-CONVENTION, RowStatus, StorageType
+          FROM SNMPv2-TC                            -- [RFC2579]
+  MODULE-COMPLIANCE, OBJECT-GROUP
+          FROM SNMPv2-CONF                          -- [RFC2580]
+  ResourceId
+          FROM ALARM-MIB;                           -- [RFC3877]
+
+arcMibModule MODULE-IDENTITY
+  LAST-UPDATED "200409090000Z"  -- September 09, 2004
+  ORGANIZATION "IETF Distributed Management Working Group"
+  CONTACT-INFO
+       "WG EMail:  disman@ietf.org
+              Subscribe: disman-request@ietf.org
+              http://www.ietf.org/html.charters/disman-charter.html
+
+        Chair:     Randy Presuhn
+                   E-mail: randy_presuhn@mindspring.com
+
+        Editor:    Hing-Kam Lam
+                   Lucent Technologies, 4C-616
+                   101 Crawfords Corner Road
+
+
+
+                   Holmdel, NJ 07733
+                   USA
+                   Tel: +1 732 949 8338
+                   E-mail: hklam@lucent.com"
+
+  DESCRIPTION
+    "The MIB module describes the objects for controlling a resource
+     in reporting alarm conditions that it detects.
+
+     Copyright (C) The Internet Society (2004).  This version
+     of this MIB module is part of RFC 3878;  see the RFC
+     itself for full legal notices."
+
+  REVISION  "200409090000Z"  -- September 09, 2004
+  DESCRIPTION
+       "Initial version, published as RFC 3878."
+  ::={ mib-2 117 }
+
+------------------
+-- TEXTUAL-CONVENTION
+------------------
+
+IANAItuProbableCauseOrZero ::= TEXTUAL-CONVENTION
+  STATUS  current
+  DESCRIPTION
+    "This TC can take any value of IANAItuProbableCause or 0.
+     IANAItuProbableCause is defined in the IANA-ITU-ALARM-TC
+     module, which is maintained at the IANA web site and
+     published in the Alarm MIB document (see RFC 3877)."
+  REFERENCE
+    "IANA-ITU-ALARM-TC MIB module as maintained at the IANA web site.
+     The initial module was also published in RFC 3877."
+--
+  SYNTAX  INTEGER (0..2147483647)
+
+------------------
+-- MIB Objects
+------------------
+
+arcTimeIntervals   OBJECT IDENTIFIER ::= { arcMibModule 1 }
+arcObjects         OBJECT IDENTIFIER ::= { arcMibModule 2 }
+
+arcTITimeInterval OBJECT-TYPE
+  SYNTAX  Unsigned32
+  UNITS       "seconds"
+  MAX-ACCESS  read-write
+  STATUS  current
+  DESCRIPTION
+
+
+
+    "This variable indicates the time interval used for the nalmTI
+     state, in units of second.  It is a pre-defined length of time
+     in which the resource will stay in the nalmTI state before
+     transition into the alm state.
+
+     Instances of this object SHOULD persist across agent restarts."
+  ::= { arcTimeIntervals 1 }
+
+arcCDTimeInterval OBJECT-TYPE
+  SYNTAX  Unsigned32
+  UNITS       "seconds"
+  MAX-ACCESS  read-write
+  STATUS  current
+  DESCRIPTION
+    "This variable indicates the time interval used for the nalmQICD
+     state, in units of second.  It is a pre-defined length of time
+     in which the resource will stay in the nalmQICD state before
+     transition into the alm state after it is problem-free.
+
+     Instances of this object SHOULD persist across agent restarts."
+  ::= { arcTimeIntervals 2 }
+
+arcTable OBJECT-TYPE
+  SYNTAX  SEQUENCE OF ArcEntry
+  MAX-ACCESS  not-accessible
+  STATUS  current
+  DESCRIPTION
+    "A table of Alarm Reporting Control (ARC) settings on the system.
+
+     Alarm Reporting Control is a feature that provides an automatic
+     in-service provisioning capability.  Alarm reporting is turned
+     off on a per-resource basis for a selective set of potential
+     alarm conditions to allow sufficient time for customer testing
+     and other maintenance activities in an 'alarm free' state.
+     Once a resource is ready for service, alarm reporting is
+     automatically or manually turned on.
+
+     Functional description and requirements of Alarm Reporting
+     Control are defined in ITU-T Recommendation M.3100 Amendment 3
+     [M.3100 Amd3]."
+
+  REFERENCE
+        "ITU Recommendation M.3100 Amendment 3, 'Generic Network
+         Information Model', January 2001."
+  ::= { arcObjects 1 }
+
+arcEntry OBJECT-TYPE
+  SYNTAX  ArcEntry
+
+
+
+  MAX-ACCESS  not-accessible
+  STATUS  current
+  DESCRIPTION
+    "A conceptual row that contains information about an ARC setting
+     of a resource in the system.
+
+     Implementation need to be aware that if the total size of
+     arcIndex and arcNotificationId exceeds 114 sub-IDs, then OIDs
+     of column instances in this table will have more than 128
+     sub-IDs and cannot be access using SNMPv1, SNMPv2c, or snmpv3."
+
+  INDEX  { arcIndex, arcAlarmType, arcNotificationId }
+  ::= { arcTable 1 }
+
+ArcEntry ::=
+  SEQUENCE {
+    arcIndex                      ResourceId,
+    arcAlarmType                  IANAItuProbableCauseOrZero,
+    arcNotificationId             OBJECT IDENTIFIER,
+    arcState                      INTEGER,
+    arcNalmTimeRemaining          Unsigned32,
+    arcRowStatus                  RowStatus,
+    arcStorageType                StorageType
+    }
+
+arcIndex OBJECT-TYPE
+  SYNTAX  ResourceId
+  MAX-ACCESS  not-accessible
+  STATUS  current
+  DESCRIPTION
+    "This object uniquely identifies a resource, which is under the
+     arcState's control for the associated arcAlarmType.
+
+     For example, if the resource is an interface, this object will
+     point to an instance of interface, e.g., ifIndex.1."
+  ::= { arcEntry 1 }
+
+arcAlarmType OBJECT-TYPE
+  SYNTAX  IANAItuProbableCauseOrZero
+  MAX-ACCESS  not-accessible
+  STATUS  current
+  DESCRIPTION
+    "This object identifies the alarm condition type controlled by the
+     arcState.  It specifies the value 0 or a value of
+     IANAItuProbableCause that is applicable to the resource.
+     IANAItuProbableCause is defined in the IANA-ITU-ALARM-TC
+     module in the Alarm MIB document.
+
+
+
+
+     The value of zero (0) implies any probable causes that are
+     applicable to the resource.  Usually, the applicable probable
+     causes of a resource are specified in the resource-specific mib."
+  ::= { arcEntry 2 }
+
+arcNotificationId OBJECT-TYPE
+  SYNTAX  OBJECT IDENTIFIER
+  MAX-ACCESS  not-accessible
+  STATUS  current
+  DESCRIPTION
+    "This object identifies the type of notification to be suppressed.
+     The notification type identified should be the one normally used
+     by the resource for reporting its alarms.  When the value of 0.0 is
+     specified for this object, it implies all applicable notification
+     types."
+  ::= { arcEntry 3 }
+
+arcState OBJECT-TYPE
+  SYNTAX  INTEGER {
+            nalm (1),
+            nalmQI (2),
+            nalmTI (3),
+            nalmQICD (4)
+            }
+  MAX-ACCESS  read-create
+  STATUS  current
+  DESCRIPTION
+    "Defined in M.3100 Amendment 3 [M.3100 Amd3], there are five
+     ARC states: alm, nalm, nalmQI, nalmQICD, and nalmTI.
+
+        alm:        Alarm reporting is turned on (i.e., is allowed).
+        nalm:       Alarm reporting is turned off (i.e., not allowed).
+        nalmQI:     nalm - Qualified Inhibit. Alarm reporting is
+                    turned off until the managed entity is qualified
+                    problem-free for an optional persistence interval.
+                    Problem-free means that the condition corresponding
+                    to the specified alarm type is cleared.
+        nalmQICD:   nalmQI - Count down.  This is a substate of nalmQI
+                    and performs the persistence timing countdown
+                    function after the managed entity is qualified
+                    problem-free.
+        nalmTI:     nalm - Timed Inhibit.  Alarm reporting is turned
+                    off for a specified time interval.
+
+     alm may transition to nalm, nalmQI or nalmTI by management request.
+
+     nalm may transition to alm, nalmQI or nalmTI by management request.
+
+
+
+
+     nalmQI may transition to nalm or alm by management request.
+
+     nalmQI may transition to alm automatically
+             if qualified problem-free (if nalmQICD is not supported) or
+             if the CD timer expired (if nalmQICD is supported)
+
+     nalmTI may transition to alm or nalm by management request.
+
+     nalmTI may transition to alm automatically if the TI timer expired.
+
+     Further details of ARC state transitions are defined in Figure 3
+     of M.3100 Amd3 [M.3100 Amd3].
+
+     According to the requirements in M.3100 Amd3, a resource
+     supporting the ARC feature shall support the alm state and at
+     least one of the nalm, nalmTI, and nalmQI states. The nalmQICD
+     state is an optional substate of nalmQI.
+
+     The arcState object controls the alarm reporting state of a
+     resource. Note that the state alm (alarm reporting is allowed) is
+     not listed in the enumeration of the value of this object. However,
+     this state is implicitly supported by the mib.
+     Once a resource enters the normal reporting mode (i.e., in the alm
+     state) for the specified alarm type, the corresponding
+     row will be automatically deleted from the arc table.
+     Also the manual setting of arcState to alm can be achieved through
+     setting the RowStatus object to 'destroy'.
+
+     The nalamQICD state is a transitional state from nalmQI to alm. It
+     is optional depending on the resource type and the implementation
+     of the resource.  If it is supported, before the state
+     transitions from nalmQI to alm, a count down period is activated
+     for a duration set by the object arcNalmCDTimeInterval.  When the
+     time is up, the arcState transitions to alm."
+
+  ::= { arcEntry 4 }
+
+arcNalmTimeRemaining OBJECT-TYPE
+  SYNTAX  Unsigned32
+  UNITS       "seconds"
+  MAX-ACCESS  read-create
+  STATUS  current
+  DESCRIPTION
+    "This variable indicates the time remaining in the nalmTI state
+     or the nalmQICD state, in units of second.
+
+     At the moment the resource enters the nalmTI state, this variable
+     will have the initial value equal to the value of
+
+
+
+     arcNalmTITimeInterval and then starts decrementing as time goes by.
+
+     Similarly at the moment the resource enters the nalmQICD state,
+     this variable will have the initial value equal to the value of
+     arcNalmCDTimeInterval and then starts decrementing as time goes by.
+
+     This variable is read-create and thus will allow the manager to
+     write (extend or shorten), as needed, the remaining time when the
+     resource is in the nalmTI or nalmQICD state.
+
+     If this variable is supported and the resource is currently not in
+     the nalmTI nor nalmQICD state, the value of this variable shall
+     equal to zero."
+  ::= { arcEntry 5 }
+
+arcRowStatus OBJECT-TYPE
+  SYNTAX  RowStatus
+  MAX-ACCESS  read-create
+  STATUS  current
+  DESCRIPTION
+    "This columnar object is used for creating and deleting a conceptual
+     row of the arcTable.  It is used to create and delete an arc
+     setting.
+
+     Setting RowStatus to createAndGo or createAndWait implies creating
+     a new ARC setting for the specified resource and alarm type.
+     Setting RowStatus to destroy implies removing the ARC setting and
+     thus has the effect of resuming normal reporting behaviour of the
+     resource for the alarm type.
+
+     Only the objects arcState, arcNalmTimeRemaining, and arcRowStatus
+     can be updated when a row is active. All the objects, except
+     arcNalmTimeRemaining, must be set before the row can be activated."
+  ::= { arcEntry 6 }
+
+arcStorageType OBJECT-TYPE
+  SYNTAX       StorageType
+  MAX-ACCESS   read-create
+  STATUS       current
+  DESCRIPTION
+    "The storage type for this conceptual row.
+     Conceptual rows having the value 'permanent' must
+     allow write-access at a minimum to arcState.
+     Note that arcState must allow change by management request.
+     Therefore, no row can be created with 'readOnly'.
+     If a set operation tries to set the value to 'readOnly',
+     then an 'inconsistentValue' error must be returned."
+  DEFVAL      { nonVolatile }
+
+
+
+  ::= { arcEntry 7}
+
+--------------------------
+-- conformance information
+--------------------------
+
+arcConformance OBJECT IDENTIFIER ::= { arcMibModule 3 }
+
+arcCompliances OBJECT IDENTIFIER ::= { arcConformance 1 }
+
+arcCompliance MODULE-COMPLIANCE
+  STATUS  current
+    DESCRIPTION
+      "The compliance statement for systems supporting
+       the ARC MIB module."
+
+  MODULE -- this module
+           MANDATORY-GROUPS {
+            arcSettingGroup
+           }
+
+  OBJECT arcStorageType
+    WRITE-SYNTAX StorageType {
+                         volatile(2),
+                         nonVolatile(3),
+                         permanent(4)
+                         }
+    DESCRIPTION
+      "Support for value 'other' is not required.
+       The arcState object must allow change by management
+       request.  Therefore, no row can be created with
+       'readOnly'."
+
+  GROUP  arcTIGroup
+  DESCRIPTION
+    "This group is REQUIRED for ARC settings
+     that provide the Time Inhibit (TI) function."
+
+  GROUP  arcQICDGroup
+  DESCRIPTION
+    "This group is REQUIRED for ARC settings
+     that provide the Quality Inhibit (QI) Count Down (CD)
+     function."
+
+  ::= { arcCompliances 1 }
+
+arcGroups OBJECT IDENTIFIER ::= { arcConformance 2 }
+
+
+
+
+arcSettingGroup OBJECT-GROUP
+  OBJECTS {
+          arcState,
+          arcRowStatus,
+          arcStorageType
+          }
+   STATUS   current
+   DESCRIPTION
+     "A collection of objects applicable to
+      basic ARC setting."
+   ::= { arcGroups 1}
+
+arcTIGroup OBJECT-GROUP
+  OBJECTS {
+          arcTITimeInterval,
+          arcNalmTimeRemaining
+          }
+   STATUS   current
+   DESCRIPTION
+     "A collection of objects applicable to
+      ARC setting that support the Time Inhibit (TI)
+      function."
+   ::= { arcGroups 2}
+
+arcQICDGroup OBJECT-GROUP
+  OBJECTS {
+          arcCDTimeInterval,
+          arcNalmTimeRemaining
+          }
+  STATUS   current
+  DESCRIPTION
+    "A collection of objects applicable to
+     ARC setting that support the Quality Inhibit (QI)
+     Count Down (CD) function."
+  ::= { arcGroups 3}
+
+END

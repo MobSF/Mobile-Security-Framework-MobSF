@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+
+<application id="16777267" name="3GPP S9" uri="http://www.3gpp.org/ftp/Specs/html-info/29215.htm">
+	<avp name="Subsession-Decision-Info" code="2200" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="yes">
+		<grouped>
+			<gavp name="Subsession-Id"/>
+			<gavp name="AN-GW-Address"/>
+			<gavp name="Result-Code"/>
+			<gavp name="Experimental-Result-Code"/>
+			<gavp name="Charging-Rule-Remove"/>
+			<gavp name="Charging-Rule-Install"/>
+			<gavp name="QoS-Rule-Install"/>
+			<gavp name="QoS-Rule-Remove"/>
+			<gavp name="Default-EPS-Bearer-QoS"/>
+			<gavp name="Usage-Monitoring-Information"/>
+			<gavp name="Session-Release-Cause"/>
+			<gavp name="Bearer-Control-Mode"/>
+			<gavp name="Event-Trigger"/>
+			<gavp name="Online"/>
+			<gavp name="Offline"/>
+			<gavp name="QoS-Information"/>
+		</grouped>
+	</avp>
+	<avp name="Subsession-Enforcement-Info" code="2201" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="yes">
+		<grouped>
+			<gavp name="Subsession-Id"/>
+			<gavp name="Subsession-Operation"/>
+			<gavp name="AN-GW-Address"/>
+			<gavp name="Bearer-Identifier"/>
+			<gavp name="Bearer-Operation"/>
+			<gavp name="Packet-Filter-Information"/>
+			<gavp name="Packet-Filter-Operation"/>
+			<gavp name="QoS-Information"/>
+			<gavp name="Framed-IP-Address"/>
+			<gavp name="Framed-IPv6-Address"/>
+			<gavp name="CoA-Information"/>
+			<gavp name="Called-Station-ID"/>
+			<gavp name="PDN-Connection-ID"/>
+			<gavp name="Bearer-Usage"/>
+			<gavp name="TFT-Packet-Filter-Information"/>
+			<gavp name="Online"/>
+			<gavp name="Offline"/>
+			<gavp name="Result-Code"/>
+			<gavp name="Experimental-Result-Code"/>
+			<gavp name="Charging-Rule-Report"/>
+			<gavp name="QoS-Rule-Report"/>
+			<gavp name="Default-EPS-Bearer-QoS"/>
+			<gavp name="Network-Request-Support"/>
+			<gavp name="Usage-Monitoring-Information"/>
+			<gavp name="Multiple-BBERF-Action"/>
+			<gavp name="Event-Trigger"/>
+			<gavp name="Access-Network-Charging-Address"/>
+			<gavp name="Access-Network-Charging-Identifier-Gx"/>
+			<gavp name="Session-Linking-Indicator"/>
+		</grouped>
+	</avp>
+	<avp name="Subsession-Id" code="2202" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="yes">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Subsession-Operation" code="2203" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="yes">
+		<type type-name="Enumerated"/>
+		<enum name="TERMINATION" code="0"/>
+		<enum name="ESTABLISHMENT" code="1"/>
+		<enum name="MODIFICATION" code="2"/>
+	</avp>
+	<avp name="Multiple-BBERF-Action" code="2204" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="yes">
+		<type type-name="Enumerated"/>
+		<enum name="ESTABLISHMENT" code="0"/>
+		<enum name="TERMINATION"   code="1"/>
+	</avp>
+</application>

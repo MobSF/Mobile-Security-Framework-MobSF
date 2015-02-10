@@ -1,0 +1,844 @@
+IP-TE-PIB PIB-DEFINITIONS ::= BEGIN 
+ 
+IMPORTS 
+     Unsigned32, Integer32, MODULE-IDENTITY, 
+     MODULE-COMPLIANCE, OBJECT-TYPE, OBJECT-GROUP 
+            FROM COPS-PR-SPPI 
+     InstanceId, ReferenceId, Prid, TagId 
+            FROM COPS-PR-SPPI-TC 
+
+     InetAddress, InetAddressType 
+            FROM INET-ADDRESS-MIB 
+     Count, TEXTUAL-CONVENTION 
+            FROM ACCT-FR-PIB-TC 
+     TruthValue, TEXTUAL-CONVENTION  
+            FROM SNMPv2-TC 
+     RoleCombination, PrcIdentifier 
+            FROM FRAMEWORK-ROLE-PIB 
+     SnmpAdminString 
+            FROM SNMP-FRAMEWORK-MIB; 
+ 
+ 
+ipTePib     MODULE-IDENTITY 
+ 
+     SUBJECT-CATEGORIES { tbd }     -- IP TE client-type to be  
+                                   -- assigned by IANA 
+     LAST-UPDATED   "200106180900Z" 
+     ORGANIZATION   "France Telecom" 
+     CONTACT-INFO   " 
+                    Christian Jacquenet 
+                    France Telecom R & D 
+                    42, rue des Coutures 
+                    BP 6243 
+                    14066 CAEN CEDEX 04 
+                    France 
+                    Phone: +33 2 31 75 94 28 
+                    E-Mail: christian.jacquenet@francetelecom.com" 
+     DESCRIPTION 
+            "The PIB module containing a set of policy rule classes 
+             that describe IP Traffic Engineering policies to be 
+             enforced within and between domains." 
+    REVISION        "200111061600Z" 
+    DESCRIPTION 
+            "Initial version." 
+ 
+     ::= { pib tbd } -- tbd to be assigned by IANA 
+ 
+ipTeFwdClasses      OBJECT IDENTIFIER ::= { ipTePib 1 } 
+ipTeMetricsClasses  OBJECT IDENTIFIER ::= { ipTePib 2 } 
+ipTeStatsClasses    OBJECT IDENTIFIER ::= { ipTePib 3 } 
+ 
+-- 
+-- Forwarding classes. The information contained in these classes 
+-- is meant to provide a detailed description of the traffic  
+-- engineered routes. One table has been specified so far, but there 
+-- is room for depicting specific kinds of routes, like MPLS LSP  
+-- paths, for example. 
+-- 
+-- 
+ 
+ 
+--  
+
+-- The ipTeRouteTable 
+-- 
+ 
+ipTeRouteTable      OBJECT-TYPE 
+  
+       SYNTAX        SEQUENCE OF ipTeRouteEntry  
+       PIB-ACCESS   notify  
+       STATUS        current  
+       DESCRIPTION  
+             "This table describes the traffic engineered routes 
+             that are installed in the forwarding tables of the 
+             routers."  
+     
+       ::= { ipTeFwdClasses 1 }  
+     
+ipTeRouteEntry      OBJECT-TYPE 
+  
+       SYNTAX        ipTeRouteEntry  
+       STATUS        current  
+       DESCRIPTION  
+             "A particular traffic engineered route to a particular 
+             destination."  
+     
+       PIB-INDEX    { ipTeRoutePrid }  
+       UNIQUENESS   { ipTeRouteDest,  
+                       ipTeRouteMask,  
+                       ipTeRoutePhbId, 
+                       ipTeRouteNextHopAddress 
+                      ipTeRouteNextHopMask }    
+     
+       ::= { ipTeRouteTable 1 }  
+     
+ipTeRouteEntry ::= SEQUENCE {  
+            ipTeRoutePrid                  InstanceId, 
+            ipTeRouteDestAddrType          InetAddressType,  
+            ipTeRouteDest                  InetAddress,  
+            ipTeRouteMask                  Unsigned32,  
+            ipTeRouteNextHopAddrType       InetAddressType,        
+            ipTeRouteNextHopAddress        InetAddress, 
+            ipTeRouteNextHopMask           Unsigned32, 
+            ipTeRoutePhbId                 Integer32, 
+            ipTeRouteOrigin                 Integer32,   
+            ipTeRouteIfIndex               Unsigned32  
+}  
+     
+ipTeRoutePrid              OBJECT-TYPE 
+      
+     SYNTAX                InstanceId 
+     STATUS                current 
+     DESCRIPTION     
+             "An integer index that uniquely identifies this route 
+             entry among all the route entries." 
+
+ 
+     ::= { ipTeRouteEntry 1 } 
+ 
+ipTeRouteDestAddrType       OBJECT-TYPE 
+      
+     SYNTAX                InetAddressType 
+     STATUS                current 
+     DESCRIPTION 
+             "The address type enumeration value ([16]) used to 
+             specify the type of a route's destination IP address." 
+              
+    ::= { ipTeRouteEntry 2 } 
+ 
+ipTeRouteDest       OBJECT-TYPE 
+  
+     SYNTAX         InetAddress  
+     STATUS         current  
+     DESCRIPTION  
+             "The IP address to match against the packet's 
+             destination address."  
+   
+     ::= { ipTeRouteEntry 3 }  
+     
+ipTeRouteMask       OBJECT-TYPE 
+  
+     SYNTAX         Unsigned32 (0..128)  
+     STATUS         current  
+     DESCRIPTION  
+             "Indicates the length of a mask for the matching of the 
+             destination IP address. Masks are constructed by 
+             setting bits in sequence from the most-significant bit 
+             downwards for ipTeRouteMask bits length. All other bits 
+             in the mask, up to the number needed to fill the length 
+             of the address ipTeRouteDest are cleared to zero.  A 
+             zero bit in the mask then means that the corresponding 
+             bit in the address always matches."" 
+     
+     ::= { ipTeRouteEntry 4 }  
+ 
+ipTeRouteNextHopAddrType    OBJECT-TYPE 
+      
+     SYNTAX                InetAddressType 
+     STATUS                current 
+     DESCRIPTION 
+             "The address type enumeration value used to specify the 
+             type of the next hop's IP address." 
+              
+    ::= { ipTeRouteEntry 5 } 
+ 
+ipTeRouteNextHopAddress     OBJECT-TYPE 
+  
+     SYNTAX                 InetAddress  
+
+     STATUS                 current  
+     DESCRIPTION  
+             "On remote routes, the address of the next router en 
+             route; Otherwise, 0.0.0.0."  
+     
+     ::= { ipTeRouteEntry 6 }  
+     
+ipTeRouteNextHopMask        OBJECT-TYPE 
+  
+     SYNTAX                Unsigned32 (0..128)  
+     STATUS                current  
+     DESCRIPTION  
+             "Indicates the length of a mask for the matching of the 
+             next hop's IP address. Masks are constructed by setting 
+             bits in sequence from the most-significant bit 
+             downwards for ipTeRouteNextHopMask bits length. All 
+             other bits in the mask, up to the number needed to fill 
+             the length of the address ipTeRouteNextHop are cleared 
+             to zero.  A zero bit in the mask then means that the 
+             corresponding bit in the address always matches." 
+     
+     ::= { ipTeRouteEntry 7 }  
+     
+ipTeRoutePhbId      OBJECT-TYPE 
+  
+     SYNTAX          Integer32 (-1 | 0..63) 
+     STATUS          current  
+     DESCRIPTION  
+             "The binary encoding that uniquely identifies a Per Hop 
+             Behaviour (PHB, [17]) or a set of PHBs associated to 
+             the DiffServ Code Point (DSCP, [15]) marking of the IP 
+             datagrams that will be conveyed along this traffic 
+             engineered route. A value of -1 indicates that a 
+             specific PHB ID value has not been defined, and thus, 
+             all PHB ID values are considered a match." 
+   
+     ::= { ipTeRouteEntry 8 }  
+     
+ipTeRouteOrigin     OBJECT-TYPE 
+ 
+     SYNTAX INTEGER { 
+                    OSPF (0) 
+                    IS-IS (1) 
+                    BGP (2) 
+                    STATIC (3) 
+                    OTHER (4) 
+            } 
+     STATUS         current 
+     DESCRIPTION     
+             "The value indicates the origin of the route. Either 
+             the route has been computed by OSPF, by IS-IS, 
+             announced by BGP4, is static, or else." 
+
+              
+     ::= { ipTeRouteEntry 9 } 
+ 
+ipTeRouteIfIndex    OBJECT-TYPE 
+  
+     SYNTAX          Unsigned32 (0..65535)  
+     STATUS          current  
+     DESCRIPTION  
+             "The ifIndex value that identifies the local interface 
+             through which the next hop of this route is 
+             accessible."  
+     
+     ::= { ipTeRouteEntry 10 } 
+ 
+-- 
+-- 
+-- Traffic engineering metrics classes.  
+-- 
+-- The information stored in the following tables is meant to provide 
+-- the description of the metric values that will be taken into  
+-- account by intra- and inter-domain routing protocols for the  
+-- computation and the selection of traffic-engineered routes. So  
+-- far, two tables have been identified: one which is based upon the 
+-- traffic engineering extensions of OSPF, the other which is based  
+-- upon the contents of a specific BGP4 attribute. Next versions of  
+-- the draft will include IS-IS specific information, as well as  
+-- extensions of the BGP4-specific provisioning information for the  
+-- "basic" enforcement of a BGP4 routing policy. 
+-- 
+-- 
+ 
+-- 
+-- The ospfTeMetricsTable 
+-- 
+ 
+ospfTeMetricsTable  OBJECT-TYPE 
+  
+     SYNTAX         SEQUENCE OF ospfTeMetricsEntry  
+     PIB-ACCESS     install-notify  
+     STATUS          current  
+     DESCRIPTION  
+             "This class describes the link and traffic engineering 
+             metrics that will be used by OSPF for TE route 
+             calculation purposes."  
+     
+       ::= { ipTeMetricsClasses 1 }  
+     
+ospfTeMetricsEntry  OBJECT-TYPE  
+        
+     SYNTAX          ospfTeMetricsEntry  
+     STATUS          current  
+     DESCRIPTION  
+
+             "The collection of OSPF metrics assigned to the router 
+             on a per interface and per DSCP basis."  
+     
+     PIB-INDEX      { ospfTeMetricsPrid }  
+     UNIQUENESS     { ospfTeMetricsLinkMetricValue,  
+                       ospfTeMetricsDscpValue,  
+                       ospfTeMetricSubTlvLinkType, 
+                       ospfTeMetricSubTlvLinkId, 
+                       ospfTeMetricSubTlvLocalIfAddress, 
+                       ospfTeMetricSubTlvRemoteIfAddress, 
+                       ospfTeMetricSubTlvTeMetric, 
+                       ospfTeMetricSubTlvMaxBandwidth, 
+                       ospfTeMetricSubTlvMaxRsvBandwidth, 
+                       ospfTeMetricSubTlvUnRsvBandwidth, 
+                       ospfTeMetricIfIndex }  
+     
+     ::= { ospfTeMetricsTable 1 }  
+     
+ospfTeMetricsEntry ::= SEQUENCE {  
+       
+            ospfTeMetricsPrid                      InstanceId,  
+            ospfTeMetricsIfMetricValue            Unsigned32,  
+            ospfTeMetricsDscpValue                Integer32, 
+            ospfTeMetricsTopTlvAddressType        InetAddressType, 
+            ospfTeMetricsTopTlvRouterAddress       InetAddress, 
+            ospfTeMetricsTopTlvRouterAddrMask      Unsigned32,  
+            ospfTeMetricsSubTlvLinkType           Unsigned32, 
+            ospfTeMetricsSubTlvLinkIdAddressType   InetAddressType, 
+            ospfTeMetricsSubTlvLinkId             InetAddress, 
+            ospfTeMetricsSubTlvLinkIdMask         Unsigned32, 
+            ospfTeMetricsSubTlvLocalIfAddressType  InetAddressType, 
+            ospfTeMetricsSubTlvLocalIfAddress      InetAddress, 
+            ospfTeMetricsSubTlvLocalIfAddrMask     Unsigned32, 
+            ospfTeMetricsSubTlvRemoteIfAddressType InetAddressType, 
+            ospfTeMetricsSubTlvRemoteIfAddress     InetAddress, 
+            ospfTeMetricsSubTlvRemoteIfAddrMask    Unsigned32, 
+            ospfTeMetricsSubTlvTeMetric           Unsigned32,     
+            ospfTeMetricsSubTlvMaxBandwidth        Unsigned32,     
+            ospfTeMetricsSubTlvMaxRsvBandwidth     Unsigned32,     
+            ospfTeMetricsSubTlvUnrsvBandwidth      Unsigned32,        
+            ospfTeMetricsIfIndex                  Unsigned32  
+     }  
+     
+ospfTeMetricsPrid          OBJECT-TYPE 
+      
+     SYNTAX                InstanceId 
+     STATUS                current 
+     DESCRIPTION     
+        "An integer index that uniquely identifies this instance of 
+        the ospfTeMetrics class." 
+ 
+     ::= { ospfTeMetricsEntry 1 } 
+
+ 
+ospfTeMetricsIfMetricValue          OBJECT-TYPE  
+        
+     SYNTAX         Unsigned32 (1..65535)  
+     STATUS         current  
+     DESCRIPTION  
+         "The link metric assigned on a per-DSCP and per-interface 
+         basis, as defined in this instance of the 
+         ospfTeMetricsTable."  
+   
+     ::= { ospfTeMetricsEntry 2 }  
+     
+ospfTeMetricsDscpValue              OBJECT-TYPE 
+  
+     SYNTAX         Integer32 (-1 | 0..63) 
+     STATUS         current  
+     DESCRIPTION     
+        "The DSCP value associated to the link metric value, as 
+        defined in the ospfTeMetricsIfMetricValue object. A value of 
+        -1 indicates that a specific DSCP value has not been defined 
+        and thus all DSCP values are considered a match." 
+     
+     ::= { ospfTeMetricsEntry 3 } 
+ 
+ospfTeMetricsTopTlvAddressType      OBJECT-TYPE 
+      
+     SYNTAX         InetAddressType 
+     STATUS         current 
+     DESCRIPTION 
+        "The address type enumeration value used to specify the IP 
+        address of the advertising router. This IP address is always 
+        reachable, and is typically implemented as a "loopback" 
+        address." 
+              
+     ::= { ospfTeMetricsEntry 4 }  
+     
+ospfTeMetricsTopTlvRouterAddress    OBJECT-TYPE  
+        
+     SYNTAX        InetAddress  
+     STATUS        current  
+     DESCRIPTION     
+        "The IP address (typically a "loopback" address) of the 
+        advertising router." 
+   
+     ::= { ospfTeMetricsEntry 5 } 
+ 
+ospfTeMetricsTopTlvRouterAddrMask   OBJECT-TYPE     
+      
+     SYNTAX        Unsigned32 (0..128)  
+     STATUS        current  
+     DESCRIPTION  
+
+
+        "Indicates the length of a mask for the matching of the 
+        advertising router's IP address. Masks are constructed by 
+        setting bits in sequence from the most-significant bit 
+        downwards for ospfTeMetricsTopTlvRouterAddrMask bits length. 
+        All other bits in the mask, up to the number needed to fill 
+        the length of the address ospfTeMetricsTopTlvRouterAddress 
+        are cleared to zero.  A zero bit in the mask then means that 
+        the corresponding bit in the address always matches."  
+ 
+     ::= { ospfTeMetricsEntry 6 } 
+     
+ospfTeMetricsSubTlvLinkType         OBJECT-TYPE  
+        
+     SYNTAX        INTEGER { 
+                           Point-to-Point (1) 
+                           Multiaccess (2)  
+                    } 
+     STATUS        current  
+     DESCRIPTION     
+        "The type of the link, either point-to-point or multi-
+        access, as defined in [8]."  
+     
+     ::= { ospfTeMetricsEntry 7 } 
+ 
+ospfTeMetricsSubTlvLinkIdAddressType OBJECT-TYPE 
+      
+     SYNTAX         InetAddressType 
+     STATUS         current 
+     DESCRIPTION 
+        "The address type enumeration value used to identify the 
+        other end of the link, described as an IP address." 
+              
+     ::= { ospfTeMetricsEntry 8 }  
+ 
+ospfTeMetricsSubTlvLinkId           OBJECT-TYPE  
+        
+     SYNTAX         InetAddress  
+     STATUS         current  
+     DESCRIPTION     
+        "The identification of the other end of the link, described 
+        as an IP address."  
+     
+     ::= { ospfTeMetricsEntry 9 } 
+ 
+ospfTeMetricsSubTlvLinkMask         OBJECT-TYPE 
+ 
+     SYNTAX        Unsigned32 (0..128)  
+     STATUS        current  
+     DESCRIPTION  
+         "Indicates the length of a mask for the matching of the 
+         other end of the link, described as an IP address. Masks 
+         are constructed by setting bits in sequence from the most-
+
+         significant bit downwards for ospfTeMetricsSubTlvLinkMask 
+         bits length. All other bits in the mask, up to the number 
+         needed to fill the length of the address 
+         ospfTeMetricsSubTlvLinkId are cleared to zero.  A zero bit 
+         in the mask then means that the corresponding bit in the 
+         address always matches."  
+ 
+     ::= { ospfTeMetricsEntry 10 } 
+ 
+ospfTeMetricsSubTlvLocalIfAddressType       OBJECT-TYPE 
+      
+     SYNTAX         InetAddressType 
+     STATUS         current 
+     DESCRIPTION 
+        "The address type enumeration value used to specify the IP 
+        address of the interface corresponding to this instance of 
+        the ospfTeMetricsSubTlvLinkType object." 
+              
+     ::= { ospfTeMetricsEntry 11 } 
+ 
+ospfTeMetricsSubTlvLocalIfAddress           OBJECT-TYPE  
+        
+     SYNTAX         InetAddress  
+     STATUS         current  
+     DESCRIPTION     
+        "Specifies the IP address of the interface of the 
+        advertising router which is connected to the link described 
+        as an instance of the ospfTeMetricsSubTlvLinkType object."  
+      
+     ::= { ospfTeMetricsEntry 12 } 
+ 
+ospfTeMetricsSubTlvLocalIfAddrMask          OBJECT-TYPE 
+ 
+     SYNTAX        Unsigned32 (0..128)  
+     STATUS        current  
+     DESCRIPTION  
+        "Indicates the length of a mask for the matching of the IP 
+        address of the interface corresponding to this instance of 
+        the ospfTeMetricsSubTlvLinkType object. Masks are 
+        constructed by setting bits in sequence from the most-
+        significant bit downwards for 
+        ospfTeMetricsSubTlvLocalIfAddrMask bits length. All other 
+        bits in the mask, up to the number needed to fill the length 
+        of the address ospfTeMetricsSubTlvLocalIfAddress are cleared 
+        to zero.  A zero bit in the mask then means that the 
+        corresponding bit in the address always matches."  
+ 
+     ::= { ospfTeMetricsEntry 13 } 
+ 
+      
+ospfTeMetricsSubTlvRemoteIfAddressType      OBJECT-TYPE 
+      
+
+     SYNTAX         InetAddressType 
+     STATUS         current 
+     DESCRIPTION 
+        "The address type enumeration value used to specify the IP 
+        address(es) of the neighbour's interface corresponding to 
+        this instance of the ospfTeMetricsSubTlvLinkType object." 
+              
+     ::= { ospfTeMetricsEntry 14 } 
+ 
+ospfTeMetricSubTlvRemoteIfAddress   OBJECT-TYPE  
+        
+     SYNTAX         InetAddress  
+     STATUS         current  
+     DESCRIPTION     
+        "Specifies the IP address of the neighbour's interface that 
+        is attached to this instance of the 
+        ospfTeMetricsSubTlvLinkType object."  
+        
+     ::= { ospfTeMetricsEntry 15 } 
+ 
+ospfTeMetricSubTlvRemoteIfAddrMask  OBJECT-TYPE  
+ 
+     SYNTAX        Unsigned32 (0..128)  
+     STATUS        current  
+     DESCRIPTION  
+        "Indicates the length of a mask for the matching of the IP 
+        address of the neighbor's interface corresponding to this 
+        instance of the ospfTeMetricsSubTlvLinkType object. Masks 
+        are constructed by setting bits in sequence from the most-
+        significant bit downwards for 
+        ospfTeMetricSubTlvRemoteIfAddrMaskbits length. All other 
+        bits in the mask, up to the number needed to fill the length 
+        of the address ospfTeMetricSubTlvRemoteIfAddress are cleared 
+        to zero.  A zero bit in the mask then means that the 
+        corresponding bit in the address always matches."  
+ 
+     ::= { ospfTeMetricsEntry 16 } 
+ 
+ 
+ospfTeMetricSubTlvTeMetric          OBJECT-TYPE  
+        
+     SYNTAX         Unsigned32 (1..65535) 
+     STATUS         current  
+     DESCRIPTION     
+        "The link metric that has been assigned for traffic 
+        engineering purposes. This metric may be different from the 
+        ospfTeMetricsLinkMetricValue object of the ospfTeMetrics 
+        class."  
+        
+     ::= { ospfTeMetricsEntry 17 } 
+ 
+ospfTeMetricSubTlvBandwidthType     OBJECT-TYPE  
+
+        
+     SYNTAX          Unsigned32 (0..4294967295) 
+     UNITS          "bytes per second" 
+     STATUS          current  
+     DESCRIPTION     
+        "Specifies the maximum bandwidth that can be used on this 
+        instance of the ospfTeMetricsSubTlvLinkType object in this 
+        direction (from the advertising router), expressed in bytes 
+        per second."  
+     
+     ::= { ospfpTeMetricsEntry 18 } 
+ 
+ospfTeMetricSubTlvMaxRsvBandwidth   OBJECT-TYPE  
+        
+     SYNTAX         Unsigned32 (0..4294967295) 
+     UNITS          "bytes per second" 
+     STATUS          current  
+     DESCRIPTION     
+        "Specifies the maximum bandwidth that may be reserved on 
+        this instance of the ospfTeMetricsSubTlvLinkType object in 
+        this direction (from the advertising router), expressed in 
+        bytes per second."  
+     
+     ::= { ospfTeMetricsEntry 19 } 
+ 
+ospfTeMetricSubTlvUnrsvBandwidth    OBJECT-TYPE  
+        
+     SYNTAX         Unsigned32 (0..4294967295) 
+     UNITS          "bytes per second" 
+     STATUS         current  
+     DESCRIPTION     
+        "Specifies the amount of bandwidth that has not been 
+        reserved on this instance of the ospfTeMetricsSubTlvLinkType 
+        object in this direction yet (from the advertising router), 
+        expressed in bytes per second."  
+     
+     ::= { ospfTeMetricsEntry 20 } 
+     
+ospfTeMetricIfIndex                 OBJECT-TYPE  
+        
+     SYNTAX         Unsigned32 (0..65535)  
+     STATUS         current  
+     DESCRIPTION  
+        "The ifIndex value that identifies the local interface that 
+        has been assigned a (set of) metrics."  
+        
+     ::= { ospfTeMetricsEntry 21 } 
+ 
+-- 
+-- The bgpTeTable 
+-- 
+ 
+
+bgpTeTable          OBJECT-TYPE 
+  
+     SYNTAX         SEQUENCE OF bgpTeEntry  
+     PIB-ACCESS     install-notify  
+     STATUS          current  
+     DESCRIPTION  
+             "This class describes the QoS information that MAY be 
+             conveyed in BGP4 UPDATE messages for the purpose of 
+             enforcing an inter-domain traffic engineering policy."  
+     
+       ::= { ipTeMetricsClasses 2 }  
+     
+bgpTeEntry          OBJECT-TYPE  
+        
+     SYNTAX          bgpTeEntry  
+     STATUS          current  
+     DESCRIPTION  
+             "The collection of QoS information to be exchanged by 
+             BGP peers, as far as the announcement of traffic 
+             engineered routes between domains is concerned."  
+     
+     PIB-INDEX      { bgpTePrid }  
+     UNIQUENESS     { bgpTeNlriAddress, 
+                      bgpTeNextHopAddress, 
+                      bgpTeReservedRate, 
+                      bgpTeAvailableRate, 
+                      bgpTeLossRate, 
+                      bgpTePhbId, 
+                      bgpTeMinOneWayDelay, 
+                      bgpTeMaxOneWayDelay, 
+                      bgpTeAverageOneWayDelay, 
+                      bgpTeInterPacketDelay }  
+     
+     ::= { bgpTeTable 1 } 
+ 
+bgpTeEntry ::= SEQUENCE {  
+       
+            bgpTePrid                       InstanceId, 
+            bgpTeNlriAddressType           InetAddressType, 
+            bgpTeNlriAddress               InetAddress, 
+            bgpTeNlriAddressMask           Unsigned32, 
+            bgpTeNextHopAddressType        InetAddressType, 
+            bgpTeNextHopAddress            InetAddress, 
+            bgpTeNextHopMask               Unsigned32, 
+            bgpTeReservedRate              Unsigned32,  
+            bgpTeAvailableRate             Unsigned32, 
+            bgpTeLossRate                  Unsigned32, 
+            bgpTePhbId                     Integer32,      
+            bgpTeMinOneWayDelay            Unsigned32, 
+            bgpTeMaxOneWayDelay            Unsigned32,  
+            bgpTeAverageOneWayDelay         Unsigned32, 
+            bgpTeInterPacketDelay          Unsigned32 
+
+     }  
+     
+bgpTePrid                  OBJECT-TYPE 
+      
+     SYNTAX                InstanceId 
+     STATUS                current 
+     DESCRIPTION     
+         "An integer index that uniquely identifies this instance of 
+         the bgpTe class." 
+ 
+     ::= { bgpTeEntry 1 } 
+ 
+bgpTeNlriAddressType        OBJECT-TYPE 
+      
+     SYNTAX                InetAddressType 
+     STATUS                current 
+     DESCRIPTION 
+             "The address type enumeration value ([18]) used to 
+             specify the type of a route's destination IP address." 
+              
+    ::= { bgpTeEntry 2 } 
+ 
+bgpTeNlriAddress           OBJECT-TYPE 
+  
+     SYNTAX                InetAddress  
+     STATUS                current  
+     DESCRIPTION  
+             "The IP address to match against the NLRI field of the 
+             QOS_NLRI attribute of the BGP4 UPDATE message."  
+   
+     ::= { bgpTeEntry 3 }  
+     
+bgpTeNlriAddressMask        OBJECT-TYPE 
+  
+     SYNTAX                Unsigned32 (0..128)  
+     STATUS                current  
+     DESCRIPTION  
+             "Indicates the length of a mask for the matching of the 
+             NLRI field of the QOS_NLRI attribute of the BGP4 UPDATE 
+             message. Masks are constructed by setting bits in 
+             sequence from the most-significant bit downwards for 
+             bgpTeNlriMask bits length. All other bits in the mask, 
+             up to the number needed to fill the length of the 
+             address bgpTeNlri are cleared to zero.  A zero bit in 
+             the mask then means that the corresponding bit in the 
+             address always matches."" 
+     
+     ::= { bgpTeEntry 4 }  
+ 
+bgpTeNextHopAddressType     OBJECT-TYPE 
+      
+     SYNTAX                InetAddressType 
+
+     STATUS                current 
+     DESCRIPTION 
+             "The address type enumeration value used to specify the 
+             type of the next hop's IP address." 
+              
+    ::= { bgpTeEntry 5 } 
+ 
+bgpTeNextHopAddress         OBJECT-TYPE 
+  
+     SYNTAX                 InetAddress  
+     STATUS                 current  
+     DESCRIPTION  
+             "On remote routes, the address of the next router en 
+             route; Otherwise, 0.0.0.0."  
+     
+     ::= { bgpTeEntry 6 }  
+     
+bgpTeNextHopMask           OBJECT-TYPE 
+  
+     SYNTAX                Unsigned32 (0..128)  
+     STATUS                current  
+     DESCRIPTION  
+        "Indicates the length of a mask for the matching of the next 
+        hop's IP address. Masks are constructed by setting bits in 
+        sequence from the most-significant bit downwards for 
+        bgpTeNextHopMask bits length. All other bits in the mask, up 
+        to the number needed to fill the length of the address 
+        bgpTeNextHopAddress are cleared to zero.  A zero bit in the 
+        mask then means that the corresponding bit in the address 
+        always matches." 
+     
+     ::= { bgpTeEntry 7 } 
+ 
+bgpTeReservedRate          OBJECT-TYPE  
+        
+     SYNTAX                 Unsigned32 (0..4294967295) 
+     UNITS                 "kilobits per second" 
+     STATUS                 current  
+     DESCRIPTION     
+        "Specifies the reserved rate that cannot be used on this 
+        instance of the bgpTeNlriAddress object in this direction 
+        (from the advertising BGP peer), expressed in kilobits per 
+        second."  
+     
+     ::= { bgpTeEntry 8 } 
+ 
+bgpTeAvailableRate         OBJECT-TYPE  
+        
+     SYNTAX                 Unsigned32 (0..4294967295) 
+     UNITS                 "kilobits per second" 
+     STATUS                 current  
+     DESCRIPTION     
+
+        "Specifies the available rate that may be reserved on this 
+        instance of the bgpTeNlriAddress object in this direction 
+        (from the advertising BGP peer), expressed in kilobits per 
+        second."  
+     
+     ::= { bgpTeEntry 9 } 
+ 
+bgpTeLossRate              OBJECT-TYPE  
+        
+     SYNTAX                 Unsigned32 (0..4294967295) 
+     STATUS                 current  
+     DESCRIPTION     
+        "Specifies the packet loss ratio that has been observed on 
+        this route instantiated by the bgpTeNlriAddress object."  
+     
+     ::= { bgpTeEntry 10 }  
+     
+bgpTePhbId                 OBJECT-TYPE 
+  
+     SYNTAX                 Integer32 (-1 | 0..63) 
+     STATUS                 current  
+     DESCRIPTION  
+             "The binary encoding that uniquely identifies a Per Hop 
+             Behaviour (PHB) or a set of PHBs associated to the 
+             DiffServ Code Point marking of the IP datagrams that 
+             are to be conveyed along this traffic engineered route. 
+             A value of -1 indicates that a specific PHB ID value 
+             has not been defined, and thus, all PHB ID values are 
+             considered a match." 
+   
+     ::= { bgpTeEntry 11 } 
+ 
+bgpTeMinOneWayDelay        OBJECT-TYPE 
+ 
+     SYNTAX                 Unsigned32 (0..4294967295) 
+     UNITS                 "milliseconds" 
+     STATUS                 current  
+     DESCRIPTION     
+        "Specifies the minimum one-way delay that has been observed 
+        on this route instantiated by the bgpTeNlriAddress object, 
+        expressed in milliseconds."  
+     
+     ::= { bgpTeEntry 12 } 
+ 
+bgpTeMaxOneWayDelay        OBJECT-TYPE 
+ 
+     SYNTAX                 Unsigned32 (0..4294967295) 
+     UNITS                 "milliseconds" 
+     STATUS                 current  
+     DESCRIPTION     
+
+
+
+        "Specifies the maximum one-way delay that has been observed 
+        on this route instantiated by the bgpTeNlriAddress object, 
+        expressed in milliseconds."  
+     
+     ::= { bgpTeEntry 13 } 
+ 
+bgpTeAverageOneWayDelay     OBJECT-TYPE 
+ 
+     SYNTAX                 Unsigned32 (0..4294967295) 
+     UNITS                 "milliseconds" 
+     STATUS                 current  
+     DESCRIPTION     
+        "Specifies the average one-way delay that has been observed 
+        on this route instantiated by the bgpTeNlriAddress object, 
+        expressed in milliseconds."  
+     
+     ::= { bgpTeEntry 14 } 
+ 
+bgpTeInterPacketDelay       OBJECT-TYPE 
+ 
+     SYNTAX                 Unsigned32 (0..4294967295) 
+     UNITS                 "milliseconds" 
+     STATUS                 current  
+     DESCRIPTION     
+        "Specifies the inter-packet delay variation that has been 
+        observed on this route instantiated by the bgpTeNlriAddress 
+        object."  
+     
+     ::= { bgpTeEntry 15 } 
+ 
+-- 
+-- Traffic engineering statistics classes. The information contained 
+-- in the yet-to-be defined tables aim at reporting statistics about 
+-- COPS control traffic, engineered traffic and potential errors. The 
+-- next version of the draft will provide a first table that will be 
+-- based upon the use of the "count" clause. 
+-- 
+-- 
+ 
+END 

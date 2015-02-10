@@ -1,0 +1,404 @@
+ATM-ACCOUNTING-INFORMATION-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, OBJECT-IDENTITY,
+    mib-2, Integer32, Counter64                   FROM SNMPv2-SMI
+    DisplayString, DateAndTime                    FROM SNMPv2-TC
+    AtmAddr                                       FROM ATM-TC-MIB;
+
+
+atmAccountingInformationMIB MODULE-IDENTITY
+    LAST-UPDATED "9611052000Z"
+    ORGANIZATION "IETF AToM MIB Working Group"
+    CONTACT-INFO "
+                  Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive,
+                  San Jose CA 95134-1706.
+                  Phone: +1 408 526 5260
+                  Email: kzm@cisco.com"
+    DESCRIPTION
+            "The MIB module for identifying items of accounting
+            information which are applicable to ATM connections."
+    ::= { mib-2 59 }
+
+
+atmAcctngMIBObjects OBJECT IDENTIFIER ::=
+                                        { atmAccountingInformationMIB 1 }
+
+
+-- Definitions of objects for use in specifying ATM accounting
+-- data to be collected
+
+atmAcctngDataObjects OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+            "This identifier defines a subtree under which various
+            objects are defined such that a set of objects to be
+            collected as ATM accounting data can be specified as a
+            (subtree, list) tuple using this identifier as the subtree."
+    ::= { atmAcctngMIBObjects 1 }
+
+-- Objects defined under the atmAcctngDataObjects subtree
+--
+-- In each case the semantics of the object are interpreted with
+-- respect to the creation/storage of an accounting record for a
+-- particular connection on a particular interface.
+
+atmAcctngConnectionType OBJECT-TYPE
+    SYNTAX      INTEGER { pvc(1),
+                          pvp(2),
+                          svcIncoming(3),
+                          svcOutgoing(4),
+                          svpIncoming(5),
+                          svpOutgoing(6),
+                          spvcInitiator(7),
+                          spvcTarget(8),
+                          spvpInitiator(9),
+                          spvpTarget(10) }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The type of connection."
+    ::= { atmAcctngDataObjects 1 }
+
+atmAcctngCastType OBJECT-TYPE
+    SYNTAX      INTEGER { p2p(1), p2mp(2) }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An indication of whether the connection is point-to-point
+            or point-to-multipoint."
+    ::= { atmAcctngDataObjects 2 }
+
+atmAcctngIfName OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A textual name for the interface on which the data for the
+            connection was collected.  If the local SNMP agent supports
+            the object ifName, the value of this object must be
+            identical to that of ifName in the conceptual row of the
+            ifTable corresponding to this interface."
+    ::= { atmAcctngDataObjects 3 }
+
+atmAcctngIfAlias OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The 'alias' name for the interface as specified by a
+            network manager, e.g., via a management set operation to
+            modify the relevant instance of the ifAlias object.  Note
+            that in contrast to ifIndex, ifAlias provides a non-volatile
+            'handle' for the interface, the value of which is retained
+            across agent reboots."
+    ::= { atmAcctngDataObjects 4 }
+
+atmAcctngVpi OBJECT-TYPE
+    SYNTAX      INTEGER (0..4095)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The VPI used for the connection."
+    ::= { atmAcctngDataObjects 5 }
+
+atmAcctngVci OBJECT-TYPE
+    SYNTAX      INTEGER (0..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The VCI used for the connection."
+    ::= { atmAcctngDataObjects 6 }
+
+atmAcctngCallingParty OBJECT-TYPE
+    SYNTAX      AtmAddr
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The connection's calling party.  If unknown (e.g., for a
+            PVC), then the value of this object is the zero-length
+            string."
+    ::= { atmAcctngDataObjects 7 }
+
+atmAcctngCalledParty OBJECT-TYPE
+    SYNTAX      AtmAddr
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The connection's called party.  If unknown (e.g., for a
+            PVC), then the value of this object is the zero-length
+            string."
+    ::= { atmAcctngDataObjects 8 }
+
+atmAcctngCallReference OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..3))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The connection's call reference value (e.g., from Q.2931).
+            If unknown (e.g., for a PVC), then the value of this object
+            is the zero-length string."
+    ::= { atmAcctngDataObjects 9 }
+
+atmAcctngStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The time when the connection was established."
+    ::= { atmAcctngDataObjects 10 }
+
+atmAcctngCollectionTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The time at which the data in this record was collected."
+    ::= { atmAcctngDataObjects 11 }
+
+atmAcctngCollectMode OBJECT-TYPE
+    SYNTAX      INTEGER { onRelease(1),
+                          periodically(2),
+                          onCommand(3) }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The reason why this connection data was collected."
+    ::= { atmAcctngDataObjects 12 }
+
+atmAcctngReleaseCause OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "If the connection data was collected because of the release
+            of an SVC, then this is the cause code in the Release
+            message for the connection; otherwise, this object has the
+            value zero."
+    ::= { atmAcctngDataObjects 13 }
+
+atmAcctngServiceCategory OBJECT-TYPE
+    SYNTAX      INTEGER { other(1), cbr(2), vbrRt(3), vbrNrt(4),
+                          abr(5), ubr(6), unknown(7) }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The connection's service category."
+    ::= { atmAcctngDataObjects 14 }
+
+atmAcctngTransmittedCells OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The number of cells, including OAM cells, transmitted by
+            this switch on this connection."
+    ::= { atmAcctngDataObjects 15 }
+
+atmAcctngTransmittedClp0Cells OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The number of cells with CLP=0, including OAM cells,
+            transmitted by this switch on this connection."
+    ::= { atmAcctngDataObjects 16 }
+
+atmAcctngReceivedCells OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The number of cells, including OAM cells, received by this
+            switch on this connection."
+    ::= { atmAcctngDataObjects 17 }
+
+atmAcctngReceivedClp0Cells OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The number of cells with CLP=0, including OAM cells,
+            received by this switch on this connection."
+    ::= { atmAcctngDataObjects 18 }
+
+atmAcctngTransmitTrafficDescriptorType OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The traffic descriptor type (as defined in RFC 1695 and its
+            successors) in the direction in which the switch transmits
+            cells on the connection."
+    REFERENCE
+            "See atmTrafficDescriptorTypes in ATM-MIB.my in RFC 1695 and
+            its successors."
+    ::= { atmAcctngDataObjects 19 }
+
+atmAcctngTransmitTrafficDescriptorParam1 OBJECT-TYPE
+    SYNTAX      INTEGER (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The first traffic descriptor parameter in the direction in
+            which this switch transmits cells on this connection.
+            Interpretation of this parameter is dependent on the value
+            of atmAcctngTransmitTrafficDescriptorType."
+    ::= { atmAcctngDataObjects 20 }
+
+atmAcctngTransmitTrafficDescriptorParam2 OBJECT-TYPE
+    SYNTAX      INTEGER (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The second traffic descriptor parameter in the direction in
+            which this switch transmits cells on this connection.
+            Interpretation of this parameter is dependent on the value
+            of atmAcctngTransmitTrafficDescriptorType."
+    ::= { atmAcctngDataObjects 21 }
+
+atmAcctngTransmitTrafficDescriptorParam3 OBJECT-TYPE
+    SYNTAX      INTEGER (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The third traffic descriptor parameter in the direction in
+            which this switch transmits cells on this connection.
+            Interpretation of this parameter is dependent on the value
+            of atmAcctngTransmitTrafficDescriptorType."
+    ::= { atmAcctngDataObjects 22 }
+
+atmAcctngTransmitTrafficDescriptorParam4 OBJECT-TYPE
+    SYNTAX      INTEGER (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The fourth traffic descriptor parameter in the direction in
+            which this switch transmits cells on this connection.
+            Interpretation of this parameter is dependent on the value
+            of atmAcctngTransmitTrafficDescriptorType."
+    ::= { atmAcctngDataObjects 23 }
+
+atmAcctngTransmitTrafficDescriptorParam5 OBJECT-TYPE
+    SYNTAX      INTEGER (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The fifth traffic descriptor parameter in the direction in
+            which this switch transmits cells on this connection.
+            Interpretation of this parameter is dependent on the value
+            of atmAcctngTransmitTrafficDescriptorType."
+    ::= { atmAcctngDataObjects 24 }
+
+atmAcctngReceiveTrafficDescriptorType OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The traffic descriptor type (as defined in RFC 1695 and its
+            successors) in the direction in which this switch receives
+            cells on this connection."
+    REFERENCE
+            "See atmTrafficDescriptorTypes in ATM-MIB.my in RFC 1695 and
+            its successors."
+    ::= { atmAcctngDataObjects 25 }
+
+atmAcctngReceiveTrafficDescriptorParam1 OBJECT-TYPE
+    SYNTAX      INTEGER (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The first traffic descriptor parameter in the direction in
+            which this switch receives cells on this connection.
+            Interpretation of this parameter is dependent on the value
+            of atmAcctngReceiveTrafficDescriptorType."
+    ::= { atmAcctngDataObjects 26 }
+
+atmAcctngReceiveTrafficDescriptorParam2 OBJECT-TYPE
+    SYNTAX      INTEGER (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The second traffic descriptor parameter in the direction in
+            which this switch receives cells on this connection.
+            Interpretation of this parameter is dependent on the value
+            of atmAcctngReceiveTrafficDescriptorType."
+    ::= { atmAcctngDataObjects 27 }
+
+atmAcctngReceiveTrafficDescriptorParam3 OBJECT-TYPE
+    SYNTAX      INTEGER (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The third traffic descriptor parameter in the direction in
+            which this switch receives cells on this connection.
+            Interpretation of this parameter is dependent on the value
+            of atmAcctngReceiveTrafficDescriptorType."
+    ::= { atmAcctngDataObjects 28 }
+
+atmAcctngReceiveTrafficDescriptorParam4 OBJECT-TYPE
+    SYNTAX      INTEGER (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The fourth traffic descriptor parameter in the direction in
+            which this switch receives cells on this connection.
+            Interpretation of this parameter is dependent on the value
+            of atmAcctngReceiveTrafficDescriptorType."
+    ::= { atmAcctngDataObjects 29 }
+
+atmAcctngReceiveTrafficDescriptorParam5 OBJECT-TYPE
+    SYNTAX      INTEGER (0..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The fifth traffic descriptor parameter in the direction in
+            which this switch receives cells on this connection.
+            Interpretation of this parameter is dependent on the value
+            of atmAcctngReceiveTrafficDescriptorType."
+    ::= { atmAcctngDataObjects 30 }
+
+atmAcctngCallingPartySubAddress OBJECT-TYPE
+    SYNTAX      AtmAddr
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The connection's calling party sub-address.  If the
+            connection has no calling party sub-address, or it's value
+            is unknown, then the value of this object is the zero-length
+            string."
+    ::= { atmAcctngDataObjects 31 }
+
+atmAcctngCalledPartySubAddress OBJECT-TYPE
+    SYNTAX      AtmAddr
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The connection's called party sub-address.  If the
+            connection has no called party sub-address, or it's value is
+            unknown, then the value of this object is the zero-length
+            string."
+    ::= { atmAcctngDataObjects 32 }
+
+atmAcctngRecordCrc16 OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(2))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The value of the CRC-16 checksum (as defined by ISO 3309
+            (HDLC) and/or ITU X.25) calculated over the accounting
+            record containing this object.
+
+            While the mechanism for calculating/encoding the checksum
+            value is specific to the method of encoding the accounting
+            record, an accounting record containing this object is
+            typically generated by initializing the value of this object
+            to the all-zeros string ('0000'H), with the location of
+            these zeros being saved.  After generating the record, the
+            checksum is calculated over the whole connection record and
+            then the all-zeros value is overwritten (at the saved
+            location) by the calculated value of the checksum."
+    ::= { atmAcctngDataObjects 33 }
+END

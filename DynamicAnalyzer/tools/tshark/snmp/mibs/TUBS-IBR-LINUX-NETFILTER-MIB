@@ -1,0 +1,636 @@
+TUBS-IBR-LINUX-NETFILTER-MIB DEFINITIONS ::= BEGIN
+
+-- @(#) $Id: TUBS-IBR-LINUX-NETFILTER-MIB,v 1.7 2002/08/26 16:46:14 wellnitz Exp $
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Unsigned32, Counter64
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, TruthValue, StorageType, RowStatus, TimeStamp
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB
+    InetAddressType, InetAddress, InetAddressPrefixLength
+        FROM INET-ADDRESS-MIB
+    ibr
+        FROM TUBS-SMI;
+
+lnfMIB MODULE-IDENTITY
+    LAST-UPDATED "200207230000Z"
+    ORGANIZATION "TU Braunschweig"
+    CONTACT-INFO
+        "Frank Strauss, Oliver Wellnitz
+         TU Braunschweig
+         Muehlenpfordtstrasse 23
+         38106 Braunschweig
+         Germany
+
+         Tel: +49 531 391 3283
+         Fax: +49 531 391 5936
+         E-mail: {strauss,wellnitz}@ibr.cs.tu-bs.de"
+    DESCRIPTION
+        "Experimental MIB module for the Linux 2.4 netfilter
+         subsystem."
+    REVISION    "200207260000Z"
+    DESCRIPTION
+        "The initial revision of this module. This revision does
+         not cover any match extensions and target extensions."
+    ::= { ibr 13 }
+
+--
+-- The various groups defined within this MIB module:
+--
+
+lnfObjects     OBJECT IDENTIFIER ::= { lnfMIB 1 }
+
+lnfTraps       OBJECT IDENTIFIER ::= { lnfMIB 2 }
+
+lnfConformance OBJECT IDENTIFIER ::= { lnfMIB 3 }
+
+--
+-- Textual Conventions:
+--
+
+LnfTarget ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "This data type represents an action that is about to
+         be applied to a packet.
+
+         none(1):   No action, except increasing counters.
+
+         other(2):  An unknown extension action which cannot
+                    be described by the values specified below.
+
+         drop(3):   Drop the packet on the floor.
+
+         accept(4): Let the packet through.
+
+         queue(5):  Pass the packet to userspace.
+
+         return(6): Stop traversing this chain and resume at the
+                    next rule in the previous (calling) chain.
+
+         chain(7):  Jump to the user chain specified by a
+                    related object.
+        "
+    SYNTAX      INTEGER {
+                    none(1),
+                    other(2),
+                    drop(3),
+                    accept(4),
+                    queue(5),
+                    return(6),
+                    chain(7)
+                }
+
+--
+-- Object definitions:
+--
+
+lnfLastChange OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The time of the last netfilter configuration change of any kind,
+	including any creation, deletion or modification of any table of this
+	MIB."
+    ::= { lnfObjects 1 }
+
+lnfTableTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF LnfTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of all tables installed on the netfilter subsystem."
+    ::= { lnfObjects 2 }
+
+lnfTableEntry OBJECT-TYPE
+    SYNTAX      LnfTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular netfilter table."
+    INDEX   { lnfTableAddressType, lnfTableName }
+    ::= { lnfTableTable 1 }
+
+LnfTableEntry ::=
+    SEQUENCE {
+        lnfTableAddressType                   InetAddressType,
+        lnfTableName                          SnmpAdminString,
+        lnfTableLastChange                    TimeStamp
+    }
+
+lnfTableAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType { ipv4(1), ipv6(2) }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The address type for which the netfilter table works."
+    ::= { lnfTableEntry 1 }
+
+lnfTableName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The name of the netfilter table."
+    ::= { lnfTableEntry 2 }
+
+lnfTableLastChange OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The time of the last modification of this netfilter
+	table, including the creation or deletion of a netfilter
+	chain that belongs to this table."
+    ::= { lnfTableEntry 3 }
+
+--
+
+lnfChainTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF LnfChainEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of all chains installed on the netfilter
+        subsystem." 
+    ::= { lnfObjects 3 }
+
+lnfChainEntry OBJECT-TYPE
+    SYNTAX      LnfChainEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular netfilter chain."
+    INDEX   { lnfTableAddressType, lnfTableName, lnfChainName }
+    ::= { lnfChainTable 1 }
+
+LnfChainEntry ::=
+    SEQUENCE {
+        lnfChainName                          SnmpAdminString,
+        lnfChainPackets                       Counter64,
+        lnfChainOctets                        Counter64,
+        lnfChainTarget                        LnfTarget,
+        lnfChainLastChange                    TimeStamp,
+        lnfChainStorage                       StorageType,
+        lnfChainStatus                        RowStatus
+    }
+
+lnfChainName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The netfilter chain to which the rule belongs."
+    ::= { lnfChainEntry 1 }
+
+lnfChainPackets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets that passed this chain since
+         the rule was installed or reset."
+    ::= { lnfChainEntry 2 }
+
+lnfChainOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of octets that passed this chain since 
+         the chain was installed or reset."
+    ::= { lnfChainEntry 3 }
+
+lnfChainTarget OBJECT-TYPE
+    SYNTAX      LnfTarget { drop(3), accept(4), return(6) }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The action that shall be applied to a packet if no rule
+         within the chain matches. Note that user-defined chains
+         only allow return(6)."
+    DEFVAL      { return }
+    ::= { lnfChainEntry 4 }
+
+lnfChainLastChange OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The time of the last modification of this netfilter
+	chain, including the creation or deletion of a netfilter
+	rule that belongs to this chain."
+    ::= { lnfChainEntry 5 }
+
+lnfChainStorage OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines whether this row is kept in
+         volatile storage and lost upon reboot or whether it
+         is backed up by stable storage or builtin."
+    ::= { lnfChainEntry 6 }
+
+lnfChainStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is used to create and delete rows in the
+         lnfChainTable."
+    ::= { lnfChainEntry 7 }
+
+--
+
+lnfRuleTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF LnfRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of all rules installed on the netfilter
+         subsystem." 
+    ::= { lnfObjects 4 }
+
+lnfRuleEntry OBJECT-TYPE
+    SYNTAX      LnfRuleEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular netfilter rule. Rules
+         of different netfilter tables and chains are
+         distinguished by the corresponding index objects."
+    INDEX   { lnfTableAddressType, lnfTableName, 
+              lnfChainName, lnfRuleIndex }
+    ::= { lnfRuleTable 1 }
+
+LnfRuleEntry ::=
+    SEQUENCE {
+        lnfRuleIndex                          Unsigned32,
+        lnfRuleProtocol                       Unsigned32,
+        lnfRuleProtocolInv                    TruthValue,
+        lnfRuleSourceAddress                  InetAddress,
+        lnfRuleSourceAddressPrefixLength      InetAddressPrefixLength,
+        lnfRuleSourceAddressInv               TruthValue,
+        lnfRuleDestinationAddress             InetAddress,
+        lnfRuleDestinationAddressPrefixLength InetAddressPrefixLength,
+        lnfRuleDestinationAddressInv          TruthValue,
+        lnfRuleInInterface                    SnmpAdminString,
+        lnfRuleInInterfaceInv                 TruthValue,
+        lnfRuleOutInterface                   SnmpAdminString,
+        lnfRuleOutInterfaceInv                TruthValue,
+        lnfRuleFragment                       TruthValue,
+        lnfRuleFragmentInv                    TruthValue,
+        lnfRulePackets                        Counter64,
+        lnfRuleOctets                         Counter64,
+        lnfRuleTarget                         LnfTarget,
+        lnfRuleTargetChain                    SnmpAdminString,
+        lnfRuleTrapEnable                     TruthValue,
+        lnfRuleLastChange                     TimeStamp,
+        lnfRuleStorage                        StorageType,
+        lnfRuleStatus                         RowStatus
+    }
+
+lnfRuleIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A unique number identifying the rule within a netfilter
+         chain."
+    ::= { lnfRuleEntry 1 }
+
+lnfRuleProtocol OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The protocol of the rule. The number zero matches all
+         protocols."
+    DEFVAL      { 0 }
+    ::= { lnfRuleEntry 2 }
+
+lnfRuleProtocolInv OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This flag specifies whether the lnfRuleProtocol test
+         has to be inverted."
+    DEFVAL      { false }
+    ::= { lnfRuleEntry 3 }
+
+lnfRuleSourceAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The source address of a packet. The exact format depends
+         on the address type specified by lnfRuleAddressType.
+         This test is applied for an address prefix whose length
+         is specified by lnfRuleSourceAddressPrefixLength.
+
+         If a new row is created this object should default to
+         an all-zeros value with a length approrpiate for the
+         corresponding lnfRuleAddressType object value."
+    ::= { lnfRuleEntry 4 }
+
+lnfRuleSourceAddressPrefixLength OBJECT-TYPE
+    SYNTAX      InetAddressPrefixLength
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The network prefix length associated with
+         lnfRuleSourceAddress." 
+    DEFVAL      { 0 }
+    ::= { lnfRuleEntry 5 }
+
+lnfRuleSourceAddressInv OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This flag specifies whether the lnfRuleSourceAddress
+         and lnfRuleSourceAddressPrefixLength test has to
+         be inverted."
+    DEFVAL      { false }
+    ::= { lnfRuleEntry 6 }
+
+lnfRuleDestinationAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The destination address of a packet. The exact format
+         depends on the address type specified by 
+         lnfRuleAddressType. This test is applied for an address
+         prefix whose length is specified by 
+         lnfRuleDestinationAddressPrefixLength.
+
+         If a new row is created this object should default to
+         an all-zeros value with a length approrpiate for the
+         corresponding lnfRuleAddressType object value."
+    ::= { lnfRuleEntry 7 }
+
+lnfRuleDestinationAddressPrefixLength OBJECT-TYPE
+    SYNTAX      InetAddressPrefixLength
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The network prefix length associated with
+         lnfRuleDestinationAddress." 
+    DEFVAL      { 0 }
+    ::= { lnfRuleEntry 8 }
+
+lnfRuleDestinationAddressInv OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This flag specifies whether the lnfRuleDestinationAddress
+         and lnfRuleDestinationAddressPrefixLength test has to
+         be inverted."
+    DEFVAL      { false }
+    ::= { lnfRuleEntry 9 }
+
+lnfRuleInInterface OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..16))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Name of an interface via which a packet is going to be
+         received (only for packets entering the INPUT, FORWARD and
+         PREROUTING chains).  If the interface name ends in a '+',
+         then any interface which begins with this name will match.
+         If this is an empty string, any interface name will match."
+    DEFVAL      { "" }
+    ::= { lnfRuleEntry 10 }
+
+lnfRuleInInterfaceInv OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This flag specifies whether the lnfRuleInInterface test
+         has to be inverted."
+    DEFVAL      { false }
+    ::= { lnfRuleEntry 11 }
+
+lnfRuleOutInterface OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..16))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Name of an interface via which a packet is going to be
+         sent (for packets entering the FORWARD, OUTPUT and
+         POSTROUTING chains).  If the interface name ends in a '+',
+         then any interface which begins with this name will match.
+         If this is an empty string, any interface name will match."
+    DEFVAL      { "" }
+    ::= { lnfRuleEntry 12 }
+
+lnfRuleOutInterfaceInv OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This flag specifies whether the lnfRuleOutInterface test
+         has to be inverted."
+    DEFVAL      { false }
+    ::= { lnfRuleEntry 13 }
+
+lnfRuleFragment OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "If this flag is true, the rule only refers to second and
+         further fragments of fragmented packets.  Since there is
+         no way to tell the source or destination ports of such a
+         packet (or ICMP type), such a packet will not match any
+         rules which specify them."
+    DEFVAL      { false }
+    ::= { lnfRuleEntry 14 }
+
+lnfRuleFragmentInv OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This flag specifies whether the lnfRuleFragmentInv test,
+         if true, has to be inverted. An inverted rule will only
+         match head fragments, or unfragmented packets."
+    DEFVAL      { false }
+    ::= { lnfRuleEntry 15 }
+
+lnfRulePackets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets that matched this rule since
+         the rule was installed or reset."
+    ::= { lnfRuleEntry 16 }
+
+lnfRuleOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of octets that matched this rule since the 
+         rule was installed or reset."
+    ::= { lnfRuleEntry 17 }
+
+lnfRuleTarget OBJECT-TYPE
+    SYNTAX      LnfTarget
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The action that shall be applied to a packet if the
+         rule matches. If the value is chain(7), then jump to
+         the user chain specified by lnfRuleTargetChain."
+    DEFVAL      { none }
+    ::= { lnfRuleEntry 18 }
+
+lnfRuleTargetChain OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The name of the target chain if the value of
+         lnfRuleTarget is chain(7)."
+    ::= { lnfRuleEntry 19 }
+
+lnfRuleTrapEnable  OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Indicates whether lnfRuleMatch traps should be
+         generated for packets matching this rule. Note
+         that it's up to the implementation to delay and
+         accumulate mutliple traps in order to reduce the
+         number of emitted traps."
+    DEFVAL      { false }
+    ::= { lnfRuleEntry 20 }
+
+lnfRuleLastChange OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The time of the last modification of this netfilter rule.
+	If it has been unchanged since the last re-initialization
+	of the local network management subsystem, then this
+        object contains a zero value."
+    ::= { lnfRuleEntry 21 }
+
+lnfRuleStorage OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object defines whether this row is kept in
+         volatile storage and lost upon reboot or whether it
+         is backed up by stable storage or builtin."
+    ::= { lnfRuleEntry 22 }
+
+lnfRuleStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is used to create and delete rows in the
+         lnfRuleTable."
+    ::= { lnfRuleEntry 23 }
+
+--
+-- Notifications:
+--
+
+lnfNotifications OBJECT IDENTIFIER ::= { lnfTraps 0 }
+
+lnfRuleMatch NOTIFICATION-TYPE
+    OBJECTS     { lnfRulePackets, lnfRuleOctets }
+    STATUS      current
+    DESCRIPTION
+        "A lnfRuleMatch trap signifies that the rule to which
+         the lnfRulePackets and lnfRuleOctets objects belong
+         was matched by at least one packets since the last
+         trap for the same rule was emitted.
+
+         The agent may delay and accumulate mutliple traps in order
+         to reduce the number of emitted traps, but the time for
+         accumulation should be no more than 60 seconds.
+
+         Note that detailed information on the packet(s) that
+         triggered a trap is not available from the trap's 
+         objects. This would cause problems with the accumulation
+         of matches and/or increased trap traffic."
+    ::= { lnfNotifications 1 }
+
+--
+-- Conformance statements:
+--
+
+lnfCompliances OBJECT IDENTIFIER ::= { lnfConformance 1 }
+
+lnfGroups OBJECT IDENTIFIER ::= { lnfConformance 2 }
+
+lnfCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for an SNMP entity which
+         implements the Linux Netfilter MIB."
+    MODULE     -- this module
+    MANDATORY-GROUPS { lnfGeneralGroup, lnfNotificationGroup }
+
+--     OBJECT      lnfTableAddressType
+--         SYNTAX      InetAddressType { ipv4(1), ipv6(2) }
+--         DESCRIPTION
+--         "Other address types than IPv4 and IPv6 are not required."
+
+    ::= { lnfCompliances 1 }
+
+lnfGeneralGroup OBJECT-GROUP
+    OBJECTS {
+        lnfLastChange,
+
+        lnfTableLastChange,
+
+        lnfChainPackets, lnfChainOctets, lnfChainTarget,
+        lnfChainLastChange, lnfChainStorage, lnfChainStatus,
+
+        lnfRuleProtocol, lnfRuleProtocolInv,
+        lnfRuleSourceAddress, lnfRuleSourceAddressPrefixLength,
+        lnfRuleSourceAddressInv, lnfRuleDestinationAddress, 
+        lnfRuleDestinationAddressPrefixLength,
+        lnfRuleDestinationAddressInv, lnfRuleInInterface,
+        lnfRuleInInterfaceInv, lnfRuleOutInterface,
+        lnfRuleOutInterfaceInv, lnfRuleFragment, 
+        lnfRuleFragmentInv, lnfRulePackets, lnfRuleOctets,
+        lnfRuleTarget, lnfRuleTargetChain, lnfRuleTrapEnable,
+        lnfRuleLastChange, lnfRuleStorage, lnfRuleStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of all Linux Netfilter objects of
+         the core table."
+    ::= { lnfGroups 1 }
+
+lnfNotificationGroup NOTIFICATION-GROUP
+    NOTIFICATIONS {
+        lnfRuleMatch
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of all Linux Netfilter notifications."
+    ::= { lnfGroups 2 }
+
+END

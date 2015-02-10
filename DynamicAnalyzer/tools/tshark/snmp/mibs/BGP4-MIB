@@ -1,0 +1,1298 @@
+BGP4-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+        IpAddress, Integer32, Counter32, Gauge32, mib-2
+            FROM SNMPv2-SMI
+        MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+            FROM SNMPv2-CONF;
+
+    bgp MODULE-IDENTITY
+        LAST-UPDATED "200601110000Z"
+        ORGANIZATION "IETF IDR Working Group"
+        CONTACT-INFO "E-mail:  idr@ietf.org
+
+                      Jeffrey Haas, Susan Hares  (Editors)
+                      NextHop Technologies
+                      825 Victors Way
+                      Suite 100
+                      Ann Arbor, MI 48108-2738
+                      Tel: +1 734 222-1600
+                      Fax: +1 734 222-1602
+                      E-mail: jhaas@nexthop.com
+                              skh@nexthop.com"
+
+        DESCRIPTION
+                "The MIB module for the BGP-4 protocol.
+
+                 Copyright (C) The Internet Society (2006).  This
+                 version of this MIB module is part of RFC 4273;
+                 see the RFC itself for full legal notices."
+
+        REVISION "200601110000Z"
+        DESCRIPTION
+               "Changes from RFC 1657:
+
+                1) Fixed the definitions of the notifications
+                   to make them equivalent to their initial
+                   definition in RFC 1269.
+                2) Added compliance and conformance info.
+                3) Updated information for the values of
+                   bgpPeerNegotiatedVersion, bgp4PathAttrLocalPref,
+                   bgp4PathAttrCalcLocalPref,
+                   bgp4PathAttrMultiExitDisc,
+                   bgp4PathAttrASPathSegement.
+                4) Added additional clarification comments where
+                   needed.
+
+
+
+                5) Noted where objects do not fully reflect
+                   the protocol as Known Issues.
+                6) Updated the DESCRIPTION for the
+                   bgp4PathAttrAtomicAggregate object.
+                7) The following objects have had their DESCRIPTION
+                   clause modified to remove the text that suggested
+                   (using 'should' verb) initializing the counter
+                   to zero on a transition to the established state:
+                     bgpPeerInUpdates, bgpPeerOutUpdates,
+                     bgpPeerInTotalMessages, bgpPeerOutTotalMessages
+                   Those implementations that still do this are
+                   still compliant with this new wording.
+                   Applications should not assume counters have
+                   started at zero.
+
+                 Published as RFC 4273."
+
+        REVISION "199405050000Z"
+        DESCRIPTION
+                "Translated to SMIv2 and published as RFC 1657."
+
+        REVISION "199110261839Z"
+        DESCRIPTION
+                "Initial version, published as RFC 1269."
+        ::= { mib-2 15 }
+
+    bgpVersion OBJECT-TYPE
+        SYNTAX     OCTET STRING (SIZE (1..255))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "Vector of supported BGP protocol version
+                 numbers.  Each peer negotiates the version
+                 from this vector.  Versions are identified
+                 via the string of bits contained within this
+                 object.  The first octet contains bits 0 to
+                 7, the second octet contains bits 8 to 15,
+                 and so on, with the most significant bit
+                 referring to the lowest bit number in the
+                 octet (e.g., the MSB of the first octet
+                 refers to bit 0).  If a bit, i, is present
+                 and set, then the version (i+1) of the BGP
+                 is supported."
+        REFERENCE
+                "RFC 4271, Section 4.2."
+        ::= { bgp 1 }
+
+    bgpLocalAs OBJECT-TYPE
+
+
+
+        SYNTAX     Integer32 (0..65535)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The local autonomous system number."
+        REFERENCE
+                 "RFC 4271, Section 4.2, 'My Autonomous System'."
+        ::= { bgp 2 }
+
+    -- BGP Peer table.  This table contains, one entry per
+    -- BGP peer, information about the BGP peer.
+
+    bgpPeerTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF BgpPeerEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+                "BGP peer table.  This table contains,
+                 one entry per BGP peer, information about the
+                 connections with BGP peers."
+        ::= { bgp 3 }
+
+    bgpPeerEntry OBJECT-TYPE
+        SYNTAX     BgpPeerEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+                "Entry containing information about the
+                 connection with a BGP peer."
+        INDEX { bgpPeerRemoteAddr }
+        ::= { bgpPeerTable 1 }
+
+    BgpPeerEntry ::= SEQUENCE {
+            bgpPeerIdentifier
+                IpAddress,
+            bgpPeerState
+                INTEGER,
+            bgpPeerAdminStatus
+                INTEGER,
+            bgpPeerNegotiatedVersion
+                Integer32,
+            bgpPeerLocalAddr
+                IpAddress,
+            bgpPeerLocalPort
+                Integer32,
+            bgpPeerRemoteAddr
+                IpAddress,
+            bgpPeerRemotePort
+
+
+
+                Integer32,
+            bgpPeerRemoteAs
+                Integer32,
+            bgpPeerInUpdates
+                Counter32,
+            bgpPeerOutUpdates
+                Counter32,
+            bgpPeerInTotalMessages
+                Counter32,
+            bgpPeerOutTotalMessages
+                Counter32,
+            bgpPeerLastError
+                OCTET STRING,
+            bgpPeerFsmEstablishedTransitions
+                Counter32,
+            bgpPeerFsmEstablishedTime
+                Gauge32,
+            bgpPeerConnectRetryInterval
+                Integer32,
+            bgpPeerHoldTime
+                Integer32,
+            bgpPeerKeepAlive
+                Integer32,
+            bgpPeerHoldTimeConfigured
+                Integer32,
+            bgpPeerKeepAliveConfigured
+                Integer32,
+            bgpPeerMinASOriginationInterval
+                Integer32,
+            bgpPeerMinRouteAdvertisementInterval
+                Integer32,
+            bgpPeerInUpdateElapsedTime
+                Gauge32
+            }
+
+    bgpPeerIdentifier OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The BGP Identifier of this entry's BGP peer.
+                 This entry MUST be 0.0.0.0 unless the
+                 bgpPeerState is in the openconfirm or the
+                 established state."
+        REFERENCE
+                "RFC 4271, Section 4.2, 'BGP Identifier'."
+        ::= { bgpPeerEntry 1 }
+
+
+
+
+    bgpPeerState OBJECT-TYPE
+        SYNTAX     INTEGER {
+                            idle(1),
+                            connect(2),
+                            active(3),
+                            opensent(4),
+                            openconfirm(5),
+                            established(6)
+                   }
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The BGP peer connection state."
+        REFERENCE
+                "RFC 4271, Section 8.2.2."
+        ::= { bgpPeerEntry 2 }
+
+    bgpPeerAdminStatus OBJECT-TYPE
+        SYNTAX     INTEGER {
+                            stop(1),
+                            start(2)
+                   }
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+                "The desired state of the BGP connection.
+                 A transition from 'stop' to 'start' will cause
+                 the BGP Manual Start Event to be generated.
+                 A transition from 'start' to 'stop' will cause
+                 the BGP Manual Stop Event to be generated.
+                 This parameter can be used to restart BGP peer
+                 connections.  Care should be used in providing
+                 write access to this object without adequate
+                 authentication."
+        REFERENCE
+                "RFC 4271, Section 8.1.2."
+        ::= { bgpPeerEntry 3 }
+
+    bgpPeerNegotiatedVersion OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The negotiated version of BGP running between
+                 the two peers.
+
+                 This entry MUST be zero (0) unless the
+                 bgpPeerState is in the openconfirm or the
+
+
+
+                 established state.
+
+                 Note that legal values for this object are
+                 between 0 and 255."
+        REFERENCE
+                "RFC 4271, Section 4.2.
+                 RFC 4271, Section 7."
+        ::= { bgpPeerEntry 4 }
+
+    bgpPeerLocalAddr OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The local IP address of this entry's BGP
+                 connection."
+        ::= { bgpPeerEntry 5 }
+
+    bgpPeerLocalPort OBJECT-TYPE
+        SYNTAX     Integer32 (0..65535)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The local port for the TCP connection between
+                 the BGP peers."
+        ::= { bgpPeerEntry 6 }
+
+    bgpPeerRemoteAddr OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The remote IP address of this entry's BGP
+                 peer."
+        ::= { bgpPeerEntry 7 }
+
+    bgpPeerRemotePort OBJECT-TYPE
+        SYNTAX     Integer32 (0..65535)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The remote port for the TCP connection
+                 between the BGP peers.  Note that the
+                 objects bgpPeerLocalAddr,
+                 bgpPeerLocalPort, bgpPeerRemoteAddr, and
+                 bgpPeerRemotePort provide the appropriate
+                 reference to the standard MIB TCP
+                 connection table."
+
+
+
+        ::= { bgpPeerEntry 8 }
+
+    bgpPeerRemoteAs OBJECT-TYPE
+        SYNTAX     Integer32 (0..65535)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The remote autonomous system number received in
+                 the BGP OPEN message."
+        REFERENCE
+                "RFC 4271, Section 4.2."
+        ::= { bgpPeerEntry 9 }
+
+    bgpPeerInUpdates OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The number of BGP UPDATE messages
+                 received on this connection."
+        REFERENCE
+                "RFC 4271, Section 4.3."
+        ::= { bgpPeerEntry 10 }
+
+    bgpPeerOutUpdates OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The number of BGP UPDATE messages
+                 transmitted on this connection."
+        REFERENCE
+                "RFC 4271, Section 4.3."
+        ::= { bgpPeerEntry 11 }
+
+    bgpPeerInTotalMessages OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The total number of messages received
+                 from the remote peer on this connection."
+        REFERENCE
+                "RFC 4271, Section 4."
+        ::= { bgpPeerEntry 12 }
+
+    bgpPeerOutTotalMessages OBJECT-TYPE
+        SYNTAX     Counter32
+
+
+
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The total number of messages transmitted to
+                 the remote peer on this connection."
+        REFERENCE
+                "RFC 4271, Section 4."
+        ::= { bgpPeerEntry 13 }
+
+    bgpPeerLastError OBJECT-TYPE
+        SYNTAX     OCTET STRING (SIZE (2))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The last error code and subcode seen by this
+                 peer on this connection.  If no error has
+                 occurred, this field is zero.  Otherwise, the
+                 first byte of this two byte OCTET STRING
+                 contains the error code, and the second byte
+                 contains the subcode."
+        REFERENCE
+                "RFC 4271, Section 4.5."
+        ::= { bgpPeerEntry 14 }
+
+    bgpPeerFsmEstablishedTransitions OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The total number of times the BGP FSM
+                 transitioned into the established state
+                 for this peer."
+        REFERENCE
+                "RFC 4271, Section 8."
+        ::= { bgpPeerEntry 15 }
+
+    bgpPeerFsmEstablishedTime OBJECT-TYPE
+        SYNTAX     Gauge32
+        UNITS      "seconds"
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This timer indicates how long (in
+                 seconds) this peer has been in the
+                 established state or how long
+                 since this peer was last in the
+                 established state.  It is set to zero when
+                 a new peer is configured or when the router is
+
+
+
+                 booted."
+        REFERENCE
+                "RFC 4271, Section 8."
+        ::= { bgpPeerEntry 16 }
+
+    bgpPeerConnectRetryInterval OBJECT-TYPE
+        SYNTAX     Integer32 (1..65535)
+        UNITS      "seconds"
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+                "Time interval (in seconds) for the
+                 ConnectRetry timer.  The suggested value
+                 for this timer is 120 seconds."
+        REFERENCE
+                "RFC 4271, Section 8.2.2.  This is the value used
+                 to initialize the 'ConnectRetryTimer'."
+        ::= { bgpPeerEntry 17 }
+
+    bgpPeerHoldTime OBJECT-TYPE
+        SYNTAX     Integer32  ( 0 | 3..65535 )
+        UNITS      "seconds"
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "Time interval (in seconds) for the Hold
+                 Timer established with the peer.  The
+                 value of this object is calculated by this
+                 BGP speaker, using the smaller of the
+                 values in bgpPeerHoldTimeConfigured and the
+                 Hold Time received in the OPEN message.
+
+                 This value must be at least three seconds
+                 if it is not zero (0).
+
+                 If the Hold Timer has not been established
+                 with the peer this object MUST have a value
+                 of zero (0).
+
+                 If the bgpPeerHoldTimeConfigured object has
+                 a value of (0), then this object MUST have a
+                 value of (0)."
+        REFERENCE
+                "RFC 4271, Section 4.2."
+        ::= { bgpPeerEntry 18 }
+
+    bgpPeerKeepAlive OBJECT-TYPE
+        SYNTAX     Integer32 ( 0 | 1..21845 )
+
+
+
+        UNITS      "seconds"
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "Time interval (in seconds) for the KeepAlive
+                 timer established with the peer.  The value
+                 of this object is calculated by this BGP
+                 speaker such that, when compared with
+                 bgpPeerHoldTime, it has the same proportion
+                 that bgpPeerKeepAliveConfigured has,
+                 compared with bgpPeerHoldTimeConfigured.
+
+                 If the KeepAlive timer has not been established
+                 with the peer, this object MUST have a value
+                 of zero (0).
+
+                 If the of bgpPeerKeepAliveConfigured object
+                 has a value of (0), then this object MUST have
+                 a value of (0)."
+        REFERENCE
+                "RFC 4271, Section 4.4."
+        ::= { bgpPeerEntry 19 }
+
+    bgpPeerHoldTimeConfigured OBJECT-TYPE
+        SYNTAX     Integer32 ( 0 | 3..65535 )
+        UNITS      "seconds"
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+                "Time interval (in seconds) for the Hold Time
+                 configured for this BGP speaker with this
+                 peer.  This value is placed in an OPEN
+                 message sent to this peer by this BGP
+                 speaker, and is compared with the Hold
+                 Time field in an OPEN message received
+                 from the peer when determining the Hold
+                 Time (bgpPeerHoldTime) with the peer.
+                 This value must not be less than three
+                 seconds if it is not zero (0).  If it is
+                 zero (0), the Hold Time is NOT to be
+                 established with the peer.  The suggested
+                 value for this timer is 90 seconds."
+        REFERENCE
+                "RFC 4271, Section 4.2.
+                 RFC 4271, Section 10."
+        ::= { bgpPeerEntry 20 }
+
+    bgpPeerKeepAliveConfigured OBJECT-TYPE
+
+
+
+        SYNTAX     Integer32 ( 0 | 1..21845 )
+        UNITS      "seconds"
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+                "Time interval (in seconds) for the
+                 KeepAlive timer configured for this BGP
+                 speaker with this peer.  The value of this
+                 object will only determine the
+                 KEEPALIVE messages' frequency relative to
+                 the value specified in
+                 bgpPeerHoldTimeConfigured; the actual
+                 time interval for the KEEPALIVE messages is
+                 indicated by bgpPeerKeepAlive.  A
+                 reasonable maximum value for this timer
+                 would be one third of that of
+                 bgpPeerHoldTimeConfigured.
+                 If the value of this object is zero (0),
+                 no periodical KEEPALIVE messages are sent
+                 to the peer after the BGP connection has
+                 been established.  The suggested value for
+                 this timer is 30 seconds."
+        REFERENCE
+                "RFC 4271, Section 4.4.
+                 RFC 4271, Section 10."
+        ::= { bgpPeerEntry 21 }
+
+    bgpPeerMinASOriginationInterval OBJECT-TYPE
+        SYNTAX     Integer32 (1..65535)
+        UNITS      "seconds"
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+                "Time interval (in seconds) for the
+                 MinASOriginationInterval timer.
+                 The suggested value for this timer is 15
+                 seconds."
+        REFERENCE
+                "RFC 4271, Section 9.2.1.2.
+                 RFC 4271, Section 10."
+        ::= { bgpPeerEntry 22 }
+
+    bgpPeerMinRouteAdvertisementInterval OBJECT-TYPE
+        SYNTAX     Integer32 (1..65535)
+        UNITS      "seconds"
+        MAX-ACCESS read-write
+        STATUS     current
+        DESCRIPTION
+
+
+
+                "Time interval (in seconds) for the
+                 MinRouteAdvertisementInterval timer.
+                 The suggested value for this timer is 30
+                 seconds for EBGP connections and 5
+                 seconds for IBGP connections."
+        REFERENCE
+                "RFC 4271, Section 9.2.1.1.
+                 RFC 4271, Section 10."
+        ::= { bgpPeerEntry 23 }
+
+    bgpPeerInUpdateElapsedTime OBJECT-TYPE
+        SYNTAX     Gauge32
+        UNITS      "seconds"
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "Elapsed time (in seconds) since the last BGP
+                 UPDATE message was received from the peer.
+                 Each time bgpPeerInUpdates is incremented,
+                 the value of this object is set to zero (0)."
+        REFERENCE
+                "RFC 4271, Section 4.3.
+                 RFC 4271, Section 8.2.2, Established state."
+        ::= { bgpPeerEntry 24 }
+
+    bgpIdentifier OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The BGP Identifier of the local system."
+        REFERENCE
+                "RFC 4271, Section 4.2."
+        ::= { bgp 4 }
+
+    -- BGP Received Path Attribute Table.  This table contains
+    -- one entry per path to a network, and path attributes
+    -- received from all peers running BGP version 3 or less.
+    -- This table is obsolete, having been replaced in
+    -- functionality by the bgp4PathAttrTable.
+
+    bgpRcvdPathAttrTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF BgpPathAttrEntry
+        MAX-ACCESS not-accessible
+        STATUS     obsolete
+        DESCRIPTION
+                "The BGP Received Path Attribute Table
+                 contains information about paths to
+
+
+
+                 destination networks, received from all
+                 peers running BGP version 3 or less."
+        ::= { bgp 5 }
+
+    bgpPathAttrEntry OBJECT-TYPE
+        SYNTAX     BgpPathAttrEntry
+        MAX-ACCESS not-accessible
+        STATUS     obsolete
+        DESCRIPTION
+                "Information about a path to a network."
+        INDEX { bgpPathAttrDestNetwork,
+                bgpPathAttrPeer        }
+        ::= { bgpRcvdPathAttrTable 1 }
+
+    BgpPathAttrEntry ::= SEQUENCE {
+        bgpPathAttrPeer
+             IpAddress,
+        bgpPathAttrDestNetwork
+             IpAddress,
+        bgpPathAttrOrigin
+             INTEGER,
+        bgpPathAttrASPath
+             OCTET STRING,
+        bgpPathAttrNextHop
+             IpAddress,
+        bgpPathAttrInterASMetric
+             Integer32
+    }
+
+    bgpPathAttrPeer OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-only
+        STATUS     obsolete
+        DESCRIPTION
+                "The IP address of the peer where the path
+                 information was learned."
+        ::= { bgpPathAttrEntry 1 }
+
+    bgpPathAttrDestNetwork OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-only
+        STATUS     obsolete
+        DESCRIPTION
+                "The address of the destination network."
+        REFERENCE
+                "RFC 1267, Section 4.3."
+        ::= { bgpPathAttrEntry 2 }
+
+
+
+
+    bgpPathAttrOrigin OBJECT-TYPE
+        SYNTAX     INTEGER {
+                       igp(1),-- networks are interior
+                       egp(2),-- networks learned via the
+                              -- EGP protocol
+                       incomplete(3) -- networks that
+                              -- are learned by some other
+                              -- means
+                   }
+        MAX-ACCESS read-only
+        STATUS     obsolete
+        DESCRIPTION
+                "The ultimate origin of the path information."
+        REFERENCE
+                "RFC 1267, Section 4.3.
+                 RFC 1267, Section 5."
+        ::= { bgpPathAttrEntry 3 }
+
+    bgpPathAttrASPath OBJECT-TYPE
+        SYNTAX     OCTET STRING (SIZE (2..255))
+        MAX-ACCESS read-only
+        STATUS     obsolete
+        DESCRIPTION
+                "The set of ASes that must be traversed to reach
+                 the network.  This object is probably best
+                 represented as SEQUENCE OF INTEGER.  For SMI
+                 compatibility, though, it is represented as
+                 OCTET STRING.  Each AS is represented as a pair
+                 of octets according to the following algorithm:
+
+                    first-byte-of-pair = ASNumber / 256;
+                    second-byte-of-pair = ASNumber & 255;"
+        REFERENCE
+                "RFC 1267, Section 4.3.
+                 RFC 1267, Section 5."
+        ::= { bgpPathAttrEntry 4 }
+
+    bgpPathAttrNextHop OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-only
+        STATUS     obsolete
+        DESCRIPTION
+                "The address of the border router that should
+                 be used for the destination network."
+        REFERENCE
+                "RFC 1267, Section 4.3.
+                 RFC 1267, Section 5."
+        ::= { bgpPathAttrEntry 5 }
+
+
+
+    bgpPathAttrInterASMetric OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS     obsolete
+        DESCRIPTION
+                "The optional inter-AS metric.  If this
+                 attribute has not been provided for this route,
+                 the value for this object is 0."
+        REFERENCE
+                "RFC 1267, Section 4.3.
+                 RFC 1267, Section 5."
+        ::= { bgpPathAttrEntry 6 }
+
+    -- BGP-4 Received Path Attribute Table.  This table
+    -- contains one entry per path to a network, and path
+    -- attributes received from all peers running BGP-4.
+
+    bgp4PathAttrTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF Bgp4PathAttrEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+                "The BGP-4 Received Path Attribute Table
+                 contains information about paths to
+                 destination networks, received from all
+                 BGP4 peers."
+        ::= { bgp 6 }
+
+    bgp4PathAttrEntry OBJECT-TYPE
+        SYNTAX     Bgp4PathAttrEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+                "Information about a path to a network."
+        INDEX { bgp4PathAttrIpAddrPrefix,
+                bgp4PathAttrIpAddrPrefixLen,
+                bgp4PathAttrPeer            }
+        ::= { bgp4PathAttrTable 1 }
+
+    Bgp4PathAttrEntry ::= SEQUENCE {
+        bgp4PathAttrPeer
+             IpAddress,
+        bgp4PathAttrIpAddrPrefixLen
+             Integer32,
+        bgp4PathAttrIpAddrPrefix
+             IpAddress,
+        bgp4PathAttrOrigin
+             INTEGER,
+
+
+
+        bgp4PathAttrASPathSegment
+             OCTET STRING,
+        bgp4PathAttrNextHop
+             IpAddress,
+        bgp4PathAttrMultiExitDisc
+             Integer32,
+        bgp4PathAttrLocalPref
+             Integer32,
+        bgp4PathAttrAtomicAggregate
+             INTEGER,
+        bgp4PathAttrAggregatorAS
+             Integer32,
+        bgp4PathAttrAggregatorAddr
+             IpAddress,
+        bgp4PathAttrCalcLocalPref
+             Integer32,
+        bgp4PathAttrBest
+             INTEGER,
+        bgp4PathAttrUnknown
+             OCTET STRING
+    }
+
+    bgp4PathAttrPeer OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The IP address of the peer where the path
+                 information was learned."
+        ::= { bgp4PathAttrEntry 1 }
+
+    bgp4PathAttrIpAddrPrefixLen OBJECT-TYPE
+        SYNTAX     Integer32 (0..32)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "Length in bits of the IP address prefix in
+                 the Network Layer Reachability
+                 Information field."
+        ::= { bgp4PathAttrEntry 2 }
+
+    bgp4PathAttrIpAddrPrefix OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "An IP address prefix in the Network Layer
+                 Reachability Information field.  This object
+
+
+
+                 is an IP address containing the prefix with
+                 length specified by
+                 bgp4PathAttrIpAddrPrefixLen.
+                 Any bits beyond the length specified by
+                 bgp4PathAttrIpAddrPrefixLen are zeroed."
+        REFERENCE
+                "RFC 4271, Section 4.3."
+        ::= { bgp4PathAttrEntry 3 }
+
+    bgp4PathAttrOrigin OBJECT-TYPE
+        SYNTAX     INTEGER {
+                       igp(1),-- networks are interior
+                       egp(2),-- networks learned via the
+                              -- EGP protocol
+                       incomplete(3) -- networks that
+                              -- are learned by some other
+                              -- means
+                   }
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The ultimate origin of the path
+                 information."
+        REFERENCE
+                "RFC 4271, Section 4.3.
+                 RFC 4271, Section 5.1.1."
+        ::= { bgp4PathAttrEntry 4 }
+
+    bgp4PathAttrASPathSegment OBJECT-TYPE
+        SYNTAX     OCTET STRING (SIZE (2..255))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The sequence of AS path segments.  Each AS
+                 path segment is represented by a triple
+                 <type, length, value>.
+
+                 The type is a 1-octet field that has two
+                 possible values:
+                     1      AS_SET: unordered set of ASes that a
+                                 route in the UPDATE message
+                                 has traversed
+
+                     2      AS_SEQUENCE: ordered set of ASes that
+                                 a route in the UPDATE message
+                                 has traversed.
+
+                 The length is a 1-octet field containing the
+
+
+
+                 number of ASes in the value field.
+
+                 The value field contains one or more AS
+                 numbers.  Each AS is represented in the octet
+                 string as a pair of octets according to the
+                 following algorithm:
+
+                    first-byte-of-pair = ASNumber / 256;
+                    second-byte-of-pair = ASNumber & 255;
+
+                 Known Issues:
+                 o BGP Confederations will result in
+                   a type of either 3 or 4.
+                 o An AS Path may be longer than 255 octets.
+                   This may result in this object containing
+                   a truncated AS Path."
+        REFERENCE
+                "RFC 4271, Section 4.3.
+                 RFC 4271, Section 5.1.2."
+        ::= { bgp4PathAttrEntry 5 }
+
+    bgp4PathAttrNextHop OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The address of the border router that
+                 should be used for the destination
+                 network.  This address is the NEXT_HOP
+                 address received in the UPDATE packet."
+        REFERENCE
+                "RFC 4271, Section 4.3.
+                 RFC 4271, Section 5.1.3."
+        ::= { bgp4PathAttrEntry 6 }
+
+    bgp4PathAttrMultiExitDisc OBJECT-TYPE
+        SYNTAX     Integer32 (-1..2147483647)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "This metric is used to discriminate
+                 between multiple exit points to an
+                 adjacent autonomous system.  A value of -1
+                 indicates the absence of this attribute.
+
+                 Known Issues:
+                 o The BGP-4 specification uses an
+                   unsigned 32 bit number.  Thus, this
+
+
+
+                   object cannot represent the full
+                   range of the protocol."
+        REFERENCE
+                "RFC 4271, Section 4.3.
+                 RFC 4271, Section 5.1.4."
+        ::= { bgp4PathAttrEntry 7 }
+
+    bgp4PathAttrLocalPref OBJECT-TYPE
+        SYNTAX     Integer32 (-1..2147483647)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The originating BGP4 speaker's degree of
+                 preference for an advertised route.  A
+                 value of -1 indicates the absence of this
+                 attribute.
+
+                 Known Issues:
+                 o The BGP-4 specification uses an
+                   unsigned 32 bit number and thus this
+                   object cannot represent the full
+                   range of the protocol."
+        REFERENCE
+                "RFC 4271, Section 4.3.
+                 RFC 4271, Section 5.1.5."
+        ::= { bgp4PathAttrEntry 8 }
+
+    bgp4PathAttrAtomicAggregate OBJECT-TYPE
+        SYNTAX     INTEGER {
+                       lessSpecificRouteNotSelected(1),
+                           -- Typo corrected from RFC 1657
+                       lessSpecificRouteSelected(2)
+                   }
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "If the ATOMIC_AGGREGATE attribute is present
+                 in the Path Attributes then this object MUST
+                 have a value of 'lessSpecificRouteNotSelected'.
+
+                 If the ATOMIC_AGGREGATE attribute is missing
+                 in the Path Attributes then this object MUST
+                 have a value of 'lessSpecificRouteSelected'.
+
+                 Note that ATOMIC_AGGREGATE is now a primarily
+                 informational attribute."
+        REFERENCE
+                "RFC 4271, Sections 5.1.6 and 9.1.4."
+
+
+
+        ::= { bgp4PathAttrEntry 9 }
+
+    bgp4PathAttrAggregatorAS OBJECT-TYPE
+        SYNTAX     Integer32 (0..65535)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The AS number of the last BGP4 speaker that
+                 performed route aggregation.  A value of
+                 zero (0) indicates the absence of this
+                 attribute.
+
+                 Note that propagation of AS of zero is illegal
+                 in the Internet."
+        REFERENCE
+                "RFC 4271, Section 5.1.7.
+                 RFC 4271, Section 9.2.2.2."
+        ::= { bgp4PathAttrEntry 10 }
+
+    bgp4PathAttrAggregatorAddr OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The IP address of the last BGP4 speaker
+                 that performed route aggregation.  A
+                 value of 0.0.0.0 indicates the absence
+                 of this attribute."
+        REFERENCE
+                "RFC 4271, Section 5.1.7.
+                 RFC 4271, Section 9.2.2.2."
+        ::= { bgp4PathAttrEntry 11 }
+
+    bgp4PathAttrCalcLocalPref OBJECT-TYPE
+        SYNTAX     Integer32 (-1..2147483647)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The degree of preference calculated by the
+                 receiving BGP4 speaker for an advertised
+                 route.  A value of -1 indicates the
+                 absence of this attribute.
+
+                 Known Issues:
+                 o The BGP-4 specification uses an
+                   unsigned 32 bit number and thus this
+                   object cannot represent the full
+                   range of the protocol."
+
+
+
+        REFERENCE
+                "RFC 4271, Section 9.1.1."
+        ::= { bgp4PathAttrEntry 12 }
+
+    bgp4PathAttrBest OBJECT-TYPE
+        SYNTAX     INTEGER {
+                       false(1),-- not chosen as best route
+                       true(2) -- chosen as best route
+                   }
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "An indication of whether this route
+                 was chosen as the best BGP4 route for this
+                 destination."
+        REFERENCE
+                "RFC 4271, Section 9.1.2."
+        ::= { bgp4PathAttrEntry 13 }
+
+    bgp4PathAttrUnknown OBJECT-TYPE
+        SYNTAX     OCTET STRING (SIZE(0..255))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "One or more path attributes not understood by
+                 this BGP4 speaker.
+
+                 Path attributes are recorded in the Update Path
+                 attribute format of type, length, value.
+
+                 Size zero (0) indicates the absence of such
+                 attributes.
+
+                 Octets beyond the maximum size, if any, are not
+                 recorded by this object.
+
+                 Known Issues:
+                 o Attributes understood by this speaker, but not
+                   represented in this MIB, are unavailable to
+                   the agent."
+        REFERENCE
+                "RFC 4271, Section 5."
+        ::= { bgp4PathAttrEntry 14 }
+
+    -- Traps.
+    -- Note that in RFC 1657, bgpTraps was incorrectly
+    -- assigned a value of { bgp 7 } and each of the
+    -- traps had the bgpPeerRemoteAddr object inappropriately
+
+
+
+    -- removed from their OBJECTS clause.  The following
+    -- definitions restore the semantics of the traps as
+    -- they were initially defined in RFC 1269.
+
+    bgpNotification OBJECT IDENTIFIER ::= { bgp 0 }
+
+    bgpEstablishedNotification NOTIFICATION-TYPE
+        OBJECTS { bgpPeerRemoteAddr,
+                  bgpPeerLastError,
+                  bgpPeerState      }
+        STATUS  current
+        DESCRIPTION
+                "The bgpEstablishedNotification event is generated
+                 when the BGP FSM enters the established state.
+
+                 This Notification replaces the bgpEstablished
+                 Notification."
+        ::= { bgpNotification 1 }
+
+    bgpBackwardTransNotification NOTIFICATION-TYPE
+        OBJECTS { bgpPeerRemoteAddr,
+                  bgpPeerLastError,
+                  bgpPeerState      }
+        STATUS  current
+        DESCRIPTION
+                "The bgpBackwardTransNotification event is
+                 generated when the BGP FSM moves from a higher
+                 numbered state to a lower numbered state.
+
+                 This Notification replaces the
+                 bgpBackwardsTransition Notification."
+        ::= { bgpNotification 2 }
+
+    -- { bgp 7 } is deprecated.  Do not allocate new objects or
+    --           notifications underneath this branch.
+
+    bgpTraps        OBJECT IDENTIFIER ::= { bgp 7 } -- deprecated
+
+    bgpEstablished NOTIFICATION-TYPE
+        OBJECTS { bgpPeerLastError,
+                  bgpPeerState      }
+        STATUS  deprecated
+        DESCRIPTION
+                "The bgpEstablished event is generated when
+                 the BGP FSM enters the established state.
+
+                 This Notification has been replaced by the
+                 bgpEstablishedNotification Notification."
+
+
+
+        ::= { bgpTraps 1 }
+
+    bgpBackwardTransition NOTIFICATION-TYPE
+        OBJECTS { bgpPeerLastError,
+                  bgpPeerState      }
+        STATUS  deprecated
+        DESCRIPTION
+                "The bgpBackwardTransition event is generated
+                 when the BGP FSM moves from a higher numbered
+                 state to a lower numbered state.
+
+                 This Notification has been replaced by the
+                 bgpBackwardTransNotification Notification."
+        ::= { bgpTraps 2 }
+
+    -- Conformance information
+
+    bgp4MIBConformance OBJECT IDENTIFIER
+        ::= { bgp 8 }
+    bgp4MIBCompliances OBJECT IDENTIFIER
+                ::= { bgp4MIBConformance 1 }
+    bgp4MIBGroups      OBJECT IDENTIFIER
+        ::= { bgp4MIBConformance 2 }
+
+    -- Compliance statements
+
+    bgp4MIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which
+                 implement the BGP4 mib."
+        MODULE  -- this module
+            MANDATORY-GROUPS { bgp4MIBGlobalsGroup,
+                               bgp4MIBPeerGroup,
+                               bgp4MIBPathAttrGroup }
+            GROUP bgp4MIBNotificationGroup
+            DESCRIPTION
+                    "Implementation of BGP Notifications are
+                     completely optional in this MIB."
+        ::= { bgp4MIBCompliances 1 }
+
+    bgp4MIBDeprecatedCompliances MODULE-COMPLIANCE
+        STATUS  deprecated
+        DESCRIPTION
+                "The compliance statement documenting deprecated
+                 objects in the BGP4 mib."
+        MODULE  -- this module
+            GROUP bgp4MIBTrapGroup
+
+
+
+            DESCRIPTION
+                "Group containing TRAP objects that were
+                 improperly converted from SMIv1 in RFC 1657.
+                 The proper semantics have been restored
+                 with the objects in bgp4MIBNotificationGroup."
+        ::= { bgp4MIBCompliances 2 }
+
+    bgp4MIBObsoleteCompliances MODULE-COMPLIANCE
+        STATUS  obsolete
+        DESCRIPTION
+                "The compliance statement documenting obsolete
+                 objects in the BGP4 mib."
+        MODULE  -- this module
+            GROUP bgpRcvdPathAttrGroup
+            DESCRIPTION
+                "Group containing objects relevant to BGP-3
+                 and earlier objects."
+        ::= { bgp4MIBCompliances 3 }
+
+    -- Units of conformance
+
+    bgp4MIBGlobalsGroup OBJECT-GROUP
+        OBJECTS { bgpVersion,
+                  bgpLocalAs,
+                  bgpIdentifier }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing
+                 information on global BGP state."
+        ::= { bgp4MIBGroups 1 }
+
+    bgp4MIBPeerGroup OBJECT-GROUP
+        OBJECTS { bgpPeerIdentifier,
+                  bgpPeerState,
+                  bgpPeerAdminStatus,
+                  bgpPeerNegotiatedVersion,
+                  bgpPeerLocalAddr,
+                  bgpPeerLocalPort,
+                  bgpPeerRemoteAddr,
+                  bgpPeerRemotePort,
+                  bgpPeerRemoteAs,
+                  bgpPeerInUpdates,
+                  bgpPeerOutUpdates,
+                  bgpPeerInTotalMessages,
+                  bgpPeerOutTotalMessages,
+                  bgpPeerLastError,
+                  bgpPeerFsmEstablishedTransitions,
+                  bgpPeerFsmEstablishedTime,
+
+
+
+                  bgpPeerConnectRetryInterval,
+                  bgpPeerHoldTime,
+                  bgpPeerKeepAlive,
+                  bgpPeerHoldTimeConfigured,
+                  bgpPeerKeepAliveConfigured,
+                  bgpPeerMinASOriginationInterval,
+                  bgpPeerMinRouteAdvertisementInterval,
+                  bgpPeerInUpdateElapsedTime }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects for managing
+                 BGP peers."
+        ::= { bgp4MIBGroups 2 }
+
+    bgpRcvdPathAttrGroup OBJECT-GROUP
+        OBJECTS { bgpPathAttrPeer,
+                  bgpPathAttrDestNetwork,
+                  bgpPathAttrOrigin,
+                  bgpPathAttrASPath,
+                  bgpPathAttrNextHop,
+                  bgpPathAttrInterASMetric }
+        STATUS  obsolete
+        DESCRIPTION
+                "A collection of objects for managing BGP-3 and
+                earlier path entries.
+
+                This conformance group, like BGP-3, is obsolete."
+        ::= { bgp4MIBGroups 3 }
+
+    bgp4MIBPathAttrGroup OBJECT-GROUP
+        OBJECTS { bgp4PathAttrPeer,
+                  bgp4PathAttrIpAddrPrefixLen,
+                  bgp4PathAttrIpAddrPrefix,
+                  bgp4PathAttrOrigin,
+                  bgp4PathAttrASPathSegment,
+                  bgp4PathAttrNextHop,
+                  bgp4PathAttrMultiExitDisc,
+                  bgp4PathAttrLocalPref,
+                  bgp4PathAttrAtomicAggregate,
+                  bgp4PathAttrAggregatorAS,
+                  bgp4PathAttrAggregatorAddr,
+                  bgp4PathAttrCalcLocalPref,
+                  bgp4PathAttrBest,
+                  bgp4PathAttrUnknown }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects for managing
+                 BGP path entries."
+
+
+
+        ::= { bgp4MIBGroups 4 }
+
+    bgp4MIBTrapGroup NOTIFICATION-GROUP
+        NOTIFICATIONS { bgpEstablished,
+                        bgpBackwardTransition }
+        STATUS  deprecated
+        DESCRIPTION
+                "A collection of notifications for signaling
+                 changes in BGP peer relationships.
+
+                 Obsoleted by bgp4MIBNotificationGroup"
+        ::= { bgp4MIBGroups 5 }
+
+    bgp4MIBNotificationGroup NOTIFICATION-GROUP
+        NOTIFICATIONS { bgpEstablishedNotification,
+                        bgpBackwardTransNotification }
+        STATUS current
+        DESCRIPTION
+                "A collection of notifications for signaling
+                 changes in BGP peer relationships.
+
+                 Obsoletes bgp4MIBTrapGroup."
+        ::= { bgp4MIBGroups 6 }
+
+END

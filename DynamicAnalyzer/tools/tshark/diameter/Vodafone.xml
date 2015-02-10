@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Id$ -->
+
+<application id="16777238" name="3GPP Gx" uri="http://www.ietf.org/internet-drafts/draft-ietf-aaa-diameter-cc-06.txt">
+
+	<avp name="Context-Type" code="256" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<type type-name="Unsigned32"/>
+		<enum name="PRIMARY" code="0"/>
+		<enum name="SECONDARY" code="1"/>
+	</avp>
+	<avp name="Quota-Consumption-Time" code="257" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Quota-Holding-Time" code="258" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Time-Quota-Threshold" code="259" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Radio-Access-Technology" code="260" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<type type-name="Unsigned32"/>
+		<enum name="UTRAN" code="0"/>
+		<enum name="GERAN" code="1"/>
+		<enum name="WLAN" code="2"/>
+	</avp>
+	<avp name="Reporting-Reason" code="261" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<type type-name="Unsigned32"/>
+		<enum name="THRESHOLD" code="0"/>
+		<enum name="QHT" code="1"/>
+		<enum name="FINAL" code="2"/>
+		<enum name="QUOTA_EXHAUSTED" code="3"/>
+		<enum name="VALIDITY_TIME" code="4"/>
+		<enum name="OTHER_QUOTA_TYPE" code="5"/>
+		<enum name="RATING_CONDITION_CHANGE" code="6"/>
+		<enum name="FORCED_REAUTHORISATION " code="7"/>
+	</avp>
+	<avp name="Rulebase-Id" code="262" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<type type-name="UTF8String"/>
+	</avp>
+	<avp name="Time-Of-First-Usage" code="263" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<type type-name="Time"/>
+	</avp>
+	<avp name="Time-Of-Last-Usage" code="264" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<type type-name="Time"/>
+	</avp>
+	<avp name="Trigger" code="265" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<grouped>
+			<gavp name="Trigger-Type"/>
+		</grouped>
+	</avp>
+	<avp name="Trigger-Type" code="266" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<type type-name="Unsigned32"/>
+		<enum name="CHANGE_IN_SGSN_IP_ADDRESS" code="1"/>
+		<enum name="CHANGEINQOS_ANY" code="2"/>
+		<enum name="CHANGEINLOCATION_ANY" code="3"/>
+		<enum name="CHANGEINRAT" code="4"/>
+		<enum name="CHANGEINQOS_TRAFFIC_CLASS" code="10"/>
+		<enum name="CHANGEINQOS_RELIABILITY_CLASS" code="11"/>
+		<enum name="CHANGEINQOS_DELAY_CLASS " code="12"/>
+		<enum name="CHANGEINQOS_PEAK_THROUGHPUT" code="13"/>
+		<enum name="CHANGEINQOS_PRECEDENCE_CLASS" code="14"/>
+		<enum name="CHANGEINQOS_MEAN_THROUGHPUT" code="15"/>
+		<enum name="CHANGEINQOS_MAXIMUM_BIT_RATE_FOR_UPLINK" code="16"/>
+		<enum name="CHANGEINQOS_MAXIMUM_BIT_RATE_FOR_DOWNLINK" code="17"/>
+		<enum name="CHANGEINQOS_RESIDUAL_BER" code="18"/>
+		<enum name="CHANGEINQOS_SDU_ERROR_RATIO" code="19"/>
+		<enum name="CHANGEINQOS_TRANSFER_DELAY" code="20"/>
+	</avp>
+	<avp name="User-Location-Information" code="267" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<type type-name="OctetString"/>
+	</avp>
+	<avp name="Volume-Quota-Threshold" code="268" vendor-id="Vodafone" mandatory="mustnot" vendor-bit="must">
+		<type type-name="Unsigned32"/>
+	</avp>
+
+</application>

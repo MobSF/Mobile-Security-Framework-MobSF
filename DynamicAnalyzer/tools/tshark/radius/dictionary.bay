@@ -1,0 +1,284 @@
+# -*- text -*-
+#
+#	Bay Networks
+#	http://www.baynetworks.com/
+#
+#	From MegaZone <megazone@megazone.org>, as posted to the bay-isp list.
+#	Modified for libradius by Alan DeKok <aland@ox.org>
+#
+#	$Id$
+#
+
+VENDOR		Bay-Networks			1584		# now Nortel
+
+BEGIN-VENDOR	Bay-Networks
+#	Bay Networks Extensions
+
+ATTRIBUTE	Annex-Filter				28	string
+ATTRIBUTE	Annex-CLI-Command			29	string
+ATTRIBUTE	Annex-CLI-Filter			30	string
+ATTRIBUTE	Annex-Host-Restrict			31	string
+ATTRIBUTE	Annex-Host-Allow			32	string
+ATTRIBUTE	Annex-Product-Name			33	string
+ATTRIBUTE	Annex-SW-Version			34	string
+ATTRIBUTE	Annex-Local-IP-Address			35	ipaddr
+ATTRIBUTE	Annex-Callback-Portlist			36	integer
+ATTRIBUTE	Annex-Sec-Profile-Index			37	integer
+ATTRIBUTE	Annex-Tunnel-Authen-Type		38	integer
+ATTRIBUTE	Annex-Tunnel-Authen-Mode		39	integer
+ATTRIBUTE	Annex-Authen-Servers			40	string
+ATTRIBUTE	Annex-Acct-Servers			41	string
+ATTRIBUTE	Annex-User-Server-Location		42	integer
+ATTRIBUTE	Annex-Local-Username			43	string
+ATTRIBUTE	Annex-System-Disc-Reason		44	integer
+ATTRIBUTE	Annex-Modem-Disc-Reason			45	integer
+ATTRIBUTE	Annex-Disconnect-Reason			46	integer
+ATTRIBUTE	Annex-Addr-Resolution-Protocol		47	integer
+ATTRIBUTE	Annex-Addr-Resolution-Servers		48	string
+ATTRIBUTE	Annex-Domain-Name			49	string
+ATTRIBUTE	Annex-Transmit-Speed			50	integer
+ATTRIBUTE	Annex-Receive-Speed			51	integer
+ATTRIBUTE	Annex-Input-Filter			52	string
+ATTRIBUTE	Annex-Output-Filter			53	string
+ATTRIBUTE	Annex-Primary-DNS-Server		54	ipaddr
+ATTRIBUTE	Annex-Secondary-DNS-Server		55	ipaddr
+ATTRIBUTE	Annex-Primary-NBNS-Server		56	ipaddr
+ATTRIBUTE	Annex-Secondary-NBNS-Server		57	ipaddr
+ATTRIBUTE	Annex-Syslog-Tap			58	integer
+ATTRIBUTE	Annex-Keypress-Timeout			59	integer
+ATTRIBUTE	Annex-Unauthenticated-Time		60	integer
+ATTRIBUTE	Annex-Re-CHAP-Timeout			61	integer
+ATTRIBUTE	Annex-MRRU				62	integer
+ATTRIBUTE	Annex-EDO				63	string
+# Annex R18.0 software
+ATTRIBUTE	Annex-PPP-Trace-Level			64	integer
+ATTRIBUTE	Annex-Pre-Input-Octets			65	integer
+ATTRIBUTE	Annex-Pre-Output-Octets			66	integer
+ATTRIBUTE	Annex-Pre-Input-Packets			67	integer
+ATTRIBUTE	Annex-Pre-Output-Packets		68	integer
+ATTRIBUTE	Annex-Connect-Progress			69	integer
+ATTRIBUTE	Annex-Multicast-Rate-Limit		73	integer
+ATTRIBUTE	Annex-Maximum-Call-Duration		74	integer
+ATTRIBUTE	Annex-Multilink-Id			75	integer
+ATTRIBUTE	Annex-Num-In-Multilink			76	integer
+ATTRIBUTE	Annex-Secondary-Srv-Endpoint		79	string
+ATTRIBUTE	Annex-Gwy-Selection-Mode		80	integer
+ATTRIBUTE	Annex-Logical-Channel-Number		81	integer
+ATTRIBUTE	Annex-Wan-Number			82	integer
+ATTRIBUTE	Annex-Port				83	integer
+ATTRIBUTE	Annex-Pool-Id				85	integer
+ATTRIBUTE	Annex-Compression-Protocol		86	string
+ATTRIBUTE	Annex-Transmitted-Packets		87	integer
+ATTRIBUTE	Annex-Retransmitted-Packets		88	integer
+ATTRIBUTE	Annex-Signal-to-Noise-Ratio		89	integer
+ATTRIBUTE	Annex-Retrain-Requests-Sent		90	integer
+ATTRIBUTE	Annex-Retrain-Requests-Rcvd		91	integer
+ATTRIBUTE	Annex-Rate-Reneg-Req-Sent		92	integer
+ATTRIBUTE	Annex-Rate-Reneg-Req-Rcvd		93	integer
+ATTRIBUTE	Annex-Begin-Receive-Line-Level		94	integer
+ATTRIBUTE	Annex-End-Receive-Line-Level		95	integer
+ATTRIBUTE	Annex-Begin-Modulation			96	string
+ATTRIBUTE	Annex-Error-Correction-Prot		97	string
+ATTRIBUTE	Annex-End-Modulation			98	string
+
+# Bay Router Specific Attributes
+#
+ATTRIBUTE	Annex-User-Level			100	integer
+ATTRIBUTE	Annex-Audit-Level			101	integer
+
+# Contivity
+ATTRIBUTE	CES-Group				102	string
+
+# Passport 8000 Series Specific Attributes
+#
+ATTRIBUTE	Passport-Access-Priority		192	integer
+
+VALUE	Passport-Access-Priority	None-Access		0
+VALUE	Passport-Access-Priority	Read-Only-Access	1
+VALUE	Passport-Access-Priority	L1-Read-Write-Access	2
+VALUE	Passport-Access-Priority	L2-Read-Write-Access	3
+VALUE	Passport-Access-Priority	L3-Read-Write-Access	4
+VALUE	Passport-Access-Priority	Read-Write-Access	5
+VALUE	Passport-Access-Priority	Read-Write-All-Access	6
+
+#	Annex Tunnel Authen Type Values
+
+VALUE	Annex-Tunnel-Authen-Type	none			0
+VALUE	Annex-Tunnel-Authen-Type	kmd5-128		1
+
+#	Annex Tunnel Authen Mode Values
+
+VALUE	Annex-Tunnel-Authen-Mode	none			0
+VALUE	Annex-Tunnel-Authen-Mode	prefix-suffix		1
+
+#	Annex User Server Location Values
+
+VALUE	Annex-User-Server-Location	local			1
+VALUE	Annex-User-Server-Location	remote			2
+
+#	Annex Addr Resolution Protocol Values
+
+VALUE	Annex-Addr-Resolution-Protocol	none			0
+VALUE	Annex-Addr-Resolution-Protocol	DHCP			1
+
+#	Annex System Disconnect Reason Values
+
+VALUE	Annex-System-Disc-Reason	Unknown			0
+VALUE	Annex-System-Disc-Reason	Line-disconnected	1
+VALUE	Annex-System-Disc-Reason	Dial-failed		2
+VALUE	Annex-System-Disc-Reason	WAN-manager-error	3
+VALUE	Annex-System-Disc-Reason	Disconnect-reset	4
+VALUE	Annex-System-Disc-Reason	Error-from-adm_notify	5
+VALUE	Annex-System-Disc-Reason	Modem-down-adm_notify	6
+VALUE	Annex-System-Disc-Reason	PPP-protocol-disconnect	7
+VALUE	Annex-System-Disc-Reason	Inactivity-timer	8
+VALUE	Annex-System-Disc-Reason	CLI-Hangup-command	9
+VALUE	Annex-System-Disc-Reason	CLI-last-job		10
+VALUE	Annex-System-Disc-Reason	Session-timeout		11
+VALUE	Annex-System-Disc-Reason	Slave-termination	12
+VALUE	Annex-System-Disc-Reason	Abnormal-termination	13
+VALUE	Annex-System-Disc-Reason	DCD-wait-failed		14
+VALUE	Annex-System-Disc-Reason	CLI-inactivity		15
+VALUE	Annex-System-Disc-Reason	Admin-port-reset	16
+VALUE	Annex-System-Disc-Reason	CLI-auth-failed		17
+VALUE	Annex-System-Disc-Reason	Slave-auth-failed	18
+VALUE	Annex-System-Disc-Reason	PAP-auth-failed		19
+VALUE	Annex-System-Disc-Reason	CHAP-auth-failed	20
+VALUE	Annex-System-Disc-Reason	Local-modem-reset	21
+VALUE	Annex-System-Disc-Reason	Modem-dead		22
+VALUE	Annex-System-Disc-Reason	PPP-LCP-failure		23
+VALUE	Annex-System-Disc-Reason	PPP-IPCP-failure	24
+VALUE	Annex-System-Disc-Reason	PPP-IPXCP-failure	25
+VALUE	Annex-System-Disc-Reason	PPP-ATCP-failure	26
+VALUE	Annex-System-Disc-Reason	PPP-CCP-failure		27
+VALUE	Annex-System-Disc-Reason	PPP-MP-failure		28
+VALUE	Annex-System-Disc-Reason	PPP-IPCP-timeout	29
+VALUE	Annex-System-Disc-Reason	PPP-IPXCP-timeout	30
+VALUE	Annex-System-Disc-Reason	PPP-ATCP-timeout	31
+VALUE	Annex-System-Disc-Reason	PPP-CCP-timeout		32
+VALUE	Annex-System-Disc-Reason	PPP-MP-timeout		33
+VALUE	Annex-System-Disc-Reason	PPP-init-failure	34
+VALUE	Annex-System-Disc-Reason	PPP-Unknown		35
+VALUE	Annex-System-Disc-Reason	PPP-Dialback-failed	36
+VALUE	Annex-System-Disc-Reason	PPP-Address-In-Use	37
+VALUE	Annex-System-Disc-Reason	PPP-No-device		38
+VALUE	Annex-System-Disc-Reason	PPP-Modem-hangup-rcvd	39
+VALUE	Annex-System-Disc-Reason	PPP-Hangup-rcvd		40
+VALUE	Annex-System-Disc-Reason	PPP-Termination-rcvd	41
+VALUE	Annex-System-Disc-Reason	PPP-Kill-rcvd		42
+VALUE	Annex-System-Disc-Reason	PPP-Time-rcvd		43
+VALUE	Annex-System-Disc-Reason	PPP-No-memory		44
+VALUE	Annex-System-Disc-Reason	PPP-Connection-Abort	45
+VALUE	Annex-System-Disc-Reason	PPP-VPN-LCP-failure	46
+VALUE	Annex-System-Disc-Reason	PPP-VPN-Auth-failure	47
+VALUE	Annex-System-Disc-Reason	PPP-MP-invalid-port	48
+VALUE	Annex-System-Disc-Reason	PPP-Invalid-device	49
+VALUE	Annex-System-Disc-Reason	PPP-MMP-bundle-failure	50
+VALUE	Annex-System-Disc-Reason	DVS-Registration-failure 51
+VALUE	Annex-System-Disc-Reason	DVS-Home-agent-dereg	52
+VALUE	Annex-System-Disc-Reason	DVS-Tunnel-no-renew	53
+VALUE	Annex-System-Disc-Reason	DVS-Tunnel-expired	54
+
+#	Annex Modem Disconnect Reason Values
+
+VALUE	Annex-Modem-Disc-Reason		Unknown			0
+VALUE	Annex-Modem-Disc-Reason		Local-disconnect	1
+VALUE	Annex-Modem-Disc-Reason		CD-Timer-Expired	2
+VALUE	Annex-Modem-Disc-Reason		Remote-protocol-disc	4
+VALUE	Annex-Modem-Disc-Reason		Clear-down		5
+VALUE	Annex-Modem-Disc-Reason		Long-Space-disconnect	6
+VALUE	Annex-Modem-Disc-Reason		Carrier-Lost		7
+VALUE	Annex-Modem-Disc-Reason		Modem-Retrain-Timeout	8
+
+#	Annex Connection Progress Values
+
+#VALUE	Annex-Connect-Progress		Progress-Unknown		2
+#VALUE	Annex-Connect-Progress		Call-Is-Up			10
+#VALUE	Annex-Connect-Progress		CLI-Started			40
+#VALUE	Annex-Connect-Progress		LAN-Session-Is-Up		60
+#VALUE	Annex-Connect-Progress		LCP-Negotiations-Allowed	61
+#VALUE	Annex-Connect-Progress		CCP-Negotiations-Allowed	62
+#VALUE	Annex-Connect-Progress		IPCP-Negotiations-Allowed	63
+#VALUE	Annex-Connect-Progress		LCP-Is-In-Open-State		65
+#VALUE	Annex-Connect-Progress		CCP-Is-In-Open-State		66
+#VALUE	Annex-Connect-Progress		IPCP-Is-In-Open-State		67
+#VALUE	Annex-Connect-Progress		LCP-Is-In-Closed-State		71
+#VALUE	Annex-Connect-Progress		LCP-Is-In-Stopped-State		72
+#VALUE	Annex-Connect-Progress		LCP-Is-In-Closing-State		73
+#VALUE	Annex-Connect-Progress		LCP-Is-In-Request-Sent-State	75
+#VALUE	Annex-Connect-Progress		LCP-Is-In-Ack-Recvd-State	76
+#VALUE	Annex-Connect-Progress		LCP-Is-In-Ack-Sent-State	77
+#VALUE	Annex-Connect-Progress		IPXCP-Is-In-Open-State		80
+
+#VALUE	Annex-Multicast-Client		Multicast-No	0
+#VALUE	Annex-Multicast-Client		Multicast-Yes	1
+
+#VALUE	Annex-Inbound-Precedence		Routine			0
+#VALUE	Annex-Inbound-Precedence		Priority		1
+#VALUE	Annex-Inbound-Precedence		Immediate		2
+#VALUE	Annex-Inbound-Precedence		Flash			3
+#VALUE	Annex-Inbound-Precedence		Flash-Override		4
+#VALUE	Annex-Inbound-Precedence		CRITIC/ECP		5
+#VALUE	Annex-Inbound-Precedence		Internetwork-Control	6
+#VALUE	Annex-Inbound-Precedence		Network-Control		7
+
+#VALUE   Annex-Outbound-Precedence		Routine			0
+#VALUE   Annex-Outbound-Precedence		Priority		1
+#VALUE   Annex-Outbound-Precedence		Immediate		2
+#VALUE   Annex-Outbound-Precedence		Flash			3
+#VALUE   Annex-Outbound-Precedence		Flash-Override		4
+#VALUE   Annex-Outbound-Precedence		CRITIC/ECP		5
+#VALUE   Annex-Outbound-Precedence		Internetwork-Control	6
+#VALUE   Annex-Outbound-Precedence		Network-Control		7
+
+#VALUE	Annex-Gwy-Selection-Mode		Normal		0
+#VALUE	Annex-Gwy-Selection-Mode		Backup		1
+#VALUE	Annex-Gwy-Selection-Mode		Distribution	2
+
+#VALUE	Annex-Pool-Id				Pool-One	1
+#VALUE	Annex-Pool-Id				Pool-Two	2
+#VALUE	Annex-Pool-Id				Pool-Three	3
+#VALUE	Annex-Pool-Id				Pool-Four	4
+#VALUE	Annex-Pool-Id				Pool-Five	5
+#VALUE	Annex-Pool-Id				Pool-Six	6
+
+VALUE	Annex-User-Level		Manager			2
+VALUE	Annex-User-Level		User			4
+VALUE	Annex-User-Level		Operator		8
+
+VALUE	Annex-Audit-Level		Manager			2
+VALUE	Annex-Audit-Level		User			4
+VALUE	Annex-Audit-Level		Operator		8
+
+END-VENDOR Bay-Networks
+
+#
+#	Define additional Bay Networks specific values for the main
+#	RADIUS dictionary
+#
+#	Note that '0x0630' == 1584, which is the Vendor-ID for Bay Networks.
+#	Nice design, and probably the best way of adding vendor-specific
+#	VALUE extensions to the standard RADIUS attributes.
+#
+
+VALUE	Service-Type			Annex-Authorize-Only	0x06300001
+VALUE	Service-Type			Annex-Framed-Tunnel	0x06300002
+
+VALUE	Acct-Status-Type		Annex-User-Reject	0x06300001
+VALUE	Acct-Status-Type		Annex-Call-Reject	0x06300002
+VALUE	Acct-Status-Type		Annex-IPCP-Start	0x06300003
+VALUE	Acct-Status-Type		Annex-IPXCP-Start	0x06300004
+VALUE	Acct-Status-Type		Annex-ATCP-Start	0x06300005
+VALUE	Acct-Status-Type		Annex-Accounting-Restart 0x06300006
+VALUE	Acct-Status-Type		Annex-Accounting-Shutoff 0x06300007
+VALUE	Acct-Status-Type		Annex-Tunnel-Start	0x06300008
+VALUE	Acct-Status-Type		Annex-Tunnel-Stop	0x06300009
+VALUE	Acct-Status-Type		Annex-Tunnel-Reject	0x0630000a
+VALUE	Acct-Status-Type		Annex-Tunnel-Link-Start	0x0630000b
+VALUE	Acct-Status-Type		Annex-Tunnel-Link-Stop	0x0630000c
+VALUE	Acct-Status-Type		Annex-MP-Start		0x0630000d
+VALUE	Acct-Status-Type		Annex-MP-Stop		0x0630000e
+VALUE	Acct-Status-Type		Annex-Line-Seizure	0x0630000f
+VALUE	Acct-Status-Type		Annex-Rlogin-Start	0x06300010
+VALUE	Acct-Status-Type		Annex-Rlogin-Stop	0x06300011
+

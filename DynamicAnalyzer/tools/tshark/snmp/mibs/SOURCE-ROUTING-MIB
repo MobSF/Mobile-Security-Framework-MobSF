@@ -1,0 +1,456 @@
+SOURCE-ROUTING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        Counter, Gauge
+                FROM RFC1155-SMI
+        dot1dBridge, dot1dSr
+                FROM BRIDGE-MIB
+        OBJECT-TYPE
+                FROM RFC-1212;
+
+
+
+-- groups in the SR MIB
+
+-- dot1dSr is imported from the Bridge MIB
+
+dot1dPortPair   OBJECT IDENTIFIER ::= { dot1dBridge 10 }
+
+-- the dot1dSr group
+
+-- this group is implemented by those bridges that
+-- support the source route bridging mode, including Source
+-- Routing and SRT bridges.
+
+
+dot1dSrPortTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot1dSrPortEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "A table that contains information about every
+            port that is associated with this source route
+            bridge."
+    ::= { dot1dSr 1 }
+
+dot1dSrPortEntry OBJECT-TYPE
+    SYNTAX  Dot1dSrPortEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "A list of information for each port of a source
+            route bridge."
+    INDEX   { dot1dSrPort }
+    ::= { dot1dSrPortTable 1 }
+
+Dot1dSrPortEntry ::=
+    SEQUENCE {
+        dot1dSrPort
+            INTEGER,
+        dot1dSrPortHopCount
+            INTEGER,
+        dot1dSrPortLocalSegment
+            INTEGER,
+        dot1dSrPortBridgeNum
+            INTEGER,
+        dot1dSrPortTargetSegment
+            INTEGER,
+        dot1dSrPortLargestFrame
+            INTEGER,
+        dot1dSrPortSTESpanMode
+            INTEGER,
+        dot1dSrPortSpecInFrames
+            Counter,
+        dot1dSrPortSpecOutFrames
+            Counter,
+        dot1dSrPortApeInFrames
+            Counter,
+        dot1dSrPortApeOutFrames
+            Counter,
+        dot1dSrPortSteInFrames
+            Counter,
+        dot1dSrPortSteOutFrames
+            Counter,
+        dot1dSrPortSegmentMismatchDiscards
+            Counter,
+        dot1dSrPortDuplicateSegmentDiscards
+            Counter,
+        dot1dSrPortHopCountExceededDiscards
+            Counter,
+        dot1dSrPortDupLanIdOrTreeErrors
+            Counter,
+        dot1dSrPortLanIdMismatches
+            Counter
+    }
+
+dot1dSrPort OBJECT-TYPE
+    SYNTAX  INTEGER (1..65535)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The port number of the port for which this entry
+            contains Source Route management information."
+    ::= { dot1dSrPortEntry 1 }
+
+dot1dSrPortHopCount OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The maximum number of routing descriptors allowed
+            in an All Paths or Spanning Tree Explorer frames."
+    ::= { dot1dSrPortEntry 2 }
+
+dot1dSrPortLocalSegment OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The segment number that uniquely identifies the
+            segment to which this port is connected. Current
+            source routing protocols limit this value to the
+            range: 0 through 4095. (The value 0 is used by
+            some management applications for special test
+            cases.) A value of 65535 signifies that no segment
+            number is assigned to this port."
+    ::= { dot1dSrPortEntry 3 }
+
+dot1dSrPortBridgeNum OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "A bridge number uniquely identifies a bridge when
+            more than one bridge is used to span the same two
+            segments.  Current source routing protocols limit
+            this value to the range: 0 through 15. A value of
+            65535 signifies that no bridge number is assigned
+            to this bridge."
+    ::= { dot1dSrPortEntry 4 }
+
+dot1dSrPortTargetSegment OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The segment number that corresponds to the target
+            segment this port is considered to be connected to
+            by the bridge.  Current source routing protocols
+            limit this value to the range: 0 through 4095.
+            (The value 0 is used by some management
+            applications for special test cases.) A value of
+            65535 signifies that no target segment is assigned
+            to this port."
+    ::= { dot1dSrPortEntry 5 }
+
+-- It would be nice if we could use ifMtu as the size of the
+-- largest frame, but we can't because ifMtu is defined to be
+-- the size that the (inter-)network layer can use which can
+-- differ from the MAC layer (especially if several layers of
+-- encapsulation are used).
+
+dot1dSrPortLargestFrame OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The maximum size of the INFO field (LLC and
+            above) that this port can send/receive.  It does
+            not include any MAC level (framing) octets.  The
+            value of this object is used by this bridge to
+            determine whether a modification of the
+            LargestFrame (LF, see [14]) field of the Routing
+            Control field of the Routing Information Field is
+            necessary.
+
+            64 valid values are defined by the IEEE 802.5M SRT
+            Addendum: 516, 635, 754, 873, 993, 1112, 1231,
+            1350, 1470, 1542, 1615, 1688, 1761, 1833, 1906,
+            1979, 2052, 2345, 2638, 2932, 3225, 3518, 3812,
+            4105, 4399, 4865, 5331, 5798, 6264, 6730, 7197,
+            7663, 8130, 8539, 8949, 9358, 9768, 10178, 10587,
+            10997, 11407, 12199, 12992, 13785, 14578, 15370,
+            16163, 16956, 17749, 20730, 23711, 26693, 29674,
+            32655, 35637, 38618, 41600, 44591, 47583, 50575,
+            53567, 56559, 59551, and 65535.
+
+            An illegal value will not be accepted by the
+            bridge."
+    ::= { dot1dSrPortEntry 6 }
+
+dot1dSrPortSTESpanMode OBJECT-TYPE
+    SYNTAX  INTEGER {
+                auto-span(1),
+                disabled(2),
+                forced(3)
+            }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "Determines how this port behaves when presented
+            with a Spanning Tree Explorer frame.  The value
+            'disabled(2)' indicates that the port will not
+            accept or send Spanning Tree Explorer packets; any
+            STE packets received will be silently discarded.
+            The value 'forced(3)' indicates the port will
+            always accept and propagate Spanning Tree Explorer
+            frames.  This allows a manually configured
+            Spanning Tree for this class of packet to be
+            configured.  Note that unlike transparent
+            bridging, this is not catastrophic to the network
+            if there are loops.  The value 'auto-span(1)' can
+            only be returned by a bridge that both implements
+            the Spanning Tree Protocol and has use of the
+            protocol enabled on this port. The behavior of the
+            port for Spanning Tree Explorer frames is
+            determined by the state of dot1dStpPortState.  If
+            the port is in the 'forwarding' state, the frame
+            will be accepted or propagated.  Otherwise, it
+            will be silently discarded."
+    ::= { dot1dSrPortEntry 7 }
+
+dot1dSrPortSpecInFrames OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The number of Specifically Routed frames, also
+            referred to as Source Routed Frames, that have
+            been received from this port's segment."
+    ::= { dot1dSrPortEntry 8 }
+
+dot1dSrPortSpecOutFrames OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The number of Specifically Routed frames, also
+            referred to as Source Routed Frames, that this
+            port has transmitted on its segment."
+    ::= { dot1dSrPortEntry 9 }
+
+dot1dSrPortApeInFrames OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The number of All Paths Explorer frames, also
+            referred to as All Routes Explorer frames, that
+            have been received by this port from its segment."
+    ::= { dot1dSrPortEntry 10 }
+
+dot1dSrPortApeOutFrames OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The number of all Paths Explorer Frames, also
+            referred to as All Routes Explorer frames, that
+            have been transmitted by this port on its
+            segment."
+    ::= { dot1dSrPortEntry 11 }
+
+dot1dSrPortSteInFrames OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The number of spanning tree explorer frames that
+            have been received by this port from its segment."
+    ::= { dot1dSrPortEntry 12 }
+
+dot1dSrPortSteOutFrames OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The number of spanning tree explorer frames that
+            have been transmitted by this port on its
+            segment."
+    ::= { dot1dSrPortEntry 13 }
+
+dot1dSrPortSegmentMismatchDiscards OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The number of explorer frames that have been
+            discarded by this port because the routing
+            descriptor field contained an invalid adjacent
+            segment value."
+    ::= { dot1dSrPortEntry 14 }
+
+dot1dSrPortDuplicateSegmentDiscards OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The number of frames that have been discarded by
+            this port because the routing descriptor field
+            contained a duplicate segment identifier."
+    ::= { dot1dSrPortEntry 15 }
+
+dot1dSrPortHopCountExceededDiscards OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The number of explorer frames that have been
+            discarded by this port because the Routing
+            Information Field has exceeded the maximum route
+            descriptor length."
+    ::= { dot1dSrPortEntry 16 }
+
+dot1dSrPortDupLanIdOrTreeErrors OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The number of duplicate LAN IDs or Tree errors.
+            This helps in detection of problems in networks
+            containing older IBM Source Routing Bridges."
+    ::= { dot1dSrPortEntry 17 }
+
+dot1dSrPortLanIdMismatches OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The number of ARE and STE frames that were
+            discarded because the last LAN ID in the routing
+            information field did not equal the LAN-in ID.
+            This error can occur in implementations which do
+            only a LAN-in ID and Bridge Number check instead
+            of a LAN-in ID, Bridge Number, and LAN-out ID
+            check before they forward broadcast frames."
+    ::= { dot1dSrPortEntry 18 }
+
+
+-- scalar object in dot1dSr
+
+dot1dSrBridgeLfMode OBJECT-TYPE
+    SYNTAX  INTEGER {
+                mode3(1),
+                mode6(2)
+            }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "Indicates whether the bridge operates using older
+            3 bit length negotiation fields or the newer 6 bit
+            length field in its RIF."
+    ::= { dot1dSr 2 }
+
+
+-- The Port-Pair Database
+
+-- Implementation of this group is optional.
+
+-- This group is implemented by those bridges that support
+-- the direct multiport model of the source route bridging
+-- mode as defined in the IEEE 802.5 SRT Addendum to
+-- 802.1d.
+
+-- Bridges implementing this group may report 65535 for
+-- dot1dSrPortBridgeNumber and dot1dSrPortTargetSegment,
+-- indicating that those objects are not applicable.
+
+dot1dPortPairTableSize OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The total number of entries in the Bridge Port
+            Pair Database."
+    ::= { dot1dPortPair 1 }
+
+
+-- the Bridge Port-Pair table
+
+-- this table represents port pairs within a bridge forming
+-- a unique bridge path, as defined in the IEEE 802.5M SRT
+-- Addendum.
+
+dot1dPortPairTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot1dPortPairEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "A table that contains information about every
+            port pair database entity associated with this
+            source routing bridge."
+    ::= { dot1dPortPair 2 }
+
+dot1dPortPairEntry OBJECT-TYPE
+    SYNTAX  Dot1dPortPairEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "A list of information for each port pair entity
+            of a bridge."
+    INDEX   { dot1dPortPairLowPort, dot1dPortPairHighPort }
+    ::= { dot1dPortPairTable 1 }
+
+Dot1dPortPairEntry ::=
+    SEQUENCE {
+        dot1dPortPairLowPort
+            INTEGER,
+        dot1dPortPairHighPort
+            INTEGER,
+        dot1dPortPairBridgeNum
+            INTEGER,
+        dot1dPortPairBridgeState
+            INTEGER
+    }
+
+dot1dPortPairLowPort OBJECT-TYPE
+    SYNTAX  INTEGER (1..65535)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The port number of the lower numbered port for
+            which this entry contains port pair database
+            information."
+    ::= { dot1dPortPairEntry 1 }
+
+dot1dPortPairHighPort OBJECT-TYPE
+    SYNTAX  INTEGER (1..65535)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The port number of the higher numbered port for
+            which this entry contains port pair database
+            information."
+    ::= { dot1dPortPairEntry 2 }
+
+dot1dPortPairBridgeNum OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "A bridge number that uniquely identifies the path
+            provided by this source routing bridge between the
+            segments connected to dot1dPortPairLowPort and
+            dot1dPortPairHighPort.  The purpose of bridge
+            number is to disambiguate between multiple paths
+            connecting the same two LANs."
+    ::= { dot1dPortPairEntry 3 }
+
+dot1dPortPairBridgeState OBJECT-TYPE
+    SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2),
+                invalid(3)
+            }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The state of dot1dPortPairBridgeNum.  Writing
+            'invalid(3)' to this object removes the
+            corresponding entry."
+    ::= { dot1dPortPairEntry 4 }
+
+
+
+
+END

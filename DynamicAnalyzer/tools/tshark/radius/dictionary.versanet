@@ -1,0 +1,56 @@
+# -*- text -*-
+#
+# dictionary.versanet Vendor specfic attributes for versanet
+#
+#
+#    VersaNet Communications, Inc.
+#     Http://www.versa-net.com
+#
+#
+#Versanet add Vendor specific terminal cause in our radius group.
+#You can follow this to set it in NAS box.
+#
+#          >> gr radius
+#          >> sh
+#          >> set 34 23
+#          >> co
+#
+#This will let our unit transfer every detail terminal cause
+#information to Redius server's accounting log file and
+#save as "Vendor Specific=Terminate Cause".
+#
+# Version:   @(#)dictionary.versanet 1.00 22-Jul-1999 support@versanetcomm.com
+#
+#	$Id$
+#
+
+VENDOR		Versanet			2180
+
+BEGIN-VENDOR	Versanet
+
+ATTRIBUTE	Versanet-Termination-Cause		1	integer
+
+VALUE	Versanet-Termination-Cause	Normal-Hangup-No-Error-Occurred 0
+VALUE	Versanet-Termination-Cause	Call-Waiting-Caused-Disconnect 3
+VALUE	Versanet-Termination-Cause	Physical-Carrier-Loss	4
+VALUE	Versanet-Termination-Cause	No-err-correction-at-other-end 5
+VALUE	Versanet-Termination-Cause	No-resp-to-feature-negotiation 6
+VALUE	Versanet-Termination-Cause	1st-modem-async-only-2nd-sync 7
+VALUE	Versanet-Termination-Cause	No-framing-technique-in-common 8
+VALUE	Versanet-Termination-Cause	No-protocol-in-common	9
+VALUE	Versanet-Termination-Cause	Bad-resp-to-feature-negotiation 10
+VALUE	Versanet-Termination-Cause	No-sync-info-from-remote-modem 11
+VALUE	Versanet-Termination-Cause	Normal-Hangup-by-Remote-modem 12
+VALUE	Versanet-Termination-Cause	Retransmission-limit-reached 13
+VALUE	Versanet-Termination-Cause	Protocol-violation-occurred 14
+VALUE	Versanet-Termination-Cause	Lost-DTR		15
+VALUE	Versanet-Termination-Cause	Received-GSTN-cleardown	16
+VALUE	Versanet-Termination-Cause	Inactivity-timeout	17
+VALUE	Versanet-Termination-Cause	Speed-not-supported	18
+VALUE	Versanet-Termination-Cause	Long-space-disconnect	19
+VALUE	Versanet-Termination-Cause	Key-abort-disconnect	20
+VALUE	Versanet-Termination-Cause	Clears-previous-disc-reason 21
+VALUE	Versanet-Termination-Cause	No-connection-established 22
+VALUE	Versanet-Termination-Cause	Disconnect-after-three-retrains 23
+
+END-VENDOR	Versanet

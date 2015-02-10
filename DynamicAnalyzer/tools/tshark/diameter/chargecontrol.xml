@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+
+
+<application id="4" name="Diameter Credit Control Application" uri="http://www.ietf.org/rfc/rfc4006.txt">
+
+	<command name="Credit-Control" code="272" vendor-id="None"/>
+
+	<!-- ************************* DCCA AVPs ************************ -->
+	<!-- This list is not complete yet -->
+	<avp name="CC-Correlation-Id" code="411" mandatory="may" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="OctetString"/>
+	</avp>
+	<avp name="CC-Input-Octets" code="412" mandatory="must">
+		<type type-name="Unsigned64"/>
+	</avp>
+	<avp name="CC-Money" code="413" mandatory="must">
+		<grouped>
+			<gavp name="Unit-Value"/>
+			<gavp name="Currency-Code"/>
+		</grouped>
+	</avp>
+
+	<avp name="CC-Output-Octets" code="414" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Unsigned64"/>
+	</avp>
+	<avp name="CC-Request-Number" code="415" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="CC-Request-Type" code="416" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Unsigned32"/>
+		<enum name="INITIAL_REQUEST"     code="1"/>
+		<enum name="UPDATE_REQUEST"      code="2"/>
+		<enum name="TERMINATION_REQUEST" code="3"/>
+		<enum name="EVENT_REQUEST"       code="4"/>
+	</avp>
+	<avp name="CC-Service-Specific-Units" code="417" mandatory="must">
+		<type type-name="Unsigned64"/>
+	</avp>
+	<avp name="CC-Session-Failover" code="418" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Enumerated"/>
+		<enum name="FAILOVER_NOT_SUPPORTED" code="0"/>
+		<enum name="FAILOVER_SUPPORTED" code="1"/>
+	</avp>
+	<avp name="CC-Sub-Session-Id" code="419" mandatory="must">
+		<type type-name="Unsigned64"/>
+	</avp>
+	<avp name="CC-Time" code="420" mandatory="must">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="CC-Total-Octets" code="421" mandatory="must">
+		<type type-name="Unsigned64"/>
+	</avp>
+	<avp name="Check-Balance-Result" code="422" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Enumerated"/>
+		<enum name="ENOUGH_CREDIT" code="0"/>
+		<enum name="NO_CREDIT" code="1"/>
+	</avp>
+	<avp name="Cost-Information" code="423" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<grouped>
+			<gavp name="Unit-Value"/>
+			<gavp name="Currency-Code"/>
+			<gavp name="Cost-Unit"/>
+		</grouped>
+	</avp>
+	<avp name="Cost-Unit" code="424" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="UTF8String"/>
+	</avp>
+	<avp name="Currency-Code" code="425" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Credit-Control" code="426" mandatory="must">
+		<type type-name="Enumerated"/>
+		<enum name="CREDIT_AUTHORIZATION" code="0"/>
+		<enum name="RE_AUTHORIZATION" code="1"/>
+	</avp>
+	<avp name="Credit-Control-Failure-Handling" code="427" mandatory="must">
+		<type type-name="Enumerated"/>
+		<enum name="TERMINATE" code="0"/>
+		<enum name="CONTINUE" code="1"/>
+		<enum name="RETRY_AND_TERMINATE" code="2"/>
+	</avp>
+	<avp name="Direct-Debiting-Failure-Handling" code="428" mandatory="must">
+		<type type-name="Enumerated"/>
+		<enum name="CONTINUE" code="1"/>
+		<enum name="TERMINATE_OR_BUFFER" code="0"/>
+	</avp>
+	<avp name="Exponent" code="429" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Integer32"/>
+	</avp>
+	<avp name="Final-Unit-Indication" code="430" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<grouped>
+			<gavp name="Final-Unit-Action"/>
+			<gavp name="Restriction-Filter-Rule"/>
+			<gavp name="Filter-Id"/>
+			<gavp name="Redirect-Server"/>
+		</grouped>
+	</avp>
+	<avp name="Granted-Service-Unit" code="431" mandatory="must">
+		<grouped>
+			<gavp name="Tariff-Time-Change"/>
+			<gavp name="CC-Time"/>
+			<gavp name="CC-Money"/>
+			<gavp name="CC-Total-Octets"/>
+			<gavp name="CC-Input-Octets"/>
+			<gavp name="CC-output-Octets"/>
+			<gavp name="CC-Service-Specific-Units"/>
+		</grouped>
+	</avp>
+	<avp name="Rating-Group" code="432" mandatory="must">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Redirect-Address-Type" code="433" mandatory="must">
+		<type type-name="Enumerated"/>
+		<enum name="IPV6_ADDRESS" code="1"/>
+		<enum name="SIP_URI" code="3"/>
+		<enum name="URL" code="2"/>
+		<enum name="IPV4_ADDRESS" code="0"/>
+	</avp>
+	<avp name="Redirect-Server" code="434" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<grouped>
+			<gavp name="Redirect-Address-Type"/>
+			<gavp name="Redirect-Server-Address"/>
+		</grouped>
+	</avp>
+	<avp name="Redirect-Server-Address" code="435" mandatory="must">
+		<type type-name="UTF8String"/>
+	</avp>
+	<avp name="Requested-Action" code="436" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Unsigned32"/>
+		<enum name="DIRECT_DEBITING"  code="0"/>
+		<enum name="REFUND_ACCOUNT"   code="1"/>
+		<enum name="CHECK_BALANCE"    code="2"/>
+		<enum name="PRICE_ENQUIRY"    code="3"/>
+	</avp>
+	<avp name="Requested-Service-Unit" code="437" mandatory="must">
+		<grouped>
+			<gavp name="CC-Time"/>
+			<gavp name="CC-Money"/>
+			<gavp name="CC-Total-Octets"/>
+			<gavp name="CC-Input-Octets"/>
+			<gavp name="CC-output-Octets"/>
+			<gavp name="CC-Service-Specific-Units"/>
+		</grouped>
+	</avp>
+	<avp name="Restricted-Filter-Rule" code="438" mandatory="must">
+		<type type-name="IPFilterRule"/>
+	</avp>
+	<avp name="Service-Identifier" code="439" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Service-Parameter-Info" code="440" mandatory="may" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<grouped>
+			<gavp name="Service-Parameter-Type"/>
+			<gavp name="Service-Parameter-Value"/>
+		</grouped>
+	</avp>
+	<avp name="Service-Parameter-Type" code="441" mandatory="may" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Unsigned32"/>
+		<!-- This field is vendor defined. -->
+	</avp>
+	<avp name="Service-Parameter-Value" code="442" mandatory="may" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="OctetString"/>
+	</avp>
+	<avp name="Subscription-Id" code="443" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<grouped>
+			<gavp name="Subscription-Id-Data"/>
+			<gavp name="Subscription-Id-Type"/>
+		</grouped>
+	</avp>
+	<avp name="Subscription-Id-Data" code="444" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="UTF8String"/>
+	</avp>
+	<avp name="Unit-Value" code="445" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<grouped>
+			<gavp name="Value-Digits"/>
+			<gavp name="Exponent"/>
+		</grouped>
+	</avp>
+	<avp name="Used-Service-Unit" code="446" mandatory="must">
+		<grouped>
+			<gavp name="Tariff-Change-Usage"/>
+			<gavp name="CC-Time"/>
+			<gavp name="CC-Money"/>
+			<gavp name="CC-Total-Octets"/>
+			<gavp name="CC-Input-Octets"/>
+			<gavp name="CC-output-Octets"/>
+			<gavp name="CC-Service-Specific-Units"/>
+		</grouped>
+	</avp>
+	<avp name="Value-Digits" code="447" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Integer64"/>
+	</avp>
+	<avp name="Validity-Time" code="448" mandatory="must">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Final-Unit-Action" code="449" mandatory="must">
+		<type type-name="Enumerated"/>
+		<enum name="TERMINATE" code="0"/>
+		<enum name="REDIRECT" code="1"/>
+		<enum name="RESTRICT_ACCESS" code="2"/>
+	</avp>
+	<avp name="Subscription-Id-Type" code="450" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Unsigned32"/>
+		<enum name="END_USER_E164"    code="0"/>
+		<enum name="END_USER_IMSI"    code="1"/>
+		<enum name="END_USER_SIP_URI" code="2"/>
+		<enum name="END_USER_NAI"     code="3"/>
+		<enum name="END_USER_PRIVATE" code="4"/>
+	</avp>
+	<avp name="Tariff-Time-Change" code="451" mandatory="must">
+		<type type-name="Time"/>
+	</avp>
+	<avp name="Tariff-Change-Usage" code="452" mandatory="must">
+		<type type-name="Enumerated"/>
+		<enum name="UNIT_AFTER_TARIFF_CHANGE" code="1"/>
+		<enum name="UNIT_INDETERMINATE" code="2"/>
+		<enum name="UNIT_BEFORE_TARIFF_CHANGE" code="0"/>
+	</avp>
+	<avp name="G-S-U-Pool-Identifier" code="453" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="CC-Unit-Type" code="454" mandatory="must">
+		<type type-name="Enumerated"/>
+		<enum name="TIME" code="0"/>
+		<enum name="MONEY" code="1"/>
+		<enum name="TOTAL-OCTETS" code="2"/>
+		<enum name="OUTPUT-OCTETS" code="4"/>
+		<enum name="INPUT-OCTETS" code="3"/>
+		<enum name="SERVICE-SPECIFIC-UNITS" code="5"/>
+	</avp>
+	<avp name="Multiple-Services-Indicator" code="455" mandatory="must">
+		<type type-name="Enumerated"/>
+		<enum name="MULTIPLE_SERVICES_NOT_SUPPORTED" code="0"/>
+		<enum name="MULTIPLE_SERVICES_SUPPORTED" code="1"/>
+	</avp>
+	<avp name="Multiple-Services-Credit-Control" code="456" mandatory="must">
+		<grouped>
+			<gavp name="Granted-Service-Unit"/>
+			<gavp name="Requested-Service-Unit"/>
+			<gavp name="Used-Service-Unit"/>
+			<gavp name="Tariff-Change-Usage"/>
+			<gavp name="Service-Identifier"/>
+			<gavp name="Rating-Group"/>
+			<gavp name="G-S-U-Pool-Reference"/>
+			<gavp name="Validity-Time"/>
+			<gavp name="Result-Code"/>
+			<gavp name="Final-Unit-Indication"/>
+		</grouped>
+	</avp>
+	<avp name="G-S-U-Pool-Reference" code="457" mandatory="must">
+		<grouped>
+			<gavp name="G-S-U-Pool-Identifier"/>
+			<gavp name="CC-Unit-Type"/>
+			<gavp name="Unit-Value"/>
+		</grouped>
+	</avp>
+	<avp name="User-Equipment-Info" code="458" mandatory="may">
+		<grouped>
+			<gavp name="User-Equipment-Info-Type"/>
+			<gavp name="User-Equipment-Info-Value"/>
+		</grouped>
+	</avp>
+	<avp name="User-Equipment-Info-Type" code="459" mandatory="may">
+		<type type-name="Enumerated"/>
+		<enum name="IMEISV" code="0"/>
+		<enum name="MAC" code="1"/>
+		<enum name="EUI64" code="2"/>
+		<enum name="MODIFIED_EUI64" code="3"/>
+	</avp>
+	<avp name="User-Equipment-Info-Value" code="460" mandatory="may">
+		<type type-name="OctetString"/>
+	</avp>
+	<avp name="Service-Context-Id" code="461" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="mustnot">
+		<type type-name="UTF8String"/>
+	</avp>
+
+</application>

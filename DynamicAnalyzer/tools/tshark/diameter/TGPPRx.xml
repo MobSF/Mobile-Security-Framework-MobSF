@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+
+    <application id="16777236" name="3GPP Rx" uri="http://www.3gpp.org/ftp/Specs/html-info/29214.htm">
+        
+    <!-- ************************** Rx AVPS ********************* -->
+		<!-- 3GPP TS 29.214 V7.5.0 (2008-05)                          -->
+		<!--    AVP as defined in Section 5.3                         -->
+<!--
+From 3GPP TS 29.214 version 7.5.0 Release 7:
+Table 5.3.1 describes the Diameter AVPs defined for the Rx interface protocol, 
+their AVP Code values, types, possible flag values and whether or not the AVP 
+may be encrypted. The Vendor-Id header of all AVPs defined in the present document
+shall be set to 3GPP (10415).
+NOTE: Most of these AVPs have already been defined in 3GPP TS 29.209 [5] for Rel-6.
+Their definition is based on the one used for Rel-6 with some possible modifications
+to be applied to the Rel-7 protocols.
+
+Wireshark:
+AVP 500 - 523
+Is defined in gqpolicy.xml
+-->
+
+    <avp name="Codec-Data AVP" code="524" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="yes">
+       <type type-name="UTF8String" /> 
+    </avp>
+    
+    <avp name="Service-URN" code="525" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="yes">
+       <type type-name="OctetString" /> 
+    </avp>
+
+    <avp name="Acceptable-Service-Info" code="526" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="yes">
+       <grouped> 
+          <gavp name="Media-Component-Description"/>
+          <gavp name="Max-Requested-Bandwidth-UL"/>
+          <gavp name="Max-Requested-Bandwidth-DL"/>
+       </grouped> 
+    </avp>
+
+    <avp name="Service-Info-Status" code="527" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="yes">
+       <type type-name="Enumerated" /> 
+          <enum name="FINAL_SERVICE_INFORMATION" code="0"/>
+          <enum name="PRELIMINARY_SERVICE_INFORMATION" code="1"/>
+    </avp>
+      <avp name="MPS-Identifier" code="528" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="yes">
+        <type type-name="OctetString" />
+      </avp>
+      <!--
+529 AF-Signalling-Protocol Enumerated
+530 Sponsored-Connectivity-Data Grouped
+-->
+      <avp name="Sponsor-Identity" code="531" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="yes">
+        <type type-name="OctetString" />
+      </avp>
+      <avp name="Application-Service-Provider-Identity" code="532" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="yes">
+        <type type-name="OctetString" />
+      </avp>
+      <!-- ************************ END Rx AVPS ******************* -->
+
+    </application>

@@ -1,0 +1,410 @@
+SFLOW-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+
+MODULE-IDENTITY, OBJECT-TYPE, Integer32, enterprises
+        FROM SNMPv2-SMI
+SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB
+OwnerString
+        FROM RMON-MIB
+InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF;
+
+sFlowMIB  MODULE-IDENTITY
+  LAST-UPDATED "200105150000Z"   -- May 15, 2001
+  ORGANIZATION "InMon Corp."
+  CONTACT-INFO
+
+
+
+         "Peter Phaal
+          InMon Corp.
+          http://www.inmon.com/
+
+          Tel:  +1-415-661-6343
+          Email: peter_phaal@inmon.com"
+  DESCRIPTION
+          "The MIB module for managing the generation and transportation
+           of sFlow data records."
+
+  --
+  -- Revision History
+  --
+  REVISION    "200105150000Z"     -- May 15, 2001
+  DESCRIPTION
+          "Version 1.2
+
+           Brings MIB into SMI v2 compliance."
+
+  REVISION    "200105010000Z"      -- May 1, 2001
+  DESCRIPTION
+           "Version 1.1
+
+            Adds sFlowDatagramVersion."
+  ::= { enterprises 4300 1 }
+
+sFlowAgent OBJECT IDENTIFIER ::= { sFlowMIB 1 }
+
+sFlowVersion OBJECT-TYPE
+     SYNTAX      SnmpAdminString
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+       "Uniquely identifies the version and implementation of this MIB.
+        The version string must have the following structure:
+           <MIB Version>;<Organization>;<Software Revision>
+        where:
+           <MIB Version>  must be '1.2', the version of this MIB.
+           <Organization> the name of the organization responsible
+                            for the agent implementation.
+           <Revision>     the specific software build of this agent.
+
+        As an example, the string '1.2;InMon Corp.;2.1.1' indicates
+        that this agent implements version '1.2' of the SFLOW MIB, that
+        it was developed by 'InMon Corp.' and that the software build
+        is '2.1.1'.
+
+        The MIB Version will change with each revision of the SFLOW
+
+
+
+        MIB.
+
+        Management entities must check the MIB Version and not attempt
+        to manage agents with MIB Versions greater than that for which
+        they were designed.
+
+        Note: The sFlow Datagram Format has an independent version
+              number which may change independently from <MIB Version>.
+              <MIB Version> applies to the structure and semantics of
+              the SFLOW MIB only."
+     DEFVAL { "1.2;;" }
+     ::= { sFlowAgent 1 }
+
+sFlowAgentAddressType OBJECT-TYPE
+     SYNTAX      InetAddressType
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+       "The address type of the address associated with this agent.
+        Only ipv4 and ipv6 types are supported."
+     ::= { sFlowAgent 2 }
+
+sFlowAgentAddress OBJECT-TYPE
+     SYNTAX      InetAddress
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+       "The IP address associated with this agent.  In the case of a
+        multi-homed agent, this should be the loopback address of the
+        agent.  The sFlowAgent address must provide SNMP connectivity
+        to the agent.  The address should be an invariant that does not
+        change as interfaces are reconfigured, enabled, disabled,
+        added or removed.  A manager should be able to use the
+        sFlowAgentAddress as a unique key that will identify this
+        agent over extended periods of time so that a history can
+        be maintained."
+    ::= { sFlowAgent 3 }
+
+sFlowTable OBJECT-TYPE
+     SYNTAX      SEQUENCE OF SFlowEntry
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+       "A table of the sFlow samplers within a device."
+     ::= { sFlowAgent 4 }
+
+sFlowEntry OBJECT-TYPE
+     SYNTAX      SFlowEntry
+
+
+
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+       "Attributes of an sFlow sampler."
+     INDEX { sFlowDataSource }
+     ::= { sFlowTable 1 }
+
+SFlowEntry ::= SEQUENCE {
+     sFlowDataSource               OBJECT IDENTIFIER,
+     sFlowOwner                    OwnerString,
+     sFlowTimeout                  Integer32,
+     sFlowPacketSamplingRate       Integer32,
+     sFlowCounterSamplingInterval  Integer32,
+     sFlowMaximumHeaderSize        Integer32,
+     sFlowMaximumDatagramSize      Integer32,
+     sFlowCollectorAddressType     InetAddressType,
+     sFlowCollectorAddress         InetAddress,
+     sFlowCollectorPort            Integer32,
+     sFlowDatagramVersion          Integer32
+}
+
+sFlowDataSource OBJECT-TYPE
+     SYNTAX      OBJECT IDENTIFIER
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+       "Identifies the source of the data for the sFlow sampler.
+       The following data source types are currently defined:
+
+       - ifIndex.<I>
+       DataSources of this traditional form are called 'port-based'.
+       Ideally the sampling entity will perform sampling on all flows
+       originating from or destined to the specified interface.
+       However, if the switch architecture only permits input or
+       output sampling then the sampling agent is permitted to only
+       sample input flows input or output flows.  Each packet must
+       only be considered once for sampling, irrespective of the
+       number of ports it will be forwarded to.
+
+       Note: Port 0 is used to indicate that all ports on the device
+             are represented by a single data source.
+             - sFlowPacketSamplingRate applies to all ports on the
+               device capable of packet sampling.
+             - sFlowCounterSamplingInterval applies to all ports.
+
+       - smonVlanDataSource.<V>
+       A dataSource of this form refers to a 'Packet-based VLAN'
+       and is called a 'VLAN-based' dataSource.  <V> is the VLAN
+
+
+
+       ID as defined by the IEEE 802.1Q standard.  The
+       value is between 1 and 4094 inclusive, and it represents
+       an 802.1Q VLAN-ID with global scope within a given
+       bridged domain.
+       Sampling is performed on all packets received that are part
+       of the specified VLAN (no matter which port they arrived on).
+       Each packet will only be considered once for sampling,
+       irrespective of the number of ports it will be forwarded to.
+
+       - entPhysicalEntry.<N>
+       A dataSource of this form refers to a physical entity within
+       the agent (e.g., entPhysicalClass = backplane(4)) and is called
+       an 'entity-based' dataSource.
+       Sampling is performed on all packets entering the resource (e.g.
+       If the backplane is being sampled, all packets transmitted onto
+       the backplane will be considered as single candidates for
+       sampling irrespective of the number of ports they ultimately
+       reach).
+
+       Note: Since each DataSource operates independently, a packet
+             that crosses multiple DataSources may generate multiple
+             flow records."
+     ::= { sFlowEntry 1 }
+
+sFlowOwner OBJECT-TYPE
+     SYNTAX      OwnerString
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+       "The entity making use of this sFlow sampler.  The empty string
+        indicates that the sFlow sampler is currently unclaimed.
+        An entity wishing to claim an sFlow sampler must make sure
+        that the sampler is unclaimed before trying to claim it.
+        The sampler is claimed by setting the owner string to identify
+        the entity claiming the sampler.  The sampler must be claimed
+        before any changes can be made to other sampler objects.
+
+        In order to avoid a race condition, the entity taking control
+        of the sampler must set both the owner and a value for
+        sFlowTimeout in the same SNMP set request.
+
+        When a management entity is finished using the sampler,
+        it should set its value back to unclaimed.  The agent
+        must restore all other entities this row to their
+        default values when the owner is set to unclaimed.
+
+        This mechanism provides no enforcement and relies on the
+        cooperation of management entities in order to ensure that
+
+
+
+        competition for a sampler is fairly resolved."
+     DEFVAL { "" }
+     ::= { sFlowEntry 2 }
+
+sFlowTimeout OBJECT-TYPE
+     SYNTAX      Integer32
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+       "The time (in seconds) remaining before the sampler is released
+        and stops sampling.  When set, the owner establishes control
+        for the specified period.  When read, the remaining time in the
+        interval is returned.
+
+        A management entity wanting to maintain control of the sampler
+        is responsible for setting a new value before the old one
+        expires.
+
+        When the interval expires, the agent is responsible for
+        restoring all other entities in this row to their default
+        values."
+     DEFVAL { 0 }
+     ::= { sFlowEntry 3 }
+
+sFlowPacketSamplingRate OBJECT-TYPE
+     SYNTAX      Integer32
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+       "The statistical sampling rate for packet sampling from this
+        source.
+
+        Set to N to sample 1/Nth of the packets in the monitored flows.
+        An agent should choose its own algorithm introduce variance
+        into the sampling so that exactly every Nth packet is not
+        counted.  A sampling rate of 1 counts all packets.  A sampling
+        rate of 0 disables sampling.
+
+        The agent is permitted to have minimum and maximum allowable
+        values for the sampling rate.  A minimum rate lets the agent
+        designer set an upper bound on the overhead associated with
+        sampling, and a maximum rate may be the result of hardware
+        restrictions (such as counter size).  In addition not all values
+        between the maximum and minimum may be realizable as the
+        sampling rate (again because of implementation considerations).
+
+        When the sampling rate is set the agent is free to adjust the
+        value so that it lies between the maximum and minimum values
+
+
+
+        and has the closest achievable value.
+
+        When read, the agent must return the actual sampling rate it
+        will be using (after the adjustments previously described).  The
+        sampling algorithm must converge so that over time the number
+        of packets sampled approaches 1/Nth of the total number of
+        packets in the monitored flows."
+     DEFVAL { 0 }
+     ::= { sFlowEntry 4 }
+
+sFlowCounterSamplingInterval OBJECT-TYPE
+  SYNTAX      Integer32
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+       "The maximum number of seconds between successive samples of the
+        counters associated with this data source.  A sampling interval
+        of 0 disables counter sampling."
+     DEFVAL { 0 }
+     ::= { sFlowEntry 5 }
+
+sFlowMaximumHeaderSize OBJECT-TYPE
+     SYNTAX      Integer32
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+       "The maximum number of bytes that should be copied from a
+        sampled packet.  The agent may have an internal maximum and
+        minimum permissible sizes.  If an attempt is made to set this
+        value outside the permissible range then the agent should
+        adjust the value to the closest permissible value."
+     DEFVAL { 128 }
+     ::= { sFlowEntry 6 }
+
+sFlowMaximumDatagramSize OBJECT-TYPE
+     SYNTAX      Integer32
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+        "The maximum number of data bytes that can be sent in a single
+         sample datagram.  The manager should set this value to avoid
+         fragmentation of the sFlow datagrams."
+     DEFVAL { 1400 }
+     ::= { sFlowEntry 7 }
+
+sFlowCollectorAddressType OBJECT-TYPE
+     SYNTAX      InetAddressType
+     MAX-ACCESS  read-write
+
+
+
+     STATUS      current
+     DESCRIPTION
+       "The type of sFlowCollectorAddress."
+     DEFVAL { ipv4 }
+     ::= { sFlowEntry 8 }
+
+sFlowCollectorAddress OBJECT-TYPE
+     SYNTAX      InetAddress
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+       "The IP address of the sFlow collector.
+        If set to 0.0.0.0 all sampling is disabled."
+     DEFVAL { "0.0.0.0" }
+     ::= { sFlowEntry 9 }
+
+sFlowCollectorPort OBJECT-TYPE
+     SYNTAX      Integer32
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+       "The destination port for sFlow datagrams."
+     DEFVAL { 6343 }
+     ::= { sFlowEntry 10 }
+
+sFlowDatagramVersion OBJECT-TYPE
+     SYNTAX      Integer32
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+       "The version of sFlow datagrams that should be sent.
+
+        When set to a value not support by the agent, the agent should
+        adjust the value to the highest supported value less than the
+        requested value, or return an error if no such values exist."
+     DEFVAL { 4 }
+     ::= { sFlowEntry 11 }
+
+ --
+ -- Compliance Statements
+ --
+
+sFlowMIBConformance OBJECT IDENTIFIER ::= { sFlowMIB 2 }
+sFlowMIBGroups      OBJECT IDENTIFIER ::= { sFlowMIBConformance 1 }
+sFlowMIBCompliances OBJECT IDENTIFIER ::= { sFlowMIBConformance 2 }
+
+sFlowCompliance MODULE-COMPLIANCE
+     STATUS      current
+
+
+
+     DESCRIPTION
+       "Compliance statements for the sFlow Agent."
+
+     MODULE -- this module
+         MANDATORY-GROUPS { sFlowAgentGroup }
+         OBJECT     sFlowAgentAddressType
+         SYNTAX     InetAddressType { ipv4(1) }
+         DESCRIPTION
+           "Agents need only support ipv4."
+
+         OBJECT sFlowCollectorAddressType
+         SYNTAX InetAddressType { ipv4(1) }
+         DESCRIPTION
+           "Agents need only support ipv4."
+
+     ::= { sFlowMIBCompliances 1 }
+
+sFlowAgentGroup OBJECT-GROUP
+     OBJECTS { sFlowVersion, sFlowAgentAddressType, sFlowAgentAddress,
+               sFlowDataSource, sFlowOwner, sFlowTimeout,
+               sFlowPacketSamplingRate, sFlowCounterSamplingInterval,
+               sFlowMaximumHeaderSize, sFlowMaximumDatagramSize,
+               sFlowCollectorAddressType, sFlowCollectorAddress,
+               sFlowCollectorPort, sFlowDatagramVersion }
+      STATUS current
+      DESCRIPTION
+        "A collection of objects for managing the generation and
+         transportation of sFlow data records."
+       ::= { sFlowMIBGroups 1 }
+
+END

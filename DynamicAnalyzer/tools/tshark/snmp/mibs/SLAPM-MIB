@@ -1,0 +1,2821 @@
+SLAPM-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+      MODULE-IDENTITY, OBJECT-TYPE,
+      experimental, Integer32, NOTIFICATION-TYPE,
+      Gauge32, Counter32, Unsigned32
+          FROM SNMPv2-SMI                  -- RFC2578
+      TEXTUAL-CONVENTION, RowStatus,
+      TestAndIncr, DateAndTime
+          FROM SNMPv2-TC                   -- RFC2579
+      MODULE-COMPLIANCE, OBJECT-GROUP,
+      NOTIFICATION-GROUP
+          FROM SNMPv2-CONF                 -- RFC2580
+      SnmpAdminString
+          FROM SNMP-FRAMEWORK-MIB;         -- RFC2571
+
+   slapmMIB MODULE-IDENTITY
+      LAST-UPDATED "200001240000Z"          -- 24 January 2000
+      ORGANIZATION "International Business Machines Corp."
+      CONTACT-INFO
+          "Kenneth White
+
+          International Business Machines Corporation
+          Network Computing Software Division
+          Research Triangle Park, NC, USA
+
+          E-mail: wkenneth@us.ibm.com"
+      DESCRIPTION
+          "The Service Level Agreement Performance Monitoring MIB
+          (SLAPM-MIB) provides data collection and monitoring
+          capabilities for Service Level Agreements (SLAs)
+          policy definitions."
+
+      --  Revision history
+      REVISION     "200001240000Z"         -- 24 January 2000
+      DESCRIPTION
+          "This version published as RFC 2758."
+
+      ::= { experimental 88 }
+
+   -- Textual Conventions
+
+   SlapmNameType ::= TEXTUAL-CONVENTION
+      STATUS  deprecated
+      DESCRIPTION
+          "The textual convention for naming entities
+          within this MIB.  The actual contents of an object
+          defined using this textual convention should consist
+          of the distinguished name portion of an name.
+          This is usually the right-most
+          portion of the name.  This convention is necessary,
+          since names within this MIB can be used as index
+          items and an instance identifier is limited to 128
+          subidentifiers.
+
+          This textual convention has been deprecated.  All of the
+          tables defined within this MIB that use this textual
+          convention have been deprecated as well since the method
+          of using a portion of the name (either of a policy
+          definition or of a traffic profile) has been replaced
+          by using an Unsigned32 index.  The new slapmPolicyNameTable
+          would then map the Unsigned32 index to a real name."
+      SYNTAX  SnmpAdminString (SIZE(0..32))
+
+   SlapmStatus ::= TEXTUAL-CONVENTION
+      STATUS  current
+      DESCRIPTION
+          "The textual convention for defining the various
+          slapmPRMonTable (or old slapmPolicyMonitorTable)
+          and the slapmSubcomponentTable states for actual policy
+          rule traffic monitoring."
+      SYNTAX  BITS {
+                     slaMinInRateNotAchieved(0),
+                     slaMaxInRateExceeded(1),
+                     slaMaxDelayExceeded(2),
+                     slaMinOutRateNotAchieved(3),
+                     slaMaxOutRateExceeded(4),
+                     monitorMinInRateNotAchieved(5),
+                     monitorMaxInRateExceeded(6),
+                     monitorMaxDelayExceeded(7),
+                     monitorMinOutRateNotAchieved(8),
+                     monitorMaxOutRateExceeded(9)
+                   }
+
+   SlapmPolicyRuleName ::= TEXTUAL-CONVENTION
+      DISPLAY-HINT "1024t"
+      STATUS  current
+      DESCRIPTION
+          "To facilitate internationalization, this TC
+          represents information taken from the ISO/IEC IS
+          10646-1 character set, encoded as an octet string
+          using the UTF-8 character encoding scheme described
+          in RFC 2044.   For strings in 7-bit US-ASCII,
+          there is no impact since the UTF-8 representation
+          is identical to the US-ASCII encoding."
+      SYNTAX  OCTET STRING (SIZE (0..1024))
+
+   -- Top-level structure of the MIB
+
+   slapmNotifications  OBJECT IDENTIFIER ::= { slapmMIB 0 }
+   slapmObjects        OBJECT IDENTIFIER ::= { slapmMIB 1 }
+   slapmConformance    OBJECT IDENTIFIER ::= { slapmMIB 2 }
+
+   -- All scalar objects
+
+   slapmBaseObjects    OBJECT IDENTIFIER ::= { slapmObjects 1 }
+
+   -- Scalar Object Definitions
+
+   slapmSpinLock OBJECT-TYPE
+      SYNTAX      TestAndIncr
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+         "An advisory lock used to allow cooperating applications
+         to coordinate their use of the contents of this MIB.  This
+         typically occurs when an application seeks to create an
+         new entry or alter an existing entry in
+         slapmPRMonTable (or old slapmPolicyMonitorTable).  A
+         management implementation MAY utilize the slapmSpinLock to
+         serialize its changes or additions.  This usage is not
+         required.   However, slapmSpinLock MUST be supported by
+         agent implementations."
+     ::= { slapmBaseObjects 1 }
+
+   slapmPolicyCountQueries OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The total number of times that a policy lookup occurred
+         with respect to a policy agent.
+         This is the number of times that a reference was made to
+         a policy definition at a system and includes the number
+         of times that a policy repository was accessed,
+         slapmPolicyCountAccesses.  The object
+         slapmPolicyCountAccesses should be less than
+         slapmPolicyCountQueries when policy definitions are
+         cached at a system."
+      ::= { slapmBaseObjects 2 }
+
+   slapmPolicyCountAccesses OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "Total number of times that a policy repository was
+          accessed with respect to a policy agent.
+          The value of this object should be less than
+          slapmPolicyCountQueries, since typically policy entries
+          are cached to minimize repository accesses."
+      ::= { slapmBaseObjects 3 }
+
+   slapmPolicyCountSuccessAccesses OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "Total number of successful policy repository accesses
+         with respect to a policy agent."
+      ::= { slapmBaseObjects 4 }
+
+   slapmPolicyCountNotFounds OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "Total number of policy repository accesses,
+         with respect to a policy agent, that
+         resulted in an entry not being located."
+      ::= { slapmBaseObjects 5 }
+
+   slapmPolicyPurgeTime OBJECT-TYPE
+      SYNTAX      Integer32 (0..3600)  -- maximum of 1 hour
+      UNITS       "seconds"
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+         "The purpose of this object is to define the amount
+         of time (in seconds) to wait before removing an
+         slapmPolicyRuleStatsEntry (or old slapmPolicyStatsEntry)
+         when a system detects that the associated policy
+         definition has been deleted.  This gives any polling
+         management applications time to complete their last poll
+         before an entry is removed.  An slapmPolicyRuleStatsEntry
+         (or old slapmPolicyStatsEntry) enters the
+         deleteNeeded(3) state via slapmPolicyRuleStatsOperStatus
+         (or old slapmPolicyStatsOperStatus) when a system first
+         detects that the entry needs to be removed.
+
+         Once slapmPolicyPurgeTime has expired for an entry in
+         deleteNeeded(3) state it is removed a long with any
+         dependent slapmPRMonTable (or slapmPolicyMonitorTable)
+         entries.
+
+         A value of 0 for this option disables this function and
+         results in the automatic purging of slapmPRMonTable
+         (or slapmPolicyTable) entries upon transition into
+         deleteNeeded(3) state.
+
+         A slapmPolicyRuleDeleted (or slapmPolicyProfileDeleted)
+         notification is sent when an slapmPolicyRuleStatsEntry (or
+         slapmPolicyStatsEntry) is removed.  Dependent
+         slapmPRMonTable (or slapmPolicyMonitorTable)
+         deletion results in a slapmPolicyRuleMonDeleted (or
+         slapmPolicyMonitorDeleted) notification being sent.
+         These notifications are suppressed if the value of
+         slapmPolicyTrapEnable is disabled(2)."
+      DEFVAL { 900 }  -- 15 minute default purge time
+      ::= { slapmBaseObjects 6 }
+
+   slapmPolicyTrapEnable OBJECT-TYPE
+      SYNTAX      INTEGER { enabled(1), disabled(2) }
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+         "Indicates whether slapmPolicyRuleDeleted and
+         slapmPolicyRuleMonDeleted (or slapmPolicyProfileDeleted
+         and slapmPolicyMonitorDeleted) notifications should be
+         generated by this system."
+      DEFVAL { disabled }
+      ::= { slapmBaseObjects 7 }
+
+   slapmPolicyTrapFilter   OBJECT-TYPE
+      SYNTAX      Integer32 (0..64)
+      UNITS       "intervals"
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+         "The purpose of this object is to suppress unnecessary
+         slapmSubcMonitorNotOkay (or
+         slapmSubcomponentMonitoredEventNotAchieved), for example,
+         notifications.  Basically, a monitored event has to
+         not meet its SLA requirement for the number of
+         consecutive intervals indicated by the value of this
+         object."
+      DEFVAL { 3 }
+      ::= { slapmBaseObjects 8 }
+
+   slapmTableObjects    OBJECT IDENTIFIER ::= { slapmObjects 2 }
+
+   -- Sla Performance Monitoring Policy Statistics Table
+
+   slapmPolicyStatsTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF SlapmPolicyStatsEntry
+      MAX-ACCESS not-accessible
+      STATUS deprecated
+      DESCRIPTION
+          "Provides statistics on all policies known at a
+          system.
+
+          This table has been deprecated and replaced with
+          the slapmPolicyRuleStatsTable.  Older implementations of
+          this MIB are expected to continue their support of this
+          table."
+     ::= { slapmTableObjects 1 }
+
+   slapmPolicyStatsEntry OBJECT-TYPE
+      SYNTAX SlapmPolicyStatsEntry
+      MAX-ACCESS not-accessible
+      STATUS deprecated
+      DESCRIPTION
+          "Defines an entry in the slapmPolicyStatsTable.  This table
+          defines a set of statistics that is kept on a per system,
+          policy and traffic profile basis.  A policy can be
+          defined to contain multiple traffic profiles that map to
+          a single action.
+
+          Entries in this table are not created or deleted via SNMP
+          but reflect the set of policy definitions known at a system."
+      INDEX {
+             slapmPolicyStatsSystemAddress,
+             slapmPolicyStatsPolicyName,
+             slapmPolicyStatsTrafficProfileName
+            }
+      ::= { slapmPolicyStatsTable 1 }
+
+   SlapmPolicyStatsEntry ::=
+      SEQUENCE {
+          slapmPolicyStatsSystemAddress      OCTET STRING,
+          slapmPolicyStatsPolicyName         SlapmNameType,
+          slapmPolicyStatsTrafficProfileName SlapmNameType,
+          slapmPolicyStatsOperStatus         INTEGER,
+          slapmPolicyStatsActiveConns        Gauge32,
+          slapmPolicyStatsTotalConns         Counter32,
+          slapmPolicyStatsFirstActivated     DateAndTime,
+          slapmPolicyStatsLastMapping        DateAndTime,
+          slapmPolicyStatsInOctets           Counter32,
+          slapmPolicyStatsOutOctets          Counter32,
+          slapmPolicyStatsConnectionLimit    Integer32,
+          slapmPolicyStatsCountAccepts       Counter32,
+          slapmPolicyStatsCountDenies        Counter32,
+          slapmPolicyStatsInDiscards         Counter32,
+          slapmPolicyStatsOutDiscards        Counter32,
+          slapmPolicyStatsInPackets          Counter32,
+          slapmPolicyStatsOutPackets         Counter32,
+          slapmPolicyStatsInProfileOctets    Counter32,
+          slapmPolicyStatsOutProfileOctets   Counter32,
+          slapmPolicyStatsMinRate            Integer32,
+          slapmPolicyStatsMaxRate            Integer32,
+          slapmPolicyStatsMaxDelay           Integer32
+      }
+
+   slapmPolicyStatsSystemAddress OBJECT-TYPE
+      SYNTAX      OCTET STRING (SIZE(0 | 4 | 16))
+      MAX-ACCESS  not-accessible
+      STATUS      deprecated
+      DESCRIPTION
+         "Address of a system that an Policy definition relates to.
+         A zero length octet string must be used to indicate that
+         only a single system is being represented.
+         Otherwise, the length of the octet string must be
+         4 for an ipv4 address or 16 for an ipv6 address."
+      ::= { slapmPolicyStatsEntry 1 }
+
+   slapmPolicyStatsPolicyName OBJECT-TYPE
+      SYNTAX      SlapmNameType
+      MAX-ACCESS  not-accessible
+      STATUS      deprecated
+      DESCRIPTION
+         "Policy name that this entry relates to."
+      ::= { slapmPolicyStatsEntry 2 }
+
+   slapmPolicyStatsTrafficProfileName OBJECT-TYPE
+      SYNTAX      SlapmNameType
+      MAX-ACCESS  not-accessible
+      STATUS      deprecated
+      DESCRIPTION
+         "The name of a traffic profile that is associated with
+         a policy."
+      ::= { slapmPolicyStatsEntry 3 }
+
+   slapmPolicyStatsOperStatus OBJECT-TYPE
+      SYNTAX      INTEGER {
+                             inactive(1),
+                             active(2),
+                             deleteNeeded(3)
+                          }
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "The state of a policy entry:
+
+           inactive(1)      - An policy entry was either defined
+                              by local system definition or
+                              discovered via a directory search
+                              but has not been activated (not
+                              currently being used).
+           active(2)        - Policy entry is being used to affect
+                              traffic flows.
+           deleteNeeded(3)  - Either though local implementation
+                              dependent methods or by discovering
+                              that the directory entry corresponding
+                              to this table entry no longer
+                              exists and slapmPolicyPurgeTime needs
+                              to expire before attempting to remove
+                              the corresponding slapmPolicyStatsEntry
+                              and any dependent slapmPolicyMonitor
+                              table entries.
+         Note: a policy traffic profile in a state other than
+         active(1) is not being used to affect traffic flows."
+      ::= { slapmPolicyStatsEntry 4 }
+
+   slapmPolicyStatsActiveConns OBJECT-TYPE
+      SYNTAX      Gauge32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "The number of active TCP connections that are
+         affected by the corresponding policy entry."
+      ::= { slapmPolicyStatsEntry 5 }
+
+   slapmPolicyStatsTotalConns OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "The number of total TCP connections that are
+         affected by the corresponding policy entry."
+      ::= { slapmPolicyStatsEntry 6 }
+
+   slapmPolicyStatsFirstActivated OBJECT-TYPE
+      SYNTAX      DateAndTime
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "The timestamp for when the corresponding policy entry
+         is activated.  The value of this object serves as
+         the discontinuity event indicator when polling entries
+         in this table.  The value of this object is updated on
+         transition of slapmPolicyStatsOperStatus into the active(2)
+         state."
+      DEFVAL { '0000000000000000'H }
+      ::= { slapmPolicyStatsEntry 7 }
+
+   slapmPolicyStatsLastMapping OBJECT-TYPE
+      SYNTAX      DateAndTime
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "The timestamp for when the last time
+         that the associated policy entry was used."
+      DEFVAL { '0000000000000000'H }
+      ::= { slapmPolicyStatsEntry 8 }
+
+   slapmPolicyStatsInOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "The number of octets that was received by IP for an
+         entity that map to this entry."
+      ::= { slapmPolicyStatsEntry 9 }
+
+   slapmPolicyStatsOutOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "The number of octets that was transmitted by IP for an
+         entity that map to this entry."
+      ::= { slapmPolicyStatsEntry 10 }
+
+   slapmPolicyStatsConnectionLimit OBJECT-TYPE
+      SYNTAX      Integer32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "The limit for the number of active TCP connections that
+         are allowed for this policy definition.  A value of zero
+         for this object implies that a connection limit has not
+         been specified."
+      ::= { slapmPolicyStatsEntry 11 }
+
+   slapmPolicyStatsCountAccepts OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "This counter is incremented when a policy action's
+          Permission value is set to Accept and a session
+          (TCP connection) is accepted."
+      ::= { slapmPolicyStatsEntry 12 }
+
+   slapmPolicyStatsCountDenies OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "This counter is incremented when a policy action's
+          Permission value is set to Deny and a session is denied,
+          or when a session (TCP connection) is rejected due to a
+          policy's connection limit (slapmPolicyStatsConnectLimit)
+          being reached."
+      ::= { slapmPolicyStatsEntry 13 }
+
+   slapmPolicyStatsInDiscards OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "This counter counts the number of in octets discarded.
+          This occurs when an error is detected.  Examples of this
+          are buffer overflow, checksum error, or bad packet
+          format."
+      ::= { slapmPolicyStatsEntry 14 }
+
+   slapmPolicyStatsOutDiscards OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "This counter counts the number of out octets discarded.
+          Examples of this are buffer overflow, checksum error, or
+          bad packet format."
+      ::= { slapmPolicyStatsEntry 15 }
+
+   slapmPolicyStatsInPackets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "This counter counts the number of in packets received
+          that relate to this policy entry from IP."
+      ::= { slapmPolicyStatsEntry 16 }
+
+   slapmPolicyStatsOutPackets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "This counter counts the number of out packets sent
+          by IP that relate to this policy entry."
+      ::= { slapmPolicyStatsEntry 17 }
+
+   slapmPolicyStatsInProfileOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "This counter counts the number of in octets that are
+          determined to be within profile."
+      ::= { slapmPolicyStatsEntry 18 }
+
+   slapmPolicyStatsOutProfileOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "This counter counts the number of out octets that are
+          determined to be within profile."
+      ::= { slapmPolicyStatsEntry 19 }
+
+   slapmPolicyStatsMinRate OBJECT-TYPE
+      SYNTAX      Integer32
+      UNITS       "Kilobits per second"
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "The minimum transfer rate defined for this entry."
+      ::= { slapmPolicyStatsEntry 20 }
+
+   slapmPolicyStatsMaxRate OBJECT-TYPE
+      SYNTAX      Integer32
+      UNITS       "Kilobits per second"
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "The maximum transfer rate defined for this entry."
+      ::= { slapmPolicyStatsEntry 21 }
+
+   slapmPolicyStatsMaxDelay OBJECT-TYPE
+      SYNTAX      Integer32
+      UNITS       "milliseconds"
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "The maximum delay defined for this entry."
+      ::= { slapmPolicyStatsEntry 22 }
+
+   -- SLA Performance Monitoring Policy Monitor Table
+
+   slapmPolicyMonitorTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF SlapmPolicyMonitorEntry
+      MAX-ACCESS not-accessible
+      STATUS     deprecated
+      DESCRIPTION
+          "Provides a method of monitoring policies and their
+          effect at a system.
+
+          This table has been deprecated and replaced with
+          the slapmPRMonTable.  Older implementations of
+          this MIB are expected to continue their support
+          of this table."
+     ::= { slapmTableObjects 2 }
+
+   slapmPolicyMonitorEntry OBJECT-TYPE
+      SYNTAX     SlapmPolicyMonitorEntry
+      MAX-ACCESS not-accessible
+      STATUS     deprecated
+      DESCRIPTION
+          "Defines an entry in the slapmPolicyMonitorTable. This
+          table defines which policies should be monitored on a
+          per policy traffic profile basis."
+      INDEX {
+             slapmPolicyMonitorOwnerIndex,
+             slapmPolicyMonitorSystemAddress,
+             slapmPolicyMonitorPolicyName,
+             slapmPolicyMonitorTrafficProfileName
+            }
+      ::= { slapmPolicyMonitorTable 1 }
+
+   SlapmPolicyMonitorEntry ::=
+      SEQUENCE {
+          slapmPolicyMonitorOwnerIndex              SnmpAdminString,
+          slapmPolicyMonitorSystemAddress           OCTET STRING,
+          slapmPolicyMonitorPolicyName              SlapmNameType,
+          slapmPolicyMonitorTrafficProfileName      SlapmNameType,
+          slapmPolicyMonitorControl                 BITS,
+          slapmPolicyMonitorStatus                  SlapmStatus,
+          slapmPolicyMonitorInterval                Integer32,
+          slapmPolicyMonitorIntTime                 DateAndTime,
+          slapmPolicyMonitorCurrentInRate           Gauge32,
+          slapmPolicyMonitorCurrentOutRate          Gauge32,
+          slapmPolicyMonitorMinRateLow              Integer32,
+          slapmPolicyMonitorMinRateHigh             Integer32,
+          slapmPolicyMonitorMaxRateHigh             Integer32,
+          slapmPolicyMonitorMaxRateLow              Integer32,
+          slapmPolicyMonitorMaxDelayHigh            Integer32,
+          slapmPolicyMonitorMaxDelayLow             Integer32,
+          slapmPolicyMonitorMinInRateNotAchieves    Counter32,
+          slapmPolicyMonitorMaxInRateExceeds        Counter32,
+          slapmPolicyMonitorMaxDelayExceeds         Counter32,
+          slapmPolicyMonitorMinOutRateNotAchieves   Counter32,
+          slapmPolicyMonitorMaxOutRateExceeds       Counter32,
+          slapmPolicyMonitorCurrentDelayRate        Gauge32,
+          slapmPolicyMonitorRowStatus               RowStatus
+      }
+
+   slapmPolicyMonitorOwnerIndex OBJECT-TYPE
+      SYNTAX      SnmpAdminString (SIZE(0..16))
+      MAX-ACCESS  not-accessible
+      STATUS      deprecated
+      DESCRIPTION
+         "To facilitate the provisioning of access control by a
+         security administrator using the View-Based Access
+         Control Model (RFC 2575, VACM) for tables in which
+         multiple users may need to independently create or modify
+         entries, the initial index is used as an 'owner index'.
+         Such an initial index has a syntax of SnmpAdminString,
+         and can thus be trivially mapped to a securityName or
+         groupName as defined in VACM, in accordance with a
+         security policy.
+
+         All entries in that table belonging to a particular user
+         will have the same value for this initial index.  For a
+         given user's entries in a particular table, the object
+         identifiers for the information in these entries will
+         have the same subidentifiers (except for the 'column'
+         subidentifier) up to the end of the encoded owner index.
+         To configure VACM to permit access to this portion of the
+         table, one would create vacmViewTreeFamilyTable entries
+         with the value of vacmViewTreeFamilySubtree including the
+         owner index portion, and vacmViewTreeFamilyMask
+         'wildcarding' the column subidentifier.  More elaborate
+         configurations are possible."
+      ::= { slapmPolicyMonitorEntry 1 }
+
+   slapmPolicyMonitorSystemAddress OBJECT-TYPE
+      SYNTAX      OCTET STRING (SIZE(0 | 4 | 16))
+      MAX-ACCESS  not-accessible
+      STATUS      deprecated
+      DESCRIPTION
+         "Address of a system that an Policy definition relates to.
+         A zero length octet string can be used to indicate that
+         only a single system is being represented.
+         Otherwise, the length of the octet string should be
+         4 for an ipv4 address and 16 for an ipv6 address."
+      ::= { slapmPolicyMonitorEntry 2 }
+
+   slapmPolicyMonitorPolicyName OBJECT-TYPE
+      SYNTAX      SlapmNameType
+      MAX-ACCESS  not-accessible
+      STATUS      deprecated
+      DESCRIPTION
+         "Policy name that this entry relates to."
+      ::= { slapmPolicyMonitorEntry 3 }
+
+   slapmPolicyMonitorTrafficProfileName OBJECT-TYPE
+      SYNTAX      SlapmNameType
+      MAX-ACCESS  not-accessible
+      STATUS      deprecated
+      DESCRIPTION
+         "The corresponding Traffic Profile name."
+      ::= { slapmPolicyMonitorEntry 4 }
+
+   slapmPolicyMonitorControl OBJECT-TYPE
+      SYNTAX      BITS {
+                        monitorMinRate(0),
+                        monitorMaxRate(1),
+                        monitorMaxDelay(2),
+                        enableAggregateTraps(3),
+                        enableSubcomponentTraps(4),
+                        monitorSubcomponents(5)
+                       }
+      MAX-ACCESS  read-create
+      STATUS      deprecated
+      DESCRIPTION
+         "The value of this object determines the type and level
+         of monitoring that is applied to a policy/profile.  The
+         value of this object can't be changed once the table
+         entry that it is a part of is activated via a
+         slapmPolicyMonitorRowStatus transition to active state.
+
+             monitorMinRate(0) - Monitor minimum transfer rate.
+             monitorMaxRate(1) - Monitor maximum transfer rate.
+             monitorMaxDelay(2) - Monitor maximum delay.
+             enableAggregateTraps(3) - The enableAggregateTraps(3)
+                   BITS setting enables notification generation
+                   when monitoring a policy traffic profile as an
+                   aggregate using the values in the corresponding
+                   slapmPolicyStatsEntry.  By default this function
+                   is not enabled.
+             enableSubcomponentTraps(4) - This BITS setting enables
+                   notification generation when monitoring all
+                   subcomponents that are mapped to an corresponding
+                   slapmPolicyStatsEntry.  By default this
+                   function is not enabled.
+             monitorSubcomponents(5) - This BITS setting enables
+                   monitoring of each subcomponent (typically a
+                   TCP connection or UDP listener) individually."
+      DEFVAL   { { monitorMinRate, monitorMaxRate,
+                   monitorMaxDelay } }
+      ::= { slapmPolicyMonitorEntry 5 }
+
+   slapmPolicyMonitorStatus OBJECT-TYPE
+      SYNTAX      SlapmStatus
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "The value of this object indicates when a monitored
+         value has not meet a threshold or isn't meeting the
+         defined service level.  The SlapmStatus TEXTUAL-CONVENTION
+         defines two levels of not meeting a threshold.  The first
+         set:
+                     slaMinInRateNotAchieved(0),
+                     slaMaxInRateExceeded(1),
+                     slaMaxDelayExceeded(2),
+                     slaMinOutRateNotAchieved(3),
+                     slaMaxOutRateExceeded(4)
+
+         are used to indicate when the SLA as an aggregate is
+         not meeting a threshold while the second set:
+
+                     monitorMinInRateNotAchieved(5),
+                     monitorMaxInRateExceeded(6),
+                     monitorMaxDelayExceeded(7),
+                     monitorMinOutRateNotAchieved(8),
+                     monitorMaxOutRateExceeded(9)
+
+         indicate that at least one subcomponent is not meeting
+         a threshold."
+      ::= { slapmPolicyMonitorEntry 6 }
+
+   slapmPolicyMonitorInterval OBJECT-TYPE
+      SYNTAX      Integer32 (15..86400) -- 15 second min, 24 hour max
+      UNITS       "seconds"
+      MAX-ACCESS  read-create
+      STATUS      deprecated
+      DESCRIPTION
+         "The number of seconds that defines the sample period."
+      DEFVAL   {20}    -- 20 seconds
+      ::= { slapmPolicyMonitorEntry 7 }
+
+   slapmPolicyMonitorIntTime OBJECT-TYPE
+      SYNTAX      DateAndTime
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "The timestamp for when the last interval ended."
+      DEFVAL { '0000000000000000'H }
+      ::= { slapmPolicyMonitorEntry 8 }
+
+   slapmPolicyMonitorCurrentInRate OBJECT-TYPE
+      SYNTAX      Gauge32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "Using the value of the corresponding
+         slapmPolicyMonitorInterval, slapmPolicyStatsInOctets
+         is sampled and then divided by slapmPolicyMonitorInterval
+         to determine the current in transfer rate."
+      ::= { slapmPolicyMonitorEntry 9 }
+
+   slapmPolicyMonitorCurrentOutRate OBJECT-TYPE
+      SYNTAX      Gauge32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "Using the value of the corresponding
+         slapmPolicyMonitorInterval, slapmPolicyStatsOutOctets
+         is sampled and then divided by slapmPolicyMonitorInterval
+         to determine the current out transfer rate."
+      ::= { slapmPolicyMonitorEntry 10 }
+
+   slapmPolicyMonitorMinRateLow OBJECT-TYPE
+      SYNTAX      Integer32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-create
+      STATUS      deprecated
+      DESCRIPTION
+         "The threshold for generating a
+         slapmMonitoredEventNotAchieved notification, signalling
+         that a monitored minimum transfer rate has not been meet.
+
+         A slapmMonitoredEventNotAchieved notification is not
+         generated again for an slapmPolicyMonitorEntry until
+         the minimum transfer rate
+         exceeds slapmPolicyMonitorMinRateHigh (a
+         slapmMonitoredEventOkay notification is then transmitted)
+         and then fails below slapmPolicyMonitorMinRateLow.  This
+         behavior reduces the slapmMonitoredEventNotAchieved
+         notifications that are transmitted.
+
+         A value of zero for this object is returned when the
+         slapmPolicyMonitorControl monitorMinRate(0) is not
+         enabled.  When enabled the default value for this object
+         is the min rate value specified in the associated
+         action definition minus 10%.  If the action definition
+         doesn't have a min rate defined then there is no
+         default for this object and a value MUST be specified
+         prior to activating this entry when monitorMinRate(0)
+         is selected.
+
+         Note: The corresponding slapmPolicyMonitorControl
+         BITS setting, enableAggregateTraps(3), MUST be selected in
+         order for any notification relating to this entry to
+         potentially be generated."
+      ::= { slapmPolicyMonitorEntry 11 }
+
+   slapmPolicyMonitorMinRateHigh OBJECT-TYPE
+      SYNTAX      Integer32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-create
+      STATUS      deprecated
+      DESCRIPTION
+         "The threshold for generating a slapmMonitoredEventOkay
+         notification, signalling that a monitored minimum
+         transfer rate has increased to an acceptable level.
+
+         A value of zero for this object is returned when the
+         slapmPolicyMonitorControl monitorMinRate(0) is not
+         enabled.  When enabled the default value for this object
+         is the min rate value specified in the associated
+         action definition plus 10%.  If the action definition
+         doesn't have a min rate defined then there is no
+         default for this object and a value MUST be specified
+         prior to activating this entry when monitorMinRate(0)
+         is selected.
+
+         Note: The corresponding slapmPolicyMonitorControl
+         BITS setting, enableAggregateTraps(3), MUST be selected
+         in order for any notification relating to this entry to
+         potentially be generated."
+      ::= { slapmPolicyMonitorEntry 12 }
+
+   slapmPolicyMonitorMaxRateHigh OBJECT-TYPE
+      SYNTAX      Integer32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-create
+      STATUS      deprecated
+      DESCRIPTION
+         "The threshold for generating a
+         slapmMonitoredEventNotAchieved notification, signalling
+         that a monitored maximum transfer rate has been exceeded.
+
+         A slapmMonitoredEventNotAchieved notification is not
+         generated again for an slapmPolicyMonitorEntry until the
+         maximum transfer rate fails below
+         slapmPolicyMonitorMaxRateLow (a slapmMonitoredEventOkay
+         notification is then transmitted) and then raises above
+         slapmPolicyMonitorMaxRateHigh.  This behavior reduces the
+         slapmMonitoredEventNotAchieved notifications that are
+         transmitted.
+
+         A value of zero for this object is returned when the
+         slapmPolicyMonitorControl monitorMaxRate(1) is not
+         enabled.  When enabled the default value for this object
+         is the max rate value specified in the associated
+         action definition plus 10%.  If the action definition
+         doesn't have a max rate defined then there is no
+         default for this object and a value MUST be specified
+         prior to activating this entry when monitorMaxRate(1)
+         is selected.
+
+         Note: The corresponding slapmPolicyMonitorControl
+         BITS setting, enableAggregateTraps(3), MUST be selected in
+         order for any notification relating to this entry to
+         potentially be generated."
+      ::= { slapmPolicyMonitorEntry 13 }
+
+   slapmPolicyMonitorMaxRateLow OBJECT-TYPE
+      SYNTAX      Integer32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-create
+      STATUS      deprecated
+      DESCRIPTION
+         "The threshold for generating a slapmMonitoredEventOkay
+         notification, signalling that a monitored maximum
+         transfer rate has fallen to an acceptable level.
+
+         A value of zero for this object is returned when the
+         slapmPolicyMonitorControl monitorMaxRate(1) is not
+         enabled.  When enabled the default value for this object
+         is the max rate value specified in the associated
+         action definition minus 10%.  If the action definition
+         doesn't have a max rate defined then there is no
+         default for this object and a value MUST be specified
+         prior to activating this entry when monitorMaxRate(1)
+         is selected.
+
+         Note: The corresponding slapmPolicyMonitorControl
+         BITS setting, enableAggregateTraps(3), MUST be selected in
+         order for any notification relating to this entry to
+         potentially be generated."
+      ::= { slapmPolicyMonitorEntry 14 }
+
+   slapmPolicyMonitorMaxDelayHigh OBJECT-TYPE
+      SYNTAX      Integer32
+      UNITS       "milliseconds"
+      MAX-ACCESS  read-create
+      STATUS      deprecated
+      DESCRIPTION
+         "The threshold for generating a
+         slapmMonitoredEventNotAchieved notification, signalling
+         that a monitored maximum delay rate has been exceeded.
+
+         A slapmMonitoredEventNotAchieved notification is not
+         generated again for an slapmPolicyMonitorEntry until
+         the maximum delay rate falls below
+         slapmPolicyMonitorMaxDelayLow (a slapmMonitoredEventOkay
+         notification is then transmitted) and raises above
+         slapmPolicyMonitorMaxDelayHigh.  This behavior reduces
+         the slapmMonitoredEventNotAchieved notifications that are
+         transmitted.
+
+         A value of zero for this object is returned when the
+         slapmPolicyMonitorControl monitorMaxDelay(4) is not
+         enabled.  When enabled the default value for this object
+         is the max delay value specified in the associated
+         action definition plus 10%.  If the action definition
+         doesn't have a max delay defined then there is no
+         default for this object and a value MUST be specified
+         prior to activating this entry when monitorMaxDelay(4)
+         is selected.
+
+         Note: The corresponding slapmPolicyMonitorControl
+         BITS setting, enableAggregateTraps(3), MUST be selected
+         in order for any notification relating to this entry to
+         potentially be generated."
+      ::= { slapmPolicyMonitorEntry 15 }
+
+   slapmPolicyMonitorMaxDelayLow OBJECT-TYPE
+      SYNTAX      Integer32
+      UNITS       "milliseconds"
+      MAX-ACCESS  read-create
+      STATUS      deprecated
+      DESCRIPTION
+         "The threshold for generating a slapmMonitoredEventOkay
+         notification, signalling that a monitored maximum delay
+         rate has fallen to an acceptable level.
+
+         A value of zero for this object is returned when the
+         slapmPolicyMonitorControl monitorMaxDelay(4) is not
+         enabled.  When enabled the default value for this object
+         is the max delay value specified in the associated
+         action definition minus 10%.  If the action definition
+         doesn't have a max delay defined then there is no
+         default for this object and a value MUST be specified
+         prior to activating this entry when monitorMaxDelay(4)
+         is selected.
+
+         Note: The corresponding slapmPolicyMonitorControl
+         BITS setting, enableAggregateTraps(3), MUST be selected
+         in order for any notification relating to this entry to
+         potentially be generated."
+      ::= { slapmPolicyMonitorEntry 16 }
+
+   slapmPolicyMonitorMinInRateNotAchieves OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "The number of times that a minimum transfer in rate
+          was not achieved."
+      ::= { slapmPolicyMonitorEntry 17 }
+
+   slapmPolicyMonitorMaxInRateExceeds OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "The number of times that a maximum transfer in rate
+          was exceeded."
+      ::= { slapmPolicyMonitorEntry 18 }
+
+   slapmPolicyMonitorMaxDelayExceeds OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "The number of times that a maximum delay in rate
+          was exceeded."
+      ::= { slapmPolicyMonitorEntry 19 }
+
+   slapmPolicyMonitorMinOutRateNotAchieves OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "The number of times that a minimum transfer out rate
+          was not achieved."
+      ::= { slapmPolicyMonitorEntry 20 }
+
+   slapmPolicyMonitorMaxOutRateExceeds OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "The number of times that a maximum transfer out rate
+          was exceeded."
+      ::= { slapmPolicyMonitorEntry 21 }
+
+   slapmPolicyMonitorCurrentDelayRate OBJECT-TYPE
+      SYNTAX      Gauge32
+      UNITS       "milliseconds"
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+          "The current delay rate for this entry.  This is
+          calculated by taking the average of the TCP
+          round trip times for all associating
+          slapmSubcomponentTable entries within a interval."
+      ::= { slapmPolicyMonitorEntry 22 }
+
+   slapmPolicyMonitorRowStatus  OBJECT-TYPE
+      SYNTAX       RowStatus
+      MAX-ACCESS   read-create
+      STATUS       deprecated
+      DESCRIPTION
+        "This object allows entries to be created and deleted
+         in the slapmPolicyMonitorTable.  An entry in this table
+         is deleted by setting this object to destroy(6).
+
+         Removal of a corresponding (same policy and traffic profile
+         names) slapmPolicyStatsEntry has the side effect of the
+         automatic deletion an entry in this table."
+      ::= { slapmPolicyMonitorEntry 23 }
+
+   -- Subcomponent Table
+
+   slapmSubcomponentTable OBJECT-TYPE
+       SYNTAX      SEQUENCE OF SlapmSubcomponentEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+            "Defines a table to provide information on the
+            individually components that are mapped to
+            a policy rule (or old traffic profile).
+
+            The indexing for this table is designed to support
+            the use of an SNMP GET-NEXT operation using only
+            the remote address and remote port as a way for
+            a management station to retrieve the table entries
+            relating to a particular client."
+       ::= { slapmTableObjects 3 }
+
+   slapmSubcomponentEntry OBJECT-TYPE
+       SYNTAX      SlapmSubcomponentEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+            "Describes a particular subcomponent entry.  This
+            table does not have an OwnerIndex as
+            part of its indexing since this table's contents
+            is intended to span multiple users."
+       INDEX {
+               slapmSubcomponentRemAddress,
+               slapmSubcomponentRemPort,
+               slapmSubcomponentLocalAddress,
+               slapmSubcomponentLocalPort
+             }
+       ::= { slapmSubcomponentTable 1 }
+
+   SlapmSubcomponentEntry ::=
+       SEQUENCE {
+            slapmSubcomponentRemAddress            OCTET STRING,
+            slapmSubcomponentRemPort               Integer32,
+            slapmSubcomponentLocalAddress          OCTET STRING,
+            slapmSubcomponentLocalPort             Integer32,
+            slapmSubcomponentProtocol              INTEGER,
+            slapmSubcomponentSystemAddress         OCTET STRING,
+            slapmSubcomponentPolicyName            SlapmNameType,
+            slapmSubcomponentTrafficProfileName    SlapmNameType,
+            slapmSubcomponentLastActivity          DateAndTime,
+            slapmSubcomponentInOctets              Counter32,
+            slapmSubcomponentOutOctets             Counter32,
+            slapmSubcomponentTcpOutBufferedOctets  Counter32,
+            slapmSubcomponentTcpInBufferedOctets   Counter32,
+            slapmSubcomponentTcpReXmts             Counter32,
+            slapmSubcomponentTcpRoundTripTime      Integer32,
+            slapmSubcomponentTcpRoundTripVariance  Integer32,
+            slapmSubcomponentInPdus                Counter32,
+            slapmSubcomponentOutPdus               Counter32,
+            slapmSubcomponentApplName              SnmpAdminString,
+            slapmSubcomponentMonitorStatus         SlapmStatus,
+            slapmSubcomponentMonitorIntTime        DateAndTime,
+            slapmSubcomponentMonitorCurrentInRate  Gauge32,
+            slapmSubcomponentMonitorCurrentOutRate Gauge32,
+            slapmSubcomponentPolicyRuleIndex       Unsigned32
+         }
+
+   slapmSubcomponentRemAddress OBJECT-TYPE
+      SYNTAX      OCTET STRING (SIZE(0 | 4 | 16))
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "Indicate the remote address of a subcomponent.
+         A remote address can be either an ipv4 address in which
+         case 4 octets are required or as an ipv6 address that
+         requires 16 octets.  The value of this subidentifier
+         is a zero length octet string when this entry relates
+         to a UDP listener."
+      ::= { slapmSubcomponentEntry 1 }
+
+   slapmSubcomponentRemPort OBJECT-TYPE
+      SYNTAX      Integer32(0..65535)
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "Indicate the remote port of a subcomponent.
+         The value of this subidentifier
+         is 0 when this entry relates to a UDP listener."
+      ::= { slapmSubcomponentEntry 2 }
+
+   slapmSubcomponentLocalAddress OBJECT-TYPE
+      SYNTAX      OCTET STRING (SIZE(4 | 16))
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "Indicate the local address of a subcomponent.
+         A local address can be either an ipv4 address in which
+         case 4 octets are required or as an ipv6 address that
+         requires 16 octets."
+      ::= { slapmSubcomponentEntry 3 }
+
+   slapmSubcomponentLocalPort OBJECT-TYPE
+      SYNTAX      Integer32(0..65535)
+      MAX-ACCESS  not-accessible
+
+      STATUS      current
+      DESCRIPTION
+         "Indicate the local port of a subcomponent."
+      ::= { slapmSubcomponentEntry 4 }
+
+   slapmSubcomponentProtocol OBJECT-TYPE
+      SYNTAX      INTEGER {
+                             udpListener(1),
+                             tcpConnection(2)
+                          }
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "Indicate the protocol in use that identifies the
+         type of subcomponent."
+      ::= { slapmSubcomponentEntry 5 }
+
+   slapmSubcomponentSystemAddress OBJECT-TYPE
+      SYNTAX      OCTET STRING (SIZE(0 | 4 | 16))
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "Address of a system that an Policy definition relates to.
+         A zero length octet string can be used to indicate that
+         only a single system is being represented.
+         Otherwise, the length of the octet string should be
+         4 for an ipv4 address and 16 for an ipv6 address."
+      ::= { slapmSubcomponentEntry 6 }
+
+   slapmSubcomponentPolicyName OBJECT-TYPE
+      SYNTAX      SlapmNameType
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "Policy name that this entry relates to.
+
+         This object, along with slapmSubcomponentTrafficProfileName,
+         have been replaced with the use of an unsigned integer
+         index that is mapped to an slapmPolicyNameEntry to actually
+         identify policy naming."
+      ::= { slapmSubcomponentEntry 7 }
+
+   slapmSubcomponentTrafficProfileName OBJECT-TYPE
+      SYNTAX      SlapmNameType
+      MAX-ACCESS  read-only
+      STATUS      deprecated
+      DESCRIPTION
+         "The corresponding traffic profile name.
+
+         This object, along with slapmSubcomponentProfileName,
+         have been replaced with the use of an unsigned integer
+         index that is mapped to an slapmPolicyNameEntry to
+         actually identify policy naming."
+      ::= { slapmSubcomponentEntry 8 }
+
+  slapmSubcomponentLastActivity OBJECT-TYPE
+      SYNTAX      DateAndTime
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "The date and timestamp of when this entry was last used."
+      DEFVAL { '0000000000000000'H }
+      ::= { slapmSubcomponentEntry 9 }
+
+   slapmSubcomponentInOctets OBJECT-TYPE
+       SYNTAX      Counter32
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+           "The number of octets received from IP for this
+           connection."
+       ::= { slapmSubcomponentEntry 10 }
+
+   slapmSubcomponentOutOctets OBJECT-TYPE
+       SYNTAX      Counter32
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+           "The number of octets sent to IP for this connection."
+       ::= { slapmSubcomponentEntry 11 }
+
+   slapmSubcomponentTcpOutBufferedOctets OBJECT-TYPE
+       SYNTAX      Counter32
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+           "Number of outgoing octets buffered.  The value
+           of this object is zero when the entry is not
+           for a TCP connection."
+       ::= { slapmSubcomponentEntry 12 }
+
+   slapmSubcomponentTcpInBufferedOctets OBJECT-TYPE
+       SYNTAX      Counter32
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+           "Number of incoming octets buffered.  The value
+           of this object is zero when the entry is not
+           for a TCP connection."
+       ::= { slapmSubcomponentEntry 13 }
+
+   slapmSubcomponentTcpReXmts OBJECT-TYPE
+       SYNTAX      Counter32
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+           "Number of retransmissions.  The value
+           of this object is zero when the entry is not
+           for a TCP connection."
+       ::= { slapmSubcomponentEntry 14 }
+
+   slapmSubcomponentTcpRoundTripTime OBJECT-TYPE
+       SYNTAX       Integer32
+       UNITS        "milliseconds"
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "The amount of time that has elapsed, measured in
+           milliseconds, from when the last TCP segment was
+           transmitted by the TCP Stack until the ACK was
+           received.
+
+           The value of this object is zero when the entry is not
+           for a TCP connection."
+       ::= { slapmSubcomponentEntry 15 }
+
+   slapmSubcomponentTcpRoundTripVariance OBJECT-TYPE
+       SYNTAX       Integer32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "Round trip time variance.
+
+           The value of this object is zero when the entry is not
+           for a TCP connection."
+       ::= { slapmSubcomponentEntry 16 }
+
+   slapmSubcomponentInPdus OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "The number of protocol related data units transferred
+           inbound:
+
+             slapmSubcomponentProtocol    PDU Type
+
+                  udpListener(1)          UDP datagrams
+                  tcpConnection(2)        TCP segments"
+       ::= { slapmSubcomponentEntry 17 }
+
+   slapmSubcomponentOutPdus OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "The number of protocol related data units transferred
+           outbound:
+
+             slapmSubcomponentProtocol    PDU Type
+
+                  udpListener(1)          UDP datagrams
+                  tcpConnection(2)        TCP segments"
+       ::= { slapmSubcomponentEntry 18 }
+
+   slapmSubcomponentApplName OBJECT-TYPE
+       SYNTAX       SnmpAdminString (SIZE(0..32))
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "The application name associated with this entry if known,
+           otherwise a zero-length octet string is returned as the
+           value of this object."
+       ::= { slapmSubcomponentEntry 19 }
+
+   slapmSubcomponentMonitorStatus OBJECT-TYPE
+      SYNTAX      SlapmStatus
+      MAX-ACCESS  read-only
+      STATUS       current
+      DESCRIPTION
+         "The value of this object indicates when a monitored
+         value has exceeded a threshold or isn't meeting the
+         defined service level.  Only the following SlapmStatus
+         BITS setting can be reported here:
+
+                     monitorMinInRateNotAchieved(5),
+                     monitorMaxInRateExceeded(6),
+                     monitorMaxDelayExceeded(7),
+                     monitorMinOutRateNotAchieved(8),
+                     monitorMaxOutRateExceeded(9)
+
+         This object only has meaning when an corresponding
+         slapmPolicyMonitorEntry exists with the
+         slapmPolicyMonitorControl BITS setting
+         monitorSubcomponents(5) enabled."
+      ::= { slapmSubcomponentEntry 20 }
+
+   slapmSubcomponentMonitorIntTime OBJECT-TYPE
+      SYNTAX      DateAndTime
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The timestamp for when the last interval ended.
+
+         This object only has meaning when an corresponding
+         slapmPRMonEntry (or old slapmPolicyMonitorEntry)
+         exists with the slapmPRMonControl (or
+         slapmPolicyMonitorControl) BITS setting
+         monitorSubcomponents(5) enabled.  All of the
+         octets returned when monitoring is not in effect
+         must be zero."
+      DEFVAL { '0000000000000000'H }
+      ::= { slapmSubcomponentEntry 21 }
+
+   slapmSubcomponentMonitorCurrentInRate OBJECT-TYPE
+      SYNTAX      Gauge32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "Using the value of the corresponding
+         slapmPRMonInterval (or slapmPolicyMonitorInterval),
+         slapmSubcomponentStatsInOctets
+         is divided by slapmSubcomponentMonitorInterval to determine
+         the current in transfer rate.
+
+         This object only has meaning when an corresponding
+         slapmPRMonEntry (or slapmPolicyMonitorEntry)
+         exists with the slapmPRMonControl (or
+         slapmPolicyMonitorControl) BITS setting
+         monitorSubcomponents(5) enabled.  The value of this
+         object is zero when monitoring is not in effect."
+      ::= { slapmSubcomponentEntry 22 }
+
+   slapmSubcomponentMonitorCurrentOutRate OBJECT-TYPE
+      SYNTAX      Gauge32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "Using the value of the corresponding slapmPRMonInterval (or
+         slapmPolicyMonitorInterva)l, slapmSubcomponentStatsOutOctets
+         is divided by slapmPRMonInterval (or
+         slapmPolicyMonitorInterval) to determine the
+         current out transfer rate.
+
+         This object only has meaning when an corresponding
+         slapmPRMonEntry (or slapmPolicyMonitorEntry) exists with
+         the slapmPRMonControl (or slapmPolicyMonitorControl)
+         BITS setting monitorSubcomponents(5) enabled.  The value
+         of this object is zero when monitoring is not in effect."
+      ::= { slapmSubcomponentEntry 23 }
+
+  slapmSubcomponentPolicyRuleIndex OBJECT-TYPE
+     SYNTAX      Unsigned32 (0..4294967295)
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+        "Points to an slapmPolicyNameEntry when combined with
+        slapmSubcomponentSystemAddress to indicate the
+        policy naming that relates to this entry.
+
+        A value of 0 for this object MUST be returned when
+        the corresponding slapmSubcomponentEntry has no
+        policy rule associated with it."
+     ::= { slapmSubcomponentEntry 24 }
+
+   -- Table that maps an unsigned integer index to whatever
+   -- names a policy rule.
+
+   slapmPolicyNameTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF SlapmPolicyNameEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Provides the mapping between a policy index as a
+          unsigned 32 bit integer and the unique name associated
+          with a policy rule."
+     ::= { slapmTableObjects 4 }
+
+   slapmPolicyNameEntry OBJECT-TYPE
+      SYNTAX SlapmPolicyNameEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Defines an entry in the slapmPolicyNameTable."
+      INDEX {
+             slapmPolicyNameSystemAddress,
+             slapmPolicyNameIndex
+            }
+      ::= { slapmPolicyNameTable 1 }
+
+   SlapmPolicyNameEntry ::=
+      SEQUENCE {
+          slapmPolicyNameSystemAddress   OCTET STRING,
+          slapmPolicyNameIndex           Unsigned32,
+          slapmPolicyNameOfRule          SlapmPolicyRuleName
+      }
+
+   slapmPolicyNameSystemAddress OBJECT-TYPE
+      SYNTAX      OCTET STRING (SIZE(0 | 4 | 16))
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "Address of a system that an Policy rule definition relates
+         to.  A zero length octet string must be used to indicate
+         that only a single system is being represented.
+         Otherwise, the length of the octet string must be
+         4 for an ipv4 address or 16 for an ipv6 address."
+      ::= { slapmPolicyNameEntry 1 }
+
+   slapmPolicyNameIndex OBJECT-TYPE
+      SYNTAX      Unsigned32 (1..4294967295)
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+          "A locally arbitrary, but unique identifier associated
+          with this table entry.  This value is not expected to
+          remain constant across reIPLs."
+      ::= { slapmPolicyNameEntry 2 }
+
+   slapmPolicyNameOfRule OBJECT-TYPE
+      SYNTAX      SlapmPolicyRuleName
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The unique name that identifies a policy rule definition."
+      ::= { slapmPolicyNameEntry 3 }
+
+   -- Sla Performance Monitoring Policy Rule Statistics Table
+
+   slapmPolicyRuleStatsTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF SlapmPolicyRuleStatsEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Provides statistics on a per system and a per policy
+          rule basis."
+     ::= { slapmTableObjects 5 }
+
+   slapmPolicyRuleStatsEntry OBJECT-TYPE
+      SYNTAX SlapmPolicyRuleStatsEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Defines an entry in the slapmPolicyRuleStatsTable.
+          This table defines a set of statistics that is kept
+          on a per system and per policy rule basis.
+
+          Entries in this table are not created or deleted via SNMP
+          but reflect the set of policy rule definitions known
+          at a system."
+      INDEX {
+             slapmPolicyNameSystemAddress,
+             slapmPolicyNameIndex
+            }
+      ::= { slapmPolicyRuleStatsTable 1 }
+
+   SlapmPolicyRuleStatsEntry ::=
+      SEQUENCE {
+          slapmPolicyRuleStatsOperStatus     INTEGER,
+          slapmPolicyRuleStatsActiveConns    Gauge32,
+          slapmPolicyRuleStatsTotalConns     Counter32,
+          slapmPolicyRuleStatsLActivated     DateAndTime,
+          slapmPolicyRuleStatsLastMapping    DateAndTime,
+          slapmPolicyRuleStatsInOctets       Counter32,
+          slapmPolicyRuleStatsOutOctets      Counter32,
+          slapmPolicyRuleStatsConnLimit      Unsigned32,
+          slapmPolicyRuleStatsCountAccepts   Counter32,
+          slapmPolicyRuleStatsCountDenies    Counter32,
+          slapmPolicyRuleStatsInDiscards     Counter32,
+          slapmPolicyRuleStatsOutDiscards    Counter32,
+          slapmPolicyRuleStatsInPackets      Counter32,
+          slapmPolicyRuleStatsOutPackets     Counter32,
+          slapmPolicyRuleStatsInProOctets    Counter32,
+          slapmPolicyRuleStatsOutProOctets   Counter32,
+          slapmPolicyRuleStatsMinRate        Unsigned32,
+          slapmPolicyRuleStatsMaxRate        Unsigned32,
+          slapmPolicyRuleStatsMaxDelay       Unsigned32,
+          slapmPolicyRuleStatsTotalRsvpFlows Counter32,
+          slapmPolicyRuleStatsActRsvpFlows   Gauge32
+      }
+
+   slapmPolicyRuleStatsOperStatus OBJECT-TYPE
+      SYNTAX      INTEGER {
+                             inactive(1),
+                             active(2),
+                             deleteNeeded(3)
+                          }
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The state of a policy entry:
+
+           inactive(1)      - An policy entry was either defined
+                              by local system definition or
+                              discovered via
+                              a directory search but has not been
+                              activated (not currently being used).
+           active(2)        - Policy entry is being used to affect
+                              traffic flows.
+           deleteNeeded(3)  - Either though local implementation
+                              dependent methods or by discovering
+                              that the directory entry corresponding
+                              to this table entry no longer
+                              exists and slapmPolicyPurgeTime needs
+                              to expire before attempting to remove
+                              the corresponding slapmPolicyStatsEntry
+                              and any dependent slapmPolicyMonitor
+                              table entries.
+         Note: a policy rule in a state other than
+         active(2) is not being used to affect traffic flows."
+      ::= { slapmPolicyRuleStatsEntry 1 }
+
+   slapmPolicyRuleStatsActiveConns OBJECT-TYPE
+      SYNTAX      Gauge32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of active TCP connections that are
+         affected by the corresponding policy entry."
+      ::= { slapmPolicyRuleStatsEntry 2 }
+
+   slapmPolicyRuleStatsTotalConns OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of total TCP connections that are
+         affected by the corresponding policy entry."
+      ::= { slapmPolicyRuleStatsEntry 3 }
+
+   slapmPolicyRuleStatsLActivated OBJECT-TYPE
+      SYNTAX      DateAndTime
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The timestamp for when the corresponding policy entry
+         was last activated.  The value of this object serves as
+         the discontinuity event indicator when polling entries
+         in this table.  The value of this object is updated on
+         transition of slapmPolicyRuleStatsOperStatus into the
+         active(2) state."
+      DEFVAL { '0000000000000000'H }
+      ::= { slapmPolicyRuleStatsEntry 4 }
+
+   slapmPolicyRuleStatsLastMapping OBJECT-TYPE
+      SYNTAX      DateAndTime
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The timestamp for when the last time
+         that the associated policy entry was used."
+      DEFVAL { '0000000000000000'H }
+      ::= { slapmPolicyRuleStatsEntry 5 }
+
+   slapmPolicyRuleStatsInOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of octets that was received by IP for an
+         entity that map to this entry."
+      ::= { slapmPolicyRuleStatsEntry 6 }
+
+   slapmPolicyRuleStatsOutOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of octets that was transmitted by IP for an
+         entity that map to this entry."
+      ::= { slapmPolicyRuleStatsEntry 7 }
+
+   slapmPolicyRuleStatsConnLimit OBJECT-TYPE
+      SYNTAX      Unsigned32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The limit for the number of active TCP connections that
+         are allowed for this policy definition.  A value of zero
+         for this object implies that a connection limit has not
+         been specified."
+      ::= { slapmPolicyRuleStatsEntry 8 }
+
+   slapmPolicyRuleStatsCountAccepts OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "This counter is incremented when a policy action's
+          Permission value is set to Accept and a session
+          (TCP connection) is accepted."
+      ::= { slapmPolicyRuleStatsEntry 9 }
+
+   slapmPolicyRuleStatsCountDenies OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "This counter is incremented when a policy action's
+          Permission value is set to Deny and a session is denied,
+          or when a session (TCP connection) is rejected due to a
+          policy's connection limit (slapmPolicyRuleStatsConnectLimit)
+          being reached."
+      ::= { slapmPolicyRuleStatsEntry 10 }
+
+   slapmPolicyRuleStatsInDiscards OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "This counter counts the number of in octets discarded.
+          This occurs when an error is detected.  Examples of this
+          are buffer overflow, checksum error, or bad packet
+          format."
+      ::= { slapmPolicyRuleStatsEntry 11 }
+
+   slapmPolicyRuleStatsOutDiscards OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "This counter counts the number of out octets discarded.
+          Examples of this are buffer overflow, checksum error, or
+          bad packet format."
+      ::= { slapmPolicyRuleStatsEntry 12 }
+
+   slapmPolicyRuleStatsInPackets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "This counter counts the number of in packets received
+          that relate to this policy entry from IP."
+      ::= { slapmPolicyRuleStatsEntry 13 }
+
+   slapmPolicyRuleStatsOutPackets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "This counter counts the number of out packets sent
+          by IP that relate to this policy entry."
+      ::= { slapmPolicyRuleStatsEntry 14 }
+
+   slapmPolicyRuleStatsInProOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "This counter counts the number of in octets that are
+          determined to be within profile."
+      ::= { slapmPolicyRuleStatsEntry 15 }
+
+   slapmPolicyRuleStatsOutProOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "This counter counts the number of out octets that are
+          determined to be within profile."
+      ::= { slapmPolicyRuleStatsEntry 16 }
+
+   slapmPolicyRuleStatsMinRate OBJECT-TYPE
+      SYNTAX      Unsigned32
+      UNITS       "Kilobits per second"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "The minimum transfer rate defined for this entry."
+      ::= { slapmPolicyRuleStatsEntry 17 }
+
+   slapmPolicyRuleStatsMaxRate OBJECT-TYPE
+      SYNTAX      Unsigned32
+      UNITS       "Kilobits per second"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "The maximum transfer rate defined for this entry."
+      ::= { slapmPolicyRuleStatsEntry 18 }
+
+   slapmPolicyRuleStatsMaxDelay OBJECT-TYPE
+      SYNTAX      Unsigned32
+      UNITS       "milliseconds"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "The maximum delay defined for this entry."
+      ::= { slapmPolicyRuleStatsEntry 19 }
+
+   slapmPolicyRuleStatsTotalRsvpFlows OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "Total number of RSVP flows that have be activated."
+      ::= { slapmPolicyRuleStatsEntry 20 }
+
+   slapmPolicyRuleStatsActRsvpFlows OBJECT-TYPE
+      SYNTAX      Gauge32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "Current number of active RSVP flows."
+      ::= { slapmPolicyRuleStatsEntry 21 }
+
+   -- SLA Performance Monitoring Policy Rule Monitor Table
+
+   slapmPRMonTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF SlapmPRMonEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Provides a method of monitoring policies and their
+          effect at a system."
+     ::= { slapmTableObjects 6 }
+
+   slapmPRMonEntry OBJECT-TYPE
+      SYNTAX SlapmPRMonEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+          "Defines an entry in the slapmPRMonTable. This
+          table defines which policies should be monitored on a
+          per policy rule basis.
+
+          An attempt to set any read-create object defined within an
+          slapmPRMonEntry while the value of slapmPRMonRowStatus is
+          active(1) will result in an inconsistentValue error."
+      INDEX {
+             slapmPRMonOwnerIndex,
+             slapmPRMonSystemAddress,
+             slapmPRMonIndex
+            }
+      ::= { slapmPRMonTable 1 }
+
+   SlapmPRMonEntry ::=
+      SEQUENCE {
+          slapmPRMonOwnerIndex              SnmpAdminString,
+          slapmPRMonSystemAddress           OCTET STRING,
+          slapmPRMonIndex                   Unsigned32,
+          slapmPRMonControl                 BITS,
+          slapmPRMonStatus                  SlapmStatus,
+          slapmPRMonInterval                Unsigned32,
+          slapmPRMonIntTime                 DateAndTime,
+          slapmPRMonCurrentInRate           Gauge32,
+          slapmPRMonCurrentOutRate          Gauge32,
+          slapmPRMonMinRateLow              Unsigned32,
+          slapmPRMonMinRateHigh             Unsigned32,
+          slapmPRMonMaxRateHigh             Unsigned32,
+          slapmPRMonMaxRateLow              Unsigned32,
+          slapmPRMonMaxDelayHigh            Unsigned32,
+          slapmPRMonMaxDelayLow             Unsigned32,
+          slapmPRMonMinInRateNotAchieves    Counter32,
+          slapmPRMonMaxInRateExceeds        Counter32,
+          slapmPRMonMaxDelayExceeds         Counter32,
+          slapmPRMonMinOutRateNotAchieves   Counter32,
+          slapmPRMonMaxOutRateExceeds       Counter32,
+          slapmPRMonCurrentDelayRate        Gauge32,
+          slapmPRMonRowStatus               RowStatus
+      }
+
+   slapmPRMonOwnerIndex OBJECT-TYPE
+      SYNTAX      SnmpAdminString (SIZE(0..16))
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "To facilitate the provisioning of access control by a
+         security administrator using the View-Based Access
+         Control Model (RFC 2575, VACM) for tables in which
+         multiple users may need to independently create or modify
+         entries, the initial index is used as an 'owner index'.
+         Such an initial index has a syntax of SnmpAdminString,
+         and can thus be trivially mapped to a securityName or
+         groupName as defined in VACM, in accordance with a
+         security policy.
+
+         All entries in that table belonging to a particular user
+         will have the same value for this initial index.  For a
+         given user's entries in a particular table, the object
+         identifiers for the information in these entries will
+         have the same subidentifiers (except for the 'column'
+         subidentifier) up to the end of the encoded owner index.
+         To configure VACM to permit access to this portion of the
+         table, one would create vacmViewTreeFamilyTable entries
+         with the value of vacmViewTreeFamilySubtree including the
+         owner index portion, and vacmViewTreeFamilyMask
+         'wildcarding' the column subidentifier.  More elaborate
+         configurations are possible."
+      ::= { slapmPRMonEntry 1 }
+
+   slapmPRMonSystemAddress OBJECT-TYPE
+      SYNTAX      OCTET STRING (SIZE(0 | 4 | 16))
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "Address of a system that an Policy definition relates to.
+         A zero length octet string can be used to indicate that
+         only a single system is being represented.
+         Otherwise, the length of the octet string should be
+         4 for an ipv4 address and 16 for an ipv6 address."
+      ::= { slapmPRMonEntry 2 }
+
+   slapmPRMonIndex OBJECT-TYPE
+      SYNTAX      Unsigned32
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "An slapmPolicyNameTable index, slapmPolicyNameIndex,
+         that points to the unique name associated with a
+         policy rule definition."
+      ::= { slapmPRMonEntry 3 }
+
+   slapmPRMonControl OBJECT-TYPE
+      SYNTAX      BITS {
+                        monitorMinRate(0),
+                        monitorMaxRate(1),
+                        monitorMaxDelay(2),
+                        enableAggregateTraps(3),
+                        enableSubcomponentTraps(4),
+                        monitorSubcomponents(5)
+                       }
+      MAX-ACCESS  read-create
+      STATUS      current
+      DESCRIPTION
+         "The value of this object determines the type and level
+         of monitoring that is applied to a policy rule.  The
+         value of this object can't be changed once the table
+         entry that it is a part of is activated via a
+         slapmPRMonRowStatus transition to active state.
+
+             monitorMinRate(0) - Monitor minimum transfer rate.
+             monitorMaxRate(1) - Monitor maximum transfer rate.
+             monitorMaxDelay(2) - Monitor maximum delay.
+             enableAggregateTraps(3) - The enableAggregateTraps(3)
+                   BITS setting enables notification generation
+                   when monitoring a policy rule as an
+                   aggregate using the values in the corresponding
+                   slapmPRMonStatsEntry.  By default this function
+                   is not enabled.
+             enableSubcomponentTraps(4) - This BITS setting enables
+                   notification generation when monitoring all
+                   subcomponents that are mapped to an corresponding
+                   slapmPRMonStatsEntry.  By default this
+                   function is not enabled.
+             monitorSubcomponents(5) - This BITS setting enables
+                   monitoring of each subcomponent (typically a
+                   TCP connection or UDP listener) individually."
+      DEFVAL   { { monitorMinRate, monitorMaxRate,
+                   monitorMaxDelay } }
+      ::= { slapmPRMonEntry 4 }
+
+   slapmPRMonStatus OBJECT-TYPE
+      SYNTAX      SlapmStatus
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The value of this object indicates when a monitored
+         value has not meet a threshold or isn't meeting the
+         defined service level.  The SlapmStatus TEXTUAL-CONVENTION
+         defines two levels of not meeting a threshold.  The first
+         set:
+                     slaMinInRateNotAchieved(0),
+                     slaMaxInRateExceeded(1),
+                     slaMaxDelayExceeded(2),
+                     slaMinOutRateNotAchieved(3),
+                     slaMaxOutRateExceeded(4)
+
+         are used to indicate when the SLA as an aggregate is
+         not meeting a threshold while the second set:
+
+                     monitorMinInRateNotAchieved(5),
+                     monitorMaxInRateExceeded(6),
+                     monitorMaxDelayExceeded(7),
+                     monitorMinOutRateNotAchieved(8),
+                     monitorMaxOutRateExceeded(9)
+
+         indicate that at least one subcomponent is not meeting
+         a threshold."
+      ::= { slapmPRMonEntry 5 }
+
+   slapmPRMonInterval OBJECT-TYPE
+      SYNTAX      Unsigned32 (15..86400) -- 15 second min, 24 hour max
+      UNITS       "seconds"
+      MAX-ACCESS  read-create
+      STATUS      current
+      DESCRIPTION
+         "The number of seconds that defines the sample period."
+      DEFVAL   {20}    -- 20 seconds
+      ::= { slapmPRMonEntry 6 }
+
+   slapmPRMonIntTime OBJECT-TYPE
+      SYNTAX      DateAndTime
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The timestamp for when the last interval ended."
+      DEFVAL { '0000000000000000'H }
+      ::= { slapmPRMonEntry 7 }
+
+   slapmPRMonCurrentInRate OBJECT-TYPE
+      SYNTAX      Gauge32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "Using the value of the corresponding
+         slapmPRMonInterval, slapmPolicyRuleStatsInOctets
+         is sampled and then divided by slapmPRMonInterval
+         to determine the current in transfer rate."
+      ::= { slapmPRMonEntry 8 }
+
+   slapmPRMonCurrentOutRate OBJECT-TYPE
+      SYNTAX      Gauge32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "Using the value of the corresponding
+         slapmPolicyMonInterval, slapmPolicyRuleStatsOutOctets
+         is sampled and then divided by slapmPRMonInterval
+         to determine the current out transfer rate."
+      ::= { slapmPRMonEntry 9 }
+
+   slapmPRMonMinRateLow OBJECT-TYPE
+      SYNTAX      Unsigned32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-create
+      STATUS      current
+      DESCRIPTION
+         "The threshold for generating a
+         slapmPolicyRuleMonNotOkay notification, signalling
+         that a monitored minimum transfer rate has not been meet.
+         A slapmPolicyRuleMonNotOkay notification is not
+         generated again for an slapmPRMonEntry until
+         the minimum transfer rate
+         exceeds slapmPRMonMinRateHigh (a
+         slapmPolicyRuleMonOkay notification is then transmitted)
+         and then fails below slapmPRMonMinRateLow.  This
+         behavior reduces the slapmPolicyRuleMonNotOkay
+         notifications that are transmitted.
+
+         A value of zero for this object is returned when the
+         slapmPRMonControl monitorMinRate(0) is not
+         enabled.  When enabled the default value for this object
+         is the min rate value specified in the associated
+         action definition minus 10%.  If the action definition
+         doesn't have a min rate defined then there is no
+         default for this object and a value MUST be specified
+         prior to activating this entry when monitorMinRate(0)
+         is selected.
+
+         Note: The corresponding slapmPRMonControl
+         BITS setting, enableAggregateTraps(3), MUST be selected in
+         order for any notification relating to this entry to
+         potentially be generated."
+      ::= { slapmPRMonEntry 10 }
+
+   slapmPRMonMinRateHigh OBJECT-TYPE
+      SYNTAX      Unsigned32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-create
+      STATUS      current
+      DESCRIPTION
+         "The threshold for generating a slapmPolicyRuleMonOkay
+         notification, signalling that a monitored minimum
+         transfer rate has increased to an acceptable level.
+
+         A value of zero for this object is returned when the
+         slapmPRMonControl monitorMinRate(0) is not
+         enabled.  When enabled the default value for this object
+         is the min rate value specified in the associated
+         action definition plus 10%.  If the action definition
+         doesn't have a min rate defined then there is no
+         default for this object and a value MUST be specified
+         prior to activating this entry when monitorMinRate(0)
+         is selected.
+
+         Note: The corresponding slapmPRMonControl
+         BITS setting, enableAggregateTraps(3), MUST be selected
+         in order for any notification relating to this entry to
+         potentially be generated."
+      ::= { slapmPRMonEntry 11 }
+
+   slapmPRMonMaxRateHigh OBJECT-TYPE
+      SYNTAX      Unsigned32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-create
+      STATUS      current
+      DESCRIPTION
+         "The threshold for generating a
+         slapmPolicyRuleMonNotOkay notification, signalling
+         that a monitored maximum transfer rate has been exceeded.
+
+         A slapmPolicyRuleNotOkay notification is not
+         generated again for an slapmPRMonEntry until the
+         maximum transfer rate fails below
+         slapmPRMonMaxRateLow (a slapmPolicyRuleMonOkay
+         notification is then transmitted) and then raises above
+         slapmPRMonMaxRateHigh.  This behavior reduces the
+         slapmPolicyRuleMonNotOkay notifications that are
+         transmitted.
+
+         A value of zero for this object is returned when the
+         slapmPRMonControl monitorMaxRate(1) is not
+         enabled.  When enabled the default value for this object
+         is the max rate value specified in the associated
+         action definition plus 10%.  If the action definition
+         doesn't have a max rate defined then there is no
+         default for this object and a value MUST be specified
+         prior to activating this entry when monitorMaxRate(1)
+         is selected.
+
+         Note: The corresponding slapmPRMonControl
+         BITS setting, enableAggregateTraps(3), MUST be selected in
+         order for any notification relating to this entry to
+         potentially be generated."
+      ::= { slapmPRMonEntry 12 }
+
+   slapmPRMonMaxRateLow OBJECT-TYPE
+      SYNTAX      Unsigned32
+      UNITS       "kilobits per second"
+      MAX-ACCESS  read-create
+      STATUS      current
+      DESCRIPTION
+         "The threshold for generating a slapmPolicyRuleMonOkay
+         notification, signalling that a monitored maximum
+         transfer rate has fallen to an acceptable level.
+         A value of zero for this object is returned when the
+         slapmPRMonControl monitorMaxRate(1) is not
+         enabled.  When enabled the default value for this object
+         is the max rate value specified in the associated
+         action definition minus 10%.  If the action definition
+         doesn't have a max rate defined then there is no
+         default for this object and a value MUST be specified
+         prior to activating this entry when monitorMaxRate(1)
+         is selected.
+
+         Note: The corresponding slapmPRMonControl
+         BITS setting, enableAggregateTraps(3), MUST be selected in
+         order for any notification relating to this entry to
+         potentially be generated."
+      ::= { slapmPRMonEntry 13 }
+
+   slapmPRMonMaxDelayHigh OBJECT-TYPE
+      SYNTAX      Unsigned32
+      UNITS       "milliseconds"
+      MAX-ACCESS  read-create
+      STATUS      current
+      DESCRIPTION
+         "The threshold for generating a
+         slapmPolicyRuleMonNotOkay notification, signalling
+         that a monitored maximum delay rate has been exceeded.
+
+         A slapmPolicyRuleMonNotOkay notification is not
+         generated again for an slapmPRMonEntry until
+         the maximum delay rate falls below
+         slapmPRMonMaxDelayLow (a slapmPolicyRuleMonOkay
+         notification is then transmitted) and raises above
+         slapmPRMonMaxDelayHigh.  This behavior reduces
+         the slapmPolicyRuleMonNotOkay notifications that are
+         transmitted.
+
+         A value of zero for this object is returned when the
+         slapmPRMonControl monitorMaxDelay(4) is not
+         enabled.  When enabled the default value for this object
+         is the max delay value specified in the associated
+         action definition plus 10%.  If the action definition
+         doesn't have a max delay defined then there is no
+         default for this object and a value MUST be specified
+         prior to activating this entry when monitorMaxDelay(4)
+         is selected.
+
+         Note: The corresponding slapmPRMonControl
+         BITS setting, enableAggregateTraps(3), MUST be selected
+         in order for any notification relating to this entry to
+         potentially be generated."
+      ::= { slapmPRMonEntry 14 }
+
+   slapmPRMonMaxDelayLow OBJECT-TYPE
+      SYNTAX      Unsigned32
+      UNITS       "milliseconds"
+      MAX-ACCESS  read-create
+      STATUS      current
+      DESCRIPTION
+         "The threshold for generating a slapmPolicyRuleMonOkay
+         notification, signalling that a monitored maximum delay
+         rate has fallen to an acceptable level.
+
+         A value of zero for this object is returned when the
+         slapmPRMonControl monitorMaxDelay(4) is not
+         enabled.  When enabled the default value for this object
+         is the max delay value specified in the associated
+         action definition minus 10%.  If the action definition
+         doesn't have a max delay defined then there is no
+         default for this object and a value MUST be specified
+         prior to activating this entry when monitorMaxDelay(4)
+         is selected.
+
+         Note: The corresponding slapmPRMonControl
+         BITS setting, enableAggregateTraps(3), MUST be selected
+         in order for any notification relating to this entry to
+         potentially be generated."
+      ::= { slapmPRMonEntry 15 }
+
+   slapmPRMonMinInRateNotAchieves OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "The number of times that a minimum transfer in rate
+          was not achieved."
+      ::= { slapmPRMonEntry 16 }
+
+   slapmPRMonMaxInRateExceeds OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "The number of times that a maximum transfer in rate
+          was exceeded."
+      ::= { slapmPRMonEntry 17 }
+
+   slapmPRMonMaxDelayExceeds OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "The number of times that a maximum delay in rate
+          was exceeded."
+      ::= { slapmPRMonEntry 18 }
+
+   slapmPRMonMinOutRateNotAchieves OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "The number of times that a minimum transfer out rate
+          was not achieved."
+      ::= { slapmPRMonEntry 19 }
+
+   slapmPRMonMaxOutRateExceeds OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "The number of times that a maximum transfer out rate
+          was exceeded."
+      ::= { slapmPRMonEntry 20 }
+
+   slapmPRMonCurrentDelayRate OBJECT-TYPE
+      SYNTAX      Gauge32
+      UNITS       "milliseconds"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "The current delay rate for this entry.  This is
+          calculated by taking the average of the TCP
+          round trip times for all associating
+          slapmSubcomponentTable entries within a interval."
+      ::= { slapmPRMonEntry 21 }
+
+   slapmPRMonRowStatus  OBJECT-TYPE
+      SYNTAX       RowStatus
+      MAX-ACCESS   read-create
+      STATUS       current
+      DESCRIPTION
+        "This object allows entries to be created and deleted
+         in the slapmPRMonTable.  An entry in this table
+         is deleted by setting this object to destroy(6).
+
+         Removal of an corresponding (same policy index)
+         slapmPolicyRuleStatsEntry has the side effect of the
+         automatic deletion an entry in this table.
+
+         Note that an attempt to set any read-create object
+         defined within an slapmPRMonEntry while the value
+         of slapmPRMonRowStatus is active(1) will result in
+         an inconsistentValue error."
+      ::= { slapmPRMonEntry 22 }
+
+   -- Notifications
+
+   slapmMonitoredEventNotAchieved NOTIFICATION-TYPE
+      OBJECTS {
+          slapmPolicyMonitorIntTime,
+          slapmPolicyMonitorControl,
+          slapmPolicyMonitorStatus,
+          slapmPolicyMonitorStatus,
+          slapmPolicyMonitorCurrentInRate,
+          slapmPolicyMonitorCurrentOutRate,
+          slapmPolicyMonitorCurrentDelayRate
+      }
+      STATUS  deprecated
+      DESCRIPTION
+         "This notification is generated when an monitored event
+         is not achieved with respect to threshold.  This
+         applies only towards monitoring a policy traffic
+         profile as an aggregate via an associating
+         slapmPolicyStatsEntry.  The value
+         of slapmPolicyMonitorControl can be examined to
+         determine what is being monitored.  The first
+         slapmPolicyMonitorStatus value supplies the current
+         monitor status while the 2nd value supplies the
+         previous status.
+
+         Note: The corresponding slapmPolicyMonitorControl
+         BITS setting, enableAggregateTraps(3), MUST be
+         selected in order for this notification to
+         potentially be generated."
+      ::= { slapmNotifications 1 }
+
+   slapmMonitoredEventOkay NOTIFICATION-TYPE
+      OBJECTS {
+          slapmPolicyMonitorIntTime,
+          slapmPolicyMonitorControl,
+          slapmPolicyMonitorStatus,
+          slapmPolicyMonitorStatus,
+          slapmPolicyMonitorCurrentInRate,
+          slapmPolicyMonitorCurrentOutRate,
+          slapmPolicyMonitorCurrentDelayRate
+      }
+      STATUS  deprecated
+      DESCRIPTION
+         "This notification is generated when a monitored
+         event has improved to an acceptable level.  This
+         applies only towards monitoring a policy traffic
+         profile as an aggregate via an associating
+         slapmPolicyStatsEntry.  The value
+         of slapmPolicyMonitorControl can be examined to
+         determine what is being monitored.  The first
+         slapmPolicyMonitorStatus value supplies the current
+         monitor status while the 2nd value supplies the
+         previous status.
+
+         Note: The corresponding slapmPolicyMonitorControl
+         BITS setting, enableAggregateTraps(3), MUST be
+         selected in order for this notification to
+         potentially be generated."
+      ::= { slapmNotifications 2 }
+
+   slapmPolicyProfileDeleted NOTIFICATION-TYPE
+      OBJECTS {
+          slapmPolicyStatsActiveConns,
+          slapmPolicyStatsTotalConns,
+          slapmPolicyStatsFirstActivated,
+          slapmPolicyStatsLastMapping,
+          slapmPolicyStatsInOctets,
+          slapmPolicyStatsOutOctets,
+          slapmPolicyStatsConnectionLimit,
+          slapmPolicyStatsCountAccepts,
+          slapmPolicyStatsCountDenies,
+          slapmPolicyStatsInDiscards,
+          slapmPolicyStatsOutDiscards,
+          slapmPolicyStatsInPackets,
+          slapmPolicyStatsOutPackets,
+          slapmPolicyStatsInProfileOctets,
+          slapmPolicyStatsOutProfileOctets,
+          slapmPolicyStatsMinRate,
+          slapmPolicyStatsMaxRate,
+          slapmPolicyStatsMaxDelay
+      }
+      STATUS  deprecated
+      DESCRIPTION
+         "A slapmPolicyDeleted notification is sent when a
+         slapmPolicyStatsEntry is deleted if the value of
+         slapmPolicyTrapEnable is enabled(1)."
+      ::= { slapmNotifications 3 }
+
+   slapmPolicyMonitorDeleted NOTIFICATION-TYPE
+      OBJECTS {
+          slapmPolicyMonitorStatus,
+          slapmPolicyMonitorInterval,
+          slapmPolicyMonitorIntTime,
+          slapmPolicyMonitorCurrentInRate,
+          slapmPolicyMonitorCurrentOutRate,
+          slapmPolicyMonitorCurrentDelayRate,
+          slapmPolicyMonitorMinRateLow,
+          slapmPolicyMonitorMinRateHigh,
+          slapmPolicyMonitorMaxRateHigh,
+          slapmPolicyMonitorMaxRateLow,
+          slapmPolicyMonitorMaxDelayHigh,
+          slapmPolicyMonitorMaxDelayLow,
+          slapmPolicyMonitorMinInRateNotAchieves,
+          slapmPolicyMonitorMaxInRateExceeds,
+          slapmPolicyMonitorMaxDelayExceeds,
+          slapmPolicyMonitorMinOutRateNotAchieves,
+          slapmPolicyMonitorMaxOutRateExceeds
+      }
+      STATUS  deprecated
+      DESCRIPTION
+         "A slapmPolicyMonitorDeleted notification is sent when a
+         slapmPolicyMonitorEntry is deleted if the value of
+         slapmPolicyTrapEnable is enabled(1)."
+      ::= { slapmNotifications 4 }
+
+   slapmSubcomponentMonitoredEventNotAchieved NOTIFICATION-TYPE
+      OBJECTS {
+          slapmSubcomponentSystemAddress,
+          slapmSubcomponentPolicyName,
+          slapmSubcomponentTrafficProfileName,
+          slapmSubcomponentMonitorStatus,
+          slapmSubcomponentMonitorStatus,
+          slapmSubcomponentMonitorIntTime,
+          slapmSubcomponentMonitorCurrentInRate,
+          slapmSubcomponentMonitorCurrentOutRate,
+          slapmSubcomponentTcpRoundTripTime
+      }
+      STATUS  deprecated
+      DESCRIPTION
+         "This notification is generated when a monitored value
+         does not achieved a threshold specification.  This
+         applies only towards monitoring the individual components
+         of a policy traffic profile.  The value of the
+         corresponding slapmPolicyMonitorControl can be examined
+         to determine what is being monitored.  The first
+         slapmSubcomponentMonitorStatus value supplies the current
+         monitor status while the 2nd value supplies the
+         previous status.
+
+         Note: The corresponding slapmPolicyMonitorControl
+         BITS setting, enableSubcomponentTraps(4), MUST be selected
+         in order for this notification to potentially be generated."
+      ::= { slapmNotifications 5 }
+
+   slapmSubcomponentMonitoredEventOkay NOTIFICATION-TYPE
+      OBJECTS {
+          slapmSubcomponentSystemAddress,
+          slapmSubcomponentPolicyName,
+          slapmSubcomponentTrafficProfileName,
+          slapmSubcomponentMonitorStatus,
+          slapmSubcomponentMonitorStatus,
+          slapmSubcomponentMonitorIntTime,
+          slapmSubcomponentMonitorCurrentInRate,
+          slapmSubcomponentMonitorCurrentOutRate,
+          slapmSubcomponentTcpRoundTripTime
+      }
+      STATUS  deprecated
+      DESCRIPTION
+         "This notification is generated when a monitored value
+         has reached an acceptable level.
+
+         Note: The corresponding slapmPolicyMonitorControl
+         BITS setting, enableSubcomponentTraps(3), MUST be
+         selected in order for this notification to potentially
+         be generated."
+      ::= { slapmNotifications 6 }
+
+   slapmPolicyRuleMonNotOkay NOTIFICATION-TYPE
+      OBJECTS {
+          slapmPRMonIntTime,
+          slapmPRMonControl,
+          slapmPRMonStatus,
+          slapmPRMonStatus,
+          slapmPRMonCurrentInRate,
+          slapmPRMonCurrentOutRate,
+          slapmPRMonCurrentDelayRate
+      }
+      STATUS  current
+      DESCRIPTION
+         "This notification is generated when an monitored event
+         is not achieved with respect to a threshold.  This
+         applies only towards monitoring a policy rule
+         as an aggregate via an associating
+         slapmPolicyRuleStatsEntry.  The value
+         of slapmPRMonControl can be examined to
+         determine what is being monitored.  The first
+         slapmPRMonStatus value supplies the current
+         monitor status while the 2nd value supplies the
+         previous status.
+
+         Note: The corresponding slapmPRMonControl
+         BITS setting, enableAggregateTraps(3), MUST be
+         selected in order for this notification to
+         potentially be generated."
+      ::= { slapmNotifications 7 }
+
+   slapmPolicyRuleMonOkay NOTIFICATION-TYPE
+      OBJECTS {
+          slapmPRMonIntTime,
+          slapmPRMonControl,
+          slapmPRMonStatus,
+          slapmPRMonStatus,
+          slapmPRMonCurrentInRate,
+          slapmPRMonCurrentOutRate,
+          slapmPRMonCurrentDelayRate
+      }
+      STATUS  current
+      DESCRIPTION
+         "This notification is generated when a monitored
+         event has improved to an acceptable level.  This
+         applies only towards monitoring a policy rule
+         as an aggregate via an associating
+         slapmPolicyRuleStatsEntry.  The value
+         of slapmPRMonControl can be examined to
+         determine what is being monitored.  The first
+         slapmPRMonStatus value supplies the current
+         monitor status while the 2nd value supplies the
+         previous status.
+
+         Note: The corresponding slapmPRMonControl
+         BITS setting, enableAggregateTraps(3), MUST be
+         selected in order for this notification to
+         potentially be generated."
+      ::= { slapmNotifications 8 }
+
+   slapmPolicyRuleDeleted NOTIFICATION-TYPE
+      OBJECTS {
+          slapmPolicyRuleStatsActiveConns,
+          slapmPolicyRuleStatsTotalConns,
+          slapmPolicyRuleStatsLActivated,
+          slapmPolicyRuleStatsLastMapping,
+          slapmPolicyRuleStatsInOctets,
+          slapmPolicyRuleStatsOutOctets,
+          slapmPolicyRuleStatsConnLimit,
+          slapmPolicyRuleStatsCountAccepts,
+          slapmPolicyRuleStatsCountDenies,
+          slapmPolicyRuleStatsInDiscards,
+          slapmPolicyRuleStatsOutDiscards,
+          slapmPolicyRuleStatsInPackets,
+          slapmPolicyRuleStatsOutPackets,
+          slapmPolicyRuleStatsInProOctets,
+          slapmPolicyRuleStatsOutProOctets,
+          slapmPolicyRuleStatsMinRate,
+          slapmPolicyRuleStatsMaxRate,
+          slapmPolicyRuleStatsMaxDelay,
+          slapmPolicyRuleStatsTotalRsvpFlows,
+          slapmPolicyRuleStatsActRsvpFlows
+      }
+      STATUS  current
+      DESCRIPTION
+         "A slapmPolicyRuleDeleted notification is sent when a
+         slapmPolicyRuleStatsEntry is deleted if the value of
+         slapmPolicyTrapEnable is enabled(1)."
+      ::= { slapmNotifications 9 }
+
+   slapmPolicyRuleMonDeleted NOTIFICATION-TYPE
+      OBJECTS {
+          slapmPRMonControl,
+          slapmPRMonStatus,
+          slapmPRMonInterval,
+          slapmPRMonIntTime,
+          slapmPRMonCurrentInRate,
+          slapmPRMonCurrentOutRate,
+          slapmPRMonCurrentDelayRate,
+          slapmPRMonMinRateLow,
+          slapmPRMonMinRateHigh,
+          slapmPRMonMaxRateHigh,
+          slapmPRMonMaxRateLow,
+          slapmPRMonMaxDelayHigh,
+          slapmPRMonMaxDelayLow,
+          slapmPRMonMinInRateNotAchieves,
+          slapmPRMonMaxInRateExceeds,
+          slapmPRMonMaxDelayExceeds,
+          slapmPRMonMinOutRateNotAchieves,
+          slapmPRMonMaxOutRateExceeds
+      }
+      STATUS  current
+      DESCRIPTION
+         "A slapmPolicyRuleMonDeleted notification is sent when a
+         slapmPRMonEntry is deleted if the value of
+         slapmPolicyTrapEnable is enabled(1)."
+      ::= { slapmNotifications 10 }
+
+   slapmSubcMonitorNotOkay NOTIFICATION-TYPE
+      OBJECTS {
+          slapmSubcomponentSystemAddress,
+          slapmSubcomponentPolicyRuleIndex,
+          slapmPRMonControl,
+          slapmSubcomponentMonitorStatus,
+          slapmSubcomponentMonitorStatus,
+          slapmSubcomponentMonitorIntTime,
+          slapmSubcomponentMonitorCurrentInRate,
+          slapmSubcomponentMonitorCurrentOutRate,
+          slapmSubcomponentTcpRoundTripTime
+      }
+      STATUS  current
+      DESCRIPTION
+         "This notification is generated when a monitored value
+         does not achieved a threshold specification.  This
+         applies only towards monitoring the individual components
+         of a policy rule.  The value of the
+         corresponding slapmPRMonControl can be examined
+         to determine what is being monitored.  The first
+         slapmSubcomponentMonitorStatus value supplies the current
+         monitor status while the 2nd value supplies the
+         previous status.
+
+         Note: The corresponding slapmPRMonControl
+         BITS setting, enableSubcomponentTraps(4), MUST be selected
+         in order for this notification to potentially be generated."
+      ::= { slapmNotifications 11 }
+
+   slapmSubcMonitorOkay NOTIFICATION-TYPE
+      OBJECTS {
+          slapmSubcomponentSystemAddress,
+          slapmSubcomponentPolicyRuleIndex,
+          slapmPRMonControl,
+          slapmSubcomponentMonitorStatus,
+          slapmSubcomponentMonitorStatus,
+          slapmSubcomponentMonitorIntTime,
+          slapmSubcomponentMonitorCurrentInRate,
+          slapmSubcomponentMonitorCurrentOutRate,
+          slapmSubcomponentTcpRoundTripTime
+      }
+
+      STATUS  current
+      DESCRIPTION
+         "This notification is generated when a monitored value
+         has reached an acceptable level.
+
+         Note: The corresponding slapmPRMonControl
+         BITS setting, enableSubcomponentTraps(3), MUST be
+         selected in order for this notification to potentially
+         be generated."
+      ::= { slapmNotifications 12 }
+
+   -- Conformance information
+   -- Compliance statements
+
+   slapmCompliances OBJECT IDENTIFIER ::= { slapmConformance 1 }
+   slapmGroups      OBJECT IDENTIFIER ::= { slapmConformance 2 }
+
+   -- Compliance statements
+
+   slapmCompliance MODULE-COMPLIANCE
+      STATUS  current
+      DESCRIPTION
+              "The compliance statement for the SLAPM-MIB."
+      MODULE  -- this module
+          MANDATORY-GROUPS {
+                              slapmBaseGroup2,
+                              slapmNotGroup2
+                           }
+          GROUP slapmEndSystemGroup2
+          DESCRIPTION
+              "The contents of this group is required by end-system
+              implementations."
+          GROUP slapmEndSystemNotGroup2
+          DESCRIPTION
+              "The contents of this group is required by end-system
+              implementations."
+          GROUP slapmBaseGroup
+          DESCRIPTION
+              "The contents of this group has been deprecated in favor
+              of the new slapmBaseGroup2.  Older implementations of this
+              MIB would continue its support of the contents of this
+              group."
+          GROUP slapmNotGroup
+          DESCRIPTION
+              "The contents of this group has been deprecated in favor
+              of the new slapmNotGroup2.  Older implementations of this
+              MIB would continue its support of the contents of
+              this group."
+          GROUP slapmOptionalGroup
+          DESCRIPTION
+              "The contents of this group has been deprecated."
+          GROUP slapmEndSystemGroup
+          DESCRIPTION
+              "The contents of this group has been deprecated in favor
+              of the new slapmEndSystemGroup2.  Older implementations
+              of this MIB would continue its support of the
+              contents of this group."
+          GROUP slapmEndSystemNotGroup
+          DESCRIPTION
+              "The contents of this group has been deprecated in favor
+              of the new slapmEndSystemNotGroup2.  Older
+              implementations of this MIB would continue its support
+              of the contents of this group."
+      ::= { slapmCompliances 1 }
+
+   -- MIB groupings
+
+   slapmBaseGroup OBJECT-GROUP
+     OBJECTS {
+               slapmSpinLock,
+               slapmPolicyCountQueries,
+               slapmPolicyCountAccesses,
+               slapmPolicyCountSuccessAccesses,
+               slapmPolicyCountNotFounds,
+               slapmPolicyPurgeTime,
+               slapmPolicyTrapEnable,
+               slapmPolicyStatsOperStatus,
+               slapmPolicyStatsActiveConns,
+               slapmPolicyStatsFirstActivated,
+               slapmPolicyStatsLastMapping,
+               slapmPolicyStatsInOctets,
+               slapmPolicyStatsOutOctets,
+               slapmPolicyStatsConnectionLimit,
+               slapmPolicyStatsTotalConns,
+               slapmPolicyStatsCountAccepts,
+               slapmPolicyStatsCountDenies,
+               slapmPolicyStatsInDiscards,
+               slapmPolicyStatsOutDiscards,
+               slapmPolicyStatsInPackets,
+               slapmPolicyStatsOutPackets,
+               slapmPolicyStatsMinRate,
+               slapmPolicyStatsMaxRate,
+               slapmPolicyStatsMaxDelay,
+               slapmPolicyMonitorControl,
+               slapmPolicyMonitorStatus,
+               slapmPolicyMonitorInterval,
+               slapmPolicyMonitorIntTime,
+               slapmPolicyMonitorCurrentInRate,
+               slapmPolicyMonitorCurrentOutRate,
+               slapmPolicyMonitorMinRateLow,
+               slapmPolicyMonitorMinRateHigh,
+               slapmPolicyMonitorMaxRateHigh,
+               slapmPolicyMonitorMaxRateLow,
+               slapmPolicyMonitorMaxDelayHigh,
+               slapmPolicyMonitorMaxDelayLow,
+               slapmPolicyMonitorMinInRateNotAchieves,
+               slapmPolicyMonitorMaxInRateExceeds,
+               slapmPolicyMonitorMaxDelayExceeds,
+               slapmPolicyMonitorMinOutRateNotAchieves,
+               slapmPolicyMonitorMaxOutRateExceeds,
+               slapmPolicyMonitorCurrentDelayRate,
+               slapmPolicyMonitorRowStatus
+              }
+    STATUS deprecated
+    DESCRIPTION
+        "The group of objects defined by this MIB that are
+        required for all implementations to be compliant."
+    ::= { slapmGroups 1 }
+
+   slapmOptionalGroup OBJECT-GROUP
+     OBJECTS {
+               slapmPolicyStatsInProfileOctets,
+               slapmPolicyStatsOutProfileOctets
+             }
+    STATUS deprecated
+    DESCRIPTION
+        "The group of objects defined by this MIB that are
+        optional."
+    ::= { slapmGroups 2 }
+
+   slapmEndSystemGroup OBJECT-GROUP
+     OBJECTS {
+               slapmPolicyTrapFilter,
+               slapmSubcomponentProtocol,
+               slapmSubcomponentSystemAddress,
+               slapmSubcomponentPolicyName,
+               slapmSubcomponentTrafficProfileName,
+               slapmSubcomponentLastActivity,
+               slapmSubcomponentInOctets,
+               slapmSubcomponentOutOctets,
+               slapmSubcomponentTcpOutBufferedOctets,
+               slapmSubcomponentTcpInBufferedOctets,
+               slapmSubcomponentTcpReXmts,
+               slapmSubcomponentTcpRoundTripTime,
+               slapmSubcomponentTcpRoundTripVariance,
+               slapmSubcomponentInPdus,
+               slapmSubcomponentOutPdus,
+               slapmSubcomponentApplName,
+               slapmSubcomponentMonitorStatus,
+               slapmSubcomponentMonitorIntTime,
+               slapmSubcomponentMonitorCurrentOutRate,
+               slapmSubcomponentMonitorCurrentInRate
+             }
+     STATUS  deprecated
+     DESCRIPTION
+         "The group of objects defined by this MIB that are
+         required for end system implementations."
+     ::= { slapmGroups 3 }
+
+   slapmNotGroup NOTIFICATION-GROUP
+     NOTIFICATIONS {
+               slapmMonitoredEventNotAchieved,
+               slapmMonitoredEventOkay,
+               slapmPolicyProfileDeleted,
+               slapmPolicyMonitorDeleted
+             }
+     STATUS  deprecated
+     DESCRIPTION
+         "The group of notifications defined by this MIB that MUST
+         be implemented."
+     ::= { slapmGroups 4 }
+
+   slapmEndSystemNotGroup NOTIFICATION-GROUP
+     NOTIFICATIONS {
+               slapmSubcomponentMonitoredEventNotAchieved,
+               slapmSubcomponentMonitoredEventOkay
+             }
+     STATUS  deprecated
+     DESCRIPTION
+         "The group of objects defined by this MIB that are
+         required for end system implementations."
+     ::= { slapmGroups 5 }
+
+   slapmBaseGroup2 OBJECT-GROUP
+     OBJECTS {
+               slapmSpinLock,
+               slapmPolicyCountQueries,
+               slapmPolicyCountAccesses,
+               slapmPolicyCountSuccessAccesses,
+               slapmPolicyCountNotFounds,
+               slapmPolicyPurgeTime,
+               slapmPolicyTrapEnable,
+               slapmPolicyNameOfRule,
+               slapmPolicyRuleStatsOperStatus,
+               slapmPolicyRuleStatsActiveConns,
+               slapmPolicyRuleStatsTotalConns,
+               slapmPolicyRuleStatsLActivated,
+               slapmPolicyRuleStatsLastMapping,
+               slapmPolicyRuleStatsInOctets,
+               slapmPolicyRuleStatsOutOctets,
+               slapmPolicyRuleStatsConnLimit,
+               slapmPolicyRuleStatsCountAccepts,
+               slapmPolicyRuleStatsCountDenies,
+               slapmPolicyRuleStatsInDiscards,
+               slapmPolicyRuleStatsOutDiscards,
+               slapmPolicyRuleStatsInPackets,
+               slapmPolicyRuleStatsOutPackets,
+               slapmPolicyRuleStatsInProOctets,
+               slapmPolicyRuleStatsOutProOctets,
+               slapmPolicyRuleStatsMinRate,
+               slapmPolicyRuleStatsMaxRate,
+               slapmPolicyRuleStatsMaxDelay,
+               slapmPolicyRuleStatsTotalRsvpFlows,
+               slapmPolicyRuleStatsActRsvpFlows,
+               slapmPRMonControl,
+               slapmPRMonStatus,
+               slapmPRMonInterval,
+               slapmPRMonIntTime,
+               slapmPRMonCurrentInRate,
+               slapmPRMonCurrentOutRate,
+               slapmPRMonMinRateLow,
+               slapmPRMonMinRateHigh,
+               slapmPRMonMaxRateHigh,
+               slapmPRMonMaxRateLow,
+               slapmPRMonMaxDelayHigh,
+               slapmPRMonMaxDelayLow,
+               slapmPRMonMinInRateNotAchieves,
+               slapmPRMonMaxInRateExceeds,
+               slapmPRMonMaxDelayExceeds,
+               slapmPRMonMinOutRateNotAchieves,
+               slapmPRMonMaxOutRateExceeds,
+               slapmPRMonCurrentDelayRate,
+               slapmPRMonRowStatus
+              }
+    STATUS current
+    DESCRIPTION
+        "The group of objects defined by this MIB that are
+        required for all implementations to be compliant."
+    ::= { slapmGroups 6 }
+
+   slapmEndSystemGroup2 OBJECT-GROUP
+     OBJECTS {
+               slapmPolicyTrapFilter,
+               slapmSubcomponentProtocol,
+               slapmSubcomponentSystemAddress,
+               slapmSubcomponentLastActivity,
+               slapmSubcomponentInOctets,
+               slapmSubcomponentOutOctets,
+               slapmSubcomponentTcpOutBufferedOctets,
+               slapmSubcomponentTcpInBufferedOctets,
+               slapmSubcomponentTcpReXmts,
+               slapmSubcomponentTcpRoundTripTime,
+               slapmSubcomponentTcpRoundTripVariance,
+               slapmSubcomponentInPdus,
+               slapmSubcomponentOutPdus,
+               slapmSubcomponentApplName,
+               slapmSubcomponentMonitorStatus,
+               slapmSubcomponentMonitorIntTime,
+               slapmSubcomponentMonitorCurrentOutRate,
+               slapmSubcomponentMonitorCurrentInRate,
+               slapmSubcomponentPolicyRuleIndex
+             }
+     STATUS  current
+     DESCRIPTION
+         "The group of objects defined by this MIB that are
+         required for end system implementations."
+     ::= { slapmGroups 7 }
+
+   slapmNotGroup2 NOTIFICATION-GROUP
+     NOTIFICATIONS {
+               slapmPolicyRuleMonNotOkay,
+               slapmPolicyRuleMonOkay,
+               slapmPolicyRuleDeleted,
+               slapmPolicyRuleMonDeleted
+             }
+     STATUS  current
+     DESCRIPTION
+         "The group of notifications defined by this MIB that MUST
+         be implemented."
+     ::= { slapmGroups 8 }
+
+   slapmEndSystemNotGroup2 NOTIFICATION-GROUP
+     NOTIFICATIONS {
+               slapmSubcMonitorNotOkay,
+               slapmSubcMonitorOkay
+             }
+     STATUS  current
+     DESCRIPTION
+         "The group of objects defined by this MIB that are
+         required for end system implementations."
+     ::= { slapmGroups 9 }
+END

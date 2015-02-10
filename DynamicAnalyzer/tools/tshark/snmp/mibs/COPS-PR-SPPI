@@ -1,0 +1,509 @@
+COPS-PR-SPPI DEFINITIONS ::= BEGIN
+
+IMPORTS    ObjectName, SimpleSyntax, ExtUTCTime, mgmt
+                                                FROM SNMPv2-SMI;
+
+-- the root for PIB definitions
+
+      pib           OBJECT IDENTIFIER ::= { mgmt 2 }
+
+-- definitions for PIB modules
+
+MODULE-IDENTITY MACRO ::=
+BEGIN
+    TYPE NOTATION ::=
+                  SubjectPart                        -- new
+                  "LAST-UPDATED" value(Update ExtUTCTime)
+                  "ORGANIZATION" Text
+                  "CONTACT-INFO" Text
+                  "DESCRIPTION" Text
+                  RevisionPart
+
+    VALUE NOTATION ::=
+                  value(VALUE OBJECT IDENTIFIER)
+
+    SubjectPart ::=                                  -- new
+                  "SUBJECT-CATEGORIES" "{" Categories "}"
+                   -- see IANA Considerations section
+    Categories ::=                                   -- new
+                  CategoryIDs
+                | "all"
+    CategoryIDs ::=                                  -- new
+                  CategoryID
+                | CategoryIDs "," CategoryID
+    CategoryID ::=                                   -- new
+                 identifier "(" number ")"  -- number is positive
+
+    RevisionPart ::=
+                  Revisions
+                | empty
+    Revisions ::=
+                  Revision
+                | Revisions Revision
+    Revision ::=
+                  "REVISION" value(Update ExtUTCTime)
+                  "DESCRIPTION" Text
+
+
+
+
+    -- a character string as defined in [SMI]
+    Text ::= value(IA5String)
+END
+
+--
+
+OBJECT-IDENTITY MACRO ::=
+BEGIN
+    TYPE NOTATION ::=
+                  "STATUS" Status
+                  "DESCRIPTION" Text
+                  ReferPart
+
+    VALUE NOTATION ::=
+                  value(VALUE OBJECT IDENTIFIER)
+
+    Status ::=
+                  "current"
+                | "deprecated"
+                | "obsolete"
+
+    ReferPart ::=
+                  "REFERENCE" Text
+                | empty
+
+    -- a character string as defined in [SMI]
+    Text ::= value(IA5String)
+END
+
+
+-- syntax of attributes
+
+-- the "base types" defined here are:
+--   3 built-in ASN.1 types: INTEGER, OCTET STRING, OBJECT IDENTIFIER
+--   7 application-defined types: Integer32, IpAddress, Unsigned32,
+--         TimeTicks, Opaque, Integer64 and Unsigned64
+
+ObjectSyntax ::=
+    CHOICE {
+        simple
+            SimpleSyntax,
+
+          -- note that SEQUENCEs for table and row definitions
+          -- are not mentioned here...
+
+        application-wide
+            ApplicationSyntax
+    }
+
+
+
+-- application-wide types
+
+ApplicationSyntax ::=
+    CHOICE {
+        ipAddress-value
+            IpAddress,
+
+        timeticks-value
+            TimeTicks,
+
+        arbitrary-value
+            Opaque,
+
+        unsigned-integer-value
+            Unsigned32,
+
+        large-integer-value                        -- new
+            Integer64,
+
+        large-unsigned-integer-value               -- new
+            Unsigned64
+    }
+
+
+-- the following 5 types are copied from the SMI
+
+-- indistinguishable from INTEGER, but never needs more than
+-- 32-bits for a two's complement representation
+Integer32 ::=
+        INTEGER (-2147483648..2147483647)
+
+-- (this is a tagged type for historical reasons)
+IpAddress ::=
+    [APPLICATION 0]
+        IMPLICIT OCTET STRING (SIZE (4))
+-- ******* THIS TYPE DEFINITION IS DEPRECATED *******
+-- The IpAddress type represents a 32-bit internet
+-- IPv4 address.  It is represented as an OctetString
+-- of length 4, in network byte-order.
+-- Note that the IpAddress type is present for
+-- historical reasons. IPv4 and IPv6 addresses should
+-- be represented using the INET-ADDRESS-MIB
+-- defined in [INETADDR].
+
+-- an unsigned 32-bit quantity
+Unsigned32 ::=
+    [APPLICATION 2]
+        IMPLICIT INTEGER (0..4294967295)
+
+
+
+-- hundredths of seconds since an epoch
+TimeTicks ::=
+    [APPLICATION 3]
+        IMPLICIT INTEGER (0..4294967295)
+
+--for backward compatibility only
+Opaque ::=
+    [APPLICATION 4]
+        IMPLICIT OCTET STRING
+
+
+-- the following 2 types are not present in the SMI
+
+Integer64 ::=
+    [APPLICATION 10]
+        IMPLICIT INTEGER (-9223372036854775808..9223372036854775807)
+
+Unsigned64 ::=
+    [APPLICATION 11]
+        IMPLICIT INTEGER (0..18446744073709551615)
+
+-- definition for Provisioning Classes and their attributes
+-- (differences from the SMI are noted in the ASN.1 comments)
+
+OBJECT-TYPE MACRO ::=
+BEGIN
+    TYPE NOTATION ::=
+                  "SYNTAX" Syntax
+                  UnitsPart
+                  "PIB-ACCESS" Access       -- modified
+                  PibReferencesPart         -- new
+                  PibTagPart                -- new
+                  "STATUS" Status
+                  "DESCRIPTION" Text
+                  ErrorsPart                -- new
+                  ReferPart
+                  IndexPart                 -- modified
+                  MibIndexPart              -- modified
+                  UniquePart                -- new
+                  DefValPart
+
+    VALUE NOTATION ::=
+                  value(VALUE ObjectName)
+
+    Syntax ::=   -- Must be one of the following:
+                       -- a base type (or its refinement),
+                       -- a textual convention (or its refinement), or
+                       -- a BITS pseudo-type
+
+
+
+                   type
+                | "BITS" "{" NamedBits "}"
+
+    NamedBits ::= NamedBit
+                | NamedBits "," NamedBit
+
+    NamedBit ::=  identifier "(" number ")" -- number is nonnegative
+
+    UnitsPart ::=
+                  "UNITS" Text
+                | empty
+
+    Access ::=                                    -- modified
+                  "install"
+                | "notify"
+                | "install-notify"
+                | "report-only"
+
+    Status ::=
+                  "current"
+                | "deprecated"
+                | "obsolete"
+
+    ErrorsPart ::=                                -- new
+                  "INSTALL-ERRORS" "{" Errors "}"
+                | empty
+
+    Errors ::=                                    -- new
+                  Error
+                | Errors "," Error
+    Error ::=                                     -- new
+                  identifier "(" number ")"   -- number is positive
+
+    ReferPart ::=
+                  "REFERENCE" Text
+                | empty
+
+    IndexPart ::=
+                  "PIB-INDEX" "{" Index "}"      -- new
+                | "AUGMENTS"  "{" Entry "}"
+                | "EXTENDS"   "{" Entry "}"      -- new
+                | empty
+    Index ::=
+                    -- the correspondent OBJECT-TYPE invocation
+                  value(ObjectName)
+    Entry ::=
+                    -- use the INDEX value of the
+                    -- correspondent OBJECT-TYPE invocation
+
+
+
+                  value(ObjectName)
+    MibIndexPart ::=
+                  "INDEX"   "{" IndexTypePart "}"
+                | empty
+    IndexTypePart ::=
+                  IndexTypes
+                | IndexTypes "," ImpliedIndex
+                | ImpliedIndex
+    IndexTypes ::=
+                  Index
+                | IndexTypes "," Index
+    ImpliedIndex ::=
+                  "IMPLIED" Index
+
+
+    PibReferencesPart ::=
+                     -- for use with ReferenceId TC
+                  "PIB-REFERENCES" "{" Entry "}"
+                |  empty
+
+    PibTagPart ::=
+                     -- for use with TagReferenceId TC
+                   "PIB-TAG" "{" Attr "}"
+                |  empty
+
+    Attr ::=       -- specifies an attribute
+                   value(ObjectName)
+
+    UniquePart ::=                               -- new
+                  "UNIQUENESS"    "{" UniqueTypes "}"
+                | "UNIQUENESS"    "{" "}"
+                |  empty
+    UniqueTypes ::=
+                  UniqueType
+                | UniqueTypes "," UniqueType
+    UniqueType ::=
+                    -- the correspondent OBJECT-TYPE invocation
+                  value(ObjectName)
+
+    DefValPart ::= "DEFVAL" "{" Defvalue "}"
+                | empty
+
+    Defvalue ::=  -- must be valid for the type specified in
+                  -- SYNTAX clause of same OBJECT-TYPE macro
+                  value(ObjectSyntax)
+                | "{" BitsValue "}"
+
+    BitsValue ::= BitNames
+
+
+
+                | empty
+
+    BitNames ::=  BitName
+                | BitNames "," BitName
+
+    BitName ::= identifier
+
+    -- a character string as defined in [SMI]
+    Text ::= value(IA5String)
+END
+
+
+-- definitions for conformance groups
+
+OBJECT-GROUP MACRO ::=
+BEGIN
+    TYPE NOTATION ::=
+                  ObjectsPart
+                  "STATUS" Status
+                  "DESCRIPTION" Text
+                  ReferPart
+
+    VALUE NOTATION ::=
+                  value(VALUE OBJECT IDENTIFIER)
+
+    ObjectsPart ::=
+                  "OBJECTS" "{" Objects "}"
+    Objects ::=
+                  Object
+                | Objects "," Object
+    Object ::=
+                  value(ObjectName)
+
+    Status ::=
+                  "current"
+                | "deprecated"
+                | "obsolete"
+
+    ReferPart ::=
+                  "REFERENCE" Text
+                | empty
+
+    -- a character string as defined in [SMI]
+    Text ::= value(IA5String)
+END
+
+
+-- definitions for compliance statements
+
+
+
+MODULE-COMPLIANCE MACRO ::=
+BEGIN
+    TYPE NOTATION ::=
+                  "STATUS" Status
+                  "DESCRIPTION" Text
+                  ReferPart
+                  ModulePart
+
+    VALUE NOTATION ::=
+                  value(VALUE OBJECT IDENTIFIER)
+
+    Status ::=
+                  "current"
+                | "deprecated"
+                | "obsolete"
+
+    ReferPart ::=
+                  "REFERENCE" Text
+                | empty
+
+    ModulePart ::=
+                  Modules
+    Modules ::=
+                  Module
+                | Modules Module
+    Module ::=
+                  -- name of module --
+                  "MODULE" ModuleName
+                  MandatoryPart
+                  CompliancePart
+
+    ModuleName ::=
+                  -- identifier must start with uppercase letter
+                  identifier ModuleIdentifier
+                  -- must not be empty unless contained
+                  -- in MIB Module
+                | empty
+    ModuleIdentifier ::=
+                  value(OBJECT IDENTIFIER)
+                | empty
+
+    MandatoryPart ::=
+                  "MANDATORY-GROUPS" "{" Groups "}"
+                | empty
+
+    Groups ::=
+                  Group
+                | Groups "," Group
+
+
+
+    Group ::=
+                  value(OBJECT IDENTIFIER)
+
+    CompliancePart ::=
+                  Compliances
+                | empty
+
+    Compliances ::=
+                  Compliance
+                | Compliances Compliance
+    Compliance ::=
+                  ComplianceGroup
+                | Object
+
+    ComplianceGroup ::=
+                  "GROUP" value(OBJECT IDENTIFIER)
+                  "DESCRIPTION" Text
+
+    Object ::=
+                  "OBJECT" value(ObjectName)
+                  InstallSyntaxPart                   -- modified
+                  AccessPart
+                  "DESCRIPTION" Text
+
+    -- must be a refinement for object's SYNTAX clause
+    InstallSyntaxPart ::= "SYNTAX" Syntax
+                | empty
+
+    Syntax ::=    -- Must be one of the following:
+                       -- a base type (or its refinement),
+                       -- a textual convention (or its refinement), or
+                       -- a BITS pseudo-type
+                  type
+                | "BITS" "{" NamedBits "}"
+
+    NamedBits ::= NamedBit
+                | NamedBits "," NamedBit
+
+    NamedBit ::= identifier "(" number ")" -- number is nonnegative
+
+    AccessPart ::=
+                  "PIB-MIN-ACCESS" Access            -- modified
+                | empty
+    Access ::=                                       -- modified
+                  "not-accessible"
+                | "install"
+                | "notify"
+                | "install-notify"
+
+
+
+                | "report-only"
+
+    -- a character string as defined in [SMI]
+    Text ::= value(IA5String)
+END
+
+-- definition of textual conventions
+
+TEXTUAL-CONVENTION MACRO ::=
+BEGIN
+    TYPE NOTATION ::=
+                  DisplayPart
+                  "STATUS" Status
+                  "DESCRIPTION" Text
+                  ReferPart
+                  "SYNTAX" Syntax
+
+    VALUE NOTATION ::=
+                   value(VALUE Syntax)      -- adapted ASN.1
+
+    DisplayPart ::=
+                  "DISPLAY-HINT" Text
+                | empty
+
+    Status ::=
+                  "current"
+                | "deprecated"
+                | "obsolete"
+
+    ReferPart ::=
+                  "REFERENCE" Text
+                | empty
+
+    -- a character string as defined in [SMI]
+    Text ::= value(IA5String)
+
+    Syntax ::=   -- Must be one of the following:
+                       -- a base type (or its refinement), or
+                       -- a BITS pseudo-type
+                  type
+                | "BITS" "{" NamedBits "}"
+
+    NamedBits ::= NamedBit
+                | NamedBits "," NamedBit
+
+    NamedBit ::=  identifier "(" number ")" -- number is nonnegative
+
+END
+
+
+
+END

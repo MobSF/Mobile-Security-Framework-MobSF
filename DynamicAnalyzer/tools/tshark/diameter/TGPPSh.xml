@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+
+<application id="16777217" name="3GPP Sh" uri="http://www.etsi.org/deliver/etsi_ts/129300_129399/129329/11.06.00_60/ts_129329v110600p.pdf">
+	<!-- 3GPP TS 29.329 version 11.6.0 Release 11, ETSI TS 129 329 V11.6.0 (2013-04)-->
+
+	<!-- 3GPP Sh Application -->
+	<command name="User-Data"			code="306" vendor-id="TGPP"/>
+	<command name="Profile-Update"			code="307" vendor-id="TGPP"/>
+	<command name="Subscribe-Notifications"		code="308" vendor-id="TGPP"/>
+	<command name="Push-Notification"		code="309" vendor-id="TGPP"/>
+
+	<!-- ************************** 3GPP Sh AVPS ********************* -->
+	<avp name="User-Identity" code="700" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<grouped>
+			<gavp name="Public-Identity"/>
+			<gavp name="MSISDN"/>
+		</grouped>
+	</avp>
+	<avp name="MSISDN" code="701" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="OctetString"/>
+	</avp>
+	<avp name="User-Data" code="702" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="OctetString"/>
+	</avp>
+	<avp name="Data-Reference" code="703" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="Enumerated"/>
+		<enum name="RepositoryData" code="0"/>
+		<enum name="Undefined" code="1"/>
+		<enum name="Undefined" code="2"/>
+		<enum name="Undefined" code="3"/>
+		<enum name="Undefined" code="4"/>
+		<enum name="Undefined" code="5"/>
+		<enum name="Undefined" code="6"/>
+		<enum name="Undefined" code="7"/>
+		<enum name="Undefined" code="8"/>
+		<enum name="Undefined" code="9"/>
+		<enum name="IMSPublicIdentity" code="10"/>
+		<enum name="IMSUserState" code="11"/>
+		<enum name="S-CSCFName" code="12"/>
+		<enum name="InitialFilterCriteria" code="13"/>
+		<enum name="LocationInformation" code="14"/>
+		<enum name="UserState" code="15"/>
+		<enum name="ChargingInformation" code="16"/>
+		<enum name="MSISDN" code="17"/>
+		<enum name="PSIActivation" code="18"/>
+		<enum name="DSAI" code="19"/>
+		<enum name="Reserved" code="20"/>
+		<enum name="ServiceLevelTraceInfo" code="21"/>
+		<enum name="IPAddressSecureBindingInformation" code="22"/>
+		<enum name="ServicePriorityLevel" code="23"/>
+		<enum name="SMSRegistrationInfo" code="24"/>
+		<enum name="UEReachabilityForIP" code="25"/>
+		<enum name="TADSinformation" code="26"/>
+		<enum name="STN-SR" code="27"/>
+		<enum name="UE-SRVCC-Capability" code="28"/>
+		<enum name="ExtendedPriority" code="29"/>
+		<enum name="CSRN" code="30"/>
+		<enum name="ReferenceLocationInformation" code="31"/>
+	</avp>
+	<avp name="Service-Indication" code="704" mandatory="must" vendor-bit="mustnot" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="OctetString"/>
+	</avp>
+	<avp name="Subs-Req-Type" code="705" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="Enumerated"/>
+		<enum name="Subscribe" code="0"/>
+		<enum name="Unsubscribe" code="1"/>
+	</avp>
+	<avp name="Requested-Domain" code="706" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="Enumerated"/>
+		<enum name="CS-Domain" code="0"/>
+		<enum name="PS-Domain" code="1"/>
+	</avp>
+	<avp name="Current-Location" code="707" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="Enumerated"/>
+		<enum name="DoNotNeedInitiateActiveLocationRetrieval" code="0"/>
+		<enum name="InitiateActiveLocationRetrieval" code="1"/>
+	</avp>
+	<avp name="Identity-Set" code="708" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="Enumerated"/>
+		<enum name="ALL_IDENTITIES" code="0"/>
+		<enum name="REGISTERED_IDENTITIES" code="1"/>
+		<enum name="IMPLICIT_IDENTITIES" code="2"/>
+		<enum name="ALIAS_IDENTITIES" code="3"/>
+	</avp>
+	<avp name="Expiry-Time" code="709" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="Time"/>
+	</avp>
+	<avp name="Send-Data-Indication" code="710" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+	      <type type-name="Enumerated"/>
+		      <enum name="USER_DATA_NOT_REQUESTED" code="0"/>
+		      <enum name="USER_DATA_REQUESTED" code="1"/>
+	</avp>
+	<avp name="DSAI-Tag" code="711" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="OctetString"/>
+	</avp>
+	<avp name="One-Time-Notification" code="712" mandatory="must" may-encrypt="no" protected="may" vendor-bit="must" vendor-id="TGPP">
+		<type type-name="Enumerated"/>
+		<enum name="ONE_TIME_NOTIFICATION_REQUESTED" code="0"/>
+	</avp>
+	<avp name="Requested-Nodes" code="713" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="Unsigned32"/>
+		<enum name="MME" code="1"/>
+		<enum name="SGSN" code="2"/>
+		<enum name="MME,SGSN" code="3"/>
+	</avp>
+	<avp name="Serving-Node-Indication" code="714" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="Enumerated"/>
+		<enum name="ONLY_SERVING_NODES_REQUIRED" code="0"/>
+	</avp>
+	<avp name="Repository-Data-ID" code="715" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<grouped>
+		<gavp name="Service-Indication"/>
+		<gavp name="Sequence-Number"/>
+		</grouped>
+	</avp>
+	<avp name="Sequence-Number" code="716" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Pre-paging-Supported" code="717" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="Enumerated"/>
+		<enum name="PREPAGING_NOT_SUPPORTED" code="0"/>
+		<enum name="PREPAGING_SUPPORTED" code="1"/>
+	</avp>
+	<avp name="Local-Time-Zone-Indication" code="718" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="Enumerated"/>
+		<enum name="ONLY_LOCAL_TIME_ZONE_REQUESTED" code="0"/>
+		<enum name="LOCAL_TIME_ZONE_WITH_LOCATION_INFO_REQUESTED" code="1"/>
+	</avp>
+	<avp name="UDR-Flags" code="719" mandatory="must" vendor-bit="must" vendor-id="TGPP" may-encrypt="no">
+		<type type-name="Unsigned32"/>
+		<enum name="Location-Information-EPS-Supported" code="1"/>
+		<enum name="RAT-Type-Requested" code="2"/>
+		<!--  <enum name="Location-Information-EPS-Supported,RAT-Type-Requested" code="3"/> -->
+	</avp>
+
+	<!-- Note: The AVP codes from 720 to 799 are reserved for TS 29.329. -->
+	<!-- ************************ END 3GPP Sh AVPS ******************* -->
+
+</application>

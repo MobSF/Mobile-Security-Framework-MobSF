@@ -1,0 +1,3238 @@
+IPATM-IPMC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-COMPLIANCE, NOTIFICATION-GROUP, OBJECT-GROUP
+        FROM SNMPv2-CONF
+    snmpModules, MODULE-IDENTITY, NOTIFICATION-TYPE, Counter32,
+        Integer32, Unsigned32, OBJECT-TYPE, IpAddress
+        FROM SNMPv2-SMI
+    AtmAddr
+        FROM ATM-TC-MIB
+    TruthValue, RowStatus
+        FROM SNMPv2-TC
+    ipAdEntAddr
+        FROM RFC1213-MIB
+    InterfaceIndex
+        FROM IF-MIB;
+
+marsMIB MODULE-IDENTITY
+    LAST-UPDATED "9804150145Z" -- 15 April 1998
+    ORGANIZATION "Internetworking Over NBMA (ion) Working Group"
+    CONTACT-INFO
+        "        Chris Chung
+         Postal: SAIC
+                 1710 Goodridge Drive
+                 Mail Stop 1-4-7
+                 McLean, VA 22102
+         Tel:    +1 703 448 6485
+         Fax:    +1 703 356 2160
+         E-mail: cchung@tieo.saic.com
+
+         Editor: Maria Greene
+         Postal: Independent Contractor
+         E-mail: maria@xedia.com
+        "
+    DESCRIPTION
+        "This module defines a portion of the managed information
+         base (MIB) for managing classical IP multicast address
+         resolution server (MARS) and related entities as
+         described in the RFC2022.  This MIB is meant to be
+         used in conjunction with the ATM-MIB (RFC1695),
+         MIB-II (RFC1213), and optionally the IF-MIB (RFC1573)."
+    ::= { snmpModules 17 }
+
+--***************************************************************
+--  IP ATM MARS Client Object Definitions
+--***************************************************************
+marsClientObjects  OBJECT IDENTIFIER ::= { marsMIB 1 }
+
+marsClientTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsClientEntry
+    MAX-ACCESS  not-accessible
+    STATUS current
+    DESCRIPTION
+        "The objects defined in this table are used for
+         the management of MARS clients, ATM attached
+         endpoints."
+    ::= { marsClientObjects 1 }
+
+marsClientEntry OBJECT-TYPE
+    SYNTAX  MarsClientEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry contains a MARS client and its associated
+         attributes.  An entry in the marsClientTable has
+         a corresponding entry in the ipAddrTable defined in
+         RFC1213. Association between the ipAddrTable and
+         the marsClientTable is made through the index,
+         ipAdEntAddr."
+    INDEX { ipAdEntAddr, marsClientIndex }
+    ::= { marsClientTable 1 }
+
+MarsClientEntry ::=
+    SEQUENCE {
+        marsClientIndex                    Integer32,
+        marsClientAddr                     AtmAddr,
+        marsClientDefaultMarsAddr          AtmAddr,
+        marsClientHsn                      Unsigned32,
+        marsClientRegistration             INTEGER,
+        marsClientCmi                      INTEGER,
+        marsClientDefaultMtu               INTEGER,
+        marsClientFailureTimer             INTEGER,
+        marsClientRetranDelayTimer         INTEGER,
+        marsClientRdmMulReqAddRetrTimer    INTEGER,
+        marsClientRdmVcRevalidateTimer     INTEGER,
+        marsClientJoinLeaveRetrInterval    INTEGER,
+        marsClientJoinLeaveRetrLimit       INTEGER,
+        marsClientRegWithMarsRdmTimer      INTEGER,
+        marsClientForceWaitTimer           INTEGER,
+        marsClientLmtToMissRedirMapTimer   INTEGER,
+        marsClientIdleTimer                INTEGER,
+        marsClientRowStatus                RowStatus
+    }
+
+marsClientIndex OBJECT-TYPE
+    SYNTAX  Integer32(1..65535)
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The auxiliary variable used to identify instances of
+         the columnar objects in the MARS MarsClientTable."
+    ::= { marsClientEntry 1 }
+
+marsClientAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+       MAX-ACCESS read-create
+       STATUS  current
+       DESCRIPTION
+           "The ATM address associated with the ATM Client."
+       ::= { marsClientEntry 2 }
+
+marsClientDefaultMarsAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+       MAX-ACCESS read-create
+       STATUS  current
+       DESCRIPTION
+           "The default MARS ATM address which is needed to
+            setup the initial signalling path between a MARS
+            client and its associated MARS."
+       ::= { marsClientEntry 3 }
+
+marsClientHsn OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-create
+       STATUS  current
+       DESCRIPTION
+           "The cluster membership own 32 bit Host Sequence
+            Number.  When a new cluster member starts up, it is
+            initialized to zero.  When the cluster member sends
+            the MARS_JOIN to register, the HSN will be correctly
+            set to the current cluster sequence number (CSN) when
+            the Client receives the copy of its MARS_JOIN from
+            the MARS.  It is is used to track the MARS sequence
+            number."
+       ::= { marsClientEntry 4 }
+
+marsClientRegistration OBJECT-TYPE
+    SYNTAX  INTEGER {
+          notRegistered (1),
+          registering (2),
+          registered (3),
+          reRegisteringFault (4),
+          reRegisteringRedirMap (5)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "An indication with regards to the registration
+         status of this client. The registration codes
+         of 'notRegistered (1)', 'registered (2)', and
+         registered (3) are self-explanatory. The
+         'reRegisteringFault (4)' indicates the client is
+         in the process of re-registering with a MARS due
+         to some fault conditions.  The 'reRegisteringRedMap
+         (5)' status code shows that client is re-registering
+         because it has received a MARS_REDIRECT_MAP message
+         and was told to register with a different MARS from
+         the current MARS."
+    ::= { marsClientEntry 5 }
+
+marsClientCmi OBJECT-TYPE
+    SYNTAX  INTEGER (0..65535)
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "16 bit Cluster member identifier (CMI) assigned by the
+         MARS which uniquely identifies each endpoint attached
+         to the cluster.  The value becomes valid after the
+         'marsClientRegistration' is set to the value
+         of 'registered (1)'."
+    ::= { marsClientEntry 6 }
+
+marsClientDefaultMtu OBJECT-TYPE
+    SYNTAX  INTEGER (1..65535)
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The default maximum transmission unit (MTU) used for
+         this cluster.  Note that the actual size used for a
+         VC between two members of the cluster may be negotiated
+         during connection setup and may be different than this
+         value.  Default value = 9180 bytes."
+    DEFVAL { 9180 }
+    ::= { marsClientEntry 7 }
+
+marsClientFailureTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "A timer used to flag the failure of last MARS_MULTI
+         to arrive.  Default value = 10 seconds (recommended)."
+    DEFVAL { 10 }
+    ::= { marsClientEntry 8 }
+
+marsClientRetranDelayTimer OBJECT-TYPE
+    SYNTAX  INTEGER (5..10)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The delay timer for sending out new MARS_REQUEST
+         for the group after the client learned that there
+         is no other group in the cluster.  The timer must
+         be set between 5 and 10 seconds inclusive."
+    ::= { marsClientEntry 9 }
+
+marsClientRdmMulReqAddRetrTimer OBJECT-TYPE
+    SYNTAX  INTEGER (5..10)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The initial random L_MULTI_RQ/ADD retransmit timer
+         which can be set between 5 and 10 seconds inclusive."
+    ::= { marsClientEntry 10 }
+
+marsClientRdmVcRevalidateTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..10)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The random time to set VC_revalidate flag.  The
+         timer value ranges between 1 and 10 seconds
+         inclusive."
+    ::= { marsClientEntry 11 }
+
+marsClientJoinLeaveRetrInterval OBJECT-TYPE
+    SYNTAX  INTEGER(5..2147483647)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "MARS_JOIN/LEAVE retransmit interval. The minimum
+         and recommended values are 5 and 10 seconds,
+         respectively."
+    DEFVAL { 10 }
+    ::= { marsClientEntry 12 }
+
+marsClientJoinLeaveRetrLimit OBJECT-TYPE
+    SYNTAX  INTEGER (0..5)
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "MARS_JOIN/LEAVE retransmit limit. The maximum
+         value is 5."
+    ::= { marsClientEntry 13 }
+
+marsClientRegWithMarsRdmTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..10)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Random time to register with MARS."
+    ::= { marsClientEntry 14 }
+
+marsClientForceWaitTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    UNITS   "minutes"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Force wait if MARS re-registration is looping.
+         The minimum value is 1 minute."
+    ::= { marsClientEntry 15 }
+
+marsClientLmtToMissRedirMapTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..4)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Timer limit for client to miss MARS_REDIRECT_MAPS."
+    ::= { marsClientEntry 16 }
+
+marsClientIdleTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    UNITS   "minutes"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The configurable inactivity timer associated with a
+         client. When a VC is created at this client, it gets
+         the idle timer value from this configurable timer.
+         The minimum suggested value is 1 minute and the
+         recommended default value is 20 minutes."
+    DEFVAL { 20 }
+    ::= { marsClientEntry 17 }
+
+marsClientRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create, delete or modify a
+         row in this table.
+
+         A row cannot be made 'active' until instances of
+         all corresponding columns in the row of this table
+         are appropriately configured and until the agent
+         has also created a corresponding row in the
+         marsClientStatTable.
+
+         When this object has a value of 'active', the
+         following columnar objects can not be modified:
+
+           marsClientDefaultMarsAddr,
+           marsClientHsn,
+           marsClientRegstration,
+           marsClientCmi,
+           marsClientDefaultMtu
+
+         while other objects in this conceptual row can be
+         modified irrespective of the value of this object.
+
+         Deletion of this row is allowed regardless of
+         whether or not a row in any associated tables
+         (i.e., marsClientVcTable) still exists or is in
+         use. Once this row is deleted, it is recommended
+         that the agent or the SNMP management station
+         (if possible) through the set command deletes
+         any stale rows that are associated with this
+         row."
+    ::= { marsClientEntry 18 }
+
+--****************************************************************
+-- IP ATM MARS Client Multicast Group Address Object Definitions
+--****************************************************************
+
+marsClientMcGrpTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsClientMcGrpEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains a list of IP multicast group address
+         blocks associated with a MARS client.  Entries in this
+         table are used by the client that needs to receive or
+         transmit packets from/to the specified range of
+         multicast addresses.
+         Each row can be created or deleted via configuration."
+    ::= {  marsClientObjects 2 }
+
+marsClientMcGrpEntry OBJECT-TYPE
+    SYNTAX  MarsClientMcGrpEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry represents a consecutive block of multicast
+         group addresses."
+    INDEX { ipAdEntAddr,
+            marsClientIndex,
+            marsClientMcMinGrpAddr,
+            marsClientMcMaxGrpAddr }
+    ::= { marsClientMcGrpTable 1 }
+
+MarsClientMcGrpEntry ::=
+    SEQUENCE {
+        marsClientMcMinGrpAddr           IpAddress,
+        marsClientMcMaxGrpAddr           IpAddress,
+        marsClientMcGrpRowStatus         RowStatus
+    }
+
+marsClientMcMinGrpAddr OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Minimum multicast group address - the min and max
+         multicast forms multi-group block.  If the MinGrpAddr
+         and MaxGrpAddr are the same, it indicates that this
+         block contains a single group address."
+    ::= { marsClientMcGrpEntry 1 }
+
+marsClientMcMaxGrpAddr OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Maximum multicast group address - the min and max
+         multicast forms a multi-group block.  If the MinGrpAddr
+         and MaxGrpAddr are the same, it indicates that this
+         block contains a single group address."
+    ::= { marsClientMcGrpEntry 2 }
+
+marsClientMcGrpRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create or delete a row in this
+         table.
+
+         Since other objects in this row are not-accessible
+         'index-objects', the value of this object has no
+         effect on whether those objects in this conceptual
+         row can be modified."
+    ::= { marsClientMcGrpEntry 3 }
+
+--****************************************************************
+-- IP ATM MARS Client Backup MARS Object Definitions
+--****************************************************************
+
+marsClientBackupMarsTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsClientBackupMarsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains a list of backup MARS addresses that
+         a client can connect to in case of failure for connecting
+         to the primary server. The list of addresses is in
+         descending order of preference. It should be noted that
+         the backup list provided by the MARS to the client via
+         the MARS_REDIRECT_MAP message has a higher preference than
+         addresses that are manually configured into the client.
+         When such a list is received from the MARS, this information
+         should be inserted at the top of the list.
+         Each row can be created or deleted via configuration."
+    ::= {  marsClientObjects 3 }
+
+marsClientBackupMarsEntry OBJECT-TYPE
+    SYNTAX  MarsClientBackupMarsEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry represents an ATM address of a backup MARS."
+    INDEX { ipAdEntAddr,
+            marsClientIndex,
+            marsClientBackupMarsPriority,
+            marsClientBackupMarsAddr }
+    ::= { marsClientBackupMarsTable 1 }
+
+MarsClientBackupMarsEntry ::=
+    SEQUENCE {
+        marsClientBackupMarsPriority     Unsigned32,
+        marsClientBackupMarsAddr         AtmAddr,
+        marsClientBackupMarsRowStatus    RowStatus
+    }
+
+marsClientBackupMarsPriority OBJECT-TYPE
+    SYNTAX  Unsigned32(0..65535)
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The priority associated with a backup MARS. A lower
+         priority value inidcates a higher preference."
+    ::= { marsClientBackupMarsEntry 1 }
+
+marsClientBackupMarsAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The ATM address associated with a backup MARS."
+    ::= { marsClientBackupMarsEntry 2 }
+
+marsClientBackupMarsRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create or delete a row in this
+         table.
+
+         Since other objects in this row are not-accessible
+         'index-objects', the value of this object has no effect
+         on whether those objects in this conceptual row can be
+         modified."
+    ::= { marsClientBackupMarsEntry 3 }
+
+--***************************************************************
+--  IP ATM MARS Client VC Object Definition Table
+--***************************************************************
+
+marsClientVcTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsClientVcEntry
+    MAX-ACCESS  not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains information about open virtual
+         circuits (VCs) that a client has.  For point to point
+         circuit, each entry represents a single VC connection
+         between this client ATM address to another party ATM
+         address.  In the case of point to multipoint connection
+         where a single source address is associated with
+         multiple destinations, several entries are used to
+         represent the relationship.  An example of point to
+         multi-point VC represented in a table is shown below.
+
+                Client    VPI/VCI    Grp Addr1/Addr2    Part Addr
+                  1         0,1          g1,g2             p1
+                  1         0,1          g1,g2             p2
+                  1         0,1          g1,g2             p3
+
+         Note:  This table assumes the IP multicast address
+                groups (min, max) defined in each entry are
+                always consecutive.  In the case of that a
+                client receives a JOIN/LEAVE with
+                mars$flag.punched set, each pair of the IP
+                groups will first be broken into several
+                pairs of consecutive IP groups before each
+                entry row corresponding to a pair of IP group
+                is created."
+    ::= { marsClientObjects 4 }
+
+marsClientVcEntry OBJECT-TYPE
+    SYNTAX  MarsClientVcEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The objects contained in the entry are VC related
+         attributes such as VC signalling type, control VC
+         type, idle timer, negotiated MTU size, etc."
+    INDEX { ipAdEntAddr,
+            marsClientIndex,
+            marsClientVcVpi,
+            marsClientVcVci,
+            marsClientVcMinGrpAddr,
+            marsClientVcMaxGrpAddr,
+            marsClientVcPartyAddr }
+    ::= { marsClientVcTable 1 }
+
+MarsClientVcEntry ::=
+    SEQUENCE {
+        marsClientVcVpi            INTEGER,
+        marsClientVcVci            INTEGER,
+        marsClientVcMinGrpAddr     IpAddress,
+        marsClientVcMaxGrpAddr     IpAddress,
+        marsClientVcPartyAddr      AtmAddr,
+        marsClientVcPartyAddrType  INTEGER,
+        marsClientVcType           INTEGER,
+        marsClientVcCtrlType       INTEGER,
+        marsClientVcIdleTimer      INTEGER,
+        marsClientVcRevalidate     TruthValue,
+        marsClientVcEncapsType     INTEGER,
+        marsClientVcNegotiatedMtu  INTEGER,
+        marsClientVcRowStatus      RowStatus
+    }
+
+marsClientVcVpi OBJECT-TYPE
+    SYNTAX  INTEGER (0..4095)
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The value of virtual path identifier (VPI). Since
+         a VPI can be numbered 0, this sub-index can take
+         a value of 0."
+    ::= { marsClientVcEntry 1 }
+
+marsClientVcVci OBJECT-TYPE
+    SYNTAX  INTEGER (0..65535)
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The value of virtual circuit identifier (VCI). Since
+         a VCI can be numbered 0, this sub-index can take
+         a value of 0."
+    ::= { marsClientVcEntry 2 }
+
+marsClientVcMinGrpAddr OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Minimum IP multicast group address - the min and
+         max multicast forms a multi-group consecutive
+         block which is associated with a table entry.
+         if the MinGrpAddr and MaxGrpAddr are the same, it
+         indicates that the size of multi-group block is 1,
+         a single IP group."
+    ::= { marsClientVcEntry 3 }
+
+marsClientVcMaxGrpAddr OBJECT-TYPE
+    SYNTAX  IpAddress
+
+
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Maximum IP multicast group address - the min and
+         max multicast forms a multi-group consecutive
+         block which is associated with a table entry.
+         if the MinGrpAddr and MaxGrpAddr are the same, it
+         indicates that the size of multi-group block is 1,
+         a single IP group."
+    ::= { marsClientVcEntry 4 }
+
+marsClientVcPartyAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "An ATM party address in which this VC is linked.
+         The party type is identified by the
+         marsClientVcPartyAddrType."
+    ::= { marsClientVcEntry 5 }
+
+marsClientVcPartyAddrType OBJECT-TYPE
+    SYNTAX  INTEGER {
+          called (1),
+          calling (2)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The party type is associated with the party address.
+         The 'called (1)' indicates that the party address is
+         a destination address which implies that VC is
+         originated from this client.  The 'calling (2)'
+         indicates the VC was initiated externally to this
+         client. In this case, the party address is the
+         source address."
+    ::= { marsClientVcEntry 6 }
+
+marsClientVcType OBJECT-TYPE
+    SYNTAX  INTEGER {
+          pvc (1),
+          svc (2)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Circuit Connection type: permanent virtual circuit or
+         switched virtual circuit."
+    ::= { marsClientVcEntry 7 }
+
+marsClientVcCtrlType OBJECT-TYPE
+    SYNTAX  INTEGER {
+           pointToPointVC (1),
+           clusterControlVC (2),
+           pointToMultiPointVC (3)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Control VC type used to specify a particular connection.
+           pointToPointVC (1):
+             used by the ATM Clients for the registration and
+             queries.  This VC or the initial signalling path
+             is set up from the source Client to a MARS. It is
+             bi-directional.
+           clusterControlVC (2):
+             used by a MARS to issue asynchronous updates to an
+             ATM Client.  This VC is established from the MARS
+             to the ATM Client.
+           pointToMultiPointVC (3):
+             used by the client to transfer multicast data
+             packets from layer 3.  This VC is established
+             from the source ATM Client to a destination ATM
+             endpoint which can be a multicast group member
+             or an MCS.  The destination endpoint was obtained
+             from the MARS."
+    ::= { marsClientVcEntry 8 }
+
+marsClientVcIdleTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    UNITS   "minutes"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The idle timer associated with this VC.  The minimum
+         suggested value is 1 minute and the recommended
+         default value is 20 minutes."
+    DEFVAL { 20 }
+    ::= { marsClientVcEntry 9 }
+
+marsClientVcRevalidate OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "A flag associated with an open and active multipoint
+         VC.  It is checked every time a packet is queued for
+         transmission on that VC. The object has the value of
+         true (1) if revalidate is required and the value
+         false (2) otherwise."
+    ::= { marsClientVcEntry 10 }
+
+ marsClientVcEncapsType OBJECT-TYPE
+    SYNTAX  INTEGER {
+          other (1),
+          llcSnap (2)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The encapsulation type used when communicating over
+         this VC."
+    ::= { marsClientVcEntry 11 }
+
+marsClientVcNegotiatedMtu OBJECT-TYPE
+    SYNTAX  INTEGER (1..65535)
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The negotiated MTU when communicating over this VC."
+    ::= { marsClientVcEntry 12 }
+
+marsClientVcRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create, delete or modify a
+         row in this table.
+
+         A row cannot be made 'active' until instances of
+         all corresponding columns in the row of this table
+         are appropriately configured.
+
+         While objects: marsClientVcIdleTimer and
+         marsClientVcRevalidate in this conceptual
+         row can be modified irrespective of the value
+         of this object, all other objects in the row can
+         not be modified when this object has a value
+         of 'active'.
+
+         It is possible for an SNMP management station
+         to set the row to 'notInService' and modify
+         the entry and then set it back to 'active'
+
+         with the following exception. That is, rows
+         for which the corresponding instance of
+         marsClientVcType has a value of 'svc' can not
+         be modified or deleted."
+    ::= { marsClientVcEntry 13 }
+
+--***************************************************************
+--  IP ATM MARS Client Statistic Object Definition Table
+--***************************************************************
+
+marsClientStatTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsClientStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains statistics collected at MARS
+         clients."
+    ::= { marsClientObjects 5 }
+
+marsClientStatEntry OBJECT-TYPE
+    SYNTAX  MarsClientStatEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry contains statistics collected at one MARS
+         client."
+    INDEX { ipAdEntAddr, marsClientIndex }
+    ::= { marsClientStatTable 1 }
+
+MarsClientStatEntry ::=
+    SEQUENCE {
+        marsClientStatTxReqMsgs        Counter32,
+        marsClientStatTxJoinMsgs       Counter32,
+        marsClientStatTxLeaveMsgs      Counter32,
+        marsClientStatTxGrpLstReqMsgs  Counter32,
+        marsClientStatRxJoinMsgs       Counter32,
+        marsClientStatRxLeaveMsgs      Counter32,
+        marsClientStatRxMultiMsgs      Counter32,
+        marsClientStatRxNakMsgs        Counter32,
+        marsClientStatRxMigrateMsgs    Counter32,
+        marsClientStatRxGrpLstRplyMsgs Counter32,
+        marsClientStatFailMultiMsgs    Counter32
+    }
+
+marsClientStatTxReqMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_REQUEST messages transmitted
+         from a client."
+    ::= { marsClientStatEntry 1 }
+
+marsClientStatTxJoinMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_JOIN messages transmitted from
+         a client."
+    ::= { marsClientStatEntry 2 }
+
+marsClientStatTxLeaveMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_LEAVE messages transmitted from
+         a client."
+    ::= { marsClientStatEntry 3 }
+
+marsClientStatTxGrpLstReqMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_GROUPLIST_REQUEST messages
+         transmitted from a client."
+    ::= { marsClientStatEntry 4 }
+
+marsClientStatRxJoinMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_JOIN messages received by
+         a client."
+    ::= { marsClientStatEntry 5 }
+
+marsClientStatRxLeaveMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_LEAVE messages received by
+         a client."
+    ::= { marsClientStatEntry 6 }
+
+marsClientStatRxMultiMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_MULTI messages received by
+         a client."
+    ::= { marsClientStatEntry 7 }
+
+marsClientStatRxNakMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_NAK messages received by
+         a client."
+    ::= { marsClientStatEntry 8 }
+
+marsClientStatRxMigrateMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_MIGRATE messages received by
+         a client."
+    ::= { marsClientStatEntry 9 }
+
+    marsClientStatRxGrpLstRplyMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_GROUPLIST_REPLY messages
+         received by a client."
+    ::= { marsClientStatEntry 10 }
+
+marsClientStatFailMultiMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of timeouts occurred indicating
+         failure of the last MARS_MULTI to arrive."
+    ::= { marsClientStatEntry 11 }
+
+--***************************************************************
+--  IP ATM MARS Object Definitions
+--***************************************************************
+
+marsObjects    OBJECT IDENTIFIER ::= { marsMIB 2 }
+
+marsTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsEntry
+    MAX-ACCESS  not-accessible
+    STATUS current
+    DESCRIPTION
+        "The objects defined in this table are used for the
+         management of MARS servers."
+    ::= {  marsObjects 1 }
+
+marsEntry OBJECT-TYPE
+    SYNTAX  MarsEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry contains a MARS and its associated
+         attributes."
+    INDEX { marsIndex, marsIfIndex }
+    ::= { marsTable 1 }
+
+MarsEntry ::=
+    SEQUENCE {
+        marsIndex              Integer32,
+        marsIfIndex            InterfaceIndex,
+        marsAddr               AtmAddr,
+        marsLocal              TruthValue,
+        marsServStatus         INTEGER,
+        marsServType           INTEGER,
+        marsServPriority       Unsigned32,
+        marsRedirMapMsgTimer   INTEGER,
+        marsCsn                Unsigned32,
+        marsSsn                Unsigned32,
+        marsRowStatus          RowStatus
+    }
+
+marsIndex OBJECT-TYPE
+    SYNTAX  Integer32(1..65535)
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The auxiliary variable used to identify instances of
+         the columnar objects in the MARS table."
+    ::= { marsEntry 1 }
+
+marsIfIndex OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The ifIndex of the interface that the MARS is
+         associated with."
+    ::= { marsEntry 2 }
+
+marsAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The ATM address associated with the MARS."
+    ::= { marsEntry 3 }
+
+marsLocal OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "A flag associated with a MARS entry.  The object has
+         the value of true (1) if the MARS whose interface
+         is local to the machine that implements this MIB;
+         otherwise the object has the value of false (2)."
+    ::= { marsEntry 4 }
+
+marsServStatus OBJECT-TYPE
+    SYNTAX  INTEGER {
+          active (1),
+          inactive (2),
+          faulted (3)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The current status of MARS."
+    ::= { marsEntry 5 }
+
+marsServType OBJECT-TYPE
+    SYNTAX  INTEGER {
+          primary (1),
+          backup (2)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Types of MARS servers: primary or backup."
+    ::= { marsEntry 6 }
+
+marsServPriority OBJECT-TYPE
+    SYNTAX  Unsigned32(0..65535)
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Priority associated with a backup MARS server.
+         A backup MARS server with lower priority value
+         indicates a higher preference than other backup
+         MARS servers to be used as the MARS server when
+         the primary server fails."
+    ::= { marsEntry 7 }
+
+marsRedirMapMsgTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..2)
+    UNITS   "minutes"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Periodic interval on which a multi-part
+         MARS_REDIRECT_MAP is sent from this MARS."
+       DEFVAL { 1 }
+    ::= { marsEntry 8 }
+
+marsCsn OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Current cluster sequence number (CSN) which is global
+         within the context of a given protocol.  The CSN is
+         incremented by the MARS on every transmission of a
+         message on ClusterControlVC.  A cluster member uses
+         the CSN to track the message loss on ClusterControlVC
+         or to monitor a membership change."
+    ::= { marsEntry 9 }
+
+marsSsn OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Current server sequence number (SSN) which is global
+         within the context of a given protocol.  The SSN is
+         incremented by the MARS on every transmission of a
+         message on ServerControlVC.  A MCS uses the SSN to
+         track the message loss on ServerControlVC or to
+         monitor a membership change."
+    ::= { marsEntry 10 }
+
+marsRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create, delete or modify a
+         row in this table.
+
+         A row cannot be made 'active' until instances of
+         all corresponding columns in the row of this table
+         are appropriately configured and until the agent
+         has also created a corresponding row in the
+         marsStatTable.
+
+         When this object has a value of 'active', the
+         following columnar objects can not be modified:
+
+           marsAddr,
+           marsAddrLocal,
+           marsServStatus,
+           marsServType,
+           marsCsn,
+           marsSsn
+
+         while other objects in this conceptual row can be
+         modified irrespective of the value of this object.
+
+         Deletion of this row is allowed regardless of
+         whether or not a row in any associated tables
+         (i.e., marsVcTable) still exists or is in use.
+         Once this row is deleted, it is recommended that
+         the agent or the SNMP management station (if
+         possible) through the set command deletes any
+         stale rows that are associated with this row."
+    ::= { marsEntry 11 }
+
+--****************************************************************
+-- IP ATM MARS Multicast Group Address Object Definitions
+--****************************************************************
+
+marsMcGrpTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsMcGrpEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains a list of IP multicast address
+         blocks associated with a MARS.  Entries in this table
+         are used by the MARS host map table and the server map
+         table.  They should be created prior to being referenced
+         as indices by those tables.
+         Each row can be created or deleted via configuration."
+    ::= { marsObjects 2 }
+
+marsMcGrpEntry OBJECT-TYPE
+    SYNTAX  MarsMcGrpEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry represents a consecutive block of multicast
+         group addresses."
+    INDEX { marsIndex,
+            marsIfIndex,
+            marsMcMinGrpAddr,
+            marsMcMaxGrpAddr }
+    ::= { marsMcGrpTable 1 }
+
+MarsMcGrpEntry ::=
+    SEQUENCE {
+        marsMcMinGrpAddr           IpAddress,
+        marsMcMaxGrpAddr           IpAddress,
+        marsMcGrpAddrUsage         INTEGER,
+        marsMcGrpRxLayer3GrpSets   Counter32,
+        marsMcGrpRxLayer3GrpResets Counter32,
+        marsMcGrpRowStatus         RowStatus
+    }
+
+marsMcMinGrpAddr OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Minimum multicast group address - the min and max
+         multicast forms multi-group block.  If the MinGrpAddr
+         and MaxGrpAddr are the same, it indicates that this
+         block contains a single group address."
+    ::= { marsMcGrpEntry 1 }
+
+marsMcMaxGrpAddr OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Maximum multicast group address - the min and max
+         multicast forms a multi-group block.  If The
+         MinGrpAddr and MaxGrpAddr are the same, it indicates
+         that this block contains a single group address."
+    ::= { marsMcGrpEntry 2 }
+
+marsMcGrpAddrUsage OBJECT-TYPE
+    SYNTAX  INTEGER {
+          hostMap (1),
+          serverMap (2),
+          hostServerMap (3)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Usage of the multicast address block.  The hostMap (1)
+         indicates that the address block is only used in the
+         MARS host map table. The serverMap (2) indicates
+         that the address block is only used in the MARS
+         server map table.  The hostServerMap (3) indicates
+         that the address block is used in both the host map
+         and the server map tables."
+    ::= { marsMcGrpEntry 3 }
+
+marsMcGrpRxLayer3GrpSets OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Number of MARS_JOIN messages received with
+         mars$flags.layer3grp flag set."
+    ::= { marsMcGrpEntry 4 }
+
+marsMcGrpRxLayer3GrpResets OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Number of MARS_JOIN messages received with
+         mars$flags.layer3grp flag reset."
+    ::= { marsMcGrpEntry 5 }
+
+marsMcGrpRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create, delete or modify a
+         row in this table.
+
+         The value of this object has no effect on whether
+         other objects in this conceptual row can be modified."
+    ::= { marsMcGrpEntry 6 }
+
+--***************************************************************
+--  IP ATM MARS Host Map Object Definitions
+--***************************************************************
+
+marsHostMapTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsHostMapEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table caches mappings between IP multicast
+         address to a list of ATM addresses that are
+         configured or dynamically learned from the MARS.
+         This address resolution is used for the host map.
+         It supports the mapping of a block of multicast
+         group addresses to a cluster member address.  In
+         the case where a group block is associated with
+         multiple cluster members, several entries are
+         used to representing the relationship."
+    ::= { marsObjects 3 }
+
+marsHostMapEntry OBJECT-TYPE
+    SYNTAX  MarsHostMapEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry row contains attributes associated with
+         the mapping between a multicast group block and an
+         ATM address."
+    INDEX { marsIndex,
+            marsIfIndex,
+            marsMcMinGrpAddr,
+            marsMcMaxGrpAddr,
+            marsHostMapAtmAddr }
+    ::= { marsHostMapTable 1 }
+
+MarsHostMapEntry ::=
+    SEQUENCE {
+        marsHostMapAtmAddr     AtmAddr,
+        marsHostMapRowType     INTEGER,
+        marsHostMapRowStatus   RowStatus
+    }
+
+marsHostMapAtmAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The mapped cluster member ATM address."
+    ::= { marsHostMapEntry 1 }
+
+marsHostMapRowType OBJECT-TYPE
+    SYNTAX  INTEGER {
+          static (1),
+          dynamic (2)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Method in which this entry row is created. The
+         static (1) indicates that this row is created
+         through configuration.  The dynamic (2) indicates
+         that the row is created as the result of group
+         address updates received at this MARS."
+    ::= { marsHostMapEntry 2 }
+
+marsHostMapRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create, delete or modify a
+         row in this table.
+
+         This object must not be set to 'active' until
+         instances of all corresponding columns in the
+         row of this table are appropriately configured.
+
+         It is possible for an SNMP management station
+         to set the row to 'notInService' and modify
+         the entry and then set it back to 'active'
+         with the following exception. That is, rows
+         for which the corresponding instance of
+         marsHostMapRowType has a value of 'dynamic'
+         can not be modified or deleted."
+    ::= { marsHostMapEntry 3 }
+
+--***************************************************************
+--  IP ATM MARS Server Map Object Definitions
+--***************************************************************
+
+marsServerMapTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsServerMapEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table caches mappings between IP multicast
+         address to a list of MCS ATM addresses that are
+         configured or dynamically learned from the MARS.
+         This address resolution is used for the server map.
+         It supports the mapping of a block of multicast
+         group addresses to a MCS address.  In the case
+         where a group block is associated with multiple
+         MCSs, several entries are used to representing the
+         relationship."
+    ::= { marsObjects 4 }
+
+marsServerMapEntry OBJECT-TYPE
+    SYNTAX  MarsServerMapEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry row contains attributes associated with
+         the mapping between a multicast group block and an
+         MCS address."
+    INDEX { marsIndex,
+            marsIfIndex,
+            marsMcMinGrpAddr,
+            marsMcMaxGrpAddr,
+            marsServerMapAtmAddr }
+    ::= { marsServerMapTable 1 }
+
+MarsServerMapEntry ::=
+    SEQUENCE {
+        marsServerMapAtmAddr   AtmAddr,
+        marsServerMapRowType   INTEGER,
+        marsServerMapRowStatus RowStatus
+    }
+
+marsServerMapAtmAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The mapped MCS ATM address."
+    ::= { marsServerMapEntry 1 }
+
+marsServerMapRowType OBJECT-TYPE
+    SYNTAX  INTEGER {
+            static (1),
+            dynamic (2)
+          }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Method in which this entry row is created. The
+         'static (1)' indicates that this row is created
+         through configuration.  The 'dynamic (2)' indicates
+         that the row is created as the result of group
+         address updates received at this MARS."
+    ::= { marsServerMapEntry 2 }
+
+marsServerMapRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create, delete or modify a
+         row in this table.
+
+         This object must not be set to 'active' until
+         instances of all corresponding columns in the
+         row of this table are appropriately configured.
+
+         It is possible for an SNMP management station
+         to set the row to 'notInService' and modify
+         the entry and then set it back to 'active'
+         with the following exception. That is, rows
+         for which the corresponding instance of
+         marsServerMapRowType has a value of 'dynamic'
+         can not be modified or deleted."
+    ::= { marsServerMapEntry 3 }
+
+--***************************************************************
+--  IP ATM MARS VC Object Definition Table
+--***************************************************************
+
+marsVcTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsVcEntry
+    MAX-ACCESS  not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains information about open virtual circuits
+         (VCs) that a MARS has.  For point to point circuit, each
+         entry represents a single VC connection between this MARS
+         ATM address to another party's ATM address.  In the case of
+         point to multipoint connection where a ControlVc is attached
+         with multiple leaf nodes, several entries are used  to
+         represent the relationship.  An example of point to
+         multi-point VC represented in a table is shown below.
+
+              MARS     VPI/VCI    MARS Addr     Party Addr
+                1         0,1         m1            p1
+                1         0,1         m1            p2
+                1         0,1         m1            p3"
+    ::= { marsObjects 5 }
+
+marsVcEntry OBJECT-TYPE
+    SYNTAX  MarsVcEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The objects contained in the entry are VC related attributes
+         such as VC signalling type, control VC type, idle timer,
+         negotiated MTU size, etc."
+    INDEX { marsIndex,
+            marsIfIndex,
+            marsVcVpi,
+            marsVcVci,
+            marsVcPartyAddr }
+    ::= { marsVcTable 1 }
+
+MarsVcEntry ::=
+    SEQUENCE {
+        marsVcVpi              INTEGER,
+        marsVcVci              INTEGER,
+        marsVcPartyAddr        AtmAddr,
+        marsVcPartyAddrType    INTEGER,
+        marsVcType             INTEGER,
+        marsVcCtrlType         INTEGER,
+        marsVcIdleTimer        INTEGER,
+        marsVcCmi              INTEGER,
+        marsVcEncapsType       INTEGER,
+        marsVcNegotiatedMtu    INTEGER,
+        marsVcRowStatus        RowStatus
+      }
+
+marsVcVpi OBJECT-TYPE
+    SYNTAX  INTEGER (0..4095)
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The value of virtual path identifier (VPI). Since
+         a VPI can be numbered 0, this sub-index can take
+         a value of 0."
+    ::= { marsVcEntry 1 }
+
+marsVcVci OBJECT-TYPE
+    SYNTAX  INTEGER (0..65535)
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The value of virtual circuit identifier (VCI).
+          Since a VCI can be numbered 0, this sub-index
+          can take a value of 0."
+    ::= { marsVcEntry 2 }
+
+marsVcPartyAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "An ATM party address in which this VC is linked. The
+         party type is identified by the marsVcPartyAddrType."
+    ::= { marsVcEntry 5 }
+
+marsVcPartyAddrType OBJECT-TYPE
+    SYNTAX  INTEGER {
+          called (1),
+          calling (2)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The party type is associated with the party address.  The
+         'called (1)' indicates that the party address is a
+         destination address which implies that VC is originated
+         from this MARS. The 'calling (2)' indicates the VC was
+         initiated externally to this MARS.  The party address is
+         the source address."
+    ::= { marsVcEntry 6 }
+
+marsVcType OBJECT-TYPE
+    SYNTAX  INTEGER {
+             pvc (1),
+             svc (2)
+           }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Circuit Connection type: permanent virtual circuit or
+         switched virtual circuit."
+    ::= { marsVcEntry 7 }
+
+marsVcCtrlType OBJECT-TYPE
+    SYNTAX  INTEGER {
+           pointToPointVC (1),
+           clusterControlVC (2),
+           serverControlVC (3)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Control VC type used to specify a particular connection.
+           pointToPointVC (1):
+             used by the ATM endpoints (clients) or the MCS for
+             registration and queries.  This VC is set up from
+             a MARS client and MCS to this MARS.  It is a
+             bi-directional VC.
+           clusterControlVC (2):
+             used by MARS to issue asynchronous updates to ATM
+             an ATM client.  This VC is established from the
+             MARs to the ATM client.
+           serverControlVC (3):
+             used by MARS to issue asynchronous update to ATM
+             multicast servers.  This type of VC exists when at
+             least a MCS is being used."
+    ::= { marsVcEntry 8 }
+
+marsVcIdleTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    UNITS   "minutes"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The idle timer associated with this VC.  The minimum
+         suggested value is 1 minute and the recommended default
+         value is 20 minutes."
+    DEFVAL { 20 }
+    ::= { marsVcEntry 9 }
+
+marsVcCmi OBJECT-TYPE
+    SYNTAX  INTEGER (0..65535)
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Cluster member identifier (CMI) which uniquely identifies
+         each endpoint attached to the cluster.  This variable
+         applies to each 'leaf node' of an outgoing control VC."
+    ::= { marsVcEntry 10 }
+
+marsVcEncapsType OBJECT-TYPE
+    SYNTAX  INTEGER {
+          other (1),
+          llcSnap (2)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The encapsulation type used when communicating over
+         this VC."
+    ::= { marsVcEntry 11 }
+
+marsVcNegotiatedMtu OBJECT-TYPE
+    SYNTAX  INTEGER (1..65535)
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The negotiated MTU when communicating over this VC."
+    ::= { marsVcEntry 12 }
+
+marsVcRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create, delete or modify a
+         row in this table.
+
+         A row cannot be made 'active' until instances of
+         all corresponding columns in the row of this table
+         are appropriately configured.
+
+         While the marsVcIdleTimer in this conceptual
+         row can be modified irrespective of the value
+         of this object, all other objects in the row can
+         not be modified when this object has a value
+         of 'active'.
+
+         It is possible for an SNMP management station
+         to set the row to 'notInService' and modify
+         the entry and then set it back to 'active'
+         with the following exception. That is, rows
+         for which the corresponding instance of
+         marsVcType has a value of 'svc' can not be
+         modified or deleted."
+    ::= { marsVcEntry 13 }
+
+--***************************************************************
+--  IP ATM MARS Registered Cluster Member List Table
+--***************************************************************
+
+marsRegClientTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsRegClientEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains ATM identities of all the currently
+         registered cluster members at a MARS.  Each entry represents
+         one set of ATM identities associated with one cluster member
+         or the MARS client."
+    ::= { marsObjects 6 }
+
+marsRegClientEntry OBJECT-TYPE
+    SYNTAX  MarsRegClientEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry row contains attributes associated with one
+         register cluster member."
+    INDEX { marsIndex,
+            marsIfIndex,
+            marsRegClientCmi}
+    ::= { marsRegClientTable 1 }
+
+MarsRegClientEntry ::=
+    SEQUENCE {
+        marsRegClientCmi       INTEGER,
+        marsRegClientAtmAddr   AtmAddr
+    }
+
+marsRegClientCmi OBJECT-TYPE
+    SYNTAX  INTEGER (0..65535)
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "This cluster member identifier is used as an auxiliary index
+         for the entry in this table."
+    ::= { marsRegClientEntry 1 }
+
+marsRegClientAtmAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "The registered client's ATM address."
+    ::= { marsRegClientEntry 2 }
+
+
+--***************************************************************
+--  IP ATM MARS Registered Server Member List Table
+--***************************************************************
+
+marsRegMcsTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsRegMcsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains ATM identities of all the currently
+         registered MCSs at a MARS. Each entry represents one set
+         of ATM identities associated with one MCS."
+    ::= { marsObjects 7 }
+
+marsRegMcsEntry OBJECT-TYPE
+    SYNTAX  MarsRegMcsEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry row contains attributes associated with one
+         registered MCS."
+    INDEX { marsIndex,
+            marsIfIndex,
+            marsRegMcsAtmAddr
+          }
+    ::= { marsRegMcsTable 1 }
+
+MarsRegMcsEntry ::=
+    SEQUENCE {
+        marsRegMcsAtmAddr  AtmAddr
+    }
+
+marsRegMcsAtmAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "The registered MCS's ATM address."
+    ::= { marsRegMcsEntry 1 }
+
+--***************************************************************
+--  IP ATM MARS Statistics Object Definition Table
+--***************************************************************
+
+marsStatTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+
+
+    DESCRIPTION
+        "The table contains statistics collected at MARS."
+    ::= {  marsObjects 8 }
+
+marsStatEntry OBJECT-TYPE
+    SYNTAX  MarsStatEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry contains statistics collected at one MARS."
+    INDEX { marsIndex, marsIfIndex }
+    ::= { marsStatTable 1 }
+
+MarsStatEntry ::=
+    SEQUENCE {
+        marsStatTxMultiMsgs        Counter32,
+        marsStatTxGrpLstRplyMsgs   Counter32,
+        marsStatTxRedirectMapMsgs  Counter32,
+        marsStatTxMigrateMsgs      Counter32,
+        marsStatTxNakMsgs          Counter32,
+        marsStatTxJoinMsgs         Counter32,
+        marsStatTxLeaveMsgs        Counter32,
+        marsStatTxSjoinMsgs        Counter32,
+        marsStatTxSleaveMsgs       Counter32,
+        marsStatTxMservMsgs        Counter32,
+        marsStatTxUnservMsgs       Counter32,
+        marsStatRxReqMsgs          Counter32,
+        marsStatRxGrpLstReqMsgs    Counter32,
+        marsStatRxJoinMsgs         Counter32,
+        marsStatRxLeaveMsgs        Counter32,
+        marsStatRxMservMsgs        Counter32,
+        marsStatRxUnservMsgs       Counter32,
+        marsStatRxBlkJoinMsgs      Counter32,
+        marsStatRegMemGroups       Counter32,
+        marsStatRegMcsGroups       Counter32
+    }
+
+marsStatTxMultiMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_MULTI transmitted by this MARS."
+    ::= { marsStatEntry 1 }
+
+marsStatTxGrpLstRplyMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_GROUPLIST_REPLY messages transmitted
+         by this MARS."
+    ::= { marsStatEntry 2 }
+
+marsStatTxRedirectMapMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_REDIRECT_MAP messages transmitted by
+         this MARS."
+    ::= { marsStatEntry 3 }
+
+marsStatTxMigrateMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_MIGRATE messages transmitted by
+         this MARS."
+    ::= { marsStatEntry 4 }
+
+marsStatTxNakMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_NAK messages transmitted by this MARS."
+    ::= { marsStatEntry 5 }
+
+marsStatTxJoinMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_JOIN messages transmitted by this
+         MARS."
+    ::= { marsStatEntry 6 }
+
+marsStatTxLeaveMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_LEAVE messages transmitted by this
+         MARS."
+    ::= { marsStatEntry 7 }
+
+marsStatTxSjoinMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_SJOIN messages transmitted by this
+         MARS."
+    ::= { marsStatEntry 8 }
+
+marsStatTxSleaveMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_SLEAVE messages transmitted by this
+         MARS."
+    ::= { marsStatEntry 9 }
+
+marsStatTxMservMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_MSERV messages transmitted by this
+         MARS."
+    ::= { marsStatEntry 10 }
+
+marsStatTxUnservMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_UNSERV messages transmitted by this
+         MARS."
+    ::= { marsStatEntry 11 }
+
+marsStatRxReqMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_REQUEST messages received by this
+         MARS."
+    ::= { marsStatEntry 12 }
+
+marsStatRxGrpLstReqMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_GROUPLIST_REQUEST messages received
+         by this MARS."
+    ::= { marsStatEntry 13 }
+
+marsStatRxJoinMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_JOINS messages received by this MARS."
+    ::= { marsStatEntry 14 }
+
+marsStatRxLeaveMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_LEAVES messages received by this MARS."
+    ::= { marsStatEntry 15 }
+
+marsStatRxMservMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_MSERV messages received by this MARS."
+    ::= { marsStatEntry 16 }
+
+marsStatRxUnservMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_UNSERV messages received by this MARS."
+    ::= { marsStatEntry 17 }
+
+marsStatRxBlkJoinMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of block joins messages received by this MARS."
+    ::= { marsStatEntry 18 }
+
+marsStatRegMemGroups OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of IP multicast groups with 1 or more joined
+         cluster members."
+    ::= { marsStatEntry 19 }
+
+marsStatRegMcsGroups OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of IP multicast groups with 1 or more joined
+         MCSs."
+    ::= { marsStatEntry 20 }
+
+--***************************************************************
+--  IP ATM MARS MCS Object Definitions
+--***************************************************************
+
+marsMcsObjects OBJECT IDENTIFIER ::= { marsMIB 3 }
+
+marsMcsTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsMcsEntry
+    MAX-ACCESS  not-accessible
+    STATUS current
+    DESCRIPTION
+        "The objects defined in this table are used for
+         the management of a multicast server (MCS)."
+    ::= {  marsMcsObjects 1 }
+
+marsMcsEntry OBJECT-TYPE
+    SYNTAX  MarsMcsEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry contains a MCS and its associated
+         attributes."
+    INDEX { marsMcsIndex, marsMcsIfIndex }
+    ::= { marsMcsTable 1 }
+
+MarsMcsEntry ::=
+    SEQUENCE {
+        marsMcsIndex                    Integer32,
+        marsMcsIfIndex                  InterfaceIndex,
+        marsMcsAddr                     AtmAddr,
+        marsMcsDefaultMarsAddr          AtmAddr,
+        marsMcsRegistration             INTEGER,
+        marsMcsSsn                      Unsigned32,
+        marsMcsDefaultMtu               INTEGER,
+        marsMcsFailureTimer             INTEGER,
+        marsMcsRetranDelayTimer         INTEGER,
+        marsMcsRdmMulReqAddRetrTimer    INTEGER,
+        marsMcsRdmVcRevalidateTimer     INTEGER,
+        marsMcsRegisterRetrInterval     INTEGER,
+        marsMcsRegisterRetrLimit        INTEGER,
+        marsMcsRegWithMarsRdmTimer      INTEGER,
+        marsMcsForceWaitTimer           INTEGER,
+        marsMcsIdleTimer                INTEGER,
+        marsMcsLmtToMissRedirMapTimer   INTEGER,
+        marsMcsRowStatus                RowStatus
+    }
+
+marsMcsIndex OBJECT-TYPE
+    SYNTAX  Integer32(1..65535)
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The auxiliary variable used to identify instances
+         of the columnar objects in the MCS table."
+    ::= { marsMcsEntry 1 }
+
+marsMcsIfIndex OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The ifIndex of the interface that the MCS is
+         associated with."
+    ::= { marsMcsEntry 2 }
+
+marsMcsAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The ATM address associated with the MCS."
+    ::= { marsMcsEntry 3 }
+
+marsMcsDefaultMarsAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The default MARS ATM address which is needed to
+         setup the initial signalling path between a MCS
+         and its associated MARS."
+    ::= { marsMcsEntry 4 }
+
+marsMcsRegistration OBJECT-TYPE
+    SYNTAX  INTEGER {
+          notRegistered (1),
+          registering (2),
+          registered (3),
+          reRegisteringFault (4),
+          reRegisteringRedirMap (5)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "An indication with regards to the registration
+         STATUS of this MCS. The registration codes of
+         'notRegistered (1)', 'registered (2)', and
+         registered (3) are self-explanatory. The
+         'reRegisteringFault (4)' indicates the MCS is
+         in the process of re-registering with a MARS due
+         to some fault conditions.  The 'reRegisteringRedMap
+         (5)' status code shows that MCS is re-registering
+         because it has received a MARS_REDIRECT_MAP message
+         and was told to register with a shift MARS."
+    ::= { marsMcsEntry 5 }
+
+marsMcsSsn OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The MCS own 32 bit Server Sequence Number.  It
+         is used to track the Mars sequence number."
+    ::= { marsMcsEntry 6 }
+
+marsMcsDefaultMtu OBJECT-TYPE
+    SYNTAX  INTEGER (1..65535)
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The default maximum transmission unit (MTU) used
+         for this cluster.  Note that the actual size used
+         for a VC between two members of the cluster may be
+         negotiated during connection setup and may be
+         different than this value.
+         Default value = 9180 bytes."
+    DEFVAL { 9180 }
+    ::= { marsMcsEntry 7 }
+
+marsMcsFailureTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "A timer used to flag the failure of last MARS_MULTI
+         to arrive.  Default value = 10 seconds (recommended)."
+    DEFVAL { 10 }
+    ::= { marsMcsEntry 8 }
+
+marsMcsRetranDelayTimer OBJECT-TYPE
+    SYNTAX  INTEGER (5..10)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The delay timer for sending out new MARS_REQUEST
+         for the group after the MCS learned that there
+         is no other group in the cluster.  The timer must
+         be set between 5 and 10 seconds inclusive."
+    ::= { marsMcsEntry 9 }
+
+marsMcsRdmMulReqAddRetrTimer OBJECT-TYPE
+    SYNTAX  INTEGER (5..10)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The initial random L_MULTI_RQ/ADD retransmit timer
+         which can be set between 5 and 10 seconds inclusive."
+    ::= { marsMcsEntry 10 }
+
+marsMcsRdmVcRevalidateTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..10)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The random time to set VC_revalidate flag.  The
+         timer value ranges between 1 and 10 seconds
+            inclusive."
+    ::= { marsMcsEntry 11 }
+
+marsMcsRegisterRetrInterval OBJECT-TYPE
+    SYNTAX  INTEGER(5..2147483647)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "MARS_MSERV/UNSERV retransmit interval. The minimum
+         and recommended values are 5 and 10 seconds,
+         respectively."
+    DEFVAL { 10 }
+    ::= { marsMcsEntry 12 }
+
+marsMcsRegisterRetrLimit OBJECT-TYPE
+    SYNTAX  INTEGER (0..5)
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "MARS_MSERV/UNSERV retransmit limit. The maximum value
+         is 5."
+    ::= { marsMcsEntry 13 }
+
+marsMcsRegWithMarsRdmTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..10)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Random time for a MCS to register with a MARS."
+    ::= { marsMcsEntry 14 }
+
+marsMcsForceWaitTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    UNITS   "minutes"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Force wait if MARS re-registration is looping.
+         The minimum value is 1 minute."
+    ::= { marsMcsEntry 15 }
+
+marsMcsLmtToMissRedirMapTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..4)
+    UNITS   "seconds"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Timer limit for MCS to miss MARS_REDIRECT_MAPS."
+    ::= { marsMcsEntry 16 }
+
+marsMcsIdleTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    UNITS   "minutes"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The configurable inactivity timer associated with a
+         MCS. When a VC is created at this MCS, it gets
+         the idle timer value from this configurable timer.
+         The minimum suggested value is 1 minute and the
+         recommended default value is 20 minutes."
+    DEFVAL { 20 }
+    ::= { marsMcsEntry 17 }
+
+marsMcsRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create, delete or modify a
+         row in this table.
+
+         A row cannot be made 'active' until instances of
+         all corresponding columns in the row of this table
+         are appropriately configured and until the agent
+         has also created a corresponding row in the
+         marsMcsStatTable.
+
+         When this object has a value of 'active', the
+         following columnar objects can not be modified:
+
+           marsMcsDefaultMarsAddr,
+           marsMcsSsn,
+           marsMcsRegstration,
+           marsMcsDefaultMtu
+
+         while other objects in this conceptual row can be
+         modified irrespective of the value of this object.
+         Deletion of this row is allowed regardless of
+         whether or not a row in any associated tables
+         (i.e., marsMcsVcTable) still exists or is in
+         use. Once this row is deleted, it is recommended
+         that the agent or the SNMP management station
+         (if possible) through the set command deletes
+         any stale rows that are associated with this
+         row."
+    ::= { marsMcsEntry 18 }
+
+
+--****************************************************************
+-- IP ATM MARS MCS Multicast Group Address Object Definitions
+--****************************************************************
+
+marsMcsMcGrpTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsMcsMcGrpEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains a list of IP multicast group address
+         blocks associated by a MARS MCS.  The MCS uses the
+         information contained in list to advertise its multicast
+         group service to the MARS.
+         Each row can be created or deleted via configuration."
+    ::= { marsMcsObjects 2 }
+
+marsMcsMcGrpEntry OBJECT-TYPE
+    SYNTAX  MarsMcsMcGrpEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry represents a consecutive block of multicast
+         group addresses."
+    INDEX { marsMcsIndex,
+            marsMcsIfIndex,
+            marsMcsMcMinGrpAddr,
+            marsMcsMcMaxGrpAddr }
+    ::= { marsMcsMcGrpTable 1 }
+
+MarsMcsMcGrpEntry ::=
+    SEQUENCE {
+        marsMcsMcMinGrpAddr           IpAddress,
+        marsMcsMcMaxGrpAddr           IpAddress,
+        marsMcsMcGrpRowStatus         RowStatus
+    }
+
+marsMcsMcMinGrpAddr OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Minimum multicast group address - the min and max
+         multicast forms multi-group block.  If the MinGrpAddr
+         and MaxGrpAddr are the same, it indicates that this
+         block contains a single group address.   Since the
+         block joins are no allowed by a MCS as implied in
+         the RFC2022, the MinGrpAddr and MaxGrpAddress should
+         be set to the same value at this time when an entry
+         row is created."
+    ::= { marsMcsMcGrpEntry 1 }
+
+marsMcsMcMaxGrpAddr OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Maximum multicast group address - the min and max
+         multicast forms a multi-group block.  If the
+         MinGrpAddr and MaxGrpAddr are the same, it indicates
+         that this block contains a single group address.
+         Since the block joins are no allowed by a MCS as
+         implied in the RFC2022, the MinGrpAddr and
+         MaxGrpAddress should be set to the same value at
+         this time when an entry row is created."
+    ::= { marsMcsMcGrpEntry 2 }
+
+marsMcsMcGrpRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create or delete a row in this
+         table.
+
+         Since other objects in this row are not-accessible
+         'index-objects', the value of this object has no
+         effect on whether those objects in this conceptual
+         row can be modified."
+    ::= { marsMcsMcGrpEntry 3 }
+
+--****************************************************************
+-- IP ATM MARS MCS Backup MARS Object Definitions
+--****************************************************************
+
+marsMcsBackupMarsTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsMcsBackupMarsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains a list of backup MARS addresses that
+         a MCS can make contact to in case of failure for
+         connecting to the primary server. The list of addresses
+         is in descending order of preference. It should be noted
+         that the backup list provided by the MARS to the MCS
+         via the MARS_REDIRECT_MAP message has a higher preference
+         than addresses that are manually configured into the MCS.
+         When such a list is received from the MARS, this information
+         should be inserted at the top of the list.
+         Each row can be created or deleted via configuration."
+    ::= {  marsMcsObjects 3 }
+
+marsMcsBackupMarsEntry OBJECT-TYPE
+    SYNTAX  MarsMcsBackupMarsEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry represents an ATM address of a backup MARS."
+    INDEX { marsMcsIndex,
+            marsMcsIfIndex,
+            marsMcsBackupMarsPriority,
+            marsMcsBackupMarsAddr }
+    ::= { marsMcsBackupMarsTable 1 }
+
+MarsMcsBackupMarsEntry ::=
+    SEQUENCE {
+        marsMcsBackupMarsPriority     Unsigned32,
+        marsMcsBackupMarsAddr         AtmAddr,
+        marsMcsBackupMarsRowStatus    RowStatus
+    }
+
+marsMcsBackupMarsPriority OBJECT-TYPE
+    SYNTAX  Unsigned32(0..65535)
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The priority associated with a backup MARS. A lower
+         priority value inidcates a higher preference."
+    ::= { marsMcsBackupMarsEntry 1 }
+
+marsMcsBackupMarsAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The ATM address associated with a backup MARS."
+    ::= { marsMcsBackupMarsEntry 2 }
+
+marsMcsBackupMarsRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create or delete a row in this
+         table.
+
+         Since other objects in this row are not-accessible
+         'index-objects', the value of this object has no
+         effect on whether those objects in this conceptual
+         row can be modified."
+    ::= { marsMcsBackupMarsEntry 3 }
+
+--***************************************************************
+--  IP ATM MARS MCS VC Object Definition Table
+--***************************************************************
+
+marsMcsVcTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsMcsVcEntry
+    MAX-ACCESS  not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains information about open virtual
+         circuits (VCs) that a MCS has.  For point to
+         point circuit, each entry represents a single VC
+         connection between this MCS ATM address to another
+         party ATM address.  In the case of point to
+         multipoint connection where a single source address
+         is associated with multiple destinations, several
+         entries are used to represent the relationship.  An
+         example of point to multi-point VC represented in a
+         table is shown below.
+
+            MCS      VPI/VCI    Grp Addr1/Addr2    Part Addr
+             1         0,1          g1,g2             p1
+             1         0,1          g1,g2             p2
+             1         0,1          g1,g2             p3"
+    ::= {  marsMcsObjects 4 }
+
+marsMcsVcEntry OBJECT-TYPE
+    SYNTAX  MarsMcsVcEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The objects contained in the entry are VC related
+         attributes such as VC signalling type, control VC
+         type, idle timer, negotiated MTU size, etc."
+    INDEX { marsMcsIndex,
+            marsMcsIfIndex,
+            marsMcsVcVpi,
+            marsMcsVcVci,
+            marsMcsVcMinGrpAddr,
+            marsMcsVcMaxGrpAddr,
+            marsMcsVcPartyAddr }
+    ::= { marsMcsVcTable 1 }
+
+MarsMcsVcEntry ::=
+    SEQUENCE {
+        marsMcsVcVpi           INTEGER,
+        marsMcsVcVci           INTEGER,
+        marsMcsVcMinGrpAddr    IpAddress,
+        marsMcsVcMaxGrpAddr    IpAddress,
+        marsMcsVcPartyAddr     AtmAddr,
+        marsMcsVcPartyAddrType INTEGER,
+        marsMcsVcType          INTEGER,
+        marsMcsVcCtrlType      INTEGER,
+        marsMcsVcIdleTimer     INTEGER,
+        marsMcsVcRevalidate    TruthValue,
+        marsMcsVcEncapsType    INTEGER,
+        marsMcsVcNegotiatedMtu INTEGER,
+        marsMcsVcRowStatus     RowStatus
+    }
+
+marsMcsVcVpi OBJECT-TYPE
+    SYNTAX  INTEGER (0..4095)
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The value of virtual path identifier (VPI). Since
+         a VPI can be numbered 0, this sub-index can take
+         a value of 0."
+    ::= { marsMcsVcEntry 1 }
+
+marsMcsVcVci OBJECT-TYPE
+    SYNTAX  INTEGER (0..65535)
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The value of virtual circuit identifier (VCI). Since
+         a VCI can be numbered 0, this sub-index can take
+         a value of 0."
+     ::= { marsMcsVcEntry 2 }
+
+marsMcsVcMinGrpAddr OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Minimum IP multicast group address - the min and
+         max multicast forms a multi-group block which is
+         associated with a VC.  If the MinGrpAddr and
+         MaxGrpAddr are the same, it indicates that the
+         size of multi-group block is 1, a single IP group."
+    ::= { marsMcsVcEntry 3 }
+
+marsMcsVcMaxGrpAddr OBJECT-TYPE
+
+
+    SYNTAX  IpAddress
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Maximum IP multicast group address - the min
+         and max multicast forms a multi-group block
+         which is associated with a VC. If the MinGrpAddr
+         and MaxGrpAddr are the same, it indicates that the
+         size of multi-group block is 1, a single IP group."
+    ::= { marsMcsVcEntry 4 }
+
+marsMcsVcPartyAddr OBJECT-TYPE
+    SYNTAX  AtmAddr
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "An ATM party address in which this VC is linked.
+         The party type is identified by the
+         marsMcsVcPartyAddrType."
+    ::= { marsMcsVcEntry 5 }
+
+marsMcsVcPartyAddrType OBJECT-TYPE
+    SYNTAX  INTEGER {
+          called (1),
+          calling (2)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The party type is associated with the party address.
+         The called (1) indicates that the party address is
+         a destination address which implies that VC is
+         originated from this MCS.  The calling (2) indicates
+         the VC was initiated externally to this MCS.  In this
+         case, the party address is the source address."
+    ::= { marsMcsVcEntry 6 }
+
+marsMcsVcType OBJECT-TYPE
+    SYNTAX  INTEGER {
+          pvc (1),
+          svc (2)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Circuit Connection type: permanent virtual circuit or
+         switched virtual circuit."
+    ::= { marsMcsVcEntry 7 }
+
+
+marsMcsVcCtrlType OBJECT-TYPE
+    SYNTAX  INTEGER {
+           pointToPointVC (1),
+           serverControlVC (2),
+           pointToMultiPointVC (3)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "Control VC type used to specify a particular connection.
+           pointToPointVC (1):
+             used by the ATM Clients for the registration and
+             queries.  This VC or the initial signalling path is
+             set up from the source MCS to a MARS. It is
+             bi-directional.
+           serverControlVC (2):
+             used by a MARS to issue asynchronous updates to an
+             ATM Client.  This VC is established from the MARS
+             to the MCS.
+           pointToMultiPointVC (3):
+             used by the client to transfer multicast data
+             packets from layer 3.  This VC is established from
+             this VC to a cluster member."
+    ::= { marsMcsVcEntry 8 }
+
+marsMcsVcIdleTimer OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    UNITS   "minutes"
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The idle timer associated with this VC. The minimum
+         suggested value is 1 minute and the recommended
+         default value is 20 minutes."
+    DEFVAL { 20 }
+    ::= { marsMcsVcEntry 9 }
+
+marsMcsVcRevalidate OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "A flag associated with an open and active multipoint
+         VC. It is checked every time a packet is queued for
+         transmission on that VC. The object has the value of
+         true (1) if revalidate is required and the value
+         false (2) otherwise."
+    ::= { marsMcsVcEntry 10 }
+
+marsMcsVcEncapsType OBJECT-TYPE
+    SYNTAX  INTEGER {
+          other (1),
+          llcSnap (2)
+        }
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The encapsulation type used when communicating over
+         this VC."
+    ::= { marsMcsVcEntry 11 }
+
+marsMcsVcNegotiatedMtu OBJECT-TYPE
+    SYNTAX  INTEGER (1..65535)
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The negotiated MTU when communicating over this VC."
+    ::= { marsMcsVcEntry 12 }
+
+marsMcsVcRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    MAX-ACCESS read-create
+    STATUS  current
+    DESCRIPTION
+        "The object is used to create, delete or modify a
+         row in this table.
+         A row cannot be made 'active' until instances of
+         all corresponding columns in the row of this table
+         are appropriately configured.
+
+         While objects: marsMcsVcIdleTimer and
+         marsMcsVcRevalidate in this conceptual row can
+         be modified irrespective of the value of this
+         object, all other objects in the row can not be
+         modified when this object has a value of 'active'.
+
+         It is possible for an SNMP management station
+         to set the row to 'notInService' and modify
+         the entry and then set it back to 'active'
+         with the following exception. That is, rows
+         for which the corresponding instance of
+         marsMcsVcType has a value of 'svc' can not
+         be modified or deleted."
+    ::= { marsMcsVcEntry 13 }
+
+--***************************************************************
+--  IP ATM MARS MCS Statistics Definition Table
+--***************************************************************
+
+marsMcsStatTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF MarsMcsStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS current
+    DESCRIPTION
+        "The table contains statistics collected at MARS MCSs."
+    ::= {  marsMcsObjects 5 }
+
+marsMcsStatEntry OBJECT-TYPE
+    SYNTAX  MarsMcsStatEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Each entry contains statistics collected at one
+         MARS MCS."
+    INDEX { marsMcsIndex, marsMcsIfIndex }
+    ::= { marsMcsStatTable 1 }
+
+MarsMcsStatEntry ::=
+    SEQUENCE {
+        marsMcsStatTxReqMsgs       Counter32,
+        marsMcsStatTxMservMsgs     Counter32,
+        marsMcsStatTxUnservMsgs    Counter32,
+        marsMcsStatRxMultiMsgs     Counter32,
+        marsMcsStatRxSjoinMsgs     Counter32,
+        marsMcsStatRxSleaveMsgs    Counter32,
+        marsMcsStatRxNakMsgs       Counter32,
+        marsMcsStatRxMigrateMsgs   Counter32,
+        marsMcsStatFailMultiMsgs   Counter32
+    }
+
+marsMcsStatTxReqMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_REQUEST messages transmitted
+         from this MCS."
+    ::= { marsMcsStatEntry 1 }
+
+marsMcsStatTxMservMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_MSERV messages transmitted from
+         this MCS."
+    ::= { marsMcsStatEntry 2 }
+
+marsMcsStatTxUnservMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_UNSERV messages transmitted from
+         this MCS."
+    ::= { marsMcsStatEntry 3 }
+
+marsMcsStatRxMultiMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_MULTI messages received by
+         this MCS."
+    ::= { marsMcsStatEntry 4 }
+
+marsMcsStatRxSjoinMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_SJOIN messages received by
+         this MCS."
+    ::= { marsMcsStatEntry 5 }
+
+marsMcsStatRxSleaveMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_SLEAVE messages received
+         by this MCS."
+    ::= { marsMcsStatEntry 6 }
+
+marsMcsStatRxNakMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_NAK messages received
+         by this MCS."
+    ::= { marsMcsStatEntry 7 }
+
+marsMcsStatRxMigrateMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of MARS_MIGRATE messages received
+         by this MCS."
+    ::= { marsMcsStatEntry 8 }
+
+marsMcsStatFailMultiMsgs OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+        "Total number of timeouts occurred indicating
+         failure of the last MARS_MULTI to arrive."
+    ::= { marsMcsStatEntry 9 }
+
+--***************************************************************
+--  IP ATM MARS Notification Definitions
+--***************************************************************
+
+marsTrapInfo OBJECT IDENTIFIER ::= { marsMIB 0 }
+
+marsFaultTrap NOTIFICATION-TYPE
+    OBJECTS {
+        marsAddr,
+        marsServStatus
+       }
+    STATUS  current
+    DESCRIPTION
+        "This trap/inform is sent to the manager whenever
+         there is a fault condition occurred on a MARS."
+    ::= { marsTrapInfo 1 }
+
+--***************************************************************
+--  IP ATM MARS Conformance Definitions
+--***************************************************************
+
+marsConformance       OBJECT IDENTIFIER ::= { marsMIB 4 }
+marsClientConformance OBJECT IDENTIFIER ::= { marsConformance 1 }
+marsServerConformance OBJECT IDENTIFIER ::= { marsConformance 2 }
+marsMcsConformance    OBJECT IDENTIFIER ::= { marsConformance 3 }
+
+marsClientCompliances OBJECT IDENTIFIER ::= { marsClientConformance 1 }
+marsClientGroups      OBJECT IDENTIFIER ::= { marsClientConformance 2 }
+
+marsServerCompliances OBJECT IDENTIFIER ::= { marsServerConformance 1 }
+
+
+marsServerGroups      OBJECT IDENTIFIER ::= { marsServerConformance 2 }
+
+marsMcsCompliances    OBJECT IDENTIFIER ::= { marsMcsConformance 1 }
+marsMcsGroups         OBJECT IDENTIFIER ::= { marsMcsConformance 2 }
+
+--***************************************************************
+-- MARS Client Compliance Statements
+--***************************************************************
+
+marsClientCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for entities that are required
+         for the management of MARS clients."
+    MODULE
+        MANDATORY-GROUPS {
+         marsClientGroup
+        }
+
+    OBJECT marsClientAddr
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientDefaultMarsAddr
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientHsn
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientRegistration
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientCmi
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientDefaultMtu
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+
+    OBJECT marsClientFailureTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientRetranDelayTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientRdmMulReqAddRetrTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientRdmVcRevalidateTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientJoinLeaveRetrInterval
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientJoinLeaveRetrLimit
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientRegWithMarsRdmTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientForceWaitTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientLmtToMissRedirMapTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientIdleTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientMcGrpRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientBackupMarsRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientVcType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientVcCtrlType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientVcIdleTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientVcRevalidate
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientVcEncapsType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientVcNegotiatedMtu
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsClientVcRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    ::= { marsClientCompliances 1 }
+
+marsClientGroup OBJECT-GROUP
+    OBJECTS {
+        marsClientAddr,
+        marsClientDefaultMarsAddr,
+        marsClientHsn,
+        marsClientRegistration,
+        marsClientCmi,
+        marsClientDefaultMtu,
+        marsClientFailureTimer,
+        marsClientRetranDelayTimer,
+        marsClientRdmMulReqAddRetrTimer,
+        marsClientRdmVcRevalidateTimer,
+        marsClientJoinLeaveRetrInterval,
+        marsClientJoinLeaveRetrLimit,
+        marsClientRegWithMarsRdmTimer,
+        marsClientForceWaitTimer,
+        marsClientIdleTimer,
+        marsClientLmtToMissRedirMapTimer,
+        marsClientRowStatus,
+        marsClientMcGrpRowStatus,
+        marsClientBackupMarsRowStatus,
+        marsClientVcPartyAddrType,
+        marsClientVcType,
+        marsClientVcCtrlType,
+        marsClientVcIdleTimer,
+        marsClientVcRevalidate,
+        marsClientVcEncapsType,
+        marsClientVcNegotiatedMtu,
+        marsClientVcRowStatus,
+        marsClientStatTxReqMsgs,
+        marsClientStatTxJoinMsgs,
+        marsClientStatTxLeaveMsgs,
+        marsClientStatTxGrpLstReqMsgs,
+        marsClientStatRxJoinMsgs,
+        marsClientStatRxLeaveMsgs,
+        marsClientStatRxMultiMsgs,
+        marsClientStatRxNakMsgs,
+        marsClientStatRxGrpLstRplyMsgs,
+        marsClientStatRxMigrateMsgs,
+        marsClientStatFailMultiMsgs
+       }
+    STATUS  current
+    DESCRIPTION
+        "A collection of objects to be implemented in a MIB
+         for the management of MARS clients."
+    ::= { marsClientGroups 1 }
+
+--***************************************************************
+-- MARS Server Compliance Statements
+--***************************************************************
+
+marsServerCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for entities that are required
+         for the management of MARS servers."
+    MODULE -- this module
+        MANDATORY-GROUPS {
+         marsServerGroup,
+         marsServerEventGroup
+        }
+
+    OBJECT marsAddr
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsLocal
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsServStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsServType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsServPriority
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsRedirMapMsgTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsCsn
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsSsn
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcGrpAddrUsage
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcGrpRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsHostMapRowType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsHostMapRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsServerMapRowType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsServerMapRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsVcPartyAddrType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsVcType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsVcCtrlType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsVcIdleTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsVcCmi
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+    OBJECT marsVcEncapsType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsVcNegotiatedMtu
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsVcRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    ::= { marsServerCompliances 1 }
+
+marsServerGroup OBJECT-GROUP
+      OBJECTS {
+        marsAddr,
+        marsLocal,
+        marsServStatus,
+        marsServType,
+        marsServPriority,
+        marsRedirMapMsgTimer,
+        marsCsn,
+        marsSsn,
+        marsRowStatus,
+        marsMcGrpAddrUsage,
+        marsMcGrpRxLayer3GrpSets,
+        marsMcGrpRxLayer3GrpResets,
+        marsMcGrpRowStatus,
+        marsHostMapRowType,
+        marsHostMapRowStatus,
+        marsServerMapRowType,
+        marsServerMapRowStatus,
+        marsVcPartyAddrType,
+        marsVcType,
+        marsVcCtrlType,
+        marsVcIdleTimer,
+        marsVcCmi,
+        marsVcEncapsType,
+        marsVcNegotiatedMtu,
+        marsVcRowStatus,
+        marsRegClientAtmAddr,
+        marsRegMcsAtmAddr,
+        marsStatTxMultiMsgs,
+        marsStatTxGrpLstRplyMsgs,
+        marsStatTxRedirectMapMsgs,
+        marsStatTxMigrateMsgs,
+        marsStatTxNakMsgs,
+        marsStatTxJoinMsgs,
+        marsStatTxLeaveMsgs,
+        marsStatTxSjoinMsgs,
+        marsStatTxSleaveMsgs,
+        marsStatTxMservMsgs,
+        marsStatTxUnservMsgs,
+        marsStatRxReqMsgs,
+        marsStatRxGrpLstReqMsgs,
+        marsStatRxJoinMsgs,
+        marsStatRxLeaveMsgs,
+        marsStatRxMservMsgs,
+        marsStatRxUnservMsgs,
+        marsStatRxBlkJoinMsgs,
+        marsStatRegMemGroups,
+        marsStatRegMcsGroups
+       }
+    STATUS  current
+    DESCRIPTION
+        "A collection of objects to be implemented in a MIB
+         for the management of MARS servers."
+    ::= { marsServerGroups 1 }
+
+marsServerEventGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { marsFaultTrap }
+    STATUS  current
+    DESCRIPTION
+        "A collection of events that can be generated from
+         a MARS server."
+    ::= { marsServerGroups 2 }
+
+--***************************************************************
+-- MARS Multicast Server (MCS) Compliance Statements
+--***************************************************************
+
+marsMcsCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for entities that are required
+         for the management of MARS multicast servers (MCS)."
+    MODULE
+        MANDATORY-GROUPS {
+         marsMcsGroup
+        }
+
+    OBJECT marsMcsAddr
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsDefaultMarsAddr
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsRegistration
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsSsn
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsDefaultMtu
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsFailureTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsRetranDelayTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsRdmMulReqAddRetrTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsRdmVcRevalidateTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsRegisterRetrInterval
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+    OBJECT marsMcsRegisterRetrLimit
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsForceWaitTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsLmtToMissRedirMapTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsIdleTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsMcGrpRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsBackupMarsRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsVcPartyAddrType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsVcType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsVcCtrlType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsVcIdleTimer
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsVcRevalidate
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsVcEncapsType
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsVcNegotiatedMtu
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    OBJECT marsMcsVcRowStatus
+    MIN-ACCESS read-only
+    DESCRIPTION
+      "Write access is not required."
+
+    ::= { marsMcsCompliances 1 }
+
+marsMcsGroup OBJECT-GROUP
+    OBJECTS {
+        marsMcsAddr,
+        marsMcsDefaultMarsAddr,
+        marsMcsRegistration,
+        marsMcsSsn ,
+        marsMcsDefaultMtu,
+        marsMcsFailureTimer,
+        marsMcsRetranDelayTimer,
+        marsMcsRdmMulReqAddRetrTimer,
+        marsMcsRdmVcRevalidateTimer,
+        marsMcsRegisterRetrInterval,
+        marsMcsRegisterRetrLimit,
+        marsMcsRegWithMarsRdmTimer,
+        marsMcsForceWaitTimer,
+        marsMcsIdleTimer,
+        marsMcsLmtToMissRedirMapTimer,
+        marsMcsRowStatus,
+        marsMcsMcGrpRowStatus,
+        marsMcsVcPartyAddrType,
+        marsMcsBackupMarsRowStatus,
+        marsMcsVcType,
+        marsMcsVcCtrlType,
+        marsMcsVcIdleTimer,
+        marsMcsVcRevalidate,
+        marsMcsVcEncapsType,
+        marsMcsVcNegotiatedMtu,
+        marsMcsVcRowStatus,
+        marsMcsStatTxReqMsgs,
+        marsMcsStatTxMservMsgs,
+        marsMcsStatTxUnservMsgs,
+        marsMcsStatRxMultiMsgs,
+        marsMcsStatRxSjoinMsgs,
+        marsMcsStatRxSleaveMsgs,
+        marsMcsStatRxNakMsgs,
+        marsMcsStatRxMigrateMsgs,
+        marsMcsStatFailMultiMsgs
+       }
+    STATUS  current
+    DESCRIPTION
+        "A collection of objects to be implemented in a MIB
+         for the management of MARS multicast servers (MCS)."
+    ::= { marsMcsGroups 1 }
+
+   END

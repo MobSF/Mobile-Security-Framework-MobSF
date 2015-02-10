@@ -1,0 +1,1398 @@
+RDBMS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    OBJECT-IDENTITY, Counter32, Gauge32, Integer32
+        FROM SNMPv2-SMI
+   MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF
+    DisplayString, DateAndTime, AutonomousType
+        FROM SNMPv2-TC
+    applIndex, applGroups
+        FROM NETWORK-SERVICES-MIB
+    mib-2
+        FROM RFC1213-MIB;
+
+rdbmsMIB MODULE-IDENTITY
+    LAST-UPDATED "9406150655Z"
+    ORGANIZATION "IETF RDBMSMIB Working Group"
+    CONTACT-INFO
+            "           David Brower
+
+                Postal: The ASK Group, INGRES DBMS Development
+                        1080 Marina Village Parkway
+                        Alameda, CA  94501
+                        US
+
+                   Tel: +1 510 748 3418
+                   Fax: +1 510 748 2770
+
+                E-mail: daveb@ingres.com"
+    DESCRIPTION
+        "The MIB module to describe objects for generic relational
+         databases."
+
+    ::= { mib-2 39 }
+
+rdbmsObjects        OBJECT IDENTIFIER ::= { rdbmsMIB 1 }
+
+----------------------------------------------------------------
+
+rdbmsDbTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RdbmsDbEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table of databases installed on a system."
+    ::= { rdbmsObjects 1 }
+
+rdbmsDbEntry    OBJECT-TYPE
+    SYNTAX      RdbmsDbEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for a single database on the host.  Whether a
+         particular database is represented by a row in rdbmsDbTable
+         may be dependent on the activity level of that database,
+         according to the product's implementation.  An instance of
+         rdbmsRelState having the value active, other, or restricted
+         implies that an entry, corresponding to that instance, will
+         be present."
+    INDEX  { rdbmsDbIndex }
+    ::= { rdbmsDbTable 1 }
+
+RdbmsDbEntry    ::=
+    SEQUENCE {
+        rdbmsDbIndex            INTEGER,
+        rdbmsDbPrivateMibOID        OBJECT IDENTIFIER,
+        rdbmsDbVendorName       DisplayString,
+        rdbmsDbName             DisplayString,
+        rdbmsDbContact          DisplayString
+    }
+
+rdbmsDbIndex        OBJECT-TYPE
+    SYNTAX          INTEGER (1..2147483647)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "A numeric index, unique among all the databases from all
+         products on this host.  This value is a surrogate for the
+         conceptually unique key, which is {PrivateMibOID,
+         databasename}"
+    ::= { rdbmsDbEntry  1 }
+
+rdbmsDbPrivateMibOID    OBJECT-TYPE
+    SYNTAX          OBJECT IDENTIFIER
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+       "The authoritative identification for the private MIB for
+        this database, presumably based on the vendor, e.g., {
+        enterprises 111 <optional subidentifiers>} for Oracle
+        databases, {enterprises 757 <optional subidentifiers>} for
+        Ingres databases, { enterprises 897 <optional
+        subidentifiers>} for Sybase databases, etc.
+
+        If no OBJECT IDENTIFIER exists for the private MIB, attempts
+        to access this object will return noSuchName (SNMPv1)
+        or noSuchInstance (SNMPv2)."
+    ::= { rdbmsDbEntry  2 }
+
+rdbmsDbVendorName   OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The name of the vendor whose RDBMS manages this database,
+         for informational purposes."
+    ::= { rdbmsDbEntry 3 }
+
+rdbmsDbName     OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of this database, in a product specific format.  The
+         product may need to qualify the name in some way to resolve
+         conflicts if it is possible for a database name to be
+         duplicated on a host.  It might be necessary to construct a
+         hierarchical name embedding the RDBMS instance/installation
+         on the host, and/or the owner of the database.  For instance,
+         '/test-installation/database-owner/database-name'."
+    ::= { rdbmsDbEntry 4 }
+
+rdbmsDbContact  OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The textual identification of the contact person for this
+         managed database, together with information on how to contact
+         this person.
+
+         Note: if there is no server associated with this database, an
+         agent may need to keep this in other persistent storage,
+         e.g., a configuration file.
+
+         Note that a compliant agent does not need to
+         allow write access to this object."
+
+    ::= { rdbmsDbEntry 5 }
+
+----------------------------------------------------------------
+
+rdbmsDbInfoTable    OBJECT-TYPE
+    SYNTAX          SEQUENCE OF RdbmsDbInfoEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The table of additional information about databases present
+         on the host."
+    ::= { rdbmsObjects 2 }
+
+rdbmsDbInfoEntry    OBJECT-TYPE
+    SYNTAX          RdbmsDbInfoEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Information that must be present if the database is actively
+         opened.  If the database is not actively opened, then
+         attempts to access corresponding instances in this table may
+         result in either noSuchName (SNMPv1) or noSuchInstance
+         (SNMPv2).  'Actively opened' means at least one of the
+         rdbmsRelState entries for this database in the rdbmsRelTable
+         is active(2)."
+    INDEX  { rdbmsDbIndex }
+    ::= { rdbmsDbInfoTable 1 }
+
+RdbmsDbInfoEntry ::=
+    SEQUENCE {
+        rdbmsDbInfoProductName      DisplayString,
+        rdbmsDbInfoVersion          DisplayString,
+        rdbmsDbInfoSizeUnits        INTEGER,
+        rdbmsDbInfoSizeAllocated    INTEGER,
+        rdbmsDbInfoSizeUsed         INTEGER,
+        rdbmsDbInfoLastBackup       DateAndTime
+    }
+
+rdbmsDbInfoProductName  OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The textual product name of the server that created or last
+         restructured this database.  The format is product specific."
+    ::= { rdbmsDbInfoEntry 1 }
+
+rdbmsDbInfoVersion  OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The version number of the server that created or last
+         restructured this database.  The format is product specific."
+    ::= { rdbmsDbInfoEntry 2 }
+
+rdbmsDbInfoSizeUnits    OBJECT-TYPE
+    SYNTAX              INTEGER {
+                            bytes(1),
+                            kbytes(2),
+                            mbytes(3),
+                            gbytes(4),
+                            tbytes(5)
+                            }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Identification of the units used to measure the size of this
+         database in rdbmsDbInfoSizeAllocated and rdbmsDbInfoSizeUsed.
+         bytes(1) indicates individual bytes, kbytes(2) indicates
+         units of kilobytes, mbytes(3) indicates units of megabytes,
+         gbytes(4) indicates units of gigabytes, and tbytes(5)
+         indicates units of terabytes.  All are binary multiples -- 1K
+         = 1024.  If writable, changes here are reflected in the get
+         values of the associated objects."
+
+    ::= { rdbmsDbInfoEntry 3 }
+
+rdbmsDbInfoSizeAllocated    OBJECT-TYPE
+    SYNTAX                  INTEGER (1..2147483647)
+    MAX-ACCESS              read-write
+    STATUS                  current
+    DESCRIPTION
+        "The estimated size of this database (in
+         rdbmsDbInfoSizeUnits), which is the disk space that has been
+         allocated to it and is no longer available to users on this
+         host.  rdbmsDbInfoSize does not necessarily indicate the
+         amount of space actually in use for database data.  Some
+         databases may support extending allocated size, and others
+         may not.
+
+         Note that a compliant agent does not need to
+         allow write access to this object."
+
+--       Note:  computing SizeAllocated may be expensive, and SNMP
+--       agents might cache the value to increase performance.
+
+    ::= { rdbmsDbInfoEntry 4 }
+
+rdbmsDbInfoSizeUsed     OBJECT-TYPE
+    SYNTAX              INTEGER (1..2147483647)
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The estimated size of this database, in rdbmsDbInfoSizeUnits,
+         which is actually in use for database data."
+
+--       Note:  computing SizeUsed may be expensive, and SNMP
+--       agents might cache the value to increase performance.
+    ::= { rdbmsDbInfoEntry 5 }
+
+rdbmsDbInfoLastBackup       OBJECT-TYPE
+     SYNTAX                 DateAndTime
+     MAX-ACCESS             read-only
+     STATUS                 current
+     DESCRIPTION
+        "The date and time that the latest complete or partial backup
+         of the database was taken. If a database has never been
+         backed up, then attempts to access this object will
+         result in either noSuchName (SNMPv1) or noSuchInstance
+         (SNMPv2)."
+     ::= { rdbmsDbInfoEntry 6 }
+
+----------------------------------------------------------------
+
+rdbmsDbParamTable       OBJECT-TYPE
+    SYNTAX              SEQUENCE OF RdbmsDbParamEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "The table of configuration parameters for a database.
+         Entries should be populated according to the following
+         guidelines:
+         (1) The value should be specified through administrative
+             (human) intervention.
+         (2) It should be configured on a per-database basis.
+         (3) One of the following is true:
+             (a) The parameter has a non-numeric value;
+             (b) The current value is numeric, but it only changes due
+                 to human intervention;
+             (c) The current value is numeric and dynamic, but the
+                 RDBMS does not track access/allocation failures
+                 related to the parameter;
+             (d) The current value is numeric and dynamic, the
+                 RDBMS tracks changes in access/allocation failures
+                 related to the parameter, but the failure has no
+                 significant impact on RDBMS performance or
+                 availability.
+             (e) The current value is numeric and dynamic, the
+                 RDBMS tracks changes in access/allocation failures
+                 related to the parameter, the failure has
+                 significant impact on RDBMS performance or
+                 availability, and is shown in the
+                 rdbmsDbLimitedResource table."
+    ::= { rdbmsObjects 3 }
+
+rdbmsDbParamEntry       OBJECT-TYPE
+    SYNTAX              RdbmsDbParamEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "An entry for a single configuration parameter for a database.
+         Parameters with single values have a subindex value of one.
+         If the parameter is naturally considered to contain a
+         variable number of members of a class, e.g.  members of the
+         DBA user group, or files which are part of the database, then
+         it must be presented as a set of rows.  If, on the other
+         hand, the parameter represents a set of choices from a class,
+         e.g. the permissions on a file or the options chosen out of
+         the set of all options allowed, AND is guaranteed to always
+         fit in the 255 character length of a DisplayString, then it
+         may be presented as a comma separated list with a subindex
+         value of one.  Zero may not be used as a subindex value.
+
+         If the database is not actively opened, then attempts
+         to access corresponding instances in this table may result in
+         either noSuchName (SNMPv1) or noSuchInstance (SNMPv2).
+         'Actively opened' means at least one of the
+         rdbmsRelState entries for this database in the rdbmsRelTable
+         is active(2)."
+    INDEX  { rdbmsDbIndex, rdbmsDbParamName, rdbmsDbParamSubIndex }
+    ::= { rdbmsDbParamTable 1 }
+
+RdbmsDbParamEntry ::=
+    SEQUENCE {
+        rdbmsDbParamName                DisplayString,
+        rdbmsDbParamSubIndex            INTEGER,
+        rdbmsDbParamID                  AutonomousType,
+        rdbmsDbParamCurrValue           DisplayString,
+        rdbmsDbParamComment             DisplayString
+    }
+
+rdbmsDbParamName        OBJECT-TYPE
+    SYNTAX              DisplayString (SIZE (1..64))
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "The name of a configuration parameter for a database.  This
+         name is product-specific.  The length is limited to 64
+         characters to constrain the number of sub-identifiers needed
+         for instance identification (and to minimize network
+         traffic)."
+
+    ::= { rdbmsDbParamEntry 1 }
+
+rdbmsDbParamSubIndex    OBJECT-TYPE
+    SYNTAX              INTEGER (1..2147483647)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "The subindex value for this parameter.  If the parameter is
+         naturally considered to contain a variable number of members
+         of a class, e.g.  members of the DBA user group, or files
+         which are part of the database, then it must be presented as
+         a set of rows.  If, on the other hand, the parameter
+         represents a set of choices from a class, e.g. the
+         permissions on a file or the options chosen out of the set of
+         all options allowed, AND is guaranteed to always fit in the
+         255 character length of a DisplayString, then it may be
+         presented as a comma separated list with a subindex value of
+         one.  Zero may not be used as a value."
+    ::= { rdbmsDbParamEntry 2 }
+
+rdbmsDbParamID          OBJECT-TYPE
+    SYNTAX              AutonomousType
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The ID of the parameter which may be described in some other
+         MIB (e.g., an enterprise-specific MIB module).  If there is
+         no ID for this rdbmsDbParamName, attempts to access this
+         object will return noSuchName (SNMPv1) or noSuchInstance
+         (SNMPv2)."
+    ::= { rdbmsDbParamEntry 3 }
+
+rdbmsDbParamCurrValue OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "The value for a configuration parameter now in effect, the
+         actual setting for the database.  While there may multiple
+         values in the temporal domain of interest (for instance, the
+         value to take effect at the next restart), this is the
+         current setting.
+
+         Note that a compliant agent does not need to
+         allow write access to this object."
+
+    ::= { rdbmsDbParamEntry 4 }
+
+rdbmsDbParamComment     OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Annotation which describes the purpose of a configuration
+         parameter or the reason for a particular parameter's
+         setting.
+
+         Note that a compliant agent does not need to
+         allow write access to this object."
+
+    ::= { rdbmsDbParamEntry 5 }
+
+----------------------------------------------------------------
+
+rdbmsDbLimitedResourceTable         OBJECT-TYPE
+    SYNTAX          SEQUENCE OF RdbmsDbLimitedResourceEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The table of limited resources that are kept per-database."
+    ::= { rdbmsObjects 4 }
+
+rdbmsDbLimitedResourceEntry     OBJECT-TYPE
+    SYNTAX      RdbmsDbLimitedResourceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for a single limited resource kept per-database.
+         A limited resource has maximum use determined by a parameter
+         that might or might not be changeable at run time, or visible
+         in the rdbmsDbParamTable. Examples would be the number of
+         available locks, or disk space on a partition.  Arrays of
+         resources are supported through an integer sub index, which
+         should have the value of one for single-instance names.
+
+         Limited resources that are shared across databases, are best
+         put in the rdbmsSvrLimitedResourceTable instead of this one.
+         If the database is not actively opened, then attempts to
+         access corresponding instances in this table may result in
+         either noSuchName (SNMPv1) or noSuchInstance (SNMPv2).
+         'Actively opened' means at least one of the rdbmsRelState
+         entries for this database in the rdbmsRelTable is active(2)."
+
+    INDEX { rdbmsDbIndex, rdbmsDbLimitedResourceName }
+    ::= { rdbmsDbLimitedResourceTable 1 }
+
+RdbmsDbLimitedResourceEntry ::=
+    SEQUENCE {
+        rdbmsDbLimitedResourceName          DisplayString,
+        rdbmsDbLimitedResourceID            AutonomousType,
+        rdbmsDbLimitedResourceLimit         INTEGER,
+        rdbmsDbLimitedResourceCurrent       INTEGER,
+        rdbmsDbLimitedResourceHighwater     INTEGER,
+        rdbmsDbLimitedResourceFailures      Counter32,
+        rdbmsDbLimitedResourceDescription   DisplayString
+    }
+
+rdbmsDbLimitedResourceName          OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The name of the resource, for instance 'global locks' or
+         'locks for the FOO database', or 'data space on /dev/rdsk/5s0
+         for FOO'. The length is limited to 64 characters to constrain
+         the number of sub-identifiers needed for instance
+         identification (and to minimize network traffic)."
+    ::= { rdbmsDbLimitedResourceEntry  1 }
+
+rdbmsDbLimitedResourceID OBJECT-TYPE
+    SYNTAX              AutonomousType
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The ID of the resource which may be described in some other
+         MIB (e.g., an enterprise-specific MIB module).  If there is
+         no ID for this rdbmsDbLimitedResourceName, attempts to access
+         this object will return noSuchName (SNMPv1) or noSuchInstance
+         (SNMPv2)."
+    ::= { rdbmsDbLimitedResourceEntry 2 }
+
+rdbmsDbLimitedResourceLimit         OBJECT-TYPE
+    SYNTAX          INTEGER (1..2147483647)
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "The maximum value the resource use may attain.
+
+         Note that a compliant agent does not need to
+         allow write access to this object."
+
+    ::= { rdbmsDbLimitedResourceEntry  3 }
+
+rdbmsDbLimitedResourceCurrent       OBJECT-TYPE
+    SYNTAX          INTEGER (1..2147483647)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The current value for the resource."
+    ::= { rdbmsDbLimitedResourceEntry  4 }
+
+rdbmsDbLimitedResourceHighwater     OBJECT-TYPE
+    SYNTAX          INTEGER (1..2147483647)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The maximum value of the resource seen since applUpTime
+         was reset for the earliest server which has the database
+         actively opened.
+
+         If there are two servers with the database open, and the
+         oldest one dies, the proper way to invalidate the value is by
+         resetting sysUpTime."
+    ::= { rdbmsDbLimitedResourceEntry  5 }
+
+rdbmsDbLimitedResourceFailures      OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The number of times the system wanted to exceed the limit of
+         the resource since applUpTime was reset for the earliest
+         server which has the database actively opened.
+
+         If there are two servers with the DB open, and the
+         oldest one dies, the proper way to invalidate the value is by
+         resetting sysUpTime."
+    ::= { rdbmsDbLimitedResourceEntry  6 }
+
+rdbmsDbLimitedResourceDescription           OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "A description of the resource and the meaning of the integer
+         units used for Limit, Current, and Highwater.
+
+         Note that a compliant agent does not need to
+         allow write access to this object."
+
+    ::= { rdbmsDbLimitedResourceEntry  7 }
+
+----------------------------------------------------------------
+
+rdbmsSrvTable       OBJECT-TYPE
+    SYNTAX          SEQUENCE OF RdbmsSrvEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The table of database servers running or installed
+         on a system."
+    ::= { rdbmsObjects 5 }
+
+rdbmsSrvEntry   OBJECT-TYPE
+    SYNTAX      RdbmsSrvEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for a single database server.  A server is an
+         independent entity that provides access to one or more
+         databases.  Failure of one does not affect access to
+         databases through any other servers.  There might be one or
+         more servers providing access to a database.  A server may be
+         a 'process' or collection of 'processes', as interpreted by
+         the product."
+    INDEX { applIndex }
+    ::= { rdbmsSrvTable 1 }
+
+RdbmsSrvEntry ::=
+    SEQUENCE {
+        rdbmsSrvPrivateMibOID   OBJECT IDENTIFIER,
+        rdbmsSrvVendorName  DisplayString,
+        rdbmsSrvProductName DisplayString,
+        rdbmsSrvContact     DisplayString
+    }
+
+rdbmsSrvPrivateMibOID   OBJECT-TYPE
+    SYNTAX          OBJECT IDENTIFIER
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The authoritative identification for the private MIB for this
+         server, presumably based on the vendor, e.g., { enterprises
+         111 <optional subidentifiers>} for Oracle servers, {
+         enterprises 757 <optional subidentifiers>} for Ingres
+         servers, { enterprises 897 <optional subidentifiers>} for
+         Sybase servers, etc.
+
+         If no OBJECT IDENTIFIER exists for the private MIB, attempts
+         to access this object will return noSuchName (SNMPv1)
+         or noSuchInstance (SNMPv2)."
+    ::= { rdbmsSrvEntry  1 }
+
+rdbmsSrvVendorName  OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The name of the vendor whose RDBMS manages this database,
+         for informational purposes."
+    ::= { rdbmsSrvEntry 2 }
+
+rdbmsSrvProductName  OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The product name of this server.  This is normally the
+         vendor's formal name for the product, in product specific
+         format."
+    ::= { rdbmsSrvEntry 3 }
+
+rdbmsSrvContact OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The textual identification of the contact person for this
+         managed server, together with information on how to contact
+         this person.
+
+         Note: if there is no active server associated with this
+         object, an agent may need to keep this in other persistent
+         storage, e.g., a configuration file.
+
+         Note that a compliant agent does not need to
+         allow write access to this object."
+
+    ::= { rdbmsSrvEntry 4 }
+
+----------------------------------------------------------------
+
+rdbmsSrvInfoTable   OBJECT-TYPE
+    SYNTAX          SEQUENCE OF RdbmsSrvInfoEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The table of additional information about database servers.
+
+         Entries in this table correspond to applications in the
+         NETWORK-SERVICES-MIB applTable.  Some objects in that table are
+         application-specific.  When they are associated with an RDBMS
+         server in this table, the objects have the following
+         meanings.
+
+         applName - The name of this server, i.e., the process or
+         group of processes providing access to this database.  The
+         exact format will be product and host specific.
+
+         applVersion - The version number of this server, in product
+         specific format.
+
+         applOperStatus - up(1) means operational and available for
+         general use.  down(2) means the server is not available for
+         use, but is known to the agent.  The other states have broad
+         meaning, and may need to be supplemented by the vendor
+         private MIB.  Halted(3) implies an administrative state of
+         unavailability.  Congested(4) implies a resource or or
+         administrative limit is prohibiting new inbound associations.
+         The 'available soon' description of restarting(5) may include
+         an indeterminate amount of recovery.
+
+         applLastChange is the time the agent noticed the most recent
+         change to applOperStatus.
+
+         applInboundAssociation is the number of currently active
+         local and remote conversations (usually SQL connects).
+
+         applOutboundAssociations is not provided by this MIB.
+
+         applAccumulatedInboundAssociations is the total number of
+         local and remote conversations started since the server came
+         up.
+
+         applAccumulatedOutbound associations is not provided by this
+         MIB.
+
+         applLastInboundActivity is the time the most recent local or
+         remote conversation was attempted or disconnected.
+
+         applLastOutboundActivity is not provided by this MIB.
+
+         applRejectedInboundAssociations is the number of local or
+         remote conversations rejected by the server for
+         administrative reasons or because of resource limitations.
+
+         applFailedOutboundAssociations is not provided by this MIB."
+
+    ::= { rdbmsObjects 6 }
+
+rdbmsSrvInfoEntry   OBJECT-TYPE
+    SYNTAX          RdbmsSrvInfoEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Information that must be present for a single 'up' database
+         server, with visibility determined by the value of the
+         corresponding applOperStatus object.  If an instance of
+         applOperStatus is not up(1), then attempts to access
+         corresponding instances in this table may result in either
+         noSuchName (SNMPv1) or noSuchInstance (SNMPv2) being returned
+         by the agent."
+    INDEX { applIndex }
+    ::= { rdbmsSrvInfoTable 1 }
+
+RdbmsSrvInfoEntry ::=
+    SEQUENCE {
+        rdbmsSrvInfoStartupTime                 DateAndTime,
+        rdbmsSrvInfoFinishedTransactions        Gauge32,
+        rdbmsSrvInfoDiskReads                   Counter32,
+        rdbmsSrvInfoDiskWrites                  Counter32,
+        rdbmsSrvInfoLogicalReads                Counter32,
+        rdbmsSrvInfoLogicalWrites               Counter32,
+        rdbmsSrvInfoPageWrites                  Counter32,
+        rdbmsSrvInfoPageReads                   Counter32,
+        rdbmsSrvInfoDiskOutOfSpaces             Counter32,
+        rdbmsSrvInfoHandledRequests             Counter32,
+        rdbmsSrvInfoRequestRecvs                Counter32,
+        rdbmsSrvInfoRequestSends                Counter32,
+        rdbmsSrvInfoHighwaterInboundAssociations        Gauge32,
+        rdbmsSrvInfoMaxInboundAssociations              Gauge32
+    }
+
+rdbmsSrvInfoStartupTime  OBJECT-TYPE
+    SYNTAX              DateAndTime
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The date and time at which this server was last started."
+    ::= { rdbmsSrvInfoEntry 1 }
+
+rdbmsSrvInfoFinishedTransactions  OBJECT-TYPE
+    SYNTAX              Gauge32
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The number of transactions visible to this server that have
+         been completed by either commit or abort.  Some database
+         operations, such as read-only queries, may not result in the
+         creation of a transaction."
+    ::= { rdbmsSrvInfoEntry 2 }
+
+rdbmsSrvInfoDiskReads   OBJECT-TYPE
+    SYNTAX              Counter32
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The total number of reads of database files issued to the
+         operating system by this server since startup.  Numbers are
+         not comparable between products.  What constitutes a
+         readand how it is accounted is product-specific."
+    ::= { rdbmsSrvInfoEntry 3 }
+
+rdbmsSrvInfoLogicalReads    OBJECT-TYPE
+    SYNTAX                  Counter32
+    MAX-ACCESS              read-only
+    STATUS                  current
+    DESCRIPTION
+        "The total number of logical reads of database files made
+         internally by this server since startup.  The values of this
+         object and those of rdbmsSrvInfoDiskReads reveal the effect
+         of caching on read operation. Numbers are not comparable
+         between products, and may only be meaningful when aggregated
+         across all servers sharing a common cache."
+    ::= { rdbmsSrvInfoEntry 4 }
+
+rdbmsSrvInfoDiskWrites  OBJECT-TYPE
+    SYNTAX              Counter32
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The total number of writes to database files issued to the
+         operating system by this server since startup.  Numbers are
+         not comparable between products."
+    ::= { rdbmsSrvInfoEntry 5 }
+
+rdbmsSrvInfoLogicalWrites  OBJECT-TYPE
+    SYNTAX              Counter32
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The total number of times parts of the database files have
+         been marked 'dirty' and in need of writing to the disk.  This
+         value and rdbmsSrvInfoDiskWrites give some indication of the
+         effect of 'write-behind' strategies in reducing the number of
+         disk writes compared to database operations.  Because the
+         writes may be done by servers other than those marking the
+         parts of the database files dirty, these values may only be
+         meaningful when aggregated across all servers sharing a
+         common cache.  Numbers are not comparable between products."
+    ::= { rdbmsSrvInfoEntry 6 }
+
+rdbmsSrvInfoPageReads   OBJECT-TYPE
+    SYNTAX              Counter32
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The total number of pages in database files read by this
+         server since startup.  'Pages' are product specific units of
+         disk i/o operations.  This value, along with
+         rdbmsSrvInfoDiskReads, reveals the effect of any grouping
+         read-ahead that may be used to enhance performance of some
+         queries, such as scans."
+    ::= { rdbmsSrvInfoEntry 7}
+
+rdbmsSrvInfoPageWrites  OBJECT-TYPE
+    SYNTAX              Counter32
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The total number of pages in database files written by this
+         server since startup.  Pages are product-specific units of
+         disk I/O.  This value, with rdbmsSrvInfoDiskWrites, shows the
+         effect of write strategies that collapse logical writes of
+         contiguous pages into single calls to the operating system."
+    ::= { rdbmsSrvInfoEntry 8 }
+
+rdbmsSrvInfoDiskOutOfSpaces OBJECT-TYPE
+    SYNTAX                  Counter32
+    MAX-ACCESS              read-only
+    STATUS                  current
+    DESCRIPTION
+        "The total number of times the server has been unable to
+         obtain disk space that it wanted, since server startup.  This
+         would be inspected by an agent on receipt of an
+         rdbmsOutOfSpace trap."
+    ::= { rdbmsSrvInfoEntry 9 }
+
+rdbmsSrvInfoHandledRequests     OBJECT-TYPE
+    SYNTAX              Counter32
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The total number of requests made to the server on inbound
+         associations.  The meaning of 'requests' is product specific,
+         and is not comparable between products.
+
+         This is intended to encapsulate high level semantic
+         operations between clients and servers, or between peers.
+         For instance, one request might correspond to a 'select' or
+         an 'insert' statement.  It is not intended to capture disk
+         i/o described in rdbmsSrvInfoDiskReads and
+         rdbmsSrvInfoDiskWrites."
+    ::= { rdbmsSrvInfoEntry 10 }
+
+rdbmsSrvInfoRequestRecvs        OBJECT-TYPE
+    SYNTAX              Counter32
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The number of receive operations made processing any requests
+         on inbound associations. The meaning of operations is product
+         specific, and is not comparable between products.
+
+         This is intended to capture lower-level i/o operations than
+         shown by HandledRequests, between clients and servers, or
+         between peers.  For instance, it might roughly correspond to
+         the amount of data given with an 'insert' statement.  It is
+         not intended to capture disk i/o described in
+         rdbmsSrvInfoDiskReads and rdbmsSrvInfoDiskWrites."
+    ::= { rdbmsSrvInfoEntry 11 }
+
+rdbmsSrvInfoRequestSends        OBJECT-TYPE
+    SYNTAX              Counter32
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The number of send operations made processing requests
+         handled on inbound associations.  The meaning of operations
+         is product specific, and is not comparable between products.
+         This is intended to capture lower-level i/o operations than
+         shown by HandledRequests, between between clients and
+         servers, or between peers.  It might roughly correspond to
+         the number of rows returned by a 'select' statement.  It is
+         not intended to capture disk i/o described in DiskReads."
+    ::= { rdbmsSrvInfoEntry 12 }
+
+rdbmsSrvInfoHighwaterInboundAssociations  OBJECT-TYPE
+    SYNTAX              Gauge32
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The greatest number of inbound associations that have been
+         simultaneously open to this server since startup."
+    ::= { rdbmsSrvInfoEntry 13 }
+
+rdbmsSrvInfoMaxInboundAssociations OBJECT-TYPE
+    SYNTAX              Gauge32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "The greatest number of inbound associations that can be
+         simultaneously open with this server.  If there is no limit,
+         then the value should be zero.
+
+         Note that a compliant agent does not need to
+         allow write access to this object."
+
+    ::= { rdbmsSrvInfoEntry 14 }
+
+----------------------------------------------------------------
+
+rdbmsSrvParamTable      OBJECT-TYPE
+    SYNTAX              SEQUENCE OF RdbmsSrvParamEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "The table of configuration parameters for a server.  Entries
+         should be populated according to the following guidelines:
+         (1) The value should be specified through administrative
+             (human) intervention.
+         (2) It should be configured on a per-server or a more global
+             basis, with duplicate entries for each server sharing
+             use of the parameter.
+         (3) One of the following is true:
+             (a) The parameter has a non-numeric value;
+             (b) The current value is numeric, but it only changes due
+                 to human intervention;
+             (c) The current value is numeric and dynamic, but the
+                 RDBMS does not track access/allocation failures
+                 related to the parameter;
+             (d) The current value is numeric and dynamic, the
+                 RDBMS tracks changes in access/allocation failures
+                 related to the parameter, but the failure has no
+                 significant impact on RDBMS performance or
+                 availability.
+             (e) The current value is numeric and dynamic, the
+                 RDBMS tracks changes in access/allocation failures
+                 related to the parameter, the failure has
+                 significant impact on RDBMS performance or
+                 availability, and is shown in the
+                 rdbmsSrvLimitedResource table."
+    ::= { rdbmsObjects 7 }
+
+rdbmsSrvParamEntry      OBJECT-TYPE
+    SYNTAX              RdbmsSrvParamEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "An entry for a single configuration parameter for a server.
+         Parameters with single values have a subindex value of one.
+         If the parameter is naturally considered to contain a
+         variable number of members of a class, e.g.  members of the
+         DBA user group, or tracepoints active in the server, then it
+         must be presented as a set of rows.  If, on the other hand,
+         the parameter represents a set of choices from a class,
+         e.g. the permissions on a file or the options chosen out of
+         the set of all options allowed, AND is guaranteed to always
+         fit in the 255 character length of a DisplayString, then it
+         may be presented as a comma separated list with a subindex
+         value of one.  Zero may not be used as a subindex value.
+
+         Entries for a server must be present if the value of the
+         corresponding applOperStatus object is up(1).  If an instance
+         of applOperStatus is not up(1), then attempts to access
+         corresponding instances in this table may result in either
+         noSuchName (SNMPv1) or noSuchInstance (SNMPv2) being returned
+         by the agent."
+    INDEX  { applIndex, rdbmsSrvParamName, rdbmsSrvParamSubIndex }
+    ::= { rdbmsSrvParamTable 1 }
+
+RdbmsSrvParamEntry ::=
+    SEQUENCE {
+        rdbmsSrvParamName           DisplayString,
+        rdbmsSrvParamSubIndex       INTEGER,
+        rdbmsSrvParamID             AutonomousType,
+        rdbmsSrvParamCurrValue      DisplayString,
+        rdbmsSrvParamComment        DisplayString
+    }
+
+rdbmsSrvParamName       OBJECT-TYPE
+    SYNTAX              DisplayString (SIZE (1..64))
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "The name of a configuration parameter for a server.  This
+         name is product-specific. The length is limited to 64
+         characters to constrain the number of sub-identifiers needed
+         for instance identification (and to minimize network
+         traffic)."
+    ::= { rdbmsSrvParamEntry 1 }
+
+rdbmsSrvParamSubIndex   OBJECT-TYPE
+    SYNTAX              INTEGER (1..2147483647)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "The subindex value for this parameter.  If the parameter is
+         naturally considered to contain a variable number of members
+         of a class, e.g.  members of the DBA user group, or files
+         which are part of the database, then it must be presented as
+         a set of rows.  If, on the other hand, the parameter
+         represents a set of choices from a class, e.g. the
+         permissions on a file or the options chosen out of the set of
+         all options allowed, AND is guaranteed to always fit in the
+         255 character length of a DisplayString, then it may be
+         presented as a comma separated list with a subindex value of
+         one.  Zero may not be used as a value."
+    ::= { rdbmsSrvParamEntry 2 }
+
+rdbmsSrvParamID         OBJECT-TYPE
+    SYNTAX              AutonomousType
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The ID of the parameter which may be described in some
+         other MIB.  If there is no ID for this rdbmsSrvParamName,
+         attempts to access this object will return noSuchName
+         (SNMPv1) or noSuchInstance (SNMPv2)."
+    ::= { rdbmsSrvParamEntry 3 }
+
+rdbmsSrvParamCurrValue  OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "The value for a configuration parameter now in effect, the
+         actual setting for the server.  While there may multiple
+         values in the temporal domain of interest (for instance, the
+         value to take effect at the next restart), this is the
+         current setting.
+
+         Note that a compliant agent does not need to
+         allow write access to this object."
+
+    ::= { rdbmsSrvParamEntry 4 }
+
+rdbmsSrvParamComment    OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Annotation which describes the purpose of a configuration
+         parameter or the reason for a particular parameter's
+         setting.
+
+         Note that a compliant agent does not need to
+         allow write access to this object."
+
+    ::= { rdbmsSrvParamEntry 5 }
+
+----------------------------------------------------------------
+
+rdbmsSrvLimitedResourceTable        OBJECT-TYPE
+    SYNTAX          SEQUENCE OF RdbmsSrvLimitedResourceEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The table of limited resources relevant to a server."
+    ::= { rdbmsObjects 8 }
+
+rdbmsSrvLimitedResourceEntry    OBJECT-TYPE
+    SYNTAX      RdbmsSrvLimitedResourceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry for a single limited resource kept by the server.
+         A limited resource has maximum use determined by a parameter
+         that might or might not changeable at run time, or visible in
+         the rbmsSrvParamTable.  Examples would be the number of
+         available locks, or number of concurrent executions allowed
+         in a server.  Arrays of resources are supported through an
+         integer subindex, which should have the value of one for
+         single-instance names.
+
+         Limited resources that are shared across servers or databases
+         are best duplicated in this table across
+         all servers accessing the resource."
+    INDEX { applIndex, rdbmsSrvLimitedResourceName }
+    ::= { rdbmsSrvLimitedResourceTable 1 }
+
+RdbmsSrvLimitedResourceEntry ::=
+    SEQUENCE {
+        rdbmsSrvLimitedResourceName         DisplayString,
+        rdbmsSrvLimitedResourceID           AutonomousType,
+        rdbmsSrvLimitedResourceLimit        INTEGER,
+        rdbmsSrvLimitedResourceCurrent      INTEGER,
+        rdbmsSrvLimitedResourceHighwater    INTEGER,
+        rdbmsSrvLimitedResourceFailures     Counter32,
+        rdbmsSrvLimitedResourceDescription  DisplayString
+    }
+
+rdbmsSrvLimitedResourceName         OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The name of the resource, for instance 'threads' or
+         'semaphores', or 'buffer pages'"
+    ::= { rdbmsSrvLimitedResourceEntry  1 }
+
+rdbmsSrvLimitedResourceID OBJECT-TYPE
+    SYNTAX              AutonomousType
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The ID of the resource which may be described in some other
+         MIB.  If there is no ID for this rdbmsSrvLimitedResourceName,
+         attempts to access this object will return noSuchName
+         (SNMPv1) or noSuchInstance (SNMPv2)."
+    ::= { rdbmsSrvLimitedResourceEntry 2 }
+
+rdbmsSrvLimitedResourceLimit        OBJECT-TYPE
+    SYNTAX          INTEGER (1..2147483647)
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "The maximum value the resource use may attain.
+
+         Note that a compliant agent does not need to
+         allow write access to this object."
+
+    ::= { rdbmsSrvLimitedResourceEntry  3 }
+
+rdbmsSrvLimitedResourceCurrent      OBJECT-TYPE
+    SYNTAX          INTEGER (1..2147483647)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The current value for the resource."
+    ::= { rdbmsSrvLimitedResourceEntry  4 }
+
+rdbmsSrvLimitedResourceHighwater            OBJECT-TYPE
+    SYNTAX          INTEGER (1..2147483647)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The maximum value of the resource seen since applUpTime
+         was reset."
+    ::= { rdbmsSrvLimitedResourceEntry  5 }
+
+rdbmsSrvLimitedResourceFailures     OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The number of times the system wanted to exceed the limit of
+         the resource since applUpTime was reset."
+    ::= { rdbmsSrvLimitedResourceEntry  6 }
+
+rdbmsSrvLimitedResourceDescription    OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      read-write
+    STATUS          current
+    DESCRIPTION
+        "A description of the resource and the meaning of the integer
+         units used for Limit, Current, and Highwater.
+
+         Note that a compliant agent does not need to
+         allow write access to this object."
+
+    ::= { rdbmsSrvLimitedResourceEntry  7 }
+
+----------------------------------------------------------------
+
+rdbmsRelTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RdbmsRelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table relating databases and servers present on a host."
+    ::= { rdbmsObjects 9 }
+
+rdbmsRelEntry   OBJECT-TYPE
+    SYNTAX      RdbmsRelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry relating a single database server to a single
+         database to which it may provide access.  The table is
+         indexed first by the index of rdbmsDbTable, and then
+         rdbmsSrvTable, so that all servers capable of providing
+         access to a given database may be found by SNMP traversal
+         operations (get-next and get-bulk).  The makeup of this table
+         depends on the product's architecture, e.g. if it is one
+         server - many databases, then each server will appear n
+         times, where n is the number of databases it may access, and
+         each database will appear once.  If the architecture is one
+         database - many servers, then each server will appear once
+         and each database will appear n times, where n is the number
+         of servers that may be accessing it."
+    INDEX  { rdbmsDbIndex, applIndex }
+    ::= { rdbmsRelTable 1 }
+
+RdbmsRelEntry ::=
+    SEQUENCE {
+         rdbmsRelState          INTEGER,
+         rdbmsRelActiveTime     DateAndTime
+    }
+
+rdbmsRelState   OBJECT-TYPE
+    SYNTAX      INTEGER{
+                    other(1),
+                    active(2),
+                    available(3),
+                    restricted(4),
+                    unavailable(5)
+                    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The state of this server's access to this database.
+         Active(2) means the server is actively using the database.
+         Available(3) means the server could use the database if
+         necessary.  Restricted(4) means the database is in some
+         administratively determined state of less-than-complete
+         availability.  Unavailable(5) means the database is not
+         available through this server.  Other(1) means the
+         database/server is in some other condition, possibly
+         described in the vendor private MIB."
+
+    ::= { rdbmsRelEntry 1 }
+
+rdbmsRelActiveTime  OBJECT-TYPE
+    SYNTAX          DateAndTime
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The time the database was made active by the server.  If an
+         instance of rdbmsRelState is not active(1), then attempts to
+         access the corresponding instance of this object may result
+         in either noSuchName (SNMPv1) or noSuchInstance (SNMPv2)
+         being returned by the agent."
+    ::= { rdbmsRelEntry 2 }
+
+----------------------------------------------------------------
+
+-- Well known resources for which limits, high water marks,
+-- access or allocation failures, and current levels of use
+-- are possibly available in either the rdbmsDbLimitedResources
+-- or the rdbmsSrvLimitedResources tables.
+
+rdbmsWellKnownLimitedResources OBJECT IDENTIFIER
+        ::= { rdbmsObjects 10 }
+
+rdbmsLogSpace   OBJECT-IDENTITY
+                STATUS  current
+                DESCRIPTION
+                "Storage allocated for redo and undo logs."
+        ::= { rdbmsWellKnownLimitedResources 1}
+
+----------------------------------------------------------------
+
+rdbmsTraps       OBJECT IDENTIFIER ::= { rdbmsMIB 2 }
+
+rdbmsStateChange    NOTIFICATION-TYPE
+    OBJECTS         { rdbmsRelState }
+    STATUS          current
+    DESCRIPTION
+        "An rdbmsStateChange trap signifies that one of the database
+         server/databases managed by this agent has changed its
+         rdbmsRelState in a way that makes it less accessible for use.
+         For these purposes, both active(2) and available(3) are
+         considered fully accessible.  The state sent with the trap is
+         the new, less accessible state."
+    ::= { rdbmsTraps 1 }
+
+rdbmsOutOfSpace NOTIFICATION-TYPE
+    OBJECTS     { rdbmsSrvInfoDiskOutOfSpaces }
+    STATUS      current
+    DESCRIPTION
+        "An rdbmsOutOfSpace trap signifies that one of the database
+         servers managed by this agent has been unable to allocate
+         space for one of the databases managed by this agent.  Care
+         should be taken to avoid flooding the network with these
+         traps."
+    ::= { rdbmsTraps 2 }
+
+----------------------------------------------------------------
+
+-- compliance information
+
+rdbmsConformance    OBJECT IDENTIFIER ::= { rdbmsMIB 3 }
+rdbmsCompliances    OBJECT IDENTIFIER ::= { rdbmsConformance 1 }
+rdbmsGroups         OBJECT IDENTIFIER ::= { rdbmsConformance 2 }
+
+-- compliance statements
+
+rdbmsCompliance     MODULE-COMPLIANCE
+    STATUS          current
+    DESCRIPTION
+        "The compliance statement for SNMP entities which
+         implement the RDBMS MIB"
+    MODULE HOST-RESOURCES-MIB
+        MANDATORY-GROUPS    { hrSystem }
+    MODULE NETWORK-SERVICES-MIB
+        MANDATORY-GROUPS { applGroups }
+    MODULE RDBMS-MIB
+        MANDATORY-GROUPS { rdbmsGroup }
+
+    GROUP  rdbmsGroup
+        DESCRIPTION
+            "The rdbmsGroup is mandatory, but no write access
+             to objects is required for compliance."
+        OBJECT      rdbmsDbContact
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "A compliant system need not allow write-access to this
+            object."
+        OBJECT      rdbmsDbParamCurrValue
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "A compliant system need not allow write-access to this
+            object."
+        OBJECT      rdbmsDbParamComment
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "A compliant system need not allow write-access to this
+            object."
+        OBJECT      rdbmsDbLimitedResourceLimit
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "A compliant system need not allow write-access to this
+            object."
+        OBJECT      rdbmsDbLimitedResourceDescription
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "A compliant system need not allow write-access to this
+            object."
+        OBJECT      rdbmsSrvContact
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "A compliant system need not allow write-access to this
+            object."
+        OBJECT      rdbmsSrvInfoMaxInboundAssociations
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "A compliant system need not allow write-access to this
+            object."
+        OBJECT      rdbmsSrvParamCurrValue
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "A compliant system need not allow write-access to this
+            object."
+        OBJECT      rdbmsSrvParamComment
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "A compliant system need not allow write-access to this
+            object."
+        OBJECT      rdbmsSrvLimitedResourceLimit
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "A compliant system need not allow write-access to this
+            object."
+        OBJECT      rdbmsSrvLimitedResourceDescription
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "A compliant system need not allow write-access to this
+            object."
+
+    ::= { rdbmsCompliances 1 }
+
+-- units of conformance
+
+    -- rdbmsStateChange and rdbmsOutOfSpace traps are omitted
+    -- intentionally.  They are not required or part of any
+    -- conformance group.
+
+rdbmsGroup   OBJECT-GROUP
+    OBJECTS  {
+                rdbmsDbPrivateMibOID, rdbmsDbVendorName,
+                rdbmsDbName, rdbmsDbContact,
+
+                rdbmsDbInfoProductName, rdbmsDbInfoVersion,
+                rdbmsDbInfoSizeUnits, rdbmsDbInfoSizeAllocated,
+                rdbmsDbInfoSizeUsed, rdbmsDbInfoLastBackup,
+
+                rdbmsDbParamCurrValue, rdbmsDbParamComment,
+
+                rdbmsDbLimitedResourceLimit,
+                rdbmsDbLimitedResourceCurrent,
+                rdbmsDbLimitedResourceHighwater,
+                rdbmsDbLimitedResourceFailures,
+                rdbmsDbLimitedResourceDescription,
+
+                rdbmsSrvPrivateMibOID, rdbmsSrvVendorName,
+                rdbmsSrvProductName, rdbmsSrvContact,
+
+                rdbmsSrvInfoStartupTime,
+                rdbmsSrvInfoFinishedTransactions,
+                rdbmsSrvInfoDiskReads, rdbmsSrvInfoDiskWrites,
+                rdbmsSrvInfoLogicalReads, rdbmsSrvInfoLogicalWrites,
+                rdbmsSrvInfoPageReads, rdbmsSrvInfoPageWrites,
+                rdbmsSrvInfoHandledRequests,
+                rdbmsSrvInfoRequestRecvs, rdbmsSrvInfoRequestSends,
+                rdbmsSrvInfoHighwaterInboundAssociations,
+                rdbmsSrvInfoMaxInboundAssociations,
+
+                rdbmsSrvParamCurrValue, rdbmsSrvParamComment,
+
+                rdbmsSrvLimitedResourceLimit,
+                rdbmsSrvLimitedResourceCurrent,
+                rdbmsSrvLimitedResourceHighwater,
+                rdbmsSrvLimitedResourceFailures,
+                rdbmsSrvLimitedResourceDescription,
+
+                rdbmsRelState, rdbmsRelActiveTime }
+    STATUS   current
+    DESCRIPTION
+        "A collection of objects providing basic instrumentation of an
+         RDBMS entity."
+    ::= { rdbmsGroups 1 }
+
+----------------------------------------------------------------
+
+END

@@ -1,0 +1,784 @@
+NOTIFICATION-LOG-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Integer32, Unsigned32,
+    TimeTicks, Counter32, Counter64,
+    IpAddress, Opaque, mib-2       FROM SNMPv2-SMI
+    TimeStamp, DateAndTime,
+    StorageType, RowStatus,
+    TAddress, TDomain              FROM SNMPv2-TC
+    SnmpAdminString, SnmpEngineID  FROM SNMP-FRAMEWORK-MIB
+    MODULE-COMPLIANCE, OBJECT-GROUP     FROM SNMPv2-CONF;
+
+notificationLogMIB MODULE-IDENTITY
+    LAST-UPDATED "200011270000Z"            -- 27 November 2000
+    ORGANIZATION "IETF Distributed Management Working Group"
+    CONTACT-INFO "Ramanathan Kavasseri
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive,
+                  San Jose CA 95134-1706.
+                  Phone: +1 408 527 2446
+                  Email: ramk@cisco.com"
+    DESCRIPTION
+     "The MIB module for logging SNMP Notifications, that is, Traps
+
+
+     and Informs."
+-- Revision History
+
+       REVISION     "200011270000Z"            -- 27 November 2000
+       DESCRIPTION  "This is the initial version of this MIB.
+               Published as RFC 3014"
+    ::= { mib-2 92 }
+
+
+notificationLogMIBObjects OBJECT IDENTIFIER ::= { notificationLogMIB 1 }
+
+nlmConfig OBJECT IDENTIFIER ::= { notificationLogMIBObjects 1 }
+nlmStats  OBJECT IDENTIFIER ::= { notificationLogMIBObjects 2 }
+nlmLog         OBJECT IDENTIFIER ::= { notificationLogMIBObjects 3 }
+
+--
+-- Configuration Section
+--
+
+nlmConfigGlobalEntryLimit OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+     "The maximum number of notification entries that may be held
+     in nlmLogTable for all nlmLogNames added together.  A particular
+     setting does not guarantee that much data can be held.
+
+     If an application changes the limit while there are
+     Notifications in the log, the oldest Notifications MUST be
+     discarded to bring the log down to the new limit - thus the
+     value of nlmConfigGlobalEntryLimit MUST take precedence over
+     the values of nlmConfigGlobalAgeOut and nlmConfigLogEntryLimit,
+     even if the Notification being discarded has been present for
+     fewer minutes than the value of nlmConfigGlobalAgeOut, or if
+     the named log has fewer entries than that specified in
+     nlmConfigLogEntryLimit.
+
+     A value of 0 means no limit.
+
+     Please be aware that contention between multiple managers
+     trying to set this object to different values MAY affect the
+     reliability and completeness of data seen by each manager."
+    DEFVAL { 0 }
+    ::= { nlmConfig 1 }
+
+nlmConfigGlobalAgeOut OBJECT-TYPE
+    SYNTAX      Unsigned32
+
+
+    UNITS       "minutes"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+     "The number of minutes a Notification SHOULD be kept in a log
+     before it is automatically removed.
+
+     If an application changes the value of nlmConfigGlobalAgeOut,
+     Notifications older than the new time MAY be discarded to meet the
+     new time.
+
+     A value of 0 means no age out.
+
+     Please be aware that contention between multiple managers
+     trying to set this object to different values MAY affect the
+     reliability and completeness of data seen by each manager."
+    DEFVAL { 1440 }  -- 24 hours
+    ::= { nlmConfig 2 }
+
+
+--
+-- Basic Log Configuration Table
+--
+
+nlmConfigLogTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NlmConfigLogEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "A table of logging control entries."
+    ::= { nlmConfig 3 }
+
+nlmConfigLogEntry OBJECT-TYPE
+    SYNTAX      NlmConfigLogEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "A logging control entry.  Depending on the entry's storage type
+     entries may be supplied by the system or created and deleted by
+     applications using nlmConfigLogEntryStatus."
+    INDEX      { nlmLogName }
+    ::= { nlmConfigLogTable 1 }
+
+NlmConfigLogEntry ::= SEQUENCE {
+    nlmLogName           SnmpAdminString,
+    nlmConfigLogFilterName    SnmpAdminString,
+    nlmConfigLogEntryLimit    Unsigned32,
+    nlmConfigLogAdminStatus   INTEGER,
+
+
+    nlmConfigLogOperStatus    INTEGER,
+    nlmConfigLogStorageType   StorageType,
+    nlmConfigLogEntryStatus   RowStatus
+    }
+
+nlmLogName OBJECT-TYPE
+    SYNTAX     SnmpAdminString (SIZE(0..32))
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+     "The name of the log.
+
+     An implementation may allow multiple named logs, up to some
+     implementation-specific limit (which may be none).  A
+     zero-length log name is reserved for creation and deletion by
+     the managed system, and MUST be used as the default log name by
+     systems that do not support named logs."
+    ::= { nlmConfigLogEntry 1 }
+
+nlmConfigLogFilterName OBJECT-TYPE
+    SYNTAX     SnmpAdminString (SIZE(0..32))
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+     "A value of snmpNotifyFilterProfileName as used as an index
+     into the snmpNotifyFilterTable in the SNMP Notification MIB,
+     specifying the locally or remotely originated Notifications
+     to be filtered out and not logged in this log.
+
+     A zero-length value or a name that does not identify an
+     existing entry in snmpNotifyFilterTable indicate no
+     Notifications are to be logged in this log."
+    DEFVAL { ''H }
+    ::= { nlmConfigLogEntry 2 }
+
+nlmConfigLogEntryLimit OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+     "The maximum number of notification entries that can be held in
+     nlmLogTable for this named log.  A particular setting does not
+     guarantee that that much data can be held.
+
+     If an application changes the limit while there are
+     Notifications in the log, the oldest Notifications are discarded
+     to bring the log down to the new limit.
+
+
+
+     A value of 0 indicates no limit.
+
+     Please be aware that contention between multiple managers
+     trying to set this object to different values MAY affect the
+     reliability and completeness of data seen by each manager."
+    DEFVAL { 0 }
+    ::= { nlmConfigLogEntry 3 }
+
+nlmConfigLogAdminStatus OBJECT-TYPE
+    SYNTAX     INTEGER { enabled(1), disabled(2) }
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+     "Control to enable or disable the log without otherwise
+     disturbing the log's entry.
+
+     Please be aware that contention between multiple managers
+     trying to set this object to different values MAY affect the
+     reliability and completeness of data seen by each manager."
+    DEFVAL { enabled }
+    ::= { nlmConfigLogEntry 4 }
+
+nlmConfigLogOperStatus OBJECT-TYPE
+    SYNTAX     INTEGER { disabled(1), operational(2), noFilter(3) }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "The operational status of this log:
+
+          disabled  administratively disabled
+
+          operational    administratively enabled and working
+
+          noFilter  administratively enabled but either
+                    nlmConfigLogFilterName is zero length
+                    or does not name an existing entry in
+                    snmpNotifyFilterTable"
+    ::= { nlmConfigLogEntry 5 }
+
+nlmConfigLogStorageType OBJECT-TYPE
+    SYNTAX     StorageType
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+     "The storage type of this conceptual row."
+    ::= { nlmConfigLogEntry 6 }
+
+nlmConfigLogEntryStatus OBJECT-TYPE
+
+
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+     "Control for creating and deleting entries.  Entries may be
+     modified while active.
+
+     For non-null-named logs, the managed system records the security
+     credentials from the request that sets nlmConfigLogStatus
+     to 'active' and uses that identity to apply access control to
+     the objects in the Notification to decide if that Notification
+     may be logged."
+    ::= { nlmConfigLogEntry 7 }
+
+--
+-- Statistics Section
+--
+
+nlmStatsGlobalNotificationsLogged OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "notifications"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The number of Notifications put into the nlmLogTable.  This
+     counts a Notification once for each log entry, so a Notification
+      put into multiple logs is counted multiple times."
+    ::= { nlmStats 1 }
+
+nlmStatsGlobalNotificationsBumped OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "notifications"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The number of log entries discarded to make room for a new entry
+     due to lack of resources or the value of nlmConfigGlobalEntryLimit
+     or nlmConfigLogEntryLimit.  This does not include entries discarded
+     due to the value of nlmConfigGlobalAgeOut."
+    ::= { nlmStats 2 }
+
+--
+-- Log Statistics Table
+--
+
+nlmStatsLogTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NlmStatsLogEntry
+    MAX-ACCESS  not-accessible
+
+
+    STATUS      current
+    DESCRIPTION
+     "A table of Notification log statistics entries."
+    ::= { nlmStats 3 }
+
+nlmStatsLogEntry OBJECT-TYPE
+    SYNTAX      NlmStatsLogEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "A Notification log statistics entry."
+    AUGMENTS { nlmConfigLogEntry }
+    ::= { nlmStatsLogTable 1 }
+
+NlmStatsLogEntry ::= SEQUENCE {
+    nlmStatsLogNotificationsLogged Counter32,
+    nlmStatsLogNotificationsBumped Counter32
+}
+
+nlmStatsLogNotificationsLogged OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "notifications"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The number of Notifications put in this named log."
+    ::= { nlmStatsLogEntry 1 }
+
+nlmStatsLogNotificationsBumped OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "notifications"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The number of log entries discarded from this named log to make
+     room for a new entry due to lack of resources or the value of
+     nlmConfigGlobalEntryLimit or nlmConfigLogEntryLimit.  This does not
+     include entries discarded due to the value of
+     nlmConfigGlobalAgeOut."
+    ::= { nlmStatsLogEntry 2 }
+
+
+--
+-- Log Section
+--
+
+--
+-- Log Table
+
+
+--
+
+nlmLogTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NlmLogEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "A table of Notification log entries.
+
+     It is an implementation-specific matter whether entries in this
+     table are preserved across initializations of the management
+     system.  In general one would expect that they are not.
+
+     Note that keeping entries across initializations of the
+     management system leads to some confusion with counters and
+     TimeStamps, since both of those are based on sysUpTime, which
+     resets on management initialization.  In this situation,
+     counters apply only after the reset and nlmLogTime for entries
+     made before the reset MUST be set to 0."
+    ::= { nlmLog 1 }
+
+nlmLogEntry OBJECT-TYPE
+    SYNTAX      NlmLogEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "A Notification log entry.
+
+     Entries appear in this table when Notifications occur and pass
+     filtering by nlmConfigLogFilterName and access control.  They are
+     removed to make way for new entries due to lack of resources or
+     the values of nlmConfigGlobalEntryLimit, nlmConfigGlobalAgeOut, or
+     nlmConfigLogEntryLimit.
+
+     If adding an entry would exceed nlmConfigGlobalEntryLimit or system
+     resources in general, the oldest entry in any log SHOULD be removed
+     to make room for the new one.
+
+     If adding an entry would exceed nlmConfigLogEntryLimit the oldest
+     entry in that log SHOULD be removed to make room for the new one.
+
+     Before the managed system puts a locally-generated Notification
+     into a non-null-named log it assures that the creator of the log
+     has access to the information in the Notification.  If not it
+     does not log that Notification in that log."
+    INDEX       { nlmLogName, nlmLogIndex }
+    ::= { nlmLogTable 1 }
+
+
+
+NlmLogEntry ::= SEQUENCE {
+    nlmLogIndex                Unsigned32,
+    nlmLogTime                 TimeStamp,
+    nlmLogDateAndTime          DateAndTime,
+    nlmLogEngineID             SnmpEngineID,
+    nlmLogEngineTAddress       TAddress,
+    nlmLogEngineTDomain        TDomain,
+    nlmLogContextEngineID      SnmpEngineID,
+    nlmLogContextName          SnmpAdminString,
+    nlmLogNotificationID       OBJECT IDENTIFIER
+}
+
+nlmLogIndex OBJECT-TYPE
+    SYNTAX     Unsigned32 (1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+     "A monotonically increasing integer for the sole purpose of
+     indexing entries within the named log.  When it reaches the
+     maximum value, an extremely unlikely event, the agent wraps the
+     value back to 1."
+    ::= { nlmLogEntry 1 }
+
+nlmLogTime OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The value of sysUpTime when the entry was placed in the log. If
+     the entry occurred before the most recent management system
+     initialization this object value MUST be set to zero."
+    ::= { nlmLogEntry 2 }
+
+nlmLogDateAndTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The local date and time when the entry was logged, instantiated
+     only by systems that have date and time capability."
+    ::= { nlmLogEntry 3 }
+
+nlmLogEngineID OBJECT-TYPE
+    SYNTAX      SnmpEngineID
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The identification of the SNMP engine at which the Notification
+
+
+     originated.
+
+     If the log can contain Notifications from only one engine
+     or the Trap is in SNMPv1 format, this object is a zero-length
+     string."
+    ::= { nlmLogEntry 4 }
+
+nlmLogEngineTAddress OBJECT-TYPE
+    SYNTAX      TAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The transport service address of the SNMP engine from which the
+     Notification was received, formatted according to the corresponding
+     value of nlmLogEngineTDomain. This is used to identify the source
+     of an SNMPv1 trap, since an nlmLogEngineId cannot be extracted
+     from the SNMPv1 trap pdu.
+
+     This object MUST always be instantiated, even if the log
+     can contain Notifications from only one engine.
+
+     Please be aware that the nlmLogEngineTAddress may not uniquely
+     identify the SNMP engine from which the Notification was received.
+     For example, if an SNMP engine uses DHCP or NAT to obtain
+     ip addresses, the address it uses may be shared with other
+     network devices, and hence will not uniquely identify the
+     SNMP engine."
+    ::= { nlmLogEntry 5 }
+
+nlmLogEngineTDomain OBJECT-TYPE
+    SYNTAX      TDomain
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "Indicates the kind of transport service by which a Notification
+     was received from an SNMP engine. nlmLogEngineTAddress contains
+     the transport service address of the SNMP engine from which
+     this Notification was received.
+
+     Possible values for this object are presently found in the
+     Transport Mappings for SNMPv2 document (RFC 1906 [8])."
+    ::= { nlmLogEntry 6 }
+
+nlmLogContextEngineID OBJECT-TYPE
+    SYNTAX      SnmpEngineID
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+
+
+     "If the Notification was received in a protocol which has a
+      contextEngineID element like SNMPv3, this object has that value.
+      Otherwise its value is a zero-length string."
+     ::= { nlmLogEntry 7 }
+
+nlmLogContextName OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The name of the SNMP MIB context from which the Notification came.
+     For SNMPv1 Traps this is the community string from the Trap."
+    ::= { nlmLogEntry 8 }
+
+nlmLogNotificationID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The NOTIFICATION-TYPE object identifier of the Notification that
+     occurred."
+    ::= { nlmLogEntry 9 }
+
+--
+-- Log Variable Table
+--
+
+nlmLogVariableTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NlmLogVariableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "A table of variables to go with Notification log entries."
+    ::= { nlmLog 2 }
+
+nlmLogVariableEntry OBJECT-TYPE
+    SYNTAX      NlmLogVariableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "A Notification log entry variable.
+
+     Entries appear in this table when there are variables in
+     the varbind list of a Notification in nlmLogTable."
+    INDEX       { nlmLogName, nlmLogIndex, nlmLogVariableIndex }
+    ::= { nlmLogVariableTable 1 }
+
+NlmLogVariableEntry ::= SEQUENCE {
+
+
+    nlmLogVariableIndex              Unsigned32,
+    nlmLogVariableID                 OBJECT IDENTIFIER,
+    nlmLogVariableValueType          INTEGER,
+    nlmLogVariableCounter32Val       Counter32,
+    nlmLogVariableUnsigned32Val      Unsigned32,
+    nlmLogVariableTimeTicksVal       TimeTicks,
+    nlmLogVariableInteger32Val       Integer32,
+    nlmLogVariableOctetStringVal     OCTET STRING,
+    nlmLogVariableIpAddressVal       IpAddress,
+    nlmLogVariableOidVal             OBJECT IDENTIFIER,
+    nlmLogVariableCounter64Val       Counter64,
+    nlmLogVariableOpaqueVal          Opaque
+}
+
+nlmLogVariableIndex OBJECT-TYPE
+    SYNTAX     Unsigned32 (1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+     "A monotonically increasing integer, starting at 1 for a given
+     nlmLogIndex, for indexing variables within the logged
+     Notification."
+    ::= { nlmLogVariableEntry 1 }
+
+nlmLogVariableID OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "The variable's object identifier."
+    ::= { nlmLogVariableEntry 2 }
+
+nlmLogVariableValueType OBJECT-TYPE
+    SYNTAX      INTEGER { counter32(1), unsigned32(2), timeTicks(3),
+                 integer32(4), ipAddress(5), octetString(6),
+                 objectId(7), counter64(8), opaque(9) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The type of the value.  One and only one of the value
+     objects that follow must be instantiated, based on this type."
+    ::= { nlmLogVariableEntry 3 }
+
+nlmLogVariableCounter32Val OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+
+
+     "The value when nlmLogVariableType is 'counter32'."
+    ::= { nlmLogVariableEntry 4 }
+
+nlmLogVariableUnsigned32Val OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The value when nlmLogVariableType is 'unsigned32'."
+    ::= { nlmLogVariableEntry 5 }
+
+nlmLogVariableTimeTicksVal OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The value when nlmLogVariableType is 'timeTicks'."
+    ::= { nlmLogVariableEntry 6 }
+
+nlmLogVariableInteger32Val OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The value when nlmLogVariableType is 'integer32'."
+    ::= { nlmLogVariableEntry 7 }
+
+nlmLogVariableOctetStringVal OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The value when nlmLogVariableType is 'octetString'."
+    ::= { nlmLogVariableEntry 8 }
+
+nlmLogVariableIpAddressVal OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The value when nlmLogVariableType is 'ipAddress'.
+     Although this seems to be unfriendly for IPv6, we
+     have to recognize that there are a number of older
+     MIBs that do contain an IPv4 format address, known
+     as IpAddress.
+
+     IPv6 addresses are represented using TAddress or
+     InetAddress, and so the underlying datatype is
+
+
+     OCTET STRING, and their value would be stored in
+     the nlmLogVariableOctetStringVal column."
+    ::= { nlmLogVariableEntry 9 }
+
+nlmLogVariableOidVal OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The value when nlmLogVariableType is 'objectId'."
+    ::= { nlmLogVariableEntry 10 }
+
+nlmLogVariableCounter64Val OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The value when nlmLogVariableType is 'counter64'."
+    ::= { nlmLogVariableEntry 11 }
+
+nlmLogVariableOpaqueVal OBJECT-TYPE
+    SYNTAX      Opaque
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+     "The value when nlmLogVariableType is 'opaque'."
+    ::= { nlmLogVariableEntry 12 }
+
+
+--
+-- Conformance
+--
+
+notificationLogMIBConformance OBJECT IDENTIFIER ::=
+    { notificationLogMIB 3 }
+notificationLogMIBCompliances OBJECT IDENTIFIER ::=
+    { notificationLogMIBConformance 1 }
+notificationLogMIBGroups      OBJECT IDENTIFIER ::=
+    { notificationLogMIBConformance 2 }
+
+-- Compliance
+
+notificationLogMIBCompliance MODULE-COMPLIANCE
+     STATUS current
+     DESCRIPTION
+          "The compliance statement for entities which implement
+          the Notification Log MIB."
+     MODULE    -- this module
+
+
+          MANDATORY-GROUPS {
+               notificationLogConfigGroup,
+               notificationLogStatsGroup,
+               notificationLogLogGroup
+          }
+
+     OBJECT nlmConfigGlobalEntryLimit
+         SYNTAX Unsigned32 (0..4294967295)
+         MIN-ACCESS read-only
+         DESCRIPTION
+          "Implementations may choose a limit and not allow it to be
+          changed or may enforce an upper or lower bound on the
+          limit."
+
+     OBJECT nlmConfigLogEntryLimit
+         SYNTAX Unsigned32 (0..4294967295)
+         MIN-ACCESS read-only
+         DESCRIPTION
+          "Implementations may choose a limit and not allow it to be
+          changed or may enforce an upper or lower bound on the
+          limit."
+
+     OBJECT nlmConfigLogEntryStatus
+         MIN-ACCESS read-only
+         DESCRIPTION
+          "Implementations may disallow the creation of named logs."
+
+     GROUP notificationLogDateGroup
+         DESCRIPTION
+          "This group is mandatory on systems that keep wall clock
+          date and time and should not be implemented on systems that
+          do not have a wall clock date."
+
+     ::= { notificationLogMIBCompliances 1 }
+
+-- Units of Conformance
+
+notificationLogConfigGroup OBJECT-GROUP
+     OBJECTS {
+          nlmConfigGlobalEntryLimit,
+          nlmConfigGlobalAgeOut,
+          nlmConfigLogFilterName,
+          nlmConfigLogEntryLimit,
+          nlmConfigLogAdminStatus,
+          nlmConfigLogOperStatus,
+          nlmConfigLogStorageType,
+          nlmConfigLogEntryStatus
+     }
+
+
+     STATUS current
+     DESCRIPTION
+          "Notification log configuration management."
+     ::= { notificationLogMIBGroups 1 }
+
+notificationLogStatsGroup OBJECT-GROUP
+     OBJECTS {
+          nlmStatsGlobalNotificationsLogged,
+          nlmStatsGlobalNotificationsBumped,
+          nlmStatsLogNotificationsLogged,
+          nlmStatsLogNotificationsBumped
+     }
+     STATUS current
+     DESCRIPTION
+          "Notification log statistics."
+     ::= { notificationLogMIBGroups 2 }
+
+notificationLogLogGroup OBJECT-GROUP
+     OBJECTS {
+          nlmLogTime,
+          nlmLogEngineID,
+          nlmLogEngineTAddress,
+          nlmLogEngineTDomain,
+          nlmLogContextEngineID,
+          nlmLogContextName,
+          nlmLogNotificationID,
+          nlmLogVariableID,
+          nlmLogVariableValueType,
+          nlmLogVariableCounter32Val,
+          nlmLogVariableUnsigned32Val,
+          nlmLogVariableTimeTicksVal,
+          nlmLogVariableInteger32Val,
+          nlmLogVariableOctetStringVal,
+          nlmLogVariableIpAddressVal,
+          nlmLogVariableOidVal,
+          nlmLogVariableCounter64Val,
+          nlmLogVariableOpaqueVal
+     }
+     STATUS current
+     DESCRIPTION
+          "Notification log data."
+     ::= { notificationLogMIBGroups 3 }
+
+notificationLogDateGroup OBJECT-GROUP
+     OBJECTS {
+          nlmLogDateAndTime
+     }
+     STATUS current
+
+
+     DESCRIPTION
+          "Conditionally mandatory notification log data.
+          This group is mandatory on systems that keep wall
+          clock date and time and should not be implemented
+          on systems that do not have a wall clock date."
+     ::= { notificationLogMIBGroups 4 }
+
+END

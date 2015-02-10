@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string></string>
+	</array>
+	<key>name</key>
+	<string>Dalvik Bytecodes (Androguard)</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>comment</key>
+			<string>comment</string>
+			<key>match</key>
+			<string>\s*(#).*$\n?</string>
+			<key>name</key>
+			<string>comment.line.number-sign.smali</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>bb name</string>
+			<key>match</key>
+			<string>^([\w\d\-\&lt;\&gt;\_]+)(@)([\w\d]+)(\s*)(:)</string>
+			<key>name</key>
+			<string>markup.bold</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>hexa value</string>
+			<key>match</key>
+			<string>(\-|\+)([\d+a-z]+)</string>
+			<key>name</key>
+			<string>storage.int</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>storage.int</string>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>int value</string>
+			<key>match</key>
+			<string>,\s(\d*)</string>
+			<key>name</key>
+			<string>storage.int</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>decimal value</string>
+			<key>match</key>
+			<string>^(\s+\d*\s+)</string>
+			<key>name</key>
+			<string>markup.italic</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>next bbs list</string>
+			<key>match</key>
+			<string>(\[)([\w\d\-\s@\&lt;\&gt;\_\:])+(\])</string>
+			<key>name</key>
+			<string>markup.list</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>support.constant</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.control.instruction</string>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>hexa + instruction</string>
+			<key>match</key>
+			<string>(\()([\d\-a-z]+)(\))(\s+)([a-z\-/0-9]+)([0-9]*)(\s+)</string>
+			<key>name</key>
+			<string>keyword.control</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>register</string>
+			<key>match</key>
+			<string>(v\d+)</string>
+			<key>name</key>
+			<string>variable.smali</string>
+		</dict>
+		<dict>
+			<key>begin</key>
+			<string>\'</string>
+			<key>end</key>
+			<string>\'</string>
+			<key>name</key>
+			<string>string.quoted.single.smali</string>
+		</dict>
+	</array>
+	<key>scopeName</key>
+	<string>source.agbt</string>
+	<key>uuid</key>
+	<string>75ba8e42-b55b-4823-b4aa-e4e407da9c8e</string>
+</dict>
+</plist>

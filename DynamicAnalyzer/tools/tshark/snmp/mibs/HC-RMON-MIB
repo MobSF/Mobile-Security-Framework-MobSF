@@ -1,0 +1,3333 @@
+HC-RMON-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Counter32, Integer32,
+        Gauge32, Counter64             FROM SNMPv2-SMI
+    RowStatus, TimeStamp               FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP FROM SNMPv2-CONF
+    rmon, OwnerString, statistics, history, hosts, hostTopN, matrix,
+    etherStatsIndex, etherHistoryIndex, etherHistorySampleIndex,
+    hostIndex, hostAddress, hostTimeIndex, hostTimeCreationOrder,
+    hostTopNReport, hostTopNIndex,
+    matrixSDIndex, matrixSDSourceAddress, matrixSDDestAddress,
+    matrixDSIndex, matrixDSDestAddress, matrixDSSourceAddress,
+    capture, captureBufferControlIndex, captureBufferIndex
+                                    FROM RMON-MIB
+    protocolDirLocalIndex, protocolDistControlIndex,
+    protocolDist, hlHostControlIndex,
+    nlHost, nlHostTimeMark, nlHostAddress,
+    hlMatrixControlIndex, nlMatrix,
+    nlMatrixSDTimeMark, nlMatrixSDSourceAddress, nlMatrixSDDestAddress,
+    nlMatrixDSTimeMark, nlMatrixDSDestAddress, nlMatrixDSSourceAddress,
+    nlMatrixTopNControlIndex, nlMatrixTopNIndex,
+    alHost, alHostTimeMark,
+    alMatrix, alMatrixSDTimeMark, alMatrixDSTimeMark,
+    alMatrixTopNControlIndex, alMatrixTopNIndex,
+
+
+
+    usrHistory, usrHistoryControlIndex,
+    usrHistorySampleIndex, usrHistoryObjectIndex,
+    rmonConformance, ZeroBasedCounter32, probeConfig
+                                    FROM RMON2-MIB
+    ZeroBasedCounter64, CounterBasedGauge64
+                                    FROM HCNUM-TC;
+
+--  Remote Network Monitoring MIB
+
+hcRMON MODULE-IDENTITY
+    LAST-UPDATED "200205080000Z"    -- May 08, 2002
+    ORGANIZATION "IETF RMON MIB Working Group"
+    CONTACT-INFO
+        "Steve Waldbusser
+
+        Phone: +1-650-948-6500
+        Fax:   +1-650-745-0671
+        Email: waldbusser@nextbeacon.com
+
+        Andy Bierman
+        WG Chair
+        abierman@cisco.com
+
+        RMONMIB WG Mailing List
+        rmonmib@ietf.org
+        http://www.ietf.org/mailman/listinfo/rmonmib"
+    DESCRIPTION
+        "The MIB module for managing remote monitoring
+        device implementations. This MIB module
+        augments the original RMON MIB as specified in
+        RFC 2819 and RFC 1513 and RMON-2 MIB as specified in
+        RFC 2021."
+
+    REVISION "200205080000Z"    -- May 08, 2002
+    DESCRIPTION
+        "The original version of this MIB, published as RFC3273."
+    ::= { rmonConformance 5 }
+
+-- { rmon 1 } through { rmon 20 } are defined in RMON [RFC 2819] and
+-- the Token Ring RMON MIB [RFC 1513] and the RMON-2 MIB [RFC 2021].
+
+mediaIndependentStats  OBJECT IDENTIFIER ::= { rmon 21 }
+
+mediaIndependentTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF MediaIndependentEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+
+
+
+        "Media independent statistics for promiscuous monitoring of
+        any media.
+
+        The following table defines media independent statistics that
+        provide information for full and/or half-duplex links as well
+        as high capacity links.
+
+        For half-duplex links, or full-duplex-capable links operating
+        in half-duplex mode, the mediaIndependentIn* objects shall be
+        used and the mediaIndependentOut* objects shall not increment.
+
+        For full-duplex links, the mediaIndependentOut* objects shall
+        be present and shall increment. Whenever possible, the probe
+        should count packets moving away from the closest terminating
+        equipment as output packets. Failing that, the probe should
+        count packets moving away from the DTE as output packets."
+    ::= { mediaIndependentStats 1 }
+
+mediaIndependentEntry OBJECT-TYPE
+    SYNTAX     MediaIndependentEntry
+    MAX-ACCESS not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Media independent statistics for promiscuous monitoring of
+        any media."
+    INDEX { mediaIndependentIndex }
+    ::= { mediaIndependentTable 1 }
+
+MediaIndependentEntry ::= SEQUENCE {
+
+    mediaIndependentIndex                       Integer32,
+    mediaIndependentDataSource                  OBJECT IDENTIFIER,
+    mediaIndependentDropEvents                  Counter32,
+    mediaIndependentDroppedFrames               Counter32,
+    mediaIndependentInPkts                      Counter32,
+    mediaIndependentInOverflowPkts              Counter32,
+    mediaIndependentInHighCapacityPkts          Counter64,
+    mediaIndependentOutPkts                     Counter32,
+    mediaIndependentOutOverflowPkts             Counter32,
+    mediaIndependentOutHighCapacityPkts         Counter64,
+    mediaIndependentInOctets                    Counter32,
+    mediaIndependentInOverflowOctets            Counter32,
+    mediaIndependentInHighCapacityOctets        Counter64,
+    mediaIndependentOutOctets                   Counter32,
+    mediaIndependentOutOverflowOctets           Counter32,
+    mediaIndependentOutHighCapacityOctets       Counter64,
+    mediaIndependentInNUCastPkts                Counter32,
+    mediaIndependentInNUCastOverflowPkts        Counter32,
+
+
+
+    mediaIndependentInNUCastHighCapacityPkts    Counter64,
+    mediaIndependentOutNUCastPkts               Counter32,
+    mediaIndependentOutNUCastOverflowPkts       Counter32,
+    mediaIndependentOutNUCastHighCapacityPkts   Counter64,
+    mediaIndependentInErrors                    Counter32,
+    mediaIndependentOutErrors                   Counter32,
+    mediaIndependentInputSpeed                  Gauge32,
+    mediaIndependentOutputSpeed                 Gauge32,
+    mediaIndependentDuplexMode                  INTEGER,
+    mediaIndependentDuplexChanges               Counter32,
+    mediaIndependentDuplexLastChange            TimeStamp,
+    mediaIndependentOwner                       OwnerString,
+    mediaIndependentStatus                      RowStatus
+}
+
+mediaIndependentIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..65535)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The value of this object uniquely identifies this
+        mediaIndependent entry."
+    ::= { mediaIndependentEntry 1 }
+
+mediaIndependentDataSource OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "This object identifies the source of the data that
+        this mediaIndependent entry is configured to analyze.  This
+        source can be any interface on this device.
+        In order to identify a particular interface, this
+        object shall identify the instance of the ifIndex
+        object, defined in RFC 1213 and RFC 2233 [16,17], for
+        the desired interface.  For example, if an entry
+        were to receive data from interface #1, this object
+        would be set to ifIndex.1.
+
+        The statistics in this group reflect all packets
+        on the local network segment attached to the
+        identified interface.
+
+        An agent may or may not be able to tell if
+        fundamental changes to the media of the interface
+        have occurred and necessitate a deletion of
+        this entry.  For example, a hot-pluggable ethernet
+        card could be pulled out and replaced by a
+
+
+
+        token-ring card.  In such a case, if the agent has
+        such knowledge of the change, it is recommended that
+        it delete this entry.
+
+        This object may not be modified if the associated
+        mediaIndependentStatus object is equal to active(1)."
+    ::= { mediaIndependentEntry 2 }
+
+mediaIndependentDropEvents OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Events"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The total number of events in which packets
+        were dropped by the probe due to lack of resources.
+        Note that this number is not necessarily the number of
+        packets dropped; it is just the number of times this
+        condition has been detected."
+    ::= { mediaIndependentEntry 3 }
+
+mediaIndependentDroppedFrames OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+       "The total number of frames which were received by the probe
+        and therefore not accounted for in the
+        mediaIndependentDropEvents, but for which the probe chose not
+        to count for this entry for whatever reason.  Most often, this
+        event occurs when the probe is out of some resources and
+        decides to shed load from this collection.
+
+        This count does not include packets that were not counted
+        because they had MAC-layer errors.
+
+        Note that, unlike the dropEvents counter, this number is the
+        exact number of frames dropped."
+    ::= { mediaIndependentEntry 4 }
+
+mediaIndependentInPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "Packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of packets (including bad packets,
+
+
+
+        broadcast packets, and multicast packets) received
+        on a half-duplex link or on the inbound connection of a
+        full-duplex link."
+    ::= { mediaIndependentEntry 5 }
+
+mediaIndependentInOverflowPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "Packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times the associated
+        mediaIndependentInPkts counter has overflowed."
+    ::= { mediaIndependentEntry 6 }
+
+mediaIndependentInHighCapacityPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "Packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of packets (including bad packets,
+        broadcast packets, and multicast packets) received
+        on a half-duplex link or on the inbound connection of a
+        full-duplex link."
+    ::= { mediaIndependentEntry 7 }
+
+mediaIndependentOutPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "Packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of packets (including bad packets,
+        broadcast packets, and multicast packets) received on a
+        full-duplex link in the direction of the network."
+    ::= { mediaIndependentEntry 8 }
+
+mediaIndependentOutOverflowPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "Packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times the associated
+        mediaIndependentOutPkts counter has overflowed."
+    ::= { mediaIndependentEntry 9 }
+
+
+
+
+mediaIndependentOutHighCapacityPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "Packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of packets (including bad packets,
+        broadcast packets, and multicast packets) received on a
+        full-duplex link in the direction of the network."
+    ::= { mediaIndependentEntry 10 }
+
+mediaIndependentInOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "Octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of octets of data (including those in bad
+        packets) received (excluding framing bits but including FCS
+        octets) on a half-duplex link or on the inbound connection of
+        a full-duplex link."
+    ::= { mediaIndependentEntry 11 }
+
+mediaIndependentInOverflowOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "Octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times the associated
+        mediaIndependentInOctets counter has overflowed."
+    ::= { mediaIndependentEntry 12 }
+
+mediaIndependentInHighCapacityOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "Octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of octets of data (including those in bad
+        packets) received (excluding framing bits but
+        including FCS octets) on a half-duplex link or on the inbound
+        connection of a full-duplex link."
+    ::= { mediaIndependentEntry 13 }
+
+mediaIndependentOutOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "Octets"
+
+
+
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of octets of data (including those in bad
+        packets) received on a full-duplex link in the direction of
+        the network (excluding framing bits but including FCS
+        octets)."
+    ::= { mediaIndependentEntry 14 }
+
+mediaIndependentOutOverflowOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "Octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times the associated
+        mediaIndependentOutOctets counter has overflowed."
+    ::= { mediaIndependentEntry 15 }
+
+mediaIndependentOutHighCapacityOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "Octets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of octets of data (including those in bad
+        packets) received on a full-duplex link in the direction of
+        the network (excluding framing bits but including FCS
+        octets)."
+    ::= { mediaIndependentEntry 16 }
+
+mediaIndependentInNUCastPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "Packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of non-unicast packets (including bad
+        packets) received on a half-duplex link or on the inbound
+        connection of a full-duplex link."
+    ::= { mediaIndependentEntry 17 }
+
+mediaIndependentInNUCastOverflowPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "Packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+
+
+
+        "The number of times the associated
+        mediaIndependentInNUCastPkts counter has overflowed."
+    ::= { mediaIndependentEntry 18 }
+
+mediaIndependentInNUCastHighCapacityPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "Packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of non-unicast packets (including bad
+        packets) received on a half-duplex link or on the inbound
+        connection of a full-duplex link."
+    ::= { mediaIndependentEntry 19 }
+
+mediaIndependentOutNUCastPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "Packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of non-unicast packets (including bad
+        packets) received on a full-duplex link in the direction of
+        the network."
+    ::= { mediaIndependentEntry 20 }
+
+mediaIndependentOutNUCastOverflowPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "Packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times the associated
+        mediaIndependentOutNUCastPkts counter has overflowed."
+    ::= { mediaIndependentEntry 21 }
+
+mediaIndependentOutNUCastHighCapacityPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    UNITS       "Packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of packets (including bad packets)
+        received on a full-duplex link in the direction of the
+        network."
+    ::= { mediaIndependentEntry 22 }
+
+mediaIndependentInErrors OBJECT-TYPE
+
+
+
+    SYNTAX     Counter32
+    UNITS       "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The total number of bad packets received on a
+        half-duplex link or on the inbound connection of a
+        full-duplex link."
+    ::= { mediaIndependentEntry 23 }
+
+mediaIndependentOutErrors OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS       "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The total number of bad packets received on a full-duplex
+        link in the direction of the network."
+    ::= { mediaIndependentEntry 24 }
+
+mediaIndependentInputSpeed OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Kilobits per Second"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The nominal maximum speed in kilobits per second of this
+        half-duplex link or on the inbound connection of this
+        full-duplex link. If the speed is unknown or there is no fixed
+        maximum (e.g. a compressed link), this value shall be zero."
+    ::= { mediaIndependentEntry 25 }
+
+mediaIndependentOutputSpeed OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Kilobits per Second"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The nominal maximum speed in kilobits per second of this
+        full-duplex link in the direction of the network. If the speed
+        is unknown, the link is half-duplex, or there is no fixed
+        maximum (e.g. a compressed link), this value shall be zero."
+    ::= { mediaIndependentEntry 26 }
+
+mediaIndependentDuplexMode OBJECT-TYPE
+    SYNTAX     INTEGER {
+                    halfduplex(1),
+                    fullduplex(2)
+
+
+
+               }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The current mode of this link.
+
+        Note that if the link has full-duplex capabilities but
+        is operating in half-duplex mode, this value will be
+        halfduplex(1)."
+    ::= { mediaIndependentEntry 27 }
+
+mediaIndependentDuplexChanges OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Events"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times this link has changed from full-duplex
+        mode to half-duplex mode or from half-duplex mode to
+        full-duplex mode."
+    ::= { mediaIndependentEntry 28 }
+
+mediaIndependentDuplexLastChange OBJECT-TYPE
+    SYNTAX     TimeStamp
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The value of sysUpTime at the time the duplex status
+        of this link last changed."
+    ::= { mediaIndependentEntry 29 }
+
+mediaIndependentOwner OBJECT-TYPE
+    SYNTAX     OwnerString
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "The entity that configured this entry and is
+        therefore using the resources assigned to it."
+    ::= { mediaIndependentEntry 30 }
+
+mediaIndependentStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this media independent statistics entry."
+    ::= { mediaIndependentEntry 31 }
+
+
+
+
+-- High Capacity extensions for the etherStatsTable
+
+etherStatsHighCapacityTable  OBJECT-TYPE
+
+    SYNTAX     SEQUENCE OF EtherStatsHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        etherStatsTable."
+    ::= { statistics 7 }
+
+etherStatsHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     EtherStatsHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        etherStatsEntry. These objects will be created by the agent
+        for all etherStatsEntries it deems appropriate."
+    INDEX { etherStatsIndex }
+    ::= { etherStatsHighCapacityTable 1 }
+
+EtherStatsHighCapacityEntry ::= SEQUENCE {
+    etherStatsHighCapacityOverflowPkts                 Counter32,
+    etherStatsHighCapacityPkts                         Counter64,
+    etherStatsHighCapacityOverflowOctets               Counter32,
+    etherStatsHighCapacityOctets                       Counter64,
+    etherStatsHighCapacityOverflowPkts64Octets         Counter32,
+    etherStatsHighCapacityPkts64Octets                 Counter64,
+    etherStatsHighCapacityOverflowPkts65to127Octets    Counter32,
+    etherStatsHighCapacityPkts65to127Octets            Counter64,
+    etherStatsHighCapacityOverflowPkts128to255Octets   Counter32,
+    etherStatsHighCapacityPkts128to255Octets           Counter64,
+    etherStatsHighCapacityOverflowPkts256to511Octets   Counter32,
+    etherStatsHighCapacityPkts256to511Octets           Counter64,
+    etherStatsHighCapacityOverflowPkts512to1023Octets  Counter32,
+    etherStatsHighCapacityPkts512to1023Octets          Counter64,
+    etherStatsHighCapacityOverflowPkts1024to1518Octets Counter32,
+    etherStatsHighCapacityPkts1024to1518Octets         Counter64
+}
+
+etherStatsHighCapacityOverflowPkts OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+
+
+
+        "The number of times the associated etherStatsPkts
+        counter has overflowed."
+    ::= { etherStatsHighCapacityEntry 1 }
+
+etherStatsHighCapacityPkts OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The total number of packets (including bad packets,
+        broadcast packets, and multicast packets) received."
+    ::= { etherStatsHighCapacityEntry 2 }
+
+etherStatsHighCapacityOverflowOctets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated etherStatsOctets
+        counter has overflowed."
+    ::= { etherStatsHighCapacityEntry 3 }
+
+etherStatsHighCapacityOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The total number of octets of data (including
+        those in bad packets) received on the
+        network (excluding framing bits but including
+        FCS octets).
+
+        If the network is half-duplex Fast Ethernet, this
+        object can be used as a reasonable estimate of
+        utilization. If greater precision is desired, the
+        etherStatsHighCapacityPkts and
+        etherStatsHighCapacityOctets objects should be sampled
+        before and after a common interval.  The differences
+        in the sampled values are Pkts and Octets,
+        respectively, and the number of seconds in the
+        interval is Interval.  These values
+        are used to calculate the Utilization as follows:
+
+
+
+
+
+
+                        Pkts * (.96 + .64) + (Octets * .08)
+        Utilization = -------------------------------------
+                                Interval * 10,000
+
+        The result of this equation is the value Utilization
+        which is the percent utilization of the ethernet
+        segment on a scale of 0 to 100 percent.
+
+        This table is not appropriate for monitoring full-duplex
+        ethernets. If the network is a full-duplex ethernet and the
+        mediaIndependentTable is monitoring that network, the
+        utilization can be calculated as follows:
+
+        1) Determine the utilization of the inbound path by using
+           the appropriate equation (for ethernet or fast ethernet)
+           to determine the utilization, substituting
+           mediaIndependentInPkts for etherStatsHighCapacityPkts, and
+           mediaIndependentInOctets for etherStatsHighCapacityOctets.
+           Call the resulting utilization inUtilization.
+
+        2) Determine the utilization of the outbound path by using
+           the same equation to determine the utilization, substituting
+           mediaIndependentOutPkts for etherStatsHighCapacityPkts, and
+           mediaIndependentOutOctets for etherStatsHighCapacityOctets.
+           Call the resulting utilization outUtilization.
+
+        3) The utilization is the maximum of inUtilization and
+           outUtilization. This metric shows the amount of percentage
+           of bandwidth that is left before congestion will be
+           experienced on the link."
+    ::= { etherStatsHighCapacityEntry 4 }
+
+etherStatsHighCapacityOverflowPkts64Octets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated etherStatsPkts64Octets
+        counter has overflowed."
+    ::= { etherStatsHighCapacityEntry 5 }
+
+etherStatsHighCapacityPkts64Octets OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+
+
+
+        "The total number of packets (including bad
+        packets) received that were 64 octets in length
+        (excluding framing bits but including FCS octets)."
+    ::= { etherStatsHighCapacityEntry 6 }
+
+etherStatsHighCapacityOverflowPkts65to127Octets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated etherStatsPkts65to127Octets
+        counter has overflowed."
+    ::= { etherStatsHighCapacityEntry 7 }
+
+etherStatsHighCapacityPkts65to127Octets OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The total number of packets (including bad
+        packets) received that were between
+        65 and 127 octets in length inclusive
+        (excluding framing bits but including FCS octets)."
+    ::= { etherStatsHighCapacityEntry 8 }
+
+etherStatsHighCapacityOverflowPkts128to255Octets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated etherStatsPkts128to255Octets
+        counter has overflowed."
+    ::= { etherStatsHighCapacityEntry 9 }
+
+etherStatsHighCapacityPkts128to255Octets OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The total number of packets (including bad
+        packets) received that were between
+        128 and 255 octets in length inclusive
+        (excluding framing bits but including FCS octets)."
+    ::= { etherStatsHighCapacityEntry 10 }
+
+
+
+etherStatsHighCapacityOverflowPkts256to511Octets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated etherStatsPkts256to511Octets
+        counter has overflowed."
+    ::= { etherStatsHighCapacityEntry 11 }
+
+etherStatsHighCapacityPkts256to511Octets OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The total number of packets (including bad
+        packets) received that were between
+        256 and 511 octets in length inclusive
+        (excluding framing bits but including FCS octets)."
+    ::= { etherStatsHighCapacityEntry 12 }
+
+etherStatsHighCapacityOverflowPkts512to1023Octets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated
+         etherStatsPkts512to1023Octets counter has overflowed."
+    ::= { etherStatsHighCapacityEntry 13 }
+
+etherStatsHighCapacityPkts512to1023Octets OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The total number of packets (including bad
+        packets) received that were between
+        512 and 1023 octets in length inclusive
+        (excluding framing bits but including FCS octets)."
+    ::= { etherStatsHighCapacityEntry 14 }
+
+etherStatsHighCapacityOverflowPkts1024to1518Octets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+
+
+
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated
+        etherStatsPkts1024to1518Octets counter has overflowed."
+    ::= { etherStatsHighCapacityEntry 15 }
+
+etherStatsHighCapacityPkts1024to1518Octets OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The total number of packets (including bad
+        packets) received that were between
+        1024 and 1518 octets in length inclusive
+        (excluding framing bits but including FCS octets)."
+    ::= { etherStatsHighCapacityEntry 16 }
+
+-- High Capacity extensions for the etherHistoryTable
+
+etherHistoryHighCapacityTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF EtherHistoryHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        etherHistoryTable."
+    ::= { history 6 }
+
+etherHistoryHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     EtherHistoryHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        etherHistoryEntry. These objects will be created by the agent
+        for all etherHistoryEntries associated with whichever
+        historyControlEntries it deems appropriate. (i.e., either all
+        etherHistoryHighCapacityEntries associated with a particular
+        historyControlEntry will be created, or none of them will
+        be.)"
+    INDEX { etherHistoryIndex, etherHistorySampleIndex }
+    ::= { etherHistoryHighCapacityTable 1 }
+
+EtherHistoryHighCapacityEntry ::= SEQUENCE {
+    etherHistoryHighCapacityOverflowPkts           Gauge32,
+    etherHistoryHighCapacityPkts                   CounterBasedGauge64,
+    etherHistoryHighCapacityOverflowOctets         Gauge32,
+
+
+
+    etherHistoryHighCapacityOctets                 CounterBasedGauge64
+}
+
+etherHistoryHighCapacityOverflowPkts OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated etherHistoryPkts
+        Gauge overflowed during this sampling interval."
+    ::= { etherHistoryHighCapacityEntry 1 }
+
+etherHistoryHighCapacityPkts OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The total number of packets (including bad packets,
+        broadcast packets, and multicast packets) received during
+        this sampling interval."
+    ::= { etherHistoryHighCapacityEntry 2 }
+
+etherHistoryHighCapacityOverflowOctets OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated etherHistoryOctets
+        counter has overflowed during this sampling interval."
+    ::= { etherHistoryHighCapacityEntry 3 }
+
+etherHistoryHighCapacityOctets OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The total number of octets of data (including
+        those in bad packets) received on the
+        network (excluding framing bits but including
+        FCS octets) during this sampling interval."
+    ::= { etherHistoryHighCapacityEntry 4 }
+
+-- High Capacity Extensions for the hostTable
+
+
+
+
+hostHighCapacityTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF HostHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        hostTable."
+    ::= { hosts 5 }
+
+hostHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     HostHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        hostEntry. These objects will be created by the agent
+        for all hostEntries associated with whichever
+        hostControlEntries it deems appropriate. (i.e., either all
+        hostHighCapacityEntries associated with a particular
+        hostControlEntry will be created, or none of them will
+        be.)"
+    INDEX { hostIndex, hostAddress }
+    ::= { hostHighCapacityTable 1 }
+
+HostHighCapacityEntry ::= SEQUENCE {
+    hostHighCapacityInOverflowPkts    Counter32,
+    hostHighCapacityInPkts            Counter64,
+    hostHighCapacityOutOverflowPkts   Counter32,
+    hostHighCapacityOutPkts           Counter64,
+    hostHighCapacityInOverflowOctets  Counter32,
+    hostHighCapacityInOctets          Counter64,
+    hostHighCapacityOutOverflowOctets Counter32,
+    hostHighCapacityOutOctets         Counter64
+}
+
+hostHighCapacityInOverflowPkts OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated hostInPkts
+        counter has overflowed."
+    ::= { hostHighCapacityEntry 1 }
+
+hostHighCapacityInPkts OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+
+
+
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of good packets transmitted to
+        this address since it was added to the
+        hostHighCapacityTable."
+    ::= { hostHighCapacityEntry 2 }
+
+hostHighCapacityOutOverflowPkts OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated hostOutPkts
+        counter has overflowed."
+    ::= { hostHighCapacityEntry 3 }
+
+hostHighCapacityOutPkts OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets, including bad packets, transmitted
+        by this address since it was added to the
+        hostHighCapacityTable."
+    ::= { hostHighCapacityEntry 4 }
+
+hostHighCapacityInOverflowOctets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated hostInOctets
+        counter has overflowed."
+    ::= { hostHighCapacityEntry 5 }
+
+hostHighCapacityInOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets transmitted to this address
+        since it was added to the hostHighCapacityTable (excluding
+        framing bits but including FCS octets), except for
+
+
+
+        those octets in bad packets."
+    ::= { hostHighCapacityEntry 6 }
+
+hostHighCapacityOutOverflowOctets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated hostOutOctets
+        counter has overflowed."
+    ::= { hostHighCapacityEntry 7 }
+
+hostHighCapacityOutOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets transmitted by this address
+        since it was added to the hostHighCapacityTable (excluding
+        framing bits but including FCS octets), including
+        those octets in bad packets."
+    ::= { hostHighCapacityEntry 8 }
+
+-- High Capacity extensions for the hostTimeTable
+
+hostTimeHighCapacityTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF HostTimeHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        hostTimeTable."
+    ::= { hosts 6 }
+
+hostTimeHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     HostTimeHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        hostTimeEntry. These objects will be created by the agent
+        for all hostTimeEntries associated with whichever
+        hostControlEntries it deems appropriate. (i.e., either all
+        hostTimeHighCapacityEntries associated with a particular
+        hostControlEntry will be created, or none of them will
+        be.)"
+
+
+
+    INDEX { hostTimeIndex, hostTimeCreationOrder }
+    ::= { hostTimeHighCapacityTable 1 }
+
+HostTimeHighCapacityEntry ::= SEQUENCE {
+    hostTimeHighCapacityInOverflowPkts    Counter32,
+    hostTimeHighCapacityInPkts            Counter64,
+    hostTimeHighCapacityOutOverflowPkts   Counter32,
+    hostTimeHighCapacityOutPkts           Counter64,
+    hostTimeHighCapacityInOverflowOctets  Counter32,
+    hostTimeHighCapacityInOctets          Counter64,
+    hostTimeHighCapacityOutOverflowOctets Counter32,
+    hostTimeHighCapacityOutOctets         Counter64
+}
+
+hostTimeHighCapacityInOverflowPkts OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated hostTimeInPkts
+        counter has overflowed."
+    ::= { hostTimeHighCapacityEntry 1 }
+
+hostTimeHighCapacityInPkts OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of good packets transmitted to this address
+        since it was added to the hostTimeHighCapacityTable."
+    ::= { hostTimeHighCapacityEntry 2 }
+
+hostTimeHighCapacityOutOverflowPkts OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated hostTimeOutPkts
+        counter has overflowed."
+    ::= { hostTimeHighCapacityEntry 3 }
+
+hostTimeHighCapacityOutPkts OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+
+
+
+    STATUS     current
+    DESCRIPTION
+        "The number of packets, including bad packets, transmitted
+        by this address since it was added to the
+        hostTimeHighCapacityTable."
+    ::= { hostTimeHighCapacityEntry 4 }
+
+hostTimeHighCapacityInOverflowOctets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated hostTimeInOctets
+        counter has overflowed."
+    ::= { hostTimeHighCapacityEntry 5 }
+
+hostTimeHighCapacityInOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets transmitted to this address
+        since it was added to the hostTimeHighCapacityTable
+        (excluding framing bits but including FCS octets),
+        except for those octets in bad packets."
+    ::= { hostTimeHighCapacityEntry 6 }
+
+hostTimeHighCapacityOutOverflowOctets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated hostTimeOutOctets
+        counter has overflowed."
+    ::= { hostTimeHighCapacityEntry 7 }
+
+hostTimeHighCapacityOutOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets transmitted by this address since
+        it was added to the hostTimeTable (excluding framing
+        bits but including FCS octets), including those
+
+
+
+        octets in bad packets."
+    ::= { hostTimeHighCapacityEntry 8 }
+
+-- High Capacity Extensions for the hostTopNTable
+
+hostTopNHighCapacityTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF HostTopNHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        hostTopNTable when hostTopNRateBase specifies a High Capacity
+        TopN Report."
+    ::= { hostTopN 3 }
+
+hostTopNHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     HostTopNHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        hostTopNEntry when hostTopNRateBase specifies a High Capacity
+        TopN Report. These objects will be created by the agent
+        for all hostTopNEntries associated with whichever
+        hostTopNControlEntries have a hostTopNRateBase that specify
+        a high capacity report."
+    INDEX { hostTopNReport, hostTopNIndex }
+    ::= { hostTopNHighCapacityTable 1 }
+
+HostTopNHighCapacityEntry ::= SEQUENCE {
+     hostTopNHighCapacityAddress        OCTET STRING,
+     hostTopNHighCapacityBaseRate       Gauge32,
+     hostTopNHighCapacityOverflowRate   Gauge32,
+     hostTopNHighCapacityRate           CounterBasedGauge64
+}
+
+hostTopNHighCapacityAddress OBJECT-TYPE
+    SYNTAX     OCTET STRING
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+          "The physical address of this host."
+    ::= { hostTopNHighCapacityEntry 1 }
+
+hostTopNHighCapacityBaseRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+
+
+
+    DESCRIPTION
+          "The amount of change in the selected variable
+          during this sampling interval, modulo 2^32.  The
+          selected variable is this host's instance of the
+          object selected by hostTopNRateBase."
+    ::= { hostTopNHighCapacityEntry 2 }
+
+hostTopNHighCapacityOverflowRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+          "The amount of change in the selected variable
+          during this sampling interval, divided by 2^32, truncating
+          fractions (i.e., X DIV 2^32).  The selected variable is
+          this host's instance of the object selected by
+          hostTopNRateBase."
+    ::= { hostTopNHighCapacityEntry 3 }
+
+hostTopNHighCapacityRate OBJECT-TYPE
+     SYNTAX     CounterBasedGauge64
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+          "The amount of change in the selected variable
+          during this sampling interval.  The selected
+          variable is this host's instance of the object
+          selected by hostTopNRateBase."
+     ::= { hostTopNHighCapacityEntry 4 }
+
+-- High Capacity Extensions for the matrixSDTable
+
+matrixSDHighCapacityTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF MatrixSDHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        matrixSDTable."
+    ::= { matrix 5 }
+
+matrixSDHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     MatrixSDHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        matrixSDEntry. These objects will be created by the agent
+
+
+
+        for all matrixSDEntries associated with whichever
+        matrixControlEntries it deems appropriate. (i.e., either all
+        matrixSDHighCapacityEntries associated with a particular
+        matrixControlEntry will be created, or none of them will
+        be.)"
+    INDEX { matrixSDIndex,
+            matrixSDSourceAddress, matrixSDDestAddress }
+    ::= { matrixSDHighCapacityTable 1 }
+
+MatrixSDHighCapacityEntry ::= SEQUENCE {
+    matrixSDHighCapacityOverflowPkts   Counter32,
+    matrixSDHighCapacityPkts           Counter64,
+    matrixSDHighCapacityOverflowOctets Counter32,
+    matrixSDHighCapacityOctets         Counter64
+}
+
+matrixSDHighCapacityOverflowPkts OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated matrixSDPkts
+        counter has overflowed."
+    ::= { matrixSDHighCapacityEntry 1 }
+
+matrixSDHighCapacityPkts OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets transmitted from the source
+        address to the destination address (this number
+        includes bad packets)."
+    ::= { matrixSDHighCapacityEntry 2 }
+
+matrixSDHighCapacityOverflowOctets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated matrixSDOctets
+        counter has overflowed."
+    ::= { matrixSDHighCapacityEntry 3 }
+
+matrixSDHighCapacityOctets OBJECT-TYPE
+
+
+
+    SYNTAX     Counter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets (excluding framing bits but
+        including FCS octets) contained in all packets
+        transmitted from the source address to the
+        destination address."
+    ::= { matrixSDHighCapacityEntry 4 }
+
+-- High Capacity extensions for the matrixDSTable
+
+matrixDSHighCapacityTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF MatrixDSHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        matrixDSTable."
+    ::= { matrix 6 }
+
+matrixDSHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     MatrixDSHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        matrixDSEntry. These objects will be created by the agent
+        for all matrixDSEntries associated with whichever
+        matrixControlEntries it deems appropriate. (i.e., either all
+        matrixDSHighCapacityEntries associated with a particular
+        matrixControlEntry will be created, or none of them will
+        be.)"
+    INDEX { matrixDSIndex,
+            matrixDSDestAddress, matrixDSSourceAddress }
+    ::= { matrixDSHighCapacityTable 1 }
+
+MatrixDSHighCapacityEntry ::= SEQUENCE {
+    matrixDSHighCapacityOverflowPkts   Counter32,
+    matrixDSHighCapacityPkts           Counter64,
+    matrixDSHighCapacityOverflowOctets Counter32,
+    matrixDSHighCapacityOctets         Counter64
+}
+
+matrixDSHighCapacityOverflowPkts OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Packets"
+
+
+
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated matrixDSPkts
+        counter has overflowed."
+    ::= { matrixDSHighCapacityEntry 1 }
+
+matrixDSHighCapacityPkts OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets transmitted from the source
+        address to the destination address (this number
+        includes bad packets)."
+    ::= { matrixDSHighCapacityEntry 2 }
+
+matrixDSHighCapacityOverflowOctets OBJECT-TYPE
+    SYNTAX     Counter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated matrixDSOctets
+        counter has overflowed."
+    ::= { matrixDSHighCapacityEntry 3 }
+
+matrixDSHighCapacityOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets (excluding framing bits
+        but including FCS octets) contained in all packets
+        transmitted from the source address to the
+        destination address."
+    ::= { matrixDSHighCapacityEntry 4 }
+
+-- High Capacity extensions for the captureBufferTable
+
+captureBufferHighCapacityTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF CaptureBufferHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+
+
+
+        captureBufferTable."
+    ::= { capture 3 }
+
+captureBufferHighCapacityEntry OBJECT-TYPE
+    SYNTAX     CaptureBufferHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-1
+        captureBufferEntry. These objects will be created by the agent
+        for all captureBufferEntries associated with whichever
+        bufferControlEntries it deems appropriate. (i.e., either all
+        captureBufferHighCapacityEntries associated with a particular
+        bufferControlEntry will be created, or none of them will
+        be.)"
+    INDEX { captureBufferControlIndex, captureBufferIndex }
+    ::= { captureBufferHighCapacityTable 1 }
+
+CaptureBufferHighCapacityEntry ::= SEQUENCE {
+    captureBufferPacketHighCapacityTime     Integer32
+}
+
+captureBufferPacketHighCapacityTime  OBJECT-TYPE
+    SYNTAX      Integer32 (0..999999)
+    UNITS       "nanoseconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of nanoseconds that had passed since this capture
+        buffer was first turned on when this packet was captured,
+        modulo 10^6.
+
+        This object is used in conjunction with the
+        captureBufferPacketTime object. This object returns the
+        number of nano-seconds to be added to to number of
+        milli-seconds obtained from the captureBufferPacketTime
+        object, to obtain more accurate inter packet arrival time."
+  ::= { captureBufferHighCapacityEntry 1 }
+
+-- High Capacity extensions for the protocolDistStatsTable
+
+protocolDistStatsHighCapacityTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF ProtocolDistStatsHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        protocolDistStatsTable."
+
+
+
+    ::= { protocolDist 3 }
+
+protocolDistStatsHighCapacityEntry OBJECT-TYPE
+    SYNTAX     ProtocolDistStatsHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        protocolDistStatsTable. These objects will be created by the
+        agent for all protocolDistStatsEntries associated with
+        whichever protocolDistControlEntries it deems appropriate.
+        (i.e., either all protocolDistStatsHighCapacityEntries
+        associated with a particular protocolDistControlEntry will be
+        created, or none of them will be.)"
+    INDEX { protocolDistControlIndex, protocolDirLocalIndex }
+    ::= { protocolDistStatsHighCapacityTable 1 }
+
+ProtocolDistStatsHighCapacityEntry ::= SEQUENCE {
+    protocolDistStatsHighCapacityOverflowPkts   ZeroBasedCounter32,
+    protocolDistStatsHighCapacityPkts           ZeroBasedCounter64,
+    protocolDistStatsHighCapacityOverflowOctets ZeroBasedCounter32,
+    protocolDistStatsHighCapacityOctets         ZeroBasedCounter64
+}
+
+protocolDistStatsHighCapacityOverflowPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated protocolDistStatsPkts
+        counter has overflowed."
+    ::= { protocolDistStatsHighCapacityEntry 1 }
+
+protocolDistStatsHighCapacityPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets without errors received of this
+        protocol type.  Note that this is the number of link-layer
+        packets, so if a single network-layer packet is fragmented
+        into several link-layer frames, this counter is incremented
+        several times."
+    ::= { protocolDistStatsHighCapacityEntry 2 }
+
+protocolDistStatsHighCapacityOverflowOctets OBJECT-TYPE
+
+
+
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated protocolDistStatsOctets
+        counter has overflowed."
+    ::= { protocolDistStatsHighCapacityEntry 3 }
+
+protocolDistStatsHighCapacityOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets in packets received of this protocol
+        type since it was added to the protocolDistStatsTable
+        (excluding framing bits but including FCS octets), except for
+        those octets in packets that contained errors.
+
+        Note this doesn't count just those octets in the particular
+        protocol frames, but includes the entire packet that contained
+        the protocol."
+    ::= { protocolDistStatsHighCapacityEntry 4 }
+
+-- High Capacity extensions for the nlHostTable.
+
+nlHostHighCapacityTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF NlHostHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        nlHostTable."
+    ::= { nlHost 3 }
+
+nlHostHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     NlHostHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        nlHostEntry. These objects will be created by the agent
+        for all nlHostEntries associated with whichever
+        hlHostControlEntries it deems appropriate. (i.e., either all
+        nlHostHighCapacityEntries associated with a particular
+        hlHostControlEntry will be created, or none of them will
+        be.)"
+
+
+
+    INDEX { hlHostControlIndex, nlHostTimeMark,
+            protocolDirLocalIndex, nlHostAddress }
+    ::= { nlHostHighCapacityTable 1 }
+
+NlHostHighCapacityEntry ::= SEQUENCE {
+    nlHostHighCapacityInOverflowPkts    ZeroBasedCounter32,
+    nlHostHighCapacityInPkts            ZeroBasedCounter64,
+    nlHostHighCapacityOutOverflowPkts   ZeroBasedCounter32,
+    nlHostHighCapacityOutPkts           ZeroBasedCounter64,
+    nlHostHighCapacityInOverflowOctets  ZeroBasedCounter32,
+    nlHostHighCapacityInOctets          ZeroBasedCounter64,
+    nlHostHighCapacityOutOverflowOctets ZeroBasedCounter32,
+    nlHostHighCapacityOutOctets         ZeroBasedCounter64
+}
+
+nlHostHighCapacityInOverflowPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated nlHostInPkts
+        counter has overflowed."
+    ::= { nlHostHighCapacityEntry 1 }
+
+nlHostHighCapacityInPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets without errors transmitted to
+        this address since it was added to the nlHostHighCapacityTable.
+        Note that this is the number of link-layer packets, so if a
+        single network-layer packet is fragmented into several
+        link-layer frames, this counter is incremented several times."
+    ::= { nlHostHighCapacityEntry 2 }
+
+nlHostHighCapacityOutOverflowPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated nlHostOutPkts
+        counter has overflowed."
+    ::= { nlHostHighCapacityEntry 3 }
+
+
+
+
+nlHostHighCapacityOutPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets without errors transmitted by
+        this address since it was added to the nlHostHighCapacityTable.
+        Note that this is the number of link-layer packets, so if a
+        single network-layer packet is fragmented into several
+        link-layer frames, this counter is incremented several times."
+    ::= { nlHostHighCapacityEntry 4 }
+
+nlHostHighCapacityInOverflowOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated nlHostInOctets
+        counter has overflowed."
+    ::= { nlHostHighCapacityEntry 5 }
+
+nlHostHighCapacityInOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets transmitted to this address
+        since it was added to the nlHostHighCapacityTable
+        (excluding framing bits but including FCS octets),
+        excluding those octets in packets that contained
+        errors.
+
+        Note this doesn't count just those octets in the
+        particular protocol frames, but includes the entire
+        packet that contained the protocol."
+    ::= { nlHostHighCapacityEntry 6 }
+
+nlHostHighCapacityOutOverflowOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated nlHostOutOctets
+        counter has overflowed."
+
+
+
+    ::= { nlHostHighCapacityEntry 7 }
+
+nlHostHighCapacityOutOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets transmitted by this address
+        since it was added to the nlHostHighCapacityTable
+        (excluding framing bits but including FCS octets),
+        excluding those octets in packets that contained
+        errors.
+
+        Note this doesn't count just those octets in the
+        particular protocol frames, but includes the entire
+        packet that contained the protocol."
+    ::= { nlHostHighCapacityEntry 8 }
+
+-- High Capacity extensions for the nlMatrixTable
+
+nlMatrixSDHighCapacityTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF NlMatrixSDHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        nlMatrixTable."
+    ::= { nlMatrix 6 }
+
+nlMatrixSDHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     NlMatrixSDHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        nlMatrixEntry. These objects will be created by the agent
+        for all nlMatrixSDEntries associated with whichever
+        hlMatrixControlEntries it deems appropriate. (i.e., either all
+        nlMatrixSDHighCapacityEntries associated with a particular
+        hlMatrixControlEntry will be created, or none of them will
+        be.)"
+    INDEX { hlMatrixControlIndex, nlMatrixSDTimeMark,
+            protocolDirLocalIndex,
+            nlMatrixSDSourceAddress, nlMatrixSDDestAddress }
+    ::= { nlMatrixSDHighCapacityTable 1 }
+
+NlMatrixSDHighCapacityEntry ::= SEQUENCE {
+
+
+
+    nlMatrixSDHighCapacityOverflowPkts   ZeroBasedCounter32,
+    nlMatrixSDHighCapacityPkts           ZeroBasedCounter64,
+    nlMatrixSDHighCapacityOverflowOctets ZeroBasedCounter32,
+    nlMatrixSDHighCapacityOctets         ZeroBasedCounter64
+}
+
+nlMatrixSDHighCapacityOverflowPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated nlMatrixSDPkts
+        counter has overflowed."
+    ::= { nlMatrixSDHighCapacityEntry 1 }
+
+nlMatrixSDHighCapacityPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets without errors transmitted from the
+        source address to the destination address since this entry was
+        added to the nlMatrixSDHighCapacityTable.  Note that this is
+        the number of link-layer packets, so if a single network-layer
+        packet is fragmented into several link-layer frames, this
+        counter is incremented several times."
+    ::= { nlMatrixSDHighCapacityEntry 2 }
+
+nlMatrixSDHighCapacityOverflowOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated nlMatrixSDOctets
+        counter has overflowed."
+    ::= { nlMatrixSDHighCapacityEntry 3 }
+
+nlMatrixSDHighCapacityOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets transmitted from the source address to
+        the destination address since this entry was added to the
+
+
+
+        nlMatrixSDHighCapacityTable (excluding framing bits but
+        including FCS octets), excluding those octets in packets that
+        contained errors.
+
+        Note this doesn't count just those octets in the particular
+        protocol frames, but includes the entire packet that contained
+        the protocol."
+    ::= { nlMatrixSDHighCapacityEntry 4 }
+
+-- High Capacity extensions for the nlMatrixDSTable
+
+nlMatrixDSHighCapacityTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF NlMatrixDSHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        nlMatrixDSTable."
+    ::= { nlMatrix 7 }
+
+nlMatrixDSHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     NlMatrixDSHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        nlMatrixDSEntry. These objects will be created by the agent
+        for all nlMatrixDSEntries associated with whichever
+        hlmatrixControlEntries it deems appropriate. (i.e., either all
+        nlMatrixDSHighCapacityEntries associated with a particular
+        hlMatrixControlEntry will be created, or none of them will
+        be.)"
+    INDEX { hlMatrixControlIndex, nlMatrixDSTimeMark,
+            protocolDirLocalIndex,
+            nlMatrixDSDestAddress, nlMatrixDSSourceAddress }
+    ::= { nlMatrixDSHighCapacityTable 1 }
+
+NlMatrixDSHighCapacityEntry ::= SEQUENCE {
+    nlMatrixDSHighCapacityOverflowPkts   ZeroBasedCounter32,
+    nlMatrixDSHighCapacityPkts           ZeroBasedCounter64,
+    nlMatrixDSHighCapacityOverflowOctets ZeroBasedCounter32,
+    nlMatrixDSHighCapacityOctets         ZeroBasedCounter64
+}
+
+nlMatrixDSHighCapacityOverflowPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+
+
+
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated nlMatrixDSPkts
+        counter has overflowed."
+    ::= { nlMatrixDSHighCapacityEntry 1 }
+
+nlMatrixDSHighCapacityPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets without errors transmitted from the
+        source address to the destination address since this entry was
+        added to the nlMatrixDSHighCapacityTable.  Note that this is
+        the number of link-layer packets, so if a single network-layer
+        packet is fragmented into several link-layer frames, this
+        counter is incremented several times."
+    ::= { nlMatrixDSHighCapacityEntry 2 }
+
+nlMatrixDSHighCapacityOverflowOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated nlMatrixDSOctets
+        counter has overflowed."
+    ::= { nlMatrixDSHighCapacityEntry 3 }
+
+nlMatrixDSHighCapacityOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets transmitted from the source address
+        to the destination address since this entry was added to the
+        nlMatrixDSHighCapacityTable (excluding framing bits but
+        including FCS octets), excluding those octets in packets that
+        contained errors.
+
+        Note this doesn't count just those octets in the particular
+        protocol frames, but includes the entire packet that contained
+        the protocol."
+    ::= { nlMatrixDSHighCapacityEntry 4 }
+
+-- High Capacity extensions for the nlMatrixTopNTable
+
+
+
+nlMatrixTopNHighCapacityTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF NlMatrixTopNHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        nlMatrixTopNTable when nlMatrixTopNControlRateBase specifies
+        a High Capacity TopN Report."
+    ::= { nlMatrix 8 }
+
+nlMatrixTopNHighCapacityEntry OBJECT-TYPE
+    SYNTAX     NlMatrixTopNHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        nlMatrixTopNEntry when nlMatrixTopNControlRateBase specifies
+        a High Capacity TopN Report. These objects will be created by
+        the agent for all nlMatrixTopNEntries associated with whichever
+        nlMatrixTopNControlEntries have a nlMatrixTopNControlRateBase
+        that specify a high capacity report."
+    INDEX { nlMatrixTopNControlIndex, nlMatrixTopNIndex }
+    ::= { nlMatrixTopNHighCapacityTable 1 }
+
+NlMatrixTopNHighCapacityEntry ::= SEQUENCE {
+  nlMatrixTopNHighCapacityProtocolDirLocalIndex    Integer32,
+  nlMatrixTopNHighCapacitySourceAddress            OCTET STRING,
+  nlMatrixTopNHighCapacityDestAddress              OCTET STRING,
+  nlMatrixTopNHighCapacityBasePktRate              Gauge32,
+  nlMatrixTopNHighCapacityOverflowPktRate          Gauge32,
+  nlMatrixTopNHighCapacityPktRate                  CounterBasedGauge64,
+  nlMatrixTopNHighCapacityReverseBasePktRate       Gauge32,
+  nlMatrixTopNHighCapacityReverseOverflowPktRate   Gauge32,
+  nlMatrixTopNHighCapacityReversePktRate           CounterBasedGauge64,
+  nlMatrixTopNHighCapacityBaseOctetRate            Gauge32,
+  nlMatrixTopNHighCapacityOverflowOctetRate        Gauge32,
+  nlMatrixTopNHighCapacityOctetRate                CounterBasedGauge64,
+  nlMatrixTopNHighCapacityReverseBaseOctetRate     Gauge32,
+  nlMatrixTopNHighCapacityReverseOverflowOctetRate Gauge32,
+  nlMatrixTopNHighCapacityReverseOctetRate         CounterBasedGauge64
+}
+
+nlMatrixTopNHighCapacityProtocolDirLocalIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..2147483647)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The protocolDirLocalIndex of the network layer protocol of
+
+
+
+        this entry's network address."
+    ::= { nlMatrixTopNHighCapacityEntry 1 }
+
+nlMatrixTopNHighCapacitySourceAddress OBJECT-TYPE
+    SYNTAX     OCTET STRING
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The network layer address of the source host in this
+        conversation.
+
+        This is represented as an octet string with
+        specific semantics and length as identified
+        by the associated nlMatrixTopNProtocolDirLocalIndex.
+
+        For example, if the protocolDirLocalIndex indicates an
+        encapsulation of ip, this object is encoded as a length
+        octet of 4, followed by the 4 octets of the ip address,
+        in network byte order."
+    ::= { nlMatrixTopNHighCapacityEntry 2 }
+
+nlMatrixTopNHighCapacityDestAddress OBJECT-TYPE
+    SYNTAX     OCTET STRING
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The network layer address of the destination host in this
+        conversation.
+
+        This is represented as an octet string with
+        specific semantics and length as identified
+        by the associated nlMatrixTopNProtocolDirLocalIndex.
+
+        For example, if the nlMatrixTopNProtocolDirLocalIndex
+        indicates an encapsulation of ip, this object is encoded as a
+        length octet of 4, followed by the 4 octets of the ip address,
+        in network byte order."
+    ::= { nlMatrixTopNHighCapacityEntry 3 }
+
+nlMatrixTopNHighCapacityBasePktRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets seen from the source host
+        to the destination host during this sampling interval,
+        modulo 2^32, counted using the rules for counting the
+
+
+
+        nlMatrixSDPkts object."
+    ::= { nlMatrixTopNHighCapacityEntry 4 }
+
+nlMatrixTopNHighCapacityOverflowPktRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets seen from the source host
+        to the destination host during this sampling interval,
+        divided by 2^32, truncating fractions (i.e., X DIV 2^32),
+        and counted using the rules for counting the
+        nlMatrixSDPkts object."
+    ::= { nlMatrixTopNHighCapacityEntry 5 }
+
+nlMatrixTopNHighCapacityPktRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets seen from the source host to the
+        destination host during this sampling interval, counted
+        using the rules for counting the nlMatrixSDPkts object.
+        If the value of nlMatrixTopNControlRateBase is
+        nlMatrixTopNHighCapacityPkts, this variable will be
+        used to sort this report."
+    ::= { nlMatrixTopNHighCapacityEntry 6 }
+
+nlMatrixTopNHighCapacityReverseBasePktRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets seen from the destination host to the
+        source host during this sampling interval, modulo 2^32, counted
+        using the rules for counting the nlMatrixSDPkts object (note
+        that the corresponding nlMatrixSDPkts object selected is the
+        one whose source address is equal to nlMatrixTopNDestAddress
+        and whose destination address is equal to
+        nlMatrixTopNSourceAddress.)
+
+        Note that if the value of nlMatrixTopNControlRateBase is equal
+        to nlMatrixTopNHighCapacityPkts, the sort of topN entries is
+        based entirely on nlMatrixTopNHighCapacityPktRate, and not on
+        the value of this object."
+
+
+
+    ::= { nlMatrixTopNHighCapacityEntry 7 }
+
+nlMatrixTopNHighCapacityReverseOverflowPktRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets seen from the destination host to the
+        source host during this sampling interval, divided by 2^32,
+        truncating fractions (i.e., X DIV 2^32), and counted
+        using the rules for counting the nlMatrixSDPkts object (note
+        that the corresponding nlMatrixSDPkts object selected is the
+        one whose source address is equal to nlMatrixTopNDestAddress
+        and whose destination address is equal to
+        nlMatrixTopNSourceAddress.)
+
+        Note that if the value of nlMatrixTopNControlRateBase is equal
+        to nlMatrixTopNHighCapacityPkts, the sort of topN entries is
+        based entirely on nlMatrixTopNHighCapacityPktRate, and not on
+        the value of this object."
+    ::= { nlMatrixTopNHighCapacityEntry 8 }
+
+nlMatrixTopNHighCapacityReversePktRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets seen from the destination host to the
+        source host during this sampling interval, counted
+        using the rules for counting the nlMatrixSDPkts object (note
+        that the corresponding nlMatrixSDPkts object selected is the
+        one whose source address is equal to nlMatrixTopNDestAddress
+        and whose destination address is equal to
+        nlMatrixTopNSourceAddress.)
+
+        Note that if the value of nlMatrixTopNControlRateBase is equal
+        to nlMatrixTopNHighCapacityPkts, the sort of topN entries is
+        based entirely on nlMatrixTopNHighCapacityPktRate, and not on
+        the value of this object."
+    ::= { nlMatrixTopNHighCapacityEntry 9 }
+
+nlMatrixTopNHighCapacityBaseOctetRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+
+
+
+    DESCRIPTION
+        "The number of octets seen from the source host to the
+        destination host during this sampling interval, modulo 2^32,
+        counted using the rules for counting the nlMatrixSDOctets
+        object."
+    ::= { nlMatrixTopNHighCapacityEntry 10 }
+
+nlMatrixTopNHighCapacityOverflowOctetRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets seen from the source host
+        to the destination host during this sampling interval,
+        divided by 2^32, truncating fractions (i.e., X DIV 2^32),
+        and counted using the rules for counting the
+        nlMatrixSDOctets object."
+    ::= { nlMatrixTopNHighCapacityEntry 11 }
+
+nlMatrixTopNHighCapacityOctetRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets seen from the source host
+        to the destination host during this sampling interval,
+        counted using the rules for counting the
+        nlMatrixSDOctets object.
+        If the value of nlMatrixTopNControlRateBase is
+        nlMatrixTopNHighCapacityOctets, this variable will be used
+        to sort this report."
+    ::= { nlMatrixTopNHighCapacityEntry 12 }
+
+nlMatrixTopNHighCapacityReverseBaseOctetRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets seen from the destination host to the
+        source host during this sampling interval, modulo 2^32, counted
+        using the rules for counting the nlMatrixSDOctets object (note
+        that the corresponding nlMatrixSDOctets object selected is the
+        one whose source address is equal to nlMatrixTopNDestAddress
+        and whose destination address is equal to
+        nlMatrixTopNSourceAddress.)
+
+
+
+        Note that if the value of nlMatrixTopNControlRateBase is equal
+        to nlMatrixTopNHighCapacityOctets, the sort of topN entries is
+        based entirely on nlMatrixTopNHighCapacityOctetRate, and not on
+        the value of this object."
+    ::= { nlMatrixTopNHighCapacityEntry 13 }
+
+nlMatrixTopNHighCapacityReverseOverflowOctetRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets seen from the destination host to the
+        source host during this sampling interval, divided by 2^32,
+        truncating fractions (i.e., X DIV 2^32), and counted
+        using the rules for counting the nlMatrixSDOctets object (note
+        that the corresponding nlMatrixSDOctets object selected is the
+        one whose source address is equal to nlMatrixTopNDestAddress
+        and whose destination address is equal to
+        nlMatrixTopNSourceAddress.)
+
+        Note that if the value of nlMatrixTopNControlRateBase is equal
+        to nlMatrixTopNHighCapacityOctets, the sort of topN entries is
+        based entirely on nlMatrixTopNHighCapacityOctetRate, and not on
+        the value of this object."
+    ::= { nlMatrixTopNHighCapacityEntry 14 }
+
+nlMatrixTopNHighCapacityReverseOctetRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets seen from the destination host to the
+        source host during this sampling interval, counted
+        using the rules for counting the nlMatrixSDOctets object (note
+        that the corresponding nlMatrixSDOctets object selected is the
+        one whose source address is equal to nlMatrixTopNDestAddress
+        and whose destination address is equal to
+        nlMatrixTopNSourceAddress.)
+
+        Note that if the value of nlMatrixTopNControlRateBase is equal
+        to nlMatrixTopNHighCapacityOctets, the sort of topN entries is
+        based entirely on nlMatrixTopNHighCapacityOctetRate, and not on
+        the value of this object."
+    ::= { nlMatrixTopNHighCapacityEntry 15 }
+
+-- High Capacity extensions for the alHostTable
+
+
+
+alHostHighCapacityTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AlHostHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        alHostTable."
+    ::= { alHost 2 }
+
+alHostHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     AlHostHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        alHostEntry. These objects will be created by the agent
+        for all alHostEntries associated with whichever
+        hlHostControlEntries it deems appropriate. (i.e., either all
+        alHostHighCapacityEntries associated with a particular
+        hlHostControlEntry will be created, or none of them will
+        be.)"
+    INDEX { hlHostControlIndex, alHostTimeMark,
+            protocolDirLocalIndex, nlHostAddress,
+            protocolDirLocalIndex }
+    ::= { alHostHighCapacityTable 1 }
+
+AlHostHighCapacityEntry ::= SEQUENCE {
+    alHostHighCapacityInOverflowPkts    ZeroBasedCounter32,
+    alHostHighCapacityInPkts            ZeroBasedCounter64,
+    alHostHighCapacityOutOverflowPkts   ZeroBasedCounter32,
+    alHostHighCapacityOutPkts           ZeroBasedCounter64,
+    alHostHighCapacityInOverflowOctets  ZeroBasedCounter32,
+    alHostHighCapacityInOctets          ZeroBasedCounter64,
+    alHostHighCapacityOutOverflowOctets ZeroBasedCounter32,
+    alHostHighCapacityOutOctets         ZeroBasedCounter64
+}
+
+alHostHighCapacityInOverflowPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated alHostInPkts
+        counter has overflowed."
+
+    ::= { alHostHighCapacityEntry 1 }
+
+
+
+
+alHostHighCapacityInPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets of this protocol type without errors
+        transmitted to this address since it was added to the
+        alHostHighCapacityTable.  Note that this is the number of
+        link-layer packets, so if a single network-layer packet
+        is fragmented into several link-layer frames, this counter
+        is incremented several times."
+    ::= { alHostHighCapacityEntry 2 }
+
+alHostHighCapacityOutOverflowPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated alHostOutPkts
+        counter has overflowed."
+    ::= { alHostHighCapacityEntry 3 }
+
+alHostHighCapacityOutPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets of this protocol type without errors
+        transmitted by this address since it was added to the
+        alHostHighCapacityTable.  Note that this is the number of
+        link-layer packets, so if a single network-layer packet
+        is fragmented into several link-layer frames, this counter
+        is incremented several times."
+    ::= { alHostHighCapacityEntry 4 }
+
+alHostHighCapacityInOverflowOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated alHostInOctets
+        counter has overflowed."
+    ::= { alHostHighCapacityEntry 5 }
+
+
+
+
+alHostHighCapacityInOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets transmitted to this address
+        of this protocol type since it was added to the
+        alHostHighCapacityTable (excluding framing bits but
+        including FCS octets), excluding those octets in
+        packets that contained errors.
+
+        Note this doesn't count just those octets in the particular
+        protocol frames, but includes the entire packet that contained
+        the protocol."
+    ::= { alHostHighCapacityEntry 6 }
+
+alHostHighCapacityOutOverflowOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated alHostOutOctets
+        counter has overflowed."
+    ::= { alHostHighCapacityEntry 7 }
+
+alHostHighCapacityOutOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets transmitted by this address
+        of this protocol type since it was added to the
+        alHostHighCapacityTable (excluding framing bits but
+        including FCS octets), excluding those octets in
+        packets that contained errors.
+
+        Note this doesn't count just those octets in the particular
+        protocol frames, but includes the entire packet that contained
+        the protocol."
+    ::= { alHostHighCapacityEntry 8 }
+
+-- High Capacity extensions for the alMatrixSDTable
+
+alMatrixSDHighCapacityTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AlMatrixSDHighCapacityEntry
+
+
+
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        alMatrixSDTable."
+    ::= { alMatrix 5 }
+
+alMatrixSDHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     AlMatrixSDHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        alMatrixSDEntry. These objects will be created by the agent
+        for all alMatrixSDEntries associated with whichever
+        hlMatrixControlEntries it deems appropriate. (i.e., either all
+        alMatrixSDHighCapacityEntries associated with a particular
+        hlMatrixControlEntry will be created, or none of them will
+        be.)"
+    INDEX { hlMatrixControlIndex, alMatrixSDTimeMark,
+            protocolDirLocalIndex,
+            nlMatrixSDSourceAddress, nlMatrixSDDestAddress,
+            protocolDirLocalIndex }
+    ::= { alMatrixSDHighCapacityTable 1 }
+
+AlMatrixSDHighCapacityEntry ::= SEQUENCE {
+    alMatrixSDHighCapacityOverflowPkts   ZeroBasedCounter32,
+    alMatrixSDHighCapacityPkts           ZeroBasedCounter64,
+    alMatrixSDHighCapacityOverflowOctets ZeroBasedCounter32,
+    alMatrixSDHighCapacityOctets         ZeroBasedCounter64
+}
+
+alMatrixSDHighCapacityOverflowPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated alMatrixSDPkts
+        counter has overflowed."
+    ::= { alMatrixSDHighCapacityEntry 1 }
+
+alMatrixSDHighCapacityPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+
+
+
+        "The number of good packets of this protocol type
+        transmitted from the source address to the destination address
+        since this entry was added to the alMatrixSDHighCapacityTable.
+        Note that this is the number of link-layer packets, so if a
+        single network-layer packet is fragmented into several
+        link-layer frames, this counter is incremented several times."
+    ::= { alMatrixSDHighCapacityEntry 2 }
+
+alMatrixSDHighCapacityOverflowOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated alMatrixSDOctets
+        counter has overflowed."
+    ::= { alMatrixSDHighCapacityEntry 3 }
+
+alMatrixSDHighCapacityOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets in good packets of this protocol type
+        transmitted from the source address to the destination address
+        since this entry was added to the alMatrixSDHighCapacityTable
+        (excluding framing bits but including FCS octets).
+
+        Note this doesn't count just those octets in the particular
+        protocol frames, but includes the entire packet that contained
+        the protocol."
+    ::= { alMatrixSDHighCapacityEntry 4 }
+
+-- High Capacity extensions for the alMatrixDSTable
+
+alMatrixDSHighCapacityTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AlMatrixDSHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        alMatrixDSTable."
+    ::= { alMatrix 6 }
+
+alMatrixDSHighCapacityEntry  OBJECT-TYPE
+    SYNTAX     AlMatrixDSHighCapacityEntry
+    MAX-ACCESS not-accessible
+
+
+
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        alMatrixSDTable. These objects will be created by the agent
+        for all alMatrixDSEntries associated with whichever
+        hlMatrixControlEntries it deems appropriate. (i.e., either all
+        alMatrixDSHighCapacityEntries associated with a particular
+        hlMatrixControlEntry will be created, or none of them will
+        be.)"
+    INDEX { hlMatrixControlIndex, alMatrixDSTimeMark,
+            protocolDirLocalIndex,
+            nlMatrixDSDestAddress, nlMatrixDSSourceAddress,
+            protocolDirLocalIndex }
+    ::= { alMatrixDSHighCapacityTable 1 }
+
+AlMatrixDSHighCapacityEntry ::= SEQUENCE {
+    alMatrixDSHighCapacityOverflowPkts   ZeroBasedCounter32,
+    alMatrixDSHighCapacityPkts           ZeroBasedCounter64,
+    alMatrixDSHighCapacityOverflowOctets ZeroBasedCounter32,
+    alMatrixDSHighCapacityOctets         ZeroBasedCounter64
+}
+
+alMatrixDSHighCapacityOverflowPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated alMatrixDSPkts
+        counter has overflowed."
+    ::= { alMatrixDSHighCapacityEntry 1 }
+
+alMatrixDSHighCapacityPkts OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of good packets of this protocol type
+        transmitted from the source address to the destination address
+        since this entry was added to the alMatrixDSHighCapacityTable.
+        Note that this is the number of link-layer packets, so if a
+        single network-layer packet is fragmented into several
+        link-layer frames, this counter is incremented several times."
+    ::= { alMatrixDSHighCapacityEntry 2 }
+
+alMatrixDSHighCapacityOverflowOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter32
+
+
+
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times the associated alMatrixDSOctets
+        counter has overflowed."
+    ::= { alMatrixDSHighCapacityEntry 3 }
+
+alMatrixDSHighCapacityOctets OBJECT-TYPE
+    SYNTAX     ZeroBasedCounter64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets in good packets of this protocol type
+        transmitted from the source address to the destination address
+        since this entry was added to the alMatrixDSHighCapacityTable
+        (excluding framing bits but including FCS octets).
+
+        Note this doesn't count just those octets in the particular
+        protocol frames, but includes the entire packet that contained
+        the protocol."
+    ::= { alMatrixDSHighCapacityEntry 4 }
+
+alMatrixTopNHighCapacityTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AlMatrixTopNHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        alMatrixTopNTable when alMatrixTopNControlRateBase specifies
+        a High Capacity TopN Report."
+    ::= { alMatrix 7 }
+
+alMatrixTopNHighCapacityEntry OBJECT-TYPE
+    SYNTAX     AlMatrixTopNHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        alMatrixTopNEntry when alMatrixTopNControlRateBase specifies
+        a High Capacity TopN Report. These objects will be created by
+        the agent for all alMatrixTopNEntries associated with whichever
+        alMatrixTopNControlEntries have a alMatrixTopNControlRateBase
+        that specify a high capacity report."
+     INDEX { alMatrixTopNControlIndex, alMatrixTopNIndex }
+    ::= { alMatrixTopNHighCapacityTable 1 }
+
+
+
+
+AlMatrixTopNHighCapacityEntry ::= SEQUENCE {
+  alMatrixTopNHighCapacityProtocolDirLocalIndex    Integer32,
+  alMatrixTopNHighCapacitySourceAddress            OCTET STRING,
+  alMatrixTopNHighCapacityDestAddress              OCTET STRING,
+  alMatrixTopNHighCapacityAppProtocolDirLocalIndex Integer32,
+  alMatrixTopNHighCapacityBasePktRate              Gauge32,
+  alMatrixTopNHighCapacityOverflowPktRate          Gauge32,
+  alMatrixTopNHighCapacityPktRate                  CounterBasedGauge64,
+  alMatrixTopNHighCapacityReverseBasePktRate       Gauge32,
+  alMatrixTopNHighCapacityReverseOverflowPktRate   Gauge32,
+  alMatrixTopNHighCapacityReversePktRate           CounterBasedGauge64,
+  alMatrixTopNHighCapacityBaseOctetRate            Gauge32,
+  alMatrixTopNHighCapacityOverflowOctetRate        Gauge32,
+  alMatrixTopNHighCapacityOctetRate                CounterBasedGauge64,
+  alMatrixTopNHighCapacityReverseBaseOctetRate     Gauge32,
+  alMatrixTopNHighCapacityReverseOverflowOctetRate Gauge32,
+  alMatrixTopNHighCapacityReverseOctetRate         CounterBasedGauge64
+}
+
+alMatrixTopNHighCapacityProtocolDirLocalIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..2147483647)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The protocolDirLocalIndex of the network layer protocol of
+        this entry's network address."
+    ::= { alMatrixTopNHighCapacityEntry 1 }
+
+alMatrixTopNHighCapacitySourceAddress OBJECT-TYPE
+    SYNTAX     OCTET STRING
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The network layer address of the source host in this
+        conversation.
+
+        This is represented as an octet string with
+        specific semantics and length as identified
+        by the associated alMatrixTopNProtocolDirLocalIndex.
+
+        For example, if the alMatrixTopNProtocolDirLocalIndex
+        indicates an encapsulation of ip, this object is encoded as a
+        length octet of 4, followed by the 4 octets of the ip address,
+        in network byte order."
+    ::= { alMatrixTopNHighCapacityEntry 2 }
+
+alMatrixTopNHighCapacityDestAddress OBJECT-TYPE
+    SYNTAX     OCTET STRING
+
+
+
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The network layer address of the destination host in this
+        conversation.
+
+        This is represented as an octet string with
+        specific semantics and length as identified
+        by the associated alMatrixTopNProtocolDirLocalIndex.
+
+        For example, if the alMatrixTopNProtocolDirLocalIndex
+        indicates an encapsulation of ip, this object is encoded as a
+        length octet of 4, followed by the 4 octets of the ip address,
+        in network byte order."
+    ::= { alMatrixTopNHighCapacityEntry 3 }
+
+alMatrixTopNHighCapacityAppProtocolDirLocalIndex OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The type of the protocol counted by this entry."
+    ::= { alMatrixTopNHighCapacityEntry 4 }
+
+alMatrixTopNHighCapacityBasePktRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets seen of this protocol from the
+        source host to the destination host during this sampling
+        interval, modulo 2^32, counted using the rules for counting
+        the alMatrixSDPkts object."
+    ::= { alMatrixTopNHighCapacityEntry 5 }
+
+alMatrixTopNHighCapacityOverflowPktRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets seen of this protocol from the source
+        host to the destination host during this sampling interval,
+        divided by 2^32, truncating fractions (i.e., X DIV 2^32),
+        and counted using the rules for counting the
+        alMatrixSDPkts object."
+    ::= { alMatrixTopNHighCapacityEntry 6 }
+
+
+
+alMatrixTopNHighCapacityPktRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets seen of this protocol from the source
+        host to the destination host during this sampling interval,
+        counted using the rules for counting the
+        alMatrixSDPkts object.
+        If the value of alMatrixTopNControlRateBase is
+        alMatrixTopNTerminalsPkts, alMatrixTopNAllPkts,
+        alMatrixTopNTerminalsHighCapacityPkts, or
+        alMatrixTopNAllHighCapacityPkts, this variable will be used
+        to sort this report."
+    ::= { alMatrixTopNHighCapacityEntry 7 }
+
+alMatrixTopNHighCapacityReverseBasePktRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets seen of this protocol from the
+        destination host to the source host during this sampling
+        interval, modulo 2^32, counted using the rules for counting
+        the alMatrixSDPkts object (note that the corresponding
+        alMatrixSDPkts object selected is the one whose source address
+        is equal to alMatrixTopNDestAddress and whose destination
+        address is equal to alMatrixTopNSourceAddress.)"
+    ::= { alMatrixTopNHighCapacityEntry 8 }
+
+alMatrixTopNHighCapacityReverseOverflowPktRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets seen of this protocol from the
+        destination host to the source host during this sampling
+        interval, divided by 2^32, truncating fractions
+        (i.e., X DIV 2^32), and counted using the rules for
+        counting the alMatrixSDPkts object (note that the
+        corresponding alMatrixSDPkts object selected is the
+        one whose source address is equal to alMatrixTopNDestAddress
+        and whose destination address is equal to
+        alMatrixTopNSourceAddress.)"
+    ::= { alMatrixTopNHighCapacityEntry 9 }
+
+
+
+alMatrixTopNHighCapacityReversePktRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    UNITS      "Packets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of packets seen of this protocol from the
+        destination host to the source host during this sampling
+        interval, counted using the rules for counting the
+        alMatrixSDPkts object (note that the corresponding
+        alMatrixSDPkts object selected is the one whose source address
+        is equal to alMatrixTopNDestAddress and whose destination
+        address is equal to alMatrixTopNSourceAddress.)"
+    ::= { alMatrixTopNHighCapacityEntry 10 }
+
+alMatrixTopNHighCapacityBaseOctetRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets seen of this protocol from the source host
+        to the destination host during this sampling interval,
+        modulo 2^32, counted using the rules for counting the
+        alMatrixSDOctets object."
+    ::= { alMatrixTopNHighCapacityEntry 11 }
+
+alMatrixTopNHighCapacityOverflowOctetRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets seen of this protocol from the source host
+        to the destination host during this sampling interval,
+        divided by 2^32, truncating fractions (i.e., X DIV 2^32),
+        and counted using the rules for counting the
+        alMatrixSDOctets object."
+    ::= { alMatrixTopNHighCapacityEntry 12 }
+
+alMatrixTopNHighCapacityOctetRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets seen of this protocol from the source host
+        to the destination host during this sampling interval,
+
+
+
+        counted using the rules for counting the
+        alMatrixSDOctets object.
+        If the value of alMatrixTopNControlRateBase is
+        alMatrixTopNTerminalsOctets, alMatrixTopNAllOctets,
+        alMatrixTopNTerminalsHighCapacityOctets, or
+        alMatrixTopNAllHighCapacityOctets, this variable will be used
+        to sort this report."
+    ::= { alMatrixTopNHighCapacityEntry 13 }
+
+alMatrixTopNHighCapacityReverseBaseOctetRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets seen of this protocol from the
+        destination host to the source host during this sampling
+        interval, modulo 2^32, counted using the rules for counting
+        the alMatrixSDOctets object (note that the corresponding
+        alMatrixSDOctets object selected is the one whose source
+        address is equal to alMatrixTopNDestAddress and whose
+        destination address is equal to alMatrixTopNSourceAddress.)"
+    ::= { alMatrixTopNHighCapacityEntry 14 }
+
+alMatrixTopNHighCapacityReverseOverflowOctetRate OBJECT-TYPE
+    SYNTAX     Gauge32
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets seen of this protocol from the
+        destination host to the source host during this sampling
+        interval, divided by 2^32, truncating fractions (i.e., X DIV
+        2^32), and counted using the rules for counting the
+        alMatrixSDOctets object (note that the corresponding
+        alMatrixSDOctets object selected is the one whose source
+        address is equal to alMatrixTopNDestAddress and whose
+        destination address is equal to alMatrixTopNSourceAddress.)"
+    ::= { alMatrixTopNHighCapacityEntry 15 }
+
+alMatrixTopNHighCapacityReverseOctetRate OBJECT-TYPE
+    SYNTAX     CounterBasedGauge64
+    UNITS      "Octets"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets seen of this protocol from the
+        destination host to the source host during this sampling
+
+
+
+        interval, counted using the rules for counting the
+        alMatrixSDOctets object (note that the corresponding
+        alMatrixSDOctets object selected is the one whose source
+        address is equal to alMatrixTopNDestAddress and whose
+        destination address is equal to alMatrixTopNSourceAddress.)"
+    ::= { alMatrixTopNHighCapacityEntry 16 }
+
+usrHistoryHighCapacityTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF UsrHistoryHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        usrHistoryTable."
+        ::= { usrHistory 4 }
+
+usrHistoryHighCapacityEntry OBJECT-TYPE
+    SYNTAX UsrHistoryHighCapacityEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Contains the High Capacity RMON extensions to the RMON-2
+        usrHistoryEntry. These objects will be created by the agent
+        for all usrHistoryEntries associated with whichever
+        usrHistoryControlEntries it deems appropriate. (i.e., either all
+        usrHistoryHighCapacityEntries associated with a particular
+        usrHistoryControlEntry will be created, or none of them will
+        be.)"
+    INDEX { usrHistoryControlIndex, usrHistorySampleIndex,
+            usrHistoryObjectIndex }
+    ::= { usrHistoryHighCapacityTable 1 }
+
+UsrHistoryHighCapacityEntry ::= SEQUENCE {
+    usrHistoryHighCapacityOverflowAbsValue     Gauge32,
+    usrHistoryHighCapacityAbsValue             CounterBasedGauge64
+}
+
+usrHistoryHighCapacityOverflowAbsValue OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The absolute value (i.e. unsigned value) of the
+        user-specified statistic during the last sampling period,
+        divided by 2^32, truncating fractions (i.e., X DIV 2^32).
+        The value during the current sampling period is not made
+        available until the period is completed.
+
+
+
+
+        To obtain the true value for this sampling interval, the
+        associated instance of usrHistoryValStatus should be checked,
+        and usrHistoryAbsValue adjusted as necessary.
+
+        If the MIB instance could not be accessed during the sampling
+        interval, then this object will have a value of zero and the
+        associated instance of usrHistoryValStatus will be set to
+        'valueNotAvailable(1)'."
+    ::= { usrHistoryHighCapacityEntry 1 }
+
+usrHistoryHighCapacityAbsValue OBJECT-TYPE
+    SYNTAX CounterBasedGauge64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The absolute value (i.e. unsigned value) of the
+        user-specified statistic during the last sampling period. The
+        value during the current sampling period is not made available
+        until the period is completed.
+
+        To obtain the true value for this sampling interval, the
+        associated instance of usrHistoryValStatus should be checked,
+        and usrHistoryHighCapacityAbsValue adjusted as necessary.
+
+        If the MIB instance could not be accessed during the sampling
+        interval, then this object will have a value of zero and the
+        associated instance of usrHistoryValStatus will be set to
+        'valueNotAvailable(1)'."
+    ::= { usrHistoryHighCapacityEntry 2 }
+
+--
+-- High Capacity RMON Probe Capabilities
+--
+hcRMONCapabilities OBJECT-TYPE
+    SYNTAX BITS {
+        mediaIndependentGroup(0),
+        etherStatsHighCapacityGroup(1),
+        etherHistoryHighCapacityGroup(2),
+        hostHighCapacityGroup(3),
+        hostTopNHighCapacityGroup(4),
+        matrixHighCapacityGroup(5),
+        captureBufferHighCapacityGroup(6),
+        protocolDistributionHighCapacityGroup(7),
+        nlHostHighCapacityGroup(8),
+        nlMatrixHighCapacityGroup(9),
+        nlMatrixTopNHighCapacityGroup(10),
+        alHostHighCapacityGroup(11),
+        alMatrixHighCapacityGroup(12),
+
+
+
+        alMatrixTopNHighCapacityGroup(13),
+        usrHistoryHighCapacityGroup(14)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "An indication of the High Capacity RMON MIB groups supported
+        on at least one interface by this probe."
+    ::= { probeConfig 16 }
+
+-- Conformance Macros
+
+hcRmonMIBCompliances OBJECT IDENTIFIER ::= { rmonConformance 6 }
+hcRmonMIBGroups      OBJECT IDENTIFIER ::= { rmonConformance 7 }
+
+hcMediaIndependentCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "Describes the requirements for conformance to the
+        High Capacity Media Independent Group."
+    MODULE  -- this module
+    MANDATORY-GROUPS { mediaIndependentGroup, hcRMONInformationGroup }
+    ::= { hcRmonMIBCompliances 1 }
+
+hcRmon1MIBCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+        "Describes the requirements for conformance to the High
+        Capacity RMON-1 MIB"
+    MODULE  -- this module
+        GROUP etherStatsHighCapacityGroup
+        DESCRIPTION
+            "The etherStatsHighCapacityGroup is optional but requires
+            implementation of the rmonEtherStatsGroup."
+
+        GROUP etherHistoryHighCapacityGroup
+        DESCRIPTION
+            "The etherHistoryHighCapacityGroup is optional but
+            requires implementation of the rmonHistoryControlGroup and
+            rmonEthernetHistoryGroup."
+
+        GROUP hostHighCapacityGroup
+        DESCRIPTION
+            "The hostHighCapacityGroup is mandatory when the
+            hostTopNHighCapacityGroup is implemented. This group also
+            requires implementation of the rmonHostGroup."
+
+        GROUP hostTopNHighCapacityGroup
+
+
+
+        DESCRIPTION
+            "The hostTopNHighCapacityGroup is optional but requires
+            implementation of the rmonHostTopNGroup."
+
+        GROUP matrixHighCapacityGroup
+        DESCRIPTION
+            "The matrixHighCapacityGroup is optional but requires
+            implementation of the rmonMatrixGroup."
+
+        GROUP captureBufferHighCapacityGroup
+        DESCRIPTION
+            "The captureBufferHighCapacityGroup is optional but
+            requires implementation of the rmonFilterGroup and
+            rmonPacketCaptureGroup."
+
+    MODULE RMON-MIB
+        GROUP rmonEtherStatsGroup
+        DESCRIPTION
+            "The RMON Ethernet Statistics Group is mandatory if the
+            etherStatsHighCapacityGroup is implemented."
+
+        GROUP rmonHistoryControlGroup
+        DESCRIPTION
+            "The RMON History Control Group is mandatory if the
+            etherHistoryHighCapacityGroup is implemented."
+
+        GROUP rmonEthernetHistoryGroup
+        DESCRIPTION
+            "The RMON Ethernet History Group is mandatory if the
+            etherHistoryHighCapacityGroup is implemented."
+
+        GROUP rmonHostGroup
+        DESCRIPTION
+            "The RMON Host Group is mandatory if the
+            hostHighCapacityGroup is implemented."
+
+        GROUP rmonHostTopNGroup
+        DESCRIPTION
+            "The RMON Host Top N Group is mandatory if the
+            hostTopNHighCapacityGroup is implemented."
+
+        GROUP rmonMatrixGroup
+        DESCRIPTION
+            "The RMON Matrix Group is mandatory if the
+            matrixHighCapacityGroup is implemented."
+
+        GROUP rmonFilterGroup
+        DESCRIPTION
+
+
+
+            "The RMON Filter Group is mandatory when the
+            captureBufferHighCapacityGroup is implemented."
+
+       GROUP rmonPacketCaptureGroup
+       DESCRIPTION
+            "The RMON Packet Capture Group is mandatory when the
+           captureBufferHighCapacityGroup is implemented."
+    ::= { hcRmonMIBCompliances 2 }
+
+hcRmon2MIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "Describes the requirements for conformance to
+        the High Capacity RMON-2 MIB"
+    MODULE  -- this module
+        MANDATORY-GROUPS { protocolDistributionHighCapacityGroup,
+                           nlHostHighCapacityGroup,
+                           nlMatrixHighCapacityGroup,
+                           nlMatrixTopNHighCapacityGroup,
+                           usrHistoryHighCapacityGroup,
+                           hcRMONInformationGroup }
+    MODULE RMON2-MIB
+        MANDATORY-GROUPS { protocolDirectoryGroup,
+                           protocolDistributionGroup,
+                           addressMapGroup,
+                           nlHostGroup,
+                           nlMatrixGroup,
+                           usrHistoryGroup,
+                           probeInformationGroup }
+
+        GROUP   rmon1EnhancementGroup
+        DESCRIPTION
+            "The rmon1EnhancementGroup is mandatory for systems which
+            implement RMON [RFC2819]"
+    ::= { hcRmonMIBCompliances 3 }
+
+hcRmon2MIBApplicationLayerCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "Describes the requirements for conformance to
+        the High Capacity RMON-2 MIB with Application Layer
+        Enhancements."
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { protocolDistributionHighCapacityGroup,
+
+                           nlHostHighCapacityGroup,
+                           nlMatrixHighCapacityGroup,
+
+
+
+                           nlMatrixTopNHighCapacityGroup,
+                           alHostHighCapacityGroup,
+                           alMatrixHighCapacityGroup,
+                           alMatrixTopNHighCapacityGroup,
+                           usrHistoryHighCapacityGroup,
+                           hcRMONInformationGroup }
+    MODULE RMON2-MIB
+        MANDATORY-GROUPS { protocolDirectoryGroup,
+                           protocolDistributionGroup,
+                           addressMapGroup,
+                           nlHostGroup,
+                           nlMatrixGroup,
+                           alHostGroup,
+                           alMatrixGroup,
+                           usrHistoryGroup,
+                           probeInformationGroup }
+
+        GROUP   rmon1EnhancementGroup
+        DESCRIPTION
+            "The rmon1EnhancementGroup is mandatory for systems which
+            implement RMON [RFC2819]"
+    ::= { hcRmonMIBCompliances 4 }
+
+mediaIndependentGroup OBJECT-GROUP
+    OBJECTS {mediaIndependentDataSource,
+        mediaIndependentDropEvents,
+        mediaIndependentDroppedFrames,
+        mediaIndependentInPkts,
+        mediaIndependentInOverflowPkts,
+        mediaIndependentInHighCapacityPkts,
+        mediaIndependentOutPkts,
+        mediaIndependentOutOverflowPkts,
+        mediaIndependentOutHighCapacityPkts,
+        mediaIndependentInOctets,
+        mediaIndependentInOverflowOctets,
+        mediaIndependentInHighCapacityOctets,
+        mediaIndependentOutOctets,
+        mediaIndependentOutOverflowOctets,
+        mediaIndependentOutHighCapacityOctets,
+        mediaIndependentInNUCastPkts,
+        mediaIndependentInNUCastOverflowPkts,
+        mediaIndependentInNUCastHighCapacityPkts,
+        mediaIndependentOutNUCastPkts,
+        mediaIndependentOutNUCastOverflowPkts,
+        mediaIndependentOutNUCastHighCapacityPkts,
+        mediaIndependentInErrors,
+        mediaIndependentOutErrors,
+        mediaIndependentInputSpeed,
+
+
+
+        mediaIndependentOutputSpeed,
+        mediaIndependentDuplexMode,
+        mediaIndependentDuplexChanges,
+        mediaIndependentDuplexLastChange,
+        mediaIndependentOwner,
+        mediaIndependentStatus }
+    STATUS current
+    DESCRIPTION
+        "Collects utilization statistics for any type of network."
+    ::= { hcRmonMIBGroups 1 }
+
+etherStatsHighCapacityGroup OBJECT-GROUP
+    OBJECTS { etherStatsHighCapacityOverflowPkts,
+              etherStatsHighCapacityPkts,
+              etherStatsHighCapacityOverflowOctets,
+              etherStatsHighCapacityOctets,
+              etherStatsHighCapacityOverflowPkts64Octets,
+              etherStatsHighCapacityPkts64Octets,
+              etherStatsHighCapacityOverflowPkts65to127Octets,
+              etherStatsHighCapacityPkts65to127Octets,
+              etherStatsHighCapacityOverflowPkts128to255Octets,
+              etherStatsHighCapacityPkts128to255Octets,
+              etherStatsHighCapacityOverflowPkts256to511Octets,
+              etherStatsHighCapacityPkts256to511Octets,
+              etherStatsHighCapacityOverflowPkts512to1023Octets,
+              etherStatsHighCapacityPkts512to1023Octets,
+              etherStatsHighCapacityOverflowPkts1024to1518Octets,
+              etherStatsHighCapacityPkts1024to1518Octets }
+    STATUS  current
+    DESCRIPTION
+        "Collects utilization statistics for ethernet networks."
+    ::= { hcRmonMIBGroups 2 }
+
+etherHistoryHighCapacityGroup OBJECT-GROUP
+    OBJECTS { etherHistoryHighCapacityOverflowPkts,
+              etherHistoryHighCapacityPkts,
+              etherHistoryHighCapacityOverflowOctets,
+              etherHistoryHighCapacityOctets }
+    STATUS  current
+    DESCRIPTION
+        "Collects utilization statistics for ethernet networks."
+    ::= { hcRmonMIBGroups 3 }
+
+hostHighCapacityGroup OBJECT-GROUP
+    OBJECTS { hostHighCapacityInOverflowPkts,
+              hostHighCapacityInPkts,
+              hostHighCapacityOutOverflowPkts,
+              hostHighCapacityOutPkts,
+
+
+
+              hostHighCapacityInOverflowOctets,
+              hostHighCapacityInOctets,
+              hostHighCapacityOutOverflowOctets,
+              hostHighCapacityOutOctets,
+              hostTimeHighCapacityInOverflowPkts,
+              hostTimeHighCapacityInPkts,
+              hostTimeHighCapacityOutOverflowPkts,
+              hostTimeHighCapacityOutPkts,
+              hostTimeHighCapacityInOverflowOctets,
+              hostTimeHighCapacityInOctets,
+              hostTimeHighCapacityOutOverflowOctets,
+              hostTimeHighCapacityOutOctets }
+    STATUS  current
+    DESCRIPTION
+        "Collects utilization and error statistics per host."
+    ::= { hcRmonMIBGroups 4 }
+
+hostTopNHighCapacityGroup OBJECT-GROUP
+    OBJECTS { hostTopNHighCapacityAddress,
+        hostTopNHighCapacityBaseRate,
+        hostTopNHighCapacityOverflowRate,
+        hostTopNHighCapacityRate }
+    STATUS  current
+    DESCRIPTION
+        "Prepares sorted reports of utilization and error statistics
+        per host."
+    ::= { hcRmonMIBGroups 5 }
+
+
+matrixHighCapacityGroup OBJECT-GROUP
+    OBJECTS { matrixSDHighCapacityOverflowPkts,
+              matrixSDHighCapacityPkts,
+              matrixSDHighCapacityOverflowOctets,
+              matrixSDHighCapacityOctets,
+              matrixDSHighCapacityOverflowPkts,
+              matrixDSHighCapacityPkts,
+              matrixDSHighCapacityOverflowOctets,
+              matrixDSHighCapacityOctets }
+    STATUS  current
+    DESCRIPTION
+        "Collects utilization statistics per conversation."
+    ::= { hcRmonMIBGroups 6 }
+
+captureBufferHighCapacityGroup OBJECT-GROUP
+    OBJECTS { captureBufferPacketHighCapacityTime }
+    STATUS  current
+    DESCRIPTION
+        "Provides finer granularity time stamps."
+
+
+
+    ::= { hcRmonMIBGroups 7 }
+
+protocolDistributionHighCapacityGroup OBJECT-GROUP
+    OBJECTS { protocolDistStatsHighCapacityOverflowPkts,
+              protocolDistStatsHighCapacityPkts,
+              protocolDistStatsHighCapacityOverflowOctets,
+              protocolDistStatsHighCapacityOctets }
+    STATUS  current
+    DESCRIPTION
+        "Collects the relative amounts of octets and packets for the
+        different protocols detected on a network segment."
+    ::= { hcRmonMIBGroups 8 }
+
+nlHostHighCapacityGroup OBJECT-GROUP
+    OBJECTS { nlHostHighCapacityInOverflowPkts,
+              nlHostHighCapacityInPkts,
+              nlHostHighCapacityOutOverflowPkts,
+              nlHostHighCapacityOutPkts,
+              nlHostHighCapacityInOverflowOctets,
+              nlHostHighCapacityInOctets,
+              nlHostHighCapacityOutOverflowOctets,
+              nlHostHighCapacityOutOctets }
+    STATUS  current
+    DESCRIPTION
+        "Counts the amount of traffic sent from and to each network
+        address discovered by the probe."
+    ::= { hcRmonMIBGroups 9 }
+
+nlMatrixHighCapacityGroup OBJECT-GROUP
+    OBJECTS { nlMatrixSDHighCapacityOverflowPkts,
+              nlMatrixSDHighCapacityPkts,
+              nlMatrixSDHighCapacityOverflowOctets,
+              nlMatrixSDHighCapacityOctets,
+              nlMatrixDSHighCapacityOverflowPkts,
+              nlMatrixDSHighCapacityPkts,
+              nlMatrixDSHighCapacityOverflowOctets,
+              nlMatrixDSHighCapacityOctets }
+    STATUS  current
+    DESCRIPTION
+        "Counts the amount of traffic sent between each pair of
+        network addresses discovered by the probe."
+    ::= { hcRmonMIBGroups 10 }
+
+nlMatrixTopNHighCapacityGroup OBJECT-GROUP
+    OBJECTS { nlMatrixTopNHighCapacityProtocolDirLocalIndex,
+        nlMatrixTopNHighCapacitySourceAddress,
+        nlMatrixTopNHighCapacityDestAddress,
+        nlMatrixTopNHighCapacityBasePktRate,
+
+
+
+        nlMatrixTopNHighCapacityOverflowPktRate,
+        nlMatrixTopNHighCapacityPktRate,
+        nlMatrixTopNHighCapacityReverseBasePktRate,
+        nlMatrixTopNHighCapacityReverseOverflowPktRate,
+        nlMatrixTopNHighCapacityReversePktRate,
+        nlMatrixTopNHighCapacityBaseOctetRate,
+        nlMatrixTopNHighCapacityOverflowOctetRate,
+        nlMatrixTopNHighCapacityOctetRate,
+        nlMatrixTopNHighCapacityReverseBaseOctetRate,
+        nlMatrixTopNHighCapacityReverseOverflowOctetRate,
+        nlMatrixTopNHighCapacityReverseOctetRate }
+    STATUS  current
+    DESCRIPTION
+        "Prepares sorted reports of the amount of traffic sent between
+        each pair of network addresses discovered by the probe."
+    ::= { hcRmonMIBGroups 11 }
+
+alHostHighCapacityGroup OBJECT-GROUP
+    OBJECTS { alHostHighCapacityInOverflowPkts,
+              alHostHighCapacityInPkts,
+              alHostHighCapacityOutOverflowPkts,
+              alHostHighCapacityOutPkts,
+              alHostHighCapacityInOverflowOctets,
+              alHostHighCapacityInOctets,
+              alHostHighCapacityOutOverflowOctets,
+              alHostHighCapacityOutOctets }
+    STATUS  current
+    DESCRIPTION
+        "Counts the amount of traffic, by protocol, sent from and to
+        each network address discovered by the probe."
+    ::= { hcRmonMIBGroups 12 }
+
+alMatrixHighCapacityGroup OBJECT-GROUP
+    OBJECTS { alMatrixSDHighCapacityOverflowPkts,
+              alMatrixSDHighCapacityPkts,
+              alMatrixSDHighCapacityOverflowOctets,
+              alMatrixSDHighCapacityOctets,
+              alMatrixDSHighCapacityOverflowPkts,
+              alMatrixDSHighCapacityPkts,
+              alMatrixDSHighCapacityOverflowOctets,
+              alMatrixDSHighCapacityOctets }
+    STATUS  current
+    DESCRIPTION
+        "Counts the amount of traffic, by protocol, sent between each
+        pair of network addresses discovered by the
+        probe."
+    ::= { hcRmonMIBGroups 13 }
+
+
+
+
+alMatrixTopNHighCapacityGroup OBJECT-GROUP
+    OBJECTS { alMatrixTopNHighCapacityProtocolDirLocalIndex,
+        alMatrixTopNHighCapacitySourceAddress,
+        alMatrixTopNHighCapacityDestAddress,
+        alMatrixTopNHighCapacityAppProtocolDirLocalIndex,
+        alMatrixTopNHighCapacityBasePktRate,
+        alMatrixTopNHighCapacityOverflowPktRate,
+        alMatrixTopNHighCapacityPktRate,
+        alMatrixTopNHighCapacityReverseBasePktRate,
+        alMatrixTopNHighCapacityReverseOverflowPktRate,
+        alMatrixTopNHighCapacityReversePktRate,
+        alMatrixTopNHighCapacityBaseOctetRate,
+        alMatrixTopNHighCapacityOverflowOctetRate,
+        alMatrixTopNHighCapacityOctetRate,
+        alMatrixTopNHighCapacityReverseBaseOctetRate,
+        alMatrixTopNHighCapacityReverseOverflowOctetRate,
+        alMatrixTopNHighCapacityReverseOctetRate }
+    STATUS  current
+    DESCRIPTION
+        "Prepares sorted reports of the amount of traffic per protocol
+        sent between each pair of network addresses discovered by the
+        probe."
+    ::= { hcRmonMIBGroups 14 }
+
+usrHistoryHighCapacityGroup OBJECT-GROUP
+    OBJECTS { usrHistoryHighCapacityOverflowAbsValue,
+        usrHistoryHighCapacityAbsValue }
+    STATUS  current
+    DESCRIPTION
+        "Provides user-defined collection of historical information
+        from MIB objects on the probe with scalability to statistics
+        from high-capacity networks."
+    ::= { hcRmonMIBGroups 15 }
+
+hcRMONInformationGroup OBJECT-GROUP
+    OBJECTS { hcRMONCapabilities }
+    STATUS  current
+    DESCRIPTION
+        "An indication of the high capacity RMON groups supported on
+        at least one interface by this probe."
+    ::= { hcRmonMIBGroups 16 }
+END

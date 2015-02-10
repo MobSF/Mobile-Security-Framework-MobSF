@@ -1,0 +1,354 @@
+SNMP-SSH-TM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    OBJECT-IDENTITY, mib-2, snmpDomains,
+    Counter32
+      FROM SNMPv2-SMI -- RFC 2578
+    TEXTUAL-CONVENTION
+      FROM SNMPv2-TC -- RFC 2579
+    MODULE-COMPLIANCE, OBJECT-GROUP
+      FROM SNMPv2-CONF -- RFC 2580
+    ;
+
+snmpSshtmMIB MODULE-IDENTITY
+    LAST-UPDATED "200906090000Z"
+    ORGANIZATION "ISMS Working Group"
+    CONTACT-INFO "WG-EMail:   isms@lists.ietf.org
+                  Subscribe:  isms-request@lists.ietf.org
+
+                  Chairs:
+                    Juergen Quittek
+                    NEC Europe Ltd.
+                    Network Laboratories
+                    Kurfuersten-Anlage 36
+                    69115 Heidelberg
+                    Germany
+                    +49 6221 90511-15
+                    quittek@netlab.nec.de
+
+                    Juergen Schoenwaelder
+                    Jacobs University Bremen
+                    Campus Ring 1
+                    28725 Bremen
+                    Germany
+                    +49 421 200-3587
+                    j.schoenwaelder@jacobs-university.de
+
+                  Co-editors:
+                    David Harrington
+                    Huawei Technologies USA
+                    1700 Alma Drive
+                    Plano Texas 75075
+
+
+
+                    USA
+                    +1 603-436-8634
+                    ietfdbh@comcast.net
+
+                    Joseph Salowey
+                    Cisco Systems
+                    2901 3rd Ave
+                    Seattle, WA 98121
+                    USA
+                    jsalowey@cisco.com
+
+                    Wes Hardaker
+                    Cobham Analytic Solutions
+                    P.O. Box 382
+                    Davis, CA  95617
+                    USA
+                    +1 530 792 1913
+                    ietf@hardakers.net
+                 "
+    DESCRIPTION
+       "The Secure Shell Transport Model MIB.
+
+        Copyright (c) 2009 IETF Trust and the persons
+        identified as authors of the code.  All rights reserved.
+
+        Redistribution and use in source and binary forms, with or
+        without modification, are permitted provided that the
+        following conditions are met:
+
+        - Redistributions of source code must retain the above copyright
+          notice, this list of conditions and the following disclaimer.
+
+        - Redistributions in binary form must reproduce the above
+          copyright notice, this list of conditions and the following
+          disclaimer in the documentation and/or other materials
+          provided with the distribution.
+
+        - Neither the name of Internet Society, IETF or IETF Trust,
+          nor the names of specific contributors, may be used to endorse
+          or promote products derived from this software without
+          specific prior written permission.
+
+        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+        CONTRIBUTORS 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+        INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+        MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+        DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+        CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+
+
+
+        SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+        NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+        LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+        HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+        CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+        OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+        EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+        This version of this MIB module is part of RFC 5592;
+        see the RFC itself for full legal notices."
+
+    REVISION     "200906090000Z"
+    DESCRIPTION  "The initial version, published in RFC 5592."
+
+    ::= { mib-2 189 }
+
+-- ---------------------------------------------------------- --
+-- subtrees in the SNMP-SSH-TM-MIB
+-- ---------------------------------------------------------- --
+
+snmpSshtmNotifications    OBJECT IDENTIFIER ::= { snmpSshtmMIB 0 }
+snmpSshtmObjects          OBJECT IDENTIFIER ::= { snmpSshtmMIB 1 }
+snmpSshtmConformance      OBJECT IDENTIFIER ::= { snmpSshtmMIB 2 }
+
+-- -------------------------------------------------------------
+-- Objects
+-- -------------------------------------------------------------
+
+snmpSSHDomain OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "The SNMP-over-SSH transport domain.  The corresponding
+         transport address is of type SnmpSSHAddress.
+
+         When an SNMP entity uses the snmpSSHDomain Transport
+         Model, it must be capable of accepting messages up to
+         and including 8192 octets in size.  Implementation of
+         larger values is encouraged whenever possible.
+
+         The securityName prefix to be associated with the
+         snmpSSHDomain is 'ssh'.  This prefix may be used by Security
+         Models or other components to identify which secure transport
+         infrastructure authenticated a securityName."
+    ::= { snmpDomains 7 }
+
+SnmpSSHAddress ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "1a"
+    STATUS      current
+
+
+
+    DESCRIPTION
+        "Represents either a hostname or IP address, along with a port
+         number and an optional user name.
+
+         The beginning of the address specification may contain a
+         user name followed by an '@' (US-ASCII character 0x40).  This
+         portion of the address will indicate the user name that should
+         be used when authenticating to an SSH server.  The user name
+         must be encoded in UTF-8 (per [RFC4252]).  If missing, the
+         SNMP securityName should be used.  After the optional user
+         name field and '@' character comes the hostname or IP
+         address.
+
+         The hostname is always in US-ASCII (as per RFC1033);
+         internationalized hostnames are encoded in US-ASCII as
+         specified in RFC 3490.  The hostname is followed by a colon
+         ':' (US-ASCII character 0x3A) and a decimal port number in
+         US-ASCII.  The name SHOULD be fully qualified whenever
+         possible.
+
+         An IPv4 address must be in dotted decimal format followed
+         by a colon ':' (US-ASCII character 0x3A) and a decimal port
+         number in US-ASCII.
+
+         An IPv6 address must be in colon-separated format, surrounded
+         by square brackets ('[', US-ASCII character 0x5B, and ']',
+         US-ASCII character 0x5D), followed by a colon ':' (US-ASCII
+         character 0x3A) and a decimal port number in US-ASCII.
+
+         Values of this Textual Convention might not be directly usable
+         as transport-layer addressing information and may require
+         runtime resolution.  As such, applications that write them
+         must be prepared for handling errors if such values are
+         not supported or cannot be resolved (if resolution occurs
+         at the time of the management operation).
+
+         The DESCRIPTION clause of TransportAddress objects that may
+         have snmpSSHAddress values must fully describe how (and
+         when) such names are to be resolved to IP addresses and vice
+         versa.
+
+         This Textual Convention SHOULD NOT be used directly in
+         object definitions since it restricts addresses to a
+         specific format.  However, if it is used, it MAY be used
+         either on its own or in conjunction with
+         TransportAddressType or TransportDomain as a pair.
+
+
+
+
+
+         When this Textual Convention is used as a syntax of an
+         index object, there may be issues with the limit of 128
+         sub-identifiers, which is specified in SMIv2 (STD 58).  It
+         is RECOMMENDED that all MIB documents using this Textual
+         Convention make explicit any limitations on index
+         component lengths that management software must observe.
+         This may be done either by including SIZE constraints on
+         the index components or by specifying applicable
+         constraints in the conceptual row DESCRIPTION clause or
+         in the surrounding documentation.
+        "
+    REFERENCE
+      "RFC 1033: DOMAIN ADMINISTRATORS OPERATIONS GUIDE
+       RFC 3490: Internationalizing Domain Names in Applications
+       RFC 3986: Uniform Resource Identifier (URI): Generic Syntax
+       RFC 4252: The Secure Shell (SSH) Authentication Protocol"
+    SYNTAX      OCTET STRING (SIZE (1..255))
+
+-- The snmpSshtmSession Group
+
+snmpSshtmSession       OBJECT IDENTIFIER ::= { snmpSshtmObjects 1 }
+
+snmpSshtmSessionOpens  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "The number of times an openSession() request has been
+                 executed as an SSH client, whether it succeeded or
+                 failed.
+                "
+    ::= { snmpSshtmSession 1 }
+
+snmpSshtmSessionCloses  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "The number of times a closeSession() request has been
+                 executed as an SSH client, whether it succeeded or
+                 failed.
+                "
+    ::= { snmpSshtmSession 2 }
+
+snmpSshtmSessionOpenErrors  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+
+
+
+
+
+    DESCRIPTION "The number of times an openSession() request
+                 failed to open a transport connection or failed to
+                 authenticate the server.
+                "
+    ::= { snmpSshtmSession 3 }
+
+snmpSshtmSessionUserAuthFailures  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "The number of times an openSession() request
+                 failed to open a session as an SSH client due to
+                 user-authentication failures.
+                "
+    ::= { snmpSshtmSession 4 }
+
+snmpSshtmSessionNoChannels  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "The number of times an openSession() request
+                 failed to open a session as an SSH client due to
+                 channel-open failures.
+                "
+    ::= { snmpSshtmSession 5 }
+
+snmpSshtmSessionNoSubsystems OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "The number of times an openSession() request
+                 failed to open a session as an SSH client due to
+                 inability to connect to the requested subsystem.
+                "
+    ::= { snmpSshtmSession 6 }
+
+snmpSshtmSessionNoSessions  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "The number of times an outgoing message was
+                 dropped because the same session was no longer
+                 available.
+                "
+    ::= { snmpSshtmSession 7 }
+
+snmpSshtmSessionInvalidCaches OBJECT-TYPE
+    SYNTAX       Counter32
+
+
+
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "The number of outgoing messages dropped because the
+                 tmStateReference referred to an invalid cache.
+                "
+    ::= { snmpSshtmSession 8 }
+
+-- ************************************************
+-- snmpSshtmMIB - Conformance Information
+-- ************************************************
+
+snmpSshtmCompliances OBJECT IDENTIFIER ::= { snmpSshtmConformance 1 }
+
+snmpSshtmGroups      OBJECT IDENTIFIER ::= { snmpSshtmConformance 2 }
+
+-- ************************************************
+-- Compliance statements
+-- ************************************************
+
+snmpSshtmCompliance MODULE-COMPLIANCE
+    STATUS      current
+
+    DESCRIPTION "The compliance statement for SNMP engines that
+                 support the SNMP-SSH-TM-MIB."
+    MODULE
+        MANDATORY-GROUPS { snmpSshtmGroup }
+    ::= { snmpSshtmCompliances 1 }
+
+-- ************************************************
+-- Units of conformance
+-- ************************************************
+
+snmpSshtmGroup OBJECT-GROUP
+    OBJECTS {
+      snmpSshtmSessionOpens,
+      snmpSshtmSessionCloses,
+      snmpSshtmSessionOpenErrors,
+      snmpSshtmSessionUserAuthFailures,
+      snmpSshtmSessionNoChannels,
+      snmpSshtmSessionNoSubsystems,
+      snmpSshtmSessionNoSessions,
+      snmpSshtmSessionInvalidCaches
+    }
+    STATUS      current
+    DESCRIPTION "A collection of objects for maintaining information
+                 of an SNMP engine that implements the SNMP Secure
+                 Shell Transport Model.
+                "
+
+
+
+    ::= { snmpSshtmGroups 2 }
+
+END

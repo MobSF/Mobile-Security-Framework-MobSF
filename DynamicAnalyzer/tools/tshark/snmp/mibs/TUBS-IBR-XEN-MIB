@@ -1,0 +1,387 @@
+TUBS-IBR-XEN-MIB DEFINITIONS ::= BEGIN
+
+-- @(#) $Id$
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Unsigned32, Counter32
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB
+    ibr
+        FROM TUBS-SMI;
+
+xenMIB MODULE-IDENTITY
+    LAST-UPDATED "200602200000Z"
+    ORGANIZATION "TU Braunschweig"
+    CONTACT-INFO
+        "Frank Strauss, Oliver Wellnitz
+         TU Braunschweig
+         Muehlenpfordtstrasse 23
+         38106 Braunschweig
+         Germany
+
+         Tel: +49 531 391 3283
+         Fax: +49 531 391 5936
+         E-mail: {strauss,wellnitz}@ibr.cs.tu-bs.de"
+    DESCRIPTION
+        "Experimental MIB module for Xen Virtual Hosting."
+    REVISION    "200602200000Z"
+    DESCRIPTION
+        "The initial revision of this module."
+    ::= { ibr 14 }
+
+--
+-- The various groups defined within this MIB module:
+--
+
+xenObjects     OBJECT IDENTIFIER ::= { xenMIB 1 }
+
+xenTraps       OBJECT IDENTIFIER ::= { xenMIB 2 }
+
+xenConformance OBJECT IDENTIFIER ::= { xenMIB 3 }
+
+--
+-- Textual Conventions:
+--
+
+XenDomainState ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "This data type represents the state of a Xen domain.
+
+         unknown(1):  No known/defined state.
+
+         running(2):  The domain is running on any CPU.
+
+         blocked(3):  The domain is blocked, e.g., waiting for I/O.
+
+         paused(4):   The domain has been paused.
+
+         crashed(5):  The domain exepectedly crashed.
+
+         dying(6):    The domain is in the process of going
+	              down or dying to any other reason.
+
+         shutdown(7): The domain has been shutdown.
+        "
+    SYNTAX      INTEGER {
+                    unknown(1),
+                    running(2),
+                    blocked(3),
+                    paused(4),
+                    crashed(5),
+                    dying(6),
+                    shutdown(7)
+                }
+
+--
+-- Object definitions:
+--
+
+--
+-- Host scalars:
+--
+
+xenHost OBJECT IDENTIFIER ::= { xenObjects 1 }
+
+xenHostXenVersion OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The version string of the Xen version running
+        on the physical host."
+    ::= { xenHost 1 }
+
+xenHostTotalMemKBytes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total amount of available memory in Kbytes
+        on the physical host."
+    ::= { xenHost 2 }
+
+xenHostCPUs OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The total number of CPUs on the physical host."
+    ::= { xenHost 3 }
+
+xenHostCPUMHz OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The CPU frequency in MHz of the CPUs on the
+        physical host."
+    ::= { xenHost 4 }
+
+--
+-- Domain table:
+--
+
+xenDomainTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XenDomainEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of all Xen domains on the physical host."
+    ::= { xenObjects 2 }
+
+xenDomainEntry OBJECT-TYPE
+    SYNTAX      XenDomainEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular Xen domain."
+    INDEX   { xenDomainName }
+    ::= { xenDomainTable 1 }
+
+XenDomainEntry ::=
+    SEQUENCE {
+        xenDomainName		        SnmpAdminString,
+        xenDomainState		        XenDomainState,
+        xenDomainMemKBytes		Unsigned32,
+        xenDomainMaxMemKBytes		Unsigned32
+    }
+
+xenDomainName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE(1..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The name of the Xen domain."
+    ::= { xenDomainEntry 1 }
+
+xenDomainState OBJECT-TYPE
+    SYNTAX      XenDomainState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The state of the Xen domain."
+    ::= { xenDomainEntry 2 }
+
+xenDomainMemKBytes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The amount of memory in Kbytes currently occupied
+	 by the Xen domain."
+    ::= { xenDomainEntry 3 }
+
+xenDomainMaxMemKBytes OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total amount of memory in Kbytes assigned
+	 to the Xen domain. A value of zero denotes that
+	 there is no limit."
+    ::= { xenDomainEntry 4 }
+
+--
+-- VCPU table:
+--
+
+xenVCPUTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XenVCPUEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of all VCPUs per Xen domain."
+    ::= { xenObjects 3 }
+
+xenVCPUEntry OBJECT-TYPE
+    SYNTAX      XenVCPUEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a VCPU of a Xen domain."
+    INDEX   { xenDomainName, xenVCPUIndex }
+    ::= { xenVCPUTable 1 }
+
+XenVCPUEntry ::=
+    SEQUENCE {
+        xenVCPUIndex		        Unsigned32,
+        xenVCPUMilliseconds	        Counter32
+    }
+
+xenVCPUIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index of the VCPU."
+    ::= { xenVCPUEntry 1 }
+
+xenVCPUMilliseconds OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number milliseconds consumed by the VCPU since
+	 the Xen domain has been set up."
+    ::= { xenVCPUEntry 2 }
+
+--
+-- Network table:
+--
+
+xenNetworkTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XenNetworkEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of all networks per Xen domain."
+    ::= { xenObjects 4 }
+
+xenNetworkEntry OBJECT-TYPE
+    SYNTAX      XenNetworkEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a network of a Xen domain."
+    INDEX   { xenDomainName, xenNetworkIndex }
+    ::= { xenNetworkTable 1 }
+
+XenNetworkEntry ::=
+    SEQUENCE {
+        xenNetworkIndex		        Unsigned32,
+        xenNetworkInKBytes		Counter32,
+        xenNetworkInPkts		Counter32,
+        xenNetworkInErrors		Counter32,
+        xenNetworkInDiscards		Counter32,
+        xenNetworkOutKBytes		Counter32,
+        xenNetworkOutPkts		Counter32,
+        xenNetworkOutErrors		Counter32,
+        xenNetworkOutDiscards		Counter32
+    }
+
+xenNetworkIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index of the network."
+    ::= { xenNetworkEntry 1 }
+
+xenNetworkInKBytes OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of Kbytes received on the network
+	 interface since the Xen domain has been set up."
+    ::= { xenNetworkEntry 2 }
+
+xenNetworkInPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets received on the network
+	 interface since the Xen domain has been set up."
+    ::= { xenNetworkEntry 3 }
+
+xenNetworkInErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of erroneous packets received on the network
+	 interface since the Xen domain has been set up."
+    ::= { xenNetworkEntry 4 }
+
+xenNetworkInDiscards OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of dropped packets received on the network
+	 interface since the Xen domain has been set up."
+    ::= { xenNetworkEntry 5 }
+
+xenNetworkOutKBytes OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of Kbytes sent on the network
+	 interface since the Xen domain has been set up."
+    ::= { xenNetworkEntry 6 }
+
+xenNetworkOutPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets sent on the network
+	 interface since the Xen domain has been set up."
+    ::= { xenNetworkEntry 7 }
+
+xenNetworkOutErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets that could not be sent
+	 on the network interface because of any errors
+	 since the Xen domain has been set up."
+    ::= { xenNetworkEntry 8 }
+
+xenNetworkOutDiscards OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets that have not been sent	
+	 on the network interface even though no errors
+	 had been detected since the Xen domain has been
+	 set up."
+    ::= { xenNetworkEntry 9 }
+
+--
+-- Conformance statements:
+--
+
+xenCompliances OBJECT IDENTIFIER ::= { xenConformance 1 }
+
+xenGroups OBJECT IDENTIFIER ::= { xenConformance 2 }
+
+xenCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for an SNMP entity which
+         implements the Xen MIB."
+    MODULE     -- this module
+    MANDATORY-GROUPS { xenGeneralGroup }
+
+    ::= { xenCompliances 1 }
+
+xenGeneralGroup OBJECT-GROUP
+    OBJECTS {
+        xenHostXenVersion, xenHostTotalMemKBytes, xenHostCPUs,
+	xenHostCPUMHz,
+
+	xenDomainState, xenDomainMemKBytes, xenDomainMaxMemKBytes,
+
+	xenVCPUMilliseconds,
+
+	xenNetworkInKBytes, xenNetworkInPkts, xenNetworkInErrors,
+	xenNetworkInDiscards, xenNetworkOutKBytes, xenNetworkOutPkts,
+	xenNetworkOutErrors, xenNetworkOutDiscards
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of all Xen MIB objects."
+    ::= { xenGroups 1 }
+
+END

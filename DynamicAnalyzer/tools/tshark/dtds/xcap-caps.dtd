@@ -1,0 +1,15 @@
+<? wireshark:protocol
+   proto_name="xcap-caps"
+   description="XML Configuration Access Protocol Server Capabilities"
+   hierarchy="yes" ?>
+
+<!--
+$Id$
+-->
+
+<!ELEMENT xcap-caps ((auid?)*, extension?, (namespace?)*) >
+
+<!ELEMENT auid      (#PCDATA)>
+<!ELEMENT extension (#PCDATA)>
+<!ELEMENT namespace (#PCDATA)>
+

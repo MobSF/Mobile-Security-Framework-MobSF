@@ -1,0 +1,1563 @@
+RSERPOOL-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   MODULE-IDENTITY, OBJECT-TYPE, experimental,
+   TimeTicks, Unsigned32
+      FROM SNMPv2-SMI
+   TEXTUAL-CONVENTION
+      FROM SNMPv2-TC
+   MODULE-COMPLIANCE, OBJECT-GROUP
+      FROM SNMPv2-CONF
+   InetAddressType, InetAddress, InetPortNumber
+      FROM INET-ADDRESS-MIB;
+
+-- ## Module definition ###########################################
+rserpoolMIB MODULE-IDENTITY
+   LAST-UPDATED
+      "200904070000Z" -- April 07, 2009
+   ORGANIZATION
+      "IEM-TdR, UNIVERSITY OF DUISBURG-ESSEN"
+   CONTACT-INFO
+      " THOMAS-DREIBHOLZ
+
+         Postal:  University of Duisburg-Essen
+                  Institute for Experimental Mathematics
+                  Ellernstrasse 29
+                  D-45326 Essen
+                  Germany
+         Phone:   +49-201-183-7637
+         Fax:     +49-201-183-7673
+         Email:   dreibh@iem.uni-due.de
+
+
+
+
+
+
+
+      JAIWANT-MULIK
+
+         Postal:  Delaware State University
+                  CIS Department
+                  1200 N. DuPont Hw
+                  Dover, DE
+                  USA 19904
+         Phone:   +1-302-857-7910
+         Fax:     +1-302-857-6552
+         Email:   jaiwant@mulik.com"
+      DESCRIPTION
+         "The MIB module for managing an RSerPool implementation.
+
+          Copyright (c) 2009 IETF Trust and the persons identified as
+          authors of the code.  All rights reserved.
+
+          Redistribution and use in source and binary forms, with or
+          without modification, are permitted provided that the
+          following conditions are met:
+
+          - Redistributions of source code must retain the above
+            copyright notice, this list of conditions and the
+            following disclaimer.
+
+          - Redistributions in binary form must reproduce the above
+            copyright notice, this list of conditions and the
+            following disclaimer in the documentation and/or other
+            materials provided with the distribution.
+
+          - Neither the name of Internet Society, IETF or IETF Trust,
+            nor the names of specific contributors, may be used to
+            endorse or promote products derived from this software
+            without specific prior written permission.
+
+          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+          CONTRIBUTORS 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+          INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+          MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+          DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+          CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+          SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+          NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+          HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+          CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+          OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+          DAMAGE.
+
+
+
+          This version of this MIB module is part of RFC 5525;
+          see the RFC itself for full legal notices."
+
+      REVISION
+         "200904070000Z" -- April 07, 2009
+      DESCRIPTION
+         "This version of the MIB module is published as RFC 5525"
+      ::= { experimental 125 }
+
+-- ## RSerPool type definitions ###################################
+RSerPoolENRPServerIdentifierTC ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "x"
+   STATUS       current
+   DESCRIPTION  "The ID of an ENRP server"
+   SYNTAX       Unsigned32 (1..4294967295)
+
+RSerPoolOperationScopeTC ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "1024t"
+   STATUS       current
+   DESCRIPTION  "The ID of an operation scope"
+   SYNTAX       OCTET STRING (SIZE (0..65535))
+
+RSerPoolPoolHandleTC ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "1024t"
+   STATUS       current
+   DESCRIPTION  "The pool handle"
+   SYNTAX       OCTET STRING (SIZE (0..65535))
+
+RserpoolPoolElementIdentifierTC ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "x"
+   STATUS       current
+   DESCRIPTION  "The pool element ID"
+   SYNTAX       Unsigned32 (1..4294967295)
+
+RSerPoolPolicyIdentifierTC ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "x"
+   STATUS       current
+   DESCRIPTION  "The ID of the pool policy"
+   SYNTAX       Unsigned32 (1..4294967295)
+
+RSerPoolPolicyLoadTC ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "d"
+   STATUS       current
+   DESCRIPTION  "The load status of a pool element"
+   SYNTAX       Unsigned32 (0..4294967295)
+
+
+
+
+
+
+RSerPoolPolicyWeightTC ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "d"
+   STATUS       current
+   DESCRIPTION  "The weight of a pool element"
+   SYNTAX       Unsigned32 (0..4294967295)
+
+RSerPoolTransportUseTypeTC ::= TEXTUAL-CONVENTION
+   STATUS       current
+   DESCRIPTION "The transport use of a pool element"
+   SYNTAX       INTEGER {
+      dataOnly(0),
+      dataPlusControl(1)
+   }
+
+RSerPoolOpaqueAddressTC ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "1024t"
+   STATUS       current
+   DESCRIPTION  "Opaque address"
+   SYNTAX       OCTET STRING  (SIZE (0..65535))
+
+-- ## Top-level definitions #######################################
+rserpoolMIBObjects     OBJECT IDENTIFIER ::= { rserpoolMIB 1 }
+rserpoolMIBConformance OBJECT IDENTIFIER ::= { rserpoolMIB 2 }
+
+rserpoolENRPServers    OBJECT IDENTIFIER ::= { rserpoolMIBObjects 1 }
+rserpoolPoolElements   OBJECT IDENTIFIER ::= { rserpoolMIBObjects 2 }
+rserpoolPoolUsers      OBJECT IDENTIFIER ::= { rserpoolMIBObjects 3 }
+
+-- ################################################################
+-- #### ENRP Servers Section                                   ####
+-- ################################################################
+
+-- ## Definition of the ENRP server table #########################
+rserpoolENRPTable OBJECT-TYPE
+   SYNTAX     SEQUENCE OF RserpoolENRPEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "The table listing of ENRP servers."
+   ::= { rserpoolENRPServers 1 }
+
+rserpoolENRPEntry OBJECT-TYPE
+   SYNTAX     RserpoolENRPEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+
+
+
+
+
+
+   DESCRIPTION
+      "An ENRP server entry in the table listing of ENRP
+      servers."
+   INDEX { rserpoolENRPIndex }
+   ::= { rserpoolENRPTable 1 }
+
+RserpoolENRPEntry ::= SEQUENCE {
+rserpoolENRPIndex                Unsigned32,
+rserpoolENRPOperationScope       RSerPoolOperationScopeTC,
+rserpoolENRPIdentifier           RSerPoolENRPServerIdentifierTC,
+rserpoolENRPDescription          OCTET STRING,
+rserpoolENRPUptime               TimeTicks,
+rserpoolENRPPort                 InetPortNumber,
+rserpoolENRPASAPAnnouncePort     InetPortNumber,
+rserpoolENRPASAPAnnounceAddrType InetAddressType,
+rserpoolENRPASAPAnnounceAddr     InetAddress,
+rserpoolENRPENRPAnnouncePort     InetPortNumber,
+rserpoolENRPENRPAnnounceAddrType InetAddressType,
+rserpoolENRPENRPAnnounceAddr     InetAddress }
+
+rserpoolENRPIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "An integer to uniquely identify an ENRP server."
+   ::= { rserpoolENRPEntry 1 }
+
+rserpoolENRPOperationScope OBJECT-TYPE
+   SYNTAX     RSerPoolOperationScopeTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The definition of the operation scope of this ENRP server."
+   REFERENCE
+      "Section 1.2 of RFC 3237 defines the term operation scope."
+   ::= { rserpoolENRPEntry 2 }
+
+rserpoolENRPIdentifier OBJECT-TYPE
+   SYNTAX     RSerPoolENRPServerIdentifierTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The ENRP server identifier of this ENRP server."
+   REFERENCE
+      "Section 3.1 of RFC 5351 explains the ENRP server identifier."
+   ::= { rserpoolENRPEntry 3 }
+
+
+
+
+rserpoolENRPDescription OBJECT-TYPE
+   SYNTAX     OCTET STRING (SIZE (0..255))
+   MAX-ACCESS read-write
+   STATUS     current
+   DESCRIPTION
+      "A textual description of this ENRP server, e.g., its location
+      and a contact address of its administrator.
+
+      This object SHOULD be maintained in a persistent manner."
+   ::= { rserpoolENRPEntry 4 }
+
+rserpoolENRPUptime OBJECT-TYPE
+   SYNTAX     TimeTicks
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The ENRP service uptime of this ENRP server."
+   ::= { rserpoolENRPEntry 5 }
+
+rserpoolENRPPort OBJECT-TYPE
+   SYNTAX     InetPortNumber
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The Stream Control Transmission Protocol (SCTP) port number of
+      the ENRP protocol endpoint of this ENRP server."
+   REFERENCE
+      "RFC 5353 defines the ENRP protocol."
+   ::= { rserpoolENRPEntry 6 }
+
+rserpoolENRPASAPAnnouncePort OBJECT-TYPE
+   SYNTAX     InetPortNumber
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The destination UDP port number to which ASAP multicast announce
+      messages are sent."
+   REFERENCE
+      "Section 3.2 of RFC 5351 explains the server-discovery mechanism
+      using ASAP announces."
+   ::= { rserpoolENRPEntry 7 }
+
+rserpoolENRPASAPAnnounceAddrType OBJECT-TYPE
+   SYNTAX     InetAddressType { ipv4(1), ipv6(2) }
+   MAX-ACCESS read-only
+   STATUS     current
+
+
+
+
+
+   DESCRIPTION
+      "The network-layer protocol over which ASAP multicast announce
+      messages are sent."
+   REFERENCE
+      "Section 3.2 of RFC 5351 explains the server-discovery mechanism
+      using ASAP announces."
+   ::= { rserpoolENRPEntry 8 }
+
+rserpoolENRPASAPAnnounceAddr OBJECT-TYPE
+   SYNTAX     InetAddress (SIZE(4|16))
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The destination IP multicast address to which ASAP multicast
+      announce messages are sent.  The type of this address is
+      given in rserpoolENRPASAPAnnounceAddrType."
+   REFERENCE
+      "Section 3.2 of RFC 5351 explains the server-discovery mechanism
+      using ASAP announces."
+   ::= { rserpoolENRPEntry 9 }
+
+rserpoolENRPENRPAnnouncePort OBJECT-TYPE
+   SYNTAX     InetPortNumber
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The destination UDP port number to which ENRP multicast announce
+      messages are sent."
+   REFERENCE
+      "Section 3.1 of RFC 5353 explains the ENRP multicast
+      announce mechanism."
+   ::= { rserpoolENRPEntry 10 }
+
+rserpoolENRPENRPAnnounceAddrType OBJECT-TYPE
+   SYNTAX     InetAddressType { ipv4(1), ipv6(2) }
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The network-layer protocol over which ENRP multicast announce
+      messages are sent."
+   REFERENCE
+      "Section 3.1 of RFC 5353 explains the ENRP multicast
+      announce mechanism."
+   ::= { rserpoolENRPEntry 11 }
+
+rserpoolENRPENRPAnnounceAddr OBJECT-TYPE
+   SYNTAX     InetAddress (SIZE(4|16))
+   MAX-ACCESS read-only
+
+
+
+   STATUS     current
+   DESCRIPTION
+      "The destination multicast IP address to which ENRP multicast
+      announce messages are sent.  The type of this address
+      is given in rserpoolENRPENRPAnnounceAddrType."
+   REFERENCE
+      "Section 3.1 of RFC 5353 explains the ENRP multicast
+      announce mechanism."
+   ::= { rserpoolENRPEntry 12 }
+
+-- ## Definition of the pool table ################################
+rserpoolENRPPoolTable OBJECT-TYPE
+   SYNTAX     SEQUENCE OF RserpoolENRPPoolEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "The table listing of pools."
+   ::= { rserpoolENRPServers 3 }
+
+rserpoolENRPPoolEntry OBJECT-TYPE
+   SYNTAX     RserpoolENRPPoolEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "The pool entry in the table listing of pools."
+   INDEX { rserpoolENRPIndex, rserpoolENRPPoolIndex }
+   ::= { rserpoolENRPPoolTable 1 }
+
+RserpoolENRPPoolEntry ::= SEQUENCE {
+   rserpoolENRPPoolIndex  Unsigned32,
+   rserpoolENRPPoolHandle RSerPoolPoolHandleTC }
+
+rserpoolENRPPoolIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "An integer to uniquely identify a pool."
+   ::= { rserpoolENRPPoolEntry 1 }
+
+rserpoolENRPPoolHandle OBJECT-TYPE
+   SYNTAX     RSerPoolPoolHandleTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The pool handle of this pool."
+   REFERENCE
+      "Section 1.2 of RFC 3237 defines the term pool handle."
+
+
+
+   ::= { rserpoolENRPPoolEntry 2 }
+
+-- ## Definition of the pool element table ########################
+rserpoolENRPPoolElementTable OBJECT-TYPE
+   SYNTAX     SEQUENCE OF RserpoolENRPPoolElementEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "The table listing of pool elements."
+   ::= { rserpoolENRPServers 4 }
+
+rserpoolENRPPoolElementEntry OBJECT-TYPE
+   SYNTAX     RserpoolENRPPoolElementEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A pool element in the table listing of pool elements."
+   INDEX {
+      rserpoolENRPIndex,
+      rserpoolENRPPoolIndex,
+      rserpoolENRPPoolElementIndex }
+   ::= { rserpoolENRPPoolElementTable 1 }
+
+RserpoolENRPPoolElementEntry ::= SEQUENCE {
+   rserpoolENRPPoolElementIndex   Unsigned32,
+   rserpoolENRPPoolElementID      RserpoolPoolElementIdentifierTC,
+   rserpoolENRPASAPTransportPort  InetPortNumber,
+   rserpoolENRPUserTransportProto Unsigned32,
+   rserpoolENRPUserTransportPort  InetPortNumber,
+   rserpoolENRPUserTransportUse   RSerPoolTransportUseTypeTC,
+   rserpoolENRPPolicyID           RSerPoolPolicyIdentifierTC,
+   rserpoolENRPPolicyDescription  OCTET STRING,
+   rserpoolENRPPolicyWeight       RSerPoolPolicyWeightTC,
+   rserpoolENRPPolicyLoad         RSerPoolPolicyLoadTC,
+   rserpoolENRPPolicyLoadDeg      RSerPoolPolicyLoadTC,
+   rserpoolENRPRegistrationLife   TimeTicks,
+   rserpoolENRPHomeENRPServer     RSerPoolENRPServerIdentifierTC }
+
+
+rserpoolENRPPoolElementIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+
+
+
+
+
+
+
+
+   DESCRIPTION
+      "An integer to uniquely identify a pool element.  Note,
+      that uniqueness of a pool element identifier in the pool
+      is not enforced; therefore, this index is required here!"
+   ::={ rserpoolENRPPoolElementEntry 1 }
+
+rserpoolENRPPoolElementID OBJECT-TYPE
+   SYNTAX     RserpoolPoolElementIdentifierTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The pool element identifier of this pool element."
+   REFERENCE
+      "Section 2.2 of RFC 5351 explains the pool element identifier
+      usage."
+   ::={ rserpoolENRPPoolElementEntry 2 }
+
+rserpoolENRPASAPTransportPort OBJECT-TYPE
+   SYNTAX     InetPortNumber
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The SCTP port number of the ASAP endpoint of this pool
+      element."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the ASAP Transport Parameter of
+      which the port number is given here."
+   ::= { rserpoolENRPPoolElementEntry 3 }
+
+rserpoolENRPUserTransportProto OBJECT-TYPE
+   SYNTAX     Unsigned32 (0..255)
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The transport protocol number of the service endpoint
+      of this pool element."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which the transport protocol number is given here."
+   ::= { rserpoolENRPPoolElementEntry 4 }
+
+rserpoolENRPUserTransportPort OBJECT-TYPE
+   SYNTAX     InetPortNumber
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The transport protocol's port number of the service
+      endpoint of this pool element."
+
+
+
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which the port number is given here."
+   ::= { rserpoolENRPPoolElementEntry 5 }
+
+rserpoolENRPUserTransportUse OBJECT-TYPE
+   SYNTAX     RSerPoolTransportUseTypeTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The transport use of the service endpoint of this pool
+      element."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which the transport use is given here."
+   ::= { rserpoolENRPPoolElementEntry 6 }
+
+rserpoolENRPPolicyID OBJECT-TYPE
+   SYNTAX     RSerPoolPolicyIdentifierTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The pool policy of this pool element."
+   REFERENCE
+      "Section 3.8 of RFC 5354 defines the Member Selection Policy
+      Parameter of which the policy identifier is given here."
+   ::= { rserpoolENRPPoolElementEntry 7 }
+
+rserpoolENRPPolicyDescription OBJECT-TYPE
+   SYNTAX     OCTET STRING (SIZE (0..255))
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The textual description of the pool policy of this pool
+      element."
+   ::= { rserpoolENRPPoolElementEntry 8 }
+
+rserpoolENRPPolicyWeight OBJECT-TYPE
+   SYNTAX     RSerPoolPolicyWeightTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The pool policy's weight parameter for this pool element."
+   REFERENCE
+      "Section 3.8 of RFC 5354 defines the Member Selection Policy
+      Parameter of which the policy's weight parameter is given here."
+   ::= { rserpoolENRPPoolElementEntry 9 }
+
+
+
+
+rserpoolENRPPolicyLoad OBJECT-TYPE
+   SYNTAX     RSerPoolPolicyLoadTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The pool policy's load status for this pool element."
+   REFERENCE
+      "Section 3.8 of RFC 5354 defines the Member Selection Policy
+      Parameter of which the policy's load parameter is given here."
+   ::= { rserpoolENRPPoolElementEntry 10 }
+
+rserpoolENRPPolicyLoadDeg OBJECT-TYPE
+   SYNTAX     RSerPoolPolicyLoadTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The pool policy's load degradation parameter for this pool
+      element."
+   REFERENCE
+      "Section 3.8 of RFC 5354 defines the Member Selection Policy
+      Parameter of which the policy's load degradation parameter is
+      given here."
+   ::= { rserpoolENRPPoolElementEntry 11 }
+
+rserpoolENRPRegistrationLife OBJECT-TYPE
+   SYNTAX     TimeTicks
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The registration life of this pool element."
+  REFERENCE
+      "Section 3.10 of RFC 5354 defines the Registration Life."
+   ::= { rserpoolENRPPoolElementEntry 12 }
+
+rserpoolENRPHomeENRPServer OBJECT-TYPE
+   SYNTAX     RSerPoolENRPServerIdentifierTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The ID of the Home ENRP server of this pool element."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the Home ENRP Server
+      Identifier."
+   ::= { rserpoolENRPPoolElementEntry 13 }
+
+-- ## Definition of the ASAP transport address list table #########
+rserpoolENRPASAPAddrTable OBJECT-TYPE
+   SYNTAX     SEQUENCE OF RserpoolENRPASAPAddrTableEntry
+
+
+
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A table listing of all IP addresses of the ASAP transport
+      endpoint."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the ASAP Transport Parameter of
+      which the addresses are listed in this table."
+   ::= { rserpoolENRPServers 5 }
+
+rserpoolENRPASAPAddrTableEntry  OBJECT-TYPE
+   SYNTAX     RserpoolENRPASAPAddrTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "An IP address of the ASAP transport endpoint."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the ASAP Transport Parameter of
+      which an address is contained by this entry."
+   INDEX {
+      rserpoolENRPIndex,
+      rserpoolENRPPoolIndex,
+      rserpoolENRPPoolElementIndex,
+      rserpoolENRPASAPAddrTableIndex }
+   ::= { rserpoolENRPASAPAddrTable 1 }
+
+RserpoolENRPASAPAddrTableEntry ::= SEQUENCE {
+   rserpoolENRPASAPAddrTableIndex Unsigned32,
+   rserpoolENRPASAPL3Type         InetAddressType,
+   rserpoolENRPASAPL3Addr         InetAddress }
+
+rserpoolENRPASAPAddrTableIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A unique identifier for the IP address of an ASAP transport
+      endpoint."
+   ::= { rserpoolENRPASAPAddrTableEntry 1 }
+
+rserpoolENRPASAPL3Type OBJECT-TYPE
+   SYNTAX     InetAddressType { ipv4(1), ipv6(2) }
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The network-layer protocol (IPv4 or IPv6) of an IP address of
+      an ASAP transport endpoint."
+   REFERENCE
+
+
+
+      "Section 3.10 of RFC 5354 defines the ASAP Transport Parameter of
+      which the network-layer protocol number is given here."
+   ::= { rserpoolENRPASAPAddrTableEntry 2 }
+
+rserpoolENRPASAPL3Addr OBJECT-TYPE
+   SYNTAX     InetAddress (SIZE(4|16))
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The IP address of an ASAP transport endpoint.  The type of
+      this address is given in rserpoolENRPASAPL3Type."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the ASAP Transport Parameter of
+      which the network-layer address (IPv4 or IPv6) is given here."
+   ::= { rserpoolENRPASAPAddrTableEntry 3 }
+
+-- ## Definition of the user transport address list table #########
+rserpoolENRPUserAddrTable OBJECT-TYPE
+   SYNTAX     SEQUENCE OF RserpoolENRPUserAddrTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A table listing of all IP addresses of the user
+      transport endpoint."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which the addresses are listed in this table."
+   ::= { rserpoolENRPServers 6 }
+
+rserpoolENRPUserAddrTableEntry  OBJECT-TYPE
+   SYNTAX     RserpoolENRPUserAddrTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "An IP address of the user transport endpoint."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which an address is contained by this entry."
+   INDEX {
+      rserpoolENRPIndex,
+      rserpoolENRPPoolIndex,
+      rserpoolENRPPoolElementIndex,
+      rserpoolENRPUserAddrTableIndex }
+   ::= { rserpoolENRPUserAddrTable 1 }
+
+RserpoolENRPUserAddrTableEntry ::= SEQUENCE {
+   rserpoolENRPUserAddrTableIndex Unsigned32,
+   rserpoolENRPUserL3Type         InetAddressType,
+
+
+
+   rserpoolENRPUserL3Addr         InetAddress,
+   rserpoolENRPUserL3Opaque       RSerPoolOpaqueAddressTC }
+
+rserpoolENRPUserAddrTableIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A unique identifier for the IP address of a user transport
+      endpoint."
+   ::= { rserpoolENRPUserAddrTableEntry 1 }
+
+rserpoolENRPUserL3Type OBJECT-TYPE
+   SYNTAX     InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The network-layer protocol (IPv4 or IPv6) of an IP address
+      of a user transport endpoint.  Set to unknown for an opaque
+      address."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which the network-layer protocol number is given here."
+   ::= { rserpoolENRPUserAddrTableEntry 2 }
+
+rserpoolENRPUserL3Addr OBJECT-TYPE
+   SYNTAX     InetAddress (SIZE(0|4|16))
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The IP address of a user transport endpoint.  The type of
+      this address is given in rserpoolENRPUserL3Type."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which the network-layer address (IPv4 or IPv6) is given here."
+   ::= { rserpoolENRPUserAddrTableEntry 3 }
+
+rserpoolENRPUserL3Opaque OBJECT-TYPE
+   SYNTAX     RSerPoolOpaqueAddressTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The opaque address of a user transport endpoint."
+   REFERENCE
+      "Section 3.16 of RFC 5354 defines the opaque transport address."
+   ::= { rserpoolENRPUserAddrTableEntry 4 }
+
+
+
+
+
+-- ## Definition of ENRP address list table #######################
+rserpoolENRPENRPAddrTable OBJECT-TYPE
+   SYNTAX     SEQUENCE OF RserpoolENRPENRPAddrTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A table listing of all IP addresses of the ENRP
+      transport endpoint."
+   ::= { rserpoolENRPServers 7 }
+
+rserpoolENRPENRPAddrTableEntry  OBJECT-TYPE
+   SYNTAX     RserpoolENRPENRPAddrTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "An IP address of the ENRP transport endpoint."
+   INDEX {
+      rserpoolENRPIndex,
+      rserpoolENRPENRPAddrTableIndex }
+   ::= { rserpoolENRPENRPAddrTable 1 }
+
+RserpoolENRPENRPAddrTableEntry ::= SEQUENCE {
+   rserpoolENRPENRPAddrTableIndex Unsigned32,
+   rserpoolENRPENRPL3Type         InetAddressType,
+   rserpoolENRPENRPL3Addr         InetAddress }
+
+rserpoolENRPENRPAddrTableIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A unique identifier for the IP address of an ENRP transport
+      endpoint."
+   ::= { rserpoolENRPENRPAddrTableEntry 1 }
+
+rserpoolENRPENRPL3Type OBJECT-TYPE
+   SYNTAX     InetAddressType { ipv4(1), ipv6(2) }
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The network-layer protocol (IPv4 or IPv6) of an IP address of
+      an ENRP transport endpoint."
+   REFERENCE
+      "RFC 5353 defines the ENRP protocol."
+   ::= { rserpoolENRPENRPAddrTableEntry 2 }
+
+
+
+
+
+
+rserpoolENRPENRPL3Addr OBJECT-TYPE
+   SYNTAX     InetAddress (SIZE(4|16))
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The IP address of an ENRP transport endpoint.  The type of
+      this address is given in rserpoolENRPENRPL3Type."
+   REFERENCE
+      "RFC 5353 defines the ENRP protocol."
+   ::= { rserpoolENRPENRPAddrTableEntry 3 }
+
+-- ## Definition of peer table ####################################
+rserpoolENRPPeerTable OBJECT-TYPE
+   SYNTAX     SEQUENCE OF RserpoolENRPPeerEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "The table listing of a peer table."
+   ::= { rserpoolENRPServers 8 }
+
+rserpoolENRPPeerEntry OBJECT-TYPE
+   SYNTAX     RserpoolENRPPeerEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A peer entry in the table listing of a peer table."
+   INDEX { rserpoolENRPPeerIndex }
+   ::= { rserpoolENRPPeerTable 1 }
+
+RserpoolENRPPeerEntry ::= SEQUENCE {
+   rserpoolENRPPeerIndex      Unsigned32,
+   rserpoolENRPPeerIdentifier RSerPoolENRPServerIdentifierTC,
+   rserpoolENRPPeerPort       InetPortNumber,
+   rserpoolENRPPeerLastHeard  TimeTicks }
+
+rserpoolENRPPeerIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A unique identifier for a peer entry in the table
+      listing of a peer table."
+   ::= { rserpoolENRPPeerEntry 1 }
+
+rserpoolENRPPeerIdentifier OBJECT-TYPE
+   SYNTAX     RSerPoolENRPServerIdentifierTC
+   MAX-ACCESS read-only
+   STATUS     current
+
+
+
+   DESCRIPTION
+      "The ENRP identifier of this peer."
+   REFERENCE
+      "RFC 5353 explains the usage of the ENRP server identifier."
+   ::= { rserpoolENRPPeerEntry 2 }
+
+rserpoolENRPPeerPort OBJECT-TYPE
+   SYNTAX     InetPortNumber
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The SCTP port number of the ENRP transport endpoint of
+      this peer."
+   REFERENCE
+      "RFC 5353 defines the ENRP protocol."
+   ::= { rserpoolENRPPeerEntry 3 }
+
+rserpoolENRPPeerLastHeard OBJECT-TYPE
+   SYNTAX     TimeTicks
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The time since the reception of the last ENRP Presence
+      message of this peer."
+   REFERENCE
+      "Section 4.1 of RFC 5353 defines the last heard value."
+   ::= { rserpoolENRPPeerEntry 4 }
+
+-- ## Definition of peer address list table #######################
+rserpoolENRPPeerAddrTable OBJECT-TYPE
+   SYNTAX     SEQUENCE OF RserpoolENRPPeerAddrTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A table listing of the peer endpoint addresses."
+   ::= { rserpoolENRPServers 9 }
+
+rserpoolENRPPeerAddrTableEntry  OBJECT-TYPE
+   SYNTAX     RserpoolENRPPeerAddrTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A table listing of all IP addresses of the ENRP
+      transport endpoint of a peer referenced by rserpoolENRPPeerIndex."
+   INDEX {
+      rserpoolENRPPeerIndex,
+      rserpoolENRPPeerAddrTableIndex }
+   ::= { rserpoolENRPPeerAddrTable 1 }
+
+
+
+RserpoolENRPPeerAddrTableEntry ::= SEQUENCE {
+   rserpoolENRPPeerAddrTableIndex Unsigned32,
+   rserpoolENRPPeerL3Type         InetAddressType,
+   rserpoolENRPPeerL3Addr         InetAddress }
+
+rserpoolENRPPeerAddrTableIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A unique identifier for the IP address of a peer ENRP
+      transport endpoint."
+   ::= { rserpoolENRPPeerAddrTableEntry 1 }
+
+rserpoolENRPPeerL3Type OBJECT-TYPE
+   SYNTAX     InetAddressType { ipv4(1), ipv6(2) }
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The network-layer protocol (IPv4 or IPv6) of an IP address
+      of a peer ENRP transport endpoint."
+   REFERENCE
+      "RFC 5353 defines the ENRP protocol."
+   ::= { rserpoolENRPPeerAddrTableEntry 2 }
+
+rserpoolENRPPeerL3Addr OBJECT-TYPE
+   SYNTAX     InetAddress (SIZE(4|16))
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The IP address of a peer ENRP transport endpoint.  The type
+      of this address is given in rserpoolENRPPeerL3Type."
+   REFERENCE
+      "RFC 5353 defines the ENRP protocol."
+   ::= { rserpoolENRPPeerAddrTableEntry 3 }
+
+-- ################################################################
+-- #### Pool Elements Section                                  ####
+-- ################################################################
+
+-- ## Definition of the pool element table ########################
+rserpoolPETable OBJECT-TYPE
+   SYNTAX     SEQUENCE OF RserpoolPEEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "The table listing of pool elements."
+   ::= { rserpoolPoolElements 1 }
+
+
+
+rserpoolPEEntry OBJECT-TYPE
+   SYNTAX     RserpoolPEEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A pool element in the table listing of pool elements."
+   INDEX { rserpoolPEIndex }
+   ::= { rserpoolPETable 1 }
+
+RserpoolPEEntry ::= SEQUENCE {
+   rserpoolPEIndex              Unsigned32,
+   rserpoolPEOperationScope     RSerPoolOperationScopeTC,
+   rserpoolPEPoolHandle         RSerPoolPoolHandleTC,
+   rserpoolPEIdentifier         RserpoolPoolElementIdentifierTC,
+   rserpoolPEDescription        OCTET STRING,
+   rserpoolPEUptime             TimeTicks,
+   rserpoolPEASAPTransportPort  InetPortNumber,
+   rserpoolPEUserTransportProto Unsigned32,
+   rserpoolPEUserTransportPort  InetPortNumber,
+   rserpoolPEUserTransportUse   RSerPoolTransportUseTypeTC,
+   rserpoolPEPolicyID           RSerPoolPolicyIdentifierTC,
+   rserpoolPEPolicyDescription  OCTET STRING,
+   rserpoolPEPolicyWeight       RSerPoolPolicyWeightTC,
+   rserpoolPEPolicyLoad         RSerPoolPolicyLoadTC,
+   rserpoolPEPolicyLoadDeg      RSerPoolPolicyLoadTC,
+   rserpoolPERegistrationLife   TimeTicks,
+   rserpoolPEHomeENRPServer     RSerPoolENRPServerIdentifierTC }
+
+
+rserpoolPEIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "An integer to uniquely identify a pool element.  Note,
+      that uniqueness of a pool element identifier in the pool
+      is not enforced; therefore, this index is required here!"
+   ::={ rserpoolPEEntry 1 }
+
+rserpoolPEOperationScope OBJECT-TYPE
+   SYNTAX     RSerPoolOperationScopeTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The operation scope of this pool element."
+   REFERENCE
+      "Section 1.2 of RFC 3237 defines the term operation scope."
+   ::= { rserpoolPEEntry 2 }
+
+
+
+rserpoolPEPoolHandle OBJECT-TYPE
+   SYNTAX     RSerPoolPoolHandleTC
+   MAX-ACCESS read-write
+   STATUS     current
+   DESCRIPTION
+      "The pool handle of this pool element.  Changing this object
+      will update the pool element's pool handle and result in a
+      re-registration.
+
+      This object SHOULD be maintained in a persistent manner."
+   REFERENCE
+      "Section 1.2 of RFC 3237 defines the term pool handle."
+   ::={ rserpoolPEEntry 3 }
+
+rserpoolPEIdentifier OBJECT-TYPE
+   SYNTAX     RserpoolPoolElementIdentifierTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The pool element identifier of this pool element."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the pool element identifier."
+   ::={ rserpoolPEEntry 4 }
+
+rserpoolPEDescription OBJECT-TYPE
+   SYNTAX     OCTET STRING (SIZE (0..255))
+   MAX-ACCESS read-write
+   STATUS     current
+   DESCRIPTION
+      "A textual description of this pool element, e.g., its location
+      and a contact address of its administrator.
+
+      This object SHOULD be maintained in a persistent manner."
+   ::= { rserpoolPEEntry 5 }
+
+rserpoolPEUptime OBJECT-TYPE
+   SYNTAX     TimeTicks
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The ENRP service uptime of this pool element."
+   ::= { rserpoolPEEntry 6 }
+
+rserpoolPEASAPTransportPort OBJECT-TYPE
+   SYNTAX     InetPortNumber
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+
+
+
+      "The SCTP port number of the ASAP endpoint of this pool element."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the ASAP Transport Parameter of
+      which the port number is given here."
+   ::= { rserpoolPEEntry 7 }
+
+rserpoolPEUserTransportProto OBJECT-TYPE
+   SYNTAX     Unsigned32 (0..255)
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The transport protocol number of the service endpoint
+      of this pool element."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which the transport protocol number is given here."
+   ::= { rserpoolPEEntry 8 }
+
+rserpoolPEUserTransportPort OBJECT-TYPE
+   SYNTAX     InetPortNumber
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The transport protocol's port number of the service
+      endpoint of this pool element."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which the port number is given here."
+   ::= { rserpoolPEEntry 9 }
+
+rserpoolPEUserTransportUse OBJECT-TYPE
+   SYNTAX     RSerPoolTransportUseTypeTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The transport use of the service endpoint of this pool element."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which the transport use is given here."
+   ::= { rserpoolPEEntry 10 }
+
+rserpoolPEPolicyID OBJECT-TYPE
+   SYNTAX     RSerPoolPolicyIdentifierTC
+   MAX-ACCESS read-write
+   STATUS     current
+   DESCRIPTION
+      "The pool policy of this pool element.  Changing this object
+      will update the pool element's policy and result in a
+
+
+
+      re-registration.
+
+      This object SHOULD be maintained in a persistent manner."
+   REFERENCE
+      "Section 3.8 of RFC 5354 defines the Member Selection Policy
+      Parameter of which the policy identifier is given here."
+   ::= { rserpoolPEEntry 11 }
+
+rserpoolPEPolicyDescription OBJECT-TYPE
+   SYNTAX     OCTET STRING (SIZE (0..255))
+   MAX-ACCESS read-write
+   STATUS     current
+   DESCRIPTION
+      "The textual description of the pool policy of this pool element.
+
+      This object SHOULD be maintained in a persistent manner."
+   ::= { rserpoolPEEntry 12 }
+
+rserpoolPEPolicyWeight OBJECT-TYPE
+   SYNTAX     RSerPoolPolicyWeightTC
+   MAX-ACCESS read-write
+   STATUS     current
+   DESCRIPTION
+      "The pool policy's weight parameter for this pool element.
+      Changing this object will update the pool element's policy
+      weight setting and result in a re-registration.
+
+      This object SHOULD be maintained in a persistent manner."
+   REFERENCE
+      "Section 3.8 of RFC 5354 defines the Member Selection Policy
+      Parameter of which the policy's weight parameter is given here."
+   ::= { rserpoolPEEntry 13 }
+
+rserpoolPEPolicyLoad OBJECT-TYPE
+   SYNTAX     RSerPoolPolicyLoadTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The pool policy's load status for this pool element."
+   REFERENCE
+      "Section 3.8 of RFC 5354 defines the Member Selection Policy
+      Parameter of which the policy's load parameter is given here."
+   ::= { rserpoolPEEntry 14 }
+
+
+
+
+
+
+
+
+rserpoolPEPolicyLoadDeg OBJECT-TYPE
+   SYNTAX     RSerPoolPolicyLoadTC
+   MAX-ACCESS read-write
+   STATUS     current
+   DESCRIPTION
+      "The pool policy's load degradation parameter for this pool
+      element.  Changing this object will update the pool element's
+      load degradation setting and result in a re-registration.
+
+      This object SHOULD be maintained in a persistent manner."
+   REFERENCE
+      "Section 3.8 of RFC 5354 defines the Member Selection Policy
+      Parameter of which the policy's load degradation parameter is
+      given here."
+   ::= { rserpoolPEEntry 15 }
+
+rserpoolPERegistrationLife OBJECT-TYPE
+   SYNTAX     TimeTicks
+   MAX-ACCESS read-write
+   STATUS     current
+   DESCRIPTION
+      "The registration life of this pool element.  Changing this
+      object will update the pool element's lifetime setting and
+      result in a re-registration.
+
+      This object SHOULD be maintained in a persistent manner."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the Registration Life."
+   ::= { rserpoolPEEntry 16 }
+
+rserpoolPEHomeENRPServer OBJECT-TYPE
+   SYNTAX     RSerPoolENRPServerIdentifierTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The ID of the Home ENRP server of this pool element."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the Home ENRP Server
+      Identifier."
+   ::= { rserpoolPEEntry 17 }
+
+-- ## Definition of the ASAP transport address list table #########
+rserpoolPEASAPAddrTable OBJECT-TYPE
+   SYNTAX     SEQUENCE OF RserpoolPEASAPAddrTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+
+
+
+
+
+   DESCRIPTION
+      "A table listing of all IP addresses of the ASAP transport
+      endpoint."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the ASAP Transport Parameter of
+      which the addresses are listed in this table."
+   ::= { rserpoolPoolElements 2 }
+
+rserpoolPEASAPAddrTableEntry  OBJECT-TYPE
+   SYNTAX     RserpoolPEASAPAddrTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "An IP address of the ASAP transport endpoint."
+  REFERENCE
+      "Section 3.10 of RFC 5354 defines the ASAP Transport Parameter of
+      which an address is contained by this entry."
+  INDEX {
+      rserpoolPEIndex,
+      rserpoolPEASAPAddrTableIndex }
+   ::= { rserpoolPEASAPAddrTable 1 }
+
+RserpoolPEASAPAddrTableEntry ::= SEQUENCE {
+   rserpoolPEASAPAddrTableIndex Unsigned32,
+   rserpoolPEASAPL3Type         InetAddressType,
+   rserpoolPEASAPL3Addr         InetAddress }
+
+rserpoolPEASAPAddrTableIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A unique identifier for the IP address of an ASAP transport
+      endpoint."
+   ::= { rserpoolPEASAPAddrTableEntry 1 }
+
+rserpoolPEASAPL3Type OBJECT-TYPE
+   SYNTAX     InetAddressType { ipv4(1), ipv6(2) }
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The network-layer protocol (IPv4 or IPv6) of an IP address of
+      an ASAP transport endpoint."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the ASAP Transport Parameter of
+      which the network-layer protocol number is given here."
+   ::= { rserpoolPEASAPAddrTableEntry 2 }
+
+
+
+
+rserpoolPEASAPL3Addr OBJECT-TYPE
+   SYNTAX     InetAddress (SIZE(4|16))
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The IP address of an ASAP transport endpoint.  The type of
+      this address is given in rserpoolPEASAPL3Type."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the ASAP Transport Parameter of
+      which the network-layer address (IPv4 or IPv6) is given here."
+   ::= { rserpoolPEASAPAddrTableEntry 3 }
+
+-- ## Definition of the user transport address list table #########
+rserpoolPEUserAddrTable OBJECT-TYPE
+   SYNTAX     SEQUENCE OF RserpoolPEUserAddrTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A table listing of all IP addresses of the user
+      transport endpoint."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which the addresses are listed in this table."
+   ::= { rserpoolPoolElements 6 }
+
+rserpoolPEUserAddrTableEntry  OBJECT-TYPE
+   SYNTAX     RserpoolPEUserAddrTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "An IP address of the user transport endpoint."
+  REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which an address is contained by this entry."
+   INDEX {
+      rserpoolPEIndex,
+      rserpoolPEUserAddrTableIndex }
+   ::= { rserpoolPEUserAddrTable 1 }
+
+RserpoolPEUserAddrTableEntry ::= SEQUENCE {
+   rserpoolPEUserAddrTableIndex Unsigned32,
+   rserpoolPEUserL3Type         InetAddressType,
+   rserpoolPEUserL3Addr         InetAddress,
+   rserpoolPEUserL3Opaque       RSerPoolOpaqueAddressTC }
+
+rserpoolPEUserAddrTableIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+
+
+
+   STATUS     current
+   DESCRIPTION
+      "A unique identifier for the IP address of a user transport
+      endpoint."
+   ::= { rserpoolPEUserAddrTableEntry 1 }
+
+rserpoolPEUserL3Type OBJECT-TYPE
+   SYNTAX     InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The network-layer protocol of an IP address of a user transport
+      endpoint.  Set to unknown for opaque address."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which the network-layer protocol number is given here."
+   ::= { rserpoolPEUserAddrTableEntry 2 }
+
+rserpoolPEUserL3Addr OBJECT-TYPE
+   SYNTAX     InetAddress (SIZE(0|4|16))
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The IP address of a user transport endpoint.  The type of
+      this address is given in rserpoolPEUserL3Addr."
+   REFERENCE
+      "Section 3.10 of RFC 5354 defines the User Transport Parameter of
+      which the network-layer address (IPv4 or IPv6) is given here."
+   ::= { rserpoolPEUserAddrTableEntry 3 }
+
+rserpoolPEUserL3Opaque OBJECT-TYPE
+   SYNTAX     RSerPoolOpaqueAddressTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The opaque address of a user transport endpoint."
+   REFERENCE
+      "Section 3.16 of RFC 5354 defines the opaque transport address."
+   ::= { rserpoolPEUserAddrTableEntry 4 }
+
+-- ################################################################
+-- #### Pool Users Section                                     ####
+-- ################################################################
+
+-- ## Definition of the pool user table ###########################
+rserpoolPUTable OBJECT-TYPE
+   SYNTAX     SEQUENCE OF RserpoolPUEntry
+   MAX-ACCESS not-accessible
+
+
+
+   STATUS     current
+   DESCRIPTION
+      "The table listing of pool users."
+   ::= { rserpoolPoolUsers 1 }
+
+rserpoolPUEntry OBJECT-TYPE
+   SYNTAX     RserpoolPUEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "A pool user in the table listing of pool users."
+   INDEX { rserpoolPUIndex }
+   ::= { rserpoolPUTable 1 }
+
+RserpoolPUEntry ::= SEQUENCE {
+   rserpoolPUIndex          Unsigned32,
+   rserpoolPUOperationScope RSerPoolOperationScopeTC,
+   rserpoolPUPoolHandle     RSerPoolPoolHandleTC,
+   rserpoolPUDescription    OCTET STRING,
+   rserpoolPUUptime         TimeTicks }
+
+rserpoolPUIndex OBJECT-TYPE
+   SYNTAX     Unsigned32 (1..4294967295)
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION
+      "An integer to uniquely identify a pool user."
+   ::= { rserpoolPUEntry 1 }
+
+rserpoolPUOperationScope OBJECT-TYPE
+   SYNTAX     RSerPoolOperationScopeTC
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The operation scope of this pool user."
+   REFERENCE
+      "Section 1.2 of RFC 3237 defines the term operation scope."
+   ::= { rserpoolPUEntry 2 }
+
+rserpoolPUPoolHandle OBJECT-TYPE
+   SYNTAX     RSerPoolPoolHandleTC
+   MAX-ACCESS read-write
+   STATUS     current
+
+
+
+
+
+
+
+
+   DESCRIPTION
+      "The pool handle of this pool user.  Changing this object
+      will update the pool user's pool handle for all future
+      sessions.
+
+      This object SHOULD be maintained in a persistent manner."
+   REFERENCE
+      "Section 1.2 of RFC 3237 defines the term pool handle."
+   ::={ rserpoolPUEntry 3 }
+
+rserpoolPUDescription OBJECT-TYPE
+   SYNTAX     OCTET STRING (SIZE (0..255))
+   MAX-ACCESS read-write
+   STATUS     current
+   DESCRIPTION
+      "A textual description of this pool user, e.g., its location
+      and a contact address of its administrator.
+
+      This object SHOULD be maintained in a persistent manner."
+   ::= { rserpoolPUEntry 4 }
+
+rserpoolPUUptime OBJECT-TYPE
+   SYNTAX     TimeTicks
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+      "The ENRP service uptime of this pool user."
+   ::= { rserpoolPUEntry 5 }
+
+-- ## MIB conformance and compliance ##############################
+rserpoolMIBCompliances OBJECT IDENTIFIER ::= {
+   rserpoolMIBConformance 1
+}
+
+rserpoolMIBGroups OBJECT IDENTIFIER ::= {
+   rserpoolMIBConformance 2
+}
+
+rserpoolMIBCompliance MODULE-COMPLIANCE
+   STATUS  current
+   DESCRIPTION
+      "The compliance statement for SNMP entities that implement
+      RSerPool."
+   MODULE
+   MANDATORY-GROUPS {
+      rserpoolENRPGroup,
+      rserpoolPEGroup,
+      rserpoolPUGroup }
+
+
+
+   ::= { rserpoolMIBCompliances 1 }
+
+rserpoolENRPGroup OBJECT-GROUP
+   OBJECTS {
+      rserpoolENRPOperationScope,
+      rserpoolENRPIdentifier,
+      rserpoolENRPDescription,
+      rserpoolENRPUptime,
+      rserpoolENRPPort,
+      rserpoolENRPASAPAnnouncePort,
+      rserpoolENRPASAPAnnounceAddr,
+      rserpoolENRPASAPAnnounceAddrType,
+      rserpoolENRPENRPAnnounceAddrType,
+      rserpoolENRPENRPAnnouncePort,
+      rserpoolENRPENRPAnnounceAddr,
+
+      rserpoolENRPPoolHandle,
+      rserpoolENRPPoolElementID,
+
+      rserpoolENRPASAPTransportPort,
+      rserpoolENRPUserTransportProto,
+      rserpoolENRPUserTransportUse,
+      rserpoolENRPUserTransportPort,
+      rserpoolENRPPolicyID,
+      rserpoolENRPPolicyDescription,
+      rserpoolENRPPolicyWeight,
+      rserpoolENRPPolicyLoad,
+      rserpoolENRPPolicyLoadDeg,
+      rserpoolENRPRegistrationLife,
+      rserpoolENRPHomeENRPServer,
+
+      rserpoolENRPASAPL3Type,
+      rserpoolENRPASAPL3Addr,
+
+      rserpoolENRPUserL3Type,
+      rserpoolENRPUserL3Addr,
+      rserpoolENRPUserL3Opaque,
+
+      rserpoolENRPENRPL3Type,
+      rserpoolENRPENRPL3Addr,
+
+      rserpoolENRPPeerIdentifier,
+      rserpoolENRPPeerPort,
+      rserpoolENRPPeerLastHeard,
+      rserpoolENRPPeerL3Type,
+      rserpoolENRPPeerL3Addr }
+   STATUS current
+   DESCRIPTION
+
+
+
+      "The group contains all ENRP server instances
+      running on the system"
+   ::= { rserpoolMIBGroups 1 }
+
+rserpoolPEGroup OBJECT-GROUP
+   OBJECTS {
+      rserpoolPEOperationScope,
+      rserpoolPEPoolHandle,
+      rserpoolPEIdentifier,
+      rserpoolPEDescription,
+      rserpoolPEUptime,
+      rserpoolPEASAPTransportPort,
+      rserpoolPEUserTransportProto,
+      rserpoolPEUserTransportPort,
+      rserpoolPEUserTransportUse,
+      rserpoolPEPolicyID,
+      rserpoolPEPolicyDescription,
+      rserpoolPEPolicyWeight,
+      rserpoolPEPolicyLoad,
+      rserpoolPEPolicyLoadDeg,
+      rserpoolPERegistrationLife,
+      rserpoolPEHomeENRPServer,
+
+      rserpoolPEASAPL3Type,
+      rserpoolPEASAPL3Addr,
+
+      rserpoolPEUserL3Type,
+      rserpoolPEUserL3Addr,
+      rserpoolPEUserL3Opaque }
+   STATUS current
+   DESCRIPTION
+      "The group contains all pool element instances
+      running on the system"
+   ::= { rserpoolMIBGroups 2 }
+
+rserpoolPUGroup OBJECT-GROUP
+   OBJECTS { rserpoolPUOperationScope,
+      rserpoolPUPoolHandle,
+      rserpoolPUDescription,
+      rserpoolPUUptime }
+   STATUS current
+   DESCRIPTION
+      "The group contains all pool user instances
+      running on the system"
+   ::= { rserpoolMIBGroups 3 }
+
+END

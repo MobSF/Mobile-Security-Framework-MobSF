@@ -1,0 +1,82 @@
+Capturing
+---------
+This section will explain the capturing options and give hints on what to do in some special cases.
+
+
+Capture options
+---------------
+The capture options can be logically divided into the following categories:
+
+-input
+-filtering
+-stop conditions
+-storing
+-display while capturing
+
+Input options
+-------------
+-Interface: You have to choose which interface (network card) will be used to capture packets from. Be sure to select the correct one, as it's a common mistake to select the wrong interface.
+
+-Link-layer header type: unless you are in the rare case that you will need this, just keep the default.
+
+Filtering options
+-----------------
+-Capture packets in promiscuous mode: Usually a network card will only capture the traffic to its own network address. If you want to capture all traffic that the network card can "see", mark this option. See the FAQ for some more details of capturing packets from a switched network.
+
+-Limit each packet to xy bytes: Will limit the maximum size to be captured of each packet, this includes the link-layer header and all subsequent headers. This can be useful when an error is known to be in the first 20 bytes of a packet, for example, as the size of the resulting capture file will be reduced.
+
+-Capture Filter: Use a capture filter to reduce the amount of packets to be captured. See "Capture Filters" in this help for further information how to use it.
+
+Storing options
+---------------
+-File: You can choose the file to which captured data will be written. If you don't enter something here a temporary file will be used.
+
+-Use multiple files: Instead of using a single capture file, multiple files will be created. The generated filenames will contain an incrementing number and the start time of the capture. For example, if you choose "/foo.cap" in the "File" field, files like "/foo_00001_20040205110102.cap", "/foo_00002_20040205110102.cap", ... will be created.
+This feature can be useful if you do long term capturing, as working with a single capture file of several GB usually isn't very fast.
+
+Stop condition options
+----------------------
+These three fields should be obvious; the capture process will be automatically stopped if one of the selected conditions is exceeded.
+
+Display while capturing options
+-------------------------------
+-Update list of packets in real time: Using this will show the captured packets immediately on the main screen.
+Please note: this will slow down capturing, so increased packet drops might appear.
+
+-Automatic scrolling in live capture: This will scroll the "Packet List" automatically to the latest captured packet, when the "Update List of packets in real time" option is used.
+
+-Name resolution: perform the corresponding name resolution while capturing.
+
+
+
+High performance capturing
+--------------------------
+When your network traffic is high, you might need to take some steps to ensure Wireshark doesn't get behind on its capture, particularly if you're running it on a slow computer.
+
+When Wireshark cannot keep up, packets are dropped. To help avoid this as much as possible:
+
+a) Don't use the "Update list of packets in real time" option (see above). This has a significant performance penalty.
+
+b) Close other programs that might slow down your system, such as virus scanner software, server processes, etc.
+
+c) It might be a good idea not to use a capture filter. This will depend on the task you have to do.
+As a rule of thumb: if you want to see most of the packets and only filter a small number out, don't use a capture filter (you can use a display filter later). If you only want to capture a small proportion of the packets, it might be better to set a capture filter, as this will reduce the number of packets that have to be saved.
+
+d) If you still get packet drops, it might be an idea to use a tool dedicated to packet capturing and only use Wireshark for displaying and analyzing the packets.
+
+Have a look at tshark, the command line variant of wireshark, which is included in this package.
+XXX: add a list of possibly useful standalone capture programs.
+
+
+
+Long term capturing
+-------------------
+By "Long term capturing", it's meant to capture data from a network for several hours or even days. Long term capturing will usually result in huge capture files, being hundreds of MB's or even several GB's in size!
+
+Before doing a long term capture, get familiar with the options to use for it, as you might not get what you desire. Doing a long term capture not getting the results needed, is usually wasting a lot of time. ;-)
+
+Rules of thumb for this task:
+-Use the ring buffer feature when you expect very large capture files.
+-Don't use the "Update list of packets in real time" option.
+-Set an appropriate capture filter, when you are only interested in some special packets from the net.
+

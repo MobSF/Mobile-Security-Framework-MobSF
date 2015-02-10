@@ -1,0 +1,375 @@
+RFC1269-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+     NetworkAddress, IpAddress, Counter
+          FROM RFC1155-SMI
+     mib-2
+          FROM RFC1213-MIB
+   OBJECT-TYPE
+          FROM RFC-1212
+     TRAP-TYPE
+          FROM RFC-1215;
+
+-- This MIB module uses the extended OBJECT-TYPE macro as
+-- defined in [9], and the TRAP-TYPE macro as defined
+-- in [10].
+
+bgp     OBJECT IDENTIFIER ::= { mib-2 15 }
+
+bgpVersion OBJECT-TYPE
+     SYNTAX OCTET STRING
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "Vector of supported BGP protocol version
+          numbers. Each peer negotiates the version from
+          this vector.  Versions are identified via the
+          string of bits contained within this object.
+          The first octet contains bits 0 to 7, the
+          second octet contains bits 8 to 15, and so on,
+          with the most significant bit referring to the
+          lowest bit number in the octet (e.g., the MSB
+          of the first octet refers to bit 0).  If a bit,
+          i, is present and set, then the version (i+1)
+          of the BGP is supported."
+     ::= { bgp 1 }
+
+bgpLocalAs OBJECT-TYPE
+     SYNTAX INTEGER (0..65535)
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The local autonomous system number."
+     ::= { bgp 2 }
+
+bgpPeerTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF BgpPeerEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+          "The bgp peer table."
+     ::= { bgp 3 }
+
+bgpIdentifier OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The BGP Identifier of local system."
+     ::= { bgp 4 }
+
+bgpPeerEntry OBJECT-TYPE
+     SYNTAX BgpPeerEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+          "Information about a BGP peer connection."
+     INDEX
+          { bgpPeerRemoteAddr }
+         ::= { bgpPeerTable 1 }
+
+BgpPeerEntry ::= SEQUENCE {
+     bgpPeerIdentifier
+          IpAddress,
+     bgpPeerState
+          INTEGER,
+     bgpPeerAdminStatus
+          INTEGER,
+     bgpPeerNegotiatedVersion
+          INTEGER,
+     bgpPeerLocalAddr
+          IpAddress,
+     bgpPeerLocalPort
+          INTEGER,
+     bgpPeerRemoteAddr
+          IpAddress,
+     bgpPeerRemotePort
+          INTEGER,
+     bgpPeerRemoteAs
+          INTEGER,
+     bgpPeerInUpdates
+          Counter,
+     bgpPeerOutUpdates
+          Counter,
+     bgpPeerInTotalMessages
+          Counter,
+     bgpPeerOutTotalMessages
+          Counter,
+     bgpPeerLastError
+          OCTET STRING
+     }
+
+bgpPeerIdentifier OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The BGP Identifier of this entry's BGP peer."
+     ::= { bgpPeerEntry 1 }
+
+bgpPeerState OBJECT-TYPE
+     SYNTAX INTEGER {
+          idle(1),
+          connect(2),
+          active(3),
+          opensent(4),
+          openconfirm(5),
+          established(6)
+     }
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The bgp peer connection state. "
+     ::= { bgpPeerEntry 2 }
+
+bgpPeerAdminStatus OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+          "The desired state of the BGP connection. A
+          transition from 'stop' to 'start' will cause
+          the BGP Start Event to be generated. A
+          transition from 'start' to 'stop' will cause
+          the BGP Stop Event to be generated. This
+          parameter can be used to restart BGP peer
+          connections.  Care should be used in providing
+          write access to this object without adequate
+          authentication."
+     ::= { bgpPeerEntry 3 }
+
+bgpPeerNegotiatedVersion OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The negotiated version of BGP running between
+          the two peers. "
+     ::= { bgpPeerEntry 4 }
+
+bgpPeerLocalAddr OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The local IP address of this entry's BGP
+          connection."
+     ::= { bgpPeerEntry 5 }
+
+bgpPeerLocalPort OBJECT-TYPE
+     SYNTAX INTEGER (0..65535)
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The local port for the TCP connection between
+          the BGP peers."
+     ::= { bgpPeerEntry 6 }
+
+bgpPeerRemoteAddr OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The remote IP address of this entry's BGP
+          peer."
+     ::= { bgpPeerEntry 7 }
+
+bgpPeerRemotePort OBJECT-TYPE
+     SYNTAX INTEGER (0..65535)
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The remote port for the TCP connection between
+          the BGP peers.  Note that the objects
+          bgpLocalAddr, bgpLocalPort, bgpRemoteAddr and
+          bgpRemotePort provide the appropriate reference
+          to the standard MIB TCP connection table."
+     ::= { bgpPeerEntry 8 }
+
+bgpPeerRemoteAs OBJECT-TYPE
+     SYNTAX INTEGER (0..65535)
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The remote autonomous system number."
+     ::= { bgpPeerEntry 9 }
+
+bgpPeerInUpdates OBJECT-TYPE
+     SYNTAX Counter
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The number of BGP UPDATE messages received on
+          this connection. This object should be
+          initialized to zero when the connection is
+          established."
+     ::= { bgpPeerEntry 10 }
+
+bgpPeerOutUpdates OBJECT-TYPE
+     SYNTAX Counter
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The number of BGP UPDATE messages received on
+          this connection. This object should be
+          initialized to zero when the connection is
+          established."
+     ::= { bgpPeerEntry 11}
+
+bgpPeerInTotalMessages OBJECT-TYPE
+     SYNTAX Counter
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The total number of messages received from the
+          remote peer on this connection. This object
+          should be initialized to zero when the
+          connection is established."
+     ::= { bgpPeerEntry 12 }
+
+bgpPeerOutTotalMessages OBJECT-TYPE
+     SYNTAX Counter
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The total number of messages transmitted to
+          the remote peer on this connection. This object
+          should be initialized to zero when the
+          connection is established."
+     ::= { bgpPeerEntry 13 }
+
+bgpPeerLastError OBJECT-TYPE
+     SYNTAX OCTET STRING (SIZE (2))
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The last error code and subcode seen by this
+          peer on this connection. If no error has
+          occurred, this field is zero. Otherwise, the
+          first byte of this two byte OCTET STRING
+          contains the error code; the second contains
+          the subcode."
+     ::= { bgpPeerEntry 14 }
+
+bgpRcvdPathAttrTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF BgpPathAttrEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+          "The BGP Received Path Attribute Table contains
+          information about paths to destination networks
+          received by all peers."
+     ::= { bgp 5 }
+
+bgpPathAttrEntry OBJECT-TYPE
+     SYNTAX BgpPathAttrEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+          "Information about a path to a network."
+     INDEX
+          { bgpPathAttrDestNetwork,
+            bgpPathAttrPeer }
+     ::= { bgpRcvdPathAttrTable 1 }
+
+BgpPathAttrEntry ::= SEQUENCE {
+     bgpPathAttrPeer
+          IpAddress,
+     bgpPathAttrDestNetwork
+          IpAddress,
+     bgpPathAttrOrigin
+          INTEGER,
+     bgpPathAttrASPath
+          OCTET STRING,
+     bgpPathAttrNextHop
+          IpAddress,
+     bgpPathAttrInterASMetric
+          INTEGER
+     }
+
+bgpPathAttrPeer OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The IP address of the peer where the path
+          information
+           was learned."
+     ::= { bgpPathAttrEntry 1 }
+
+bgpPathAttrDestNetwork OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The address of the destination network."
+     ::= { bgpPathAttrEntry 2 }
+
+bgpPathAttrOrigin OBJECT-TYPE
+     SYNTAX INTEGER {
+          igp(1),-- networks are interior
+          egp(2),-- networks learned via EGP
+          incomplete(3) -- undetermined
+     }
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The ultimate origin of the path information."
+     ::= { bgpPathAttrEntry 3 }
+
+bgpPathAttrASPath OBJECT-TYPE
+     SYNTAX OCTET STRING
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The set of ASs that must be traversed to reach
+          the network. ( This object is probably best
+          represented as SEQUENCE OF INTEGER. For SMI
+          compatibility, though, it is represented as
+          OCTET STRING. Each AS is represented as a pair
+          of octets according to the following algorithm:
+
+               first-byte-of-pair = ASNumber / 256;
+               second-byte-of-pair = ASNumber & 255;"
+     ::= { bgpPathAttrEntry 4 }
+
+bgpPathAttrNextHop OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The address of the border router that should
+          be used for the destination network."
+     ::= { bgpPathAttrEntry 5 }
+
+bgpPathAttrInterASMetric OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The optional inter-AS metric. If this
+          attribute has not been provided for this route,
+          the value for this object is 0."
+     ::= { bgpPathAttrEntry 6 }
+
+bgpEstablished TRAP-TYPE
+     ENTERPRISE bgp
+     VARIABLES  { bgpPeerRemoteAddr,
+               bgpPeerLastError,
+               bgpPeerState }
+     DESCRIPTION
+          "The BGP Established event is generated when
+          the BGP FSM enters the ESTABLISHED state. "
+     ::= 1
+
+bgpBackwardTransition TRAP-TYPE
+     ENTERPRISE bgp
+     VARIABLES  { bgpPeerRemoteAddr,
+               bgpPeerLastError,
+               bgpPeerState }
+     DESCRIPTION
+          "The BGPBackwardTransition Event is generated
+          when the BGP FSM moves from a higher numbered
+          state to a lower numbered state."
+     ::= 2
+END

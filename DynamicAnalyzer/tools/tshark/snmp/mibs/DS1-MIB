@@ -1,0 +1,3181 @@
+DS1-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+     MODULE-IDENTITY, OBJECT-TYPE,
+     NOTIFICATION-TYPE, transmission
+     FROM SNMPv2-SMI         -- [RFC2578]
+     DisplayString, TimeStamp, TruthValue
+     FROM SNMPv2-TC          -- [RFC2579]
+     MODULE-COMPLIANCE, OBJECT-GROUP,
+     NOTIFICATION-GROUP
+     FROM SNMPv2-CONF        -- [RFC2580]
+     InterfaceIndex, ifIndex
+     FROM IF-MIB             -- [RFC2863]
+     PerfCurrentCount, PerfIntervalCount,
+     PerfTotalCount
+     FROM PerfHist-TC-MIB;   -- [RFC3593]
+
+ds1 MODULE-IDENTITY
+    LAST-UPDATED "200703050000Z"
+    ORGANIZATION "IETF AToM MIB Working Group"
+
+
+
+    CONTACT-INFO
+      "WG charter:
+       http://www.ietf.org/html.charters/atommib-charter.html
+
+       Mailing Lists:
+         General Discussion: atommib@research.telcordia.com
+         To Subscribe: atommib-request@research.telcordia.com
+
+       Editor: Orly Nicklass
+
+       Postal: RAD Data Communications, Ltd.
+               Ziv Tower, 24 Roul Walenberg
+               Tel Aviv, Israel, 69719
+
+               Tel: +9723 765 9969
+       E-mail: orly_n@rad.com"
+
+    DESCRIPTION
+         "The MIB module to describe DS1, J1, E1, DS2, and
+          E2 interfaces objects.
+
+          Copyright (c) The IETF Trust (2007).  This
+          version of this MIB module is part of RFC 4805;
+          see the RFC itself for full legal notices."
+    REVISION "200703050000Z"
+    DESCRIPTION
+         "The following changes were made:
+          (1) Values were added to dsx1LineType to
+              support J1 types.
+          (2) The object dsx1LineImpedance was added.
+          (3) All DM-related objects were deprecated
+              following their removal from ITU performance
+              standards.
+         The RFC 4805 version of this MIB module."
+    REVISION "200409090000Z"
+    DESCRIPTION
+         "The RFC 3895 version of this MIB module.
+          The key changes made to this MIB module
+          since its publication in RFC 2495 are as follows:
+     (1) The dsx1FracIfIndex SYNTAX matches the description
+         range.
+     (2) A value was added to dsx1TransmitClockSource.
+     (3) Values were added to dsx1LineType.
+     (4) Two objects were added, dsx1LineMode and
+         dsx1LineBuildOut, to better express transceiver
+         mode and LineBuildOut for T1.
+     (5) Reference was added to Circuit Identifier object.
+
+
+
+
+     (6) Align the DESCRIPTION clauses of few statistic
+         objects with the near-end definition, with the far-end
+         definition, and with RFC 3593.
+     (7) Changes in Compliance Statements to include new
+         objects.
+     (8) A typographical error in dsx2E2 was fixed; the new name
+         is dsx1E2."
+
+    REVISION "199808011830Z"
+    DESCRIPTION
+         "The RFC 2495 version of this MIB module.
+          The key changes made to this MIB module
+          since its publication in RFC 1406 are as follows:
+     (1)  The Fractional table has been deprecated.
+     (2)  This document uses SMIv2.
+     (3)  Usage is given for ifTable and ifXTable.
+     (4)  Example usage of ifStackTable is included.
+     (5)  dsx1IfIndex has been deprecated.
+     (6)  Support for DS2 and E2 has been added.
+     (7)  Additional lineTypes for DS2, E2, and unframed E1
+          were added.
+     (8)  The definition of valid intervals has been clarified
+          for the case where the agent proxied for other
+          devices.  In particular, the treatment of missing
+          intervals has been clarified.
+     (9)  An inward loopback has been added.
+     (10) Additional lineStatus bits have been added for Near
+          End in Unavailable Signal State, Carrier Equipment
+          Out of Service, DS2 Payload AIS, and DS2 Performance
+          Threshold.
+     (11) A read-write line Length object has been added.
+     (12) Signal mode of other has been added.
+     (13) Added a lineStatus last change, trap and enabler.
+     (14) The e1(19) ifType has been obsoleted, so this MIB
+          does not list it as a supported ifType.
+     (15) Textual Conventions for statistics objects have
+          been used.
+     (16) A new object, dsx1LoopbackStatus, has been
+          introduced to reflect the loopbacks established
+          on a DS1 interface and the source to the requests.
+          dsx1LoopbackConfig continues to be the desired
+          loopback state while dsx1LoopbackStatus reflects
+          the actual state.
+     (17) A dual loopback has been added to allow the setting
+          of an inward loopback and a line loopback at the
+          same time.
+     (18) An object indicating which channel to use within a
+          parent object (i.e., DS3) has been added.
+
+
+
+     (19) An object has been added to indicate whether or
+          not this DS1/E1 is channelized.
+     (20) Line coding type of B6ZS has been added for DS2."
+
+    REVISION "199301252028Z"
+    DESCRIPTION
+         "Initial version, published as RFC 1406."
+    ::= { transmission 18 }
+
+-- note that this subsumes cept(19) and g703at2mb(67)
+-- there is no separate CEPT or G703AT2MB MIB
+-- The DS1 Near End Group
+
+-- The DS1 Near End Group consists of five tables:
+--    DS1 Configuration
+--    DS1 Current
+--    DS1 Interval
+--    DS1 Total
+--    DS1 Channel Table
+
+-- The DS1 Configuration Table
+
+dsx1ConfigTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx1ConfigEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS1 Configuration table."
+     ::= { ds1 6 }
+
+dsx1ConfigEntry OBJECT-TYPE
+     SYNTAX  Dsx1ConfigEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS1 Configuration table."
+     INDEX   { dsx1LineIndex }
+     ::= { dsx1ConfigTable 1 }
+
+Dsx1ConfigEntry ::=
+     SEQUENCE {
+           dsx1LineIndex                    InterfaceIndex,
+           dsx1IfIndex                      InterfaceIndex,
+           dsx1TimeElapsed                  INTEGER,
+           dsx1ValidIntervals               INTEGER,
+           dsx1LineType                     INTEGER,
+           dsx1LineCoding                   INTEGER,
+           dsx1SendCode                     INTEGER,
+
+
+
+           dsx1CircuitIdentifier            DisplayString,
+           dsx1LoopbackConfig               INTEGER,
+           dsx1LineStatus                   INTEGER,
+           dsx1SignalMode                   INTEGER,
+           dsx1TransmitClockSource          INTEGER,
+           dsx1Fdl                          INTEGER,
+           dsx1InvalidIntervals             INTEGER,
+           dsx1LineLength                   INTEGER,
+           dsx1LineStatusLastChange         TimeStamp,
+           dsx1LineStatusChangeTrapEnable   INTEGER,
+           dsx1LoopbackStatus               INTEGER,
+           dsx1Ds1ChannelNumber             INTEGER,
+           dsx1Channelization               INTEGER,
+           dsx1LineMode                     INTEGER,
+           dsx1LineBuildOut                 INTEGER,
+           dsx1LineImpedance                INTEGER
+}
+
+dsx1LineIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "This object should be made equal to ifIndex.  The
+            next paragraph describes its previous usage.
+            Making the object equal to ifIndex allows proper
+            use of the ifStackTable and ds0/ds0bundle MIBs.
+
+            Previously, this object was the identifier of a DS1
+            interface on a managed device.  If there is an
+            ifEntry that is directly associated with this and
+            only this DS1 interface, it should have the same
+            value as ifIndex.  Otherwise, number the
+            dsx1LineIndices with a unique identifier
+            following the rules of choosing a number that is
+            greater than ifNumber and numbering the inside
+            interfaces (e.g., equipment side) with even
+            numbers and outside interfaces (e.g., network
+            side) with odd numbers."
+     ::= { dsx1ConfigEntry 1 }
+
+dsx1IfIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only
+     STATUS  deprecated
+     DESCRIPTION
+            "This value for this object is equal to the value
+
+
+
+            of ifIndex from the Interfaces table (RFC 2863)."
+     ::= { dsx1ConfigEntry 2 }
+
+dsx1TimeElapsed OBJECT-TYPE
+     SYNTAX  INTEGER (0..899)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of seconds that have elapsed since the
+            beginning of the near-end current error-
+            measurement period.  If, for some reason, such as
+            an adjustment in the system's time-of-day clock,
+            the current interval exceeds the maximum value,
+            the agent will return the maximum value."
+     ::= { dsx1ConfigEntry 3 }
+
+dsx1ValidIntervals OBJECT-TYPE
+     SYNTAX  INTEGER (0..96)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of previous near-end intervals for
+            which data was collected.  The value will be 96
+            unless the interface was brought online within the
+            last 24 hours, in which case the value will be the
+            number of complete 15-minute near-end intervals
+            since the interface has been online.  In the case
+            where the agent is a proxy, it is possible that
+            some intervals are unavailable.  In this case,
+            this interval is the maximum interval number for
+            which data is available."
+     ::= { dsx1ConfigEntry 4 }
+
+dsx1LineType OBJECT-TYPE
+     SYNTAX INTEGER {
+               other(1),
+               dsx1ESF(2),
+               dsx1D4(3),
+               dsx1E1(4),
+               dsx1E1CRC(5),
+               dsx1E1MF(6),
+               dsx1E1CRCMF(7),
+               dsx1Unframed(8),
+               dsx1E1Unframed(9),
+               dsx1DS2M12(10),
+               dsx1E2(11),
+               dsx1E1Q50(12),
+               dsx1E1Q50CRC(13),
+
+
+
+               dsx1J1ESF(14),
+               dsx1J1Unframed(16)
+                               }
+     MAX-ACCESS read-write
+     STATUS current
+     DESCRIPTION
+            "This variable indicates the variety of DS1
+            Line implementing this circuit.  The type of
+            circuit affects the number of bits per second
+            that the circuit can reasonably carry, as well
+            as the interpretation of the usage and error
+            statistics.  The values, in sequence, describe:
+
+                  TITLE:          SPECIFICATION:
+                  dsx1ESF         Extended SuperFrame DS1
+                                         (T1.107)
+                  dsx1D4          AT&T D4 format DS1 (T1.107)
+                  dsx1E1          ITU-T G.704, (Table 5A)
+                  dsx1E1-CRC      ITU-T G.704, (Table 5B)
+                  dsxE1-MF        G.704 (Table 5A) with TS16
+                                         multiframing enabled
+                  dsx1E1-CRC-MF   G.704 (Table 5B) with TS16
+                                         multiframing enabled
+                  dsx1Unframed    DS1 with No Framing
+                  dsx1E1Unframed  E1 with No Framing (G.703)
+                  dsx1DS2M12      DS2 frame format (T1.107)
+                  dsx1E2          E2 frame format (G.704)
+                  dsx1E1Q50       TS16 bits 5,7,8 set to 101,
+                                  [in all other cases it is set
+                                  to 111.] (G.704, table 14)
+                  dsx1E1Q50CRC    E1Q50 with CRC
+                  dsx1J1ESF       J1 according to (JT-G704,
+                                         JT-G706, and JT-I431)
+                  dsx1J1Unframed  J1 with No Framing
+
+            For clarification, the capacity for each E1 type
+            is as listed below:
+            dsx1E1Unframed - E1, no framing = 32 x 64k = 2048k
+            dsx1E1 or dsx1E1CRC - E1, with framing,
+            no signalling = 31 x 64k = 1984k
+            dsx1E1MF or dsx1E1CRCMF - E1, with framing,
+            signalling = 30 x 64k = 1920k"
+     REFERENCE
+       "American National Standard for
+             telecommunications -
+             digital hierarchy - formats specification,
+             ANSI T1.107- 1988.
+        ITU-T G.703: Physical/Electrical Characteristics
+
+
+
+             of Hierarchical Digital Interfaces, November
+             2001.
+        ITU-T G.704: Synchronous frame structures used at
+             1544, 6312, 2048, 8488 and 44 736 kbit/s
+             Hierarchical Levels, July 1995.
+        JT-G704: Synchronous frame structures used at
+             Primary and Secondary Hierarchical Levels,2002.
+        JT-G706. Frame Alignment and Cyclic Redundancy
+             Check (CRC) Procedures.
+        JT-I431. ISDN Primary Rate User-Network Interface,
+             Layer 1 Specifications, 2002 "
+::= { dsx1ConfigEntry 5 }
+
+dsx1LineCoding OBJECT-TYPE
+     SYNTAX  INTEGER {
+                dsx1JBZS(1),
+                dsx1B8ZS(2),
+                dsx1HDB3(3),
+                dsx1ZBTSI(4),
+                dsx1AMI(5),
+                other(6),
+                dsx1B6ZS(7)
+            }
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This variable describes the variety of Zero Code
+            Suppression used on this interface, which in turn
+            affects a number of its characteristics.
+
+            dsx1JBZS refers the Jammed Bit Zero Suppression,
+            in which the AT&T specification of at least one
+            pulse every 8-bit period is literally implemented
+            by forcing a pulse in bit 8 of each channel.
+            Thus, only 7 bits per channel, or 1.344 Mbps,
+            are available for data.
+
+            dsx1B8ZS refers to the use of a specified pattern
+            of normal bits and bipolar violations that are
+            used to replace a sequence of 8 zero bits.
+            ANSI Clear Channels may use dsx1ZBTSI, or Zero
+            Byte Time Slot Interchange.
+
+            E1 links, with or without CRC, use dsx1HDB3 or
+            dsx1AMI.
+
+            dsx1AMI refers to a mode wherein no Zero Code
+            Suppression is present and the line encoding does
+
+
+
+            not solve the problem directly.  In this
+            application, the higher layer must provide data
+            that meets or exceeds the pulse density
+            requirements, such as inverting HDLC data.
+
+            dsx1B6ZS refers to the user of a specified pattern
+            of normal bits and bipolar violations that are
+            used to replace a sequence of 6 zero bits.  Used
+            for DS2.
+            For more information about line coding see
+            [ANSI-T1.102]"
+     ::= { dsx1ConfigEntry 6 }
+
+dsx1SendCode OBJECT-TYPE
+     SYNTAX  INTEGER {
+               dsx1SendNoCode(1),
+               dsx1SendLineCode(2),
+               dsx1SendPayloadCode(3),
+               dsx1SendResetCode(4),
+               dsx1SendQRS(5),
+               dsx1Send511Pattern(6),
+               dsx1Send3in24Pattern(7),
+               dsx1SendOtherTestPattern(8)
+               }
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This variable indicates what type of code is
+            being sent across the DS1 interface by the device.
+            Setting this variable causes the interface to send
+            the code requested.  The values mean the following:
+
+      dsx1SendNoCode
+           sending looped or normal data
+
+      dsx1SendLineCode
+           sending a request for a line loopback
+
+      dsx1SendPayloadCode
+           sending a request for a payload loopback
+
+      dsx1SendResetCode
+           sending a loopback termination request
+
+      dsx1SendQRS
+           sending a Quasi-Random Signal (QRS) test
+           pattern
+
+
+
+
+      dsx1Send511Pattern
+           sending a 511-bit fixed test pattern
+
+      dsx1Send3in24Pattern
+           sending a fixed test pattern of 3 bits set
+           in 24
+
+      dsx1SendOtherTestPattern
+           sending a test pattern other than those
+           described by this object"
+     ::= { dsx1ConfigEntry 7 }
+
+dsx1CircuitIdentifier OBJECT-TYPE
+     SYNTAX  DisplayString (SIZE (0..255))
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This variable contains the transmission vendor's
+            circuit identifier, for the purpose of
+            facilitating troubleshooting."
+     REFERENCE "ITU-T M.1400"
+     ::= { dsx1ConfigEntry 8 }
+
+dsx1LoopbackConfig OBJECT-TYPE
+     SYNTAX  INTEGER {
+                 dsx1NoLoop(1),
+                 dsx1PayloadLoop(2),
+                 dsx1LineLoop(3),
+                 dsx1OtherLoop(4),
+                 dsx1InwardLoop(5),
+                 dsx1DualLoop(6)
+               }
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This variable represents the desired loopback
+            configuration of the DS1 interface.  Agents
+            supporting read/write access should return
+            inconsistentValue in response to a requested
+            loopback state that the interface does not
+            support.  The values mean:
+
+      dsx1NoLoop
+            not in the loopback state.  A device that is not
+            capable of performing a loopback on the interface
+            shall always return this as its value.
+
+      dsx1PayloadLoop
+
+
+
+            the received signal at this interface is looped
+            through the device.  Typically, the received signal
+            is looped back for retransmission after it has
+            passed through the device's framing function.
+
+      dsx1LineLoop
+            the received signal at this interface does not go
+            through the device (minimum penetration) but is
+            looped back out.
+
+      dsx1OtherLoop
+            loopbacks that are not defined here.
+
+      dsx1InwardLoop
+            the transmitted signal at this interface is
+            looped back and received by the same interface.
+            What is transmitted onto the line is product
+            dependent.
+
+      dsx1DualLoop
+            both dsx1LineLoop and dsx1InwardLoop will be
+            active simultaneously."
+     ::= { dsx1ConfigEntry 9 }
+
+dsx1LineStatus OBJECT-TYPE
+     SYNTAX  INTEGER (1..131071)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "This variable indicates the line status of the
+            interface.  It contains loopback, failure,
+            received alarm and transmitted alarms
+            information.
+
+            The dsx1LineStatus is a bitmap represented as a
+            sum; therefore, it can represent multiple failures
+            (alarms) and a LoopbackState simultaneously.
+
+            dsx1NoAlarm must be set if and only if no other
+            flag is set.
+
+            If the dsx1loopbackState bit is set, the loopback
+            in effect can be determined from the
+            dsx1loopbackConfig object.  The various bit
+            positions are as follows:
+
+      1     dsx1NoAlarm           No alarm present
+      2     dsx1RcvFarEndLOF      Far end LOF (a.k.a.
+
+
+
+                                  Yellow Alarm)
+      4     dsx1XmtFarEndLOF      Near end sending LOF
+                                  indication
+      8     dsx1RcvAIS            Far end sending AIS
+     16     dsx1XmtAIS            Near end sending AIS
+     32     dsx1LossOfFrame       Near end LOF (a.k.a.
+                                  Red Alarm)
+     64     dsx1LossOfSignal      Near end Loss of Signal
+    128     dsx1LoopbackState     Near end is looped
+    256     dsx1T16AIS            E1 TS16 AIS
+    512     dsx1RcvFarEndLOMF     Far end sending TS16 LOMF
+   1024     dsx1XmtFarEndLOMF     Near end sending TS16 LOMF
+   2048     dsx1RcvTestCode       Near end detects a test code
+   4096     dsx1OtherFailure      Any line status not defined
+                                  here
+   8192     dsx1UnavailSigState   Near end in unavailable
+                                  signal state
+  16384     dsx1NetEquipOOS       Carrier equipment out of
+                                  service
+  32768     dsx1RcvPayloadAIS     DS2 payload AIS
+  65536     dsx1Ds2PerfThreshold  DS2 performance threshold
+                                  exceeded"
+     ::= { dsx1ConfigEntry 10 }
+
+dsx1SignalMode OBJECT-TYPE
+     SYNTAX  INTEGER {
+                none(1),
+                robbedBit(2),
+                bitOriented(3),
+                messageOriented(4),
+                other(5)
+            }
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+       "'none' indicates that no bits are reserved for
+       signaling on this channel.
+
+       'robbedBit' indicates that DS1 Robbed Bit Signaling
+       is in use.
+
+       'bitOriented' indicates that E1 Channel Associated
+       Signaling is in use.
+
+       'messageOriented' indicates that Common Channel
+       Signaling is in use on either channel 16 of
+       an E1 link or channel 24 of a DS1."
+     ::= { dsx1ConfigEntry 11 }
+
+
+
+dsx1TransmitClockSource OBJECT-TYPE
+     SYNTAX  INTEGER {
+                loopTiming(1),
+                localTiming(2),
+                throughTiming(3),
+                adaptive (4)
+            }
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+       "The source of transmit clock.
+
+        'loopTiming' indicates that the recovered
+        receive clock is used as the transmit clock.
+
+        'localTiming' indicates that a local clock
+       source is used or when an external clock is
+       attached to the box containing the interface.
+
+        'throughTiming' indicates that recovered
+       receive clock from another interface is used as
+       the transmit clock.
+
+        'adaptive' indicates that the clock is recovered
+       based on the data flow and not based on the
+       physical layer"
+     ::= { dsx1ConfigEntry 12 }
+
+dsx1Fdl OBJECT-TYPE
+     SYNTAX  INTEGER (1..15)
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+       "This bitmap describes the use of the
+       facilities data link and is the sum of the
+       capabilities.  Set any bits that are appropriate:
+
+       other(1),
+       dsx1AnsiT1403(2),
+       dsx1Att54016(4),
+       dsx1FdlNone(8)
+
+        'other' indicates that a protocol other than
+       one of the following is used.
+
+        'dsx1AnsiT1403' refers to the FDL exchange
+       recommended by ANSI.
+
+
+
+
+        'dsx1Att54016' refers to ESF FDL exchanges.
+
+        'dsx1FdlNone' indicates that the device does
+       not use the FDL."
+     ::= { dsx1ConfigEntry 13 }
+
+dsx1InvalidIntervals OBJECT-TYPE
+     SYNTAX  INTEGER (0..96)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of intervals in the range from 0 to
+            dsx1ValidIntervals for which no data is available.
+            This object will typically be zero except in cases
+            where the data for some intervals is not
+            available (e.g., in proxy situations)."
+     ::= { dsx1ConfigEntry 14 }
+
+dsx1LineLength OBJECT-TYPE
+     SYNTAX  INTEGER (0..64000)
+     UNITS  "meters"
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "The length of the DS1 line in meters.  This
+            object provides information for line build-out
+            circuitry.  This object is only useful if the
+            interface has configurable line build-out
+            circuitry."
+     ::= { dsx1ConfigEntry 15 }
+
+dsx1LineStatusLastChange OBJECT-TYPE
+     SYNTAX  TimeStamp
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The value of MIB II's sysUpTime object at the
+            time this DS1 entered its current line status
+            state.  If the current state was entered prior to
+            the last re-initialization of the proxy-agent,
+            then this object contains a zero value."
+     ::= { dsx1ConfigEntry 16 }
+
+dsx1LineStatusChangeTrapEnable  OBJECT-TYPE
+     SYNTAX      INTEGER {
+                    enabled(1),
+                    disabled(2)
+                 }
+
+
+
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+            "Indicates whether dsx1LineStatusChange traps
+            should be generated for this interface."
+     DEFVAL { disabled }
+     ::= { dsx1ConfigEntry 17 }
+
+dsx1LoopbackStatus  OBJECT-TYPE
+     SYNTAX      INTEGER (1..127)
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+            "This variable represents the current state of the
+            loopback on the DS1 interface.  It contains
+            information about loopbacks established by a
+            manager and remotely from the far end.
+
+            The dsx1LoopbackStatus is a bitmap represented as
+            a sum; therefore, it can represent multiple
+            loopbacks simultaneously.
+
+            The various bit positions are as follows:
+             1  dsx1NoLoopback
+             2  dsx1NearEndPayloadLoopback
+             4  dsx1NearEndLineLoopback
+             8  dsx1NearEndOtherLoopback
+            16  dsx1NearEndInwardLoopback
+            32  dsx1FarEndPayloadLoopback
+            64  dsx1FarEndLineLoopback"
+
+     ::= { dsx1ConfigEntry 18 }
+
+dsx1Ds1ChannelNumber  OBJECT-TYPE
+     SYNTAX      INTEGER (0..28)
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+            "This variable represents the channel number of
+            the DS1/E1 on its parent DS2/E2 or DS3/E3.  A
+            value of 0 indicates that this DS1/E1 does not
+            have a parent DS3/E3."
+     ::= { dsx1ConfigEntry 19 }
+
+dsx1Channelization  OBJECT-TYPE
+     SYNTAX      INTEGER {
+                    disabled(1),
+                    enabledDs0(2),
+
+
+
+                    enabledDs1(3)
+                 }
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+            "Indicates whether this DS1/E1 or DS2 is
+            channelized or unchannelized.
+
+            The value of enabledDs0(2) indicates that this is a
+            DS1 channelized into DS0s.  Setting this value will
+            cause the creation, and resetting it to disabled(1)
+            will cause the deletion of entries in the ifTable
+            for the DS0s that are within the DS1.
+
+            The value of enabledDs1(3) indicates that this is a
+            DS2 channelized into DS1s.  Setting this value will
+            cause the creation, and resetting it to disabled(1)
+            will cause the deletion of entries in the ifTable
+            for the DS1s that are within the DS2."
+
+     ::= { dsx1ConfigEntry 20 }
+
+dsx1LineMode  OBJECT-TYPE
+     SYNTAX      INTEGER {
+                    csu(1),
+                    dsu(2)
+                  }
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+            "This setting puts the T1 framer into either
+            long-haul (CSU) mode or short-haul (DSU) mode."
+     ::= { dsx1ConfigEntry 21 }
+
+dsx1LineBuildOut  OBJECT-TYPE
+     SYNTAX      INTEGER {
+                    notApplicable(1),
+                    neg75dB(2),
+                    neg15dB(3),
+                    neg225dB(4),
+                    zerodB(5)
+                 }
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+            "Attenuation setting for T1 framer in long haul
+            (CSU) mode.  The optional values are -7.5dB,
+            -15dB, -22.5dB, and 0dB."
+
+
+
+     ::= { dsx1ConfigEntry 22 }
+
+dsx1LineImpedance   OBJECT-TYPE
+     SYNTAX      INTEGER {
+                    notApplicable(1),
+                    unbalanced75ohms(2),
+                    balanced100ohms(3),
+                    balanced120ohms(4)
+                 }
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+            "Nominal line impedance.  For T1 and J1 lines, the
+            value is typically balanced100ohms(3).  For E1
+            lines, the value is typically unbalanced75ohms(2)
+            and balanced120ohms(4).  When this object does not
+            apply, or when the appropriate value is not known,
+            the value should be set to notApplicable(1)."
+     ::= { dsx1ConfigEntry 23 }
+
+-- The DS1 Current Table
+dsx1CurrentTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx1CurrentEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS1 Current table contains various statistics
+            being collected for the current 15-minute
+            interval."
+     ::= { ds1 7 }
+
+dsx1CurrentEntry OBJECT-TYPE
+     SYNTAX  Dsx1CurrentEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS1 Current table."
+     INDEX   { dsx1CurrentIndex }
+     ::= { dsx1CurrentTable 1 }
+
+Dsx1CurrentEntry ::=
+     SEQUENCE {
+         dsx1CurrentIndex            InterfaceIndex,
+         dsx1CurrentESs              PerfCurrentCount,
+         dsx1CurrentSESs             PerfCurrentCount,
+         dsx1CurrentSEFSs            PerfCurrentCount,
+         dsx1CurrentUASs             PerfCurrentCount,
+         dsx1CurrentCSSs             PerfCurrentCount,
+
+
+
+         dsx1CurrentPCVs             PerfCurrentCount,
+         dsx1CurrentLESs             PerfCurrentCount,
+         dsx1CurrentBESs             PerfCurrentCount,
+         dsx1CurrentDMs              PerfCurrentCount,
+         dsx1CurrentLCVs             PerfCurrentCount
+}
+
+dsx1CurrentIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "The index value that uniquely identifies the DS1
+            interface to which this entry is applicable.  The
+            interface identified by a particular value of this
+            index is the same interface as identified by the
+            same value as a dsx1LineIndex object instance."
+     ::= { dsx1CurrentEntry 1 }
+
+dsx1CurrentESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Errored Seconds."
+     ::= { dsx1CurrentEntry 2 }
+
+dsx1CurrentSESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Severely Errored Seconds."
+     ::= { dsx1CurrentEntry 3 }
+
+dsx1CurrentSEFSs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Severely Errored Framing Seconds."
+     ::= { dsx1CurrentEntry 4 }
+
+dsx1CurrentUASs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+
+
+
+     DESCRIPTION
+            "The number of Unavailable Seconds."
+     ::= { dsx1CurrentEntry 5 }
+
+dsx1CurrentCSSs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Controlled Slip Seconds."
+     ::= { dsx1CurrentEntry 6 }
+
+dsx1CurrentPCVs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Path Coding Violations."
+     ::= { dsx1CurrentEntry 7 }
+
+dsx1CurrentLESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Line Errored Seconds."
+     ::= { dsx1CurrentEntry 8 }
+
+dsx1CurrentBESs OBJECT-TYPE
+     SYNTAX PerfCurrentCount
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+            "The number of Bursty Errored Seconds."
+     ::= { dsx1CurrentEntry 9 }
+
+dsx1CurrentDMs OBJECT-TYPE
+     SYNTAX PerfCurrentCount
+     MAX-ACCESS read-only
+     STATUS deprecated
+     DESCRIPTION
+            "The number of Degraded Minutes."
+     ::= { dsx1CurrentEntry 10 }
+
+dsx1CurrentLCVs OBJECT-TYPE
+     SYNTAX PerfCurrentCount
+     MAX-ACCESS read-only
+     STATUS current
+
+
+
+     DESCRIPTION
+            "The number of Line Coding Violations (LCVs)."
+     ::= { dsx1CurrentEntry 11 }
+
+-- The DS1 Interval Table
+dsx1IntervalTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx1IntervalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS1 Interval table contains various
+            statistics collected by each DS1 interface over
+            the previous 24 hours of operation.  The past 24
+            hours are broken into 96 completed 15-minute
+            intervals.  Each row in this table represents one
+            such interval (identified by dsx1IntervalNumber)
+            for one specific instance (identified by
+            dsx1IntervalIndex)."
+     ::= { ds1 8 }
+
+dsx1IntervalEntry OBJECT-TYPE
+     SYNTAX  Dsx1IntervalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS1 Interval table."
+     INDEX   { dsx1IntervalIndex, dsx1IntervalNumber }
+     ::= { dsx1IntervalTable 1 }
+
+Dsx1IntervalEntry ::=
+     SEQUENCE {
+         dsx1IntervalIndex             InterfaceIndex,
+         dsx1IntervalNumber            INTEGER,
+         dsx1IntervalESs               PerfIntervalCount,
+         dsx1IntervalSESs              PerfIntervalCount,
+         dsx1IntervalSEFSs             PerfIntervalCount,
+         dsx1IntervalUASs              PerfIntervalCount,
+         dsx1IntervalCSSs              PerfIntervalCount,
+         dsx1IntervalPCVs              PerfIntervalCount,
+         dsx1IntervalLESs              PerfIntervalCount,
+         dsx1IntervalBESs              PerfIntervalCount,
+         dsx1IntervalDMs               PerfIntervalCount,
+         dsx1IntervalLCVs              PerfIntervalCount,
+         dsx1IntervalValidData         TruthValue
+}
+
+dsx1IntervalIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+
+
+
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "The index value that uniquely identifies the DS1
+            interface to which this entry is applicable.  The
+            interface identified by a particular value of this
+            index is the same interface as identified by the
+            same value as a dsx1LineIndex object instance."
+     ::= { dsx1IntervalEntry 1 }
+
+dsx1IntervalNumber OBJECT-TYPE
+     SYNTAX  INTEGER (1..96)
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "A number between 1 and 96, where 1 is the most
+            recently completed 15-minute interval and 96 is
+            the 15-minute interval completed 23 hours and 45
+            minutes prior to interval 1."
+     ::= { dsx1IntervalEntry 2 }
+
+dsx1IntervalESs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Errored Seconds."
+     ::= { dsx1IntervalEntry 3 }
+
+dsx1IntervalSESs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Severely Errored Seconds."
+     ::= { dsx1IntervalEntry 4 }
+
+dsx1IntervalSEFSs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Severely Errored Framing Seconds."
+     ::= { dsx1IntervalEntry 5 }
+
+dsx1IntervalUASs OBJECT-TYPE
+
+
+
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Unavailable Seconds.  This object
+            may decrease if the occurrence of unavailable
+            seconds occurs across an interval boundary."
+     ::= { dsx1IntervalEntry 6 }
+
+dsx1IntervalCSSs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Controlled Slip Seconds."
+     ::= { dsx1IntervalEntry 7 }
+
+dsx1IntervalPCVs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Path Coding Violations."
+     ::= { dsx1IntervalEntry 8 }
+
+dsx1IntervalLESs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Line Errored Seconds."
+     ::= { dsx1IntervalEntry 9 }
+
+dsx1IntervalBESs OBJECT-TYPE
+     SYNTAX PerfIntervalCount
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+            "The number of Bursty Errored Seconds."
+     ::= { dsx1IntervalEntry 10 }
+
+dsx1IntervalDMs OBJECT-TYPE
+     SYNTAX PerfIntervalCount
+     MAX-ACCESS read-only
+     STATUS deprecated
+     DESCRIPTION
+            "The number of Degraded Minutes."
+     ::= { dsx1IntervalEntry 11 }
+
+
+
+dsx1IntervalLCVs OBJECT-TYPE
+     SYNTAX PerfIntervalCount
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+            "The number of Line Coding Violations."
+     ::= { dsx1IntervalEntry 12 }
+
+dsx1IntervalValidData OBJECT-TYPE
+     SYNTAX TruthValue
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+            "This variable indicates whether the data for this
+            interval is valid."
+     ::= { dsx1IntervalEntry 13 }
+
+-- The DS1 Total Table
+dsx1TotalTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx1TotalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS1 Total table contains the cumulative sum
+            of the various statistics for the 24-hour period
+            preceding the current interval."
+     ::= { ds1 9 }
+
+dsx1TotalEntry OBJECT-TYPE
+     SYNTAX  Dsx1TotalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS1 Total table."
+     INDEX   { dsx1TotalIndex }
+     ::= { dsx1TotalTable 1 }
+
+Dsx1TotalEntry ::=
+     SEQUENCE {
+         dsx1TotalIndex                InterfaceIndex,
+         dsx1TotalESs                  PerfTotalCount,
+         dsx1TotalSESs                 PerfTotalCount,
+         dsx1TotalSEFSs                PerfTotalCount,
+         dsx1TotalUASs                 PerfTotalCount,
+         dsx1TotalCSSs                 PerfTotalCount,
+         dsx1TotalPCVs                 PerfTotalCount,
+         dsx1TotalLESs                 PerfTotalCount,
+         dsx1TotalBESs                 PerfTotalCount,
+
+
+
+         dsx1TotalDMs                  PerfTotalCount,
+         dsx1TotalLCVs                 PerfTotalCount
+}
+
+dsx1TotalIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "The index value that uniquely identifies the DS1
+            interface to which this entry is applicable.  The
+            interface identified by a particular value of this
+            index is the same interface as identified by the
+            same value as a dsx1LineIndex object instance."
+     ::= { dsx1TotalEntry 1 }
+
+dsx1TotalESs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Errored Seconds encountered by a DS1
+            interface in the previous 24-hour interval.
+            Invalid 15-minute intervals count as 0."
+     ::= { dsx1TotalEntry 2 }
+
+dsx1TotalSESs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Severely Errored Seconds
+            encountered by a DS1 interface in the previous
+            24-hour interval.  Invalid 15-minute intervals
+            count as 0."
+     ::= { dsx1TotalEntry 3 }
+
+dsx1TotalSEFSs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Severely Errored Framing Seconds
+            encountered by a DS1 interface in the previous
+            24-hour interval.  Invalid 15-minute intervals
+            count as 0."
+     ::= { dsx1TotalEntry 4 }
+
+
+
+dsx1TotalUASs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Unavailable Seconds encountered by
+            a DS1 interface in the previous 24-hour interval.
+            Invalid 15-minute intervals count as 0."
+     ::= { dsx1TotalEntry 5 }
+
+dsx1TotalCSSs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Controlled Slip Seconds encountered
+            by a DS1 interface in the previous 24-hour
+            interval.  Invalid 15-minute intervals count as
+            0."
+     ::= { dsx1TotalEntry 6 }
+
+dsx1TotalPCVs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Path Coding Violations encountered
+            by a DS1 interface in the previous 24-hour
+            interval.  Invalid 15-minute intervals count as
+            0."
+     ::= { dsx1TotalEntry 7 }
+
+dsx1TotalLESs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Line Errored Seconds encountered by
+            a DS1 interface in the previous 24-hour interval.
+            Invalid 15-minute intervals count as 0."
+     ::= { dsx1TotalEntry 8 }
+
+dsx1TotalBESs OBJECT-TYPE
+     SYNTAX PerfTotalCount
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+            "The number of Bursty Errored Seconds (BESs)
+
+
+
+            encountered by a DS1 interface in the previous
+            24-hour interval.  Invalid 15-minute intervals count
+            as 0."
+     ::= { dsx1TotalEntry 9 }
+
+dsx1TotalDMs OBJECT-TYPE
+     SYNTAX PerfTotalCount
+     MAX-ACCESS read-only
+     STATUS deprecated
+     DESCRIPTION
+            "The number of Degraded Minutes (DMs) encountered
+            by a DS1 interface in the previous 24-hour
+            interval.  Invalid 15-minute intervals count as
+            0."
+     ::= { dsx1TotalEntry 10 }
+
+dsx1TotalLCVs OBJECT-TYPE
+     SYNTAX PerfTotalCount
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+            "The number of Line Coding Violations (LCVs)
+            encountered by a DS1 interface in the current
+            15-minute interval.  Invalid 15-minute intervals
+            count as 0."
+     ::= { dsx1TotalEntry 11 }
+
+-- The DS1 Channel Table
+
+dsx1ChanMappingTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx1ChanMappingEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS1 Channel Mapping table.  This table maps a
+            DS1 channel number on a particular DS3 into an
+            ifIndex.  In the presence of DS2s, this table can
+            be used to map a DS2 channel number on a DS3 into
+            an ifIndex, or used to map a DS1 channel number on
+            a DS2 into an ifIndex."
+     ::= { ds1 16 }
+
+dsx1ChanMappingEntry OBJECT-TYPE
+     SYNTAX  Dsx1ChanMappingEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS1 Channel Mapping table.  There
+
+
+
+            is an entry in this table corresponding to each
+            DS1 ifEntry within any interface that is
+            channelized to the individual DS1 ifEntry level.
+
+            This table is intended to facilitate mapping from
+            channelized interface / channel number to DS1
+            ifEntry (e.g., mapping (DS3 ifIndex, DS1 channel
+            number) -> ifIndex).
+
+            While this table provides information that can
+            also be found in the ifStackTable and
+            dsx1ConfigTable, it provides this same information
+            with a single table lookup, rather than by walking
+            the ifStackTable to find the various constituent
+            DS1 ifTable entries, and testing various
+            dsx1ConfigTable entries to check for the entry
+            with the applicable DS1 channel number."
+     INDEX   { ifIndex, dsx1Ds1ChannelNumber }
+     ::= { dsx1ChanMappingTable 1 }
+
+Dsx1ChanMappingEntry ::=
+     SEQUENCE {
+         dsx1ChanMappedIfIndex  InterfaceIndex
+}
+
+dsx1ChanMappedIfIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "This object indicates the ifIndex value assigned
+            by the agent for the individual DS1 ifEntry that
+            corresponds to the given DS1 channel number
+            (specified by the INDEX element
+            dsx1Ds1ChannelNumber) of the given channelized
+            interface (specified by INDEX element ifIndex)."
+     ::= { dsx1ChanMappingEntry 1 }
+
+-- The DS1 Far End Current Table
+
+dsx1FarEndCurrentTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx1FarEndCurrentEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS1 Far End Current table contains various
+            statistics being collected for the current
+            15-minute interval.  The statistics are collected
+
+
+
+            from the far-end messages on the Facilities Data
+            Link.  The definitions are the same as described
+            for the near-end information."
+     ::= { ds1 10 }
+
+dsx1FarEndCurrentEntry OBJECT-TYPE
+     SYNTAX  Dsx1FarEndCurrentEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS1 Far End Current table."
+     INDEX   { dsx1FarEndCurrentIndex }
+     ::= { dsx1FarEndCurrentTable 1 }
+
+Dsx1FarEndCurrentEntry ::=
+     SEQUENCE {
+         dsx1FarEndCurrentIndex      InterfaceIndex,
+         dsx1FarEndTimeElapsed       INTEGER,
+         dsx1FarEndValidIntervals    INTEGER,
+         dsx1FarEndCurrentESs        PerfCurrentCount,
+         dsx1FarEndCurrentSESs       PerfCurrentCount,
+         dsx1FarEndCurrentSEFSs      PerfCurrentCount,
+         dsx1FarEndCurrentUASs       PerfCurrentCount,
+         dsx1FarEndCurrentCSSs       PerfCurrentCount,
+         dsx1FarEndCurrentLESs       PerfCurrentCount,
+         dsx1FarEndCurrentPCVs       PerfCurrentCount,
+         dsx1FarEndCurrentBESs       PerfCurrentCount,
+         dsx1FarEndCurrentDMs        PerfCurrentCount,
+         dsx1FarEndInvalidIntervals  INTEGER
+}
+
+dsx1FarEndCurrentIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "The index value that uniquely identifies the DS1
+            interface to which this entry is applicable.  The
+            interface identified by a particular value of this
+            index is identical to the interface identified by
+            the same value of dsx1LineIndex."
+     ::= { dsx1FarEndCurrentEntry 1 }
+
+dsx1FarEndTimeElapsed OBJECT-TYPE
+     SYNTAX  INTEGER (0..899)
+     MAX-ACCESS  read-only
+     STATUS  current
+
+
+
+     DESCRIPTION
+            "The number of seconds that have elapsed since the
+            beginning of the far-end current error-measurement
+            period.  If, for some reason, such as an adjustment
+            in the system's time-of-day clock, the current
+            interval exceeds the maximum value, the agent will
+            return the maximum value."
+     ::= { dsx1FarEndCurrentEntry 2 }
+
+dsx1FarEndValidIntervals OBJECT-TYPE
+     SYNTAX  INTEGER (0..96)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of previous far-end intervals for
+            which data was collected.  The value will be 96
+            unless the interface was brought online within the
+            last 24 hours, in which case the value will be the
+            number of complete 15-minute far-end intervals
+            since the interface has been online.  In the case
+            where the agent is a proxy, it is possible that
+            some intervals are unavailable.  In this case,
+            this interval is the maximum interval number for
+            which data is available."
+     ::= { dsx1FarEndCurrentEntry 3 }
+
+dsx1FarEndCurrentESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Errored Seconds."
+     ::= { dsx1FarEndCurrentEntry 4 }
+
+dsx1FarEndCurrentSESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Severely Errored Seconds."
+     ::= { dsx1FarEndCurrentEntry 5 }
+
+dsx1FarEndCurrentSEFSs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Severely Errored Framing
+
+
+
+            Seconds."
+     ::= { dsx1FarEndCurrentEntry 6 }
+
+dsx1FarEndCurrentUASs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Unavailable Seconds."
+     ::= { dsx1FarEndCurrentEntry 7 }
+
+dsx1FarEndCurrentCSSs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Controlled Slip Seconds."
+     ::= { dsx1FarEndCurrentEntry 8 }
+
+dsx1FarEndCurrentLESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Line Errored Seconds."
+     ::= { dsx1FarEndCurrentEntry 9 }
+
+dsx1FarEndCurrentPCVs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Path Coding Violations."
+     ::= { dsx1FarEndCurrentEntry 10 }
+
+dsx1FarEndCurrentBESs OBJECT-TYPE
+     SYNTAX PerfCurrentCount
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+            "The number of Far End Bursty Errored Seconds."
+     ::= { dsx1FarEndCurrentEntry 11 }
+
+dsx1FarEndCurrentDMs OBJECT-TYPE
+     SYNTAX PerfCurrentCount
+     MAX-ACCESS read-only
+     STATUS deprecated
+     DESCRIPTION
+
+
+
+            "The number of Far End Degraded Minutes."
+     ::= { dsx1FarEndCurrentEntry 12 }
+
+dsx1FarEndInvalidIntervals OBJECT-TYPE
+     SYNTAX  INTEGER (0..96)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of intervals in the range from 0 to
+            dsx1FarEndValidIntervals for which no data is
+            available.  This object will typically be zero
+            except in cases where the data for some intervals
+            is not available (e.g., in proxy situations)."
+     ::= { dsx1FarEndCurrentEntry 13 }
+
+-- The DS1 Far End Interval Table
+
+dsx1FarEndIntervalTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx1FarEndIntervalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS1 Far End Interval table contains various
+            statistics collected by each DS1 interface over
+            the previous 24 hours of operation.  The past 24
+            hours are broken into 96 completed 15-minute
+            intervals.  Each row in this table represents one
+            such interval (identified by
+            dsx1FarEndIntervalNumber) for one specific
+            instance (identified by dsx1FarEndIntervalIndex)."
+     ::= { ds1 11 }
+
+dsx1FarEndIntervalEntry OBJECT-TYPE
+     SYNTAX  Dsx1FarEndIntervalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS1 Far End Interval table."
+     INDEX   { dsx1FarEndIntervalIndex,
+               dsx1FarEndIntervalNumber }
+     ::= { dsx1FarEndIntervalTable 1 }
+
+Dsx1FarEndIntervalEntry ::=
+     SEQUENCE {
+         dsx1FarEndIntervalIndex       InterfaceIndex,
+         dsx1FarEndIntervalNumber      INTEGER,
+         dsx1FarEndIntervalESs         PerfIntervalCount,
+         dsx1FarEndIntervalSESs        PerfIntervalCount,
+
+
+
+         dsx1FarEndIntervalSEFSs       PerfIntervalCount,
+         dsx1FarEndIntervalUASs        PerfIntervalCount,
+         dsx1FarEndIntervalCSSs        PerfIntervalCount,
+         dsx1FarEndIntervalLESs        PerfIntervalCount,
+         dsx1FarEndIntervalPCVs        PerfIntervalCount,
+         dsx1FarEndIntervalBESs        PerfIntervalCount,
+         dsx1FarEndIntervalDMs         PerfIntervalCount,
+         dsx1FarEndIntervalValidData   TruthValue
+}
+
+dsx1FarEndIntervalIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "The index value that uniquely identifies the DS1
+            interface to which this entry is applicable.  The
+            interface identified by a particular value of this
+            index is identical to the interface identified by
+            the same value of dsx1LineIndex."
+     ::= { dsx1FarEndIntervalEntry 1 }
+
+dsx1FarEndIntervalNumber OBJECT-TYPE
+     SYNTAX  INTEGER (1..96)
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "A number between 1 and 96, where 1 is the most
+            recently completed 15-minute interval and 96 is
+            the 15 minutes interval completed 23 hours and 45
+            minutes prior to interval 1."
+     ::= { dsx1FarEndIntervalEntry 2 }
+
+dsx1FarEndIntervalESs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Errored Seconds."
+     ::= { dsx1FarEndIntervalEntry 3 }
+
+dsx1FarEndIntervalSESs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+
+
+
+            "The number of Far End Severely Errored Seconds."
+     ::= { dsx1FarEndIntervalEntry 4 }
+
+dsx1FarEndIntervalSEFSs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Severely Errored Framing
+            Seconds."
+     ::= { dsx1FarEndIntervalEntry 5 }
+
+dsx1FarEndIntervalUASs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Unavailable Seconds."
+     ::= { dsx1FarEndIntervalEntry 6 }
+
+dsx1FarEndIntervalCSSs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Controlled Slip Seconds."
+     ::= { dsx1FarEndIntervalEntry 7 }
+
+dsx1FarEndIntervalLESs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Line Errored Seconds."
+     ::= { dsx1FarEndIntervalEntry 8 }
+
+dsx1FarEndIntervalPCVs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Path Coding Violations."
+     ::= { dsx1FarEndIntervalEntry 9 }
+
+dsx1FarEndIntervalBESs OBJECT-TYPE
+     SYNTAX PerfIntervalCount
+     MAX-ACCESS read-only
+     STATUS current
+
+
+
+     DESCRIPTION
+            "The number of Far End Bursty Errored Seconds."
+     ::= { dsx1FarEndIntervalEntry 10 }
+
+dsx1FarEndIntervalDMs OBJECT-TYPE
+     SYNTAX PerfIntervalCount
+     MAX-ACCESS read-only
+     STATUS deprecated
+     DESCRIPTION
+            "The number of Far End Degraded Minutes."
+     ::= { dsx1FarEndIntervalEntry 11 }
+
+dsx1FarEndIntervalValidData OBJECT-TYPE
+     SYNTAX TruthValue
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+            " This variable indicates if the data for this
+            interval is valid."
+     ::= { dsx1FarEndIntervalEntry 12 }
+
+-- The DS1 Far End Total Table
+
+dsx1FarEndTotalTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx1FarEndTotalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS1 Far End Total table contains the
+            cumulative sum of the various statistics for the
+            24-hour period preceding the current interval."
+     ::= { ds1 12 }
+
+dsx1FarEndTotalEntry OBJECT-TYPE
+     SYNTAX  Dsx1FarEndTotalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS1 Far End Total table."
+     INDEX   { dsx1FarEndTotalIndex }
+     ::= { dsx1FarEndTotalTable 1 }
+
+Dsx1FarEndTotalEntry ::=
+     SEQUENCE {
+         dsx1FarEndTotalIndex          InterfaceIndex,
+         dsx1FarEndTotalESs            PerfTotalCount,
+         dsx1FarEndTotalSESs           PerfTotalCount,
+         dsx1FarEndTotalSEFSs          PerfTotalCount,
+
+
+
+         dsx1FarEndTotalUASs           PerfTotalCount,
+         dsx1FarEndTotalCSSs           PerfTotalCount,
+         dsx1FarEndTotalLESs           PerfTotalCount,
+         dsx1FarEndTotalPCVs           PerfTotalCount,
+         dsx1FarEndTotalBESs           PerfTotalCount,
+         dsx1FarEndTotalDMs            PerfTotalCount
+}
+
+dsx1FarEndTotalIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "The index value that uniquely identifies the DS1
+            interface to which this entry is applicable.  The
+            interface identified by a particular value of this
+            index is identical to the interface identified by
+            the same value of dsx1LineIndex."
+     ::= { dsx1FarEndTotalEntry 1 }
+
+dsx1FarEndTotalESs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Errored Seconds encountered
+            by a DS1 interface in the previous 24-hour
+            interval.  Invalid 15-minute intervals count as
+            0."
+     ::= { dsx1FarEndTotalEntry 2 }
+
+dsx1FarEndTotalSESs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Severely Errored Seconds
+            encountered by a DS1 interface in the previous
+            24-hour interval.  Invalid 15-minute intervals
+            count as 0."
+     ::= { dsx1FarEndTotalEntry 3 }
+
+dsx1FarEndTotalSEFSs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+
+
+
+            "The number of Far End Severely Errored Framing
+            Seconds encountered by a DS1 interface in the
+            previous 24-hour interval.  Invalid 15-minute
+            intervals count as 0."
+     ::= { dsx1FarEndTotalEntry 4 }
+
+dsx1FarEndTotalUASs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Unavailable Seconds encountered by
+            a DS1 interface in the previous 24-hour interval.
+            Invalid 15-minute intervals count as 0."
+     ::= { dsx1FarEndTotalEntry 5 }
+
+dsx1FarEndTotalCSSs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Controlled Slip Seconds
+            encountered by a DS1 interface in the previous
+            24-hour interval.  Invalid 15 minute intervals
+            count as 0."
+     ::= { dsx1FarEndTotalEntry 6 }
+
+dsx1FarEndTotalLESs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Line Errored Seconds
+            encountered by a DS1 interface in the previous
+            24-hour interval.  Invalid 15-minute intervals
+            count as 0."
+     ::= { dsx1FarEndTotalEntry 7 }
+
+dsx1FarEndTotalPCVs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Far End Path Coding Violations
+            reported via the far end block error count
+            encountered by a DS1 interface in the previous
+            24-hour interval.  Invalid 15-minute intervals
+            count as 0."
+
+
+
+     ::= { dsx1FarEndTotalEntry 8 }
+
+dsx1FarEndTotalBESs OBJECT-TYPE
+     SYNTAX PerfTotalCount
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+            "The number of Bursty Errored Seconds (BESs)
+            encountered by a DS1 interface in the previous
+            24-hour interval.  Invalid 15-minute intervals
+            count as 0."
+     ::= { dsx1FarEndTotalEntry 9 }
+
+dsx1FarEndTotalDMs OBJECT-TYPE
+     SYNTAX PerfTotalCount
+     MAX-ACCESS read-only
+     STATUS deprecated
+     DESCRIPTION
+            "The number of Degraded Minutes (DMs) encountered
+            by a DS1 interface in the previous 24-hour
+            interval.  Invalid 15-minute intervals count as
+            0."
+     ::= { dsx1FarEndTotalEntry 10 }
+
+-- The DS1 Fractional Table
+
+dsx1FracTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx1FracEntry
+     MAX-ACCESS  not-accessible
+     STATUS  deprecated
+     DESCRIPTION
+            "This table is deprecated in favor of using
+            ifStackTable.
+
+            The table was mandatory for systems dividing a DS1
+            into channels containing different data streams
+            that are of local interest.  Systems that are
+            indifferent to data content, such as CSUs, need
+            not implement it.
+
+            The DS1 Fractional table identifies which DS1
+            channels associated with a CSU are being used to
+            support a logical interface, i.e., an entry in the
+            interfaces table from the Internet-standard MIB.
+
+            For example, consider an application managing a
+            North American ISDN Primary Rate link whose
+            division is a 384-kbit/s H1 _B_ Channel for video,
+
+
+
+            a second H1 for data to a primary routing peer,
+            and 12 64-kbit/s H0 _B_ Channels.  Consider that
+            some subset of the H0 channels is used for voice
+            and the remainder are available for dynamic data
+            calls.
+
+            We count a total of 14 interfaces multiplexed onto
+            the DS1 interface.  Six DS1 channels (for the sake
+            of the example, channels 1..6) are used for video,
+            six more (7..11 and 13) are used for data, and the
+            remaining 12 are in channels 12 and 14..24.
+
+            Let us further imagine that ifIndex 2 is of type
+            DS1 and refers to the DS1 interface and that the
+            interfaces layered onto it are numbered 3..16.
+
+            We might describe the allocation of channels, in
+            the dsx1FracTable, as follows:
+          dsx1FracIfIndex.2. 1 = 3  dsx1FracIfIndex.2.13 = 4
+          dsx1FracIfIndex.2. 2 = 3  dsx1FracIfIndex.2.14 = 6
+          dsx1FracIfIndex.2. 3 = 3  dsx1FracIfIndex.2.15 = 7
+          dsx1FracIfIndex.2. 4 = 3  dsx1FracIfIndex.2.16 = 8
+          dsx1FracIfIndex.2. 5 = 3  dsx1FracIfIndex.2.17 = 9
+          dsx1FracIfIndex.2. 6 = 3  dsx1FracIfIndex.2.18 = 10
+          dsx1FracIfIndex.2. 7 = 4  dsx1FracIfIndex.2.19 = 11
+          dsx1FracIfIndex.2. 8 = 4  dsx1FracIfIndex.2.20 = 12
+          dsx1FracIfIndex.2. 9 = 4  dsx1FracIfIndex.2.21 = 13
+          dsx1FracIfIndex.2.10 = 4  dsx1FracIfIndex.2.22 = 14
+          dsx1FracIfIndex.2.11 = 4  dsx1FracIfIndex.2.23 = 15
+          dsx1FracIfIndex.2.12 = 5  dsx1FracIfIndex.2.24 = 16
+
+            For North American (DS1) interfaces, there are 24
+            legal channels, numbered 1 through 24.
+
+            For G.704 interfaces, there are 31 legal channels,
+            numbered 1 through 31.  The channels (1..31)
+            correspond directly to the equivalently numbered
+            time-slots."
+     ::= { ds1 13 }
+
+dsx1FracEntry OBJECT-TYPE
+     SYNTAX  Dsx1FracEntry
+     MAX-ACCESS  not-accessible
+     STATUS  deprecated
+     DESCRIPTION
+        "An entry in the DS1 Fractional table."
+    INDEX   { dsx1FracIndex, dsx1FracNumber }
+    ::= { dsx1FracTable 1 }
+
+
+
+Dsx1FracEntry ::=
+    SEQUENCE {
+        dsx1FracIndex        INTEGER,
+        dsx1FracNumber       INTEGER,
+        dsx1FracIfIndex      INTEGER
+    }
+
+dsx1FracIndex OBJECT-TYPE
+    SYNTAX  INTEGER (1..'7fffffff'h)
+    MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+    STATUS  deprecated
+    DESCRIPTION
+       "The index value that uniquely identifies the
+       DS1 interface to which this entry is applicable.
+       The interface identified by a particular
+       value of this index is the same interface as
+       identified by the same value as a dsx1LineIndex
+       object instance."
+   ::= { dsx1FracEntry 1 }
+
+dsx1FracNumber OBJECT-TYPE
+    SYNTAX  INTEGER (1..31)
+    MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+    STATUS  deprecated
+    DESCRIPTION
+       "The channel number for this entry."
+   ::= { dsx1FracEntry 2 }
+
+dsx1FracIfIndex OBJECT-TYPE
+    SYNTAX  INTEGER (0..'7fffffff'h)
+    MAX-ACCESS  read-write
+    STATUS  deprecated
+    DESCRIPTION
+       "An index value that uniquely identifies an
+       interface.  The interface identified by a particular
+       value of this index is the same interface
+       as identified by the same value as an ifIndex
+       object instance.  If no interface is currently using
+       a channel, the value should be zero.  If a
+       single interface occupies more than one time-slot,
+       that ifIndex value will be found in multiple
+       time-slots."
+   ::= { dsx1FracEntry 3 }
+
+ -- DS1 TRAPS
+
+
+
+
+ds1Traps OBJECT IDENTIFIER ::= { ds1 15 }
+
+dsx1LineStatusChange NOTIFICATION-TYPE
+    OBJECTS { dsx1LineStatus,
+              dsx1LineStatusLastChange }
+    STATUS  current
+    DESCRIPTION
+            "A dsx1LineStatusChange trap is sent when the
+            value of an instance dsx1LineStatus changes.  It
+            can be utilized by an Network Management Station
+            (NMS) to trigger polls.  When the line status
+            change results from a higher-level line status
+            change (i.e., DS3), then no traps for the DS1
+            are sent."
+     ::= { ds1Traps 0 1 }
+
+-- conformance information
+
+ds1Conformance OBJECT IDENTIFIER ::= { ds1 14 }
+
+ds1Groups      OBJECT IDENTIFIER ::= { ds1Conformance 1 }
+ds1Compliances OBJECT IDENTIFIER ::= { ds1Conformance 2 }
+
+-- compliance statements
+
+ds1Compliance MODULE-COMPLIANCE
+    STATUS  deprecated
+    DESCRIPTION
+            "The compliance statement for T1 and E1
+            interfaces."
+    MODULE  -- this module
+        MANDATORY-GROUPS { ds1NearEndConfigGroup,
+                           ds1NearEndStatisticsGroup }
+
+        GROUP       ds1FarEndGroup
+        DESCRIPTION
+            "Implementation of this group is optional for all
+            systems that attach to a DS1 interface."
+
+        GROUP       ds1NearEndOptionalConfigGroup
+        DESCRIPTION
+            "Implementation of this group is optional for all
+            systems that attach to a DS1 interface."
+
+        GROUP       ds1DS2Group
+        DESCRIPTION
+            "Implementation of this group is mandatory for all
+            systems that attach to a DS2 interface."
+
+
+
+        GROUP       ds1TransStatsGroup
+        DESCRIPTION
+            "This group is the set of statistics appropriate
+            for all systems that attach to a DS1 interface
+            running transparent or unFramed lineType."
+
+        GROUP       ds1ChanMappingGroup
+        DESCRIPTION
+            "This group is the set of objects for mapping a
+            DS3 Channel (dsx1Ds1ChannelNumber) to ifIndex.
+            Implementation of this group is mandatory for
+            systems that support the channelization of DS3s
+            into DS1s."
+
+        OBJECT dsx1LineType
+                SYNTAX  INTEGER {
+                            other(1),
+                            dsx1ESF(2),
+                            dsx1D4(3),
+                            dsx1E1(4),
+                            dsx1E1CRC(5),
+                            dsx1E1MF(6),
+                            dsx1E1CRCMF(7),
+                            dsx1Unframed(8),
+                            dsx1E1Unframed(9),
+                            dsx1DS2M12(10),
+                            dsx1E2(11)
+                          }
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line type is not
+            required."
+
+        OBJECT dsx1LineCoding
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line coding is not
+            required."
+
+        OBJECT dsx1SendCode
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the send code is not
+            required."
+
+        OBJECT dsx1LoopbackConfig
+        MIN-ACCESS read-only
+        DESCRIPTION
+
+
+
+            "The ability to set loopbacks is not required."
+
+        OBJECT dsx1SignalMode
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the signal mode is not
+            required."
+
+        OBJECT dsx1TransmitClockSource
+                SYNTAX  INTEGER {
+                             loopTiming(1),
+                             localTiming(2),
+                             throughTiming(3)
+                           }
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the transmit clock source is
+            not required."
+
+        OBJECT dsx1Fdl
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the FDL is not required."
+
+        OBJECT dsx1LineLength
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line length is not
+            required."
+
+        OBJECT dsx1Channelization
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the channelization is not
+            required."
+    ::= { ds1Compliances 1 }
+
+ds1MibT1PriCompliance MODULE-COMPLIANCE
+    STATUS deprecated
+    DESCRIPTION
+            "Compliance statement for using this MIB for ISDN
+            Primary Rate interfaces on T1 lines."
+    MODULE
+        MANDATORY-GROUPS { ds1NearEndConfigGroup,
+                           ds1NearEndStatisticsGroup }
+        OBJECT dsx1LineType
+            SYNTAX INTEGER {
+                dsx1ESF(2)   -- Intl Spec would be G704(2)
+
+
+
+                             -- or I.431(4)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Line type for T1 ISDN Primary Rate
+                 interfaces."
+
+        OBJECT dsx1LineCoding
+            SYNTAX INTEGER {
+                dsx1B8ZS(2)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Type of Zero Code Suppression for
+                 T1 ISDN Primary Rate interfaces."
+
+        OBJECT dsx1SignalMode
+            SYNTAX INTEGER {
+                none(1), -- if there is no signaling channel
+                messageOriented(4)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Possible signaling modes for
+                 T1 ISDN Primary Rate interfaces."
+
+        OBJECT dsx1TransmitClockSource
+            SYNTAX INTEGER {
+                loopTiming(1)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The transmit clock is derived from
+                 received clock on ISDN Primary Rate
+                 interfaces."
+
+        OBJECT dsx1Fdl
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Facilities Data Link usage on T1 ISDN
+                 Primary Rate interfaces.
+                 Note: Eventually, dsx1Att-54016(4) is to be
+                       used here since the line type is ESF."
+
+        OBJECT dsx1Channelization
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set the channelization
+
+
+
+                 is not required."
+    ::= { ds1Compliances 2 }
+
+ds1MibE1PriCompliance MODULE-COMPLIANCE
+    STATUS deprecated
+    DESCRIPTION
+            "Compliance statement for using this MIB for ISDN
+            Primary Rate interfaces on E1 lines."
+    MODULE
+        MANDATORY-GROUPS { ds1NearEndConfigGroup,
+                           ds1NearEndStatisticsGroup }
+        OBJECT dsx1LineType
+            SYNTAX INTEGER {
+                dsx1E1CRC(5)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Line type for E1 ISDN Primary Rate
+                 interfaces."
+
+        OBJECT dsx1LineCoding
+            SYNTAX INTEGER {
+                dsx1HDB3(3)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Type of Zero Code Suppression for
+                 E1 ISDN Primary Rate interfaces."
+
+        OBJECT dsx1SignalMode
+            SYNTAX INTEGER {
+                messageOriented(4)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Signaling on E1 ISDN Primary Rate interfaces
+                 is always message oriented."
+
+        OBJECT dsx1TransmitClockSource
+            SYNTAX INTEGER {
+                loopTiming(1)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The transmit clock is derived from received
+                 clock on ISDN Primary Rate interfaces."
+
+        OBJECT dsx1Fdl
+
+
+
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Facilities Data Link usage on E1 ISDN
+                 Primary Rate interfaces.
+                 Note: There is an 'M-Channel' in E1,
+                       using National Bit Sa4 (G.704,
+                       Table 5A).  It is used to implement
+                       management features between ET
+                       and NT.  This is different from
+                       FDL in T1, which is used to carry
+                       control signals and performance
+                       data.  In E1, control and status
+                       signals are carried using National
+                       Bits Sa5, Sa6, and A (RAI Ind.).
+                 This indicates that only the other(1) or
+                 eventually the dsx1Fdl-none(8) bits should
+                 be set in this object for E1 PRI."
+
+        OBJECT dsx1Channelization
+            MIN-ACCESS read-only
+            DESCRIPTION
+                 "The ability to set the channelization is not
+                 required."
+    ::= { ds1Compliances 3 }
+
+ds1Ds2Compliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+            "Compliance statement for using this MIB for DS2
+            interfaces."
+    MODULE
+        MANDATORY-GROUPS { ds1DS2Group }
+
+        OBJECT dsx1LineType
+             SYNTAX INTEGER {
+                        dsx1DS2M12(10),
+                        dsx1E2(11)
+             }
+             MIN-ACCESS read-only
+             DESCRIPTION
+                 "Line type for DS2, E2
+                 interfaces."
+
+        OBJECT dsx1Channelization
+             MIN-ACCESS read-only
+             DESCRIPTION
+                 "The ability to set the channelization is not
+                 required."
+
+
+
+    ::= { ds1Compliances 4 }
+
+ds1NCompliance MODULE-COMPLIANCE
+    STATUS  deprecated
+    DESCRIPTION
+            "The compliance statement for T1 and E1
+            interfaces."
+    MODULE  -- this module
+        MANDATORY-GROUPS { ds1NearEndConfigurationGroup,
+                           ds1NearEndStatisticsGroup }
+
+        GROUP       ds1FarEndGroup
+        DESCRIPTION
+            "Implementation of this group is optional for all
+            systems that attach to a DS1 interface."
+
+         GROUP       ds1NearEndOptionalTrapGroup
+         DESCRIPTION
+             "Implementation of this group is optional for all
+             systems that attach to a DS1 interface.  If it is
+             implemented, then ds1NearEndOptionalConfigGroup
+             should also be implemented."
+
+        GROUP       ds1NearEndOptionalConfigGroup
+        DESCRIPTION
+            "Implementation of this group is recommended for
+            all systems that attach to a DS1 interface and
+            implement ds1NearEndOptionalTrapGroup."
+
+        GROUP       ds1DS2Group
+        DESCRIPTION
+            "Implementation of this group is mandatory for all
+            systems that attach to a DS2 interface."
+
+        GROUP       ds1TransStatsGroup
+        DESCRIPTION
+            "This group is the set of statistics appropriate
+            for all systems that attach to a DS1 interface
+            running transparent or unFramed lineType."
+
+
+        GROUP       ds1ChanMappingGroup
+        DESCRIPTION
+            "This group is the set of objects for mapping a
+            DS3 Channel (dsx1Ds1ChannelNumber) to ifIndex.
+            Implementation of this group is mandatory for
+            systems that support the channelization of DS3s
+            into DS1s."
+
+
+
+        OBJECT dsx1LineType
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line type is not
+            required."
+
+        OBJECT dsx1LineCoding
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line coding is not
+            required."
+
+        OBJECT dsx1SendCode
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the send code is not
+            required."
+
+        OBJECT dsx1LoopbackConfig
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set loopbacks is not required."
+
+        OBJECT dsx1SignalMode
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the signal mode is not
+            required."
+
+        OBJECT dsx1TransmitClockSource
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the transmit clock source is
+            not required."
+
+        OBJECT dsx1Fdl
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the FDL is not required."
+
+        OBJECT dsx1LineLength
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line length is not
+            required."
+
+        OBJECT dsx1Channelization
+        MIN-ACCESS read-only
+
+
+
+        DESCRIPTION
+            "The ability to set the channelization is not
+            required."
+
+        OBJECT dsx1LineMode
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line mode is not
+            required."
+
+        OBJECT dsx1LineBuildOut
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line build-out is not
+            required."
+    ::= { ds1Compliances 5 }
+
+ds1MibT1PriNCompliance MODULE-COMPLIANCE
+    STATUS deprecated
+    DESCRIPTION
+            "Compliance statement for using this MIB for ISDN
+            Primary Rate interfaces on T1 lines."
+    MODULE
+        MANDATORY-GROUPS { ds1NearEndConfigurationGroup,
+                           ds1NearEndStatisticsGroup }
+        OBJECT dsx1LineType
+            SYNTAX INTEGER {
+                dsx1ESF(2)   -- Intl Spec would be G704(2)
+                             -- or I.431(4)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Line type for T1 ISDN Primary Rate
+                 interfaces."
+
+        OBJECT dsx1LineCoding
+            SYNTAX INTEGER {
+                dsx1B8ZS(2)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Type of Zero Code Suppression for
+                 T1 ISDN Primary Rate interfaces."
+
+        OBJECT dsx1SignalMode
+            SYNTAX INTEGER {
+                none(1), -- if there is no signaling channel
+                messageOriented(4)
+
+
+
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Possible signaling modes for
+                 T1 ISDN Primary Rate interfaces."
+
+        OBJECT dsx1TransmitClockSource
+            SYNTAX INTEGER {
+                loopTiming(1)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The transmit clock is derived from
+                 received clock on ISDN Primary Rate
+                 interfaces."
+
+        OBJECT dsx1Fdl
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Facilities Data Link usage on T1 ISDN
+                 Primary Rate interfaces.
+                 Note: Eventually, dsx1Att-54016(4) is to be
+                       used here since the line type is ESF."
+
+        OBJECT dsx1Channelization
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set the channelization
+                 is not required."
+
+        OBJECT dsx1LineMode
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set the line mode is not
+                 required."
+
+        OBJECT dsx1LineBuildOut
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set the line build-out
+                 is not required."
+    ::= { ds1Compliances 6 }
+
+ds1MibE1PriNCompliance MODULE-COMPLIANCE
+    STATUS deprecated
+    DESCRIPTION
+            "Compliance statement for using this MIB for ISDN
+            Primary Rate interfaces on E1 lines."
+
+
+
+    MODULE
+        MANDATORY-GROUPS { ds1NearEndConfigurationGroup,
+                           ds1NearEndStatisticsGroup }
+        OBJECT dsx1LineType
+            SYNTAX INTEGER {
+                dsx1E1CRC(5)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Line type for E1 ISDN Primary Rate
+                 interfaces."
+
+        OBJECT dsx1LineCoding
+            SYNTAX INTEGER {
+                dsx1HDB3(3)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Type of Zero Code Suppression for
+                 E1 ISDN Primary Rate interfaces."
+
+        OBJECT dsx1SignalMode
+            SYNTAX INTEGER {
+                messageOriented(4)
+            }
+            MIN-ACCESS read-only
+
+            DESCRIPTION
+                "Signaling on E1 ISDN Primary Rate interfaces
+                 is always message oriented."
+
+        OBJECT dsx1TransmitClockSource
+            SYNTAX INTEGER {
+                loopTiming(1)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The transmit clock is derived from received
+                 clock on ISDN Primary Rate interfaces."
+
+        OBJECT dsx1Fdl
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Facilities Data Link usage on E1 ISDN
+                 Primary Rate interfaces.
+                 Note: There is an 'M-Channel' in E1,
+                       using National Bit Sa4 (G704,
+                       Table 5A).  It is used to implement
+
+
+
+                       management features between ET
+                       and NT.  This is different from
+                       FDL in T1, which is used to carry
+                       control signals and performance
+                       data.  In E1, control and status
+                       signals are carried using National
+                       Bits Sa5, Sa6, and A (RAI Ind.).
+                 This indicates that only the other(1) or
+                 eventually the dsx1Fdl-none(8) bits should
+                 be set in this object for E1 PRI."
+
+        OBJECT dsx1Channelization
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set the channelization is not
+                 required."
+
+        OBJECT dsx1LineMode
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set the line mode is not
+                 required."
+
+        OBJECT dsx1LineBuildOut
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set the line build-out
+                 is not required."
+    ::= { ds1Compliances 7 }
+
+ds1J1Compliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for T1, J1, and E1
+            interfaces."
+    MODULE  -- this module
+        MANDATORY-GROUPS { ds1NearEndCfgGroup,
+                           ds1NearEndStatGroup }
+
+        GROUP       ds1FarEndNGroup
+        DESCRIPTION
+            "Implementation of this group is optional for all
+            systems that attach to a DS1 interface."
+
+         GROUP       ds1NearEndOptionalTrapGroup
+         DESCRIPTION
+             "Implementation of this group is optional for all
+             systems that attach to a DS1 interface.  If it is
+
+
+
+             implemented, then ds1NearEndOptionalConfigGroup
+             should also be implemented."
+
+        GROUP       ds1NearEndOptionalConfigGroup
+        DESCRIPTION
+            "Implementation of this group is recommended for
+            all systems that attach to a DS1 interface and
+            implement ds1NearEndOptionalTrapGroup."
+
+        GROUP       ds1DS2Group
+        DESCRIPTION
+            "Implementation of this group is mandatory for all
+            systems that attach to a DS2 interface."
+
+        GROUP       ds1TransStatsGroup
+        DESCRIPTION
+            "This group is the set of statistics appropriate
+            for all systems that attach to a DS1 interface
+            running transparent or unFramed lineType."
+
+        GROUP       ds1ChanMappingGroup
+        DESCRIPTION
+            "This group is the set of objects for mapping a
+            DS3 Channel (dsx1Ds1ChannelNumber) to ifIndex.
+            Implementation of this group is mandatory for
+            systems that support the channelization of DS3s
+            into DS1s."
+
+        OBJECT dsx1LineType
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line type is not
+            required."
+
+        OBJECT dsx1LineCoding
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line coding is not
+            required."
+
+        OBJECT dsx1SendCode
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the send code is not
+            required."
+
+        OBJECT dsx1LoopbackConfig
+        MIN-ACCESS read-only
+
+
+
+        DESCRIPTION
+            "The ability to set loopbacks is not required."
+
+        OBJECT dsx1SignalMode
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the signal mode is not
+            required."
+
+        OBJECT dsx1TransmitClockSource
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the transmit clock source is
+            not required."
+
+        OBJECT dsx1Fdl
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the FDL is not required."
+
+        OBJECT dsx1LineLength
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line length is not
+            required."
+
+        OBJECT dsx1Channelization
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the channelization is not
+            required."
+
+        OBJECT dsx1LineMode
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line mode is not
+            required."
+
+        OBJECT dsx1LineBuildOut
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the line build-out is not
+            required."
+
+        OBJECT dsx1LineImpedance
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set line impedance is not
+
+
+
+            required."
+    ::= { ds1Compliances 8 }
+
+ds1NMibT1PriNCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+            "Compliance statement for using this MIB for ISDN
+            Primary Rate interfaces on T1 lines."
+    MODULE
+        MANDATORY-GROUPS { ds1NearEndCfgGroup,
+                           ds1NearEndStatGroup }
+        OBJECT dsx1LineType
+            SYNTAX INTEGER {
+                dsx1ESF(2)   -- Intl Spec would be G704(2)
+                             -- or I.431(4)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Line type for T1 ISDN Primary Rate
+                 interfaces."
+
+        OBJECT dsx1LineCoding
+            SYNTAX INTEGER {
+                dsx1B8ZS(2)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Type of Zero Code Suppression for
+                 T1 ISDN Primary Rate interfaces."
+
+        OBJECT dsx1SignalMode
+            SYNTAX INTEGER {
+                none(1), -- if there is no signaling channel
+                messageOriented(4)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Possible signaling modes for
+                 T1 ISDN Primary Rate interfaces."
+
+        OBJECT dsx1TransmitClockSource
+            SYNTAX INTEGER {
+                loopTiming(1)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The transmit clock is derived from
+                 received clock on ISDN Primary Rate
+
+
+
+                 interfaces."
+
+        OBJECT dsx1Fdl
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Facilities Data Link usage on T1 ISDN
+                 Primary Rate interfaces.
+                 Note: Eventually, dsx1Att-54016(4) is to be
+                       used here since the line type is ESF."
+
+        OBJECT dsx1Channelization
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set the channelization
+                 is not required."
+
+        OBJECT dsx1LineMode
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set the line mode is not
+                 required."
+
+        OBJECT dsx1LineBuildOut
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set the line build-out
+                 is not required."
+    ::= { ds1Compliances 9 }
+
+ds1NMibE1PriNCompliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+            "Compliance statement for using this MIB for ISDN
+            Primary Rate interfaces on E1 lines."
+    MODULE
+        MANDATORY-GROUPS { ds1NearEndCfgGroup,
+                           ds1NearEndStatGroup }
+
+        OBJECT dsx1LineType
+            SYNTAX INTEGER {
+                dsx1E1CRC(5)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Line type for E1 ISDN Primary Rate
+                 interfaces."
+
+        OBJECT dsx1LineCoding
+
+
+
+            SYNTAX INTEGER {
+                dsx1HDB3(3)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Type of Zero Code Suppression for
+                 E1 ISDN Primary Rate interfaces."
+
+        OBJECT dsx1SignalMode
+            SYNTAX INTEGER {
+                messageOriented(4)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Signaling on E1 ISDN Primary Rate interfaces
+                 is always message oriented."
+
+        OBJECT dsx1TransmitClockSource
+            SYNTAX INTEGER {
+                loopTiming(1)
+            }
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The transmit clock is derived from received
+                 clock on ISDN Primary Rate interfaces."
+
+        OBJECT dsx1Fdl
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "Facilities Data Link usage on E1 ISDN
+                 Primary Rate interfaces.
+                 Note: There is an 'M-Channel' in E1,
+                       using National Bit Sa4 (G704,
+                       Table 5A).  It is used to implement
+                       management features between ET
+                       and NT.  This is different from
+                       FDL in T1, which is used to carry
+                       control signals and performance
+                       data.  In E1, control and status
+                       signals are carried using National
+                       Bits Sa5, Sa6, and A (RAI Ind.).
+                 This indicates that only the other(1) or
+                 eventually the dsx1Fdl-none(8) bits should
+                 be set in this object for E1 PRI."
+
+        OBJECT dsx1Channelization
+            MIN-ACCESS read-only
+            DESCRIPTION
+
+
+
+                "The ability to set the channelization is not
+                 required."
+
+        OBJECT dsx1LineMode
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set the line mode is not
+                required."
+
+        OBJECT dsx1LineBuildOut
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set the line build-out
+                 is not required."
+
+        OBJECT dsx1LineImpedance
+            MIN-ACCESS read-only
+            DESCRIPTION
+                "The ability to set line impedance is not
+                 required."
+     ::= { ds1Compliances 10 }
+
+-- units of conformance
+
+ds1NearEndConfigGroup  OBJECT-GROUP
+    OBJECTS { dsx1LineIndex,
+              dsx1TimeElapsed,
+              dsx1ValidIntervals,
+              dsx1LineType,
+              dsx1LineCoding,
+              dsx1SendCode,
+              dsx1CircuitIdentifier,
+              dsx1LoopbackConfig,
+              dsx1LineStatus,
+              dsx1SignalMode,
+              dsx1TransmitClockSource,
+              dsx1Fdl,
+              dsx1InvalidIntervals,
+              dsx1LineLength,
+              dsx1LoopbackStatus,
+              dsx1Ds1ChannelNumber,
+              dsx1Channelization                      }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing configuration
+            information applicable to all DS1 interfaces."
+    ::= { ds1Groups 1 }
+
+
+
+
+ds1NearEndStatisticsGroup OBJECT-GROUP
+    OBJECTS { dsx1CurrentIndex,
+              dsx1CurrentESs,
+              dsx1CurrentSESs,
+              dsx1CurrentSEFSs,
+              dsx1CurrentUASs,
+              dsx1CurrentCSSs,
+              dsx1CurrentPCVs,
+              dsx1CurrentLESs,
+              dsx1CurrentBESs,
+              dsx1CurrentDMs,
+              dsx1CurrentLCVs,
+              dsx1IntervalIndex,
+              dsx1IntervalNumber,
+              dsx1IntervalESs,
+              dsx1IntervalSESs,
+              dsx1IntervalSEFSs,
+              dsx1IntervalUASs,
+              dsx1IntervalCSSs,
+              dsx1IntervalPCVs,
+              dsx1IntervalLESs,
+              dsx1IntervalBESs,
+              dsx1IntervalDMs,
+              dsx1IntervalLCVs,
+              dsx1IntervalValidData,
+              dsx1TotalIndex,
+              dsx1TotalESs,
+              dsx1TotalSESs,
+              dsx1TotalSEFSs,
+              dsx1TotalUASs,
+              dsx1TotalCSSs,
+              dsx1TotalPCVs,
+              dsx1TotalLESs,
+              dsx1TotalBESs,
+              dsx1TotalDMs,
+              dsx1TotalLCVs }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing statistics
+            information applicable to all DS1 interfaces."
+    ::= { ds1Groups 2 }
+
+ds1FarEndGroup  OBJECT-GROUP
+    OBJECTS { dsx1FarEndCurrentIndex,
+              dsx1FarEndTimeElapsed,
+              dsx1FarEndValidIntervals,
+              dsx1FarEndCurrentESs,
+              dsx1FarEndCurrentSESs,
+
+
+
+              dsx1FarEndCurrentSEFSs,
+              dsx1FarEndCurrentUASs,
+              dsx1FarEndCurrentCSSs,
+              dsx1FarEndCurrentLESs,
+              dsx1FarEndCurrentPCVs,
+              dsx1FarEndCurrentBESs,
+              dsx1FarEndCurrentDMs,
+              dsx1FarEndInvalidIntervals,
+              dsx1FarEndIntervalIndex,
+              dsx1FarEndIntervalNumber,
+              dsx1FarEndIntervalESs,
+              dsx1FarEndIntervalSESs,
+              dsx1FarEndIntervalSEFSs,
+              dsx1FarEndIntervalUASs,
+              dsx1FarEndIntervalCSSs,
+              dsx1FarEndIntervalLESs,
+              dsx1FarEndIntervalPCVs,
+              dsx1FarEndIntervalBESs,
+              dsx1FarEndIntervalDMs,
+              dsx1FarEndIntervalValidData,
+              dsx1FarEndTotalIndex,
+              dsx1FarEndTotalESs,
+              dsx1FarEndTotalSESs,
+              dsx1FarEndTotalSEFSs,
+              dsx1FarEndTotalUASs,
+              dsx1FarEndTotalCSSs,
+              dsx1FarEndTotalLESs,
+              dsx1FarEndTotalPCVs,
+              dsx1FarEndTotalBESs,
+              dsx1FarEndTotalDMs }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing remote
+            configuration and statistics information."
+    ::= { ds1Groups 3 }
+
+ds1DeprecatedGroup OBJECT-GROUP
+    OBJECTS { dsx1IfIndex,
+              dsx1FracIndex,
+              dsx1FracNumber,
+              dsx1FracIfIndex }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of obsolete objects that may be
+            implemented for backwards compatibility."
+    ::= { ds1Groups 4 }
+
+ds1NearEndOptionalConfigGroup OBJECT-GROUP
+
+
+
+    OBJECTS { dsx1LineStatusLastChange,
+              dsx1LineStatusChangeTrapEnable }
+
+    STATUS    current
+    DESCRIPTION
+            "A collection of objects that may be implemented
+            on DS1 and DS2 interfaces."
+    ::= { ds1Groups 5 }
+
+ds1DS2Group OBJECT-GROUP
+    OBJECTS { dsx1LineIndex,
+              dsx1LineType,
+              dsx1LineCoding,
+              dsx1SendCode,
+              dsx1LineStatus,
+              dsx1SignalMode,
+              dsx1TransmitClockSource,
+              dsx1Channelization }
+    STATUS   current
+    DESCRIPTION
+            "A collection of objects providing information
+            about DS2 (6,312 kbps) and E2 (8,448 kbps)
+            systems."
+    ::= { ds1Groups 6 }
+
+ds1TransStatsGroup OBJECT-GROUP
+    OBJECTS { dsx1CurrentESs,
+              dsx1CurrentSESs,
+              dsx1CurrentUASs,
+              dsx1IntervalESs,
+              dsx1IntervalSESs,
+              dsx1IntervalUASs,
+              dsx1TotalESs,
+              dsx1TotalSESs,
+              dsx1TotalUASs }
+    STATUS   current
+    DESCRIPTION
+            "A collection of objects that are the
+            statistics that can be collected from a DS1
+            interface that is running transparent or unframed
+            lineType.  Statistics not in this list should
+            return noSuchInstance."
+    ::= { ds1Groups 7 }
+
+ds1NearEndOptionalTrapGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { dsx1LineStatusChange }
+    STATUS    current
+    DESCRIPTION
+
+
+
+            "A collection of notifications that may be
+            implemented on DS1 and DS2 interfaces."
+    ::= { ds1Groups 8 }
+
+ds1ChanMappingGroup OBJECT-GROUP
+    OBJECTS { dsx1ChanMappedIfIndex }
+    STATUS    current
+    DESCRIPTION
+            "A collection of objects that give a mapping of
+            DS3 Channel (dsx1Ds1ChannelNumber) to ifIndex."
+    ::= { ds1Groups 9 }
+
+ds1NearEndConfigurationGroup  OBJECT-GROUP
+    OBJECTS { dsx1LineIndex,
+              dsx1TimeElapsed,
+              dsx1ValidIntervals,
+              dsx1LineType,
+              dsx1LineCoding,
+              dsx1SendCode,
+              dsx1CircuitIdentifier,
+              dsx1LoopbackConfig,
+              dsx1LineStatus,
+              dsx1SignalMode,
+              dsx1TransmitClockSource,
+              dsx1Fdl,
+              dsx1InvalidIntervals,
+              dsx1LineLength,
+              dsx1LoopbackStatus,
+              dsx1Ds1ChannelNumber,
+              dsx1Channelization,
+              dsx1LineMode,
+              dsx1LineBuildOut                      }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of objects providing configuration
+            information applicable to all DS1 interfaces."
+    ::= { ds1Groups 10 }
+
+ds1NearEndCfgGroup  OBJECT-GROUP
+    OBJECTS { dsx1LineIndex,
+              dsx1TimeElapsed,
+              dsx1ValidIntervals,
+              dsx1LineType,
+              dsx1LineCoding,
+              dsx1SendCode,
+              dsx1CircuitIdentifier,
+              dsx1LoopbackConfig,
+              dsx1LineStatus,
+
+
+
+              dsx1SignalMode,
+              dsx1TransmitClockSource,
+              dsx1Fdl,
+              dsx1InvalidIntervals,
+              dsx1LineLength,
+              dsx1LoopbackStatus,
+              dsx1Ds1ChannelNumber,
+              dsx1Channelization,
+              dsx1LineMode,
+              dsx1LineBuildOut,
+              dsx1LineImpedance                     }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing configuration
+            information applicable to all DS1 interfaces."
+    ::= { ds1Groups 11 }
+
+ds1NearEndStatGroup OBJECT-GROUP
+    OBJECTS { dsx1CurrentIndex,
+              dsx1CurrentESs,
+              dsx1CurrentSESs,
+              dsx1CurrentSEFSs,
+              dsx1CurrentUASs,
+              dsx1CurrentCSSs,
+              dsx1CurrentPCVs,
+              dsx1CurrentLESs,
+              dsx1CurrentBESs,
+              dsx1CurrentLCVs,
+              dsx1IntervalIndex,
+              dsx1IntervalNumber,
+              dsx1IntervalESs,
+              dsx1IntervalSESs,
+              dsx1IntervalSEFSs,
+              dsx1IntervalUASs,
+              dsx1IntervalCSSs,
+              dsx1IntervalPCVs,
+              dsx1IntervalLESs,
+              dsx1IntervalBESs,
+              dsx1IntervalLCVs,
+              dsx1IntervalValidData,
+              dsx1TotalIndex,
+              dsx1TotalESs,
+              dsx1TotalSESs,
+              dsx1TotalSEFSs,
+              dsx1TotalUASs,
+              dsx1TotalCSSs,
+              dsx1TotalPCVs,
+              dsx1TotalLESs,
+
+
+
+              dsx1TotalBESs,
+              dsx1TotalLCVs }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing statistics
+            information applicable to all DS1 interfaces."
+    ::= { ds1Groups 12 }
+
+ds1FarEndNGroup  OBJECT-GROUP
+    OBJECTS { dsx1FarEndCurrentIndex,
+              dsx1FarEndTimeElapsed,
+              dsx1FarEndValidIntervals,
+              dsx1FarEndCurrentESs,
+              dsx1FarEndCurrentSESs,
+              dsx1FarEndCurrentSEFSs,
+              dsx1FarEndCurrentUASs,
+              dsx1FarEndCurrentCSSs,
+              dsx1FarEndCurrentLESs,
+              dsx1FarEndCurrentPCVs,
+              dsx1FarEndCurrentBESs,
+              dsx1FarEndInvalidIntervals,
+              dsx1FarEndIntervalIndex,
+              dsx1FarEndIntervalNumber,
+              dsx1FarEndIntervalESs,
+              dsx1FarEndIntervalSESs,
+              dsx1FarEndIntervalSEFSs,
+              dsx1FarEndIntervalUASs,
+              dsx1FarEndIntervalCSSs,
+              dsx1FarEndIntervalLESs,
+              dsx1FarEndIntervalPCVs,
+              dsx1FarEndIntervalBESs,
+              dsx1FarEndIntervalValidData,
+              dsx1FarEndTotalIndex,
+              dsx1FarEndTotalESs,
+              dsx1FarEndTotalSESs,
+              dsx1FarEndTotalSEFSs,
+              dsx1FarEndTotalUASs,
+              dsx1FarEndTotalCSSs,
+              dsx1FarEndTotalLESs,
+              dsx1FarEndTotalPCVs,
+              dsx1FarEndTotalBESs}
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing remote
+            configuration and statistics information."
+    ::= { ds1Groups 13 }
+END

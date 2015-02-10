@@ -1,0 +1,742 @@
+RADIUS-DYNAUTH-SERVER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE,
+       Counter32, Integer32, mib-2,
+       TimeTicks         FROM SNMPv2-SMI             -- [RFC2578]
+       SnmpAdminString   FROM SNMP-FRAMEWORK-MIB     -- [RFC3411]
+       InetAddressType,
+       InetAddress       FROM INET-ADDRESS-MIB       -- [RFC4001]
+       MODULE-COMPLIANCE,
+       OBJECT-GROUP  FROM SNMPv2-CONF;               -- [RFC2580]
+
+radiusDynAuthServerMIB MODULE-IDENTITY
+       LAST-UPDATED "200608290000Z" -- 29 August 2006
+       ORGANIZATION "IETF RADEXT Working Group"
+       CONTACT-INFO
+              " Stefaan De Cnodder
+                Alcatel
+                Francis Wellesplein 1
+                B-2018 Antwerp
+                Belgium
+
+                Phone: +32 3 240 85 15
+                EMail: stefaan.de_cnodder@alcatel.be
+
+                Nagi Reddy Jonnala
+                Cisco Systems, Inc.
+                Divyasree Chambers, B Wing,
+                O'Shaugnessy Road,
+                Bangalore-560027, India.
+
+                Phone: +91 94487 60828
+                EMail: njonnala@cisco.com
+
+                Murtaza Chiba
+                Cisco Systems, Inc.
+                170 West Tasman Dr.
+                San Jose CA, 95134
+
+                Phone: +1 408 525 7198
+                EMail: mchiba@cisco.com "
+       DESCRIPTION
+           "The MIB module for entities implementing the server
+            side of the Dynamic Authorization Extensions to the
+            Remote Authentication Dial-In User Service (RADIUS)
+            protocol.  Copyright (C) The Internet Society (2006).
+
+
+
+            Initial version as published in RFC 4673; for full
+            legal notices see the RFC itself."
+
+       REVISION "200608290000Z" -- 29 August 2006
+       DESCRIPTION "Initial version as published in RFC 4673."
+       ::= { mib-2 146 }
+
+radiusDynAuthServerMIBObjects OBJECT IDENTIFIER ::=
+                                      { radiusDynAuthServerMIB 1 }
+
+radiusDynAuthServerScalars    OBJECT IDENTIFIER ::=
+                               { radiusDynAuthServerMIBObjects 1 }
+
+radiusDynAuthServerDisconInvalidClientAddresses OBJECT-TYPE
+      SYNTAX Counter32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+            "The number of Disconnect-Request packets received from
+             unknown addresses.  This counter may experience a
+             discontinuity when the DAS module (re)starts, as
+             indicated by the value of
+             radiusDynAuthServerCounterDiscontinuity."
+      ::= { radiusDynAuthServerScalars 1 }
+
+radiusDynAuthServerCoAInvalidClientAddresses OBJECT-TYPE
+      SYNTAX Counter32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+            "The number of CoA-Request packets received from unknown
+             addresses.  This counter may experience a discontinuity
+             when the DAS module (re)starts, as indicated by the
+             value of radiusDynAuthServerCounterDiscontinuity."
+      ::= { radiusDynAuthServerScalars 2 }
+
+radiusDynAuthServerIdentifier OBJECT-TYPE
+      SYNTAX SnmpAdminString
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             "The NAS-Identifier of the RADIUS Dynamic Authorization
+              Server.  This is not necessarily the same as sysName in
+              MIB II."
+      REFERENCE
+             "RFC 2865, Section 5.32, NAS-Identifier."
+      ::= { radiusDynAuthServerScalars 3 }
+
+
+
+
+radiusDynAuthClientTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF RadiusDynAuthClientEntry
+      MAX-ACCESS not-accessible
+      STATUS     current
+      DESCRIPTION
+            "The (conceptual) table listing the RADIUS Dynamic
+             Authorization Clients with which the server shares a
+             secret."
+      ::= { radiusDynAuthServerMIBObjects 2 }
+
+radiusDynAuthClientEntry OBJECT-TYPE
+       SYNTAX     RadiusDynAuthClientEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "An entry (conceptual row) representing one Dynamic
+              Authorization Client with which the server shares a
+              secret."
+       INDEX      { radiusDynAuthClientIndex }
+       ::= { radiusDynAuthClientTable 1 }
+
+RadiusDynAuthClientEntry ::= SEQUENCE {
+       radiusDynAuthClientIndex                     Integer32,
+       radiusDynAuthClientAddressType               InetAddressType,
+       radiusDynAuthClientAddress                   InetAddress,
+       radiusDynAuthServDisconRequests              Counter32,
+       radiusDynAuthServDisconAuthOnlyRequests      Counter32,
+       radiusDynAuthServDupDisconRequests           Counter32,
+       radiusDynAuthServDisconAcks                  Counter32,
+       radiusDynAuthServDisconNaks                  Counter32,
+       radiusDynAuthServDisconNakAuthOnlyRequests   Counter32,
+       radiusDynAuthServDisconNakSessNoContext      Counter32,
+       radiusDynAuthServDisconUserSessRemoved       Counter32,
+       radiusDynAuthServMalformedDisconRequests     Counter32,
+       radiusDynAuthServDisconBadAuthenticators     Counter32,
+       radiusDynAuthServDisconPacketsDropped        Counter32,
+       radiusDynAuthServCoARequests                 Counter32,
+       radiusDynAuthServCoAAuthOnlyRequests         Counter32,
+       radiusDynAuthServDupCoARequests              Counter32,
+       radiusDynAuthServCoAAcks                     Counter32,
+       radiusDynAuthServCoANaks                     Counter32,
+       radiusDynAuthServCoANakAuthOnlyRequests      Counter32,
+       radiusDynAuthServCoANakSessNoContext         Counter32,
+       radiusDynAuthServCoAUserSessChanged          Counter32,
+       radiusDynAuthServMalformedCoARequests        Counter32,
+       radiusDynAuthServCoABadAuthenticators        Counter32,
+       radiusDynAuthServCoAPacketsDropped           Counter32,
+       radiusDynAuthServUnknownTypes                Counter32,
+
+
+
+       radiusDynAuthServerCounterDiscontinuity      TimeTicks
+}
+
+
+radiusDynAuthClientIndex OBJECT-TYPE
+       SYNTAX     Integer32 (1..2147483647)
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "A number uniquely identifying each RADIUS Dynamic
+              Authorization Client with which this Dynamic
+              Authorization Server communicates.  This number is
+              allocated by the agent implementing this MIB module
+              and is unique in this context."
+       ::= { radiusDynAuthClientEntry 1 }
+
+radiusDynAuthClientAddressType OBJECT-TYPE
+       SYNTAX     InetAddressType
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The type of IP address of the RADIUS Dynamic
+              Authorization Client referred to in this table entry."
+       ::= { radiusDynAuthClientEntry 2 }
+
+radiusDynAuthClientAddress OBJECT-TYPE
+       SYNTAX     InetAddress
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The IP address value of the RADIUS Dynamic
+              Authorization Client referred to in this table entry,
+              using the version neutral IP address format.  The type
+              of this address is determined by the value of
+              the radiusDynAuthClientAddressType object."
+       ::= { radiusDynAuthClientEntry 3 }
+
+radiusDynAuthServDisconRequests OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS Disconnect-Requests received
+              from this Dynamic Authorization Client.  This also
+              includes the RADIUS Disconnect-Requests that have a
+              Service-Type attribute with value 'Authorize Only'.
+              This counter may experience a discontinuity when the
+
+
+
+              DAS module (re)starts as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.1, Disconnect Messages (DM)."
+       ::= { radiusDynAuthClientEntry 4 }
+
+radiusDynAuthServDisconAuthOnlyRequests OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS Disconnect-Requests that include
+              a Service-Type attribute with value 'Authorize Only'
+              received from this Dynamic Authorization Client.  This
+              counter may experience a discontinuity when the DAS
+              module (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.1, Disconnect Messages (DM)."
+       ::= { radiusDynAuthClientEntry 5 }
+
+radiusDynAuthServDupDisconRequests OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of duplicate RADIUS Disconnect-Request
+              packets received from this Dynamic Authorization
+              Client.  This counter may experience a discontinuity
+              when the DAS module (re)starts, as indicated by the
+              value of radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.1, Disconnect Messages (DM)."
+       ::= { radiusDynAuthClientEntry 6 }
+
+radiusDynAuthServDisconAcks  OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "replies"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS Disconnect-ACK packets sent to
+              this Dynamic Authorization Client.  This counter may
+              experience a discontinuity when the DAS module
+              (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+
+
+
+       REFERENCE
+             "RFC 3576, Section 2.1, Disconnect Messages (DM)."
+       ::= { radiusDynAuthClientEntry 7 }
+
+radiusDynAuthServDisconNaks OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "replies"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS Disconnect-NAK packets
+              sent to this Dynamic Authorization Client.  This
+              includes the RADIUS Disconnect-NAK packets sent
+              with a Service-Type attribute with value 'Authorize
+              Only' and the RADIUS Disconnect-NAK packets sent
+              because no session context was found.  This counter
+              may experience a discontinuity when the DAS module
+              (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.1, Disconnect Messages (DM)."
+       ::= { radiusDynAuthClientEntry 8 }
+
+radiusDynAuthServDisconNakAuthOnlyRequests OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "replies"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS Disconnect-NAK packets that
+              include a Service-Type attribute with value
+              'Authorize Only' sent to this Dynamic Authorization
+              Client.  This counter may experience a discontinuity
+              when the DAS module (re)starts, as indicated by the
+              value of radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.1, Disconnect Messages (DM)."
+       ::= { radiusDynAuthClientEntry 9 }
+
+radiusDynAuthServDisconNakSessNoContext OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "replies"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS Disconnect-NAK packets
+              sent to this Dynamic Authorization Client
+              because no session context was found.  This counter may
+
+
+
+              experience a discontinuity when the DAS module
+              (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.1, Disconnect Messages (DM)."
+       ::= { radiusDynAuthClientEntry 10 }
+
+radiusDynAuthServDisconUserSessRemoved OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "sessions"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of user sessions removed for the
+              Disconnect-Requests received from this
+              Dynamic Authorization Client.  Depending on site-
+              specific policies, a single Disconnect request
+              can remove multiple user sessions.  In cases where
+              this Dynamic Authorization Server has no
+              knowledge of the number of user sessions that
+              are affected by a single request, each such
+              Disconnect-Request will count as a single
+              affected user session only.  This counter may experience
+              a discontinuity when the DAS module (re)starts, as
+              indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.1, Disconnect Messages (DM)."
+       ::= { radiusDynAuthClientEntry 11 }
+
+radiusDynAuthServMalformedDisconRequests OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of malformed RADIUS Disconnect-Request
+              packets received from this Dynamic Authorization
+              Client.  Bad authenticators and unknown types are not
+              included as malformed Disconnect-Requests.  This counter
+              may experience a discontinuity when the DAS module
+              (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.1, Disconnect Messages (DM), and
+              Section 2.3, Packet Format."
+       ::= { radiusDynAuthClientEntry 12 }
+
+
+
+
+radiusDynAuthServDisconBadAuthenticators OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS Disconnect-Request packets
+              that contained an invalid Authenticator field
+              received from this Dynamic Authorization Client.  This
+              counter may experience a discontinuity when the DAS
+              module (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.1, Disconnect Messages (DM), and
+              Section 2.3, Packet Format."
+       ::= { radiusDynAuthClientEntry 13 }
+
+radiusDynAuthServDisconPacketsDropped OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of incoming Disconnect-Requests
+              from this Dynamic Authorization Client silently
+              discarded by the server application for some reason
+              other than malformed, bad authenticators, or unknown
+              types.  This counter may experience a discontinuity
+              when the DAS module (re)starts, as indicated by the
+              value of radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.1, Disconnect Messages (DM), and
+              Section 2.3, Packet Format."
+       ::= { radiusDynAuthClientEntry 14 }
+
+radiusDynAuthServCoARequests OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS CoA-requests received from this
+              Dynamic Authorization Client.  This also includes
+              the CoA requests that have a Service-Type attribute
+              with value 'Authorize Only'.  This counter may
+              experience a discontinuity when the DAS module
+              (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+
+
+
+       REFERENCE
+             "RFC 3576, Section 2.2, Change-of-Authorization
+              Messages (CoA)."
+       ::= { radiusDynAuthClientEntry 15 }
+
+radiusDynAuthServCoAAuthOnlyRequests OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS CoA-requests that include a
+              Service-Type attribute with value 'Authorize Only'
+              received from this Dynamic Authorization Client.  This
+              counter may experience a discontinuity when the DAS
+              module (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.2, Change-of-Authorization
+              Messages (CoA)."
+       ::= { radiusDynAuthClientEntry 16 }
+
+
+radiusDynAuthServDupCoARequests OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of duplicate RADIUS CoA-Request packets
+              received from this Dynamic Authorization Client.  This
+              counter may experience a discontinuity when the DAS
+              module (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.2, Change-of-Authorization
+              Messages (CoA)."
+       ::= { radiusDynAuthClientEntry 17 }
+
+radiusDynAuthServCoAAcks  OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "replies"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS CoA-ACK packets sent to this
+              Dynamic Authorization Client.  This counter may
+              experience a discontinuity when the DAS module
+
+
+
+              (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.2, Change-of-Authorization
+              Messages (CoA)."
+       ::= { radiusDynAuthClientEntry 18 }
+
+radiusDynAuthServCoANaks OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "replies"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS CoA-NAK packets sent to
+              this Dynamic Authorization Client.  This includes
+              the RADIUS CoA-NAK packets sent with a Service-Type
+              attribute with value 'Authorize Only' and the RADIUS
+              CoA-NAK packets sent because no session context was
+              found.  This counter may experience a discontinuity
+              when the DAS module (re)starts, as indicated by the
+              value of radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.2, Change-of-Authorization
+              Messages (CoA)."
+       ::= { radiusDynAuthClientEntry 19 }
+
+radiusDynAuthServCoANakAuthOnlyRequests OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "replies"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS CoA-NAK packets that include a
+              Service-Type attribute with value 'Authorize Only'
+              sent to this Dynamic Authorization Client.  This counter
+              may experience a discontinuity when the DAS module
+              (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.2, Change-of-Authorization
+              Messages (CoA)."
+       ::= { radiusDynAuthClientEntry 20 }
+
+radiusDynAuthServCoANakSessNoContext OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "replies"
+       MAX-ACCESS read-only
+       STATUS     current
+
+
+
+       DESCRIPTION
+             "The number of RADIUS CoA-NAK packets sent to this
+              Dynamic Authorization Client because no session context
+              was found.  This counter may experience a discontinuity
+              when the DAS module (re)starts, as indicated by the
+              value of radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.2, Change-of-Authorization
+              Messages (CoA)."
+       ::= { radiusDynAuthClientEntry 21 }
+
+radiusDynAuthServCoAUserSessChanged OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "sessions"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of user sessions authorization
+              changed for the CoA-Requests received from this
+              Dynamic Authorization Client.  Depending on site-
+              specific policies, a single CoA request can change
+              multiple user sessions' authorization.  In cases where
+              this Dynamic Authorization Server has no knowledge of
+              the number of user sessions that are affected by a
+              single request, each such CoA-Request will
+              count as a single affected user session only.  This
+              counter may experience a discontinuity when the DAS
+              module (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.2, Change-of-Authorization
+              Messages (CoA)."
+       ::= { radiusDynAuthClientEntry 22 }
+
+radiusDynAuthServMalformedCoARequests OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of malformed RADIUS CoA-Request packets
+              received from this Dynamic Authorization Client.  Bad
+              authenticators and unknown types are not included as
+              malformed CoA-Requests.  This counter may experience a
+              discontinuity when the DAS module (re)starts, as
+              indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+
+
+
+             "RFC 3576, Section 2.2, Change-of-Authorization
+              Messages (CoA), and Section 2.3, Packet Format."
+       ::= { radiusDynAuthClientEntry  23 }
+
+radiusDynAuthServCoABadAuthenticators OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of RADIUS CoA-Request packets that
+              contained an invalid Authenticator field received
+              from this Dynamic Authorization Client.  This counter
+              may experience a discontinuity when the DAS module
+              (re)starts, as indicated by the value of
+                radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.2, Change-of-Authorization
+              Messages (CoA), and Section 2.3, Packet Format."
+       ::= { radiusDynAuthClientEntry 24 }
+
+radiusDynAuthServCoAPacketsDropped OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of incoming CoA packets from this
+              Dynamic Authorization Client silently discarded
+              by the server application for some reason other than
+              malformed, bad authenticators, or unknown types.  This
+              counter may experience a discontinuity when the DAS
+              module (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.2, Change-of-Authorization
+              Messages (CoA), and Section 2.3, Packet Format."
+       ::= { radiusDynAuthClientEntry 25 }
+
+radiusDynAuthServUnknownTypes OBJECT-TYPE
+       SYNTAX     Counter32
+       UNITS      "requests"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The number of incoming packets of unknown types that
+              were received on the Dynamic Authorization port.  This
+              counter may experience a discontinuity when the DAS
+
+
+
+              module (re)starts, as indicated by the value of
+              radiusDynAuthServerCounterDiscontinuity."
+       REFERENCE
+             "RFC 3576, Section 2.3, Packet Format."
+       ::= { radiusDynAuthClientEntry 26 }
+
+radiusDynAuthServerCounterDiscontinuity OBJECT-TYPE
+       SYNTAX TimeTicks
+       UNITS  "hundredths of a second"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The time (in hundredths of a second) since the
+              last counter discontinuity.  A discontinuity may
+              be the result of a reinitialization of the DAS
+              module within the managed entity."
+       ::= { radiusDynAuthClientEntry 27 }
+
+
+-- conformance information
+
+radiusDynAuthServerMIBConformance
+       OBJECT IDENTIFIER ::= { radiusDynAuthServerMIB 2 }
+radiusDynAuthServerMIBCompliances
+       OBJECT IDENTIFIER ::= { radiusDynAuthServerMIBConformance 1 }
+radiusDynAuthServerMIBGroups
+       OBJECT IDENTIFIER ::= { radiusDynAuthServerMIBConformance 2 }
+
+-- compliance statements
+
+radiusAuthServerMIBCompliance MODULE-COMPLIANCE
+       STATUS  current
+       DESCRIPTION
+             "The compliance statement for entities implementing
+              the RADIUS Dynamic Authorization Server.  Implementation
+              of this module is for entities that support IPv4 and/or
+              IPv6."
+       MODULE  -- this module
+       MANDATORY-GROUPS { radiusDynAuthServerMIBGroup }
+
+       OBJECT             radiusDynAuthClientAddressType
+       SYNTAX             InetAddressType { ipv4(1), ipv6(2) }
+       DESCRIPTION
+           "An implementation is only required to support IPv4 and
+            globally unique IPv6 addresses."
+
+       OBJECT             radiusDynAuthClientAddress
+       SYNTAX             InetAddress (SIZE(4|16))
+
+
+
+       DESCRIPTION
+           "An implementation is only required to support IPv4 and
+            globally unique IPv6 addresses."
+
+       GROUP              radiusDynAuthServerAuthOnlyGroup
+       DESCRIPTION
+             "Only required for Dynamic Authorization Clients that
+              are supporting Service-Type attributes with value
+              'Authorize-Only'."
+
+
+       GROUP              radiusDynAuthServerNoSessGroup
+       DESCRIPTION
+             "This group is not required if the Dynamic
+              Authorization Server cannot easily determine whether
+              a session exists (e.g., in case of a RADIUS
+              proxy)."
+
+       ::= { radiusDynAuthServerMIBCompliances 1 }
+
+-- units of conformance
+
+radiusDynAuthServerMIBGroup OBJECT-GROUP
+       OBJECTS { radiusDynAuthServerDisconInvalidClientAddresses,
+                 radiusDynAuthServerCoAInvalidClientAddresses,
+                 radiusDynAuthServerIdentifier,
+                 radiusDynAuthClientAddressType,
+                 radiusDynAuthClientAddress,
+                 radiusDynAuthServDisconRequests,
+                 radiusDynAuthServDupDisconRequests,
+                 radiusDynAuthServDisconAcks,
+                 radiusDynAuthServDisconNaks,
+                 radiusDynAuthServDisconUserSessRemoved,
+                 radiusDynAuthServMalformedDisconRequests,
+                 radiusDynAuthServDisconBadAuthenticators,
+                 radiusDynAuthServDisconPacketsDropped,
+                 radiusDynAuthServCoARequests,
+                 radiusDynAuthServDupCoARequests,
+                 radiusDynAuthServCoAAcks,
+                 radiusDynAuthServCoANaks,
+                 radiusDynAuthServCoAUserSessChanged,
+                 radiusDynAuthServMalformedCoARequests,
+                 radiusDynAuthServCoABadAuthenticators,
+                 radiusDynAuthServCoAPacketsDropped,
+                 radiusDynAuthServUnknownTypes,
+                 radiusDynAuthServerCounterDiscontinuity
+               }
+       STATUS  current
+
+
+
+       DESCRIPTION
+             "The collection of objects providing management of
+              a RADIUS Dynamic Authorization Server."
+       ::= { radiusDynAuthServerMIBGroups 1 }
+
+radiusDynAuthServerAuthOnlyGroup OBJECT-GROUP
+       OBJECTS { radiusDynAuthServDisconAuthOnlyRequests,
+                 radiusDynAuthServDisconNakAuthOnlyRequests,
+                 radiusDynAuthServCoAAuthOnlyRequests,
+                 radiusDynAuthServCoANakAuthOnlyRequests
+               }
+       STATUS  current
+       DESCRIPTION
+             "The collection of objects supporting the RADIUS
+              messages including Service-Type attribute with
+              value 'Authorize Only'."
+       ::= { radiusDynAuthServerMIBGroups 2 }
+
+radiusDynAuthServerNoSessGroup OBJECT-GROUP
+       OBJECTS { radiusDynAuthServDisconNakSessNoContext,
+                 radiusDynAuthServCoANakSessNoContext
+               }
+       STATUS  current
+       DESCRIPTION
+             "The collection of objects supporting the RADIUS
+              messages that are referring to non-existing sessions."
+       ::= { radiusDynAuthServerMIBGroups 3 }
+
+
+END

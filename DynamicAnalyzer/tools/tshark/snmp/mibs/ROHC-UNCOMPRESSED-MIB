@@ -1,0 +1,206 @@
+ROHC-UNCOMPRESSED-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Counter32, mib-2
+        FROM SNMPv2-SMI                               -- [RFC2578]
+
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF                              -- [RFC2580]
+
+    rohcChannelID, rohcContextCID
+        FROM ROHC-MIB;
+
+
+
+rohcUncmprMIB MODULE-IDENTITY
+    LAST-UPDATED "200406030000Z"  -- June 3, 2004
+    ORGANIZATION "IETF Robust Header Compression Working Group"
+    CONTACT-INFO
+       "WG charter:
+          http://www.ietf.org/html.charters/rohc-charter.html
+
+        Mailing Lists:
+          General Discussion: rohc@ietf.org
+          To Subscribe: rohc-request@ietf.org
+          In Body: subscribe your_email_address
+
+        Editor:
+          Juergen Quittek
+          NEC Europe Ltd.
+          Network Laboratories
+          Kurfuersten-Anlage 36
+          69221 Heidelberg
+          Germany
+          Tel: +49 6221 90511-15
+          EMail: quittek@netlab.nec.de"
+    DESCRIPTION
+        "This MIB module defines a set of objects for monitoring
+         and configuring RObust Header Compression (ROHC).
+         The objects are specific to ROHC uncompressed
+         (profile 0x0000).
+
+         Copyright (C) The Internet Society (2004). The
+         initial version of this MIB module was published
+         in RFC 3816. For full legal notices see the RFC
+         itself or see:
+         http://www.ietf.org/copyrights/ianamib.html"
+
+    REVISION    "200406030000Z"  -- June 3, 2004
+    DESCRIPTION "Initial version, published as RFC 3816."
+    ::= { mib-2 113 }
+
+--
+-- The groups defined within this MIB module:
+--
+
+rohcUncmprObjects       OBJECT IDENTIFIER ::= { rohcUncmprMIB 1 }
+rohcUncmprConformance   OBJECT IDENTIFIER ::= { rohcUncmprMIB 2 }
+
+--
+-- Context Table
+--
+-- The rohcUncmprContextTable lists all contexts per interface
+
+
+-- and instance.  It extends the rohcContextTable.
+--
+
+rohcUncmprContextTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RohcUncmprContextEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table lists and describes ROHC uncompressed profile
+         specific properties of compressor contexts and
+         decompressor contexts.  It extends the rohcContextTable
+         of the ROHC-MIB module."
+    ::= { rohcUncmprObjects 1 }
+
+rohcUncmprContextEntry OBJECT-TYPE
+    SYNTAX      RohcUncmprContextEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry describing a particular context."
+    INDEX {
+        rohcChannelID,
+        rohcContextCID
+    }
+    ::= { rohcUncmprContextTable 1 }
+
+RohcUncmprContextEntry ::= SEQUENCE {
+    rohcUncmprContextState         INTEGER,
+    rohcUncmprContextMode          INTEGER,
+    rohcUncmprContextACKs          Counter32
+}
+
+rohcUncmprContextState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    initAndRefresh(1),
+                    normal(2),
+                    noContext(3),
+                    fullContext(4)
+                }
+
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "State of the context. States initAndRefresh(1) and normal(2)
+         are states of compressor contexts, states noContext(3)
+         and fullContext(4) are states of decompressor contexts."
+    REFERENCE
+        "RFC 3095, Section 5.10.3"
+
+
+
+    ::= { rohcUncmprContextEntry 3 }
+
+rohcUncmprContextMode OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    unidirectional(1),
+                    bidirectional(2)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Mode of the context."
+    REFERENCE
+        "RFC 3095, Section 5.10.3"
+    ::= { rohcUncmprContextEntry 4 }
+
+rohcUncmprContextACKs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of all positive feedbacks (ACK) sent or
+         received in this context, respectively.
+
+         Discontinuities in the value of this counter can
+         occur at re-initialization of the management
+         system, and at other times as indicated by the
+         value of ifCounterDiscontinuityTime.  For checking
+         ifCounterDiscontinuityTime, the interface index is
+         required.  It can be determined by reading the
+         rohcChannelTable of the ROHC-MIB."
+    REFERENCE
+        "RFC 3095, Section 5.2.1"
+    ::= { rohcUncmprContextEntry 5 }
+
+--
+-- conformance information
+--
+
+rohcUncmprCompliances OBJECT IDENTIFIER
+    ::= { rohcUncmprConformance 1 }
+rohcUncmprGroups      OBJECT IDENTIFIER
+    ::= { rohcUncmprConformance 2 }
+
+--
+-- compliance statements
+--
+
+rohcUncmprCompliance MODULE-COMPLIANCE
+
+
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for SNMP entities that implement
+         the ROHC-UNCOMPRESSED-MIB.
+
+         Note that compliance with this compliance
+         statement requires compliance with the
+         rohcCompliance MODULE-COMPLIANCE statement of the
+         ROHC-MIB and with the ifCompliance3 MODULE-COMPLIANCE
+         statement of the IF-MIB (RFC2863)."
+    MODULE      -- this module
+    MANDATORY-GROUPS {
+            rohcUncmprContextGroup
+    }
+    GROUP   rohcUncmprStatisticsGroup
+    DESCRIPTION
+       "A compliant implementation does not have to implement
+        the rohcUncmprStatisticsGroup."
+    ::= { rohcUncmprCompliances 1 }
+
+rohcUncmprContextGroup OBJECT-GROUP
+    OBJECTS {
+        rohcUncmprContextState,
+        rohcUncmprContextMode
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+         ROHC uncompressed compressors and decompressors."
+    ::= { rohcUncmprGroups 1 }
+
+rohcUncmprStatisticsGroup OBJECT-GROUP
+    OBJECTS {
+        rohcUncmprContextACKs
+    }
+    STATUS      current
+    DESCRIPTION
+        "An object providing context statistics."
+    ::= { rohcUncmprGroups 2 }
+
+END

@@ -1,0 +1,1322 @@
+T11-FC-FABRIC-ADDR-MGR-MIB  DEFINITIONS ::= BEGIN
+
+-- the Fibre Channel Fabric Address Manager MIB
+--
+-- for management of the functionality, in Fibre Channel switches,
+-- which is used to manage fabric configuration, domains, and
+-- addresses within a domain.
+--
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    NOTIFICATION-TYPE, Unsigned32,
+    Counter32, Gauge32, mib-2          FROM SNMPv2-SMI   -- [RFC2578]
+    MODULE-COMPLIANCE, OBJECT-GROUP,
+    NOTIFICATION-GROUP                 FROM SNMPv2-CONF  -- [RFC2580]
+    TEXTUAL-CONVENTION, TruthValue,
+    RowStatus                          FROM SNMPv2-TC    -- [RFC2579]
+    ifIndex                            FROM IF-MIB       -- [IF-MIB]
+    fcmInstanceIndex, fcmSwitchIndex,
+    FcDomainIdOrZero, FcNameIdOrZero   FROM FC-MGMT-MIB  -- [FC-MGMT]
+    T11FabricIndex                     FROM T11-TC-MIB;
+
+t11FcFabricAddrMgrMIB MODULE-IDENTITY
+
+
+
+    LAST-UPDATED "200603020000Z"
+    ORGANIZATION "T11"
+    CONTACT-INFO
+            "     Claudio DeSanti
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA 95134 USA
+                  Phone: +1 408 853-9172
+                  EMail: cds@cisco.com
+
+                  Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive
+                  San Jose, CA USA 95134
+                  Phone: +1 408-526-5260
+                  EMail: kzm@cisco.com"
+    DESCRIPTION
+           "The MIB module for the Fabric Address management
+           functionality defined by the Fibre Channel standards.  For
+           the purposes of this MIB, Fabric Address Manager refers to
+           the functionality of acquiring DomainID(s) as specified in
+           FC-SW-3, and managing Fibre Channel Identifiers as specified
+           in FC-FS.  An instance of 'Fabric Address Manager' software
+           functionality executes in the Principal Switch, and in each
+           other switch.
+
+           After an agent reboot, the values of read-write objects
+           defined in this MIB module are implementation-dependent.
+
+           Copyright (C) The Internet Society (2006).  This version of
+           this MIB module is part of RFC 4439;  see the RFC itself for
+           full legal notices."
+    REVISION    "200603020000Z"
+    DESCRIPTION
+           "Initial version of this MIB module, published as RFC 4439."
+    ::= { mib-2 137 }
+
+t11FamNotifications   OBJECT IDENTIFIER ::= { t11FcFabricAddrMgrMIB 0 }
+t11FamMIBObjects      OBJECT IDENTIFIER ::= { t11FcFabricAddrMgrMIB 1 }
+t11FamMIBConformance  OBJECT IDENTIFIER ::= { t11FcFabricAddrMgrMIB 2 }
+t11FamConfiguration   OBJECT IDENTIFIER ::= { t11FamMIBObjects 1 }
+t11FamInfo            OBJECT IDENTIFIER ::= { t11FamMIBObjects 2 }
+t11FamNotifyControl   OBJECT IDENTIFIER ::= { t11FamMIBObjects 3 }
+
+
+-- Textual Conventions
+
+T11FamDomainPriority ::= TEXTUAL-CONVENTION
+
+
+
+    DISPLAY-HINT  "d"
+    STATUS    current
+    DESCRIPTION
+           "Priority of a switch.
+
+           The Principal Switch selection is influenced by the
+           priority of the switches.
+
+           Some values of importance are:
+
+           1   : The highest priority in Principal Switch
+                 selection, which is used by the administrator
+                 to establish which switch becomes the Principal
+                 Switch.
+           255 : Indicates that the switch is not capable of
+                 acting as a Principal Switch."
+    REFERENCE   "Fibre Channel - Switch Fabric - 3 (FC-SW-3),
+                 ANSI INCITS 384-2004, section 6.1.5."
+    SYNTAX    Unsigned32 (1..255)
+
+T11FamDomainInterfaceRole ::= TEXTUAL-CONVENTION
+    STATUS    current
+    DESCRIPTION
+           "The 'designated' state/role of the Inter-Switch Link (ISL)
+           to which an interface connects, or (if not connected)
+           the state of the interface:
+
+           nonPrincipal (1)       - non-Principal ISL
+           principalUpstream (2)  - Upstream Principal ISL
+           principalDownsteam (3) - Downstream Principal ISL
+           isolated (4)           - interface is isolated
+           down (5)               - interface is down
+           unknown (6)            - state/role is unknown
+           "
+    REFERENCE   "Fibre Channel - Switch Fabric - 3 (FC-SW-3),
+                 ANSI INCITS 384-2004, Sections 3.1, 5.7,
+                 and Figure 9."
+    SYNTAX    INTEGER {
+                       nonPrincipal (1),
+                       principalUpstream (2),
+                       principalDownsteam (3),
+                       isolated (4),
+                       down (5),
+                       unknown (6)
+              }
+
+T11FamState ::= TEXTUAL-CONVENTION
+    STATUS    current
+
+
+
+    DESCRIPTION
+           "The state of the Fabric Address Manager, as described in
+           Table 86 and Figure 15 of FC-SW-3.
+
+           - 'other' represents a switch that is in a state not
+             represented by any of the below enumerations.
+
+           - 'starting' represents a switch engaged in the process
+             represented by the first row in Table 86.
+
+           - 'unconfigured' represents a switch that requires
+             operator input before it can begin the process
+             represented by the first row in Table 86.
+
+           - 'principalSwitchSelection' represents a switch engaged
+             in the process represented by the second row in
+             Table 86, but not in states F0 or F1 of Figure 15.
+
+           - 'domainIdDistribution' represents a switch engaged in
+             the process represented by the third row in Table 86.
+
+           - 'buildFabricPhase' represents a switch that is in
+             state F0 of Figure 15.
+
+           - 'reconfigureFabricPhase' represents a switch that is
+             in state F1 of Figure 15.
+
+           - 'stable' represents a switch that has successfully
+             completed the process represented by the third row in
+             Table 86 and has at least one E_Port.
+
+           - 'stableWithNoEports' represents a switch that has
+             successfully completed the process represented by the
+             third row in Table 86 but has no E_Ports.
+
+           - 'noDomains' represents a switch that has completed
+             the process represented by the third row in Table 86
+             but failed to obtain a Domain_ID.
+
+           - 'disabled' represents any situation in which the
+             corresponding instance of t11FamEnable has the value
+             'false'.
+
+           - 'unknown' represents a switch that is confused about
+             what state it is in."
+    REFERENCE   "Fibre Channel - Switch Fabric - 3 (FC-SW-3),
+                 ANSI INCITS 384-2004, Table 86 and Figure 15."
+    SYNTAX    INTEGER {
+
+
+
+                       other(1),
+                       starting(2),
+                       unconfigured(3),
+                       principalSwitchSelection(4),
+                       domainIdDistribution(5),
+                       buildFabricPhase(6),
+                       reconfigureFabricPhase(7),
+                       stable(8),
+                       stableWithNoEports(9),
+                       noDomains(10),
+                       disabled(11),
+                       unknown(12)
+              }
+
+
+--
+-- t11FamTable
+--
+
+t11FamTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF T11FamEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "This table contains Fabric Address Manager related
+           parameters that are able to be configured and monitored
+           in a Fibre Channel switch.  For each of the switches
+           (identified by fcmSwitchIndex) managed by a Fibre Channel
+           management instance (identified by fcmInstanceIndex),
+           there is any entry for each Fabric known to that switch.
+           Entries are implicitly created/removed if and when
+           additional Fabrics are created/deleted."
+    ::= { t11FamConfiguration 1 }
+
+t11FamEntry OBJECT-TYPE
+    SYNTAX     T11FamEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry provides information on the local Fabric Address
+           Manager functionality for a Fabric known to a
+           particular switch."
+    INDEX { fcmInstanceIndex, fcmSwitchIndex, t11FamFabricIndex }
+    ::= { t11FamTable 1 }
+
+T11FamEntry ::= SEQUENCE {
+    t11FamFabricIndex                       T11FabricIndex,
+    t11FamConfigDomainId                    FcDomainIdOrZero,
+
+
+
+    t11FamConfigDomainIdType                INTEGER,
+    t11FamAutoReconfigure                   TruthValue,
+    t11FamContiguousAllocation              TruthValue,
+    t11FamPriority                          T11FamDomainPriority,
+    t11FamPrincipalSwitchWwn                FcNameIdOrZero,
+    t11FamLocalSwitchWwn                    FcNameIdOrZero,
+    t11FamAssignedAreaIdList                OCTET STRING,
+    t11FamGrantedFcIds                      Counter32,
+    t11FamRecoveredFcIds                    Counter32,
+    t11FamFreeFcIds                         Gauge32,
+    t11FamAssignedFcIds                     Gauge32,
+    t11FamAvailableFcIds                    Gauge32,
+    t11FamRunningPriority                   T11FamDomainPriority,
+    t11FamPrincSwRunningPriority            T11FamDomainPriority,
+    t11FamState                             T11FamState,
+    t11FamLocalPrincipalSwitchSlctns        Counter32,
+    t11FamPrincipalSwitchSelections         Counter32,
+    t11FamBuildFabrics                      Counter32,
+    t11FamFabricReconfigures                Counter32,
+    t11FamDomainId                          FcDomainIdOrZero,
+    t11FamSticky                            TruthValue,
+    t11FamRestart                           INTEGER,
+    t11FamRcFabricNotifyEnable              TruthValue,
+    t11FamEnable                            TruthValue,
+    t11FamFabricName                        FcNameIdOrZero
+}
+
+t11FamFabricIndex OBJECT-TYPE
+    SYNTAX      T11FabricIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "A unique index value that uniquely identifies a
+           particular Fabric known to a particular switch.
+
+           In a Fabric conformant to FC-SW-3, only a single Fabric
+           can operate within a physical infrastructure, and thus,
+           the value of this Fabric Index will always be 1.
+
+           However, the current standard, FC-SW-4, defines
+           how multiple Fabrics, each with its own management
+           instrumentation, could operate within one (or more)
+           physical infrastructures.  When such multiple Fabrics
+           are in use, this index value is used to uniquely
+           identify a particular Fabric within a physical
+           infrastructure."
+    ::= { t11FamEntry 1 }
+
+
+
+
+t11FamConfigDomainId OBJECT-TYPE
+    SYNTAX      FcDomainIdOrZero
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "The configured Domain_ID of the particular switch on this
+           Fabric, or zero if no Domain_ID has been configured.
+           The meaning of this object depends on
+           t11FamConfigDomainIdType object.
+
+           If t11FamConfigDomainIdType is 'preferred', then the
+           configured Domain_ID is called the 'preferred Domain_ID'.
+           Valid values are between 0 and 239.  In a situation where
+           this Domain_ID cannot be assigned, any other Domain_ID
+           will be acceptable.  A value of zero means any Domain_ID.
+
+           If t11FamConfigDomainIdType is 'insistent', then the
+           configured Domain_ID is called the 'insistent Domain_ID' and
+           valid values are between 1 and 239.  In a situation where
+           this Domain_ID cannot be assigned, no other Domain_ID is
+           acceptable.
+
+           In both of the above cases, the switch sends an RDI (Request
+           Domain_ID) to request this Domain_ID to the Principal
+           Switch.  If no Domain_ID is able to be granted in the case
+           of 'preferred', or if an 'insistent' Domain_ID is configured
+           but not able to be granted, then it is an error condition.
+           When this error occurs, the switch will continue as if it
+           receives a SW_RJT with a reason/explanation of 'Unable to
+           perform command request'/'Domain_ID not available'.  That
+           is, its E_Ports on that Fabric will be isolated and the
+           administrator informed via a 't11FamDomainIdNotAssigned'
+           notification.
+
+           If t11FamConfigDomainIdType is 'static', then the configured
+           Domain_ID is called the 'static Domain_ID' and valid values
+           are between 1 and 239.  In this situation, there is no
+           Principal Switch in the Fabric and the Domain_ID is simply
+           assigned by configuration, together with the Fabric_Name.
+           A switch configured with a static Domain_ID, on receiving
+           an EFP, BF, RCF, DIA, or RDI SW_ILS, shall reply with an
+           SW_RJT having Reason Code Explanation 'E_Port is Isolated'
+           and shall isolate the receiving E_Port.
+
+           For the persistence of values across reboots, see the
+           MODULE-IDENTITY's DESCRIPTION clause."
+    REFERENCE   "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+                 ANSI INCITS 418-2006, section 7."
+
+
+
+    DEFVAL      { 0 }
+    ::= { t11FamEntry 2 }
+
+t11FamConfigDomainIdType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                       preferred(1),
+                       insistent(2),
+                       static(3)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "Type of configured Domain_ID contained in
+           t11FamConfigDomainId.
+
+           For the persistence of values across reboots, see the
+           MODULE-IDENTITY's DESCRIPTION clause."
+    DEFVAL  { preferred }
+    ::= { t11FamEntry 3 }
+
+t11FamAutoReconfigure OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "This object determines how a particular switch
+           responds to certain error conditions.
+
+           The condition that might cause these errors is
+           the merging of two disjoint Fabrics that have
+           overlapping Domain_ID lists.
+
+           If value of this object is 'true', the switch will
+           send an RCF (ReConfigureFabric) to rebuild the
+           Fabric.
+
+           If 'false', the switch will isolate the E_Ports on
+           which the errors happened.
+
+           For the persistence of values across reboots, see the
+           MODULE-IDENTITY's DESCRIPTION clause."
+    REFERENCE   "Fibre Channel - Switch Fabric - 3 (FC-SW-3),
+                   December 2003, sections 6.1.12 & 7.3.
+                Fibre Channel - Methodologies for Interconnects
+                   (FC-MI), INCITS TR-30-2002, table 14, note g."
+    DEFVAL  { false }
+    ::= { t11FamEntry 4 }
+
+
+
+
+t11FamContiguousAllocation OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "Determines how a particular switch behaves when elected as
+           the Principal Switch.
+
+           If true, the switch will only accept RDIs with a contiguous
+           allocation; specifically, it will reject RDIs with
+           non-contiguous Domain_IDs, and if an RDI for a contiguous
+           Domain_ID is not able to be fulfilled, it will try to
+           replace all the Domain_IDs in the list with contiguous
+           Domain_IDs, and if that fails, the RDI will be rejected.
+
+           If false, then the switch acts normally in granting
+           the Domain_IDs even if they are not contiguous.
+
+           For the persistence of values across reboots, see the
+           MODULE-IDENTITY's DESCRIPTION clause."
+    ::= { t11FamEntry 5 }
+
+t11FamPriority  OBJECT-TYPE
+    SYNTAX     T11FamDomainPriority
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+           "The initial or configured priority of a particular switch
+           to be used in Principal Switch selection process.
+
+           For the persistence of values across reboots, see the
+           MODULE-IDENTITY's DESCRIPTION clause."
+    ::= { t11FamEntry 6 }
+
+t11FamPrincipalSwitchWwn OBJECT-TYPE
+    SYNTAX      FcNameIdOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The WWN of the Principal Switch on this Fabric,
+           or zero-length string if the identity of the principal
+           switch is unknown."
+    DEFVAL  { ''H }
+    ::= { t11FamEntry 7 }
+
+t11FamLocalSwitchWwn OBJECT-TYPE
+    SYNTAX      FcNameIdOrZero
+    MAX-ACCESS  read-only
+
+
+
+    STATUS      current
+    DESCRIPTION
+           "The WWN of the particular switch on this Fabric."
+    ::= { t11FamEntry 8 }
+
+t11FamAssignedAreaIdList    OBJECT-TYPE
+    SYNTAX     OCTET STRING (SIZE(0..256))
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The list of (zero or more) Area_IDs that have been
+           assigned by a particular switch in this Fabric, formatted
+           as an array of octets in ascending order.
+
+           Each octet represents one Area_ID.  So, the list containing
+           Area_IDs 23, 45, 235, and 56 would be formatted as the
+           4-octet string x'172d38eb'.
+
+           A particular area's Area_ID is used as the index into the
+           t11FamAreaTable to get the statistics on that area."
+    ::= { t11FamEntry 9 }
+
+t11FamGrantedFcIds OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The total number of Fibre Channel Address Identifiers
+           granted (for local use, i.e., with a particular switch's
+           Domain_ID) by the Fabric Address Manager on that switch.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11FamEntry 10 }
+
+t11FamRecoveredFcIds OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The total number of Fibre Channel Address Identifiers that
+           have been recovered by the Fabric Address Manager on a
+           particular switch since the switch has been initialized.
+           A recovered Fibre Channel Address Identifier is one that is
+           explicitly returned after previously being used.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+
+
+
+    ::= { t11FamEntry 11 }
+
+t11FamFreeFcIds OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of Fibre Channel Address Identifiers that are
+           currently unassigned on this Fabric and could be available
+           for assignment either immediately or at some later time.
+
+           The sum of the instances of FreeFcIds and AssignedFcIds
+           corresponding to a particular Fabric is the total number of
+           Fibre Channel Address Identifiers that the local Fabric
+           Address Management is capable of assigning on that Fabric."
+    ::= { t11FamEntry 12 }
+
+t11FamAssignedFcIds OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of Fibre Channel Address Identifiers that are
+           currently assigned on this Fabric.
+
+           The sum of the instances of FreeFcIds and AssignedFcIds
+           corresponding to a particular Fabric is the total number of
+           Fibre Channel Address Identifiers that the local Fabric
+           Address Management is capable of assigning on that Fabric."
+    ::= { t11FamEntry 13 }
+
+t11FamAvailableFcIds OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of Fibre Channel Address Identifiers that are
+           unassigned and currently available for immediate assignment
+           on the Fabric, e.g., with the 'Clean Address' bit set to 1."
+    REFERENCE
+        "Fibre Channel - Framing and Signaling (FC-FS),
+         ANSI INCITS 373-2003, section 15.6.2.4.2."
+    ::= { t11FamEntry 14 }
+
+t11FamRunningPriority OBJECT-TYPE
+    SYNTAX     T11FamDomainPriority
+    MAX-ACCESS read-only
+    STATUS      current
+
+
+
+    DESCRIPTION
+           "The running priority of a particular switch on this Fabric.
+           This value is initialized to the value of t11FamPriority,
+           and subsequently altered as specified by the procedures
+           defined in FC-SW-3."
+    ::= { t11FamEntry 15 }
+
+t11FamPrincSwRunningPriority OBJECT-TYPE
+    SYNTAX     T11FamDomainPriority
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The running priority of the Principal Switch on this
+           Fabric."
+    ::= { t11FamEntry 16 }
+
+t11FamState OBJECT-TYPE
+    SYNTAX     T11FamState
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The state of the Fabric Address Manager on a particular
+           switch on this Fabric."
+    ::= { t11FamEntry 17 }
+
+t11FamLocalPrincipalSwitchSlctns OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of times a particular switch became the
+           Principal Switch on this Fabric.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11FamEntry 18 }
+
+t11FamPrincipalSwitchSelections OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of Principal Switch selections on this Fabric.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11FamEntry 19 }
+
+
+
+
+t11FamBuildFabrics OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of non-disruptive fabric reconfigurations (BFs)
+           that have occurred on this Fabric.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11FamEntry 20 }
+
+t11FamFabricReconfigures OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of disruptive fabric reconfigurations (RCFs)
+           that have occurred on this Fabric.
+
+           This counter has no discontinuities other than those
+           that all Counter32s have when sysUpTime=0."
+    ::= { t11FamEntry 21 }
+
+t11FamDomainId OBJECT-TYPE
+    SYNTAX      FcDomainIdOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The Domain_ID of a particular switch on this Fabric or
+           zero if no Domain_ID has been assigned."
+    ::= { t11FamEntry 22 }
+
+t11FamSticky   OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "An indication of whether a particular switch is supporting
+           the concept of Preferred Domain_IDs via a best-effort
+           attempt to re-assign the same Fibre Channel Address
+           Identifier value to a port on the next occasion when a port
+           requests an assignment on this Fabric.
+
+           If the value of this object is 'true', then the switch is
+           maintaining rows in the t11FamFcIdCacheTable for this
+           Fabric."
+    ::= { t11FamEntry 23 }
+
+
+
+t11FamRestart  OBJECT-TYPE
+    SYNTAX     INTEGER {
+                       nonDisruptive(1),
+                       disruptive(2),
+                       noOp(3)
+               }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "This object tells the Fabric Address Manager to
+           request a Fabric reconfiguration.
+
+           If this object is set to 'disruptive', then an RCF
+           (ReConfigure Fabric) is generated in the Fabric
+           in order for the Fabric to recover from the errors.
+
+           If this object is set to 'nonDisruptive', then a
+           BF (Build Fabric) is generated in the Fabric.
+
+           No action is taken if this object is set to 'noOp'.
+           The value of the object when read is always 'noOp'.
+
+           For the persistence of values across reboots, see the
+           MODULE-IDENTITY's DESCRIPTION clause."
+    REFERENCE   "Fibre Channel - Switch Fabric - 3 (FC-SW-3),
+                 ANSI INCITS 384-2004, section 7.3."
+    ::= { t11FamEntry 24 }
+
+t11FamRcFabricNotifyEnable OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+           "An indication of whether or not a particular switch
+           should issue a t11FamFabricChangeNotify notification on
+           sending or receiving ReConfigureFabric (RCF) on a Fabric.
+
+           If the value of the object is 'true', then the
+           notification is generated.  If the value is 'false',
+           notification is not generated.
+
+           If an implementation requires all Fabrics to have the
+           same value, then setting one instance of this object
+           to a new object will result in all corresponding
+           instances being set to that same new value.
+
+           For the persistence of values across reboots, see the
+           MODULE-IDENTITY's DESCRIPTION clause."
+
+
+
+    DEFVAL { false }
+    ::= { t11FamEntry 25 }
+
+t11FamEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "Enables the Fabric Address Manager on this switch
+           on this Fabric.
+
+           If enabled on a Fabric, the switch will participate in
+           Principal Switch selection, and Domain_IDs are assigned
+           dynamically.  If disabled, the switch will not participate
+           in Principal Switch selection, and Domain_IDs are
+           assigned statically.  Thus, the corresponding value of
+           t11FamConfigDomainIdType needs to be 'static'.
+
+           For the persistence of values across reboots, see the
+           MODULE-IDENTITY's DESCRIPTION clause."
+  REFERENCE   "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+               ANSI INCITS 418-2006, sections 7.1 and 7.3."
+  DEFVAL  { true }
+  ::= { t11FamEntry 26 }
+
+t11FamFabricName  OBJECT-TYPE
+    SYNTAX      FcNameIdOrZero
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "The WWN that is configured on this switch to be used as
+           the name of this Fabric when the value of t11FamEnable is
+           'false'.
+
+           If the value of t11FamEnable is 'true', this value is not
+           used.
+
+           Fibre Channel requires that:
+               a) all switches in an operational Fabric be
+                  configured with the same Fabric name; and
+               b) each Fabric have a unique Fabric name.
+           If either of these is violated, either by switches within a
+           single Fabric being configured with different Fabric names,
+           or by multiple Fabrics that share management applications
+           or interact in other ways having the same Fabric name,
+           then the behavior of the switches and associated management
+           functions is not specified by Fibre Channel or Internet
+           standards.
+
+
+
+           For the persistence of values across reboots, see the
+           MODULE-IDENTITY's DESCRIPTION clause."
+    REFERENCE   "Fibre Channel - Switch Fabric - 4 (FC-SW-4),
+                 ANSI INCITS 418-2006, section 7.1."
+    ::= { t11FamEntry 27 }
+
+
+--
+-- t11FamIfTable - Interface configuration
+--
+
+t11FamIfTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF T11FamIfEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "This table contains those Fabric Address Manager parameters
+           and status values that are per-interface (identified
+           by an ifIndex value), per-Fabric (identified by a
+           t11FamFabricIndex value), and per-switch (identified by
+           values of fcmInstanceIndex and fcmSwitchIndex).
+
+           An entry in this table is automatically created when
+           an E_Port becomes non-isolated on a particular Fabric.
+
+           An entry is deleted automatically from this table if:
+           a) the corresponding interface is no longer an E_Port (e.g.,
+              a G_Port that is dynamically determined to be an F_Port),
+              and all configuration parameter(s) have default values; or
+           b) the interface identified by ifIndex no longer exists
+              (e.g., because a line-card is physically removed); or
+           c) the row in the t11FamTable corresponding the fabric
+              identified by t11FamFabricID no longer exists.
+
+           Creating an entry in this table via t11FamIfRowStatus
+           provides the means to specify non-default parameter value(s)
+           for an interface at a time when the relevant row in this
+           table does not exist, i.e., because the interface is either
+           down or it is not an E_Port."
+    ::= { t11FamConfiguration 2 }
+
+t11FamIfEntry OBJECT-TYPE
+    SYNTAX     T11FamIfEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry containing information on the interface
+           configuration on the Fabric identified by
+
+
+
+           t11FamFabricIndex."
+    INDEX { fcmInstanceIndex, fcmSwitchIndex,
+            t11FamFabricIndex, ifIndex}
+    ::= { t11FamIfTable 1 }
+
+T11FamIfEntry ::= SEQUENCE {
+    t11FamIfRcfReject    TruthValue,
+    t11FamIfRole         T11FamDomainInterfaceRole,
+    t11FamIfRowStatus    RowStatus
+}
+
+t11FamIfRcfReject    OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-create
+    STATUS      current
+    DESCRIPTION
+           "This object determines if the incoming ReConfigure
+           Fabric (RCF) messages on this interface on this
+           Fabric is accepted or not.  If this object is 'true', then
+           the incoming RCF is rejected.  If 'false', incoming RCF is
+           accepted.
+
+           Note that this object does not apply to the outgoing
+           RCFs generated by this interface.
+
+           Implementations that support write-access to this object
+           can do so under whatever conditions they choose."
+    DEFVAL {false}
+    ::= { t11FamIfEntry 1 }
+
+t11FamIfRole    OBJECT-TYPE
+    SYNTAX     T11FamDomainInterfaceRole
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+           "The role of this interface."
+    ::= { t11FamIfEntry 2 }
+
+t11FamIfRowStatus    OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS      current
+    DESCRIPTION
+           "The status of this row."
+    ::= { t11FamIfEntry 3 }
+
+
+--
+
+
+
+-- t11FamAreaTable
+--
+
+t11FamAreaTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF T11FamAreaEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "This table contains area assignments per-Fabric by a
+           switch's Fabric Address Manager.  Each octet in
+           t11FamAssignedAreaList is able to be used to index into
+           this table to find information on each area."
+    REFERENCE   "Fibre Channel - Switch Fabric - 3 (FC-SW-3),
+                 ANSI INCITS 384-2004, section 4.8."
+    ::= { t11FamInfo 1 }
+
+t11FamAreaEntry OBJECT-TYPE
+    SYNTAX     T11FamAreaEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry gives information on the Area_ID and all
+           Port_IDs that have been assigned within an area for
+           the Fabric identified by t11FamFabricIndex, by the
+           Fabric Address Manager in the switch identified by
+           fcmInstanceIndex and fcmSwitchIndex."
+    INDEX { fcmInstanceIndex, fcmSwitchIndex,
+            t11FamFabricIndex, t11FamAreaAreaId}
+    ::= { t11FamAreaTable 1 }
+
+T11FamAreaEntry ::= SEQUENCE {
+    t11FamAreaAreaId                Unsigned32,
+    t11FamAreaAssignedPortIdList    OCTET STRING
+}
+
+t11FamAreaAreaId    OBJECT-TYPE
+    SYNTAX     Unsigned32 (0..255)
+    MAX-ACCESS not-accessible
+    STATUS      current
+    DESCRIPTION
+           "The Area_ID of this area."
+    ::= { t11FamAreaEntry 1 }
+
+t11FamAreaAssignedPortIdList    OBJECT-TYPE
+    SYNTAX     OCTET STRING (SIZE(0..256))
+    MAX-ACCESS read-only
+    STATUS      current
+    DESCRIPTION
+
+
+
+           "The list of Port_IDs which have been assigned in
+           this area and Fabric, formatted as an array of
+           octets in ascending order.  There could be zero or more
+           Port_IDs assigned on this area and Fabric.
+
+           Each octet represents one Port_ID.  So, the list containing
+           the Port_IDs 23, 45, 235, and 56 would be formatted as the
+           4-octet string x'172d38eb'."
+    ::= { t11FamAreaEntry 2 }
+
+
+--
+-- t11FamDatabaseTable
+--
+
+t11FamDatabaseTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF T11FamDatabaseEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "This table contains all information known by
+           a switch about all the domains that have been
+           assigned in each Fabric."
+    REFERENCE   "Fibre Channel - Switch Fabric - 3 (FC-SW-3),
+                 ANSI INCITS 384-2004, section 4.8."
+    ::= { t11FamInfo 2 }
+
+t11FamDatabaseEntry OBJECT-TYPE
+    SYNTAX     T11FamDatabaseEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry (conceptual row) in the t11FamDatabaseTable
+           containing information about one Domain_ID in the
+           Fabric identified by t11FamFabricIndex, and known by
+           the switch identified by t11FamFabricIndex and
+           t11FamDatabaseDomainId."
+    INDEX { fcmInstanceIndex, fcmSwitchIndex,
+            t11FamFabricIndex , t11FamDatabaseDomainId}
+    ::= { t11FamDatabaseTable 1 }
+
+T11FamDatabaseEntry ::= SEQUENCE {
+    t11FamDatabaseDomainId              FcDomainIdOrZero,
+    t11FamDatabaseSwitchWwn             FcNameIdOrZero
+}
+
+t11FamDatabaseDomainId  OBJECT-TYPE
+    SYNTAX     FcDomainIdOrZero (1..239)
+
+
+
+    MAX-ACCESS not-accessible
+    STATUS      current
+    DESCRIPTION
+           "The Domain_ID for which this row contains information.
+           The value must be non-zero."
+    ::= { t11FamDatabaseEntry 1 }
+
+t11FamDatabaseSwitchWwn  OBJECT-TYPE
+    SYNTAX      FcNameIdOrZero
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The node name (WWN) of the switch to which the
+            corresponding value of t11FamDatabaseDomainId is currently
+            assigned for the particular Fabric."
+    ::= { t11FamDatabaseEntry 2 }
+
+
+--
+-- Fibre Channel Address Identifier cache information
+--
+-- The cached information allows the Fabric Address Manager to
+-- implement the concept of a Preferred Domain_ID, whereby after a port
+-- releases a Fibre Channel Address Identifier value, a switch makes an
+-- attempt to re-assign the same Fibre Channel Address Identifier value
+-- on the next occasion when that port requests an assignment.
+--
+
+t11FamMaxFcIdCacheSize  OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The maximum number of Fibre Channel Address Identifiers
+           that are able to be cached in the t11FamFcIdCacheTable.
+           If the number is unknown, the value of this object is
+           zero."
+    ::= { t11FamInfo 3 }
+
+
+--
+-- t11FamFcIdCacheTable
+--
+
+t11FamFcIdCacheTable  OBJECT-TYPE
+    SYNTAX     SEQUENCE OF T11FamFcIdCacheEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+
+
+
+    DESCRIPTION
+           "This table contains all the Fibre Channel Address
+           Identifiers that have recently been released by the
+           Fabric Address Manager in a switch.  So, it lists
+           all the Fibre Channel Address Identifiers that have valid
+           WWN-to-Fibre Channel Address Identifier mappings and are
+           currently not assigned to any ports.  These Fibre Channel
+           Address Identifiers were assigned to ports but have since
+           been released.  These cached Fibre Channel Address
+           Identifiers contain only Area_ID and Port_ID information.
+           This cache is kept to provide best-effort re-assignment of
+           same Fibre Channel Address Identifiers; i.e., when an
+           Nx_Port asks for a Fibre Channel Address Identifier, soon
+           after releasing one, the same value is re-assigned, if
+           possible."
+    ::= { t11FamInfo 4 }
+
+t11FamFcIdCacheEntry OBJECT-TYPE
+    SYNTAX     T11FamFcIdCacheEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+           "An entry (conceptual row) in the t11FamFcIdCacheTable
+           containing information about one Fibre Channel Address
+           Identifier that was released from a WWN, corresponding to a
+           range of one or more ports connected to the switch
+           (identified by t11FamFabricIndex and t11FamFcIdCacheWwn) in
+           the Fabric (identified by t11FamFabricIndex).  An entry is
+           created when a Fibre Channel Address Identifier is released
+           by the last port in the range.  The oldest entry is deleted
+           if the number of rows in this table reaches
+           t11FamMaxFcIdCacheSize, and its space is required for a new
+           entry.  An entry is also deleted when its Fibre Channel
+           Address Identifier is assigned to a port."
+    INDEX { fcmInstanceIndex, fcmSwitchIndex,
+            t11FamFabricIndex, t11FamFcIdCacheWwn}
+    ::= { t11FamFcIdCacheTable 1 }
+
+T11FamFcIdCacheEntry ::= SEQUENCE {
+    t11FamFcIdCacheWwn                  FcNameIdOrZero,
+    t11FamFcIdCacheAreaIdPortId         OCTET STRING,
+    t11FamFcIdCachePortIds              Unsigned32
+}
+
+t11FamFcIdCacheWwn  OBJECT-TYPE
+    SYNTAX     FcNameIdOrZero
+    MAX-ACCESS not-accessible
+    STATUS      current
+
+
+
+    DESCRIPTION
+           "The N_Port_Name (WWN) of the port associated with this
+           entry."
+    ::= { t11FamFcIdCacheEntry 1 }
+
+t11FamFcIdCacheAreaIdPortId  OBJECT-TYPE
+    SYNTAX     OCTET STRING (SIZE (2))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The combination of this object and t11FamFcIdCachePortIds
+           represent one range of Fibre Channel Address Identifiers,
+           which were assigned and later released.  This object
+           contains the Area_ID and Port_ID of the first Fibre
+           Channel Address Identifier in the range.
+
+           Note that this object is only 2 bytes."
+    ::= { t11FamFcIdCacheEntry 2 }
+
+t11FamFcIdCachePortIds  OBJECT-TYPE
+    SYNTAX     Unsigned32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The combination of t11FamFcIdCacheAreaIdPortId and this
+           object represent one range of Fibre Channel Address
+           Identifiers, which were assigned and later released.  This
+           object contains the number of (consecutive) Fibre Channel
+           Address Identifiers in the range."
+    ::= { t11FamFcIdCacheEntry 3 }
+
+
+-- Objects for use in notifications
+
+t11FamNotifyFabricIndex OBJECT-TYPE
+    SYNTAX      T11FabricIndex
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+           "A unique index value that identifies a particular
+           Fabric for which a particular notification is generated.
+
+           In a Fabric conformant to SW-3, only a single Fabric
+           can operate within a physical infrastructure, and thus,
+           the value of this Fabric Index will always be 1.
+
+           However, the current standard, FC-SW-4, defines
+           how multiple Fabrics, each with its own management
+
+
+
+           instrumentation, could operate within one (or more)
+           physical infrastructures.  In order to accommodate this
+           scenario, this index value is used to uniquely identify a
+           particular Fabric within a physical infrastructure."
+    ::= { t11FamNotifyControl 1 }
+
+
+-- Notifications
+
+t11FamDomainIdNotAssignedNotify NOTIFICATION-TYPE
+    OBJECTS     { t11FamLocalSwitchWwn, t11FamNotifyFabricIndex }
+    STATUS      current
+    DESCRIPTION
+           "This notification indicates that a Domain_ID has not
+           been configured or assigned for a particular Fabric,
+           identified by t11FamNotifyFabricIndex, on a particular
+           switch identified by t11FamLocalSwitchWwn.  This could
+           happen under the following conditions, and results in the
+           switch isolating E_Ports on the Fabric:
+
+            - if the switch's request for a configured static
+              Domain_ID is rejected or no other Domain_ID is
+              assigned, then the E_Ports are isolated."
+    ::= { t11FamNotifications 1 }
+
+t11FamNewPrincipalSwitchNotify NOTIFICATION-TYPE
+    OBJECTS     { t11FamLocalSwitchWwn, t11FamNotifyFabricIndex }
+    STATUS      current
+    DESCRIPTION
+           "This notification indicates that a particular switch,
+           identified by t11FamLocalSwitchWwn, has become the new
+           Principal Switch on the Fabric identified by
+           t11FamNotifyFabricIndex.
+
+           This notification is sent soon after its election as
+           the new Principal Switch, i.e., upon expiration of a
+           Principal Switch selection timer that is equal to
+           twice the Fabric Stability Timeout value (F_S_TOV)."
+    ::= { t11FamNotifications 2 }
+
+t11FamFabricChangeNotify NOTIFICATION-TYPE
+    OBJECTS     { t11FamLocalSwitchWwn, t11FamNotifyFabricIndex }
+    STATUS      current
+    DESCRIPTION
+           "This notification is sent whenever a particular switch,
+           identified by t11FamLocalSwitchWwn, sends or
+           receives a Build Fabric (BF) or a ReConfigure Fabric
+           (RCF) message on the Fabric identified by
+
+
+
+           t11FamNotifyFabricIndex.
+
+           This notification is not sent if a
+           't11FamNewPrincipalSwitchNotify' notification is sent
+           for the same event."
+    ::= { t11FamNotifications 3 }
+
+
+--
+-- Conformance
+--
+
+t11FamMIBCompliances OBJECT IDENTIFIER ::= { t11FamMIBConformance 1 }
+t11FamMIBGroups OBJECT IDENTIFIER ::= { t11FamMIBConformance 2 }
+
+t11FamMIBCompliance MODULE-COMPLIANCE
+    STATUS   current
+    DESCRIPTION
+           "The compliance statement for Fibre Channel switches
+           that implement Fabric Address Manager functionality."
+    MODULE
+    MANDATORY-GROUPS { t11FamGroup,
+                       t11FamDatabaseGroup,
+                       t11FamAreaGroup,
+                       t11FamNotificationGroup
+                     }
+
+      OBJECT t11FamConfigDomainId
+      MIN-ACCESS read-only
+      DESCRIPTION
+             "Write access is not required."
+
+      OBJECT t11FamConfigDomainIdType
+      MIN-ACCESS read-only
+      DESCRIPTION
+             "Write access is not required."
+
+      OBJECT t11FamAutoReconfigure
+      MIN-ACCESS read-only
+      DESCRIPTION
+             "Write access is not required."
+
+      OBJECT t11FamContiguousAllocation
+      MIN-ACCESS read-only
+      DESCRIPTION
+             "Write access is not required."
+
+      OBJECT t11FamPriority
+
+
+
+      MIN-ACCESS read-only
+      DESCRIPTION
+             "Write access is not required."
+
+      OBJECT t11FamIfRcfReject
+      MIN-ACCESS read-only
+      DESCRIPTION
+             "Write access is not required."
+
+      OBJECT t11FamIfRowStatus
+      MIN-ACCESS read-only
+      DESCRIPTION
+             "Write access is not required."
+
+      OBJECT t11FamRcFabricNotifyEnable
+      MIN-ACCESS read-only
+      DESCRIPTION
+             "Write access is not required."
+
+      GROUP  t11FamCacheGroup
+      DESCRIPTION
+             "This group is mandatory only for switches that
+             support the concept of Preferred Domain_ID via a best-
+             effort attempt for (short-term) re-assignment of the
+             same FC address identifiers."
+
+      GROUP  t11FamCommandGroup
+      DESCRIPTION
+             "This group is optional."
+
+    ::= { t11FamMIBCompliances 1 }
+
+
+-- Units of Conformance
+
+t11FamGroup OBJECT-GROUP
+    OBJECTS  { t11FamConfigDomainId,
+               t11FamConfigDomainIdType,
+               t11FamAutoReconfigure,
+               t11FamContiguousAllocation,
+               t11FamPriority,
+               t11FamPrincipalSwitchWwn,
+               t11FamLocalSwitchWwn,
+               t11FamAssignedAreaIdList,
+               t11FamGrantedFcIds,
+               t11FamRecoveredFcIds,
+               t11FamFreeFcIds,
+               t11FamAssignedFcIds,
+
+
+
+               t11FamAvailableFcIds,
+               t11FamRunningPriority,
+               t11FamPrincSwRunningPriority,
+               t11FamState,
+               t11FamLocalPrincipalSwitchSlctns,
+               t11FamPrincipalSwitchSelections,
+               t11FamBuildFabrics,
+               t11FamFabricReconfigures,
+               t11FamDomainId,
+               t11FamSticky,
+               t11FamRestart,
+               t11FamRcFabricNotifyEnable,
+               t11FamEnable,
+               t11FamFabricName,
+               t11FamIfRcfReject,
+               t11FamIfRole,
+               t11FamIfRowStatus,
+               t11FamNotifyFabricIndex
+            }
+    STATUS   current
+    DESCRIPTION
+           "A collection of general objects for displaying and
+           configuring Fabric Address management."
+    ::= { t11FamMIBGroups 1 }
+
+t11FamCommandGroup OBJECT-GROUP
+    OBJECTS  { t11FamRestart }
+    STATUS   current
+    DESCRIPTION
+           "A collection of objects used for initiating an
+           operation on the Fabric."
+    ::= { t11FamMIBGroups 2 }
+
+t11FamDatabaseGroup OBJECT-GROUP
+    OBJECTS  { t11FamDatabaseSwitchWwn }
+    STATUS   current
+    DESCRIPTION
+           "A collection of objects containing information about
+           Domain-IDs assignments."
+    ::= { t11FamMIBGroups 3 }
+
+t11FamAreaGroup OBJECT-GROUP
+    OBJECTS  { t11FamAreaAssignedPortIdList }
+    STATUS   current
+    DESCRIPTION
+           "A collection of objects containing information about
+           currently assigned addresses within a domain."
+    ::= { t11FamMIBGroups 4 }
+
+
+
+t11FamCacheGroup OBJECT-GROUP
+    OBJECTS  { t11FamMaxFcIdCacheSize,
+               t11FamFcIdCacheAreaIdPortId,
+               t11FamFcIdCachePortIds
+             }
+    STATUS   current
+    DESCRIPTION
+           "A collection of objects containing information about
+           recently-released Fibre Channel Address Identifiers."
+    ::= { t11FamMIBGroups 5 }
+
+t11FamNotificationGroup NOTIFICATION-GROUP
+    NOTIFICATIONS  { t11FamDomainIdNotAssignedNotify,
+                     t11FamNewPrincipalSwitchNotify,
+                     t11FamFabricChangeNotify }
+    STATUS   current
+    DESCRIPTION
+           "A collection of notifications for status monitoring
+           and notification."
+    ::= { t11FamMIBGroups 6 }
+END

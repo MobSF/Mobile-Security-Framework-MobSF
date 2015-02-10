@@ -1,0 +1,95 @@
+COPS-PR-SPPI-TC   PIB-DEFINITIONS ::= BEGIN
+
+IMPORTS    Unsigned32, MODULE-IDENTITY, TEXTUAL-CONVENTION, pib
+                                              FROM COPS-PR-SPPI;
+
+copsPrSppiTc    MODULE-IDENTITY
+    SUBJECT-CATEGORIES   { all }
+    LAST-UPDATED "200108160000Z"
+    ORGANIZATION "IETF RAP WG"
+    CONTACT-INFO "Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive,
+                  San Jose, CA 95134-1706 USA
+                  Phone: +1 408 526 5260
+                  Email: kzm@cisco.com
+
+                  Ravi Sahita
+                  Intel
+                  2111 NE 25th Avenue
+                  Hillsboro, OR 97124 USA
+                  Phone: +1 503 712 1554
+                  Email: ravi.sahita@intel.com "
+    DESCRIPTION
+            "The PIB module containing a set of Textual Conventions
+            which have general applicability to all PIB modules."
+    REVISION     "200108160000Z"
+    DESCRIPTION
+         "Initial version, published in RFC 3159."
+    ::= { pib 1 }
+
+InstanceId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The textual convention for use by an attribute which is used
+        as the instance-identifying index of a PRC, i.e., an attribute
+        named in a PIB-INDEX clause.  The value of an attribute with
+        this syntax is always greater than zero.  PRIs of the same PRC
+        need not have contiguous values for their instance-identifying
+        attribute."
+    SYNTAX       Unsigned32 (1..4294967295)
+
+ReferenceId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "A textual convention for use by an attribute which is used as
+        a pointer in order to reference an instance of a particular
+
+
+        PRC.  An attribute with this syntax must not be used in a
+        PIB-INDEX clause , and its description must specify the
+        particular PRC to which the referenced PRI will belong.
+        For an attribute of this type, the referenced PRI must exist.
+        Furthermore, it is an error to try to delete a PRI that is
+        referenced by another instance without first deleting/modifying
+        the referencing instance.  The definition of an attribute with
+        this syntax can permit the attribute to have a value of zero to
+        indicate that it is not currently pointing to a PRI."
+    SYNTAX       Unsigned32
+
+Prid ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+         "Represents a pointer to a PRI, i.e,. to an instance of a
+         PRC.  The value is the OID name of the PRC's row definition,
+         appended with one sub-identifier containing the value of the
+         InstanceId value for the referenced instance.  The definition
+         of an attribute with this syntax can permit the attribute to
+         have a value of 0.0 to indicate that it is not currently
+         pointing to a PRI."
+    SYNTAX       OBJECT IDENTIFIER
+
+TagId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+         "Represents a tag value, such that all instances of a
+         particular PRC having the same tag value form a tag list.
+         A tag list is identified by the tag value shared by all
+         instances in that tag list."
+    SYNTAX       Unsigned32 (1..4294967295)
+
+TagReferenceId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+         "Represents a reference to a tag list of instances of a
+         particular PRC.  The particular PRC must have an attribute
+         with the syntax of TagId.  The tag list consists of
+         all instances which have the same value of the TagId
+         attribute.  Reference to the tag list is via the attribute
+         with the syntax of TagReferenceId containing the tag
+         value which identifies the tag list.
+         The definition of an attribute with this syntax can permit
+         the attribute to have a value of 0 to indicate that it is
+         not currently referencing a tag list."
+    SYNTAX       Unsigned32
+END

@@ -1,0 +1,1860 @@
+TE-LINK-STD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   MODULE-IDENTITY, OBJECT-TYPE, transmission, Integer32, Unsigned32
+      FROM SNMPv2-SMI
+
+   MODULE-COMPLIANCE, OBJECT-GROUP
+      FROM SNMPv2-CONF
+
+   TEXTUAL-CONVENTION, RowStatus, StorageType
+      FROM SNMPv2-TC
+
+   InterfaceIndexOrZero, ifIndex
+      FROM IF-MIB
+
+   InetAddressType, InetAddress
+      FROM INET-ADDRESS-MIB;
+
+
+teLinkStdMIB MODULE-IDENTITY
+   LAST-UPDATED "200510110000Z"  -- 11 October 2005
+   ORGANIZATION "Multiprotocol Label Switching (MPLS) Working Group"
+   CONTACT-INFO
+       "        Martin Dubuc
+        Email:  mdubuc@ncf.ca
+
+                Thomas D. Nadeau
+        Email:  tnadeau@cisco.com
+
+
+
+
+                Jonathan P. Lang
+        Email:  jplang@ieee.org
+
+        Comments about this document should be emailed directly to
+        the MPLS working group mailing list at mpls@uu.net."
+
+   DESCRIPTION
+       "Copyright (C) 2005 The Internet Society.  This version of
+        this MIB module is part of RFC 4220; see the RFC
+        itself for full legal notices.
+
+        This MIB module contains managed object definitions for
+        MPLS traffic engineering links as defined in
+        'Link Bundling in MPLS Traffic Engineering (TE)'."
+
+   -- Revision history.
+   REVISION
+       "200510110000Z"  -- 11 October 2005
+   DESCRIPTION
+       "Initial version published as RFC 4220."
+   ::= { transmission 200 }
+
+-- Textual Conventions
+
+TeLinkBandwidth ::= TEXTUAL-CONVENTION
+   STATUS       current
+   DESCRIPTION
+       "This type is used to represent link bandwidth in bps.  This
+        value is represented using a 4 octet IEEE floating point
+        format [IEEE].  The floating point representation is not
+        used to represent fractional value but rather to allow
+        specification of large numbers that cannot be expressed
+        with 32-bit integers."
+   REFERENCE
+       "IEEE Standard for Binary Floating-Point Arithmetic,
+        Standard 754-1985"
+   SYNTAX       OCTET STRING (SIZE(4))
+
+TeLinkPriority ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "d"
+   STATUS       current
+   DESCRIPTION
+       "This type is used to represent a priority.  Each connection
+        is assigned a priority.  This priority is used when
+        accounting for bandwidth on TE links or component
+        links, for resource allocation and for rerouting purposes.
+        Value 0 is the highest priority.  Value 7 is the lowest
+        priority."
+
+
+
+   SYNTAX       Unsigned32 (0..7)
+
+TeLinkProtection ::= TEXTUAL-CONVENTION
+   STATUS       current
+   DESCRIPTION
+       "Link protection."
+   SYNTAX       INTEGER {
+                    primary(1),
+                    secondary(2)
+                }
+
+TeLinkSwitchingCapability ::= TEXTUAL-CONVENTION
+   STATUS       current
+   DESCRIPTION
+       "Switching capability as specified in the 'OSPF Extensions in
+        Support of Generalized Multi-Protocol Label Switching
+        (GMPLS)' document.  The values specified in this document
+        are not contiguous."
+   SYNTAX       INTEGER {
+                    packetSwitch1(1),
+                    packetSwitch2(2),
+                    packetSwitch3(3),
+                    packetSwitch4(4),
+                    layer2Switch(51),
+                    tdm(100),
+                    lambdaSwitch(150),
+                    fiberSwitch(200)
+                }
+
+TeLinkEncodingType ::= TEXTUAL-CONVENTION
+   STATUS       current
+   DESCRIPTION
+       "Link encoding type as specified in 'Generalized
+        Multi-Protocol Label Switching (GMPLS) Signaling
+        Functional Description' document.  The values
+        specified in this document are not contiguous."
+   SYNTAX       INTEGER {
+                    packet(1),
+                    ethernet(2),
+                    ansiEtsiPdh(3),
+                    sdhItuSonetAnsi(5),
+                    digitalWrapper(7),
+                    lambda(8),
+                    fiber(9),
+                    fiberChannel(11)
+                }
+
+TeLinkSonetSdhIndication ::= TEXTUAL-CONVENTION
+
+
+
+   STATUS       current
+   DESCRIPTION
+       "This convention is used to indicate whether the interface
+        supports Standard or Arbitrary SONET/SDH.  To simplify the
+        mapping process, the values used in this textual convention
+        match the values specified in the interface switching
+        capability specific information field, i.e., 0 for Standard
+        SONET/SDH and 1 for Arbitrary SONET/SDH."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   SYNTAX       INTEGER {
+                    standard(0),
+                    arbitrary(1)
+                }
+
+-- Top level components of this MIB module
+
+-- Notifications
+teLinkNotifications OBJECT IDENTIFIER ::= { teLinkStdMIB 0 }
+-- Tables, Scalars
+teLinkObjects       OBJECT IDENTIFIER ::= { teLinkStdMIB 1 }
+-- Conformance
+teLinkConformance   OBJECT IDENTIFIER ::= { teLinkStdMIB 2 }
+
+-- TE Link Table
+
+teLinkTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF TeLinkEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This table specifies the grouping of component links into
+        TE links and the grouping of TE links into bundled links."
+   ::= { teLinkObjects 1 }
+
+teLinkEntry OBJECT-TYPE
+   SYNTAX        TeLinkEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "An entry in this table exists for each ifEntry with an
+        ifType of teLink(200), i.e., for every TE link.  An ifEntry
+        in the ifTable must exist before a teLinkEntry is created
+        with the corresponding ifIndex.  If a TE link entry in the
+        ifTable is destroyed, then so is the corresponding entry
+        in the teLinkTable.  The administrative and operational
+        status values are controlled from the ifEntry."
+
+
+
+   INDEX         { ifIndex }
+   ::= { teLinkTable 1 }
+
+TeLinkEntry ::= SEQUENCE {
+  teLinkAddressType                 InetAddressType,
+  teLinkLocalIpAddr                 InetAddress,
+  teLinkRemoteIpAddr                InetAddress,
+  teLinkMetric                      Unsigned32,
+  teLinkMaximumReservableBandwidth  TeLinkBandwidth,
+  teLinkProtectionType              INTEGER,
+  teLinkWorkingPriority             TeLinkPriority,
+  teLinkResourceClass               Unsigned32,
+  teLinkIncomingIfId                Integer32,
+  teLinkOutgoingIfId                InterfaceIndexOrZero,
+  teLinkRowStatus                   RowStatus,
+  teLinkStorageType                 StorageType
+}
+
+teLinkAddressType OBJECT-TYPE
+   SYNTAX        InetAddressType
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The type of Internet address for the TE link."
+   ::= { teLinkEntry 1 }
+
+teLinkLocalIpAddr OBJECT-TYPE
+   SYNTAX        InetAddress
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The local Internet address for numbered links.  The type of
+        this address is determined by the value of the
+        teLinkAddressType object.
+
+        For IPv4 and IPv6 numbered links, this object represents the
+        local IP address associated with the TE link.  For an
+        unnumbered link, the local address is of type unknown, this
+        object is set to the zero length string, and the
+        teLinkOutgoingIfId object then identifies the unnumbered
+        address.
+
+        If the TE link is a Forwarding Adjacency (FA), the local
+        IP address is set to the head-end address of the FA-LSP.
+
+        If ipAddrTable is implemented, this object must have the
+        same value as the ipAdEntAddr object that belongs to the
+        row in ipAddrTable where ipAdEntIfIndex is equal to
+
+
+
+        ifIndex."
+   ::= { teLinkEntry 2 }
+
+teLinkRemoteIpAddr OBJECT-TYPE
+   SYNTAX        InetAddress
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The remote Internet address for numbered links.  The type of
+        this address is determined by the value of the
+        teLinkAddressType object.
+
+        The remote IP address associated with the TE link (IPv4 and
+        IPv6 numbered links).  For an unnumbered link, the remote
+        address is of type unknown, this object is set to the
+        zero length string, and the teLinkIncomingIfId object then
+        identifies the unnumbered address.
+
+        If the TE link is a Forwarding Adjacency, the remote IP
+        address is set to the tail-end address of the FA-LSP."
+   ::= { teLinkEntry 3 }
+
+teLinkMetric OBJECT-TYPE
+   SYNTAX        Unsigned32
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The traffic engineering metric for the TE link is
+        derived from its component links.  All component links
+        within the TE link must have the same traffic
+        engineering metric."
+   REFERENCE
+       "Link Bundling in MPLS Traffic Engineering (TE), RFC 4201"
+   ::= { teLinkEntry 4 }
+
+teLinkMaximumReservableBandwidth OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum reservable bandwidth on
+        the TE link.  This is the union of the maximum reservable
+        bandwidth of all the component links within the
+        TE link that can be used to carry live traffic."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+
+
+
+   ::= { teLinkEntry 5 }
+
+teLinkProtectionType OBJECT-TYPE
+   SYNTAX        INTEGER {
+                     extraTraffic(1),
+                     unprotected(2),
+                     shared(3),
+                     dedicated1For1(4),
+                     dedicated1Plus1(5),
+                     enhanced(6)
+                 }
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the link protection type of the
+        TE link.  Descriptions of the different protection types can
+        be found in the 'Routing Extensions in Support of
+        Generalized Multi-Protocol Label Switching (GMPLS)'
+        document."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203 and
+        Routing Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4202"
+   ::= { teLinkEntry 6 }
+
+teLinkWorkingPriority OBJECT-TYPE
+   SYNTAX        TeLinkPriority
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This object represents a priority value such that a new
+        connection with a higher priority, i.e., numerically lower
+        than this value, is guaranteed to be setup on a primary
+        link and not on a secondary link."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkEntry 7 }
+
+teLinkResourceClass OBJECT-TYPE
+   SYNTAX        Unsigned32
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the TE link resource class.
+        The resource class is a 32 bit bitfield.  The resource class
+        for a link bundle is derived from the resource class of its
+
+
+
+        TE links.  All TE links within a link bundle must have the
+        same resource class.  Encoding of the resource class is
+        described in the 'Traffic Engineering (TE) Extensions to
+        OSPF Version 2' document."
+   REFERENCE
+       "Link Bundling in MPLS Traffic Engineering (TE), RFC 4201
+        and Traffic Engineering (TE) Extensions to OSPF Version 2,
+        RFC 3630"
+   ::= { teLinkEntry 8 }
+
+teLinkIncomingIfId OBJECT-TYPE
+   SYNTAX        Integer32 (0..2147483647)
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "For unnumbered links, the incoming interface is set to the
+        outgoing interface identifier chosen by the neighboring LSR
+        for the reverse link corresponding to this TE link.  If the
+        link is numbered, the value of this object is 0 and the
+        address is stored in the teLinkRemoteIpAddr instead."
+   REFERENCE
+       "Link Bundling in MPLS Traffic Engineering (TE), RFC 4201"
+   ::= { teLinkEntry 9 }
+
+teLinkOutgoingIfId OBJECT-TYPE
+   SYNTAX        InterfaceIndexOrZero
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "If the link is unnumbered, the outgoing interface identifier
+        is set to the outgoing interface identifier chosen for the
+        TE link by the advertising LSR.  If the link is numbered, the
+        value of this object is 0 and the address is stored in the
+        teLinkLocalIpAddr instead."
+   REFERENCE
+       "Link Bundling in MPLS Traffic Engineering (TE), RFC 4201"
+   ::= { teLinkEntry 10 }
+
+teLinkRowStatus OBJECT-TYPE
+   SYNTAX        RowStatus
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This variable is used to create, modify, and/or
+        delete a row in this table.  None of the writable objects in
+        a row can be changed if status is active(1)."
+   ::= { teLinkEntry 11 }
+
+
+
+
+teLinkStorageType OBJECT-TYPE
+   SYNTAX        StorageType
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The storage type for this conceptual row in the
+        teLinkTable.  Conceptual rows having the value
+        'permanent' need not allow write-access to any
+        columnar object in the row."
+   ::= { teLinkEntry 12 }
+
+-- End of teLinkTable
+
+
+-- TE Link Descriptor Table
+
+teLinkDescriptorTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF TeLinkDescriptorEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This table specifies the interface switching capability
+        descriptors associated with the TE links."
+   ::= { teLinkObjects 2 }
+
+teLinkDescriptorEntry OBJECT-TYPE
+   SYNTAX        TeLinkDescriptorEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "An entry in this table is created for every TE link interface
+        switching capability descriptor.  An ifEntry in the ifTable
+        must exist before a teLinkDescriptorEntry using the same
+        ifIndex is created.  ifType of ifEntry must be teLink(200).
+        If a TE link entry in the ifTable is destroyed, then so are
+        all of the entries in the teLinkDescriptorTable that use the
+        ifIndex of this TE link."
+   INDEX         { ifIndex, teLinkDescriptorId }
+   ::= { teLinkDescriptorTable 1 }
+
+TeLinkDescriptorEntry ::= SEQUENCE {
+  teLinkDescriptorId               Unsigned32,
+  teLinkDescrSwitchingCapability   TeLinkSwitchingCapability,
+  teLinkDescrEncodingType          TeLinkEncodingType,
+  teLinkDescrMinLspBandwidth       TeLinkBandwidth,
+  teLinkDescrMaxLspBandwidthPrio0  TeLinkBandwidth,
+  teLinkDescrMaxLspBandwidthPrio1  TeLinkBandwidth,
+  teLinkDescrMaxLspBandwidthPrio2  TeLinkBandwidth,
+
+
+
+  teLinkDescrMaxLspBandwidthPrio3  TeLinkBandwidth,
+  teLinkDescrMaxLspBandwidthPrio4  TeLinkBandwidth,
+  teLinkDescrMaxLspBandwidthPrio5  TeLinkBandwidth,
+  teLinkDescrMaxLspBandwidthPrio6  TeLinkBandwidth,
+  teLinkDescrMaxLspBandwidthPrio7  TeLinkBandwidth,
+  teLinkDescrInterfaceMtu          Unsigned32,
+  teLinkDescrIndication            TeLinkSonetSdhIndication,
+  teLinkDescrRowStatus             RowStatus,
+  teLinkDescrStorageType           StorageType
+}
+
+teLinkDescriptorId OBJECT-TYPE
+   SYNTAX        Unsigned32 (1..4294967295)
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This object specifies the link descriptor identifier."
+   ::= { teLinkDescriptorEntry 1 }
+
+teLinkDescrSwitchingCapability OBJECT-TYPE
+   SYNTAX        TeLinkSwitchingCapability
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies interface switching capability of
+        the TE link, which is derived from its component links."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkDescriptorEntry 2 }
+
+teLinkDescrEncodingType OBJECT-TYPE
+   SYNTAX        TeLinkEncodingType
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the TE link encoding type."
+   REFERENCE
+       "Generalized Multi-Protocol Label Switching (GMPLS)
+        Signaling Functional Description, RFC 3471"
+   ::= { teLinkDescriptorEntry 3 }
+
+teLinkDescrMinLspBandwidth OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+
+
+
+       "This attribute specifies the minimum LSP bandwidth on
+        the TE link.  This is derived from the union of the
+        minimum LSP bandwidth of all the component links
+        associated with the TE link that can be used to carry
+        live traffic."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkDescriptorEntry 4 }
+
+teLinkDescrMaxLspBandwidthPrio0 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 0 on the TE link.  This is the union of the maximum
+        LSP bandwidth at priority 0 of all the component links within
+        the TE link that can be used to carry live traffic."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkDescriptorEntry 5 }
+
+teLinkDescrMaxLspBandwidthPrio1 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 1 on the TE link.  This is the union of the maximum
+        LSP bandwidth at priority 1 of all the component links within
+        the TE link that can be used to carry live traffic."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkDescriptorEntry 6 }
+
+teLinkDescrMaxLspBandwidthPrio2 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 2 on the TE link.  This is the union of the maximum
+
+
+
+        LSP bandwidth at priority 2 of all the component links within
+        the TE link that can be used to carry live traffic."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkDescriptorEntry 7 }
+
+teLinkDescrMaxLspBandwidthPrio3 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 3 on the TE link.  This is the union of the maximum
+        LSP bandwidth at priority 3 of all the component links within
+        the TE link that can be used to carry live traffic."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkDescriptorEntry 8 }
+
+teLinkDescrMaxLspBandwidthPrio4 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 4 on the TE link.  This is the union of the maximum
+        LSP bandwidth at priority 4 of all the component links within
+        the TE link that can be used to carry live traffic."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkDescriptorEntry 9 }
+
+teLinkDescrMaxLspBandwidthPrio5 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 5 on the TE link.  This is the union of the maximum
+        LSP bandwidth at priority 5 of all the component links within
+        the TE link that can be used to carry live traffic."
+   REFERENCE
+
+
+
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkDescriptorEntry 10 }
+
+teLinkDescrMaxLspBandwidthPrio6 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 6 on the TE link.  This is the union of the maximum
+        LSP bandwidth at priority 6 of all the component links within
+        the TE link that can be used to carry live traffic."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkDescriptorEntry 11 }
+
+teLinkDescrMaxLspBandwidthPrio7 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 7 on the TE link.  This is the union of the maximum
+        LSP bandwidth at priority 7 of all the component links within
+        the TE link that can be used to carry live traffic."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkDescriptorEntry 12 }
+
+teLinkDescrInterfaceMtu OBJECT-TYPE
+   SYNTAX        Unsigned32 (1..65535)
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the interface MTU for the TE
+        link descriptor."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkDescriptorEntry 13 }
+
+teLinkDescrIndication OBJECT-TYPE
+   SYNTAX        TeLinkSonetSdhIndication
+
+
+
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies whether this interface supports
+        Standard or Arbitrary SONET/SDH."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkDescriptorEntry 14 }
+
+teLinkDescrRowStatus OBJECT-TYPE
+   SYNTAX        RowStatus
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This variable is used to create, modify, and/or
+        delete a row in this table.  No read-create object
+        can be changed if teLinkDescrRowStatus is in the active(1)
+        state."
+   ::= { teLinkDescriptorEntry 15 }
+
+teLinkDescrStorageType OBJECT-TYPE
+   SYNTAX        StorageType
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The storage type for this conceptual row in the
+        teLinkDescriptorTable.  Conceptual rows having the value
+        'permanent' need not allow write-access to any
+        columnar object in the row."
+   ::= { teLinkDescriptorEntry 16 }
+
+-- End of teLinkDescriptorTable
+
+
+-- TE Link Shared Risk Link Group Table
+
+teLinkSrlgTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF TeLinkSrlgEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This table specifies the SRLGs associated with TE links."
+   ::= { teLinkObjects 3 }
+
+teLinkSrlgEntry OBJECT-TYPE
+   SYNTAX        TeLinkSrlgEntry
+   MAX-ACCESS    not-accessible
+
+
+
+   STATUS        current
+   DESCRIPTION
+       "An entry in this table contains information about an
+        SRLG associated with a TE link.
+        An ifEntry in the ifTable must exist before a
+        teLinkSrlgEntry using the same ifIndex is created.
+        The ifType of ifEntry must be teLink(200).
+        If a TE link entry in the ifTable is destroyed, then so
+        are all of the entries in the teLinkSrlgTable that use the
+        ifIndex of this TE link."
+   INDEX         { ifIndex, teLinkSrlg }
+   ::= { teLinkSrlgTable 1 }
+
+TeLinkSrlgEntry ::= SEQUENCE {
+  teLinkSrlg            Unsigned32,
+  teLinkSrlgRowStatus   RowStatus,
+  teLinkSrlgStorageType StorageType
+}
+
+teLinkSrlg OBJECT-TYPE
+   SYNTAX        Unsigned32 (0..4294967295)
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This identifies an SRLG supported by the TE link.  An SRLG is
+        identified with a 32-bit number that is unique within an IGP
+        domain.  Zero is a valid SRLG number."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { teLinkSrlgEntry 1 }
+
+teLinkSrlgRowStatus OBJECT-TYPE
+   SYNTAX        RowStatus
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This variable is used to create, modify, and/or
+        delete a row in this table.  No read-create object can
+        be modified if teLinkSrlgRowStatus is active(1)."
+   ::= { teLinkSrlgEntry 2 }
+
+teLinkSrlgStorageType OBJECT-TYPE
+   SYNTAX        StorageType
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The storage type for this conceptual row in the
+
+
+
+        teLinkSrlgTable.  Conceptual rows having the value
+        'permanent' need not allow write-access to any
+        columnar object in the row."
+   ::= { teLinkSrlgEntry 3 }
+
+-- End of teLinkSrlgTable
+
+
+-- TE Link Bandwidth Table
+
+teLinkBandwidthTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF TeLinkBandwidthEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This table specifies the priority-based bandwidth table
+        for TE links."
+   ::= { teLinkObjects 4 }
+
+teLinkBandwidthEntry OBJECT-TYPE
+   SYNTAX        TeLinkBandwidthEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "An entry in this table contains information about
+        the priority-based bandwidth of TE links.  An ifEntry in the
+        ifTable must exist before a teLinkBandwidthEntry using the
+        same ifIndex is created.  The ifType of ifEntry must be
+        teLink(200).  If a TE link entry in the ifTable is destroyed,
+        then so are all of the entries in the teLinkBandwidthTable
+        that use the ifIndex of this TE link."
+   INDEX         { ifIndex, teLinkBandwidthPriority }
+   ::= { teLinkBandwidthTable 1 }
+
+TeLinkBandwidthEntry ::= SEQUENCE {
+  teLinkBandwidthPriority    TeLinkPriority,
+  teLinkBandwidthUnreserved  TeLinkBandwidth,
+  teLinkBandwidthRowStatus   RowStatus,
+  teLinkBandwidthStorageType StorageType
+}
+
+teLinkBandwidthPriority OBJECT-TYPE
+   SYNTAX        TeLinkPriority
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the priority.  A value of 0 is valid
+        as specified in the 'Traffic Engineering (TE) Extensions to
+
+
+
+        OSPF Version 2' document."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203 and
+        Traffic Engineering (TE) Extensions to OSPF Version 2,
+        RFC 3630"
+   ::= { teLinkBandwidthEntry 1 }
+
+teLinkBandwidthUnreserved OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the TE link unreserved
+        bandwidth at priority p.  It is the sum of the unreserved
+        bandwidths at priority p of all component links associated
+        with the TE link (excluding all links that are strictly
+        used as protecting links)."
+   REFERENCE
+       "Link Bundling in MPLS Traffic Engineering (TE), RFC 4201"
+   ::= { teLinkBandwidthEntry 2 }
+
+teLinkBandwidthRowStatus OBJECT-TYPE
+   SYNTAX        RowStatus
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This variable is used to create, modify, and/or
+        delete a row in this table.  No read-create object
+        can be modified when teLinkBandwidthRowStatus is active(1)."
+   ::= { teLinkBandwidthEntry 3 }
+
+teLinkBandwidthStorageType OBJECT-TYPE
+   SYNTAX        StorageType
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The storage type for this conceptual row in the
+        teLinkBandwidthTable.  Conceptual rows having the value
+        'permanent' need not allow write-access to any
+        columnar object in the row."
+   ::= { teLinkBandwidthEntry 4 }
+
+-- End of teLinkBandwidthTable
+
+
+-- Component Link Table
+
+
+
+componentLinkTable  OBJECT-TYPE
+   SYNTAX        SEQUENCE OF ComponentLinkEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This table specifies the component link parameters."
+   ::= { teLinkObjects 5 }
+
+componentLinkEntry  OBJECT-TYPE
+   SYNTAX        ComponentLinkEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "An entry in this table exists for each ifEntry that
+        represents a component link.  An ifEntry must exist in
+        the ifTable before a componentLinkEntry is created with
+        the corresponding ifIndex.  ifEntry's ifType can be
+        of any interface type that has been defined for TE Link
+        interworking.  Examples include ATM, Frame Relay, Ethernet,
+        etc.  If an entry representing a component link is destroyed
+        in the ifTable, then so is the corresponding entry in the
+        componentLinkTable.  The administrative and operational
+        status values are controlled from the ifEntry."
+   INDEX         { ifIndex }
+   ::= { componentLinkTable 1 }
+
+ComponentLinkEntry ::= SEQUENCE {
+  componentLinkMaxResBandwidth     TeLinkBandwidth,
+  componentLinkPreferredProtection TeLinkProtection,
+  componentLinkCurrentProtection   TeLinkProtection,
+  componentLinkRowStatus           RowStatus,
+  componentLinkStorageType         StorageType
+}
+
+componentLinkMaxResBandwidth OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum reservable bandwidth on
+        the component link."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkEntry 1 }
+
+componentLinkPreferredProtection OBJECT-TYPE
+
+
+
+   SYNTAX        TeLinkProtection
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies whether this component link is
+        a primary or secondary entity."
+   ::= { componentLinkEntry 2 }
+
+componentLinkCurrentProtection OBJECT-TYPE
+   SYNTAX        TeLinkProtection
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies whether this component link is
+        currently used as primary or secondary link."
+   ::= { componentLinkEntry 3 }
+
+componentLinkRowStatus OBJECT-TYPE
+   SYNTAX        RowStatus
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This variable is used to create, modify, and/or
+        delete a row in this table.  No read-create object
+        can be modified when componentLinkRowStatus is active(1)."
+   ::= { componentLinkEntry 4 }
+
+componentLinkStorageType OBJECT-TYPE
+   SYNTAX        StorageType
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The storage type for this conceptual row in the
+        componentLinkTable.  Conceptual rows having the value
+        'permanent' need not allow write-access to any
+        columnar object in the row."
+   ::= { componentLinkEntry 5 }
+
+-- End of componentLinkTable
+
+
+-- Component Link Descriptor Table
+
+componentLinkDescriptorTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF ComponentLinkDescriptorEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+
+
+
+       "This table specifies the interface switching capability
+        descriptors associated with the component links."
+   ::= { teLinkObjects 6 }
+
+componentLinkDescriptorEntry OBJECT-TYPE
+   SYNTAX        ComponentLinkDescriptorEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "An entry in this table is created for every component link
+        descriptor.  An ifEntry in the ifTable must exist before a
+        componentLinkDescriptorEntry using the same ifIndex is
+        created.  ifEntry's ifType can be of any interface type that
+        has been defined for TE Link interworking.  Examples include
+        ATM, Frame Relay, Ethernet, etc.  If a component link entry
+        in the ifTable is destroyed, then so are all entries in the
+        componentLinkDescriptorTable that use the ifIndex of this
+        component link."
+   INDEX         { ifIndex, componentLinkDescrId }
+   ::= { componentLinkDescriptorTable 1 }
+
+ComponentLinkDescriptorEntry ::= SEQUENCE {
+  componentLinkDescrId                    Unsigned32,
+  componentLinkDescrSwitchingCapability   TeLinkSwitchingCapability,
+  componentLinkDescrEncodingType          TeLinkEncodingType,
+  componentLinkDescrMinLspBandwidth       TeLinkBandwidth,
+  componentLinkDescrMaxLspBandwidthPrio0  TeLinkBandwidth,
+  componentLinkDescrMaxLspBandwidthPrio1  TeLinkBandwidth,
+  componentLinkDescrMaxLspBandwidthPrio2  TeLinkBandwidth,
+  componentLinkDescrMaxLspBandwidthPrio3  TeLinkBandwidth,
+  componentLinkDescrMaxLspBandwidthPrio4  TeLinkBandwidth,
+  componentLinkDescrMaxLspBandwidthPrio5  TeLinkBandwidth,
+  componentLinkDescrMaxLspBandwidthPrio6  TeLinkBandwidth,
+  componentLinkDescrMaxLspBandwidthPrio7  TeLinkBandwidth,
+  componentLinkDescrInterfaceMtu          Unsigned32,
+  componentLinkDescrIndication            TeLinkSonetSdhIndication,
+  componentLinkDescrRowStatus             RowStatus,
+  componentLinkDescrStorageType           StorageType
+}
+
+componentLinkDescrId OBJECT-TYPE
+   SYNTAX        Unsigned32 (1..4294967295)
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This object specifies the link descriptor identifier."
+   ::= { componentLinkDescriptorEntry 1 }
+
+
+
+
+componentLinkDescrSwitchingCapability OBJECT-TYPE
+   SYNTAX        TeLinkSwitchingCapability
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies link multiplexing capabilities of
+        the component link."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkDescriptorEntry 2 }
+
+componentLinkDescrEncodingType OBJECT-TYPE
+   SYNTAX        TeLinkEncodingType
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the component link encoding type."
+   REFERENCE
+       "Generalized Multi-Protocol Label Switching (GMPLS) Signaling
+        Functional Description, RFC 3471"
+   ::= { componentLinkDescriptorEntry 3 }
+
+componentLinkDescrMinLspBandwidth OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the minimum LSP bandwidth on
+        the component link."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkDescriptorEntry 4 }
+
+componentLinkDescrMaxLspBandwidthPrio0 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 0 on the component link."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkDescriptorEntry 5 }
+
+
+
+componentLinkDescrMaxLspBandwidthPrio1 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 1 on the component link."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkDescriptorEntry 6 }
+
+componentLinkDescrMaxLspBandwidthPrio2 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 2 on the component link."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkDescriptorEntry 7 }
+
+componentLinkDescrMaxLspBandwidthPrio3 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 3 on the component link."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkDescriptorEntry 8 }
+
+componentLinkDescrMaxLspBandwidthPrio4 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 4 on the component link."
+   REFERENCE
+
+
+
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkDescriptorEntry 9 }
+
+componentLinkDescrMaxLspBandwidthPrio5 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "thousand bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 5 on the component link."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkDescriptorEntry 10 }
+
+componentLinkDescrMaxLspBandwidthPrio6 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 6 on the component link."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkDescriptorEntry 11 }
+
+componentLinkDescrMaxLspBandwidthPrio7 OBJECT-TYPE
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the maximum LSP bandwidth at
+        priority 7 on the component link."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkDescriptorEntry 12 }
+
+componentLinkDescrInterfaceMtu OBJECT-TYPE
+   SYNTAX        Unsigned32 (1..65535)
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+
+
+
+       "This attribute specifies the interface MTU for the component
+        link descriptor."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkDescriptorEntry 13 }
+
+componentLinkDescrIndication OBJECT-TYPE
+   SYNTAX        TeLinkSonetSdhIndication
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies whether this interface supports
+        Standard or Arbitrary SONET/SDH."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkDescriptorEntry 14 }
+
+componentLinkDescrRowStatus OBJECT-TYPE
+   SYNTAX        RowStatus
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This variable is used to create, modify, and/or
+        delete a row in this table.  No read-create object
+        can be modified when componentLinkDescrRowStatus
+        is active(1)."
+   ::= { componentLinkDescriptorEntry 15 }
+
+componentLinkDescrStorageType OBJECT-TYPE
+   SYNTAX        StorageType
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The storage type for this conceptual row in the
+        componentLinkDescriptorTable.  Conceptual rows
+        having the value 'permanent' need not allow write-access
+        to any columnar object in the row."
+   ::= { componentLinkDescriptorEntry 16 }
+
+-- End of componentLinkDescriptorTable
+
+
+-- Component Link Bandwidth Table
+
+componentLinkBandwidthTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF ComponentLinkBandwidthEntry
+
+
+
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This table specifies the priority-based bandwidth
+        for component links."
+   ::= { teLinkObjects 7 }
+
+componentLinkBandwidthEntry OBJECT-TYPE
+   SYNTAX        ComponentLinkBandwidthEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "An entry in this table contains information about
+        the priority-based bandwidth on component links.
+        An ifEntry in the ifTable must exist before a
+        componentLinkBandwidthEntry using the same ifIndex is
+        created.  ifEntry's ifType can be of any interface type that
+        has been defined for TE Link interworking.  Examples
+        include ATM, Frame Relay, Ethernet, etc.  If a component link
+        entry in the ifTable is destroyed, then so are all entries
+        in the componentLinkBandwidthTable that use the ifIndex of
+        this component link."
+   INDEX         { ifIndex, componentLinkBandwidthPriority }
+   ::= { componentLinkBandwidthTable 1 }
+
+ComponentLinkBandwidthEntry ::= SEQUENCE {
+  componentLinkBandwidthPriority    TeLinkPriority,
+  componentLinkBandwidthUnreserved  TeLinkBandwidth,
+  componentLinkBandwidthRowStatus   RowStatus,
+  componentLinkBandwidthStorageType StorageType
+}
+
+componentLinkBandwidthPriority OBJECT-TYPE
+   SYNTAX        TeLinkPriority
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the priority.  A value of 0 is valid
+        as specified in the 'Traffic Engineering (TE) Extensions to
+         OSPF Version 2' document."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203 and
+        Traffic Engineering (TE) Extensions to OSPF Version 2,
+        RFC 3630"
+   ::= { componentLinkBandwidthEntry 1 }
+
+componentLinkBandwidthUnreserved OBJECT-TYPE
+
+
+
+   SYNTAX        TeLinkBandwidth
+   UNITS         "bps"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "This attribute specifies the component link unreserved
+        bandwidth at priority p."
+   REFERENCE
+       "OSPF Extensions in Support of Generalized Multi-Protocol
+        Label Switching (GMPLS), RFC 4203"
+   ::= { componentLinkBandwidthEntry 2 }
+
+componentLinkBandwidthRowStatus OBJECT-TYPE
+   SYNTAX        RowStatus
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This variable is used to create, modify, and/or
+        delete a row in this table.  No read-create object can
+        be modified when componentLinkBandwidthRowStatus is
+        active(1)."
+   ::= { componentLinkBandwidthEntry 3 }
+
+componentLinkBandwidthStorageType OBJECT-TYPE
+   SYNTAX        StorageType
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The storage type for this conceptual row in the
+        componentLinkBandwidthTable.  Conceptual rows
+        having the value 'permanent' need not allow write-access
+        to any columnar object in the row."
+   ::= { componentLinkBandwidthEntry 4 }
+
+-- End of componentLinkBandwidthTable
+
+
+-- Module compliance
+
+teLinkCompliances
+   OBJECT IDENTIFIER ::= { teLinkConformance 1 }
+
+teLinkGroups
+   OBJECT IDENTIFIER ::= { teLinkConformance 2 }
+
+teLinkModuleFullCompliance MODULE-COMPLIANCE
+   STATUS current
+   DESCRIPTION
+
+
+
+       "Compliance statement for agents that support read-create
+        so that both configuration and monitoring of TE links can
+        be accomplished via this MIB module."
+   MODULE -- this module
+
+      MANDATORY-GROUPS    { teLinkGroup,
+                            teLinkBandwidthGroup,
+                            componentLinkBandwidthGroup }
+
+      GROUP teLinkSrlgGroup
+      DESCRIPTION
+          "This group is mandatory for GMPLS enabled devices."
+
+      GROUP teLinkPscGroup
+      DESCRIPTION
+          "This group is mandatory for devices that support the
+           packet switching capability."
+
+      GROUP teLinkTdmGroup
+      DESCRIPTION
+          "This group is mandatory for devices that support the TDM
+           switching capability."
+
+      -- teLinkTable
+
+      OBJECT      teLinkAddressType
+      SYNTAX      INTEGER { unknown(0), ipv4(1), ipv6(2) }
+      DESCRIPTION
+          "Only ipv4(1) and ipv6(2) address types need to be
+           supported for numbered links.  For unnumbered links, the
+           unknown(0) address type needs to be supported."
+
+      OBJECT      teLinkLocalIpAddr
+      SYNTAX      InetAddress (SIZE(0|4|16))
+      DESCRIPTION
+          "Size of TE link IP address depends on type of TE link.
+           TE link IP address size is zero if the link is unnumbered,
+           four if the link IP address is IPv4, and sixteen if the
+           link IP address is IPv6."
+
+      OBJECT      teLinkRemoteIpAddr
+      SYNTAX      InetAddress (SIZE(0|4|16))
+      DESCRIPTION
+          "Size of TE link IP address depends on type of TE link.
+           TE link IP address size is zero if the link is unnumbered,
+           four if the link IP address is IPv4, and sixteen if the
+           link IP address is IPv6."
+
+
+
+
+      OBJECT      teLinkRowStatus
+      SYNTAX      RowStatus { active(1), notInService(2) }
+      WRITE-SYNTAX RowStatus { active(1), notInService(2),
+                               createAndGo(4), destroy(6) }
+      DESCRIPTION
+          "Support for notReady(3) and createAndWait(5) is
+           not required."
+
+      -- teLinkDescriptorTable
+
+      OBJECT      teLinkDescrRowStatus
+      SYNTAX      RowStatus { active(1), notInService(2) }
+      WRITE-SYNTAX RowStatus { active(1), notInService(2),
+                               createAndGo(4), destroy(6) }
+      DESCRIPTION
+          "Support for notReady(3) and createAndWait(5) is
+           not required."
+
+      -- teLinkSrlgTable
+
+      OBJECT      teLinkSrlgRowStatus
+      SYNTAX      RowStatus { active(1), notInService(2) }
+      WRITE-SYNTAX RowStatus { active(1), notInService(2),
+                               createAndGo(4), destroy(6) }
+      DESCRIPTION
+          "Support for notReady(3) and createAndWait(5) is
+           not required."
+
+      -- teLinkBandwidthTable
+
+      OBJECT      teLinkBandwidthRowStatus
+      SYNTAX      RowStatus { active(1), notInService(2) }
+      WRITE-SYNTAX RowStatus { active(1), notInService(2),
+                               createAndGo(4), destroy(6) }
+      DESCRIPTION
+          "Support for notReady(3) and createAndWait(5) is
+           not required."
+
+      -- componentLinkTable
+
+      OBJECT      componentLinkRowStatus
+      SYNTAX      RowStatus { active(1), notInService(2) }
+      WRITE-SYNTAX RowStatus { active(1), notInService(2),
+                               createAndGo(4), destroy(6) }
+      DESCRIPTION
+          "Support for notReady(3) and createAndWait(5) is
+           not required."
+
+
+
+
+      -- componentLinkDescriptorTable
+
+      OBJECT      componentLinkDescrRowStatus
+      SYNTAX      RowStatus { active(1), notInService(2) }
+      WRITE-SYNTAX RowStatus { active(1), notInService(2),
+                               createAndGo(4), destroy(6) }
+      DESCRIPTION
+          "Support for notReady(3) and createAndWait(5) is
+           not required."
+
+      -- componentLinkBandwidthTable
+
+      OBJECT      componentLinkBandwidthRowStatus
+      SYNTAX      RowStatus { active(1), notInService(2) }
+      WRITE-SYNTAX RowStatus { active(1), notInService(2),
+                               createAndGo(4), destroy(6) }
+      DESCRIPTION
+          "Support for notReady(3) and createAndWait(5) is
+           not required."
+
+   ::= { teLinkCompliances 1 }
+
+teLinkModuleReadOnlyCompliance MODULE-COMPLIANCE
+   STATUS current
+   DESCRIPTION
+       "Compliance statement for agents that support the
+        monitoring of the TE link MIB module."
+   MODULE -- this module
+
+      MANDATORY-GROUPS    { teLinkGroup,
+                            teLinkBandwidthGroup,
+                            componentLinkBandwidthGroup }
+
+      GROUP teLinkSrlgGroup
+      DESCRIPTION
+          "This group is mandatory for GMPLS enabled devices."
+
+      GROUP teLinkPscGroup
+      DESCRIPTION
+          "This group is mandatory for devices that support the
+           packet switching capability."
+
+      GROUP teLinkTdmGroup
+      DESCRIPTION
+          "This group is mandatory for devices that support the TDM
+           switching capability."
+
+      -- teLinkTable
+
+
+
+      OBJECT      teLinkAddressType
+      SYNTAX      INTEGER { unknown(0), ipv4(1), ipv6(2) }
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Only ipv4(1) and ipv6(2) address types need to be
+           supported for numbered links.  For unnumbered links, the
+           unknown(0) address type needs to be supported."
+
+      OBJECT      teLinkLocalIpAddr
+      SYNTAX      InetAddress (SIZE(0|4|16))
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Size of TE link IP address depends on type of TE link.
+           TE link IP address size is zero if the link is unnumbered,
+           four if the link IP address is IPv4, and sixteen if the
+           link IP address is IPv6."
+
+      OBJECT      teLinkRemoteIpAddr
+      SYNTAX      InetAddress (SIZE(0|4|16))
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Size of TE link IP address depends on type of TE link.
+           TE link IP address size is zero if the link is unnumbered,
+           four if the link IP address is IPv4, and sixteen if the
+           link IP address is IPv6."
+
+      OBJECT      teLinkProtectionType
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkWorkingPriority
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkRowStatus
+      SYNTAX      RowStatus { active(1) }
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required and active(1) is the
+           only status that needs to be supported."
+
+      OBJECT      teLinkStorageType
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+
+
+
+      -- teLinkDescriptorTable
+
+      OBJECT      teLinkDescrSwitchingCapability
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkDescrEncodingType
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkDescrMinLspBandwidth
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkDescrMaxLspBandwidthPrio0
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkDescrMaxLspBandwidthPrio1
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkDescrMaxLspBandwidthPrio2
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkDescrMaxLspBandwidthPrio3
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkDescrMaxLspBandwidthPrio4
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkDescrMaxLspBandwidthPrio5
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkDescrMaxLspBandwidthPrio6
+
+
+
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkDescrMaxLspBandwidthPrio7
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      teLinkDescrRowStatus
+      SYNTAX      RowStatus { active(1) }
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required and active(1) is the
+           only status that needs to be supported."
+
+      OBJECT      teLinkDescrStorageType
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      -- teLinkSrlgTable
+
+      OBJECT      teLinkSrlgRowStatus
+      SYNTAX      RowStatus { active(1) }
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required and active(1) is the
+           only status that needs to be supported."
+
+      OBJECT      teLinkSrlgStorageType
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      -- teLinkBandwidthTable
+
+      OBJECT      teLinkBandwidthRowStatus
+      SYNTAX      RowStatus { active(1) }
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required and active(1) is the
+           only status that needs to be supported."
+
+      OBJECT      teLinkBandwidthStorageType
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+
+
+      -- componentLinkTable
+
+      OBJECT      componentLinkMaxResBandwidth
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkPreferredProtection
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkRowStatus
+      SYNTAX      RowStatus { active(1) }
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required and active(1) is the
+           only status that needs to be supported."
+
+      OBJECT      componentLinkStorageType
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      -- componentLinkDescriptorTable
+
+      OBJECT      componentLinkDescrSwitchingCapability
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrEncodingType
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrMinLspBandwidth
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrMaxLspBandwidthPrio0
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrMaxLspBandwidthPrio1
+      MIN-ACCESS  read-only
+
+
+
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrMaxLspBandwidthPrio2
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrMaxLspBandwidthPrio3
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrMaxLspBandwidthPrio4
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrMaxLspBandwidthPrio5
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrMaxLspBandwidthPrio6
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrMaxLspBandwidthPrio7
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrInterfaceMtu
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrIndication
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      OBJECT      componentLinkDescrRowStatus
+      SYNTAX      RowStatus { active(1) }
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required and active(1) is the
+
+
+
+           only status that needs to be supported."
+
+      OBJECT      componentLinkDescrStorageType
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+      -- componentLinkBandwidthTable
+
+      OBJECT      componentLinkBandwidthRowStatus
+      SYNTAX      RowStatus { active(1) }
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required and active(1) is the
+           only status that needs to be supported."
+
+      OBJECT      componentLinkBandwidthStorageType
+      MIN-ACCESS  read-only
+      DESCRIPTION
+          "Write access is not required."
+
+   ::= { teLinkCompliances 2 }
+
+-- Units of conformance
+
+teLinkGroup OBJECT-GROUP
+   OBJECTS { teLinkAddressType,
+             teLinkLocalIpAddr,
+             teLinkRemoteIpAddr,
+             teLinkMetric,
+             teLinkProtectionType,
+             teLinkWorkingPriority,
+             teLinkResourceClass,
+             teLinkIncomingIfId,
+             teLinkOutgoingIfId,
+             teLinkRowStatus,
+             teLinkStorageType,
+             teLinkDescrSwitchingCapability,
+             teLinkDescrEncodingType,
+             teLinkDescrRowStatus,
+             teLinkDescrStorageType,
+             componentLinkPreferredProtection,
+             componentLinkCurrentProtection,
+             componentLinkRowStatus,
+             componentLinkStorageType,
+             componentLinkDescrSwitchingCapability,
+             componentLinkDescrEncodingType,
+             componentLinkDescrRowStatus,
+
+
+
+             componentLinkDescrStorageType
+           }
+
+   STATUS  current
+   DESCRIPTION
+          "Collection of objects needed for the management of
+           resources associated with TE links."
+   ::= { teLinkGroups 1 }
+
+teLinkSrlgGroup OBJECT-GROUP
+   OBJECTS { teLinkSrlgRowStatus,
+             teLinkSrlgStorageType
+           }
+
+   STATUS  current
+   DESCRIPTION
+          "Collection of objects needed for the management of
+           SRLG resources associated with TE links."
+   ::= { teLinkGroups 2 }
+
+teLinkBandwidthGroup OBJECT-GROUP
+   OBJECTS { teLinkMaximumReservableBandwidth,
+             teLinkDescrMaxLspBandwidthPrio0,
+             teLinkDescrMaxLspBandwidthPrio1,
+             teLinkDescrMaxLspBandwidthPrio2,
+             teLinkDescrMaxLspBandwidthPrio3,
+             teLinkDescrMaxLspBandwidthPrio4,
+             teLinkDescrMaxLspBandwidthPrio5,
+             teLinkDescrMaxLspBandwidthPrio6,
+             teLinkDescrMaxLspBandwidthPrio7,
+             teLinkBandwidthUnreserved,
+             teLinkBandwidthRowStatus,
+             teLinkBandwidthStorageType
+           }
+
+   STATUS  current
+   DESCRIPTION
+          "Collection of objects needed for the management of
+           the bandwidth resources associated with TE links and
+           component links."
+   ::= { teLinkGroups 3 }
+
+componentLinkBandwidthGroup OBJECT-GROUP
+   OBJECTS { componentLinkMaxResBandwidth,
+             componentLinkDescrMaxLspBandwidthPrio0,
+             componentLinkDescrMaxLspBandwidthPrio1,
+             componentLinkDescrMaxLspBandwidthPrio2,
+             componentLinkDescrMaxLspBandwidthPrio3,
+
+
+
+             componentLinkDescrMaxLspBandwidthPrio4,
+             componentLinkDescrMaxLspBandwidthPrio5,
+             componentLinkDescrMaxLspBandwidthPrio6,
+             componentLinkDescrMaxLspBandwidthPrio7,
+             componentLinkBandwidthUnreserved,
+             componentLinkBandwidthRowStatus,
+             componentLinkBandwidthStorageType
+           }
+
+   STATUS  current
+   DESCRIPTION
+          "Collection of objects needed for the management of the
+           bandwidth parameters associated with component links."
+   ::= { teLinkGroups 4 }
+
+teLinkPscGroup OBJECT-GROUP
+   OBJECTS { teLinkDescrMinLspBandwidth,
+             teLinkDescrInterfaceMtu,
+             componentLinkDescrMinLspBandwidth,
+             componentLinkDescrInterfaceMtu
+           }
+
+   STATUS  current
+   DESCRIPTION
+          "Collection of objects needed for devices that are
+           packet switch capable."
+   ::= { teLinkGroups 5 }
+
+teLinkTdmGroup OBJECT-GROUP
+   OBJECTS { teLinkDescrMinLspBandwidth,
+             teLinkDescrIndication,
+             componentLinkDescrMinLspBandwidth,
+             componentLinkDescrIndication
+           }
+
+   STATUS  current
+   DESCRIPTION
+          "Collection of objects needed for devices that are
+           TDM switching capable."
+   ::= { teLinkGroups 6 }
+
+-- End of TE-LINK-STD-MIB
+END

@@ -1,0 +1,1170 @@
+SNMP-TLS-TM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    OBJECT-IDENTITY, mib-2, snmpDomains,
+    Counter32, Unsigned32, Gauge32, NOTIFICATION-TYPE
+      FROM SNMPv2-SMI                 -- RFC 2578 or any update thereof
+    TEXTUAL-CONVENTION, TimeStamp, RowStatus, StorageType,
+    AutonomousType
+      FROM SNMPv2-TC                  -- RFC 2579 or any update thereof
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+      FROM SNMPv2-CONF                -- RFC 2580 or any update thereof
+    SnmpAdminString
+      FROM SNMP-FRAMEWORK-MIB         -- RFC 3411 or any update thereof
+    snmpTargetParamsName, snmpTargetAddrName
+      FROM SNMP-TARGET-MIB            -- RFC 3413 or any update thereof
+    ;
+
+
+
+
+
+
+snmpTlstmMIB MODULE-IDENTITY
+    LAST-UPDATED "201005070000Z"
+    ORGANIZATION "ISMS Working Group"
+    CONTACT-INFO "WG-EMail:   isms@lists.ietf.org
+                  Subscribe:  isms-request@lists.ietf.org
+
+                  Chairs:
+                     Juergen Schoenwaelder
+                     Jacobs University Bremen
+                     Campus Ring 1
+                     28725 Bremen
+                     Germany
+                     +49 421 200-3587
+                     j.schoenwaelder@jacobs-university.de
+
+                     Russ Mundy
+                     SPARTA, Inc.
+                     7110 Samuel Morse Drive
+                     Columbia, MD  21046
+                     USA
+
+                  Editor:
+                     Wes Hardaker
+                     SPARTA, Inc.
+                     P.O. Box 382
+                     Davis, CA  95617
+                     USA
+                     ietf@hardakers.net
+                  "
+
+    DESCRIPTION  "
+        The TLS Transport Model MIB
+
+        Copyright (c) 2010 IETF Trust and the persons identified as
+        the document authors.  All rights reserved.
+
+        Redistribution and use in source and binary forms, with or
+        without modification, is permitted pursuant to, and subject
+        to the license terms contained in, the Simplified BSD License
+        set forth in Section 4.c of the IETF Trust's Legal Provisions
+        Relating to IETF Documents
+        (http://trustee.ietf.org/license-info)."
+
+       REVISION     "201005070000Z"
+       DESCRIPTION  "This version of this MIB module is part of
+                     RFC 5953; see the RFC itself for full legal
+                     notices."
+
+
+
+
+    ::= { mib-2 198 }
+
+-- ************************************************
+-- subtrees of the SNMP-TLS-TM-MIB
+-- ************************************************
+
+snmpTlstmNotifications OBJECT IDENTIFIER ::= { snmpTlstmMIB 0 }
+snmpTlstmIdentities    OBJECT IDENTIFIER ::= { snmpTlstmMIB 1 }
+snmpTlstmObjects       OBJECT IDENTIFIER ::= { snmpTlstmMIB 2 }
+snmpTlstmConformance   OBJECT IDENTIFIER ::= { snmpTlstmMIB 3 }
+
+-- ************************************************
+-- snmpTlstmObjects - Objects
+-- ************************************************
+
+snmpTLSTCPDomain OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "The SNMP over TLS via TCP transport domain.  The
+        corresponding transport address is of type SnmpTLSAddress.
+
+        The securityName prefix to be associated with the
+        snmpTLSTCPDomain is 'tls'.  This prefix may be used by
+        security models or other components to identify which secure
+        transport infrastructure authenticated a securityName."
+    REFERENCE
+      "RFC 2579: Textual Conventions for SMIv2"
+
+    ::= { snmpDomains 8 }
+
+snmpDTLSUDPDomain OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION
+        "The SNMP over DTLS via UDP transport domain.  The
+        corresponding transport address is of type SnmpTLSAddress.
+
+        The securityName prefix to be associated with the
+        snmpDTLSUDPDomain is 'dtls'.  This prefix may be used by
+        security models or other components to identify which secure
+        transport infrastructure authenticated a securityName."
+    REFERENCE
+      "RFC 2579: Textual Conventions for SMIv2"
+
+    ::= { snmpDomains 9 }
+
+
+
+
+
+
+
+SnmpTLSAddress ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "1a"
+    STATUS       current
+    DESCRIPTION
+        "Represents an IPv4 address, an IPv6 address, or a
+         US-ASCII-encoded hostname and port number.
+
+        An IPv4 address must be in dotted decimal format followed by a
+        colon ':' (US-ASCII character 0x3A) and a decimal port number
+        in US-ASCII.
+
+        An IPv6 address must be a colon-separated format (as described
+        in RFC 5952), surrounded by square brackets ('[', US-ASCII
+        character 0x5B, and ']', US-ASCII character 0x5D), followed by
+        a colon ':' (US-ASCII character 0x3A) and a decimal port number
+        in US-ASCII.
+
+        A hostname is always in US-ASCII (as per [RFC1033]);
+        internationalized hostnames are encoded in US-ASCII as domain
+        names after transformation via the ToASCII operation specified
+        in [RFC3490].  The ToASCII operation MUST be performed with the
+        UseSTD3ASCIIRules flag set.  The hostname is followed by a
+        colon ':' (US-ASCII character 0x3A) and a decimal port number
+        in US-ASCII.  The name SHOULD be fully qualified whenever
+        possible.
+
+        Values of this textual convention may not be directly usable
+        as transport-layer addressing information, and may require
+        run-time resolution.  As such, applications that write them
+        must be prepared for handling errors if such values are not
+        supported, or cannot be resolved (if resolution occurs at the
+        time of the management operation).
+
+        The DESCRIPTION clause of TransportAddress objects that may
+        have SnmpTLSAddress values must fully describe how (and
+        when) such names are to be resolved to IP addresses and vice
+        versa.
+
+        This textual convention SHOULD NOT be used directly in object
+        definitions since it restricts addresses to a specific
+        format.  However, if it is used, it MAY be used either on its
+        own or in conjunction with TransportAddressType or
+        TransportDomain as a pair.
+
+        When this textual convention is used as a syntax of an index
+        object, there may be issues with the limit of 128
+        sub-identifiers specified in SMIv2 (STD 58).  It is RECOMMENDED
+        that all MIB documents using this textual convention make
+
+
+
+        explicit any limitations on index component lengths that
+        management software must observe.  This may be done either by
+        including SIZE constraints on the index components or by
+        specifying applicable constraints in the conceptual row
+        DESCRIPTION clause or in the surrounding documentation."
+
+    REFERENCE
+      "RFC 1033: DOMAIN ADMINISTRATORS OPERATIONS GUIDE
+       RFC 3490: Internationalizing Domain Names in Applications
+       RFC 5952: A Recommendation for IPv6 Address Text Representation
+      "
+    SYNTAX       OCTET STRING (SIZE (1..255))
+
+SnmpTLSFingerprint ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "1x:1x"
+    STATUS       current
+    DESCRIPTION
+       "A fingerprint value that can be used to uniquely reference
+       other data of potentially arbitrary length.
+
+       An SnmpTLSFingerprint value is composed of a 1-octet hashing
+       algorithm identifier followed by the fingerprint value.  The
+       octet value encoded is taken from the IANA TLS HashAlgorithm
+       Registry (RFC 5246).  The remaining octets are filled using the
+       results of the hashing algorithm.
+
+       This TEXTUAL-CONVENTION allows for a zero-length (blank)
+       SnmpTLSFingerprint value for use in tables where the
+       fingerprint value may be optional.  MIB definitions or
+       implementations may refuse to accept a zero-length value as
+       appropriate."
+       REFERENCE "RFC 5246: The Transport Layer
+                  Security (TLS) Protocol Version 1.2
+                  http://www.iana.org/assignments/tls-parameters/
+       "
+    SYNTAX OCTET STRING (SIZE (0..255))
+
+-- Identities for use in the snmpTlstmCertToTSNTable
+
+snmpTlstmCertToTSNMIdentities OBJECT IDENTIFIER
+    ::= { snmpTlstmIdentities 1 }
+
+snmpTlstmCertSpecified OBJECT-IDENTITY
+    STATUS        current
+    DESCRIPTION  "Directly specifies the tmSecurityName to be used for
+                  this certificate.  The value of the tmSecurityName
+                  to use is specified in the snmpTlstmCertToTSNData
+                  column.  The snmpTlstmCertToTSNData column must
+
+
+
+                  contain a non-zero length SnmpAdminString compliant
+                  value or the mapping described in this row must be
+                  considered a failure."
+    ::= { snmpTlstmCertToTSNMIdentities 1 }
+
+snmpTlstmCertSANRFC822Name OBJECT-IDENTITY
+    STATUS        current
+    DESCRIPTION  "Maps a subjectAltName's rfc822Name to a
+                  tmSecurityName.  The local part of the rfc822Name is
+                  passed unaltered but the host-part of the name must
+                  be passed in lowercase.  This mapping results in a
+                  1:1 correspondence between equivalent subjectAltName
+                  rfc822Name values and tmSecurityName values except
+                  that the host-part of the name MUST be passed in
+                  lowercase.
+
+                  Example rfc822Name Field:  FooBar@Example.COM
+                  is mapped to tmSecurityName: FooBar@example.com."
+    ::= { snmpTlstmCertToTSNMIdentities 2 }
+
+snmpTlstmCertSANDNSName OBJECT-IDENTITY
+    STATUS        current
+    DESCRIPTION  "Maps a subjectAltName's dNSName to a
+                  tmSecurityName after first converting it to all
+                  lowercase (RFC 5280 does not specify converting to
+                  lowercase so this involves an extra step).  This
+                  mapping results in a 1:1 correspondence between
+                  subjectAltName dNSName values and the tmSecurityName
+                  values."
+    REFERENCE "RFC 5280 - Internet X.509 Public Key Infrastructure
+                         Certificate and Certificate Revocation
+                         List (CRL) Profile."
+    ::= { snmpTlstmCertToTSNMIdentities 3 }
+
+snmpTlstmCertSANIpAddress OBJECT-IDENTITY
+    STATUS        current
+    DESCRIPTION  "Maps a subjectAltName's iPAddress to a
+                  tmSecurityName by transforming the binary encoded
+                  address as follows:
+
+
+                  1) for IPv4, the value is converted into a
+                     decimal-dotted quad address (e.g., '192.0.2.1').
+
+                  2) for IPv6 addresses, the value is converted into a
+                     32-character all lowercase hexadecimal string
+                     without any colon separators.
+
+
+
+
+                  This mapping results in a 1:1 correspondence between
+                  subjectAltName iPAddress values and the
+                  tmSecurityName values.
+
+                  The resulting length of an encoded IPv6 address is
+                  the maximum length supported by the View-Based
+                  Access Control Model (VACM).  Using both the
+                  Transport Security Model's support for transport
+                  prefixes (see the SNMP-TSM-MIB's
+                  snmpTsmConfigurationUsePrefix object for details)
+                  will result in securityName lengths that exceed what
+                  VACM can handle."
+    ::= { snmpTlstmCertToTSNMIdentities 4 }
+
+snmpTlstmCertSANAny OBJECT-IDENTITY
+    STATUS        current
+    DESCRIPTION  "Maps any of the following fields using the
+                  corresponding mapping algorithms:
+
+                  |------------+----------------------------|
+                  | Type       | Algorithm                  |
+                  |------------+----------------------------|
+                  | rfc822Name | snmpTlstmCertSANRFC822Name |
+                  | dNSName    | snmpTlstmCertSANDNSName    |
+                  | iPAddress  | snmpTlstmCertSANIpAddress  |
+                  |------------+----------------------------|
+
+                  The first matching subjectAltName value found in the
+                  certificate of the above types MUST be used when
+                  deriving the tmSecurityName.  The mapping algorithm
+                  specified in the 'Algorithm' column MUST be used to
+                  derive the tmSecurityName.
+
+                  This mapping results in a 1:1 correspondence between
+                  subjectAltName values and tmSecurityName values.  The
+                  three sub-mapping algorithms produced by this
+                  combined algorithm cannot produce conflicting
+                  results between themselves."
+    ::= { snmpTlstmCertToTSNMIdentities 5 }
+
+snmpTlstmCertCommonName OBJECT-IDENTITY
+    STATUS        current
+
+    DESCRIPTION  "Maps a certificate's CommonName to a tmSecurityName
+                  after converting it to a UTF-8 encoding.  The usage
+                  of CommonNames is deprecated and users are
+                  encouraged to use subjectAltName mapping methods
+
+
+
+
+                  instead.  This mapping results in a 1:1
+                  correspondence between certificate CommonName values
+                  and tmSecurityName values."
+    ::= { snmpTlstmCertToTSNMIdentities 6 }
+
+-- The snmpTlstmSession Group
+
+snmpTlstmSession           OBJECT IDENTIFIER ::= { snmpTlstmObjects 1 }
+
+snmpTlstmSessionOpens  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The number of times an openSession() request has been executed
+       as a (D)TLS client, regardless of whether it succeeded or
+       failed."
+    ::= { snmpTlstmSession 1 }
+
+snmpTlstmSessionClientCloses  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The number of times a closeSession() request has been
+        executed as an (D)TLS client, regardless of whether it
+        succeeded or failed."
+    ::= { snmpTlstmSession 2 }
+
+snmpTlstmSessionOpenErrors  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The number of times an openSession() request failed to open a
+        session as a (D)TLS client, for any reason."
+    ::= { snmpTlstmSession 3 }
+
+snmpTlstmSessionAccepts  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The number of times a (D)TLS server has accepted a new
+       connection from a client and has received at least one SNMP
+       message through it."
+    ::= { snmpTlstmSession 4 }
+
+
+
+
+snmpTlstmSessionServerCloses  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The number of times a closeSession() request has been
+        executed as an (D)TLS server, regardless of whether it
+        succeeded or failed."
+    ::= { snmpTlstmSession 5 }
+
+snmpTlstmSessionNoSessions  OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The number of times an outgoing message was dropped because
+        the session associated with the passed tmStateReference was no
+        longer (or was never) available."
+    ::= { snmpTlstmSession 6 }
+
+snmpTlstmSessionInvalidClientCertificates OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The number of times an incoming session was not established
+        on an (D)TLS server because the presented client certificate
+        was invalid.  Reasons for invalidation include, but are not
+        limited to, cryptographic validation failures or lack of a
+        suitable mapping row in the snmpTlstmCertToTSNTable."
+    ::= { snmpTlstmSession 7 }
+
+snmpTlstmSessionUnknownServerCertificate OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The number of times an outgoing session was not established
+         on an (D)TLS client because the server certificate presented
+         by an SNMP over (D)TLS server was invalid because no
+         configured fingerprint or Certification Authority (CA) was
+         acceptable to validate it.
+         This may result because there was no entry in the
+         snmpTlstmAddrTable or because no path could be found to a
+         known CA."
+    ::= { snmpTlstmSession 8 }
+
+
+
+
+
+snmpTlstmSessionInvalidServerCertificates OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The number of times an outgoing session was not established
+         on an (D)TLS client because the server certificate presented
+         by an SNMP over (D)TLS server could not be validated even if
+         the fingerprint or expected validation path was known.  That
+         is, a cryptographic validation error occurred during
+         certificate validation processing.
+
+        Reasons for invalidation include, but are not
+        limited to, cryptographic validation failures."
+    ::= { snmpTlstmSession 9 }
+
+snmpTlstmSessionInvalidCaches OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The number of outgoing messages dropped because the
+        tmStateReference referred to an invalid cache."
+    ::= { snmpTlstmSession 10 }
+
+-- Configuration Objects
+
+snmpTlstmConfig             OBJECT IDENTIFIER ::= { snmpTlstmObjects 2 }
+
+-- Certificate mapping
+
+snmpTlstmCertificateMapping OBJECT IDENTIFIER ::= { snmpTlstmConfig 1 }
+
+snmpTlstmCertToTSNCount OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A count of the number of entries in the
+        snmpTlstmCertToTSNTable."
+    ::= { snmpTlstmCertificateMapping 1 }
+
+
+
+
+
+
+
+
+
+
+snmpTlstmCertToTSNTableLastChanged OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of sysUpTime.0 when the snmpTlstmCertToTSNTable was
+        last modified through any means, or 0 if it has not been
+        modified since the command responder was started."
+    ::= { snmpTlstmCertificateMapping 2 }
+
+snmpTlstmCertToTSNTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SnmpTlstmCertToTSNEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is used by a (D)TLS server to map the (D)TLS
+        client's presented X.509 certificate to a tmSecurityName.
+
+        On an incoming (D)TLS/SNMP connection, the client's presented
+        certificate must either be validated based on an established
+        trust anchor, or it must directly match a fingerprint in this
+        table.  This table does not provide any mechanisms for
+        configuring the trust anchors; the transfer of any needed
+        trusted certificates for path validation is expected to occur
+        through an out-of-band transfer.
+
+        Once the certificate has been found acceptable (either by path
+        validation or directly matching a fingerprint in this table),
+        this table is consulted to determine the appropriate
+        tmSecurityName to identify with the remote connection.  This
+        is done by considering each active row from this table in
+        prioritized order according to its snmpTlstmCertToTSNID value.
+        Each row's snmpTlstmCertToTSNFingerprint value determines
+        whether the row is a match for the incoming connection:
+
+            1) If the row's snmpTlstmCertToTSNFingerprint value
+               identifies the presented certificate, then consider the
+               row as a successful match.
+
+            2) If the row's snmpTlstmCertToTSNFingerprint value
+               identifies a locally held copy of a trusted CA
+               certificate and that CA certificate was used to
+               validate the path to the presented certificate, then
+               consider the row as a successful match.
+
+        Once a matching row has been found, the
+        snmpTlstmCertToTSNMapType value can be used to determine how
+        the tmSecurityName to associate with the session should be
+
+
+
+        determined.  See the snmpTlstmCertToTSNMapType column's
+        DESCRIPTION for details on determining the tmSecurityName
+        value.  If it is impossible to determine a tmSecurityName from
+        the row's data combined with the data presented in the
+        certificate, then additional rows MUST be searched looking for
+        another potential match.  If a resulting tmSecurityName mapped
+        from a given row is not compatible with the needed
+        requirements of a tmSecurityName (e.g., VACM imposes a
+        32-octet-maximum length and the certificate derived
+        securityName could be longer), then it must be considered an
+        invalid match and additional rows MUST be searched looking for
+        another potential match.
+
+        If no matching and valid row can be found, the connection MUST
+        be closed and SNMP messages MUST NOT be accepted over it.
+
+        Missing values of snmpTlstmCertToTSNID are acceptable and
+        implementations should continue to the next highest numbered
+        row.  It is recommended that administrators skip index values
+        to leave room for the insertion of future rows (for example,
+        use values of 10 and 20 when creating initial rows).
+
+        Users are encouraged to make use of certificates with
+        subjectAltName fields that can be used as tmSecurityNames so
+        that a single root CA certificate can allow all child
+        certificate's subjectAltName to map directly to a
+        tmSecurityName via a 1:1 transformation.  However, this table
+        is flexible to allow for situations where existing deployed
+        certificate infrastructures do not provide adequate
+        subjectAltName values for use as tmSecurityNames.
+        Certificates may also be mapped to tmSecurityNames using the
+        CommonName portion of the Subject field.  However, the usage
+        of the CommonName field is deprecated and thus this usage is
+        NOT RECOMMENDED.  Direct mapping from each individual
+        certificate fingerprint to a tmSecurityName is also possible
+        but requires one entry in the table per tmSecurityName and
+        requires more management operations to completely configure a
+        device."
+    ::= { snmpTlstmCertificateMapping 3 }
+
+snmpTlstmCertToTSNEntry OBJECT-TYPE
+    SYNTAX      SnmpTlstmCertToTSNEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A row in the snmpTlstmCertToTSNTable that specifies a mapping
+        for an incoming (D)TLS certificate to a tmSecurityName to use
+        for a connection."
+
+
+
+    INDEX   { snmpTlstmCertToTSNID }
+    ::= { snmpTlstmCertToTSNTable 1 }
+
+SnmpTlstmCertToTSNEntry ::= SEQUENCE {
+    snmpTlstmCertToTSNID           Unsigned32,
+    snmpTlstmCertToTSNFingerprint  SnmpTLSFingerprint,
+    snmpTlstmCertToTSNMapType      AutonomousType,
+    snmpTlstmCertToTSNData         OCTET STRING,
+    snmpTlstmCertToTSNStorageType  StorageType,
+    snmpTlstmCertToTSNRowStatus    RowStatus
+}
+
+snmpTlstmCertToTSNID OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A unique, prioritized index for the given entry.  Lower
+        numbers indicate a higher priority."
+    ::= { snmpTlstmCertToTSNEntry 1 }
+
+snmpTlstmCertToTSNFingerprint OBJECT-TYPE
+    SYNTAX      SnmpTLSFingerprint (SIZE(1..255))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "A cryptographic hash of a X.509 certificate.  The results of
+        a successful matching fingerprint to either the trusted CA in
+        the certificate validation path or to the certificate itself
+        is dictated by the snmpTlstmCertToTSNMapType column."
+    ::= { snmpTlstmCertToTSNEntry 2 }
+
+snmpTlstmCertToTSNMapType OBJECT-TYPE
+    SYNTAX      AutonomousType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Specifies the mapping type for deriving a tmSecurityName from
+        a certificate.  Details for mapping of a particular type SHALL
+        be specified in the DESCRIPTION clause of the OBJECT-IDENTITY
+        that describes the mapping.  If a mapping succeeds it will
+        return a tmSecurityName for use by the TLSTM model and
+        processing stops.
+
+        If the resulting mapped value is not compatible with the
+        needed requirements of a tmSecurityName (e.g., VACM imposes a
+        32-octet-maximum length and the certificate derived
+
+
+
+
+        securityName could be longer), then future rows MUST be
+        searched for additional snmpTlstmCertToTSNFingerprint matches
+        to look for a mapping that succeeds.
+
+        Suitable values for assigning to this object that are defined
+        within the SNMP-TLS-TM-MIB can be found in the
+        snmpTlstmCertToTSNMIdentities portion of the MIB tree."
+    DEFVAL { snmpTlstmCertSpecified }
+    ::= { snmpTlstmCertToTSNEntry 3 }
+
+snmpTlstmCertToTSNData OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..1024))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Auxiliary data used as optional configuration information for
+        a given mapping specified by the snmpTlstmCertToTSNMapType
+        column.  Only some mapping systems will make use of this
+        column.  The value in this column MUST be ignored for any
+        mapping type that does not require data present in this
+        column."
+    DEFVAL { "" }
+    ::= { snmpTlstmCertToTSNEntry 4 }
+
+snmpTlstmCertToTSNStorageType OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The storage type for this conceptual row.  Conceptual rows
+        having the value 'permanent' need not allow write-access to
+        any columnar objects in the row."
+    DEFVAL      { nonVolatile }
+    ::= { snmpTlstmCertToTSNEntry 5 }
+
+snmpTlstmCertToTSNRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this conceptual row.  This object may be used
+        to create or remove rows from this table.
+
+        To create a row in this table, an administrator must set this
+        object to either createAndGo(4) or createAndWait(5).
+
+
+
+
+
+
+        Until instances of all corresponding columns are appropriately
+        configured, the value of the corresponding instance of the
+        snmpTlstmParamsRowStatus column is notReady(3).
+
+        In particular, a newly created row cannot be made active until
+        the corresponding snmpTlstmCertToTSNFingerprint,
+        snmpTlstmCertToTSNMapType, and snmpTlstmCertToTSNData columns
+        have been set.
+
+        The following objects may not be modified while the
+        value of this object is active(1):
+            - snmpTlstmCertToTSNFingerprint
+            - snmpTlstmCertToTSNMapType
+            - snmpTlstmCertToTSNData
+        An attempt to set these objects while the value of
+        snmpTlstmParamsRowStatus is active(1) will result in
+        an inconsistentValue error."
+    ::= { snmpTlstmCertToTSNEntry 6 }
+
+-- Maps tmSecurityNames to certificates for use by the SNMP-TARGET-MIB
+
+snmpTlstmParamsCount OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A count of the number of entries in the snmpTlstmParamsTable."
+    ::= { snmpTlstmCertificateMapping 4 }
+
+snmpTlstmParamsTableLastChanged OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of sysUpTime.0 when the snmpTlstmParamsTable
+        was last modified through any means, or 0 if it has not been
+        modified since the command responder was started."
+    ::= { snmpTlstmCertificateMapping 5 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+snmpTlstmParamsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SnmpTlstmParamsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is used by a (D)TLS client when a (D)TLS
+        connection is being set up using an entry in the
+        SNMP-TARGET-MIB.  It extends the SNMP-TARGET-MIB's
+        snmpTargetParamsTable with a fingerprint of a certificate to
+        use when establishing such a (D)TLS connection."
+    ::= { snmpTlstmCertificateMapping 6 }
+
+snmpTlstmParamsEntry OBJECT-TYPE
+    SYNTAX      SnmpTlstmParamsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A conceptual row containing a fingerprint hash of a locally
+        held certificate for a given snmpTargetParamsEntry.  The
+        values in this row should be ignored if the connection that
+        needs to be established, as indicated by the SNMP-TARGET-MIB
+        infrastructure, is not a certificate and (D)TLS based
+        connection.  The connection SHOULD NOT be established if the
+        certificate fingerprint stored in this entry does not point to
+        a valid locally held certificate or if it points to an
+        unusable certificate (such as might happen when the
+        certificate's expiration date has been reached)."
+    INDEX    { IMPLIED snmpTargetParamsName }
+    ::= { snmpTlstmParamsTable 1 }
+
+SnmpTlstmParamsEntry ::= SEQUENCE {
+    snmpTlstmParamsClientFingerprint SnmpTLSFingerprint,
+    snmpTlstmParamsStorageType       StorageType,
+    snmpTlstmParamsRowStatus         RowStatus
+}
+
+snmpTlstmParamsClientFingerprint OBJECT-TYPE
+    SYNTAX      SnmpTLSFingerprint
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object stores the hash of the public portion of a
+        locally held X.509 certificate.  The X.509 certificate, its
+        public key, and the corresponding private key will be used
+        when initiating a (D)TLS connection as a (D)TLS client."
+    ::= { snmpTlstmParamsEntry 1 }
+
+
+
+
+
+snmpTlstmParamsStorageType OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The storage type for this conceptual row.  Conceptual rows
+        having the value 'permanent' need not allow write-access to
+        any columnar objects in the row."
+    DEFVAL      { nonVolatile }
+    ::= { snmpTlstmParamsEntry 2 }
+
+
+snmpTlstmParamsRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this conceptual row.  This object may be used
+        to create or remove rows from this table.
+
+        To create a row in this table, an administrator must set this
+        object to either createAndGo(4) or createAndWait(5).
+
+        Until instances of all corresponding columns are appropriately
+        configured, the value of the corresponding instance of the
+        snmpTlstmParamsRowStatus column is notReady(3).
+
+        In particular, a newly created row cannot be made active until
+        the corresponding snmpTlstmParamsClientFingerprint column has
+        been set.
+
+        The snmpTlstmParamsClientFingerprint object may not be modified
+        while the value of this object is active(1).
+
+        An attempt to set these objects while the value of
+        snmpTlstmParamsRowStatus is active(1) will result in
+        an inconsistentValue error."
+    ::= { snmpTlstmParamsEntry 3 }
+
+snmpTlstmAddrCount OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A count of the number of entries in the snmpTlstmAddrTable."
+    ::= { snmpTlstmCertificateMapping 7 }
+
+
+
+
+
+snmpTlstmAddrTableLastChanged OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of sysUpTime.0 when the snmpTlstmAddrTable
+        was last modified through any means, or 0 if it has not been
+        modified since the command responder was started."
+    ::= { snmpTlstmCertificateMapping 8 }
+
+snmpTlstmAddrTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SnmpTlstmAddrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table is used by a (D)TLS client when a (D)TLS
+        connection is being set up using an entry in the
+        SNMP-TARGET-MIB.  It extends the SNMP-TARGET-MIB's
+        snmpTargetAddrTable so that the client can verify that the
+        correct server has been reached.  This verification can use
+        either a certificate fingerprint, or an identity
+        authenticated via certification path validation.
+
+        If there is an active row in this table corresponding to the
+        entry in the SNMP-TARGET-MIB that was used to establish the
+        connection, and the row's snmpTlstmAddrServerFingerprint
+        column has non-empty value, then the server's presented
+        certificate is compared with the
+        snmpTlstmAddrServerFingerprint value (and the
+        snmpTlstmAddrServerIdentity column is ignored).  If the
+        fingerprint matches, the verification has succeeded.  If the
+        fingerprint does not match, then the connection MUST be
+        closed.
+
+        If the server's presented certificate has passed
+        certification path validation [RFC5280] to a configured
+        trust anchor, and an active row exists with a zero-length
+        snmpTlstmAddrServerFingerprint value, then the
+        snmpTlstmAddrServerIdentity column contains the expected
+        host name.  This expected host name is then compared against
+        the server's certificate as follows:
+
+          - Implementations MUST support matching the expected host
+          name against a dNSName in the subjectAltName extension
+          field and MAY support checking the name against the
+          CommonName portion of the subject distinguished name.
+
+
+
+
+
+          - The '*' (ASCII 0x2a) wildcard character is allowed in the
+          dNSName of the subjectAltName extension (and in common
+          name, if used to store the host name), but only as the
+          left-most (least significant) DNS label in that value.
+          This wildcard matches any left-most DNS label in the
+          server name.  That is, the subject *.example.com matches
+          the server names a.example.com and b.example.com, but does
+          not match example.com or a.b.example.com.  Implementations
+          MUST support wildcards in certificates as specified above,
+          but MAY provide a configuration option to disable them.
+
+          - If the locally configured name is an internationalized
+          domain name, conforming implementations MUST convert it to
+          the ASCII Compatible Encoding (ACE) format for performing
+          comparisons, as specified in Section 7 of [RFC5280].
+
+        If the expected host name fails these conditions then the
+        connection MUST be closed.
+
+        If there is no row in this table corresponding to the entry
+        in the SNMP-TARGET-MIB and the server can be authorized by
+        another, implementation-dependent means, then the connection
+        MAY still proceed."
+
+    ::= { snmpTlstmCertificateMapping 9 }
+
+snmpTlstmAddrEntry OBJECT-TYPE
+    SYNTAX      SnmpTlstmAddrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A conceptual row containing a copy of a certificate's
+        fingerprint for a given snmpTargetAddrEntry.  The values in
+        this row should be ignored if the connection that needs to be
+        established, as indicated by the SNMP-TARGET-MIB
+        infrastructure, is not a (D)TLS based connection.  If an
+        snmpTlstmAddrEntry exists for a given snmpTargetAddrEntry, then
+        the presented server certificate MUST match or the connection
+        MUST NOT be established.  If a row in this table does not
+        exist to match an snmpTargetAddrEntry row, then the connection
+        SHOULD still proceed if some other certificate validation path
+        algorithm (e.g., RFC 5280) can be used."
+    INDEX    { IMPLIED snmpTargetAddrName }
+    ::= { snmpTlstmAddrTable 1 }
+
+
+
+
+
+
+
+SnmpTlstmAddrEntry ::= SEQUENCE {
+    snmpTlstmAddrServerFingerprint    SnmpTLSFingerprint,
+    snmpTlstmAddrServerIdentity       SnmpAdminString,
+    snmpTlstmAddrStorageType          StorageType,
+    snmpTlstmAddrRowStatus            RowStatus
+}
+
+snmpTlstmAddrServerFingerprint OBJECT-TYPE
+    SYNTAX      SnmpTLSFingerprint
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "A cryptographic hash of a public X.509 certificate.  This
+        object should store the hash of the public X.509 certificate
+        that the remote server should present during the (D)TLS
+        connection setup.  The fingerprint of the presented
+        certificate and this hash value MUST match exactly or the
+        connection MUST NOT be established."
+    DEFVAL { "" }
+    ::= { snmpTlstmAddrEntry 1 }
+
+snmpTlstmAddrServerIdentity OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The reference identity to check against the identity
+        presented by the remote system."
+    DEFVAL { "" }
+    ::= { snmpTlstmAddrEntry 2 }
+
+snmpTlstmAddrStorageType OBJECT-TYPE
+    SYNTAX       StorageType
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The storage type for this conceptual row.  Conceptual rows
+        having the value 'permanent' need not allow write-access to
+        any columnar objects in the row."
+    DEFVAL      { nonVolatile }
+    ::= { snmpTlstmAddrEntry 3 }
+
+
+snmpTlstmAddrRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+
+
+
+
+    DESCRIPTION
+        "The status of this conceptual row.  This object may be used
+        to create or remove rows from this table.
+
+        To create a row in this table, an administrator must set this
+        object to either createAndGo(4) or createAndWait(5).
+
+        Until instances of all corresponding columns are
+        appropriately configured, the value of the
+        corresponding instance of the snmpTlstmAddrRowStatus
+        column is notReady(3).
+
+        In particular, a newly created row cannot be made active until
+        the corresponding snmpTlstmAddrServerFingerprint column has been
+        set.
+
+        Rows MUST NOT be active if the snmpTlstmAddrServerFingerprint
+        column is blank and the snmpTlstmAddrServerIdentity is set to
+        '*' since this would insecurely accept any presented
+        certificate.
+
+        The snmpTlstmAddrServerFingerprint object may not be modified
+        while the value of this object is active(1).
+
+        An attempt to set these objects while the value of
+        snmpTlstmAddrRowStatus is active(1) will result in
+        an inconsistentValue error."
+    ::= { snmpTlstmAddrEntry 4 }
+
+
+-- ************************************************
+--  snmpTlstmNotifications - Notifications Information
+-- ************************************************
+
+snmpTlstmServerCertificateUnknown NOTIFICATION-TYPE
+    OBJECTS { snmpTlstmSessionUnknownServerCertificate }
+    STATUS  current
+    DESCRIPTION
+        "Notification that the server certificate presented by an SNMP
+         over (D)TLS server was invalid because no configured
+         fingerprint or CA was acceptable to validate it.  This may be
+         because there was no entry in the snmpTlstmAddrTable or
+         because no path could be found to known Certification
+         Authority.
+
+
+
+
+
+
+
+         To avoid notification loops, this notification MUST NOT be
+         sent to servers that themselves have triggered the
+         notification."
+    ::= { snmpTlstmNotifications 1 }
+
+snmpTlstmServerInvalidCertificate NOTIFICATION-TYPE
+    OBJECTS { snmpTlstmAddrServerFingerprint,
+              snmpTlstmSessionInvalidServerCertificates}
+    STATUS  current
+    DESCRIPTION
+        "Notification that the server certificate presented by an SNMP
+         over (D)TLS server could not be validated even if the
+         fingerprint or expected validation path was known.  That is, a
+         cryptographic validation error occurred during certificate
+         validation processing.
+
+         To avoid notification loops, this notification MUST NOT be
+         sent to servers that themselves have triggered the
+         notification."
+    ::= { snmpTlstmNotifications 2 }
+
+-- ************************************************
+-- snmpTlstmCompliances - Conformance Information
+-- ************************************************
+
+snmpTlstmCompliances OBJECT IDENTIFIER ::= { snmpTlstmConformance 1 }
+
+snmpTlstmGroups OBJECT IDENTIFIER ::= { snmpTlstmConformance 2 }
+
+
+
+-- ************************************************
+-- Compliance statements
+-- ************************************************
+
+snmpTlstmCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for SNMP engines that support the
+        SNMP-TLS-TM-MIB"
+    MODULE
+        MANDATORY-GROUPS { snmpTlstmStatsGroup,
+                           snmpTlstmIncomingGroup,
+                           snmpTlstmOutgoingGroup,
+                           snmpTlstmNotificationGroup }
+    ::= { snmpTlstmCompliances 1 }
+
+
+
+
+
+-- ************************************************
+-- Units of conformance
+-- ************************************************
+snmpTlstmStatsGroup OBJECT-GROUP
+    OBJECTS {
+        snmpTlstmSessionOpens,
+        snmpTlstmSessionClientCloses,
+        snmpTlstmSessionOpenErrors,
+        snmpTlstmSessionAccepts,
+        snmpTlstmSessionServerCloses,
+        snmpTlstmSessionNoSessions,
+        snmpTlstmSessionInvalidClientCertificates,
+        snmpTlstmSessionUnknownServerCertificate,
+        snmpTlstmSessionInvalidServerCertificates,
+        snmpTlstmSessionInvalidCaches
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects for maintaining
+        statistical information of an SNMP engine that
+        implements the SNMP TLS Transport Model."
+    ::= { snmpTlstmGroups 1 }
+
+snmpTlstmIncomingGroup OBJECT-GROUP
+    OBJECTS {
+        snmpTlstmCertToTSNCount,
+        snmpTlstmCertToTSNTableLastChanged,
+        snmpTlstmCertToTSNFingerprint,
+        snmpTlstmCertToTSNMapType,
+        snmpTlstmCertToTSNData,
+        snmpTlstmCertToTSNStorageType,
+        snmpTlstmCertToTSNRowStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects for maintaining
+        incoming connection certificate mappings to
+        tmSecurityNames of an SNMP engine that implements the
+        SNMP TLS Transport Model."
+    ::= { snmpTlstmGroups 2 }
+
+snmpTlstmOutgoingGroup OBJECT-GROUP
+    OBJECTS {
+        snmpTlstmParamsCount,
+        snmpTlstmParamsTableLastChanged,
+        snmpTlstmParamsClientFingerprint,
+        snmpTlstmParamsStorageType,
+        snmpTlstmParamsRowStatus,
+
+
+
+        snmpTlstmAddrCount,
+        snmpTlstmAddrTableLastChanged,
+        snmpTlstmAddrServerFingerprint,
+        snmpTlstmAddrServerIdentity,
+        snmpTlstmAddrStorageType,
+        snmpTlstmAddrRowStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects for maintaining
+        outgoing connection certificates to use when opening
+        connections as a result of SNMP-TARGET-MIB settings."
+    ::= { snmpTlstmGroups 3 }
+
+snmpTlstmNotificationGroup NOTIFICATION-GROUP
+    NOTIFICATIONS {
+        snmpTlstmServerCertificateUnknown,
+        snmpTlstmServerInvalidCertificate
+    }
+    STATUS current
+    DESCRIPTION
+        "Notifications"
+    ::= { snmpTlstmGroups 4 }
+
+END

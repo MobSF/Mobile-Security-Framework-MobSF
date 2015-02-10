@@ -1,0 +1,30 @@
+# -*- text -*-
+##############################################################################
+#
+#	Nokia dictionary for attributes that conflict with other dictionaries.
+#
+#	$Id$
+#
+##############################################################################
+
+#
+#       Enable by putting the line "$INCLUDE dictionary.nokia.conflict" into
+#       the main dictionary file. Don't forget to comment out the
+#       $INCLUDE dictionary.ascend, because these over-lap with the
+#       standard RADIUS attributes, which are also illegitimately used
+#       by Ascend.
+#
+#	It's apparently rocket science for people to define their own
+#	VSA's.
+#
+
+ATTRIBUTE	Nokia-Primary-DNS-Server		135	ipaddr
+ATTRIBUTE	Nokia-Secondary-DNS-Server		136	ipaddr
+
+
+ATTRIBUTE	Nokia-IMSI				224	octets
+ATTRIBUTE	Nokia-Charging-Id			225	integer
+ATTRIBUTE	Nokia-Prepaid-Ind			226	integer
+ATTRIBUTE	Nokia-GGSN-IP-Address			227	ipaddr
+ATTRIBUTE	Nokia-SGSN-IP-Address			228	ipaddr
+

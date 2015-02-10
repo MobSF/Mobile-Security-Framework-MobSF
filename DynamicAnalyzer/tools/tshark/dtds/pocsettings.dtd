@@ -1,0 +1,30 @@
+<? wireshark:protocol
+   proto_name="poc-settings"
+   description="poc-settings XML doc (RFC 4354)"
+   hierarchy="yes" ?>
+<!--
+$Id:$
+-->
+
+
+<!ELEMENT poc-settings (entity)* >
+<!ATTLIST poc-settings xmlns CDATA #IMPLIED>
+
+<!ELEMENT entity (isb-settings? | am-settings? | ipab-settings? | sss-settings?)* >
+<!ATTLIST entity id CDATA #REQUIRED>
+
+<!ELEMENT isb-settings (incoming-session-barring)>
+<!ELEMENT incoming-session-barring (#PCDATA)>
+<!ATTLIST incoming-session-barring    active CDATA #REQUIRED>
+
+<!ELEMENT am-settings (answer-mode)>
+<!ELEMENT answer-mode (#PCDATA)>
+
+<!ELEMENT ipab-settings (incoming-personal-alert-barring)>
+<!ELEMENT incoming-personal-alert-barring (#PCDATA)>
+<!ATTLIST incoming-personal-alert-barring    active CDATA #REQUIRED>
+
+<!ELEMENT sss-settings (simultaneous-sessions-support)>
+<!ELEMENT simultaneous-sessions-support (#PCDATA)>
+<!ATTLIST simultaneous-sessions-support    active CDATA #REQUIRED>
+

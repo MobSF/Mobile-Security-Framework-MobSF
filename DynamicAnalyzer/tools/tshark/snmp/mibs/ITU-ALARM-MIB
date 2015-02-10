@@ -1,0 +1,502 @@
+ITU-ALARM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   MODULE-IDENTITY, OBJECT-TYPE,
+   Gauge32, mib-2
+       FROM SNMPv2-SMI                -- [RFC2578]
+   AutonomousType, RowPointer
+       FROM SNMPv2-TC                 -- [RFC2579]
+   SnmpAdminString
+       FROM SNMP-FRAMEWORK-MIB        -- [RFC3411]
+   alarmListName, alarmModelIndex,
+   alarmActiveDateAndTime, alarmActiveIndex
+       FROM ALARM-MIB                 -- [RFC3877]
+   ItuPerceivedSeverity,
+   ItuTrendIndication
+       FROM ITU-ALARM-TC-MIB          -- [RFC3877]
+   IANAItuProbableCause,
+   IANAItuEventType
+       FROM IANA-ITU-ALARM-TC-MIB     -- [RFC3877]
+   MODULE-COMPLIANCE, OBJECT-GROUP
+       FROM SNMPv2-CONF               -- [RFC2580]
+   ZeroBasedCounter32
+       FROM RMON2-MIB;                -- [RFC2021]
+
+  ituAlarmMIB MODULE-IDENTITY
+      LAST-UPDATED "200409090000Z"  -- September 09, 2004
+      ORGANIZATION "IETF Distributed Management Working Group"
+      CONTACT-INFO
+           "WG EMail: disman@ietf.org
+           Subscribe: disman-request@ietf.org
+           http://www.ietf.org/html.charters/disman-charter.html
+
+           Chair:     Randy Presuhn
+                      randy_presuhn@mindspring.com
+
+           Editors:   Sharon Chisholm
+                      Nortel Networks
+                      PO Box 3511 Station C
+                      Ottawa, Ont.  K1Y 4H7
+                      Canada
+                      schishol@nortelnetworks.com
+
+                      Dan Romascanu
+                      Avaya
+                      Atidim Technology Park, Bldg. #3
+                      Tel Aviv, 61131
+
+
+                      Israel
+                      Tel: +972-3-645-8414
+                      Email: dromasca@avaya.com"
+      DESCRIPTION
+              "The MIB module describes ITU Alarm information
+              as defined in ITU Recommendation M.3100 [M.3100],
+              X.733 [X.733] and X.736 [X.736].
+
+              Copyright (C) The Internet Society (2004).  The
+              initial version of this MIB module was published
+              in RFC 3877.  For full legal notices see the RFC
+              itself.  Supplementary information may be available on:
+              http://www.ietf.org/copyrights/ianamib.html"
+      REVISION    "200409090000Z"  -- September 09, 2004
+      DESCRIPTION
+          "Initial version, published as RFC 3877."
+      ::= { mib-2 121 }
+
+ituAlarmObjects OBJECT IDENTIFIER ::= { ituAlarmMIB 1 }
+
+ituAlarmModel OBJECT IDENTIFIER ::= { ituAlarmObjects 1 }
+
+ituAlarmActive  OBJECT IDENTIFIER ::= { ituAlarmObjects 2 }
+
+ituAlarmTable OBJECT-TYPE
+   SYNTAX      SEQUENCE OF ItuAlarmEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "A table of ITU Alarm information for possible alarms
+       on the system."
+   ::= { ituAlarmModel 1 }
+
+ituAlarmEntry OBJECT-TYPE
+   SYNTAX      ItuAlarmEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "Entries appear in this table whenever an entry is created
+        in the alarmModelTable with a value of alarmModelState in
+        the range from 1 to 6.  Entries disappear from this table
+        whenever the corresponding entries are deleted from the
+        alarmModelTable, including in cases where those entries
+        have been deleted due to local system action.  The value of
+        alarmModelSpecificPointer has no effect on the creation
+        or deletion of entries in this table.  Values of
+        alarmModelState map to values of ituAlarmPerceivedSeverity
+        as follows:
+
+
+          alarmModelState -> ituAlarmPerceivedSeverity
+                 1        ->         clear (1)
+                 2        ->         indeterminate (2)
+                 3        ->         warning (6)
+                 4        ->         minor (5)
+                 5        ->         major (4)
+                 6        ->         critical (3)
+
+        All other values of alarmModelState MUST NOT appear
+        in this table.
+
+        This table MUST be persistent across system reboots."
+   INDEX       { alarmListName, alarmModelIndex,
+                ituAlarmPerceivedSeverity }
+   ::= { ituAlarmTable 1 }
+
+ItuAlarmEntry ::= SEQUENCE {
+   ituAlarmPerceivedSeverity     ItuPerceivedSeverity,
+   ituAlarmEventType             IANAItuEventType,
+   ituAlarmProbableCause         IANAItuProbableCause,
+   ituAlarmAdditionalText        SnmpAdminString,
+   ituAlarmGenericModel          RowPointer }
+
+ituAlarmPerceivedSeverity OBJECT-TYPE
+   SYNTAX  ItuPerceivedSeverity
+   MAX-ACCESS   not-accessible
+   STATUS       current
+   DESCRIPTION
+            "ITU perceived severity values."
+    REFERENCE
+        "ITU Recommendation M.3100, 'Generic Network Information
+            Model', 1995
+         ITU Recommendation X.733, 'Information Technology - Open
+            Systems Interconnection - System Management: Alarm
+            Reporting Function', 1992"
+    ::= { ituAlarmEntry 1 }
+
+ituAlarmEventType OBJECT-TYPE
+   SYNTAX       IANAItuEventType
+   MAX-ACCESS   read-write
+   STATUS       current
+   DESCRIPTION
+            "Represents the event type values for the alarms"
+    REFERENCE
+        "ITU Recommendation M.3100, 'Generic Network Information
+            Model', 1995
+         ITU Recommendation X.733, 'Information Technology - Open
+            Systems Interconnection - System Management: Alarm
+
+
+            Reporting Function', 1992
+         ITU Recommendation X.736, 'Information Technology - Open
+            Systems Interconnection - System Management: Security
+            Alarm Reporting Function', 1992"
+    ::= { ituAlarmEntry 2 }
+
+ituAlarmProbableCause OBJECT-TYPE
+   SYNTAX      IANAItuProbableCause
+   MAX-ACCESS  read-write
+   STATUS       current
+   DESCRIPTION
+            "ITU probable cause values."
+    REFERENCE
+        "ITU Recommendation M.3100, 'Generic Network Information
+            Model', 1995
+         ITU Recommendation X.733, 'Information Technology - Open
+            Systems Interconnection - System Management: Alarm
+            Reporting Function', 1992
+         ITU Recommendation X.736, 'Information Technology - Open
+            Systems Interconnection - System Management: Security
+            Alarm Reporting Function', 1992"
+    ::= { ituAlarmEntry 3 }
+
+ituAlarmAdditionalText OBJECT-TYPE
+   SYNTAX  SnmpAdminString
+   MAX-ACCESS read-write
+   STATUS     current
+   DESCRIPTION
+            "Represents the additional text field for the alarm."
+    REFERENCE
+        "ITU Recommendation M.3100, 'Generic Network Information
+            Model', 1995
+         ITU Recommendation X.733, 'Information Technology - Open
+            Systems Interconnection - System Management: Alarm
+            Reporting Function', 1992"
+    ::= { ituAlarmEntry 4}
+
+ituAlarmGenericModel OBJECT-TYPE
+   SYNTAX     RowPointer
+   MAX-ACCESS read-write
+   STATUS     current
+   DESCRIPTION
+   "This object points to the corresponding
+    row in the alarmModelTable for this alarm severity.
+
+    This corresponding entry to alarmModelTable could also
+    be derived by performing the reverse of the mapping
+    from alarmModelState to ituAlarmPerceivedSeverity defined
+
+
+    in the description of ituAlarmEntry to determine the
+    appropriate { alarmListName, alarmModelIndex, alarmModelState }
+    for this { alarmListName, alarmModelIndex,
+    ituAlarmPerceivedSeverity }."
+   ::= { ituAlarmEntry 5 }
+
+-- ITU Active Alarm Table --
+
+ituAlarmActiveTable OBJECT-TYPE
+   SYNTAX      SEQUENCE OF ItuAlarmActiveEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "A table of ITU information for active alarms entries."
+   ::= { ituAlarmActive 1 }
+
+ituAlarmActiveEntry OBJECT-TYPE
+   SYNTAX      ItuAlarmActiveEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "Entries appear in this table when alarms are active.  They
+       are removed when the alarm is no longer occurring."
+   INDEX       { alarmListName, alarmActiveDateAndTime,
+                alarmActiveIndex }
+   ::= { ituAlarmActiveTable 1 }
+
+ItuAlarmActiveEntry ::= SEQUENCE {
+    ituAlarmActiveTrendIndication       ItuTrendIndication,
+    ituAlarmActiveDetector              AutonomousType,
+    ituAlarmActiveServiceProvider       AutonomousType,
+    ituAlarmActiveServiceUser           AutonomousType
+    }
+
+ituAlarmActiveTrendIndication OBJECT-TYPE
+   SYNTAX      ItuTrendIndication
+   MAX-ACCESS  read-only
+   STATUS       current
+   DESCRIPTION
+            "Represents the trend indication values for the alarms."
+    REFERENCE
+        "ITU Recommendation M.3100, 'Generic Network Information
+            Model', 1995
+         ITU Recommendation X.733, 'Information Technology - Open
+            Systems Interconnection - System Management: Alarm
+            Reporting Function', 1992"
+    ::= { ituAlarmActiveEntry 1 }
+
+
+
+ituAlarmActiveDetector OBJECT-TYPE
+   SYNTAX AutonomousType
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+      "Represents the SecurityAlarmDetector object."
+    REFERENCE
+        "ITU Recommendation X.736, 'Information Technology - Open
+            Systems Interconnection - System Management: Security
+            Alarm Reporting Function', 1992"
+   ::= { ituAlarmActiveEntry 2 }
+
+ituAlarmActiveServiceProvider OBJECT-TYPE
+   SYNTAX AutonomousType
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+      "Represents the ServiceProvider object."
+    REFERENCE
+        "ITU Recommendation X.736, 'Information Technology - Open
+            Systems Interconnection - System Management: Security
+            Alarm Reporting Function', 1992"
+   ::= { ituAlarmActiveEntry 3 }
+
+ituAlarmActiveServiceUser OBJECT-TYPE
+   SYNTAX AutonomousType
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+      "Represents the ServiceUser object."
+    REFERENCE
+        "ITU Recommendation X.736, 'Information Technology - Open
+            Systems Interconnection - System Management: Security
+            Alarm Reporting Function', 1992"
+   ::= { ituAlarmActiveEntry 4 }
+
+-- Statistics and Counters
+
+ituAlarmActiveStatsTable  OBJECT-TYPE
+      SYNTAX  SEQUENCE OF ItuAlarmActiveStatsEntry
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+         "This table represents the ITU alarm statistics
+         information."
+  ::= { ituAlarmActive 2 }
+
+
+
+
+ituAlarmActiveStatsEntry OBJECT-TYPE
+      SYNTAX  ItuAlarmActiveStatsEntry
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+         "Statistics on the current active ITU alarms."
+      INDEX   { alarmListName }
+
+  ::= {  ituAlarmActiveStatsTable 1 }
+
+ItuAlarmActiveStatsEntry ::=
+ SEQUENCE {
+   ituAlarmActiveStatsIndeterminateCurrent Gauge32,
+   ituAlarmActiveStatsCriticalCurrent      Gauge32,
+   ituAlarmActiveStatsMajorCurrent         Gauge32,
+   ituAlarmActiveStatsMinorCurrent         Gauge32,
+   ituAlarmActiveStatsWarningCurrent       Gauge32,
+   ituAlarmActiveStatsIndeterminates       ZeroBasedCounter32,
+   ituAlarmActiveStatsCriticals            ZeroBasedCounter32,
+   ituAlarmActiveStatsMajors               ZeroBasedCounter32,
+   ituAlarmActiveStatsMinors               ZeroBasedCounter32,
+   ituAlarmActiveStatsWarnings             ZeroBasedCounter32
+ }
+
+ituAlarmActiveStatsIndeterminateCurrent OBJECT-TYPE
+   SYNTAX      Gauge32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "A count of the current number of active alarms with a
+        ituAlarmPerceivedSeverity of indeterminate."
+   ::= { ituAlarmActiveStatsEntry 1 }
+
+ituAlarmActiveStatsCriticalCurrent OBJECT-TYPE
+   SYNTAX      Gauge32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "A count of the current number of active alarms with a
+        ituAlarmPerceivedSeverity of critical."
+   ::= { ituAlarmActiveStatsEntry 2 }
+
+ituAlarmActiveStatsMajorCurrent OBJECT-TYPE
+   SYNTAX      Gauge32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "A count of the current number of active alarms with a
+
+
+        ituAlarmPerceivedSeverity of major."
+   ::= { ituAlarmActiveStatsEntry 3 }
+
+ituAlarmActiveStatsMinorCurrent OBJECT-TYPE
+   SYNTAX      Gauge32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "A count of the current number of active alarms with a
+        ituAlarmPerceivedSeverity of minor."
+   ::= { ituAlarmActiveStatsEntry 4 }
+
+ituAlarmActiveStatsWarningCurrent OBJECT-TYPE
+   SYNTAX      Gauge32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "A count of the current number of active alarms with a
+        ituAlarmPerceivedSeverity of warning."
+   ::= { ituAlarmActiveStatsEntry 5 }
+
+ituAlarmActiveStatsIndeterminates OBJECT-TYPE
+   SYNTAX      ZeroBasedCounter32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "A count of the total number of active alarms with a
+        ituAlarmPerceivedSeverity of indeterminate since system
+        restart."
+   ::= { ituAlarmActiveStatsEntry 6 }
+
+ituAlarmActiveStatsCriticals OBJECT-TYPE
+   SYNTAX      ZeroBasedCounter32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "A count of the total number of active alarms with a
+        ituAlarmPerceivedSeverity of critical since system restart."
+   ::= { ituAlarmActiveStatsEntry 7 }
+
+ituAlarmActiveStatsMajors OBJECT-TYPE
+   SYNTAX      ZeroBasedCounter32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "A count of the total number of active alarms with a
+        ituAlarmPerceivedSeverity of major since system restart."
+   ::= { ituAlarmActiveStatsEntry 8 }
+
+
+ituAlarmActiveStatsMinors OBJECT-TYPE
+   SYNTAX      ZeroBasedCounter32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "A count of the total number of active alarms with a
+        ituAlarmPerceivedSeverity of minor since system restart."
+   ::= { ituAlarmActiveStatsEntry 9 }
+
+ituAlarmActiveStatsWarnings OBJECT-TYPE
+   SYNTAX      ZeroBasedCounter32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "A count of the total number of active alarms with a
+        ituAlarmPerceivedSeverity of warning since system restart."
+   ::= { ituAlarmActiveStatsEntry 10 }
+
+-- Conformance
+
+ituAlarmConformance OBJECT IDENTIFIER ::= { ituAlarmMIB 2 }
+ituAlarmCompliances  OBJECT IDENTIFIER ::= { ituAlarmConformance 1 }
+
+ituAlarmCompliance MODULE-COMPLIANCE
+   STATUS  current
+   DESCRIPTION
+          "The compliance statement for systems supporting
+          the ITU Alarm MIB."
+   MODULE -- this module
+       MANDATORY-GROUPS {
+           ituAlarmGroup
+           }
+   GROUP       ituAlarmServiceUserGroup
+       DESCRIPTION
+           "This group is optional."
+   GROUP       ituAlarmSecurityGroup
+       DESCRIPTION
+           "This group is optional."
+   GROUP       ituAlarmStatisticsGroup
+       DESCRIPTION
+           "This group is optional."
+  ::= { ituAlarmCompliances 1 }
+
+ituAlarmGroups OBJECT IDENTIFIER ::= { ituAlarmConformance 2 }
+
+ituAlarmGroup OBJECT-GROUP
+ OBJECTS {
+           ituAlarmEventType,
+
+
+           ituAlarmProbableCause,
+           ituAlarmGenericModel
+         }
+ STATUS   current
+ DESCRIPTION
+               "ITU alarm details list group."
+ ::= { ituAlarmGroups 1}
+
+ituAlarmServiceUserGroup OBJECT-GROUP
+ OBJECTS {
+           ituAlarmAdditionalText,
+           ituAlarmActiveTrendIndication
+         }
+ STATUS current
+ DESCRIPTION
+         "The use of these parameters is a service-user option."
+ ::= { ituAlarmGroups 2 }
+
+ituAlarmSecurityGroup OBJECT-GROUP
+  OBJECTS {
+          ituAlarmActiveDetector,
+          ituAlarmActiveServiceProvider,
+          ituAlarmActiveServiceUser
+         }
+  STATUS current
+  DESCRIPTION
+         "Security Alarm Reporting Function"
+    REFERENCE
+        "ITU Recommendation X.736, 'Information Technology - Open
+            Systems Interconnection - System Management: Security
+            Alarm Reporting Function', 1992"
+  ::= { ituAlarmGroups 3 }
+
+ituAlarmStatisticsGroup OBJECT-GROUP
+  OBJECTS {
+         ituAlarmActiveStatsIndeterminateCurrent,
+         ituAlarmActiveStatsCriticalCurrent,
+         ituAlarmActiveStatsMajorCurrent,
+         ituAlarmActiveStatsMinorCurrent,
+         ituAlarmActiveStatsWarningCurrent,
+         ituAlarmActiveStatsIndeterminates,
+         ituAlarmActiveStatsCriticals,
+         ituAlarmActiveStatsMajors,
+         ituAlarmActiveStatsMinors,
+         ituAlarmActiveStatsWarnings
+          }
+  STATUS current
+  DESCRIPTION
+
+
+    "ITU Active Alarm Statistics."
+  ::= { ituAlarmGroups 4 }
+
+END

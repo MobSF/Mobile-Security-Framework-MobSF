@@ -1,0 +1,292 @@
+PARALLEL-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Counter32, Integer32
+        FROM SNMPv2-SMI
+    InterfaceIndex
+        FROM IF-MIB
+    transmission
+        FROM RFC1213-MIB
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF;
+
+
+para MODULE-IDENTITY
+     LAST-UPDATED "9405261700Z"
+     ORGANIZATION "IETF Character MIB Working Group"
+     CONTACT-INFO
+            "        Bob Stewart
+             Postal: Xyplex, Inc.
+                     295 Foster Street
+                     Littleton, MA 01460
+
+                Tel: 508-952-4816
+                Fax: 508-952-4887
+             E-mail: rlstewart@eng.xyplex.com"
+     DESCRIPTION
+            "The MIB module for Parallel-printer-like hardware devices."
+    ::= { transmission 34 }
+
+
+-- Generic Parallel-printer-like information
+
+paraNumber OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of ports (regardless of their current
+        state) in the Parallel-printer-like port table."
+    ::= { para 1 }
+
+
+-- the Parallel-printer-like Port table
+
+paraPortTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF ParaPortEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A list of port entries.  The number of entries is
+        given by the value of paraNumber."
+    ::= { para 2 }
+
+paraPortEntry OBJECT-TYPE
+    SYNTAX ParaPortEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Status and parameter values for a port."
+    INDEX { paraPortIndex }
+    ::= { paraPortTable 1 }
+
+ParaPortEntry ::=
+    SEQUENCE {
+        paraPortIndex
+            InterfaceIndex,
+        paraPortType
+            INTEGER,
+        paraPortInSigNumber
+            Integer32,
+        paraPortOutSigNumber
+            Integer32
+    }
+
+paraPortIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The value of ifIndex for the port.  By convention
+        and if possible, hardware port numbers map directly
+        to external connectors.  The value for each port must
+        remain constant at least from one re-initialization
+        of the network management agent to the next."
+    ::= { paraPortEntry 1 }
+
+paraPortType OBJECT-TYPE
+    SYNTAX INTEGER {
+        other(1),
+        centronics(2),
+        dataproducts(3)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The port's hardware type."
+    ::= { paraPortEntry 2 }
+
+paraPortInSigNumber OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of input signals for the port in the
+        input signal table (paraPortInSigTable).  The table
+        contains entries only for those signals the software
+        can detect and that are useful to observe."
+    ::= { paraPortEntry 3 }
+
+paraPortOutSigNumber OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of output signals for the port in the
+        output signal table (paraPortOutSigTable).  The
+        table contains entries only for those signals the
+        software can assert and that are useful to observe."
+    ::= { paraPortEntry 4 }
+
+-- Parallel-printer-like Input Signal Table
+
+paraInSigTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF ParaInSigEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A list of port input control signal entries."
+    ::= { para 3 }
+
+paraInSigEntry OBJECT-TYPE
+    SYNTAX ParaInSigEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Input control signal status for a hardware port."
+    INDEX { paraInSigPortIndex, paraInSigName }
+    ::= { paraInSigTable 1 }
+
+ParaInSigEntry ::=
+    SEQUENCE {
+        paraInSigPortIndex
+            InterfaceIndex,
+        paraInSigName
+            INTEGER,
+        paraInSigState
+            INTEGER,
+        paraInSigChanges
+            Counter32
+    }
+
+paraInSigPortIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The value of paraPortIndex for the port to which
+        this entry belongs."
+    ::= { paraInSigEntry 1 }
+
+paraInSigName OBJECT-TYPE
+    SYNTAX INTEGER { power(1), online(2), busy(3),
+                     paperout(4), fault(5) }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Identification of a hardware signal."
+    ::= { paraInSigEntry 2 }
+
+paraInSigState OBJECT-TYPE
+    SYNTAX INTEGER { none(1), on(2), off(3) }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current signal state."
+    ::= { paraInSigEntry 3 }
+
+paraInSigChanges OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of times the signal has changed from
+        'on' to 'off' or from 'off' to 'on'."
+    ::= { paraInSigEntry 4 }
+
+
+-- Output Signal Table
+
+paraOutSigTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF ParaOutSigEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A list of port output control signal entries."
+    ::= { para 4 }
+
+paraOutSigEntry OBJECT-TYPE
+    SYNTAX ParaOutSigEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Output control signal status for a hardware port."
+    INDEX { paraOutSigPortIndex, paraOutSigName }
+    ::= { paraOutSigTable 1 }
+
+ParaOutSigEntry ::=
+    SEQUENCE {
+        paraOutSigPortIndex
+            InterfaceIndex,
+        paraOutSigName
+            INTEGER,
+        paraOutSigState
+            INTEGER,
+        paraOutSigChanges
+            Counter32
+    }
+
+paraOutSigPortIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The value of paraPortIndex for the port to which
+        this entry belongs."
+    ::= { paraOutSigEntry 1 }
+
+paraOutSigName OBJECT-TYPE
+    SYNTAX INTEGER { power(1), online(2), busy(3),
+                     paperout(4), fault(5) }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Identification of a hardware signal."
+    ::= { paraOutSigEntry 2 }
+
+paraOutSigState OBJECT-TYPE
+    SYNTAX INTEGER { none(1), on(2), off(3) }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The current signal state."
+    ::= { paraOutSigEntry 3 }
+
+paraOutSigChanges OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of times the signal has changed from
+        'on' to 'off' or from 'off' to 'on'."
+    ::= { paraOutSigEntry 4 }
+
+
+-- conformance information
+
+paraConformance OBJECT IDENTIFIER ::= { para 5 }
+
+paraGroups      OBJECT IDENTIFIER ::= { paraConformance 1 }
+paraCompliances OBJECT IDENTIFIER ::= { paraConformance 2 }
+
+-- compliance statements
+
+paraCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for SNMPv2 entities
+            which have Parallel-printer-like hardware
+            interfaces."
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { paraGroup }
+    ::= { paraCompliances 1 }
+
+
+-- units of conformance
+
+paraGroup    OBJECT-GROUP
+    OBJECTS { paraNumber, paraPortIndex, paraPortType,
+              paraPortInSigNumber, paraPortOutSigNumber,
+              paraInSigPortIndex, paraInSigName,
+              paraInSigState, paraInSigChanges,
+              paraOutSigPortIndex, paraOutSigName,
+              paraOutSigState, paraOutSigChanges }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing information
+             applicable to all Parallel-printer-like interfaces."
+    ::= { paraGroups 1 }
+
+END

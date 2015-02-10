@@ -1,0 +1,1262 @@
+SMON-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+     MODULE-IDENTITY, OBJECT-TYPE, Counter32,
+     Integer32, Counter64
+             FROM SNMPv2-SMI
+     RowStatus, TEXTUAL-CONVENTION
+             FROM SNMPv2-TC
+     rmon, OwnerString
+             FROM RMON-MIB
+     LastCreateTime, DataSource, rmonConformance, probeConfig
+             FROM RMON2-MIB
+     InterfaceIndex
+             FROM IF-MIB
+     MODULE-COMPLIANCE, OBJECT-GROUP
+             FROM SNMPv2-CONF;
+
+switchRMON MODULE-IDENTITY
+     LAST-UPDATED "9812160000Z"
+     ORGANIZATION "IETF RMON MIB Working Group"
+     CONTACT-INFO
+     "IETF RMONMIB WG Mailing list: rmonmib@cisco.com
+
+             Rich Waterman
+             Allot Networks Inc.
+             Tel:  +1-408-559-0253
+             Email: rich@allot.com
+
+             Bill Lahaye
+             Xylan Corp.
+             Tel: +1-800-995-2612
+             Email:  lahaye@ctron.com
+
+             Dan Romascanu
+             Lucent Technologies
+             Tel:  +972-3-645-8414
+             Email: dromasca@lucent.com
+
+             Steven Waldbusser
+             International Network Services (INS)
+             Tel: +1-650-318-1251
+             Email: waldbusser@ins.com"
+
+     DESCRIPTION
+             "The MIB module for managing remote monitoring device
+              implementations for Switched Networks"
+
+      -- revision history
+
+     REVISION    "9812160000Z"     -- 16 Dec 1998 midemight
+     DESCRIPTION "Initial Version, published as RFC 2613."
+
+     ::= { rmon 22 }
+
+smonMIBObjects OBJECT IDENTIFIER ::= { switchRMON 1 }
+
+dataSourceCaps          OBJECT IDENTIFIER ::= {smonMIBObjects 1}
+smonStats               OBJECT IDENTIFIER ::= {smonMIBObjects 2}
+portCopyConfig          OBJECT IDENTIFIER ::= {smonMIBObjects 3}
+smonRegistrationPoints  OBJECT IDENTIFIER ::= {smonMIBObjects 4}
+
+-- Textual Conventions
+--
+
+SmonDataSource ::= TEXTUAL-CONVENTION
+ STATUS        current
+ DESCRIPTION
+     "Identifies the source of the data that the associated function
+      is configured to analyze. This Textual Convention
+      extends the DataSource Textual Convention defined by RMON 2
+      to the following data source types:
+
+      - ifIndex.<I>
+      DataSources of this traditional form are called 'port-based',
+      but only if ifType.<I> is not equal to 'propVirtual(53)'.
+
+      - smonVlanDataSource.<V>
+      A dataSource of this form refers to a 'Packet-based VLAN'
+      and is called a 'VLAN-based' dataSource. <V> is the VLAN
+      ID as defined by the IEEE 802.1Q standard [19]. The
+      value is between 1 and 4094 inclusive, and it represents
+      an 802.1Q VLAN-ID with global scope within a given
+      bridged domain, as defined by [19].
+
+     - entPhysicalEntry.<N>
+      A dataSource of this form refers to a physical entity within
+      the agent (e.g. entPhysicalClass = backplane(4)) and is called
+      an 'entity-based' dataSource."
+ SYNTAX      OBJECT IDENTIFIER
+
+-- The smonCapabilities object describes SMON agent capabilities.
+
+smonCapabilities OBJECT-TYPE
+ SYNTAX BITS {
+   smonVlanStats(0),
+   smonPrioStats(1),
+   dataSource(2),
+   smonUnusedBit(3),
+   portCopy(4)
+   }
+ MAX-ACCESS read-only
+ STATUS current
+ DESCRIPTION
+     "An indication of the SMON MIB groups supported
+      by this agent."
+ ::= { probeConfig  15 }
+
+-- dataSourceCaps MIB group - defines SMON data source and port
+-- copy capabilities for devices supporting SMON.
+
+-- A NMS application will check this MIB group and retrieve
+-- information about the SMON capabilities of the device before
+-- applying SMON control operations to the device.
+
+
+-- dataSourceCapsTable: defines capabilities of RMON data sources
+
+dataSourceCapsTable OBJECT-TYPE
+ SYNTAX      SEQUENCE OF DataSourceCapsEntry
+ MAX-ACCESS  not-accessible
+ STATUS      current
+ DESCRIPTION
+     "This table describes RMON data sources and port copy
+     capabilities. An NMS MAY use this table to discover the
+     identity and attributes of the data sources on a given agent
+     implementation. Similar to the probeCapabilities object,
+     actual row-creation operations will succeed or fail based on
+     the resources available and parameter values used in each
+     row-creation operation.
+
+     Upon restart of the RMON agent, the dataSourceTable, ifTable,
+     and perhaps entPhysicalTable are initialized for the available
+     dataSources.
+
+     For each dataSourceCapsEntry representing a VLAN or
+     entPhysicalEntry the agent MUST create an associated ifEntry
+     with a ifType value of 'propVirtual(53)'. This ifEntry will be
+     used as the actual value in RMON control table dataSource
+     objects. The assigned ifIndex value is copied into the
+     associated dataSourceCapsIfIndex object.
+
+     It is understood that dataSources representing VLANs may not
+     always be instantiated immediately upon restart, but rather as
+     VLAN usage is detected by the agent. The agent SHOULD attempt
+     to create dataSource and interface entries for all dataSources
+     as soon as possible."
+::= { dataSourceCaps 1 }
+
+dataSourceCapsEntry  OBJECT-TYPE
+ SYNTAX      DataSourceCapsEntry
+ MAX-ACCESS  not-accessible
+ STATUS      current
+ DESCRIPTION
+     "Entries per data source containing descriptions of data
+      source and port copy capabilities. This table is populated by
+      the SMON agent with one entry for each supported data
+      source."
+INDEX { IMPLIED dataSourceCapsObject }
+::= { dataSourceCapsTable 1 }
+
+DataSourceCapsEntry ::= SEQUENCE {
+     dataSourceCapsObject
+             SmonDataSource,
+     dataSourceRmonCaps
+             BITS,
+     dataSourceCopyCaps
+             BITS,
+     dataSourceCapsIfIndex
+             InterfaceIndex
+     }
+
+dataSourceCapsObject OBJECT-TYPE
+ SYNTAX      SmonDataSource
+ MAX-ACCESS  not-accessible
+ STATUS      current
+ DESCRIPTION
+     "Defines an object that can be a SMON data source or a
+       source or a destination for a port copy operation."
+ ::= { dataSourceCapsEntry 1  }
+
+dataSourceRmonCaps OBJECT-TYPE
+ SYNTAX BITS {
+        countErrFrames(0),
+        countAllGoodFrames(1),
+        countAnyRmonTables(2),
+        babyGiantsCountAsGood(3)
+        }
+ MAX-ACCESS read-only
+ STATUS current
+ DESCRIPTION
+     " General attributes of the specified dataSource. Note that
+     these are static attributes, which SHOULD NOT be adjusted
+     because of current resources or configuration.
+
+   - countErrFrames(0)
+       The agent sets this bit for the dataSource if errored frames
+       received on this dataSource can actually be monitored by the
+       agent The agent clears this bit if any errored frames are
+       not visible to the RMON data collector.
+
+   - countAllGoodFrames(1)
+       The agent sets this bit for the dataSource if all good
+       frames received on this dataSource can actually be monitored
+       by the agent. The agent clears this bit if any good frames
+       are not visible for RMON collection, e.g., the dataSource is
+       a non-promiscuous interface or an internal switch interface
+       which may not receive frames which were switched in hardware
+       or dropped by the bridge forwarding function.
+
+   - countAnyRmonTables(2)
+       The agent sets this bit if this dataSource can actually be
+       used in any of the implemented RMON tables, resources
+       notwithstanding. The agent clears this bit if this
+       dataSourceCapsEntry is present simply to identify a
+       dataSource that may only be used as portCopySource and/or a
+       portCopyDest, but not the source of an actual RMON data
+       collection.
+
+   - babyGiantsCountAsGood(3)
+       The agent sets this bit if it can distinguish, for counting
+       purposes, between true giant frames and frames that exceed
+       Ethernet maximum frame size 1518 due to VLAN tagging ('baby
+       giants'). Specifically, this BIT means that frames up to
+       1522 octets are counted as good.
+
+       Agents not capable of detecting 'baby giants' will clear
+       this bit and will view all frames less than or equal to 1518
+       octets as 'good frames' and all frames larger than 1518
+       octets as 'bad frames' for the purpose of counting in the
+       smonVlanIdStats and smonPrioStats tables.
+
+       Agents capable of detecting 'baby giants' SHALL consider
+       them as 'good frames' for the purpose of counting in the
+       smonVlanIdStats and smonPrioStats tables."
+
+ ::= { dataSourceCapsEntry 2  }
+
+dataSourceCopyCaps OBJECT-TYPE
+ SYNTAX BITS {
+     copySourcePort(0),
+     copyDestPort(1),
+     copySrcTxTraffic(2),
+     copySrcRxTraffic(3),
+     countDestDropEvents(4),
+     copyErrFrames(5),
+     copyUnalteredFrames(6),
+     copyAllGoodFrames(7)
+     }
+ MAX-ACCESS   read-only
+ STATUS       current
+ DESCRIPTION
+     "PortCopy function capabilities of the specified dataSource.
+ Note that these are static capabilities, which SHOULD NOT be
+ adjusted because of current resources or configuration.
+
+   - copySourcePort(0)
+       The agent sets this bit if this dataSource is capable of
+       acting as a source of a portCopy operation. The agent clears
+       this bit otherwise.
+
+   - copyDestPort(1)
+       The agent sets this bit if this dataSource is capable of
+       acting as a destination of a portCopy operation. The agent
+       clears this bit otherwise.
+
+  - copySrcTxTraffic(2)
+       If the copySourcePort bit is set:
+             The agent sets this bit if this dataSource is capable of
+           copying frames transmitted out this portCopy source. The
+           agent clears this bit otherwise. This function is needed
+           to support full-duplex ports.
+        Else:
+            this bit SHOULD be cleared.
+
+   - copySrcRxTraffic(3)
+       If the copySourcePort bit is set:
+         The agent sets this bit if this dataSource is capable of
+         copying frames received on this portCopy source. The agent
+         clears this bit otherwise. This function is needed to
+         support full-duplex ports.
+       Else:
+         this bit SHOULD be cleared.
+
+   - countDestDropEvents(4)
+       If the copyDestPort bit is set:
+           The agent sets this bit if it is capable of incrementing
+           portCopyDestDropEvents, when this dataSource is the
+           target of a portCopy operation and a frame destined to
+           this dataSource is dropped (for RMON counting purposes).
+       Else:
+           this BIT SHOULD be cleared.
+
+   - copyErrFrames(5)
+       If the copySourcePort bit is set:
+           The agent sets this bit if it is capable of copying all
+           errored frames from this portCopy source-port, for
+           errored frames received on this dataSource.
+       Else:
+           this BIT SHOULD be cleared.
+
+   - copyUnalteredFrames(6)
+       If the copySourcePort bit is set:
+           The agent sets the copyUnalteredFrames bit If it is
+           capable of copying all frames from this portCopy
+           source-port without alteration in any way;
+       Else:
+           this bit SHOULD be cleared.
+
+   - copyAllGoodFrames(7)
+       If the copySourcePort bit is set:
+           The agent sets this bit for the dataSource if all good
+           frames received on this dataSource are normally capable
+           of being copied by the agent. The agent clears this bit
+           if any good frames are not visible for the RMON portCopy
+           operation, e.g., the dataSource is a non-promiscuous
+           interface or an internal switch interface which may not
+           receive frames which were switched in hardware or
+           dropped by the bridge forwarding function.
+        Else:
+           this bit SHOULD be cleared."
+
+ ::= { dataSourceCapsEntry 3  }
+
+dataSourceCapsIfIndex OBJECT-TYPE
+SYNTAX       InterfaceIndex
+MAX-ACCESS   read-only
+STATUS       current
+DESCRIPTION
+     "This object contains the ifIndex value of the ifEntry
+      associated with this smonDataSource. The agent MUST create
+      'propVirtual' ifEntries for each dataSourceCapsEntry of type
+      VLAN or entPhysicalEntry."
+
+ ::= { dataSourceCapsEntry 4  }
+
+-- The SMON Statistics MIB Group
+
+-- aggregated statistics for IEEE 802.1Q VLAN environments.
+
+-- VLAN statistics can be gathered by configuring smonVlanIdStats
+-- and/or smonPrioStats collections. These functions allow a
+-- VLAN-ID or user priority distributions per dataSource,
+-- auto-populated by the agent in a manner similar to the RMON
+-- hostTable.
+
+-- Only good frames are counted in the tables described in this
+-- section.
+
+-- VLAN ID Stats
+
+-- smonVlanStatsControlTable allows configuration of VLAN-ID
+-- collections.
+
+smonVlanStatsControlTable OBJECT-TYPE
+ SYNTAX      SEQUENCE OF SmonVlanStatsControlEntry
+ MAX-ACCESS  not-accessible
+ STATUS      current
+ DESCRIPTION
+
+     "Controls the setup of VLAN statistics tables.
+
+      The statistics collected represent a distribution based on
+      the IEEE 802.1Q VLAN-ID (VID), for each good frame attributed
+      to the data source for the collection."
+ ::= { smonStats 1 }
+
+smonVlanStatsControlEntry OBJECT-TYPE
+ SYNTAX      SmonVlanStatsControlEntry
+ MAX-ACCESS  not-accessible
+ STATUS      current
+ DESCRIPTION
+     "A conceptual row in the smonVlanStatsControlTable."
+ INDEX { smonVlanStatsControlIndex }
+ ::= { smonVlanStatsControlTable 1 }
+
+SmonVlanStatsControlEntry ::= SEQUENCE {
+ smonVlanStatsControlIndex                 Integer32,
+ smonVlanStatsControlDataSource           DataSource,
+ smonVlanStatsControlCreateTime       LastCreateTime,
+ smonVlanStatsControlOwner               OwnerString,
+ smonVlanStatsControlStatus                RowStatus
+}
+
+smonVlanStatsControlIndex OBJECT-TYPE
+ SYNTAX      Integer32 (1..65535)
+ MAX-ACCESS  not-accessible
+ STATUS      current
+ DESCRIPTION
+     "A unique arbitrary index for this smonVlanStatsControlEntry."
+ ::= { smonVlanStatsControlEntry 1 }
+
+smonVlanStatsControlDataSource OBJECT-TYPE
+ SYNTAX      DataSource
+ MAX-ACCESS  read-create
+ STATUS      current
+ DESCRIPTION
+     "The source of data for this set of VLAN statistics.
+
+     This object MAY NOT be modified if the associated
+     smonVlanStatsControlStatus object is equal to active(1)."
+ ::= { smonVlanStatsControlEntry 2 }
+
+smonVlanStatsControlCreateTime OBJECT-TYPE
+ SYNTAX     LastCreateTime
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The value of sysUpTime when this control entry was last
+     activated. This object allows to a management station to
+     detect deletion and recreation cycles between polls."
+ ::= { smonVlanStatsControlEntry 3 }
+
+smonVlanStatsControlOwner OBJECT-TYPE
+
+ SYNTAX      OwnerString
+ MAX-ACCESS  read-create
+ STATUS      current
+ DESCRIPTION
+     "Administratively assigned named of the owner of this entry.
+     It usually defines the entity that created this entry and is
+     therefore using the resources assigned to it, though there is
+     no enforcement mechanism, nor assurance that rows created are
+     ever used."
+ ::= { smonVlanStatsControlEntry 4 }
+
+smonVlanStatsControlStatus OBJECT-TYPE
+ SYNTAX      RowStatus
+ MAX-ACCESS  read-create
+ STATUS      current
+ DESCRIPTION
+     "The status of this row.
+     An entry MAY NOT exist in the active state unless all
+     objects in the entry have an appropriate value.
+
+     If this object is not equal to active(1), all associated
+     entries in the smonVlanIdStatsTable SHALL be deleted."
+ ::= { smonVlanStatsControlEntry 5 }
+
+-- The VLAN Statistics Table
+
+smonVlanIdStatsTable  OBJECT-TYPE
+ SYNTAX     SEQUENCE OF SmonVlanIdStatsEntry
+ MAX-ACCESS not-accessible
+ STATUS     current
+ DESCRIPTION
+     "Contains the VLAN statistics data.
+      The statistics collected represent a distribution based
+      on the IEEE 802.1Q VLAN-ID (VID), for each good frame
+      attributed to the data source for the collection.
+
+      This function applies the same rules for attributing frames
+      to VLAN-based collections. RMON VLAN statistics are collected
+      after the Ingress Rules defined in section 3.13 of the VLAN
+      Specification [20] are applied.
+
+      It is possible that entries in this table will be
+      garbage-collected, based on agent resources, and VLAN
+      configuration. Agents are encouraged to support all 4094
+      index values and not garbage collect this table."
+::= { smonStats 2 }
+
+smonVlanIdStatsEntry  OBJECT-TYPE
+ SYNTAX     SmonVlanIdStatsEntry
+ MAX-ACCESS not-accessible
+ STATUS     current
+ DESCRIPTION
+     "A conceptual row in smonVlanIdStatsTable."
+ INDEX { smonVlanStatsControlIndex, smonVlanIdStatsId }
+ ::= { smonVlanIdStatsTable 1 }
+
+SmonVlanIdStatsEntry ::= SEQUENCE {
+ smonVlanIdStatsId                             Integer32,
+ smonVlanIdStatsTotalPkts                      Counter32,
+ smonVlanIdStatsTotalOverflowPkts              Counter32,
+ smonVlanIdStatsTotalHCPkts                    Counter64,
+ smonVlanIdStatsTotalOctets                    Counter32,
+ smonVlanIdStatsTotalOverflowOctets            Counter32,
+ smonVlanIdStatsTotalHCOctets                  Counter64,
+ smonVlanIdStatsNUcastPkts                     Counter32,
+ smonVlanIdStatsNUcastOverflowPkts             Counter32,
+ smonVlanIdStatsNUcastHCPkts                   Counter64,
+ smonVlanIdStatsNUcastOctets                   Counter32,
+ smonVlanIdStatsNUcastOverflowOctets           Counter32,
+ smonVlanIdStatsNUcastHCOctets                 Counter64,
+ smonVlanIdStatsCreateTime                     LastCreateTime
+}
+
+smonVlanIdStatsId OBJECT-TYPE
+ SYNTAX     Integer32 (1..4094)
+ MAX-ACCESS not-accessible
+ STATUS     current
+ DESCRIPTION
+     "The unique identifier of the VLAN monitored for
+      this specific statistics collection.
+
+     Tagged packets match the VID for the range between 1 and 4094.
+     An external RMON probe MAY detect VID=0 on an Inter Switch
+     Link, in which case the packet belongs to a VLAN determined by
+     the PVID of the ingress port. The VLAN to which such a packet
+     belongs can be determined only by a RMON probe internal to the
+     switch."
+ REFERENCE
+     "Draft Standard for Virtual Bridged Local Area Networks,
+       P802.1Q/D10, chapter 3.13"
+ ::= { smonVlanIdStatsEntry 1 }
+
+smonVlanIdStatsTotalPkts OBJECT-TYPE
+ SYNTAX     Counter32
+ UNITS "packets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The total number of packets counted on this VLAN."
+ ::= { smonVlanIdStatsEntry 2 }
+
+smonVlanIdStatsTotalOverflowPkts OBJECT-TYPE
+ SYNTAX     Counter32
+ UNITS "packets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The number of times the associated smonVlanIdStatsTotalPkts
+      counter has overflowed."
+ ::= { smonVlanIdStatsEntry 3 }
+
+smonVlanIdStatsTotalHCPkts OBJECT-TYPE
+ SYNTAX     Counter64
+ UNITS "packets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The total number of packets counted on this VLAN."
+ ::= { smonVlanIdStatsEntry 4 }
+
+smonVlanIdStatsTotalOctets OBJECT-TYPE
+ SYNTAX     Counter32
+ UNITS "octets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The total number of octets counted on this VLAN."
+ ::= { smonVlanIdStatsEntry 5 }
+
+smonVlanIdStatsTotalOverflowOctets OBJECT-TYPE
+ SYNTAX     Counter32
+ UNITS "octets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The number of times the associated smonVlanIdStatsTotalOctets
+      counter has overflowed."
+ ::= { smonVlanIdStatsEntry 6 }
+
+smonVlanIdStatsTotalHCOctets OBJECT-TYPE
+ SYNTAX     Counter64
+ UNITS "octets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The total number of octets counted on this VLAN."
+::= { smonVlanIdStatsEntry 7 }
+
+smonVlanIdStatsNUcastPkts OBJECT-TYPE
+ SYNTAX     Counter32
+ UNITS "packets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The total number of non-unicast packets counted on this
+      VLAN."
+ ::= { smonVlanIdStatsEntry 8 }
+
+smonVlanIdStatsNUcastOverflowPkts OBJECT-TYPE
+ SYNTAX     Counter32
+ UNITS "packets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The number of times the associated smonVlanIdStatsNUcastPkts
+      counter has overflowed."
+ ::= { smonVlanIdStatsEntry 9 }
+
+smonVlanIdStatsNUcastHCPkts OBJECT-TYPE
+ SYNTAX     Counter64
+ UNITS "packets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The total number of non-unicast packets counted on
+      this VLAN."
+ ::= { smonVlanIdStatsEntry 10 }
+
+smonVlanIdStatsNUcastOctets OBJECT-TYPE
+ SYNTAX     Counter32
+ UNITS "octets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The total number of non-unicast octets counted on
+      this VLAN."
+ ::= { smonVlanIdStatsEntry 11 }
+
+smonVlanIdStatsNUcastOverflowOctets OBJECT-TYPE
+ SYNTAX     Counter32
+ UNITS "octets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The number of times the associated
+      smonVlanIdStatsNUcastOctets counter has overflowed."
+ ::= { smonVlanIdStatsEntry 12 }
+
+smonVlanIdStatsNUcastHCOctets OBJECT-TYPE
+ SYNTAX     Counter64
+ UNITS "octets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The total number of Non-unicast octets counted on
+      this VLAN."
+ ::= { smonVlanIdStatsEntry 13 }
+
+smonVlanIdStatsCreateTime OBJECT-TYPE
+ SYNTAX     LastCreateTime
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The value of sysUpTime when this entry was last
+     activated. This object allows to a management station to
+     detect deletion and recreation cycles between polls."
+ ::= { smonVlanIdStatsEntry 14 }
+
+-- smonPrioStatsControlTable
+
+smonPrioStatsControlTable OBJECT-TYPE
+ SYNTAX      SEQUENCE OF SmonPrioStatsControlEntry
+ MAX-ACCESS  not-accessible
+ STATUS      current
+ DESCRIPTION
+     "Controls the setup of priority statistics tables.
+
+      The smonPrioStatsControlTable allows configuration of
+      collections based on the value of the 3-bit user priority
+      field encoded in the Tag Control Information (TCI) field
+      according to [19],[20].
+
+      Note that this table merely reports priority as encoded in
+      the VLAN headers, not the priority (if any) given to the
+      frame for the actual switching purposes."
+
+ ::= { smonStats 3 }
+
+smonPrioStatsControlEntry OBJECT-TYPE
+ SYNTAX      SmonPrioStatsControlEntry
+ MAX-ACCESS  not-accessible
+ STATUS      current
+ DESCRIPTION
+     "A conceptual row in the smonPrioStatsControlTable."
+ INDEX { smonPrioStatsControlIndex }
+ ::= { smonPrioStatsControlTable 1 }
+
+
+SmonPrioStatsControlEntry ::= SEQUENCE {
+ smonPrioStatsControlIndex                 Integer32,
+ smonPrioStatsControlDataSource           DataSource,
+ smonPrioStatsControlCreateTime       LastCreateTime,
+ smonPrioStatsControlOwner               OwnerString,
+ smonPrioStatsControlStatus                RowStatus
+}
+
+smonPrioStatsControlIndex OBJECT-TYPE
+ SYNTAX      Integer32 (1..65535)
+ MAX-ACCESS  not-accessible
+ STATUS      current
+ DESCRIPTION
+     "A unique arbitrary index for this smonPrioStatsControlEntry."
+ ::= { smonPrioStatsControlEntry 1 }
+
+smonPrioStatsControlDataSource OBJECT-TYPE
+ SYNTAX      DataSource
+ MAX-ACCESS  read-create
+ STATUS      current
+ DESCRIPTION
+     "The source of data for this set of VLAN statistics.
+
+     This object MAY NOT be modified if the associated
+     smonPrioStatsControlStatus object is equal to active(1)."
+ ::= { smonPrioStatsControlEntry 2 }
+
+smonPrioStatsControlCreateTime OBJECT-TYPE
+ SYNTAX     LastCreateTime
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+      "The value of sysUpTime when this entry was created.
+     This object allows to a management station to
+     detect deletion and recreation cycles between polls."
+
+ ::= { smonPrioStatsControlEntry 3 }
+
+smonPrioStatsControlOwner OBJECT-TYPE
+ SYNTAX      OwnerString
+ MAX-ACCESS  read-create
+ STATUS      current
+ DESCRIPTION
+      "Administratively assigned named of the owner of this entry.
+     It usually defines the entity that created this entry and is
+     therefore using the resources assigned to it, though there is
+     no enforcement mechanism, nor assurance that rows created are
+     ever used."
+ ::= { smonPrioStatsControlEntry 4 }
+
+smonPrioStatsControlStatus OBJECT-TYPE
+ SYNTAX      RowStatus
+ MAX-ACCESS  read-create
+ STATUS      current
+ DESCRIPTION
+     "The status of this row.
+     An entry MAY NOT exist in the active state unless all
+     objects in the entry have an appropriate value.
+
+     If this object is not equal to active(1), all associated
+     entries in the smonPrioStatsTable SHALL be deleted."
+ ::= { smonPrioStatsControlEntry 5 }
+
+-- The Priority Statistics Table
+
+smonPrioStatsTable  OBJECT-TYPE
+ SYNTAX     SEQUENCE OF SmonPrioStatsEntry
+ MAX-ACCESS not-accessible
+ STATUS     current
+ DESCRIPTION
+     "Contains the priority statistics. The collections are based
+      on the value of the 3-bit user priority field encoded in the
+      Tag Control Information (TCI) field according to [19], [20].
+      Note that this table merely reports priority as encoded in
+      the VLAN headers, not the priority (if any) given to the
+      frame for the actual switching purposes.
+
+      No garbage collection is designed for this table, as there
+      always are at most eight rows per statistical set, and the
+      low memory requirements do not justify the implementation of
+      such a mechanism."
+ ::= { smonStats 4 }
+
+smonPrioStatsEntry  OBJECT-TYPE
+ SYNTAX     SmonPrioStatsEntry
+ MAX-ACCESS not-accessible
+ STATUS     current
+ DESCRIPTION
+     "A conceptual row in smonPrioStatsTable."
+ INDEX { smonPrioStatsControlIndex, smonPrioStatsId }
+ ::= { smonPrioStatsTable 1 }
+
+SmonPrioStatsEntry ::= SEQUENCE {
+ smonPrioStatsId                       Integer32,
+ smonPrioStatsPkts                     Counter32,
+ smonPrioStatsOverflowPkts             Counter32,
+ smonPrioStatsHCPkts                   Counter64,
+ smonPrioStatsOctets                   Counter32,
+ smonPrioStatsOverflowOctets           Counter32,
+ smonPrioStatsHCOctets                 Counter64
+}
+
+smonPrioStatsId OBJECT-TYPE
+ SYNTAX     Integer32 (0..7)
+ MAX-ACCESS not-accessible
+ STATUS     current
+ DESCRIPTION
+     "The unique identifier of the priority level monitored for
+      this specific statistics collection."
+ REFERENCE
+     " Draft Standard for Virtual Bridged Local Area Networks,
+       P802.1Q/D10, chapter 4.3.2.1"
+ ::= { smonPrioStatsEntry 1 }
+
+smonPrioStatsPkts OBJECT-TYPE
+ SYNTAX     Counter32
+ UNITS "packets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The total number of packets counted on
+      this priority level."
+ ::= { smonPrioStatsEntry 2 }
+
+smonPrioStatsOverflowPkts OBJECT-TYPE
+ SYNTAX     Counter32
+ UNITS "packets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The number of times the associated smonPrioStatsPkts
+      counter has overflowed."
+ ::= { smonPrioStatsEntry 3 }
+
+smonPrioStatsHCPkts OBJECT-TYPE
+ SYNTAX     Counter64
+ UNITS "packets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The total number of packets counted on
+      this priority level."
+ ::= { smonPrioStatsEntry 4 }
+
+smonPrioStatsOctets OBJECT-TYPE
+ SYNTAX     Counter32
+ UNITS "octets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The total number of octets counted on
+      this priority level."
+ ::= { smonPrioStatsEntry 5 }
+
+smonPrioStatsOverflowOctets OBJECT-TYPE
+ SYNTAX     Counter32
+ UNITS "octets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The number of times the associated smonPrioStatsOctets
+      counter has overflowed."
+ ::= { smonPrioStatsEntry 6 }
+
+smonPrioStatsHCOctets OBJECT-TYPE
+ SYNTAX     Counter64
+ UNITS "octets"
+ MAX-ACCESS read-only
+ STATUS     current
+ DESCRIPTION
+     "The total number of octets counted on
+      this priority level."
+ ::= { smonPrioStatsEntry 7 }
+
+
+portCopyTable  OBJECT-TYPE
+ SYNTAX      SEQUENCE OF PortCopyEntry
+ MAX-ACCESS  not-accessible
+ STATUS      current
+ DESCRIPTION
+     " Port Copy provides the ability to copy all frames from a
+      specified source to specified destination within a switch.
+      Source and destinations MUST be ifEntries, as defined by [22].
+      One to one, one to many, many to one and many to many source to
+      destination relationships may be configured.
+
+      Applicable counters on the destination will increment for all
+      packets transiting the port, be it by normal bridging/switching
+      or due to packet copy.
+      Note that this table manages no RMON data collection by itself,
+      and an agent may possibly implement no RMON objects except
+      objects related to the port copy operation defined by the
+      portCopyCompliance conformance macro. That allows for a switch
+      with no other embedded RMON capability to perform port copy
+      operations to a destination port at which a different external
+      RMON probe is connected.
+
+      One to one, many to one and one to many source to destination
+      relationships may be configured.
+      Each row that exists in this table defines such a
+      relationship. By disabling a row in this table the port copy
+      relationship no longer exists.
+
+      The number of entries and the types of port copies (1-1,
+      many-1, 1-many) are implementation specific and could
+      possibly be dynamic due to changing resource availability.
+
+      In order to configure a source to destination portCopy
+      relationship, both source and destination interfaces MUST be
+      present as an ifEntry in the ifTable and their respective
+      ifAdminStatus and ifOperStatus values MUST be equal to
+      'up(1)'. If the value of any of those two objects changes
+      after the portCopyEntry is activated, portCopyStatus will
+      transition to 'notReady(3)'.
+
+      The capability of an interface to be source or destination of
+      a port copy operation is described by the 'copySourcePort(0)'
+      and 'copyDestPort(1)' bits in dataSourceCopyCaps. Those bits
+      SHOULD be appropriately set by the agent, in order to allow
+      for a portCopyEntry to be created.
+
+      Applicable counters on the destination will increment for all
+      packets transmitted, be it by normal bridging/switching or
+      due to packet copy."
+::= { portCopyConfig 1 }
+
+portCopyEntry  OBJECT-TYPE
+ SYNTAX      PortCopyEntry
+ MAX-ACCESS  not-accessible
+ STATUS      current
+ DESCRIPTION
+     "Describes a particular port copy entry."
+INDEX { portCopySource, portCopyDest }
+::= { portCopyTable 1 }
+
+PortCopyEntry ::= SEQUENCE {
+     portCopySource
+             InterfaceIndex,
+     portCopyDest
+             InterfaceIndex,
+     portCopyDestDropEvents
+             Counter32,
+     portCopyDirection
+             INTEGER,
+     portCopyStatus
+             RowStatus
+     }
+
+portCopySource OBJECT-TYPE
+ SYNTAX       InterfaceIndex
+ MAX-ACCESS   not-accessible
+ STATUS       current
+ DESCRIPTION
+     "The ifIndex of the source which will have all packets
+      redirected to the destination as defined by portCopyDest."
+ ::= { portCopyEntry 1 }
+
+portCopyDest OBJECT-TYPE
+ SYNTAX       InterfaceIndex
+ MAX-ACCESS   not-accessible
+ STATUS       current
+ DESCRIPTION
+     "Defines the ifIndex destination for the copy operation."
+ ::= { portCopyEntry 2 }
+
+portCopyDestDropEvents OBJECT-TYPE
+ SYNTAX       Counter32
+ UNITS "events"
+ MAX-ACCESS   read-only
+ STATUS       current
+ DESCRIPTION
+      "The total number of events in which port copy packets were
+      dropped by the switch at the destination port due to lack of
+      resources.
+
+      Note that this number is not necessarily the number of
+      packets dropped; it is just the number of times this
+      condition has been detected.
+
+      A single dropped event counter is maintained for each
+      portCopyDest. Thus all instances associated with a given
+      portCopyDest will have the same portCopyDestDropEvents
+      value."
+  ::= { portCopyEntry 3 }
+
+portCopyDirection OBJECT-TYPE
+ SYNTAX       INTEGER {
+     copyRxOnly(1),
+     copyTxOnly(2),
+     copyBoth(3)
+ }
+ MAX-ACCESS   read-create
+ STATUS       current
+ DESCRIPTION
+     "This object affects the way traffic is copied from a switch
+       source port, for the indicated port copy operation.
+      If this object has the value 'copyRxOnly(1)', then only
+      traffic received on the indicated source port will be copied
+      to the indicated destination port.
+
+      If this object has the value 'copyTxOnly(2)', then only
+      traffic transmitted out the indicated source port will be
+      copied to the indicated destination port.
+
+      If this object has the value 'copyBoth(3)', then all traffic
+      received or transmitted on the indicated source port will be
+      copied to the indicated destination port.
+
+      The creation and deletion of instances of this object is
+      controlled by the portCopyRowStatus object. Note that there
+      is no guarantee that changes in the value of this object
+      performed while the associated portCopyRowStatus object is
+      equal to active will not cause traffic discontinuities in the
+      packet stream."
+DEFVAL { copyBoth }
+::= { portCopyEntry 4 }
+
+portCopyStatus OBJECT-TYPE
+ SYNTAX       RowStatus
+ MAX-ACCESS   read-create
+ STATUS       current
+ DESCRIPTION
+     "Defines the status of the port copy entry.
+
+      In order to configure a source to destination portCopy
+      relationship, both source and destination interfaces MUST be
+      present as an ifEntry in the ifTable and their respective
+      ifAdminStatus and ifOperStatus values MUST be equal to
+      'up(1)'. If the value of any of those two objects changes
+      after the portCopyEntry is activated, portCopyStatus will
+      transition to 'notReady(3)'.
+
+      The capability of an interface to be source or destination of
+      a port copy operation is described by the 'copySourcePort(0)'
+      and 'copyDestPort(1)' bits in dataSourceCopyCaps. Those bits
+      SHOULD be appropriately set by the agent, in order to allow
+      for a portCopyEntry to be created."
+ ::= { portCopyEntry 5 }
+
+-- smonRegistrationPoints
+-- defines a set of OIDs for registration purposes of entities
+-- supported by the SMON MIB.
+
+smonVlanDataSource
+      OBJECT IDENTIFIER ::= { smonRegistrationPoints 1}
+
+-- Defined for use as an SmonDataSource. A single integer parameter
+-- is appended to the end of this OID when actually encountered in
+-- the dataSourceCapsTable, which represents a positive, non-zero
+-- VLAN identifier value.
+
+-- Conformance Macros
+
+smonMIBCompliances      OBJECT IDENTIFIER ::= { rmonConformance 3}
+smonMIBGroups           OBJECT IDENTIFIER ::= { rmonConformance 4}
+
+smonMIBCompliance       MODULE-COMPLIANCE
+     STATUS      current
+     DESCRIPTION
+     "Describes the requirements for full conformance with the SMON
+     MIB"
+     MODULE -- this module
+     MANDATORY-GROUPS                 {dataSourceCapsGroup,
+                                       smonVlanStatsGroup,
+                                       smonPrioStatsGroup,
+                                       portCopyConfigGroup,
+                                       smonInformationGroup}
+
+     GROUP         smonHcTo100mbGroup
+     DESCRIPTION
+     "This group of VLAN statistics counter are mandatory only for
+      those network interfaces for which the corresponding ifSpeed
+      can be greater than 10MB/sec and less than or equal to
+      100MB/sec."
+
+     GROUP         smonHc100mbPlusGroup
+     DESCRIPTION
+     "This group of VLAN statistics counters are mandatory only for
+      those network interfaces for which the corresponding ifSpeed
+      can be more than 100MB/sec. This group of VLAN statistics is
+      also mandatory for smonDataSources of type VLAN or
+      entPhysicalEntry."
+
+::= { smonMIBCompliances 1 }
+
+smonMIBVlanStatsCompliance        MODULE-COMPLIANCE
+     STATUS      current
+     DESCRIPTION
+     "Describes the requirements for conformance with the SMON MIB
+      with support for VLAN Statistics. Mandatory for a SMON probe
+      in environment where IEEE 802.1Q bridging is implemented."
+     MODULE -- this module
+     MANDATORY-GROUPS                 {dataSourceCapsGroup,
+                                       smonVlanStatsGroup,
+                                       smonInformationGroup}
+     GROUP         hcVlanTo100mbGroup
+     DESCRIPTION
+     "This group of VLAN statistics counter are mandatory only
+      for those network interfaces for which the corresponding
+      ifSpeed can be up to and including 100MB/sec."
+
+     GROUP         hcVlan100mbPlusGroup
+     DESCRIPTION
+     "This group of VLAN statistics counters are mandatory only for
+      those network interfaces for which the corresponding ifSpeed
+      is greater than 100MB/sec. This group of VLAN statistics is
+      also mandatory for smonDataSources of type VLAN or
+      entPhysicalEntry."
+
+::= { smonMIBCompliances 2 }
+
+smonMIBPrioStatsCompliance         MODULE-COMPLIANCE
+     STATUS      current
+     DESCRIPTION
+     "Describes the requirements for conformance with the SMON MIB
+      with support for priority level Statistics. Mandatory for a
+      SMON probe in a environment where IEEE 802.1p
+      priority-switching is implemented."
+     MODULE -- this module
+     MANDATORY-GROUPS                 {dataSourceCapsGroup,
+                                       smonPrioStatsGroup,
+                                       smonInformationGroup}
+
+     GROUP         hcPrioTo100mbGroup
+     DESCRIPTION
+     "This group of VLAN priority statistics counters are mandatory
+      only for those network interfaces for which the corresponding
+      ifSpeed can be up to and including 100MB/sec."
+
+     GROUP         hcPrio100mbPlusGroup
+     DESCRIPTION
+     "This group is mandatory only for those network
+      interfaces for which the corresponding ifSpeed is greater
+      than 100MB/sec. This group of VLAN priority
+      statistics is also mandatory for smonDataSources of type
+      VLAN or entPhysicalEntry"
+
+::= { smonMIBCompliances 3 }
+
+portCopyCompliance                 MODULE-COMPLIANCE
+     STATUS      current
+     DESCRIPTION
+     "Describes the requirements for conformance with the port copy
+      functionality defined by the SMON MIB"
+     MODULE  -- this module
+     MANDATORY-GROUPS                 {dataSourceCapsGroup,
+                                       portCopyConfigGroup,
+                                       smonInformationGroup}
+
+      ::= { smonMIBCompliances 4}
+
+dataSourceCapsGroup     OBJECT-GROUP
+     OBJECTS          { dataSourceRmonCaps,
+                       dataSourceCopyCaps,
+                       dataSourceCapsIfIndex}
+     STATUS      current
+     DESCRIPTION
+     "Defines the objects that describe the capabilities of RMON
+      data sources."
+::= {smonMIBGroups 1 }
+
+smonVlanStatsGroup      OBJECT-GROUP
+     OBJECTS         { smonVlanStatsControlDataSource,
+                      smonVlanStatsControlCreateTime,
+                      smonVlanStatsControlOwner,
+                      smonVlanStatsControlStatus,
+                      smonVlanIdStatsTotalPkts,
+                      smonVlanIdStatsTotalOctets,
+                      smonVlanIdStatsNUcastPkts,
+                      smonVlanIdStatsCreateTime}
+     STATUS      current
+     DESCRIPTION
+     "Defines the switch monitoring specific statistics - per VLAN
+      Id on interfaces of 10MB or less."
+::= { smonMIBGroups 2 }
+
+smonPrioStatsGroup      OBJECT-GROUP
+     OBJECTS         { smonPrioStatsControlDataSource,
+                      smonPrioStatsControlCreateTime,
+                      smonPrioStatsControlOwner,
+                      smonPrioStatsControlStatus,
+                      smonPrioStatsPkts,
+                      smonPrioStatsOctets}
+     STATUS      current
+     DESCRIPTION
+     "Defines the switch monitoring specific statistics - per VLAN
+      Id on interface."
+::= { smonMIBGroups 3 }
+
+smonHcTo100mbGroup        OBJECT-GROUP
+     OBJECTS         { smonVlanIdStatsTotalOverflowOctets,
+                      smonVlanIdStatsTotalHCOctets,
+                      smonPrioStatsOverflowOctets,
+                      smonPrioStatsHCOctets}
+     STATUS      current
+     DESCRIPTION
+     "Defines the additional high capacity statistics needed to be
+      kept on interfaces with ifSpeed greater than 10MB/sec and
+      less than or equal to 100MB/sec."
+::= { smonMIBGroups 4 }
+
+smonHc100mbPlusGroup      OBJECT-GROUP
+     OBJECTS         { smonVlanIdStatsTotalOverflowPkts,
+                      smonVlanIdStatsTotalHCPkts,
+                      smonVlanIdStatsTotalOverflowOctets,
+                      smonVlanIdStatsTotalHCOctets,
+                      smonVlanIdStatsNUcastOverflowPkts,
+                      smonVlanIdStatsNUcastHCPkts,
+                      smonPrioStatsOverflowPkts,
+                      smonPrioStatsHCPkts,
+                      smonPrioStatsOverflowOctets,
+                      smonPrioStatsHCOctets}
+     STATUS      current
+     DESCRIPTION
+     "Defines the additional high capacity statistics needed to be
+      kept on interfaces with ifSpeed of more than 100MB/sec. These
+      statistics MUST also be kept on smonDataSources of type VLAN
+      or entPhysicalEntry."
+::= { smonMIBGroups 5 }
+
+hcVlanTo100mbGroup        OBJECT-GROUP
+     OBJECTS         { smonVlanIdStatsTotalOverflowOctets,
+                      smonVlanIdStatsTotalHCOctets}
+     STATUS      current
+     DESCRIPTION
+     "Defines the additional high capacity VLAN statistics
+      needed to be kept on interfaces with ifSpeed greater than
+      10MB/sec and less than or equal to 100MB/sec."
+::= { smonMIBGroups 6 }
+
+hcVlan100mbPlusGroup      OBJECT-GROUP
+     OBJECTS         { smonVlanIdStatsTotalOverflowPkts,
+                      smonVlanIdStatsTotalHCPkts,
+                      smonVlanIdStatsTotalOverflowOctets,
+                      smonVlanIdStatsTotalHCOctets,
+                      smonVlanIdStatsNUcastOverflowPkts,
+                      smonVlanIdStatsNUcastHCPkts}
+     STATUS      current
+     DESCRIPTION
+     "Defines the additional high capacity VLAN statistics
+      needed to be kept on interfaces with ifSpeed of more than
+      100MB/sec.  These statistics MUST also be kept on
+      smonDataSources of type VLAN or entPhysicalEntry."
+::= { smonMIBGroups 7 }
+
+hcPrioTo100mbGroup        OBJECT-GROUP
+     OBJECTS         { smonPrioStatsOverflowOctets,
+                      smonPrioStatsHCOctets }
+     STATUS      current
+     DESCRIPTION
+     "Defines the additional high capacity VLAN priority
+      statistics needed to be kept on interfaces with
+      ifSpeed of greater than 10MB/sec and less than or equal
+      to 100MB/sec."
+::= { smonMIBGroups 8 }
+
+hcPrio100mbPlusGroup      OBJECT-GROUP
+     OBJECTS         { smonPrioStatsOverflowPkts,
+                      smonPrioStatsHCPkts,
+                      smonPrioStatsOverflowOctets,
+                      smonPrioStatsHCOctets}
+     STATUS      current
+     DESCRIPTION
+     "Defines the additional high capacity VLAN priority
+      statistics needed to be kept on interfaces with
+      ifSpeed of greater than 100MB/sec. These statistics MUST
+      also be kept on smonDataSources of type VLAN or
+      entPhysicalEntry."
+::= { smonMIBGroups 9 }
+
+smonVlanStatsExtGroup   OBJECT-GROUP
+     OBJECTS         {smonVlanIdStatsNUcastOctets,
+                      smonVlanIdStatsNUcastOverflowOctets,
+                      smonVlanIdStatsNUcastHCOctets}
+     STATUS      current
+     DESCRIPTION
+     "Defines the switch monitoring specific statistics for systems
+      capable of counting non-unicast octets for a given dataSource
+      (as described in the dataSourceRmonCaps object)."
+::= { smonMIBGroups 10 }
+
+smonInformationGroup    OBJECT-GROUP
+     OBJECTS         { smonCapabilities }
+     STATUS      current
+     DESCRIPTION
+     "An indication of the SMON capabilities supported by this
+     agent."
+::= { smonMIBGroups 11 }
+
+portCopyConfigGroup     OBJECT-GROUP
+     OBJECTS         { portCopyDestDropEvents,
+                       portCopyDirection,
+                       portCopyStatus
+                     }
+     STATUS      current
+     DESCRIPTION
+     "Defines the control objects for copy port operations."
+::= { smonMIBGroups 12 }
+
+END

@@ -1,0 +1,919 @@
+Finisher-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, mib-2
+        FROM SNMPv2-SMI                                  -- [RFC2578]
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF                                 -- [RFC2580]
+    hrDeviceIndex
+        FROM HOST-RESOURCES-MIB                          -- [RFC2790]
+    PrtInputTypeTC, PrtMarkerSuppliesTypeTC
+        FROM IANA-PRINTER-MIB                            -- [RFC3805]
+    printmib, PrtSubUnitStatusTC, PrtLocalizedDescriptionStringTC,
+        PrtMarkerSuppliesSupplyUnitTC, PrtMediaUnitTC,
+        PrtCapacityUnitTC, PrtMarkerSuppliesClassTC,
+        PresentOnOff, prtMIBConformance
+        FROM Printer-MIB                                 -- [RFC3805]
+    FinDeviceTypeTC, FinAttributeTypeTC
+        FROM IANA-FINISHER-MIB;
+
+finisherMIB MODULE-IDENTITY
+    LAST-UPDATED "200406020000Z"
+    ORGANIZATION "PWG IEEE/ISTO Printer Working Group"
+    CONTACT-INFO
+
+        "Harry Lewis
+        IBM
+        Phone (303) 924-5337
+        Email: harryl@us.ibm.com
+
+        Send comments to the printmib WG using the Finisher MIB
+        Project (FIN) Mailing List:  fin@pwg.org
+
+        For further information, access the PWG web page under 'Finisher
+        MIB':      http://www.pwg.org/
+
+        Implementers of this specification are encouraged to join the
+        fin mailing list in order to participate in discussions on any
+        clarifications needed and registration proposals being reviewed
+        in order to achieve consensus."
+    DESCRIPTION
+        "The MIB module for management of printers.
+         Copyright (C) The Internet Society (2004). This
+         version of this MIB module was published
+
+
+
+         in RFC 3806. For full legal notices see the RFC itself."
+    REVISION "200406020000Z"
+    DESCRIPTION
+        "The original version of this MIB."
+    ::= { mib-2  111 }
+
+ -- Finisher Device Group (Mandatory)
+--
+-- A printer may support zero or more finishing subunits.  A
+-- finishing device subunit may be associated with one or more
+-- output subunits and one or more media path subunits.
+
+finDevice  OBJECT IDENTIFIER  ::=  { printmib 30 }
+
+finDeviceTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF FinDeviceEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+      "This table defines the finishing device subunits,
+       including information regarding possible configuration
+       options and the status for each finisher device subunit."
+    ::= { finDevice 1 }
+
+finDeviceEntry OBJECT-TYPE
+    SYNTAX      FinDeviceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "There is an entry in the finishing device table for each
+       possible finisher process.  Each individual finisher process is
+       implemented by a finishing device represented in this table."
+    INDEX  { hrDeviceIndex, finDeviceIndex }
+    ::= { finDeviceTable 1 }
+
+FinDeviceEntry ::= SEQUENCE {
+      finDeviceIndex                 Integer32,
+      finDeviceType                  FinDeviceTypeTC,
+      finDevicePresentOnOff          PresentOnOff,
+      finDeviceCapacityUnit          PrtCapacityUnitTC,
+      finDeviceMaxCapacity           Integer32,
+      finDeviceCurrentCapacity       Integer32,
+      finDeviceAssociatedMediaPaths  OCTET STRING,
+      finDeviceAssociatedOutputs     OCTET STRING,
+      finDeviceStatus                PrtSubUnitStatusTC,
+      finDeviceDescription           PrtLocalizedDescriptionStringTC
+     }
+
+
+
+finDeviceIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "A unique value used to identify a finisher process.
+       Although these values may change due to a major
+       reconfiguration of the printer system (e.g., the addition
+       of new finishing processes), the values are normally
+       expected to remain stable across successive power cycles."
+    ::= { finDeviceEntry 1 }
+
+finDeviceType OBJECT-TYPE
+    SYNTAX      FinDeviceTypeTC
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Defines the type of finishing process associated with this
+       table row entry."
+    ::= { finDeviceEntry 2 }
+
+finDevicePresentOnOff OBJECT-TYPE
+    SYNTAX      PresentOnOff
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Indicates if this finishing device subunit is available
+       and whether the device subunit is enabled."
+    DEFVAL      { notPresent }
+    ::= { finDeviceEntry 3 }
+
+finDeviceCapacityUnit OBJECT-TYPE
+    SYNTAX      PrtCapacityUnitTC
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "The unit of measure for specifying the capacity of this
+       finisher device subunit."
+    ::= { finDeviceEntry 4 }
+
+finDeviceMaxCapacity OBJECT-TYPE
+    SYNTAX      Integer32 (-2..2147483647)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The maximum capacity of this finisher device subunit in
+       finDeviceCapacityUnits.  If the device can reliably sense
+       this value, the value is sensed by the finisher device
+
+
+       and is read-only: otherwise the value may be written by a
+       management or control console application.  The value (-1)
+       means other and specifically indicates that the device
+       places no restrictions on this parameter.  The value (-2)
+       means unknown."
+    DEFVAL      { -2 }      -- unknown
+    ::= { finDeviceEntry 5 }
+
+finDeviceCurrentCapacity OBJECT-TYPE
+    SYNTAX      Integer32 (-2..2147483647)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The current capacity of this finisher device subunit in
+       finDeviceCapacityUnits.  If the device can reliably sense
+       this value, the value is sensed by the finisher and is
+       read-only: otherwise the value may be written by a
+       management or control console application.  The value (-1)
+       means other and specifically indicates that the device
+       places no restrictions on this parameter.  The value (-2)
+       means unknown."
+    DEFVAL      { -2 }      -- unknown
+    ::= { finDeviceEntry 6 }
+
+finDeviceAssociatedMediaPaths OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Indicates the media paths which can supply media for this
+       finisher device.  The value of this object is a bit map in an
+       octet string with each position representing the value of a
+       prtMediaPathIndex.  For a media path that can be a source
+       for this finisher device subunit, the bit position equal
+       to one less than the value of prtMediaPathIndex will be set.
+       The bits are numbered starting with the most significant bit of
+       the first byte being bit 0, the least significant bit of the
+       first byte being bit 7, the most significant of the second byte
+       being bit 8, and so on."
+    ::= { finDeviceEntry 7 }
+
+finDeviceAssociatedOutputs OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Indicates the printer output subunits this finisher device
+       subunit services.  The value of this object is a bit map in an
+
+
+       octet string with each position representing the value of a
+       prtOutputIndex.  For an output subunit that is serviced
+       by this finisher device subunit, the bit position equal
+       to one less than the value of prtOutputIndex will be set.
+       The bits are numbered starting with the most significant bit of
+       the first byte being bit 0, the least significant bit of the
+       first byte being bit 7, the most significant of the second byte
+       being bit 8, and so on."
+    ::= { finDeviceEntry 8 }
+
+finDeviceStatus OBJECT-TYPE
+    SYNTAX      PrtSubUnitStatusTC
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Indicates the current status of this finisher device
+       subunit."
+    DEFVAL      { 5 }      -- unknown
+    ::= { finDeviceEntry 9 }
+
+finDeviceDescription OBJECT-TYPE
+    SYNTAX      PrtLocalizedDescriptionStringTC
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "A free form text description of this device subunit in the
+       localization specified by prtGeneralCurrentLocalization."
+    ::= { finDeviceEntry 10 }
+
+
+-- Finisher Supply Group (Mandatory)
+--
+-- A finisher device, but not all finisher devices, may have one or more
+-- supplies associated with it.  For example a finisher may use both
+-- binding tape and stitching wire supplies. A finisher may also have
+-- more than one source for a given type of supply e.g., multiple supply
+-- sources of ink for imprinters.
+
+finSupply  OBJECT IDENTIFIER  ::=  { printmib 31 }
+
+finSupplyTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF FinSupplyEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+      "Each unique source of supply is an entry in the finisher
+       supply table. Each supply entry has its own
+       characteristics associated with it such as colorant and
+
+
+       current supply level."
+    ::= { finSupply 1 }
+
+finSupplyEntry OBJECT-TYPE
+    SYNTAX     FinSupplyEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+      "A list of finisher devices, with their associated
+       supplies and supplies characteristics."
+    INDEX  { hrDeviceIndex, finSupplyIndex }
+    ::= { finSupplyTable 1 }
+
+FinSupplyEntry ::= SEQUENCE {
+      finSupplyIndex               Integer32,
+      finSupplyDeviceIndex         Integer32,
+      finSupplyClass               PrtMarkerSuppliesClassTC,
+      finSupplyType                PrtMarkerSuppliesTypeTC,
+      finSupplyDescription         PrtLocalizedDescriptionStringTC,
+      finSupplyUnit                PrtMarkerSuppliesSupplyUnitTC,
+      finSupplyMaxCapacity         Integer32,
+      finSupplyCurrentLevel        Integer32,
+      finSupplyColorName           OCTET STRING
+     }
+
+finSupplyIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "A unique value used by a finisher to identify this supply
+       container/receptacle.  Although these values may change
+       due to a major reconfiguration of the finisher (e.g., the
+       addition of new supply sources to the finisher), values
+       are normally expected to remain stable across successive
+       power cycles."
+    ::= { finSupplyEntry 1 }
+
+finSupplyDeviceIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "The value of finDeviceIndex corresponding to the finishing
+       device subunit with which this finisher supply is associated.
+       The value zero indicates the associated finishing device is
+       Unknown."
+    ::= { finSupplyEntry 2 }
+
+
+
+finSupplyClass OBJECT-TYPE
+    SYNTAX      PrtMarkerSuppliesClassTC
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "This value indicates whether this supply entity
+       represents a supply that is consumed or a container that
+       is filled."
+    ::= { finSupplyEntry 3 }
+
+finSupplyType OBJECT-TYPE
+    SYNTAX      PrtMarkerSuppliesTypeTC
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "The type of this supply."
+    ::= { finSupplyEntry 4 }
+
+finSupplyDescription OBJECT-TYPE
+    SYNTAX      PrtLocalizedDescriptionStringTC
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "The description of this supply/receptacle in text useful
+       for operators and management applications and in the
+       localization specified by prtGeneralCurrentLocalization."
+    ::= { finSupplyEntry 5 }
+
+finSupplyUnit OBJECT-TYPE
+    SYNTAX      PrtMarkerSuppliesSupplyUnitTC
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Unit of measure of this finisher supply container or
+       receptacle."
+    ::= { finSupplyEntry 6 }
+
+finSupplyMaxCapacity OBJECT-TYPE
+    SYNTAX      Integer32 (-2..2147483647)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The maximum capacity of this supply container/receptacle
+       expressed in Supply Units.  If this supply container/
+       receptacle can reliably sense this value, the value is
+       sensed  and is read-only; otherwise the value may be
+       written by a control panel or management application.  The
+       value (-1) means other and places no restrictions on this
+
+
+
+       parameter.  The value (-2) means unknown."
+    DEFVAL      { -2 }      -- unknown
+    ::= { finSupplyEntry 7 }
+
+finSupplyCurrentLevel OBJECT-TYPE
+    SYNTAX      Integer32 (-3..2147483647)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The current level if this supply is a container; the
+       remaining space if this supply is a receptacle. If this
+       supply container/receptacle can reliably sense this value,
+       the value is sensed and is read-only; otherwise the value
+       may be written by a control panel or management
+       application.  The value (-1) means other and places no
+       restrictions on this parameter. The value (-2) means
+       unknown.  A value of (-3) means that the printer knows there
+       is some supply or remaining space."
+    DEFVAL      { -2 }      -- unknown
+    ::= { finSupplyEntry 8 }
+
+
+--             Capacity Attribute Relationships
+--
+--                 MEDIA INPUT MEASUREMENT
+--
+--     _______ |                   |
+--      |      |                   |
+--      |      |                   |                   |
+--      |      |_ _ _ _ _ _ _ _ _ _| ________________  |direction
+--      |      |                   |      |            v
+-- MaxCapacity |                   |      |
+--      |      | Sheets remaining  | CurrentLevel
+--      |      |                   |      |
+--      v      |                   |      v
+--     _______ +___________________+ _______
+
+
+finSupplyColorName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "The name of the color associated with this supply."
+
+    REFERENCE
+       "The PWG Standardized Media Names specification [PWGMEDIA],
+        section 4 Media Color Names, contains the recommended values
+
+
+
+        for this object. Implementers may add additional string values.
+        The naming conventions in ISO 9070 are recommended in order to
+        avoid potential name clashes."
+    ::= { finSupplyEntry 9 }
+
+
+-- Finisher Supply, Media Input Group (Conditionally Mandatory)
+--
+-- A finisher device may have one or more associated supply media
+-- inputs.  Each entry in this table defines an input for a
+-- supply media type such as inserts, covers, etc.
+--
+-- This group is mandatory only if the printer system contains a
+-- finisher device that requires a media supply used exclusively by a
+-- finishing process.  Examples are inserts or covers that are not
+-- supplied by an input subunit that provides media to the marker.
+
+finSupplyMediaInput  OBJECT IDENTIFIER  ::=  { printmib 32 }
+
+finSupplyMediaInputTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF FinSupplyMediaInputEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+      "The input subunits associated with a finisher supply media
+       are each represented by an entry in this table."
+::= { finSupplyMediaInput 1 }
+
+finSupplyMediaInputEntry OBJECT-TYPE
+    SYNTAX     FinSupplyMediaInputEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+      "A list of finisher supply media input subunit features and
+       characteristics."
+    INDEX  { hrDeviceIndex, finSupplyMediaInputIndex }
+    ::= { finSupplyMediaInputTable 1 }
+
+FinSupplyMediaInputEntry ::= SEQUENCE {
+      finSupplyMediaInputIndex            Integer32,
+      finSupplyMediaInputDeviceIndex      Integer32,
+      finSupplyMediaInputSupplyIndex      Integer32,
+      finSupplyMediaInputType             PrtInputTypeTC,
+      finSupplyMediaInputDimUnit          PrtMediaUnitTC,
+      finSupplyMediaInputMediaDimFeedDir  Integer32,
+      finSupplyMediaInputMediaDimXFeedDir Integer32,
+      finSupplyMediaInputStatus           PrtSubUnitStatusTC,
+      finSupplyMediaInputMediaName      OCTET STRING,
+
+
+
+      finSupplyMediaInputName           OCTET STRING,
+      finSupplyMediaInputDescription    PrtLocalizedDescriptionStringTC,
+      finSupplyMediaInputSecurity       PresentOnOff,
+      finSupplyMediaInputMediaWeight    Integer32,
+      finSupplyMediaInputMediaThickness Integer32,
+      finSupplyMediaInputMediaType      OCTET STRING
+     }
+
+finSupplyMediaInputIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "A unique value used by a finisher to identify this supply
+       media input subunit.  Although these values may change
+       due to a major reconfiguration of the finisher (e.g., the
+       addition of new supply media input sources to the
+       finisher), values are normally expected to remain stable
+       across successive power cycles."
+    ::= { finSupplyMediaInputEntry 1 }
+
+finSupplyMediaInputDeviceIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "The value of finDeviceIndex corresponding to the finishing
+       device subunit with which this finisher media supply is
+       associated.  The value zero indicates the associated device
+       is unknown."
+    ::= { finSupplyMediaInputEntry 2 }
+
+finSupplyMediaInputSupplyIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "The value of finSupplyIndex corresponding to the finishing
+       supply subunit with which this finisher media supply is
+       associated.  The value zero indicates the associated finishing
+       supply is unknown or there is no applicable finisher supply
+       table entry."
+    ::= { finSupplyMediaInputEntry 3 }
+
+finSupplyMediaInputType OBJECT-TYPE
+    SYNTAX      PrtInputTypeTC
+    MAX-ACCESS  read-only
+    STATUS      current
+
+
+
+    DESCRIPTION
+      "The type of technology (discriminated primarily according
+       to the feeder mechanism type) employed by the input
+       subunit."
+    ::= { finSupplyMediaInputEntry 4 }
+
+finSupplyMediaInputDimUnit OBJECT-TYPE
+    SYNTAX      PrtMediaUnitTC
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "The unit of measure for specifying dimensional values for
+       this input device."
+    ::= { finSupplyMediaInputEntry 5 }
+
+finSupplyMediaInputMediaDimFeedDir OBJECT-TYPE
+    SYNTAX      Integer32 (-2..2147483647)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "This object provides the value of the dimension in the
+       feed direction of the media that is placed or will be
+       placed in this input device.  Feed dimension measurements
+       are taken parallel to the feed direction of the device and
+       measured in finSupplyMediaInputDimUnits.  If this input
+       device can reliably sense this value, the value is sensed
+       and is read-only access. Otherwise the value is read-write
+       access and may be written by management or control panel
+       applications. The value (-1) means other and specifically
+       indicates that this device places no restrictions on this
+       parameter. The value (-2) indicates unknown. "
+    ::= { finSupplyMediaInputEntry 6 }
+
+finSupplyMediaInputMediaDimXFeedDir OBJECT-TYPE
+    SYNTAX      Integer32 (-2..2147483647)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "This object provides the value of the dimension across the
+       feed direction of the media that is placed or will be
+       placed in this input device.  The cross feed direction is
+       ninety degrees relative to the feed direction on this
+       device and measured in finSupplyMediaInputDimUnits.  If
+       this input device can reliably sense this value, the value
+       is sensed and is read-only access. Otherwise the value is
+       read-write access and may be written by management or
+       control panel applications. The value (-1) means other and
+       specifically indicates that this device places no
+
+
+
+       restrictions on this parameter. The value (-2) indicates
+       unknown. "
+    ::= { finSupplyMediaInputEntry 7 }
+
+finSupplyMediaInputStatus OBJECT-TYPE
+    SYNTAX      PrtSubUnitStatusTC
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "This value indicates the current status of this input
+       device."
+    DEFVAL      { 5 }      -- unknown
+    ::= { finSupplyMediaInputEntry 8 }
+
+finSupplyMediaInputMediaName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..63))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The name of the current media contained in this input
+       device. Examples are Engineering Manual Cover, Section A Tab
+       Divider or any ISO standard names."
+    ::= { finSupplyMediaInputEntry 9 }
+
+finSupplyMediaInputName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..63))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The name assigned to this input subunit."
+    ::= { finSupplyMediaInputEntry 10 }
+
+finSupplyMediaInputDescription OBJECT-TYPE
+    SYNTAX      PrtLocalizedDescriptionStringTC
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "A free form text description of this input subunit in the
+       localization specified by prtGeneralCurrentLocalization."
+    ::= { finSupplyMediaInputEntry 11 }
+
+finSupplyMediaInputSecurity OBJECT-TYPE
+    SYNTAX      PresentOnOff
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Indicates if this subunit has some security associated
+       with it."
+
+
+
+    ::= { finSupplyMediaInputEntry 12 }
+
+finSupplyMediaInputMediaWeight OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The weight of the media associated with this Input device
+       in grams per meter squared.  The value (-1) means other
+       and specifically indicates that the device places no
+       restriction on this parameter.  The value (-2) means
+       unknown.  This object can be used to calculate the weight
+       of individual pages processed by the document finisher.
+       This value, when multiplied by the number of pages in a
+       finished set, can be used to calculate the weight of a set
+       before it is inserted into a mailing envelope."
+    ::= { finSupplyMediaInputEntry 13 }
+
+finSupplyMediaInputMediaThickness OBJECT-TYPE
+    SYNTAX      Integer32 (-2..2147483647)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "This object identifies the thickness of the input media
+       processed by this document input subunit measured in
+       micrometers.  This value may be used by devices (or
+       operators) to set up proper machine tolerances for the
+       feeder operation.  The value (-2) indicates that the media
+       thickness is unknown or not used in the setup for this
+       input subunit."
+    ::= { finSupplyMediaInputEntry 14 }
+
+finSupplyMediaInputMediaType OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..63))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "The name of the type of medium associated with this input
+       subunit. "
+
+    REFERENCE
+       "The PWG Standardized Media Names specification [PWGMEDIA],
+        section 3 Media Type Names, contains the recommended values
+        for this object. Implementers may add additional string values.
+        The naming conventions in ISO 9070 are recommended in order to
+        avoid potential name clashes."
+    ::= { finSupplyMediaInputEntry 15 }
+
+
+
+
+-- Finisher Device Attribute Group (Mandatory)
+--
+-- A finisher device subunit may have one or more parameters that
+-- cannot be specified by any other objects in the MIB.  The
+-- Device Attribute group facilitates the definition of these
+-- parameters.  The objects which define the attributes are
+-- read-write, to allow both Set and Get operations.
+--
+-- At least one table entry must exist for each finisher device defined
+-- by the MIB.  If no other entry is possible for a finisher device, the
+-- deviceName(3) attribute MUST be returned.
+
+finDeviceAttribute  OBJECT IDENTIFIER  ::=  { printmib 33 }
+
+finDeviceAttributeTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF FinDeviceAttributeEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+      "The attribute table defines special parameters that are
+       applicable only to a minority of the finisher devices.
+       An attribute table entry is used, rather than unique
+       objects, to minimize the number of MIB objects and to
+       allow for expansion without the addition of MIB objects.
+       Each finisher device is represented by a separate row
+       in the device subunit attribute table."
+::= { finDeviceAttribute 1 }
+
+finDeviceAttributeEntry OBJECT-TYPE
+    SYNTAX     FinDeviceAttributeEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+      "Each entry defines a finisher function parameter that
+       cannot be represented by an object in the finisher
+       device subunit table."
+    INDEX  { hrDeviceIndex, finDeviceIndex,
+             finDeviceAttributeTypeIndex,
+             finDeviceAttributeInstanceIndex }
+::= { finDeviceAttributeTable 1 }
+
+FinDeviceAttributeEntry ::= SEQUENCE {
+      finDeviceAttributeTypeIndex        FinAttributeTypeTC,
+      finDeviceAttributeInstanceIndex    Integer32,
+      finDeviceAttributeValueAsInteger   Integer32,
+      finDeviceAttributeValueAsOctets    OCTET STRING
+     }
+
+
+
+
+finDeviceAttributeTypeIndex OBJECT-TYPE
+    SYNTAX      FinAttributeTypeTC
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Defines the attribute type represented by this row."
+    ::= { finDeviceAttributeEntry 1 }
+
+finDeviceAttributeInstanceIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "An index that allows the discrimination of an attribute
+       instance when the same attribute occurs multiple times for
+       a specific instance of a finisher function.  The value of
+       this index shall be 1 if only a single instance of the
+       attribute occurs for the specific finisher function.
+       Additional values shall be assigned in a contiguous manner."
+    ::= { finDeviceAttributeEntry 2 }
+
+finDeviceAttributeValueAsInteger OBJECT-TYPE
+    SYNTAX      Integer32 (-2..2147483647)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Defines the integer value of the attribute.  The value of
+       the attribute is represented as an integer if the
+       finAttributeTypeTC description for the attribute has the
+       tag 'INTEGER:'.
+
+       Depending upon the attribute enum definition, this object
+       may be either an integer, a counter, an index, or an enum.
+       Attributes for which the concept of an integer value is
+       not meaningful SHALL return a value of -1 for this
+       attribute."
+    DEFVAL      { -2 }      -- unknown
+    ::= { finDeviceAttributeEntry 3 }
+
+finDeviceAttributeValueAsOctets OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..63))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "Contains the octet string value of the attribute.  The
+       value of the attribute is represented as a string if the
+       finAttributeTypeTC description for the attribute has the
+       tag 'OCTETS:'.
+
+
+
+       Depending upon the attribute enum definition, this object
+       may be either a coded character set string (text) or a
+       binary octet string.  Attributes for which the concept of
+       an octet string value is not meaningful SHALL contain a
+       zero length string."
+    DEFVAL      { ''H }      -- empty string
+    ::= { finDeviceAttributeEntry 4 }
+
+
+-- Conformance Information
+
+-- compliance statements
+
+finMIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for agents that implement the
+        finisher MIB."
+    MODULE -- this module
+    MANDATORY-GROUPS { finDeviceGroup, finSupplyGroup,
+                       finDeviceAttributeGroup }
+
+        OBJECT      finDevicePresentOnOff
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finDeviceMaxCapacity
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finDeviceCurrentCapacity
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finSupplyMaxCapacity
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finSupplyCurrentLevel
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finSupplyMediaInputMediaDimFeedDir
+
+
+
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finSupplyMediaInputMediaDimXFeedDir
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finSupplyMediaInputMediaName
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finSupplyMediaInputName
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finSupplyMediaInputSecurity
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finSupplyMediaInputMediaWeight
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finSupplyMediaInputMediaThickness
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finSupplyMediaInputMediaType
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finDeviceAttributeValueAsInteger
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+        OBJECT      finDeviceAttributeValueAsOctets
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "It is conformant to implement this object as read-only."
+
+
+
+        GROUP       finSupplyMediaInputGroup
+        DESCRIPTION
+            "This group is conditionally mandatory and must be included
+             if a finisher device requires a media supply that is used
+             exclusively by a finishing process."
+
+    ::= { prtMIBConformance 5 }
+
+
+finMIBGroups      OBJECT IDENTIFIER ::= { prtMIBConformance 6 }
+
+finDeviceGroup OBJECT-GROUP
+    OBJECTS { finDeviceType, finDevicePresentOnOff,
+              finDeviceCapacityUnit, finDeviceMaxCapacity,
+              finDeviceCurrentCapacity, finDeviceAssociatedMediaPaths,
+              finDeviceAssociatedOutputs, finDeviceStatus,
+              finDeviceDescription }
+    STATUS  current
+    DESCRIPTION
+        "The finisher device group."
+    ::= { finMIBGroups 1 }
+
+finSupplyGroup OBJECT-GROUP
+    OBJECTS { finSupplyDeviceIndex, finSupplyClass, finSupplyType,
+              finSupplyDescription, finSupplyUnit, finSupplyMaxCapacity,
+              finSupplyCurrentLevel, finSupplyColorName }
+    STATUS  current
+    DESCRIPTION
+        "The finisher supply group."
+    ::= { finMIBGroups 2 }
+
+finSupplyMediaInputGroup OBJECT-GROUP
+    OBJECTS { finSupplyMediaInputDeviceIndex,
+              finSupplyMediaInputSupplyIndex, finSupplyMediaInputType,
+              finSupplyMediaInputDimUnit,
+              finSupplyMediaInputMediaDimFeedDir,
+              finSupplyMediaInputMediaDimXFeedDir,
+              finSupplyMediaInputStatus, finSupplyMediaInputMediaName,
+              finSupplyMediaInputName, finSupplyMediaInputDescription,
+              finSupplyMediaInputSecurity,
+              finSupplyMediaInputMediaWeight,
+              finSupplyMediaInputMediaThickness,
+              finSupplyMediaInputMediaType }
+    STATUS  current
+    DESCRIPTION
+        "The finisher supply, media input group."
+    ::= { finMIBGroups 3 }
+
+
+
+
+finDeviceAttributeGroup OBJECT-GROUP
+    OBJECTS { finDeviceAttributeValueAsInteger,
+              finDeviceAttributeValueAsOctets }
+    STATUS  current
+    DESCRIPTION
+        "The finisher device attribute group.  This group is mandatory
+         for a finisher device that contains an inserter subunit."
+    ::= { finMIBGroups 4 }
+
+END

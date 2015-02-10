@@ -1,0 +1,2831 @@
+PW-CEP-STD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   MODULE-IDENTITY, OBJECT-TYPE,
+   Integer32, Counter32, Unsigned32, Counter64, mib-2
+      FROM SNMPv2-SMI             -- [RFC2578]
+
+   MODULE-COMPLIANCE, OBJECT-GROUP
+      FROM SNMPv2-CONF            -- [RFC2580]
+
+   TEXTUAL-CONVENTION, TruthValue, RowStatus, StorageType,
+   TimeStamp
+      FROM SNMPv2-TC              -- [RFC2579]
+
+
+
+
+
+   SnmpAdminString
+      FROM SNMP-FRAMEWORK-MIB     -- [RFC3411]
+
+   InterfaceIndexOrZero, InterfaceIndex
+      FROM IF-MIB                 -- [RFC2863]
+
+   PerfCurrentCount, PerfIntervalCount
+      FROM PerfHist-TC-MIB        -- [RFC3593]
+
+   HCPerfCurrentCount, HCPerfIntervalCount, HCPerfTimeElapsed,
+   HCPerfValidIntervals
+      FROM HC-PerfHist-TC-MIB     -- [RFC3705]
+
+   pwIndex
+      FROM PW-STD-MIB             -- [RFC5601]
+
+   PwCfgIndexOrzero
+      FROM PW-TC-STD-MIB          -- [RFC5542]
+;
+
+-- The PW CEP MIB
+
+pwCepStdMIB MODULE-IDENTITY
+   LAST-UPDATED "201105160000Z"  -- 16 May 2011 00:00:00 GMT
+   ORGANIZATION "Pseudowire Emulation Edge-to-Edge (PWE3)
+                 Working Group"
+   CONTACT-INFO
+       "David Zelig (Ed.)
+        Email: david_zelig@pmc-sierra.com
+
+        Ron Cohen (Ed.)
+        Email: ronc@resolutenetworks.com
+
+        Thomas D. Nadeau (Ed.)
+        Email: Thomas.Nadeau@ca.com
+
+        The PWE3 Working Group
+        Email: pwe3@ietf.org (email distribution)
+        http://www.ietf.org/html.charters/pwe3-charter.html"
+
+   DESCRIPTION
+       "This MIB module contains managed object definitions for
+        Circuit Emulation over Packet (CEP) as in [RFC4842]:  Malis,
+        A., Prayson, P., Cohen, R., and D. Zelig. 'Synchronous
+        Optical Network/Synchronous Digital Hierarchy (SONET/SDH)
+        Circuit Emulation over Packet (CEP)', RFC 4842.
+
+
+
+
+
+        Copyright (c) 2011 IETF Trust and the persons identified as
+        authors of the code.  All rights reserved.
+
+        Redistribution and use in source and binary forms, with or
+        without modification, is permitted pursuant to, and subject
+        to the license terms contained in, the Simplified BSD
+        License set forth in Section 4.c of the IETF Trust's Legal
+        Provisions Relating to IETF Documents
+        (http://trustee.ietf.org/license-info)."
+
+   -- Revision history
+
+   REVISION "201105160000Z"  -- 16 May 2011 00:00:00 GMT
+   DESCRIPTION "This MIB module published as part of RFC 6240."
+
+   ::= { mib-2 200 }
+
+-- Local textual conventions
+
+PwCepSonetEbm ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION
+       "Equipped Bit Mask (EBM) used for fractional STS-1/Virtual
+        Circuit 3 (VC-3).  The EBM bits are the 28 least
+        significant bits out of the 32-bit value."
+   SYNTAX  Unsigned32
+
+PwCepSdhVc4Ebm ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION
+       "Equipped Bit Mask (EBM) used for each Tributary Unit Group
+        3 (TUG-3) in fractional VC-4 circuits.  The EBM bits are
+        the 30 least significant bits out of the 32-bit value."
+   SYNTAX  Unsigned32
+
+PwCepSonetVtgMap ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION
+       "The VT/VC types carried in the 7 VT groups (VTGs)/TUG-2s.
+        The format is 28 bits in the form of an Equipped Bit Mask
+        (EBM) for fractional STS-1/VC-3.  The mapping specifies the
+        maximal occupancies of VT/VC within each VTG/TUG-2.  For
+        example, all four bits are set to 1 in this object to
+        represent a VTG carrying VT1.5/VC11s, while only three
+        are set when VT2/VC12s are carried within this VTG.
+        The relevant bits are the 28 least significant bits out of
+        the 32-bit value."
+   SYNTAX  Unsigned32
+
+
+
+PwCepFracAsyncMap ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION
+       "The type of asynchronous mapping carried inside STS-1,
+        VC-3, or TUG-3 containing TU-3 circuit."
+
+   SYNTAX INTEGER {
+            other ( 1),
+            ds3   ( 2),
+            e3    ( 3)
+          }
+
+-- Top-level components of this MIB module
+
+-- Tables, Scalars
+pwCepObjects       OBJECT IDENTIFIER
+                              ::= { pwCepStdMIB 1 }
+-- Conformance
+pwCepConformance   OBJECT IDENTIFIER
+                              ::= { pwCepStdMIB 2 }
+
+-- CEP PW Table
+
+pwCepTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF PwCepEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This table contains objects and parameters for managing and
+        monitoring the CEP PW."
+   ::= { pwCepObjects 1 }
+
+pwCepEntry OBJECT-TYPE
+   SYNTAX        PwCepEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "Each entry represents the association of a SONET/SDH path or
+        VT to a PW.  This table is indexed by the pwIndex of the
+        applicable PW entry in the pwTable.
+
+        An entry is created in this table by the agent for every
+        entry in the pwTable with a pwType equal to 'cep'.
+
+        All read-write objects in this table MAY be changed at any
+        time; however, change of some objects (for example
+        pwCepCfgIndex) during PW forwarding state may cause
+        traffic disruption.
+
+
+
+        Manual entries in this table SHOULD be preserved after a
+        reboot.  The agent MUST ensure the integrity of those
+        entries.  If the set of entries of a specific row are found
+        to be inconsistent after reboot, the PW pwOperStatus MUST
+        be declared as notPresent(5)."
+
+   INDEX  { pwIndex }
+
+      ::= { pwCepTable 1 }
+
+PwCepEntry ::= SEQUENCE {
+
+      pwCepType                       INTEGER,
+      pwCepSonetIfIndex               InterfaceIndexOrZero,
+      pwCepSonetConfigErrorOrStatus   BITS,
+      pwCepCfgIndex                   PwCfgIndexOrzero,
+      pwCepTimeElapsed                HCPerfTimeElapsed,
+      pwCepValidIntervals             HCPerfValidIntervals,
+      pwCepIndications                BITS,
+      pwCepLastEsTimeStamp            TimeStamp,
+      pwCepPeerCepOption              Unsigned32
+      }
+
+pwCepType OBJECT-TYPE
+   SYNTAX INTEGER {
+         spe      (1),
+         vt       (2),
+         fracSpe  (3)
+   }
+   MAX-ACCESS    read-write
+   STATUS        current
+   DESCRIPTION
+       "Specifies the sub-type of CEP PW.  Currently only
+        structured types are supported:
+
+        'spe'(1)      : SONET STS-Nc signals.
+        'vt' (2)      : SONET VT-x (x=1.5,2,3,6) signals.
+        'fracSpe' (3) : SONET fractional STS-1 or SDH fractional
+                        VC-3 or VC-4 carrying tributaries or
+                        asynchronous signals.
+
+        Support of 'vt' mode or 'fracSpe' mode is optional."
+   DEFVAL
+       { spe }
+
+   ::= { pwCepEntry 1 }
+
+
+
+
+
+pwCepSonetIfIndex OBJECT-TYPE
+   SYNTAX        InterfaceIndexOrZero
+   MAX-ACCESS    read-write
+   STATUS        current
+   DESCRIPTION
+       "This is a unique index within the ifTable.  It represents
+        the interface index for the SONET path for SPE emulation
+        ([RFC3592], Section 3.3), an interface index for the SONET
+        VT ([RFC3592], Section 3.4) if the VT to be emulated is
+        extracted from a SONET signal or locally mapped from a
+        physical interface.
+
+        A value of zero indicates an interface index that has yet
+        to be determined.
+
+        Once set, if the SONET ifIndex is (for some reason) later
+        removed, the agent MAY delete the associated PW rows
+        (e.g., this pwCepTableEntry).  If the agent does not
+        delete the rows, it is RECOMMENDED that the agent set this
+        object to zero."
+
+   ::= { pwCepEntry 2 }
+
+pwCepSonetConfigErrorOrStatus OBJECT-TYPE
+   SYNTAX BITS {
+         other                 ( 0),
+         timeslotInUse         ( 1),
+         timeslotMisuse        ( 2),
+         peerDbaIncompatible   ( 3), -- Status only
+         peerEbmIncompatible   ( 4),
+         peerRtpIncompatible   ( 5),
+         peerAsyncIncompatible ( 6),
+         peerDbaAsymmetric     ( 7), -- Status only
+         peerEbmAsymmetric     ( 8),
+         peerRtpAsymmetric     ( 9),
+         peerAsyncAsymmetric   (10)
+   }
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "This object reports a configuration mismatch inside
+        the local node or between the local node and the peer node.
+        Some bits indicate an error, and some are simply status
+        reports that do not affect the forwarding process.
+
+        'timeslotInUse'(1) is set when another CEP PW has already
+        reserved a timeslot (or timeslots) that this CEP PW is
+        attempting to reserve.
+
+
+
+        'timeslotMisuse'(2) is set when the stated timeslot this
+        PW is trying to use is not legal, for example, if
+        specifying a starting timeslot of 45 for a SONET path of
+        an STS-12c width.
+
+        The peerZZZIncompatible bits are set if the local
+        configuration is not compatible with the peer configuration
+        as available from the CEP option received from the peer
+        through the signaling process and the local node cannot
+        support such asymmetric configuration.
+
+        The peerZZZAsymmetric bits are set if the local
+        configuration is not compatible with the peer configuration
+        as available from the CEP option received from the peer
+        through the signaling process, but the local node can
+        support such asymmetric configuration."
+
+   REFERENCE
+       "Malis, A., et al., 'Synchronous Optical Network/Synchronous
+        Digital Hierarchy (SONET/SDH) Circuit Emulation over Packet
+        (CEP)', RFC 4842, Section 12."
+   ::= { pwCepEntry 3 }
+
+pwCepCfgIndex OBJECT-TYPE
+   SYNTAX        PwCfgIndexOrzero
+   MAX-ACCESS    read-write
+   STATUS        current
+   DESCRIPTION
+       "Index to CEP configuration table below.  Multiple CEP PWs
+        MAY share a single pwCepCfgEntry.
+
+        The value 0 indicates that no entries are available."
+   ::= { pwCepEntry 4 }
+
+pwCepTimeElapsed OBJECT-TYPE
+    SYNTAX  HCPerfTimeElapsed
+    UNITS      "seconds"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The number of seconds, including partial seconds,
+        that have elapsed since the beginning of the current
+        measurement period.  If, for some reason such as an
+        adjustment in the system's time-of-day clock, the
+        current interval exceeds the maximum value, the
+        agent will return the maximum value."
+    ::= { pwCepEntry 5 }
+
+
+
+
+pwCepValidIntervals OBJECT-TYPE
+    SYNTAX  HCPerfValidIntervals
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "The number (n) of previous 15-minute intervals for which
+        data was collected.
+
+        An agent with CEP capability MUST be capable of supporting
+        at least 4 intervals.  The RECOMMENDED default value for
+        n is 32, and n MUST NOT exceed 96."
+    ::= { pwCepEntry 6 }
+
+pwCepIndications OBJECT-TYPE
+   SYNTAX BITS {
+         missingPkt  ( 0),
+         ooRngDropped( 1),
+         jtrBfrUnder ( 2),
+         pktMalformed( 3),
+         lops        ( 4),
+         cepRdi      ( 5),
+         cepAis      ( 6),
+         badHdrStack ( 7),
+         cepNeFailure( 8),
+         cepFeFailure( 9)
+   }
+   MAX-ACCESS    read-write
+   STATUS        current
+   DESCRIPTION
+       "Definitions:
+
+        'missingPkt'(0) - While playing out a sequence of packets,
+        at least one packet was determined to be missing based on a
+        gap in the CEP sequence number.  Note: If the implementation
+        supports packet reordering, detecting gaps SHOULD take
+        place as they are played out, not as they arrive.  This
+        provides time for misordered packets to arrive late.
+
+        'ooRngDropped'(1) - At least one packet arrived outside the
+        range of the jitter buffer.  This may be because the
+        jitter buffer is full or the sequence number addresses
+        a buffer outside the current jitter buffer range or
+        an already occupied buffer within range.  Whether or not
+        packet reordering is supported by the implementation, this
+        indication MUST be supported.
+
+
+
+
+
+
+        'jtrBfrUnder'(2) - The jitter buffer underflowed because
+        not enough packets arrived as packets were being
+        played out.
+
+        'pktMalformed'(3) - Any error related to unexpected
+        packet format (except bad header stack) or unexpected
+        length.
+
+        'lops'(4) - Loss of Packet Synchronization.
+
+        'cepRdi'(5) - Circuit Emulation over Packet Remote Defect
+        Indication.  Remote Defect Indication (RDI) is generated by
+        the remote CEP de-packetizer when LOPS is detected.
+
+        'cepAis'(6) - Remote CEP packetizer has detected an Alarm
+        Indication Signal (AIS) on its incoming SONET stream.
+        cepAis MUST NOT (in itself) cause a CEP PW down
+        notification.
+
+        'badHdrStack'(7) - Set when the number of
+        CEP header extensions detected in incoming packets does
+        not match the expected number.
+
+        'cepNeFailure'(8) - Set when CEP-NE failure is currently
+        declared.
+
+        'cepFeFailure'(8) - Set when CEP-FE failure is currently
+        declared.
+
+        This object MUST hold the accumulated indications until the
+        next SNMP write that clear the indication(s).
+
+        Writing a non-zero value MUST fail.
+
+        Currently, there is no hierarchy of CEP defects.
+
+        The algorithm used to capture these indications
+        is implementation specific."
+
+    ::= { pwCepEntry 7 }
+
+
+
+
+
+
+
+
+
+
+
+pwCepLastEsTimeStamp OBJECT-TYPE
+   SYNTAX      TimeStamp
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The value of sysUpTime on the most recent occasion at which
+        the CEP PW entered the Errored Seconds (ES) or Severely
+        Errored Seconds (SES) state."
+
+    ::= { pwCepEntry 8 }
+
+pwCepPeerCepOption OBJECT-TYPE
+   SYNTAX      Unsigned32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+       "The value of the CEP option parameter as received from the
+        peer by the PW signaling protocol."
+
+    ::= { pwCepEntry 9 }
+
+-- End of CEP PW Table
+
+-- Obtain index for PW CEP Configuration Table entries
+
+pwCepCfgIndexNext OBJECT-TYPE
+   SYNTAX            PwCfgIndexOrzero
+   MAX-ACCESS        read-only
+   STATUS            current
+   DESCRIPTION
+       "This object contains an appropriate value to be used
+        for pwCepCfgIndex when creating entries in the
+        pwCepCfgTable.  The value 0 indicates that no
+        unassigned entries are available.  To obtain the
+        value of pwCepCfgIndex for a new entry in the
+        pwCepCfgTable, the manager issues a management
+        protocol retrieval operation to obtain the current
+        value of pwCepCfgIndex.  After each retrieval
+        operation, the agent should modify the value to
+        reflect the next unassigned index.  After a manager
+        retrieves a value, the agent will determine through
+        its local policy when this index value will be made
+        available for reuse."
+
+   ::= { pwCepObjects 2 }
+
+
+
+
+
+
+-- CEP PW Configuration Table
+
+pwCepCfgTable   OBJECT-TYPE
+   SYNTAX                  SEQUENCE OF PwCepCfgEntry
+   MAX-ACCESS              not-accessible
+   STATUS                  current
+   DESCRIPTION
+       "This table contains a set of parameters that may be
+        referenced by one or more CEP PWs by pwCepTable."
+
+   ::= { pwCepObjects 3 }
+
+pwCepCfgEntry   OBJECT-TYPE
+
+   SYNTAX            PwCepCfgEntry
+   MAX-ACCESS        not-accessible
+   STATUS            current
+   DESCRIPTION
+       "These parameters define the characteristics of a
+        CEP PW.  They are grouped here to ease Network Management
+        System (NMS) burden.  Once an entry is created here, it may
+        be reused by many PWs.
+
+        By default, all the read-create objects MUST NOT be
+        changed after row activation unless specifically indicated
+        in the individual object description.  If the operator
+        wishes to change value of a read-create object, the
+        pwCepCfgRowStatus MUST be set to notInService(2).
+
+        The agent MUST NOT allow the change of the
+        pwCepCfgRowStatus from the active(1) state for
+        pwCepCfgEntry, which is in use by at least one active PW.
+
+        Manual entries in this table SHOULD be preserved after a
+        reboot, the agent MUST ensure the integrity of those
+        entries.  If the set of entries of a specific row are found
+        to be inconsistent after reboot, the affected PWs'
+        pwOperStatus MUST be declared as notPresent(5)."
+
+   INDEX  { pwCepCfgTableIndex }
+
+      ::= { pwCepCfgTable 1 }
+
+PwCepCfgEntry ::= SEQUENCE {
+      pwCepCfgTableIndex            Unsigned32,
+      pwCepSonetPayloadLength       Unsigned32,
+      pwCepCfgMinPktLength          Unsigned32,
+      pwCepCfgPktReorder            TruthValue,
+
+
+
+      pwCepCfgEnableDBA             BITS,
+      pwCepCfgRtpHdrSuppress        TruthValue,
+
+      pwCepCfgJtrBfrDepth           Unsigned32,
+
+      pwCepCfgConsecPktsInsync      Unsigned32,
+      pwCepCfgConsecMissingOutSync  Unsigned32,
+
+      pwCepCfgPktErrorPlayOutValue  Unsigned32,
+
+      pwCepCfgMissingPktsToSes      Unsigned32,
+      pwCepCfgSesToUas              Unsigned32,
+      pwCepCfgSecsToExitUas         Unsigned32,
+
+      pwCepCfgName                  SnmpAdminString,
+
+      pwCepCfgRowStatus             RowStatus,
+      pwCepCfgStorageType           StorageType
+      }
+
+pwCepCfgTableIndex   OBJECT-TYPE
+   SYNTAX        Unsigned32 (1..4294967295)
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "Primary index to this table."
+   ::= { pwCepCfgEntry 1 }
+
+pwCepSonetPayloadLength OBJECT-TYPE
+   SYNTAX        Unsigned32
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The number of SONET bytes of the Path or VT carried as
+        payload within one packet.  For example, for STS-1/VC-3 SPE
+        circuits, a value of 783 bytes indicates that each packet
+        carries the payload equivalent to one frame.  For VT1.5/VC11
+        circuits, a payload length of 104 bytes indicates that each
+        packet carries payload equivalent to one VT1.5 super-frame.
+        The actual payload size may be different due to bandwidth
+        reduction modes, e.g., Dynamic Bandwidth Allocation (DBA)
+        mode or dynamically assigned fractional SPE.  This length
+        applies to inbound and outbound packets carrying user
+        payload.  Although there is no control over inbound packets,
+        those of illegal length are discarded and accounted for (see
+        pwCepPerf...Malformed.)
+
+
+
+
+
+        The default values are determined by the pwCepType:
+        783 for pwCepType equal to spe(2) or fracSpe(3).
+        For vt(3) modes, the applicable super-frame payload size
+        is the default value."
+   REFERENCE
+       "Malis, A., et al., 'Synchronous Optical Network/Synchronous
+        Digital Hierarchy (SONET/SDH) Circuit Emulation over Packet
+        (CEP)', RFC 4842, Sections 5.1 and 12.1"
+   ::= { pwCepCfgEntry 2 }
+
+pwCepCfgMinPktLength OBJECT-TYPE
+   SYNTAX        Unsigned32
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This object defines the minimum CEP packet length in
+        number of bytes (including CEP header and payload).
+        It applies to CEP's bandwidth-savings packets.  Currently,
+        DBA is the only bandwidth-savings packet type (in the
+        future, CEP may support compression).  Minimum packet
+        length is necessary in some systems or networks.
+
+        Setting zero here indicates that there is no minimum
+        packet restriction."
+
+   DEFVAL { 0 }
+
+   ::= { pwCepCfgEntry 3 }
+
+pwCepCfgPktReorder OBJECT-TYPE
+   SYNTAX        TruthValue
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "This object defines if reordering is applied for incoming
+        packets.
+
+        If set 'true', as inbound packets are queued in the
+        jitter buffer, out-of-order packets are reordered.  The
+        maximum sequence number differential (i.e., the range in
+        which resequencing can occur) is dependant on the depth
+        of the jitter buffer.
+
+        If the local agent supports packet reordering, the default
+        value SHOULD be set to 'true'; otherwise, this value
+        SHOULD be set to 'false'."
+
+   ::= { pwCepCfgEntry 4 }
+
+
+
+pwCepCfgEnableDBA OBJECT-TYPE
+   SYNTAX BITS {
+         ais        (0),
+         unequipped (1)
+   }
+
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This object defines when DBA is applied for packets sent
+        toward the PSN.
+
+        Setting 'ais' MUST cause CEP packet payload suppression
+        when AIS is detected on the associated SONET path.
+        Similarly, 'unequipped' MUST cause payload suppression
+        when an unequipped condition is detected on the SONET/SDH
+        PATH/VT.
+
+        During DBA condition, CEP packets will continue
+        to be sent, but with indicators set in the CEP header
+        instructing the remote to play all ones (for AIS) or all
+        zeros (for unequipped) onto its SONET/SDH path.
+
+        NOTE: Some implementations may not support this feature.
+        In these cases, this object should be read-only."
+
+   REFERENCE
+       "Malis, A., et al., 'Synchronous Optical Network/Synchronous
+        Digital Hierarchy (SONET/SDH) Circuit Emulation over Packet
+        (CEP)', RFC 4842, Section 11.1."
+
+   ::= { pwCepCfgEntry 5 }
+
+pwCepCfgRtpHdrSuppress OBJECT-TYPE
+   SYNTAX        TruthValue
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "If this object is set to 'true', an RTP header is not
+        prepended to the CEP packet."
+   REFERENCE
+       "Malis, A., et al., 'Synchronous Optical Network/Synchronous
+        Digital Hierarchy (SONET/SDH) Circuit Emulation over Packet
+        (CEP)', RFC 4842, Section 5.3."
+   DEFVAL
+       { true }
+
+   ::= { pwCepCfgEntry 6 }
+
+
+
+pwCepCfgJtrBfrDepth OBJECT-TYPE
+   SYNTAX        Unsigned32
+   UNITS         "micro-seconds"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This object defines the number of microseconds
+        of expected packet delay variation for this CEP PW
+        over the PSN.
+
+        The actual jitter buffer MUST be at least twice this
+        value for proper operation.
+
+        If configured to a value not supported by the
+        implementation, the agent MUST reject the SNMP Set
+        operation."
+   REFERENCE
+       "The control of jitter and wander within digital
+        networks which are based on the synchronous digital
+        hierarchy (SDH), ITU-T Recommendation G.825."
+   ::= { pwCepCfgEntry 7 }
+
+--
+-- The following counters work together to integrate (filter)
+-- errors and the lack of errors on the CEP PW.  An error is
+-- caused by a missing packet.  Missing packets can be a result
+-- of packet loss in the network, (uncorrectable) packet out
+-- of sequence, packet-length error, jitter-buffer overflow,
+-- and jitter-buffer underflow.  The result declares whether
+-- or not the CEP PW is in Loss of Packet Sync (LOPS) state.
+--
+
+pwCepCfgConsecPktsInsync      OBJECT-TYPE
+   SYNTAX        Unsigned32
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "Consecutive packets with sequential sequence
+        numbers required to exit the LOPS state."
+   REFERENCE
+       "Malis, A., et al., 'Synchronous Optical Network/Synchronous
+        Digital Hierarchy (SONET/SDH) Circuit Emulation over Packet
+        (CEP)', RFC 4842, Section 6.2.2."
+   DEFVAL
+       { 2 }
+
+   ::= { pwCepCfgEntry 8 }
+
+
+
+
+pwCepCfgConsecMissingOutSync  OBJECT-TYPE
+   SYNTAX        Unsigned32
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "Consecutive missing packets required to enter
+        the LOPS state."
+   REFERENCE
+       "Malis, A., et al., 'Synchronous Optical Network/Synchronous
+        Digital Hierarchy (SONET/SDH) Circuit Emulation over Packet
+        (CEP)', RFC 4842, Section 6.2.2."
+   DEFVAL
+       { 10 }
+
+   ::= { pwCepCfgEntry 9 }
+
+pwCepCfgPktErrorPlayOutValue OBJECT-TYPE
+   SYNTAX        Unsigned32 (0..255)
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This object defines the value played when inbound packets
+        have over/underflowed the jitter buffer or are missing
+        for any reason.  This byte pattern is sent (played) on
+        the SONET path."
+   DEFVAL
+       { 255 } -- Play all ones, equal to AIS indications
+   ::= { pwCepCfgEntry 10 }
+
+pwCepCfgMissingPktsToSes OBJECT-TYPE
+   SYNTAX        Unsigned32
+   UNITS         "seconds"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The number of missing packets detected (consecutive or not)
+        within a 1-second window to cause a Severely Errored
+        Second (SES) to be counted."
+   REFERENCE
+       "Malis, A., et al., 'Synchronous Optical Network/Synchronous
+        Digital Hierarchy (SONET/SDH) Circuit Emulation over Packet
+        (CEP)', RFC 4842, Section 10.1."
+   DEFVAL
+       { 3 }
+   ::= { pwCepCfgEntry 11 }
+
+
+
+
+
+
+pwCepCfgSesToUas OBJECT-TYPE
+   SYNTAX        Unsigned32
+   UNITS         "seconds"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The number of consecutive SESs before declaring PW in
+        Unavailable Seconds (UAS) state (at which point
+        pwCepPerfUASs starts counting).  The SesToUas default value
+        is 10 seconds.
+
+        NOTE: Similar to [RFC3592], if the agent chooses to update
+        the various performance statistics in real time, it MUST
+        be prepared to retroactively reduce the ES and SES counts by
+        this value and increase the UAS count by this value when it
+        determines that UAS state has been entered.
+
+        NOTE: See pwCepPerfSESs and pwCepPerfUASs."
+   REFERENCE
+       "Malis, A., et al., 'Synchronous Optical Network/Synchronous
+        Digital Hierarchy (SONET/SDH) Circuit Emulation over Packet
+        (CEP)', RFC 4842, Section 10.1."
+   DEFVAL
+       { 10 }
+   ::= { pwCepCfgEntry 12 }
+
+pwCepCfgSecsToExitUas OBJECT-TYPE
+   SYNTAX        Unsigned32
+   UNITS         "seconds"
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The number of consecutive nonSESs before declaring PW is NOT
+        in UAS state (at which point pwCepPerfUASs stops counting)."
+   REFERENCE
+       "Malis, A., et al., 'Synchronous Optical Network/Synchronous
+        Digital Hierarchy (SONET/SDH) Circuit Emulation over Packet
+        (CEP)', RFC 4842, Section 10.1."
+   DEFVAL { 10 }
+   ::= { pwCepCfgEntry 13 }
+
+pwCepCfgName OBJECT-TYPE
+   SYNTAX        SnmpAdminString
+   MAX-ACCESS    read-create
+   STATUS        current
+
+
+
+
+
+
+   DESCRIPTION
+       "This variable contains the name of the Configuration entry.
+        This name may be used to help the NMS to display the
+        purpose of the entry."
+   ::= { pwCepCfgEntry 14 }
+
+pwCepCfgRowStatus    OBJECT-TYPE
+   SYNTAX               RowStatus
+   MAX-ACCESS           read-create
+   STATUS               current
+   DESCRIPTION
+       "For creating, modifying, and deleting this row.
+
+        None of the read-create objects' values can be changed
+        when pwCepCfgRowStatus is in the active(1) state.  Changes
+        are allowed when the pwRowStatus is in notInService(2) or
+        notReady(3) states only.
+
+        If the operator needs to change one of the values for an
+        active row (for example, in order to fix a mismatch in
+        configuration between the local node and the peer), the
+        pwCepCfgRowStatus should be first changed to
+        notInService(2).  The objects may be changed now and later
+        changed to active(1) in order to re-initiate the signaling
+        process with the new values in effect.
+
+        Change of status from the active(1) state or deleting a row
+        SHOULD be blocked by the local agent if the row is
+        referenced by any pwCepEntry those pwRowStatus
+        is in the active(1) state."
+
+   ::= { pwCepCfgEntry 15 }
+
+pwCepCfgStorageType  OBJECT-TYPE
+   SYNTAX                      StorageType
+   MAX-ACCESS                  read-create
+   STATUS                      current
+   DESCRIPTION
+       "This object indicates the storage type for this row."
+   DEFVAL { nonVolatile }
+
+   ::= { pwCepCfgEntry 16 }
+
+-- End of CEP PW Configuration Parameter Table
+
+
+
+
+
+
+
+-- CEP Fractional Table
+
+pwCepFracTable   OBJECT-TYPE
+   SYNTAX                  SEQUENCE OF PwCepFracEntry
+   MAX-ACCESS              not-accessible
+   STATUS                  current
+   DESCRIPTION
+       "This table contains a set of parameters for CEP PWs with
+        pwCepType FRAC type."
+   ::= { pwCepObjects 4 }
+
+pwCepFracEntry   OBJECT-TYPE
+   SYNTAX            PwCepFracEntry
+   MAX-ACCESS        not-accessible
+   STATUS            current
+   DESCRIPTION
+       "There are two options for creating an entry in this table:
+
+        - By the Element Management System (EMS) in advance for
+          creating the PW.
+        - By the agent automatically when the PW is set up.
+
+        The first option is typically used when there is a native
+        service processing (NSP) cross-connect option between the
+        physical ports and the emulated (virtual ports), while the
+        second MAY be used when there is a one-to-one mapping
+        between the emulated signal and the physical signal."
+
+   INDEX  { pwCepFracIndex }
+
+      ::= { pwCepFracTable 1 }
+
+PwCepFracEntry ::= SEQUENCE {
+
+      pwCepFracIndex                InterfaceIndex,
+      pwCepFracMode                 INTEGER,
+      pwCepFracConfigError          BITS,
+      pwCepFracAsync                PwCepFracAsyncMap,
+      pwCepFracVtgMap               PwCepSonetVtgMap,
+      pwCepFracEbm                  PwCepSonetEbm,
+      pwCepFracPeerEbm              PwCepSonetEbm,
+      pwCepFracSdhVc4Mode           INTEGER,
+      pwCepFracSdhVc4Tu3Map1        PwCepFracAsyncMap,
+      pwCepFracSdhVc4Tu3Map2        PwCepFracAsyncMap,
+      pwCepFracSdhVc4Tu3Map3        PwCepFracAsyncMap,
+      pwCepFracSdhVc4Tug2Map1       PwCepSonetVtgMap,
+      pwCepFracSdhVc4Tug2Map2       PwCepSonetVtgMap,
+      pwCepFracSdhVc4Tug2Map3       PwCepSonetVtgMap,
+
+
+
+      pwCepFracSdhVc4Ebm1           PwCepSdhVc4Ebm,
+      pwCepFracSdhVc4Ebm2           PwCepSdhVc4Ebm,
+      pwCepFracSdhVc4Ebm3           PwCepSdhVc4Ebm,
+      pwCepFracSdhVc4PeerEbm1       PwCepSdhVc4Ebm,
+      pwCepFracSdhVc4PeerEbm2       PwCepSdhVc4Ebm,
+      pwCepFracSdhVc4PeerEbm3       PwCepSdhVc4Ebm,
+      pwCepFracRowStatus            RowStatus,
+      pwCepFracStorageType          StorageType
+      }
+
+pwCepFracIndex OBJECT-TYPE
+   SYNTAX InterfaceIndex
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This is the index of this table.  It is a unique
+        index within the ifTable.  It represents the interface index
+        for the SONET path ([RFC3592], Section 3.3) for fractional
+        SPE emulation.
+
+        It may represent an internal (virtual) interface if an NSP
+        function exists between the physical interface and the
+        emulation process."
+
+   ::= { pwCepFracEntry 1 }
+
+pwCepFracMode OBJECT-TYPE
+   SYNTAX INTEGER {
+            notApplicable ( 1),
+            dynamic       ( 2),
+            static        ( 3),
+            staticWithEbm ( 4),
+            staticAsync   ( 5)
+   }
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "Fractional mode for STS-1/VC-3 or VC-4 circuits:
+
+        notApplicable - When this object is not applicable.
+        dynamic - EBM carried within the CEP header.  Unequipped
+                  VTs are removed from the payload on the fly.
+        static  - EBM not carried within the CEP header.  Only VTs
+                  defined in the EBM are carried within the payload.
+        staticWithEbm - EBM carried within the CEP header.  Only
+                  VTs defined in the EBM are carried within the
+                  payload.
+        staticAsync - Asynchronous E3/T3 fixed byte removal only."
+
+
+
+   DEFVAL
+       { dynamic }
+
+   ::= { pwCepFracEntry 2 }
+
+pwCepFracConfigError OBJECT-TYPE
+   SYNTAX BITS {
+         other               ( 0),
+         vtgMapEbmConflict   ( 1),
+         vtgMapAsyncConflict ( 2)
+   }
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "vtgMapEbmConflict(1) is set when the configured static EBM
+        does not match the configured vtgMap for fractional
+        STS-1/VC-3 circuits or when the TUG2Map is in conflict with
+        the static EBM for VC-4 circuits, for example, if the vtgMap
+        specifies that VTG#1 carries VT2 VTs while the EBM indicate
+        that four VTs are equipped within VTG#1.
+
+        vtgMapAsyncConflict(2) is set when there is a conflict
+        between the mode, the async indication, and the vtgMap
+        fields.  For example, fractional mode is set to staticAsync
+        while the VtgMap indicates that the STS-1/VC-3 carries VTs,
+        or both async1 and Tug2Map are set in fractional VC-4
+        circuits."
+
+  ::= { pwCepFracEntry 3 }
+
+pwCepFracAsync OBJECT-TYPE
+   SYNTAX PwCepFracAsyncMap
+   MAX-ACCESS    read-create
+   STATUS        current
+      DESCRIPTION
+       "This object defines the asynchronous payload carried
+        within the STS-1/VC-3.  This object is applicable when
+        pwCepFracMode equals 'staticAsync' and MUST equal to
+        'other' otherwise."
+
+   DEFVAL { other }
+
+   ::= { pwCepFracEntry 4 }
+
+pwCepFracVtgMap OBJECT-TYPE
+   SYNTAX        PwCepSonetVtgMap
+   MAX-ACCESS    read-create
+   STATUS        current
+
+
+
+   DESCRIPTION
+       "This object defines the VT/VC types of the seven
+        VTG/TUG-2 within the STS-1/VC-3.
+
+        This variable should be set when 'dynamic', 'static',
+        or 'staticWithEbm' fractional STS-1/VC-3 pwCepFracMode
+        is selected."
+
+   ::= { pwCepFracEntry 5 }
+
+pwCepFracEbm OBJECT-TYPE
+   SYNTAX        PwCepSonetEbm
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This object holds the static Equipped Bit Mask (EBM)
+        for STS-1/VC-3 channel.
+
+        This variable MAY be set when 'static' or
+        'staticWithEbm' fractional STS-1/VC-3 pwCepFracMode is
+        selected.
+
+        It is possible that the configuration of other MIB modules
+        will define the EBM value; in these cases, this object is
+        read-only and reflects the actual EBM that would be used."
+
+   ::= { pwCepFracEntry 6 }
+
+pwCepFracPeerEbm OBJECT-TYPE
+   SYNTAX        PwCepSonetEbm
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "This object reports the Equipped Bit Mask (EBM) for
+        STS-1/VC-3 channel as received from the peer within
+        the CEP extension header."
+
+   ::= { pwCepFracEntry 7 }
+
+
+pwCepFracSdhVc4Mode OBJECT-TYPE
+   SYNTAX INTEGER {
+            notApplicable ( 1),
+            dynamic       ( 2),
+            static        ( 3),
+            staticWithEbm ( 4)
+   }
+   MAX-ACCESS    read-create
+
+
+
+   STATUS        current
+   DESCRIPTION
+       "Fractional mode for VC-4 circuits:
+
+        notApplicable - When this is not VC-4 circuit.
+        dynamic - EBM carried within the CEP header.  Unequipped
+                  VTs are removed from the payload on the fly.
+        static  - EBM not carried within the CEP header.  Only VTs
+                  defined in the EBM are carried within the payload.
+        staticWithEbm - EBM carried within the CEP header.  Only
+                  VTs defined in the EBM are carried within the
+                  payload."
+
+   DEFVAL { notApplicable }
+
+   ::= { pwCepFracEntry 8 }
+
+pwCepFracSdhVc4Tu3Map1 OBJECT-TYPE
+   SYNTAX PwCepFracAsyncMap
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The type of asynchronous mapping carried inside STS-1,
+        VC-3, or TUG-3 containing TU-3 circuit."
+
+   DEFVAL { other }
+   ::= { pwCepFracEntry 9 }
+
+
+pwCepFracSdhVc4Tu3Map2 OBJECT-TYPE
+   SYNTAX PwCepFracAsyncMap
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "If the second TUG-3 within the VC-4 contains a TU-3, this
+        variable must be set."
+
+   DEFVAL { other }
+   ::= { pwCepFracEntry 10 }
+
+pwCepFracSdhVc4Tu3Map3 OBJECT-TYPE
+   SYNTAX PwCepFracAsyncMap
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "If the third TUG-3 within the VC-4 contains a TU-3, this
+        variable must be set."
+
+
+
+
+   DEFVAL { other }
+
+   ::= { pwCepFracEntry 11 }
+
+
+pwCepFracSdhVc4Tug2Map1 OBJECT-TYPE
+   SYNTAX        PwCepSonetVtgMap
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+        "The VC types of the seven TUG-2s within the first
+         TUG-3 of the VC-4."
+
+   ::= { pwCepFracEntry 12 }
+
+pwCepFracSdhVc4Tug2Map2 OBJECT-TYPE
+   SYNTAX        PwCepSonetVtgMap
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The VC types of the seven TUG-2s within the second
+        TUG-3 of the VC-4."
+
+   ::= { pwCepFracEntry 13 }
+
+pwCepFracSdhVc4Tug2Map3 OBJECT-TYPE
+   SYNTAX        PwCepSonetVtgMap
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "The VC types of the seven TUG-2s within the third
+        TUG-3 of the VC-4."
+
+   ::= { pwCepFracEntry 14 }
+
+pwCepFracSdhVc4Ebm1 OBJECT-TYPE
+   SYNTAX        PwCepSdhVc4Ebm
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "Static Equipped Bit Mask (EBM) for the first TUG-3
+        within the VC-4.
+
+        This variable should be set when 'static' or
+        'staticWithEbm' fractional VC-4 pwCepFracMode is
+        selected.
+
+
+
+
+
+        It is possible that the EBM that would be used is
+        available based on configuration of other MIB modules.
+        In these cases, this object is read-only and reflects the
+        actual EBM that would be used."
+
+   ::= { pwCepFracEntry 15 }
+
+pwCepFracSdhVc4Ebm2 OBJECT-TYPE
+   SYNTAX        PwCepSdhVc4Ebm
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "Static Equipped Bit Mask (EBM) for the second TUG-3
+        within the VC-4.
+
+        This variable should be set when 'static' or
+        'staticWithEbm' fractional VC-4 pwCepFracMode is
+        selected.
+
+        It is possible that the EBM that would be used is
+        available based on configuration of other MIB modules.
+        In these cases, this object is read-only and reflects the
+        actual EBM that would be used."
+
+   ::= { pwCepFracEntry 16 }
+
+pwCepFracSdhVc4Ebm3 OBJECT-TYPE
+   SYNTAX        PwCepSdhVc4Ebm
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "Static Equipped Bit Mask (EBM) for the third TUG-3 within
+        the VC-4.
+
+        This variable should be set when 'Static' or
+        'staticWithEbm' fractional VC-4 pwCepFracMode is
+        selected.
+
+        It is possible that the EBM that would be used is
+        available based on configuration of other MIB modules.
+        In these cases, this object is read-only and reflects the
+        actual EBM that would be used."
+
+   ::= { pwCepFracEntry 17 }
+
+pwCepFracSdhVc4PeerEbm1 OBJECT-TYPE
+   SYNTAX        PwCepSdhVc4Ebm
+   MAX-ACCESS    read-only
+
+
+
+   STATUS        current
+   DESCRIPTION
+       "Equipped Bit Mask (EBM) for the first TUG-3 within
+        the fractional VC-4 channel received from the peer
+        within the CEP extension header."
+
+   ::= { pwCepFracEntry 18 }
+
+pwCepFracSdhVc4PeerEbm2 OBJECT-TYPE
+   SYNTAX        PwCepSdhVc4Ebm
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Equipped Bit Mask (EBM) for the second TUG-3 within
+        the fractional VC-4 channel received from the peer
+        within the CEP extension header."
+
+   ::= { pwCepFracEntry 19 }
+
+pwCepFracSdhVc4PeerEbm3 OBJECT-TYPE
+   SYNTAX        PwCepSdhVc4Ebm
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Equipped Bit Mask (EBM) for the third TUG-3 within
+        the fractional VC-4 channel received from the peer
+        within the CEP extension header."
+
+   ::= { pwCepFracEntry 20 }
+
+pwCepFracRowStatus OBJECT-TYPE
+   SYNTAX        RowStatus
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "For creating, modifying, and deleting this row.
+        This object MAY be changed at any time."
+
+   ::= { pwCepFracEntry 21 }
+
+pwCepFracStorageType OBJECT-TYPE
+   SYNTAX        StorageType
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "This variable indicates the storage type for this
+        object."
+
+
+
+
+   DEFVAL { nonVolatile }
+   ::= { pwCepFracEntry 22 }
+
+-- End CEP Fractional Table
+
+-- CEP PW Performance Current Interval Table
+
+pwCepPerfCurrentTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF PwCepPerfCurrentEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "CEP bridges the SONET and packet worlds.  In the packet
+        world, counts typically start from the time of service
+        creation and do not stop.  In the SONET world, counts are
+        kept in 15-minute intervals.  The PW CEP MIB supports both
+        methods.  The current 15-minute interval counts are in
+        this table.  The interval and total stats are in tables
+        following this.
+
+        This table provides per-CEP PW performance information.
+        High capacity (HC) counters are required for some counts
+        due to the high speeds expected with CEP services.  A SONET
+        path of width 48 (STS-48c) can rollover non-HC counters in
+        a few minutes."
+
+   ::= { pwCepObjects 5 }
+
+pwCepPerfCurrentEntry OBJECT-TYPE
+   SYNTAX        PwCepPerfCurrentEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "An entry in this table is created by the agent for every
+        pwCep entry.  After 15 minutes, the contents of this table
+        entry are copied to a new entry in the pwCepPerfInterval
+        table, and the counts in this entry are reset to zero."
+
+   INDEX  { pwIndex }
+
+   ::= { pwCepPerfCurrentTable 1 }
+
+PwCepPerfCurrentEntry ::= SEQUENCE {
+      pwCepPerfCurrentDbaInPacketsHC     HCPerfCurrentCount,
+      pwCepPerfCurrentDbaOutPacketsHC    HCPerfCurrentCount,
+
+      pwCepPerfCurrentInNegPtrAdjust     PerfCurrentCount,
+      pwCepPerfCurrentInPosPtrAdjust     PerfCurrentCount,
+
+
+
+      pwCepPerfCurrentInPtrAdjustSecs    PerfCurrentCount,
+      pwCepPerfCurrentOutNegPtrAdjust    PerfCurrentCount,
+      pwCepPerfCurrentOutPosPtrAdjust    PerfCurrentCount,
+      pwCepPerfCurrentOutPtrAdjustSecs   PerfCurrentCount,
+      pwCepPerfCurrentAbsPtrAdjust       Integer32,
+
+      pwCepPerfCurrentMissingPkts        PerfCurrentCount,
+      pwCepPerfCurrentPktsOoseq          PerfCurrentCount,
+      pwCepPerfCurrentPktsOoRngDropped   PerfCurrentCount,
+      pwCepPerfCurrentJtrBfrUnderruns    PerfCurrentCount,
+      pwCepPerfCurrentPktsMalformed      PerfCurrentCount,
+      pwCepPerfCurrentSummaryErrors      PerfCurrentCount,
+
+      pwCepPerfCurrentESs                PerfCurrentCount,
+      pwCepPerfCurrentSESs               PerfCurrentCount,
+      pwCepPerfCurrentUASs               PerfCurrentCount,
+      pwCepPerfCurrentFC                 PerfCurrentCount
+   }
+
+pwCepPerfCurrentDbaInPacketsHC OBJECT-TYPE
+   SYNTAX        HCPerfCurrentCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of DBA packets received."
+   ::= { pwCepPerfCurrentEntry 1 }
+
+pwCepPerfCurrentDbaOutPacketsHC OBJECT-TYPE
+   SYNTAX        HCPerfCurrentCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of DBA packets sent."
+   ::= { pwCepPerfCurrentEntry 2 }
+
+
+-- Pointer adjustment stats
+
+pwCepPerfCurrentInNegPtrAdjust OBJECT-TYPE
+   SYNTAX        PerfCurrentCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of negative pointer adjustments sent on the
+        SONET path based on CEP pointer adjustments received."
+   ::= { pwCepPerfCurrentEntry 3 }
+
+
+
+
+
+pwCepPerfCurrentInPosPtrAdjust OBJECT-TYPE
+   SYNTAX        PerfCurrentCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of positive pointer adjustments sent on the
+        SONET path based on CEP pointer adjustments received."
+   ::= { pwCepPerfCurrentEntry 4 }
+
+pwCepPerfCurrentInPtrAdjustSecs OBJECT-TYPE
+   SYNTAX        PerfCurrentCount
+   UNITS         "seconds"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of seconds in which a positive or negative pointer
+        adjustment was sent on the SONET path."
+   ::= { pwCepPerfCurrentEntry 5 }
+
+pwCepPerfCurrentOutNegPtrAdjust OBJECT-TYPE
+   SYNTAX        PerfCurrentCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of negative pointer adjustments seen on the
+        SONET path and encoded onto sent CEP packets."
+   ::= { pwCepPerfCurrentEntry 6 }
+
+pwCepPerfCurrentOutPosPtrAdjust OBJECT-TYPE
+   SYNTAX        PerfCurrentCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of positive pointer adjustments seen on the
+        SONET path and encoded onto sent CEP packets."
+   ::= { pwCepPerfCurrentEntry 7 }
+
+pwCepPerfCurrentOutPtrAdjustSecs OBJECT-TYPE
+   SYNTAX        PerfCurrentCount
+   UNITS         "seconds"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of seconds in which a positive or negative pointer
+        adjustment was seen on the SONET path."
+   ::= { pwCepPerfCurrentEntry 8 }
+
+
+
+
+
+pwCepPerfCurrentAbsPtrAdjust OBJECT-TYPE
+   SYNTAX        Integer32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Indicates the relative adjustment drift between
+        inbound and outbound streams.
+
+        It is calculated as absolute value of:
+           (InPosPtrAdjust  -   InNegPtrAdjust ) -
+           (OutPosPtrAdjust  -   OutNegPtrAdjust)"
+   ::= { pwCepPerfCurrentEntry 9 }
+
+pwCepPerfCurrentMissingPkts OBJECT-TYPE
+   SYNTAX        PerfCurrentCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of missing packets (as detected via CEP header
+        sequence number gaps)."
+   ::= { pwCepPerfCurrentEntry 10 }
+
+pwCepPerfCurrentPktsOoseq OBJECT-TYPE
+   SYNTAX        PerfCurrentCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of packets detected out of sequence (via CEP
+        header sequence numbers) but successfully reordered.
+        Note: Some implementations may not support this
+        feature (see pwCepCfgPktReorder)."
+   ::= { pwCepPerfCurrentEntry 11 }
+
+pwCepPerfCurrentPktsOoRngDropped OBJECT-TYPE
+   SYNTAX        PerfCurrentCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of packets detected out of range (via CEP header
+        sequence numbers) and could not be reordered or could not
+        fit in the jitter buffer."
+   ::= { pwCepPerfCurrentEntry 12 }
+
+pwCepPerfCurrentJtrBfrUnderruns OBJECT-TYPE
+   SYNTAX        PerfCurrentCount
+   MAX-ACCESS    read-only
+   STATUS        current
+
+
+
+
+   DESCRIPTION
+       "Number of times a packet needed to be played out and the
+        jitter buffer was empty."
+   ::= { pwCepPerfCurrentEntry 13 }
+
+pwCepPerfCurrentPktsMalformed OBJECT-TYPE
+   SYNTAX        PerfCurrentCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of packets detected with unexpected size or bad
+        headers stack."
+   ::= { pwCepPerfCurrentEntry 14 }
+
+pwCepPerfCurrentSummaryErrors OBJECT-TYPE
+   SYNTAX        PerfCurrentCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "A summary of all the packet-error types above (from
+        missing packets to bad length packets)."
+   ::= { pwCepPerfCurrentEntry 15 }
+
+pwCepPerfCurrentESs OBJECT-TYPE
+    SYNTAX       PerfCurrentCount
+    UNITS        "seconds"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The counter associated with the number of Errored
+        Seconds encountered."
+    ::= { pwCepPerfCurrentEntry 16 }
+
+pwCepPerfCurrentSESs OBJECT-TYPE
+    SYNTAX        PerfCurrentCount
+    UNITS         "seconds"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+       "The counter associated with the number of
+        Severely Errored Seconds encountered."
+    ::= { pwCepPerfCurrentEntry 17 }
+
+pwCepPerfCurrentUASs OBJECT-TYPE
+    SYNTAX        PerfCurrentCount
+    UNITS         "seconds"
+    MAX-ACCESS    read-only
+    STATUS        current
+
+
+
+    DESCRIPTION
+       "The counter associated with the number of
+        Unavailable Seconds encountered."
+    ::= { pwCepPerfCurrentEntry 18 }
+
+pwCepPerfCurrentFC OBJECT-TYPE
+    SYNTAX        PerfCurrentCount
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+       "CEP Failure Counts (FC-CEP).  The number of CEP failure
+        events.  A failure event begins when the LOPS failure
+        is declared and ends when the failure is cleared.  A
+        failure event that begins in one period and ends in
+        another period is counted only in the period in which
+        it begins."
+    ::= { pwCepPerfCurrentEntry 19 }
+
+-- End CEP PW Performance Current Interval Table
+
+-- CEP Performance 15-Minute Interval Table
+
+pwCepPerfIntervalTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF PwCepPerfIntervalEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "This table provides per-CEP PW performance information,
+        much like the pwCepPerfCurrentTable above.  However,
+        these counts represent historical 15-minute intervals.
+        Typically, this table will have a maximum of 96 entries
+        for a 24-hour period but is not limited to this.
+
+        NOTE: Counter64 objects are used here; Counter32 is
+        too small for OC-768 CEP PWs."
+
+   ::= { pwCepObjects 6 }
+
+pwCepPerfIntervalEntry OBJECT-TYPE
+   SYNTAX        PwCepPerfIntervalEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "An entry in this table is created by the agent for
+        every pwCepPerfCurrentEntry that is 15 minutes old.
+        The contents of the Current entry are copied to the new
+
+
+
+
+
+        entry here.  The Current entry then resets its counts
+        to zero for the next current 15-minute interval.
+        pwCepIndex is found in the pwCepCfg table."
+
+   INDEX  { pwIndex, pwCepPerfIntervalNumber }
+
+   ::= { pwCepPerfIntervalTable 1 }
+
+PwCepPerfIntervalEntry ::= SEQUENCE {
+
+      pwCepPerfIntervalNumber             Integer32,
+      pwCepPerfIntervalValidData          TruthValue,
+      pwCepPerfIntervalReset              INTEGER,
+      pwCepPerfIntervalTimeElapsed        HCPerfTimeElapsed,
+
+      pwCepPerfIntervalDbaInPacketsHC     HCPerfIntervalCount,
+      pwCepPerfIntervalDbaOutPacketsHC    HCPerfIntervalCount,
+
+      pwCepPerfIntervalInNegPtrAdjust     PerfIntervalCount,
+      pwCepPerfIntervalInPosPtrAdjust     PerfIntervalCount,
+      pwCepPerfIntervalInPtrAdjustSecs    PerfIntervalCount,
+      pwCepPerfIntervalOutNegPtrAdjust    PerfIntervalCount,
+      pwCepPerfIntervalOutPosPtrAdjust    PerfIntervalCount,
+      pwCepPerfIntervalOutPtrAdjustSecs   PerfIntervalCount,
+      pwCepPerfIntervalAbsPtrAdjust       Integer32,
+
+      pwCepPerfIntervalMissingPkts        PerfIntervalCount,
+      pwCepPerfIntervalPktsOoseq          PerfIntervalCount,
+      pwCepPerfIntervalPktsOoRngDropped   PerfIntervalCount,
+      pwCepPerfIntervalJtrBfrUnderruns    PerfIntervalCount,
+      pwCepPerfIntervalPktsMalformed      PerfIntervalCount,
+      pwCepPerfIntervalSummaryErrors      PerfIntervalCount,
+
+      pwCepPerfIntervalESs                PerfIntervalCount,
+      pwCepPerfIntervalSESs               PerfIntervalCount,
+      pwCepPerfIntervalUASs               PerfIntervalCount,
+      pwCepPerfIntervalFC                 PerfIntervalCount
+      }
+
+pwCepPerfIntervalNumber OBJECT-TYPE
+   SYNTAX        Integer32 (1..96)
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "A number (between 1 and 96 to cover a 24-hour
+        period) that identifies the interval for which the set
+        of statistics is available.  The interval identified by 1
+        is the most recently completed 15-minute interval, and
+
+
+
+        the interval identified by N is the interval immediately
+        preceding the one identified by N-1.  The minimum range of
+        N is 1 through 4.  The default range is 1 through 32.  The
+        maximum range of N is 1 through 96."
+   ::= { pwCepPerfIntervalEntry 1 }
+
+pwCepPerfIntervalValidData OBJECT-TYPE
+   SYNTAX        TruthValue
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "This variable indicates if the data for this interval
+        is valid."
+   ::= { pwCepPerfIntervalEntry 2 }
+
+pwCepPerfIntervalReset OBJECT-TYPE
+   SYNTAX        INTEGER {
+         reset (1),
+         normal(2)
+   }
+   MAX-ACCESS    read-create
+   STATUS        current
+   DESCRIPTION
+       "Used in cases where the user knows that the errors
+        within this interval should not be counted.  Writing
+        'reset' sets all error counts to zero.  The value of
+        0 is not used here due to issues with
+        implementations."
+   ::= { pwCepPerfIntervalEntry 3 }
+
+pwCepPerfIntervalTimeElapsed OBJECT-TYPE
+    SYNTAX      HCPerfTimeElapsed
+    UNITS       "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The duration of a particular interval in seconds.
+        Adjustments in the system's time-of-day clock may
+        cause the interval to be greater or less than the
+        normal value.  Therefore, this actual interval value
+        is provided."
+    ::= { pwCepPerfIntervalEntry 4 }
+
+pwCepPerfIntervalDbaInPacketsHC OBJECT-TYPE
+   SYNTAX        HCPerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+
+
+
+
+   DESCRIPTION
+       "Number of DBA packets received."
+   ::= { pwCepPerfIntervalEntry 5 }
+
+pwCepPerfIntervalDbaOutPacketsHC OBJECT-TYPE
+   SYNTAX        HCPerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of DBA packets sent."
+   ::= { pwCepPerfIntervalEntry 6 }
+
+-- Pointer adjustment stats
+pwCepPerfIntervalInNegPtrAdjust OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of negative pointer adjustments sent on the
+        SONET path based on CEP pointer adjustments received."
+   ::= { pwCepPerfIntervalEntry 7 }
+
+pwCepPerfIntervalInPosPtrAdjust OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of positive pointer adjustments sent on the
+        SONET path based on CEP pointer adjustments received."
+   ::= { pwCepPerfIntervalEntry 8 }
+
+pwCepPerfIntervalInPtrAdjustSecs OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   UNITS         "seconds"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of seconds in which a positive or negative
+        pointer adjustment was sent on the SONET path."
+   ::= { pwCepPerfIntervalEntry 9 }
+
+pwCepPerfIntervalOutNegPtrAdjust OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of negative pointer adjustments seen on the
+        SONET path and encoded onto sent CEP packets."
+
+
+
+   ::= { pwCepPerfIntervalEntry 10 }
+
+pwCepPerfIntervalOutPosPtrAdjust OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of positive pointer adjustments seen on the
+        SONET path and encoded onto sent CEP packets."
+   ::= { pwCepPerfIntervalEntry 11 }
+
+pwCepPerfIntervalOutPtrAdjustSecs OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   UNITS         "seconds"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of seconds in which a positive or negative
+        pointer adjustment was seen on the SONET path."
+   ::= { pwCepPerfIntervalEntry 12 }
+
+pwCepPerfIntervalAbsPtrAdjust OBJECT-TYPE
+   SYNTAX        Integer32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "The relative adjustment drift between inbound
+        and outbound streams.
+
+        It is calculated as absolute value of:
+           (InPosPtrAdjust  -   InNegPtrAdjust) -
+           (OutPosPtrAdjust  -  OutNegPtrAdjust)"
+   ::= { pwCepPerfIntervalEntry 13 }
+
+pwCepPerfIntervalMissingPkts OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of missing packets (as detected via CEP header
+        sequence number gaps)."
+   ::= { pwCepPerfIntervalEntry 14 }
+
+pwCepPerfIntervalPktsOoseq OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+
+
+
+
+   DESCRIPTION
+       "Number of packets detected out of sequence (via CEP
+        header sequence numbers) but successfully reordered.
+        Note: Some implementations mat not support this
+        feature (see pwCepCfgPktReorder)."
+   ::= { pwCepPerfIntervalEntry 15 }
+
+pwCepPerfIntervalPktsOoRngDropped OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of packets detected out of range (via CEP
+        header sequence numbers) and could not be reordered
+        or could not fit in the jitter buffer."
+   ::= { pwCepPerfIntervalEntry 16 }
+
+pwCepPerfIntervalJtrBfrUnderruns OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of times a packet needed to be played
+        out and the jitter buffer was empty."
+   ::= { pwCepPerfIntervalEntry 17 }
+
+pwCepPerfIntervalPktsMalformed OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of packets detected with unexpected size or bad
+        headers stack."
+   ::= { pwCepPerfIntervalEntry 18 }
+
+pwCepPerfIntervalSummaryErrors OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "A summary of all the packet-error types above (from
+        missing packets to bad length packets)."
+   ::= { pwCepPerfIntervalEntry 19 }
+
+pwCepPerfIntervalESs OBJECT-TYPE
+   SYNTAX       PerfIntervalCount
+   UNITS        "seconds"
+   MAX-ACCESS   read-only
+
+
+
+   STATUS       current
+   DESCRIPTION
+       "The counter associated with the number of Errored
+        Seconds encountered."
+   ::= { pwCepPerfIntervalEntry 20 }
+
+pwCepPerfIntervalSESs OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   UNITS         "seconds"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "The counter associated with the number of
+        Severely Errored Seconds encountered."
+   ::= { pwCepPerfIntervalEntry 21 }
+
+pwCepPerfIntervalUASs OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   UNITS         "seconds"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "The counter associated with the number of
+        Unavailable Seconds encountered."
+   ::= { pwCepPerfIntervalEntry 22 }
+
+pwCepPerfIntervalFC OBJECT-TYPE
+   SYNTAX        PerfIntervalCount
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "CEP Failure Counts (FC-CEP).  The number of CEP failure
+        events.  A failure event begins when the LOPS failure
+        is declared and ends when the failure is cleared.  A
+        failure event that begins in one period and ends in
+        another period is counted only in the period in which
+        it begins."
+   ::= { pwCepPerfIntervalEntry 23 }
+
+-- End CEP Performance 15-Minute Interval Table
+
+-- CEP Performance 1-Day Table
+
+pwCepPerf1DayIntervalTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF PwCepPerf1DayIntervalEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+
+
+
+
+   DESCRIPTION
+       "This table provides per CEP PW performance information,
+        the current day's measurement, and the previous day's
+        interval.
+
+        In the extreme case where one of the error counters has
+        overflowed during the one-day interval, the error counter
+        MUST NOT wrap around and MUST return the maximum value."
+   ::= { pwCepObjects 7 }
+
+pwCepPerf1DayIntervalEntry OBJECT-TYPE
+   SYNTAX        PwCepPerf1DayIntervalEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+       "An entry is created in this table by the agent for
+        every entry in the pwCepTable and for each day
+        interval up to the number of supported historical
+        intervals."
+
+   INDEX  { pwIndex, pwCepPerf1DayIntervalNumber }
+
+      ::= { pwCepPerf1DayIntervalTable 1 }
+
+PwCepPerf1DayIntervalEntry ::= SEQUENCE {
+
+      pwCepPerf1DayIntervalNumber                 Unsigned32,
+      pwCepPerf1DayIntervalValidData              TruthValue,
+      pwCepPerf1DayIntervalMoniSecs               HCPerfTimeElapsed,
+
+      pwCepPerf1DayIntervalDbaInPacketsHC         Counter64,
+      pwCepPerf1DayIntervalDbaOutPacketsHC        Counter64,
+
+      pwCepPerf1DayIntervalInNegPtrAdjust         Counter32,
+      pwCepPerf1DayIntervalInPosPtrAdjust         Counter32,
+      pwCepPerf1DayIntervalInPtrAdjustSecs        Counter32,
+      pwCepPerf1DayIntervalOutNegPtrAdjust        Counter32,
+      pwCepPerf1DayIntervalOutPosPtrAdjust        Counter32,
+      pwCepPerf1DayIntervalOutPtrAdjustSecs       Counter32,
+      pwCepPerf1DayIntervalAbsPtrAdjust           Integer32,
+
+      pwCepPerf1DayIntervalMissingPkts            Counter32,
+      pwCepPerf1DayIntervalPktsOoseq              Counter32,
+      pwCepPerf1DayIntervalPktsOoRngDropped       Counter32,
+      pwCepPerf1DayIntervalJtrBfrUnderruns        Counter32,
+      pwCepPerf1DayIntervalPktsMalformed          Counter32,
+      pwCepPerf1DayIntervalSummaryErrors          Counter32,
+
+
+
+
+      pwCepPerf1DayIntervalESs                    Counter32,
+      pwCepPerf1DayIntervalSESs                   Counter32,
+      pwCepPerf1DayIntervalUASs                   Counter32,
+      pwCepPerf1DayIntervalFC                     Counter32
+      }
+
+pwCepPerf1DayIntervalNumber OBJECT-TYPE
+   SYNTAX      Unsigned32(1..31)
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION
+       "History Data Interval number.  Interval 1 is the current day
+        measurement period; interval 2 is the most recent previous
+        day; and interval 30 is 31 days ago."
+   ::= { pwCepPerf1DayIntervalEntry 1 }
+
+pwCepPerf1DayIntervalValidData OBJECT-TYPE
+   SYNTAX        TruthValue
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "This variable indicates if the data for this interval
+        is valid."
+   ::= { pwCepPerf1DayIntervalEntry 2 }
+
+pwCepPerf1DayIntervalMoniSecs OBJECT-TYPE
+   SYNTAX       HCPerfTimeElapsed
+   UNITS        "seconds"
+   MAX-ACCESS   read-only
+   STATUS       current
+   DESCRIPTION
+       "The amount of time in the 1-day interval over which the
+        performance monitoring information is actually counted.
+        This value will be the same as the interval duration except
+        in situations where performance monitoring data could not
+        be collected for any reason or the agent clock was
+        adjusted."
+   ::= { pwCepPerf1DayIntervalEntry 3 }
+
+pwCepPerf1DayIntervalDbaInPacketsHC OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of DBA packets received."
+   ::= { pwCepPerf1DayIntervalEntry 4 }
+
+
+
+
+
+pwCepPerf1DayIntervalDbaOutPacketsHC OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of DBA packets sent."
+   ::= { pwCepPerf1DayIntervalEntry 5 }
+
+-- Pointer adjustment stats
+
+pwCepPerf1DayIntervalInNegPtrAdjust OBJECT-TYPE
+   SYNTAX        Counter32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of negative pointer adjustments sent on the
+        SONET path based on CEP pointer adjustments received."
+   ::= { pwCepPerf1DayIntervalEntry 6 }
+
+pwCepPerf1DayIntervalInPosPtrAdjust OBJECT-TYPE
+   SYNTAX        Counter32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of positive pointer adjustments sent on the
+        SONET path based on CEP pointer adjustments received."
+   ::= { pwCepPerf1DayIntervalEntry 7 }
+
+pwCepPerf1DayIntervalInPtrAdjustSecs OBJECT-TYPE
+   SYNTAX        Counter32
+   UNITS         "seconds"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of seconds in which a positive or negative pointer
+        adjustment was sent on the SONET path."
+   ::= { pwCepPerf1DayIntervalEntry 8 }
+
+pwCepPerf1DayIntervalOutNegPtrAdjust OBJECT-TYPE
+   SYNTAX        Counter32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of negative pointer adjustments seen on the
+        SONET path and encoded onto sent CEP packets."
+   ::= { pwCepPerf1DayIntervalEntry 9 }
+
+
+
+
+
+pwCepPerf1DayIntervalOutPosPtrAdjust OBJECT-TYPE
+   SYNTAX        Counter32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of positive pointer adjustments seen on the
+        SONET path and encoded onto sent CEP packets."
+   ::= { pwCepPerf1DayIntervalEntry 10 }
+
+pwCepPerf1DayIntervalOutPtrAdjustSecs OBJECT-TYPE
+   SYNTAX        Counter32
+   UNITS         "seconds"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of seconds in which a positive or negative pointer
+        adjustment was seen on the SONET path."
+   ::= { pwCepPerf1DayIntervalEntry 11 }
+
+pwCepPerf1DayIntervalAbsPtrAdjust OBJECT-TYPE
+   SYNTAX        Integer32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "The relative adjustment of drift between inbound
+        and outbound streams.  It is calculated as absolute
+        value of:
+           (InPosPtrAdjust  -   InNegPtrAdjust) -
+           (OutPosPtrAdjust  -  OutNegPtrAdjust)"
+   ::= { pwCepPerf1DayIntervalEntry 12 }
+
+pwCepPerf1DayIntervalMissingPkts OBJECT-TYPE
+   SYNTAX        Counter32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of missing packets (as detected via CEP header
+        sequence number gaps)."
+   ::= { pwCepPerf1DayIntervalEntry 13 }
+
+pwCepPerf1DayIntervalPktsOoseq OBJECT-TYPE
+   SYNTAX        Counter32
+   MAX-ACCESS    read-only
+   STATUS        current
+
+
+
+
+
+
+
+   DESCRIPTION
+       "Number of packets detected out of sequence (via CEP
+        header sequence numbers) but successfully reordered.
+        Note: Some implementations may not support this feature
+        (see pwCepCfgPktReorder)."
+   ::= { pwCepPerf1DayIntervalEntry 14 }
+
+pwCepPerf1DayIntervalPktsOoRngDropped OBJECT-TYPE
+   SYNTAX        Counter32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of packets detected out of range (via CEP header
+        sequence numbers) and could not be reordered or could not
+        fit in the jitter buffer."
+   ::= { pwCepPerf1DayIntervalEntry 15 }
+
+pwCepPerf1DayIntervalJtrBfrUnderruns OBJECT-TYPE
+   SYNTAX        Counter32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of times a packet needed to be played out, and the
+        jitter buffer was empty."
+   ::= { pwCepPerf1DayIntervalEntry 16 }
+
+pwCepPerf1DayIntervalPktsMalformed OBJECT-TYPE
+   SYNTAX        Counter32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "Number of packets detected with unexpected size or bad
+        headers stack."
+   ::= { pwCepPerf1DayIntervalEntry 17 }
+
+pwCepPerf1DayIntervalSummaryErrors OBJECT-TYPE
+   SYNTAX        Counter32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "A summary of all the packet-error types above (from
+        missing packets to bad length packets)."
+   ::= { pwCepPerf1DayIntervalEntry 18 }
+
+pwCepPerf1DayIntervalESs OBJECT-TYPE
+   SYNTAX       Counter32
+   UNITS        "seconds"
+   MAX-ACCESS   read-only
+
+
+
+   STATUS       current
+   DESCRIPTION
+       "The counter associated with the number of Errored
+        Seconds encountered."
+   ::= { pwCepPerf1DayIntervalEntry 19 }
+
+pwCepPerf1DayIntervalSESs OBJECT-TYPE
+   SYNTAX        Counter32
+   UNITS         "seconds"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "The counter associated with the number of Severely
+        Errored Seconds.  See pwCepCfgMissingPktsToSes."
+   ::= { pwCepPerf1DayIntervalEntry 20 }
+
+pwCepPerf1DayIntervalUASs OBJECT-TYPE
+   SYNTAX        Counter32
+   UNITS         "seconds"
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "The counter associated with the number of
+        unavailable seconds.  See pwCepCfgSesToUAS.
+
+        NOTE: When first entering the UAS state, the number
+        of SesToUas is added to this object; then, as each
+        additional UAS occurs, this object increments by one.
+
+        NOTE: Similar to [RFC3592], if the agent chooses to update
+        the various performance statistics in real time, it must
+        be prepared to retroactively reduce the ES and SES counts
+        (by the value of pwCepCfgSesToUas) and increase the UAS
+        count (by that same value) when it determines that UAS
+        state has been entered."
+   ::= { pwCepPerf1DayIntervalEntry 21 }
+
+pwCepPerf1DayIntervalFC OBJECT-TYPE
+   SYNTAX        Counter32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "CEP Failure Counts (FC-CEP).  The number of CEP failure
+        events.  A failure event begins when the LOPS failure
+        is declared and ends when the failure is cleared."
+   ::= { pwCepPerf1DayIntervalEntry 22 }
+
+-- End of CEP Performance 1-Day Table
+
+
+
+-- Conformance information
+
+pwCepGroups      OBJECT IDENTIFIER ::= { pwCepConformance 1 }
+
+pwCepCompliances OBJECT IDENTIFIER ::= { pwCepConformance 2 }
+
+-- Compliance statement for full compliant implementations
+
+pwCepModuleFullCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+       "The compliance statement for agents that support
+        full CEP PW configuration through this MIB module."
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { pwCepGroup,
+                           pwCepCfgGroup,
+                           pwCepPerfCurrentGroup,
+                           pwCepPerfIntervalGroup,
+                           pwCepPerf1DayIntervalGroup
+                         }
+
+   GROUP        pwCepFractionalGroup
+   DESCRIPTION  "This group is only mandatory for implementations
+                 that support fractional SPE."
+
+   GROUP        pwCepFractionalSts1Vc3Group
+   DESCRIPTION  "This group is only mandatory for implementations
+                 that support the fractional STS-1/VC-3."
+
+   GROUP        pwCepFractionalVc4Group
+   DESCRIPTION  "This group is only mandatory for implementations
+                 that support the fractional VC-4."
+
+   GROUP        pwCepSignalingGroup
+   DESCRIPTION  "This group is only mandatory for implementations
+                 that support the CEP PW signaling."
+
+   OBJECT       pwCepType
+   SYNTAX       INTEGER { spe(1) }
+   MIN-ACCESS   read-only
+   DESCRIPTION  "The support of the value vt(2) or fracSpe(3) is
+                 optional.  If either of these options are
+                 supported, read-write access is not required."
+
+
+
+
+
+
+
+   OBJECT       pwCepSonetPayloadLength
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only the default values (which are
+                 based on the pwCepType)."
+
+   OBJECT       pwCepCfgMinPktLength
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepCfgEnableDBA
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepCfgRtpHdrSuppress
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that do not support RTP header for CEP
+                 connections."
+
+   OBJECT       pwCepCfgConsecPktsInsync
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepCfgConsecMissingOutSync
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepCfgPktErrorPlayOutValue
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepCfgMissingPktsToSes
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepCfgSesToUas
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepCfgSecsToExitUas
+
+
+
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepCfgName
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgRowStatus
+   SYNTAX       RowStatus { active(1), notInService(2),
+                            notReady(3) }
+   WRITE-SYNTAX RowStatus { active(1), notInService(2),
+                            createAndGo(4), destroy(6)
+                          }
+   DESCRIPTION  "Support for createAndWait is not required."
+
+   OBJECT       pwCepFracMode
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepFracAsync
+   SYNTAX       PwCepFracAsyncMap { other(1) }
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Support for ds3(2) or e3(3) and read-write access
+                 is not required if the implementations do not
+                 support these options."
+
+   OBJECT       pwCepFracVtgMap
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepFracEbm
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 where the EBM is derived from configuration in
+                 other MIB modules."
+
+   OBJECT       pwCepFracSdhVc4Mode
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepFracSdhVc4Tu3Map1
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+
+
+   OBJECT       pwCepFracSdhVc4Tu3Map2
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepFracSdhVc4Tu3Map3
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepFracSdhVc4Tug2Map1
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepFracSdhVc4Tug2Map2
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepFracSdhVc4Tug2Map3
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 that support only a single predefined value."
+
+   OBJECT       pwCepFracSdhVc4Ebm1
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 where the EBM is derived from configuration in
+                 other MIB modules."
+
+   OBJECT       pwCepFracSdhVc4Ebm2
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 where the EBM is derived from configuration in
+                 other MIB modules."
+
+   OBJECT       pwCepFracSdhVc4Ebm3
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required for implementations
+                 where the EBM is derived from configuration in
+                 other MIB modules."
+
+
+
+
+
+
+
+
+
+   OBJECT       pwCepFracRowStatus
+   SYNTAX       RowStatus { active(1), notInService(2),
+                            notReady(3) }
+   WRITE-SYNTAX RowStatus { active(1), notInService(2),
+                            createAndGo(4), destroy(6)
+                          }
+   DESCRIPTION  "Support for createAndWait is not required."
+
+    ::= { pwCepCompliances 1 }
+
+-- Compliance requirement for read-only compliant implementations
+
+pwCepModuleReadOnlyCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+       "The compliance statement for agents that provide
+        read-only support for the PW CEP MIB Module.  Such
+        devices can be monitored but cannot be configured
+        using this MIB module."
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { pwCepGroup,
+                           pwCepCfgGroup,
+                           pwCepPerfCurrentGroup,
+                           pwCepPerfIntervalGroup,
+                           pwCepPerf1DayIntervalGroup
+                         }
+
+   GROUP        pwCepFractionalGroup
+   DESCRIPTION  "This group is only mandatory for implementations
+                 that support fractional SPE."
+
+   GROUP        pwCepFractionalSts1Vc3Group
+   DESCRIPTION  "This group is only mandatory for implementations
+                 that support the fractional STS-1/VC-3."
+
+   GROUP        pwCepFractionalVc4Group
+   DESCRIPTION  "This group is only mandatory for implementations
+                 that support the fractional VC-4."
+
+   GROUP        pwCepSignalingGroup
+   DESCRIPTION  "This group is only mandatory for implementations
+                 that support the CEP PW signaling."
+
+   OBJECT       pwCepType
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+
+
+
+   OBJECT       pwCepSonetIfIndex
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgIndex
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepSonetPayloadLength
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgMinPktLength
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgEnableDBA
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgRtpHdrSuppress
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgJtrBfrDepth
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgConsecPktsInsync
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgConsecMissingOutSync
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgPktErrorPlayOutValue
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgMissingPktsToSes
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgSesToUas
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+
+
+
+   OBJECT       pwCepCfgSecsToExitUas
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgRowStatus
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepCfgStorageType
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracMode
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracAsync
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracVtgMap
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracEbm
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracSdhVc4Mode
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracSdhVc4Tu3Map1
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracSdhVc4Tu3Map2
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracSdhVc4Tu3Map3
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracSdhVc4Tug2Map1
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+
+
+
+   OBJECT       pwCepFracSdhVc4Tug2Map2
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracSdhVc4Tug2Map3
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracSdhVc4Ebm1
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracSdhVc4Ebm2
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracSdhVc4Ebm3
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracRowStatus
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+   OBJECT       pwCepFracStorageType
+   MIN-ACCESS   read-only
+   DESCRIPTION  "Write access is not required."
+
+     ::= { pwCepCompliances 2 }
+
+-- Units of conformance
+
+pwCepGroup OBJECT-GROUP
+   OBJECTS {
+            pwCepType,
+            pwCepSonetIfIndex,
+            pwCepSonetConfigErrorOrStatus,
+            pwCepCfgIndex,
+            pwCepTimeElapsed,
+            pwCepValidIntervals,
+            pwCepIndications,
+            pwCepLastEsTimeStamp
+            }
+   STATUS  current
+   DESCRIPTION
+       "Collection of objects for basic CEP PW config and
+        status."
+   ::= { pwCepGroups 1 }
+
+
+
+pwCepSignalingGroup OBJECT-GROUP
+   OBJECTS {
+            pwCepPeerCepOption
+          }
+   STATUS  current
+   DESCRIPTION
+       "Collection of objects required if the network element
+        support CEP connections signaling."
+   ::= { pwCepGroups 2 }
+
+pwCepCfgGroup OBJECT-GROUP
+   OBJECTS {
+            pwCepCfgIndexNext,
+
+            pwCepSonetPayloadLength,
+            pwCepCfgMinPktLength,
+            pwCepCfgPktReorder,
+            pwCepCfgEnableDBA,
+
+            pwCepCfgRtpHdrSuppress,
+
+            pwCepCfgJtrBfrDepth,
+
+            pwCepCfgConsecPktsInsync,
+            pwCepCfgConsecMissingOutSync,
+
+            pwCepCfgPktErrorPlayOutValue,
+
+            pwCepCfgMissingPktsToSes,
+            pwCepCfgSesToUas,
+            pwCepCfgSecsToExitUas,
+
+            pwCepCfgName,
+
+            pwCepCfgRowStatus,
+
+            pwCepCfgStorageType
+   }
+   STATUS  current
+   DESCRIPTION
+       "Collection of detailed objects needed to
+        configure CEP PWs."
+   ::= { pwCepGroups 3 }
+
+pwCepPerfCurrentGroup OBJECT-GROUP
+   OBJECTS {
+            pwCepPerfCurrentDbaInPacketsHC,
+            pwCepPerfCurrentDbaOutPacketsHC,
+
+
+
+            pwCepPerfCurrentInNegPtrAdjust,
+            pwCepPerfCurrentInPosPtrAdjust,
+            pwCepPerfCurrentInPtrAdjustSecs,
+            pwCepPerfCurrentOutNegPtrAdjust,
+            pwCepPerfCurrentOutPosPtrAdjust,
+            pwCepPerfCurrentOutPtrAdjustSecs,
+            pwCepPerfCurrentAbsPtrAdjust,
+            pwCepPerfCurrentMissingPkts,
+            pwCepPerfCurrentPktsOoseq,
+            pwCepPerfCurrentPktsOoRngDropped,
+            pwCepPerfCurrentJtrBfrUnderruns,
+            pwCepPerfCurrentPktsMalformed,
+            pwCepPerfCurrentSummaryErrors,
+
+            pwCepPerfCurrentESs,
+            pwCepPerfCurrentSESs,
+            pwCepPerfCurrentUASs,
+            pwCepPerfCurrentFC
+            }
+   STATUS  current
+   DESCRIPTION
+       "Collection of statistics objects for CEP PWs."
+   ::= { pwCepGroups 4 }
+
+pwCepPerfIntervalGroup OBJECT-GROUP
+   OBJECTS {
+            pwCepPerfIntervalValidData,
+            pwCepPerfIntervalReset,
+            pwCepPerfIntervalTimeElapsed,
+
+            pwCepPerfIntervalDbaInPacketsHC,
+            pwCepPerfIntervalDbaOutPacketsHC,
+
+            pwCepPerfIntervalInNegPtrAdjust,
+            pwCepPerfIntervalInPosPtrAdjust,
+            pwCepPerfIntervalInPtrAdjustSecs,
+            pwCepPerfIntervalOutNegPtrAdjust,
+            pwCepPerfIntervalOutPosPtrAdjust,
+            pwCepPerfIntervalOutPtrAdjustSecs,
+            pwCepPerfIntervalAbsPtrAdjust,
+
+            pwCepPerfIntervalMissingPkts,
+            pwCepPerfIntervalPktsOoseq,
+            pwCepPerfIntervalPktsOoRngDropped,
+            pwCepPerfIntervalJtrBfrUnderruns,
+            pwCepPerfIntervalPktsMalformed,
+            pwCepPerfIntervalSummaryErrors,
+
+
+
+
+            pwCepPerfIntervalESs,
+            pwCepPerfIntervalSESs,
+            pwCepPerfIntervalUASs,
+            pwCepPerfIntervalFC
+
+   }
+   STATUS  current
+   DESCRIPTION
+       "Collection of statistics objects for CEP PWs."
+   ::= { pwCepGroups 5 }
+
+pwCepPerf1DayIntervalGroup OBJECT-GROUP
+   OBJECTS {
+            pwCepPerf1DayIntervalValidData,
+            pwCepPerf1DayIntervalMoniSecs,
+
+            pwCepPerf1DayIntervalDbaInPacketsHC,
+            pwCepPerf1DayIntervalDbaOutPacketsHC,
+
+            pwCepPerf1DayIntervalInNegPtrAdjust,
+            pwCepPerf1DayIntervalInPosPtrAdjust,
+            pwCepPerf1DayIntervalInPtrAdjustSecs,
+            pwCepPerf1DayIntervalOutNegPtrAdjust,
+            pwCepPerf1DayIntervalOutPosPtrAdjust,
+            pwCepPerf1DayIntervalOutPtrAdjustSecs,
+            pwCepPerf1DayIntervalAbsPtrAdjust,
+
+            pwCepPerf1DayIntervalMissingPkts,
+            pwCepPerf1DayIntervalPktsOoseq,
+            pwCepPerf1DayIntervalPktsOoRngDropped,
+            pwCepPerf1DayIntervalJtrBfrUnderruns,
+            pwCepPerf1DayIntervalPktsMalformed,
+            pwCepPerf1DayIntervalSummaryErrors,
+
+            pwCepPerf1DayIntervalESs,
+            pwCepPerf1DayIntervalSESs,
+            pwCepPerf1DayIntervalUASs,
+            pwCepPerf1DayIntervalFC
+            }
+   STATUS  current
+   DESCRIPTION
+       "Collection of statistics objects for CEP PWs."
+   ::= { pwCepGroups 6 }
+
+
+
+
+
+
+
+
+pwCepFractionalGroup OBJECT-GROUP
+   OBJECTS {
+            pwCepFracRowStatus,
+            pwCepFracStorageType
+   }
+   STATUS  current
+   DESCRIPTION
+       "Collection of fractional SPE objects.  These objects
+        are optional and should be supported only if
+        fractional SPE is supported within the network
+        element."
+   ::= { pwCepGroups 7 }
+
+pwCepFractionalSts1Vc3Group OBJECT-GROUP
+   OBJECTS {
+            pwCepFracMode,
+            pwCepFracConfigError,
+            pwCepFracAsync,
+            pwCepFracVtgMap,
+            pwCepFracEbm,
+            pwCepFracPeerEbm
+   }
+   STATUS  current
+   DESCRIPTION
+       "Collection of fractional STS-1/VC3 objects.  These
+        objects are optional and should be supported only if
+        fractional STS-1/VC3 is supported within the network
+        element."
+   ::= { pwCepGroups 8 }
+
+pwCepFractionalVc4Group OBJECT-GROUP
+   OBJECTS {
+            pwCepFracSdhVc4Mode,
+            pwCepFracSdhVc4Tu3Map1,
+            pwCepFracSdhVc4Tu3Map2,
+            pwCepFracSdhVc4Tu3Map3,
+            pwCepFracSdhVc4Tug2Map1,
+            pwCepFracSdhVc4Tug2Map2,
+            pwCepFracSdhVc4Tug2Map3,
+            pwCepFracSdhVc4Ebm1,
+            pwCepFracSdhVc4Ebm2,
+            pwCepFracSdhVc4Ebm3,
+            pwCepFracSdhVc4PeerEbm1,
+            pwCepFracSdhVc4PeerEbm2,
+            pwCepFracSdhVc4PeerEbm3
+   }
+   STATUS  current
+
+
+
+
+   DESCRIPTION
+       "Collection of fractional VC4 objects.  These objects
+        are optional and should be supported only if
+        fractional VC4 is supported within the network
+        element."
+   ::= { pwCepGroups 9 }
+
+END

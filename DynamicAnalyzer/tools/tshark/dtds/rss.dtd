@@ -1,0 +1,109 @@
+<? wireshark:protocol proto_name="rss" hierarchy="yes" ?>
+<!--
+$Id:$
+-->
+
+<!--
+    this DTD is made so that wireshark can dissect RSS up to 2.0, do not try to use it for validating RSS documents
+    http://blogs.law.harvard.edu/tech/rss
+-->
+
+<!ELEMENT rss (channel) >
+
+<!ATTLIST rss version CDATA #REQUIRED >
+
+<!ELEMENT channel ( title
+                  | description
+                  | link
+                  | language
+                  | item+
+                  | rating?
+                  | image?
+                  | textinput?
+                  | copyright?
+                  | pubDate?
+                  | lastBuildDate?
+                  | docs?
+                  | managingEditor?
+                  | webMaster?
+                  | skipHours?
+                  | skipDays?
+                  
+                  | cloud
+                  | ttl
+                  )*>
+
+<!ELEMENT title (#PCDATA)>
+
+<!ELEMENT description (#PCDATA)>
+
+<!ELEMENT link (#PCDATA)>
+
+<!ELEMENT image (title | url | link | width? | height? | description?)*>
+
+<!ELEMENT url (#PCDATA)>
+
+<!ELEMENT item ( title | link | description
+               | author | category | comments | enclosure | guid | pubDate | source )*>
+
+<!ELEMENT textinput (title | description | name | link)*>
+
+<!ELEMENT name (#PCDATA)>
+
+<!ELEMENT rating (#PCDATA)>
+
+<!ELEMENT language (#PCDATA)>
+
+<!ELEMENT width (#PCDATA)>
+
+<!ELEMENT height (#PCDATA)>
+
+<!ELEMENT copyright (#PCDATA)>
+
+<!ELEMENT pubDate (#PCDATA)>
+
+<!ELEMENT lastBuildDate (#PCDATA)>
+
+<!ELEMENT docs (#PCDATA)>
+
+<!ELEMENT managingEditor (#PCDATA)>
+
+<!ELEMENT webMaster (#PCDATA)>
+
+<!ELEMENT hour (#PCDATA)>
+
+<!ELEMENT day (#PCDATA)>
+
+<!ELEMENT skipHours (hour+)>
+
+<!ELEMENT skipDays (day+)>
+
+<!ELEMENT cloud (#PCDATA)>
+
+<!ATTLIST cloud domain CDATA #IMPLIED
+                port CDATA #IMPLIED
+                registerProcedure CDATA #IMPLIED
+                protocol CDATA #IMPLIED
+                path CDATA #IMPLIED >
+                    
+<!ELEMENT ttl (#PCDATA)>
+
+<!ELEMENT source (#PCDATA)>
+<!ATTLIST source url CDATA #IMPLIED >
+
+<!ELEMENT enclosure (#PCDATA)>
+<!ATTLIST enclosure url CDATA #IMPLIED
+                    length CDATA #IMPLIED
+                    type CDATA #IMPLIED >
+
+
+<!ELEMENT category (#PCDATA)>
+<!ATTLIST category domain CDATA #IMPLIED >
+
+<!ELEMENT guid (#PCDATA)>
+<!ATTLIST guid isPermaLink CDATA #IMPLIED >
+
+<!ELEMENT author (#PCDATA)>
+
+<!ELEMENT comments (#PCDATA)>
+

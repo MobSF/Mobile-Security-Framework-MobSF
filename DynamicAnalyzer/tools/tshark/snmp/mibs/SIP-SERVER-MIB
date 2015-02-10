@@ -1,0 +1,901 @@
+SIP-SERVER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Counter32,
+    Unsigned32,
+    Gauge32,
+    mib-2
+          FROM SNMPv2-SMI             -- RFC 2578
+
+    TruthValue,
+    TimeStamp, DateAndTime
+          FROM SNMPv2-TC              -- RFC 2579
+
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+          FROM SNMPv2-CONF            -- RFC 2580
+
+    SnmpAdminString
+          FROM SNMP-FRAMEWORK-MIB     -- RFC 3411
+
+
+    applIndex
+          FROM NETWORK-SERVICES-MIB   -- RFC 2788
+
+    InetAddressType,
+    InetAddress
+          FROM INET-ADDRESS-MIB;      -- RFC 4001
+
+sipServerMIB MODULE-IDENTITY
+    LAST-UPDATED   "200704200000Z"
+    ORGANIZATION   "IETF Session Initiation Protocol
+                    Working Group"
+    CONTACT-INFO
+       "SIP WG email: sip@ietf.org
+
+           Co-editor: Kevin Lingle
+                      Cisco Systems, Inc.
+              postal: 7025 Kit Creek Road
+                      P.O. Box 14987
+                      Research Triangle Park, NC 27709
+                      USA
+             email:   klingle@cisco.com
+             phone:   +1 919 476 2029
+
+           Co-editor: Joon Maeng
+               email: jmaeng@austin.rr.com
+
+           Co-editor: Jean-Francois Mule
+                      CableLabs
+              postal: 858 Coal Creek Circle
+                      Louisville, CO 80027
+                      USA
+               email: jf.mule@cablelabs.com
+               phone: +1 303 661 9100
+
+           Co-editor: Dave Walker
+               email: drwalker@rogers.com
+          "
+    DESCRIPTION
+       "Session Initiation Protocol (SIP) Server MIB module.  SIP is an
+        application-layer signaling protocol for creating, modifying,
+        and terminating multimedia sessions with one or more
+        participants.  These sessions include Internet multimedia
+        conferences and Internet telephone calls.  SIP is defined in
+        RFC 3261 (June 2002).
+
+        This MIB is defined for the management of SIP Proxy, Redirect,
+        and Registrar Servers.
+
+
+
+        A Proxy Server acts as both a client and a server.  It accepts
+        requests from other clients, either responding to them or
+        passing them on to other servers, possibly after modification.
+
+        A Redirect Server accepts requests from clients and returns
+        zero or more addresses to that client.  Unlike a User Agent
+        Server, it does not accept calls.
+
+        A Registrar is a server that accepts REGISTER requests.  A
+        Registrar is typically co-located with a Proxy or Redirect
+        Server.
+
+        Copyright (C) The IETF Trust (2007).  This version of
+        this MIB module is part of RFC 4780; see the RFC itself for
+        full legal notices."
+    REVISION        "200704200000Z"
+    DESCRIPTION
+       "Initial version of the IETF SIP-SERVER-MIB module.  This
+       version published as part of RFC 4780."
+  ::= { mib-2 151 }
+
+-- Top-Level Components of this MIB.
+
+sipServerMIBObjects     OBJECT IDENTIFIER ::= { sipServerMIB 1 }
+sipServerMIBConformance OBJECT IDENTIFIER ::= { sipServerMIB 2 }
+
+--
+-- These groups contain objects common to all SIP servers.
+--
+sipServerCfg            OBJECT IDENTIFIER ::= { sipServerMIBObjects 1 }
+
+--
+-- Common Server Configuration Objects
+--
+sipServerCfgTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SipServerCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This table contains configuration objects applicable to SIP
+        Redirect and Proxy Servers."
+    ::= { sipServerCfg 1 }
+
+sipServerCfgEntry OBJECT-TYPE
+    SYNTAX      SipServerCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+
+
+       "A row of common configuration.
+
+        Each row represents those objects for a particular SIP server
+        present in this system.  applIndex is used to uniquely identify
+        these instances of SIP servers and correlate them through
+        the common framework of the NETWORK-SERVICES-MIB (RFC 2788).
+        The same value of applIndex used in the corresponding
+        SIP-COMMON-MIB is used here."
+    INDEX { applIndex }
+    ::= { sipServerCfgTable 1 }
+
+SipServerCfgEntry ::=
+    SEQUENCE {
+        sipServerCfgHostAddressType       InetAddressType,
+        sipServerCfgHostAddress           InetAddress
+    }
+
+sipServerCfgHostAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-only
+
+    STATUS      current
+    DESCRIPTION
+       "The type of Internet address by which the SIP server is
+        reachable."
+    REFERENCE
+       "RFC 3261, Section 19.1.1"
+    ::= { sipServerCfgEntry 1 }
+
+sipServerCfgHostAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This is the host portion of a SIP URI that is assigned to the
+        SIP server.  It MAY contain a fully qualified domain name or
+        an IP address.  The length of the value will depend on the type
+        of address specified.  The type of address given by this object
+        is controlled by sipServerCfgHostAddressType."
+    REFERENCE
+       "RFC 3261, Section 19.1.1"
+    ::= { sipServerCfgEntry 2 }
+
+--
+-- This group contains MIB objects
+-- related to SIP Proxy Servers.
+--
+sipServerProxyCfg      OBJECT IDENTIFIER ::= { sipServerMIBObjects 3 }
+
+
+sipServerProxyStats    OBJECT IDENTIFIER ::= { sipServerMIBObjects 4 }
+
+--
+-- Proxy Server Configuration
+--
+sipServerProxyCfgTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SipServerProxyCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This table contains configuration objects applicable to SIP
+        Proxy Servers."
+    ::= { sipServerProxyCfg 1 }
+
+sipServerProxyCfgEntry OBJECT-TYPE
+    SYNTAX      SipServerProxyCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "A row of common proxy configuration.
+
+        Each row represents those objects for a particular SIP server
+        present in this system.  applIndex is used to uniquely identify
+        these instances of SIP servers and correlate them through the
+        common framework of the NETWORK-SERVICES-MIB (RFC 2788).  The
+        same value of applIndex used in the corresponding
+        SIP-COMMON-MIB is used here."
+    INDEX { applIndex }
+    ::= { sipServerProxyCfgTable 1 }
+
+SipServerProxyCfgEntry ::=
+    SEQUENCE {
+        sipServerCfgProxyStatefulness     INTEGER,
+        sipServerCfgProxyRecursion        TruthValue,
+        sipServerCfgProxyRecordRoute      TruthValue,
+        sipServerCfgProxyAuthMethod       BITS,
+        sipServerCfgProxyAuthDefaultRealm SnmpAdminString
+    }
+
+sipServerCfgProxyStatefulness OBJECT-TYPE
+    SYNTAX      INTEGER {
+                  stateless(1),
+                  transactionStateful(2),
+                  callStateful(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+
+
+
+       "This object reflects the default mode of operation for the
+        Proxy Server entity.
+
+        A stateless proxy is a logical entity that does not maintain
+        the client or server transaction state machines when it
+        processes requests.  A stateless proxy forwards every request it
+        receives downstream and every response it receives upstream.  If
+        the value of this object is stateless(1), the proxy defaults to
+        stateless operations.
+
+        A transaction stateful proxy, or simply a 'stateful proxy', is
+        a logical entity that maintains the client and server
+        transaction state machines during the processing of a request.
+        A (transaction) stateful proxy is not the same as a call
+        stateful proxy.  If the value of this object is
+        transactionStateful(2), the proxy is stateful on a transaction
+        basis.
+
+        A call stateful proxy is a logical entity if it retains state
+        for a dialog from the initiating INVITE to the terminating BYE
+        request.  A call stateful proxy is always transaction stateful,
+        but the converse is not necessarily true.  If the value of this
+        object is callStateful(3), the proxy is call stateful."
+
+    REFERENCE
+        "RFC 3261, Section 16"
+    ::= { sipServerProxyCfgEntry 1 }
+
+sipServerCfgProxyRecursion OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object reflects whether or not the Proxy performs a
+        recursive search on the Contacts provided in 3xx redirects.
+
+        If the value of this object is 'true', a recursive search is
+        performed.  If the value is 'false', no search is performed,
+        and the 3xx response is sent upstream towards the source of
+        the request."
+    REFERENCE
+       "RFC 3261 Sections 16.5 and 16.6"
+    ::= { sipServerProxyCfgEntry 2 }
+
+sipServerCfgProxyRecordRoute OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-only
+    STATUS     current
+
+
+    DESCRIPTION
+       "This object reflects whether or not the proxy adds itself to
+        the Record-Route header as a default action.  This header is
+        used to list the proxies that insist on being in the signaling
+        path for subsequent requests related to the call leg.
+
+        If the value of this object is 'true', the proxy adds itself to
+        the end of the Record-Route header, creating the header if
+        required.  If the value is 'false', the proxy does not add
+        itself to the Record-Route header."
+    REFERENCE
+       "RFC 3261, Section 20.30"
+    ::= { sipServerProxyCfgEntry 3 }
+
+--
+-- Security
+--
+sipServerCfgProxyAuthMethod OBJECT-TYPE
+    SYNTAX      BITS {
+                  none(0),
+                  tls(1),
+                  digest(2)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object reflects the authentication methods that MAY be
+        used to authenticate request originators.
+
+        bit 0  no authentication is performed
+        bit 1  TLS is used
+        bit 2  HTTP Digest is used."
+    REFERENCE
+       "RFC 3261 Sections 22, 23, 26, 26.2.3"
+    ::= { sipServerProxyCfgEntry 4 }
+
+sipServerCfgProxyAuthDefaultRealm OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object reflects the default realm value used in
+        Proxy-Authenticate headers.  Note that this MAY need to be
+        stored per user, in which case, this default value is ignored.
+       "
+    REFERENCE
+       "RFC 3261, Section 22.1"
+    ::= { sipServerProxyCfgEntry 5 }
+
+
+--
+-- Proxy Server Statistics
+--
+sipServerProxyStatsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SipServerProxyStatsEntry
+    MAX-ACCESS  not-accessible
+
+    STATUS      current
+    DESCRIPTION
+       "This table contains the statistics objects applicable to all
+        SIP Proxy Servers in this system."
+    ::= { sipServerProxyStats 1 }
+
+sipServerProxyStatsEntry OBJECT-TYPE
+    SYNTAX      SipServerProxyStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "A row of summary statistics.
+
+        Each row represents those objects for a particular SIP server
+        present in this system.  applIndex is used to uniquely identify
+        these instances of SIP servers and correlate them through the
+        common framework of the NETWORK-SERVICES-MIB (RFC 2788).  The
+        same value of applIndex used in the corresponding
+        SIP-COMMON-MIB is used here."
+    INDEX { applIndex }
+    ::= { sipServerProxyStatsTable 1 }
+
+SipServerProxyStatsEntry ::=
+    SEQUENCE {
+        sipServerProxyStatProxyReqFailures Counter32,
+        sipServerProxyStatsDisconTime      TimeStamp
+    }
+
+sipServerProxyStatProxyReqFailures OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object contains the number of occurrences of unsupported
+        options being specified in received Proxy-Require headers.
+        Such occurrences result in a 420 Bad Extension status code
+        being returned.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the SIP entity or service.  A Management
+        Station can detect discontinuities in this counter by
+
+
+        monitoring the sipServerProxyStatsDisconTime object in the same
+        row."
+    ::= { sipServerProxyStatsEntry 1 }
+
+sipServerProxyStatsDisconTime OBJECT-TYPE
+ SYNTAX      TimeStamp
+ MAX-ACCESS  read-only
+ STATUS      current
+ DESCRIPTION
+    "The value of the sysUpTime object when the counters for the server
+     statistics objects in this row last experienced a discontinuity."
+ ::= { sipServerProxyStatsEntry 2 }
+
+--
+-- This group contains MIB objects related to SIP Registrars.
+--
+sipServerRegCfg         OBJECT IDENTIFIER ::= { sipServerMIBObjects 5 }
+sipServerRegStats       OBJECT IDENTIFIER ::= { sipServerMIBObjects 6 }
+
+--
+-- Registrar Configuration
+--
+sipServerRegCfgTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SipServerRegCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This table contains configuration objects applicable to SIP
+        Registrars."
+    ::= { sipServerRegCfg 1 }
+
+sipServerRegCfgEntry OBJECT-TYPE
+    SYNTAX      SipServerRegCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "A row of common Registrar configuration.
+
+        Each row represents those objects for a particular SIP server
+        present in this system.  applIndex is used to uniquely identify
+        these instances of SIP servers and correlate them through the
+        common framework of the NETWORK-SERVICES-MIB (RFC 2788).  The
+        same value of applIndex used in the corresponding
+        SIP-COMMON-MIB is used here."
+    INDEX { applIndex }
+    ::= { sipServerRegCfgTable 1 }
+
+SipServerRegCfgEntry ::=
+
+
+    SEQUENCE {
+        sipServerRegMaxContactExpiryDuration  Unsigned32,
+        sipServerRegMaxUsers                  Unsigned32,
+        sipServerRegCurrentUsers              Gauge32,
+        sipServerRegDfltRegActiveInterval     Unsigned32
+    }
+
+sipServerRegMaxContactExpiryDuration OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..4294967295)
+    UNITS      "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object reflects the maximum expiry that may be requested
+        by a User Agent for a particular Contact.  User Agents can
+        specify expiry using either an Expiry header in a REGISTER
+        request, or using an Expires parameter in a Contact header in
+        a REGISTER request.  If the value requested by the User Agent
+        is greater than the value of this object, then the contact
+        information is given the duration specified by this object, and
+        that duration is indicated to the User Agent in the response."
+    ::= { sipServerRegCfgEntry 1 }
+
+sipServerRegMaxUsers OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object reflects the maximum number of users that the
+        Registrar supports.  The current number of users is reflected
+        by sipServerRegCurrentUsers."
+    ::= { sipServerRegCfgEntry 2 }
+
+sipServerRegCurrentUsers OBJECT-TYPE
+    SYNTAX      Gauge32 (0..4294967295)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object reflects the number of users currently registered
+        with the Registrar."
+    ::= { sipServerRegCfgEntry 3 }
+
+sipServerRegDfltRegActiveInterval OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    UNITS      "seconds"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+
+
+       "This object reflects the default time interval the Registrar
+        considers registrations to be active.  The value is used to
+        compute the Expires header in the REGISTER response.  If a user
+        agent requests a time interval shorter than specified by this
+        object, the Registrar SHOULD honor that request.  If a Contact
+        entry does not have an 'expires' parameter, the value of the
+        Expires header field is used instead.  If a Contact entry has no
+        'expires' parameter and no Expires header field is present,
+        the value of this object is used as the default value."
+    REFERENCE
+       "RFC 3261, Section 10.2"
+    ::= { sipServerRegCfgEntry 4 }
+--
+-- Per User Information
+--
+sipServerRegUserTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SipServerRegUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This table contains information on all users registered to each
+        Registrar in this system."
+    ::= { sipServerRegCfg 2 }
+
+sipServerRegUserEntry OBJECT-TYPE
+    SYNTAX      SipServerRegUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This entry contains information for a single user registered to
+        this Registrar.
+
+        Each row represents those objects for a particular SIP server
+        present in this system.  applIndex is used to uniquely identify
+        these instances of SIP servers and correlate them through the
+        common framework of the NETWORK-SERVICES-MIB (RFC 2788).  The
+        same value of applIndex used in the corresponding
+        SIP-COMMON-MIB is used here."
+    INDEX { applIndex, sipServerRegUserIndex }
+    ::= { sipServerRegUserTable 1 }
+
+SipServerRegUserEntry ::=
+    SEQUENCE {
+        sipServerRegUserIndex                  Unsigned32,
+        sipServerRegUserUri                    SnmpAdminString,
+        sipServerRegUserAuthenticationFailures Counter32,
+        sipServerRegUserDisconTime             TimeStamp
+    }
+
+
+sipServerRegUserIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This object uniquely identifies a conceptual row in the table."
+    ::= { sipServerRegUserEntry 1 }
+
+sipServerRegUserUri OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object contains the user's address-of-record.  It is the
+        main form by which the Registrar knows the user.  The format is
+        typically 'user@domain'.  It is contained in the To header for
+        all REGISTER requests."
+    ::= { sipServerRegUserEntry 2 }
+
+sipServerRegUserAuthenticationFailures OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object contains a count of the number of times the user
+        has failed authentication.
+
+        Discontinuities in the value of this counter can occur due to
+        successful user authentications and at re-initialization of
+        the SIP entity or service.  A Management Station can detect
+        discontinuities in this counter by monitoring the
+        sipServerRegUserDisconTime object in the same row."
+    ::= { sipServerRegUserEntry 3 }
+
+sipServerRegUserDisconTime OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The value of the sysUpTime object when the counters for the
+        user registration statistics objects in this row last
+        experienced a discontinuity."
+    ::= { sipServerRegUserEntry 4 }
+--
+-- Per Contact Information
+--
+sipServerRegContactTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SipServerRegContactEntry
+
+
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This table contains information on every location where a
+        registered user (specified by sipServerRegUserIndex) wishes to
+        be found (i.e., the user has provided contact information to
+        each SIP Registrar in this system)."
+    ::= { sipServerRegCfg 3 }
+
+sipServerRegContactEntry OBJECT-TYPE
+    SYNTAX      SipServerRegContactEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This entry contains information for a single Contact.  Multiple
+        contacts may exist for a single user.
+
+        Each row represents those objects for a particular SIP server
+        present in this system.  applIndex is used to uniquely identify
+        these instances of SIP servers and correlate them through the
+        common framework of the NETWORK-SERVICES-MIB (RFC 2788).  The
+        same value of applIndex used in the corresponding
+        SIP-COMMON-MIB is used here."
+
+    INDEX { applIndex,
+            sipServerRegUserIndex,
+            sipServerRegContactIndex
+          }
+    ::= { sipServerRegContactTable 1 }
+
+SipServerRegContactEntry ::=
+    SEQUENCE {
+        sipServerRegContactIndex        Unsigned32,
+        sipServerRegContactDisplayName  SnmpAdminString,
+        sipServerRegContactURI          SnmpAdminString,
+        sipServerRegContactLastUpdated  TimeStamp,
+        sipServerRegContactExpiry       DateAndTime,
+        sipServerRegContactPreference   SnmpAdminString
+    }
+
+sipServerRegContactIndex OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "Along with the sipServerRegUserIndex, this object uniquely
+        identifies a conceptual row in the table."
+    ::= { sipServerRegContactEntry 1 }
+
+
+sipServerRegContactDisplayName OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object contains the display name for the Contact.  For
+        example, 'Santa at Home', or 'Santa on his Sled', corresponding
+        to contact URIs of sip:BigGuy@example.com or
+        sip:sclaus817@example.com, respectively."
+    ::= { sipServerRegContactEntry 2 }
+
+sipServerRegContactURI OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object contains either a SIP URI where the user can be
+        contacted.  This URI is normally returned to a client from a
+        Redirect Server, or is used as the RequestURI in a SIP request
+        line for requests forwarded by a proxy."
+    ::= { sipServerRegContactEntry 3 }
+
+sipServerRegContactLastUpdated OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object indicates the time when this contact information
+        was accepted.  If the contact information is updated via a
+        subsequent REGISTER of the same information, this object is
+        also updated."
+    ::= { sipServerRegContactEntry 4 }
+
+sipServerRegContactExpiry OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object contains the date and time when the contact
+        information will no longer be valid.  Such times may be
+        specified by the user at registration (i.e., Expires header or
+        expiry parameter in the Contact information), or a system
+        default can be applied."
+    ::= { sipServerRegContactEntry 5 }
+
+sipServerRegContactPreference OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+
+
+
+    STATUS      current
+    DESCRIPTION
+       "This object indicates a relative preference for the particular
+        Contact header field value compared to other bindings for this
+        address-of-record.  A registering user may provide this
+        preference as a 'qvalue' parameter in the Contact header.
+
+        The format of this item is a decimal number between 0 and 1
+        (for example 0.9).  Higher values indicate locations preferred
+        by the user."
+    REFERENCE
+       "RFC 3261, Section 10.2.1.2, 16.6, and 20.10"
+    ::= { sipServerRegContactEntry 6 }
+
+--
+-- Registrar Statistics
+--
+sipServerRegStatsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SipServerRegStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This table contains the summary statistics objects applicable
+        to all SIP Registrars in this system."
+    ::= { sipServerRegStats 1 }
+
+sipServerRegStatsEntry OBJECT-TYPE
+    SYNTAX      SipServerRegStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "A row of summary statistics.
+
+        Each row represents those objects for a particular SIP server
+        present in this system.  applIndex is used to uniquely identify
+        these instances of SIP servers and correlate them through the
+        common framework of the NETWORK-SERVICES-MIB (RFC 2788).  The
+        same value of applIndex used in the corresponding
+        SIP-COMMON-MIB is used here."
+    INDEX { applIndex }
+    ::= { sipServerRegStatsTable 1 }
+
+SipServerRegStatsEntry ::=
+    SEQUENCE {
+        sipServerRegStatsAcceptedRegs     Counter32,
+        sipServerRegStatsRejectedRegs     Counter32,
+        sipServerRegStatsDisconTime       TimeStamp
+    }
+
+
+sipServerRegStatsAcceptedRegs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object contains a count of the number of REGISTER requests
+        that have been accepted (status code 200) by the Registrar.
+        This includes additions of new contact information, refreshing
+        contact information, as well as requests for deletion of
+        contact information.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the SIP entity or service.  A Management
+        Station can detect discontinuities in this counter by
+        monitoring the sipServerRegStatsDisconTime object in the same
+        row."
+    ::= { sipServerRegStatsEntry 1 }
+
+sipServerRegStatsRejectedRegs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "This object contains a count of the number REGISTER requests
+        that have been rejected by the Registrar.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the SIP entity or service.  A Management
+        Station can detect discontinuities in this counter by
+        monitoring the sipServerRegStatsDisconTime object in the same
+        row."
+  ::= { sipServerRegStatsEntry 2 }
+
+sipServerRegStatsDisconTime OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+       "The value of the sysUpTime object when the counters for the
+        registrar statistics objects in this row last experienced a
+        discontinuity."
+ ::= { sipServerRegStatsEntry 3 }
+
+--
+-- Conformance
+--
+sipServerMIBCompliances
+         OBJECT IDENTIFIER ::= { sipServerMIBConformance 1 }
+
+
+sipServerMIBGroups
+         OBJECT IDENTIFIER ::= { sipServerMIBConformance 2 }
+
+--
+-- Compliance Statements
+--
+sipServerProxyServerCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+       "The compliance statement for SIP entities acting as Proxy
+        Servers."
+    MODULE -- this module
+        MANDATORY-GROUPS { sipServerConfigGroup,
+                           sipServerProxyConfigGroup,
+                           sipServerProxyStatsGroup
+                         }
+    ::= { sipServerMIBCompliances 1 }
+
+sipRedirectServerCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+       "The compliance statement for SIP entities acting as Redirect
+        Servers."
+    MODULE -- this module
+        MANDATORY-GROUPS { sipServerConfigGroup }
+    ::= { sipServerMIBCompliances 2 }
+
+sipServerRegistrarServerCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+       "The compliance statement for SIP entities acting as
+        Registrars."
+    MODULE -- this module
+        MANDATORY-GROUPS { sipServerConfigGroup,
+                           sipServerRegistrarConfigGroup,
+                           sipServerRegistrarStatsGroup }
+    GROUP sipServerRegistrarUsersGroup
+    DESCRIPTION
+       "This is an optional group."
+    ::= { sipServerMIBCompliances 3 }
+
+--
+-- Units of Conformance
+--
+sipServerConfigGroup OBJECT-GROUP
+    OBJECTS {
+            sipServerCfgHostAddressType,
+            sipServerCfgHostAddress
+
+
+    }
+    STATUS      current
+    DESCRIPTION
+       "A collection of objects providing configuration common to SIP
+        Proxy and Redirect servers."
+    ::= { sipServerMIBGroups 1 }
+
+sipServerProxyConfigGroup OBJECT-GROUP
+    OBJECTS {
+            sipServerCfgProxyStatefulness,
+            sipServerCfgProxyRecursion,
+            sipServerCfgProxyRecordRoute,
+            sipServerCfgProxyAuthMethod,
+            sipServerCfgProxyAuthDefaultRealm
+    }
+    STATUS      current
+    DESCRIPTION
+       "A collection of objects providing configuration for SIP Proxy
+        servers."
+    ::= { sipServerMIBGroups 2 }
+
+sipServerProxyStatsGroup OBJECT-GROUP
+    OBJECTS {
+            sipServerProxyStatProxyReqFailures,
+            sipServerProxyStatsDisconTime
+    }
+    STATUS      current
+    DESCRIPTION
+       "A collection of objects providing statistics for SIP Proxy
+        servers."
+    ::= { sipServerMIBGroups 3 }
+
+sipServerRegistrarConfigGroup OBJECT-GROUP
+    OBJECTS {
+            sipServerRegMaxContactExpiryDuration,
+            sipServerRegMaxUsers,
+            sipServerRegCurrentUsers,
+            sipServerRegDfltRegActiveInterval
+    }
+    STATUS      current
+    DESCRIPTION
+       "A collection of objects providing configuration for SIP
+        Registrars."
+    ::= { sipServerMIBGroups 4 }
+
+sipServerRegistrarStatsGroup OBJECT-GROUP
+    OBJECTS {
+            sipServerRegStatsAcceptedRegs,
+
+
+            sipServerRegStatsRejectedRegs,
+            sipServerRegStatsDisconTime
+    }
+    STATUS      current
+    DESCRIPTION
+       "A collection of objects providing statistics for SIP
+        Registrars."
+    ::= { sipServerMIBGroups 5 }
+
+sipServerRegistrarUsersGroup OBJECT-GROUP
+    OBJECTS {
+            sipServerRegUserUri,
+            sipServerRegUserAuthenticationFailures,
+            sipServerRegUserDisconTime,
+            sipServerRegContactDisplayName,
+            sipServerRegContactURI,
+            sipServerRegContactLastUpdated,
+            sipServerRegContactExpiry,
+            sipServerRegContactPreference
+    }
+    STATUS      current
+    DESCRIPTION
+       "A collection of objects related to registered users."
+    ::= { sipServerMIBGroups 6 }
+
+END

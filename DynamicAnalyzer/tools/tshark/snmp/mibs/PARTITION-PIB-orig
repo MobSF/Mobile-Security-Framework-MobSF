@@ -1,0 +1,924 @@
+PARTITION-PIB PIB-DEFINITIONS ::= BEGIN 
+ 
+IMPORTS 
+    Unsigned32, IpAddress, Integer32, 
+    MODULE-IDENTITY, OBJECT-TYPE, 
+    PolicyInstanceId 
+            FROM COPS-PR-SPPI 
+    TEXTUAL-CONVENTION 
+            FROM SNMPv2-TC; 
+ 
+switchPartitionPib  MODULE-IDENTITY 
+    CLIENT-TYPE { TBD } 
+    LAST-UPDATED "TBS" 
+    ORGANIZATION "IETF" 
+    CONTACT-INFO " 
+          Todd A. Anderson 
+          Intel 
+          2111 NE 25th Avenue 
+          Hillsboro, OR 97124 USA 
+          Phone: +1 503 712 1760 
+          Email: todd.a.anderson@intel.com 
+ 
+          Avri Doria 
+          Nortel Networks 
+          600 Technology Park Drive 
+          Billerica  MA 01821 
+          Phone: +1 401 663 5024 
+          Email: avri@nortelnetworks.com 
+ 
+          Jiang Yong 
+          Telia Research AB 
+          123 86 Farsta 
+          Sweden 
+          Phone: +46 (0) 8 713 81 25 
+          Email: yong.b.jiang@telia.se 
+ 
+          Jerry Sydir                     
+          CPlane Inc.                     
+          5150 El Camino Real Suite B-31 
+          Los Altos, CA 94022 
+          Phone: +1(650) 938-8066 x102 
+          sydir@cplane.com 
+ 
+          Balaji Srinivasan                     
+          CPlane Inc.                     
+          5150 El Camino Real Suite B-31 
+          Los Altos, CA 94022 
+          phone: +1(650) 938-8066 x103 
+          balaji@cplane.com" 
+    DESCRIPTION 
+"The PIB module specifies a set of policy rule classes  
+for partitioning a single switch into a set of virtual  
+switches." 
+    ::= { tbd } 
+ 
+VSConfig  OBJECT IDENTIFIER ::= { switchPartitionPib 1 } 
+ 
+PortDirection ::= TEXTUAL-CONVENTION 
+    STATUS        current 
+    DESCRIPTION 
+      "The following type is used to specify the direction of the 
+      label ranges and the bandwidth in the physical port of the  
+      switch as well as  the virtual port of the virtual switch." 
+    SYNTAX  INTEGER { 
+        incoming(1), 
+        outgoing(2) 
+    } 
+ 
+RatioString ::= TEXTUAL-CONVENTION 
+   STATUS       current 
+   DESCRIPTION 
+     "This data type is used to model a floating number,  
+     specifically here the cell loss ratio and a  
+     probability number. It is required to be of the form  
+     m:n, where m and n are both integers and represent a  
+     floating number m divided by n." 
+   SYNTAX       OCTET STRING (SIZE(3)) 
+ 
+VectorString ::= TEXTUAL-CONVENTION 
+   STATUS       current 
+   DESCRIPTION 
+     "This data type is used to model a 2-dimentional  
+     number (x,y). Here it is used to specify the vpi/vci  
+     range for an ATM interface. 2 vectors, (minVpi,  
+     minVci) and (maxVpi, maxVci), make up a label range.  
+     It is required to have the format x:y" 
+   SYNTAX       OCTET STRING (SIZE(3..8)) 
+ 
+PortType := TEXTUAL-CONVENTION 
+        STATUS          current 
+        DESCRIPTION  
+          "This data type is used to model the port type of the  
+          switch" 
+        SYNTAX          INTEGER { 
+          atm(1), 
+          frameRelay(2), 
+          ethernetSwitch(3), 
+          mpls(4), 
+          ipRouting(5) 
+        } 
+ 
+-- 
+================================================================== 
+--This table performParamTable is used to represent the 
+--performance targets associated with the equivalent bandwidths  
+--for each port. This table allows the bandwidth, buffer space,  
+--and queue schedulers assigned to a VS to be  simply abstracted  
+--using a single parameter: the Equivalent bandwidth per port 
+--assigned to the VS. Each entry in the VS interface bandwidth  
+--table uses its serviceParamIndex to point to a row in this  
+--table. Then the equivalent bandwidth points to a performance  
+--target set by the service descriptor parameters. The performance  
+--target is most common in the form of a loss target but also a  
+--delay target can be used.  
+================================================================== 
+performParamTable OBJECT-TYPE 
+   SYNTAX SEQUENCE OF PerformParamEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Table giving the configured performance targets  
+               for this switch" 
+   ::= { switchPartitionPib 2 } 
+ 
+performParamEntry OBJECT-TYPE 
+   SYNTAX PerformParamEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This table gives each performance target  
+               parameters" 
+   INDEX { performParamIndex } 
+   ::= { performParamTable 1 } 
+ 
+PerformParamEntry ::= 
+   SEQUENCE { 
+      performParamIndex       PolicyInstanceId, 
+      performPLR              RatioString, 
+      performMaxDelay         INTEGER, 
+      performDelayOverProb    RatioString 
+   } 
+ 
+performParamIndex OBJECT-TYPE 
+   SYNTAX PolicyInstanceId 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Identifies each performance target" 
+   ::= { performParamEntry 1 } 
+ 
+performPLR OBJECT-TYPE 
+   SYNTAX RatioString 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This indicates the packet loss ratio " 
+   ::= { performParamEntry 2 } 
+ 
+performMaxDelay OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION " This indicates the maximum packet delay " 
+   ::= { performParamEntry 3 } 
+ 
+performDelayOverProb OBJECT-TYPE 
+   SYNTAX RatioString 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION " This indicates the possibility that the packet   
+               delay is bigger than the maximum delay allowed" 
+   ::= { performParamEntry 4 } 
+ 
+--=================================== 
+--End of performParamTable 
+--=================================== 
+ 
+VSConfigTable OBJECT-TYPE 
+   SYNTAX SEQUENCE OF VSConfigEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Each row in this table describes a virtual switch  
+               that has been created on this switch" 
+   ::= { VSConfig 1 } 
+ 
+VSConfigEntry OBJECT-TYPE 
+   SYNTAX VSConfigEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Describes a virtual switch" 
+   INDEX { VSConfigVSID } 
+   ::= { VSConfigTable 1 } 
+ 
+VSConfigEntry ::=  
+   SEQUENCE { 
+      VSConfigVSID              PolicyInstanceId, 
+      VSAdminStatus             INTEGER, 
+      VSOperStatus              INTEGER, 
+        VSNumPorts                INTEGER, 
+        VSNumRoutingEntries       INTEGER 
+} 
+ 
+VSConfigVSID OBJECT-TYPE 
+   SYNTAX PolicyInstanceId 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Identifies the virtual switch within this switch" 
+   ::= { VSConfigEntry 1 } 
+ 
+VSAdminStatus OBJECT-TYPE 
+   SYNTAX INTEGER { 
+             up(1), 
+             down(2), 
+             testing(3) 
+   } 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "The administrative state of the virtual switch. A 
+                virtual switch's administrative status can not be  
+                "up" until all the necessary parameters for this  
+                virtual switch have been specified" 
+   ::={ VSConfigEntry 2 } 
+ 
+VSOperStatus OBJECT-TYPE 
+   SYNTAX INTEGER { 
+             up(1), 
+             down(2) 
+          } 
+   POLICY-ACCESS NOTIFY 
+   STATUS mandatory 
+   DESCRIPTION "The current operational state of the virtual  
+               switch" 
+   ::={ VSConfigEntry 3 } 
+ 
+VSNumPorts OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "The number of virtual ports in this virtual  
+               switch" 
+   ::= {VSConfigEntry 4 } 
+ 
+VSNumRoutingEntries OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION  
+     "The number of routing table entries allocated to  
+     this virtual switch.  This value is ignored if the  
+     switch has only per port routing tables (i.e., no  
+     switch-wide routing table)" 
+   ::= {VSConfigEntry 5 } 
+ 
+--=============================== 
+-- END OF VSConfigTable 
+--=============================== 
+ 
+VSCtrlConfigTable OBJECT-TYPE 
+  SYNTAX SEQUENCE OF VSCtrlConfigEntry 
+  POLICY-ACCESS INSTALL 
+  STATUS mandatory 
+  DESCRIPTION "This table gives the per controller configured for  
+              the VS" 
+  ::={VSConfig 2} 
+ 
+VSCtrlConfigEntry OBJECT-TYPE 
+  SYNTAX VSCtrlConfigEntry 
+  POLICY-ACCESS INSTALL 
+  STATUS mandatory 
+  DESCRIPTION "Configuration for each controller for the VS" 
+  INDEX { VSConfigVSID } 
+  ::= {VSCtrlConfigTable 1} 
+ 
+VSCtrlConfigEntry ::= 
+  SEQUENCE { 
+      VSConfigVSID                PolicyInstanceId, 
+      VSCtrlID                    INTEGER, 
+      VSSciType                   INTEGER, 
+      VSSciTransportType          INTEGER, 
+      VSSciTCPPortNumber          INTEGER, 
+      VSSciPortInterfaceNum       INTEGER, 
+      VSSciVpiNumber              INTEGER, 
+      VSSciVciNumber              INTEGER 
+} 
+ 
+VSConfigVSID OBJECT-TYPE 
+   SYNTAX PolicyInstanceId 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Identifies the virtual switch within this switch" 
+   ::= { VSCtrlConfigEntry 1 } 
+ 
+VSCtrlID OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Identifies the virtual switch controller across  
+               the SCI" 
+   ::= { VSCtrlConfigEntry 2 } 
+ 
+VSSciType OBJECT-TYPE 
+   SYNTAX INTEGER { 
+            gsmp(1), 
+            megacop(2), 
+            cops-pr(3) 
+          } 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "The switch control protocol used to control this 
+                virtual switch" 
+   ::= { VSCtrlConfigEntry 3 } 
+ 
+VSSciTransportType OBJECT-TYPE 
+   SYNTAX INTEGER { 
+       ethernet(1), 
+       tcp(2), 
+       atm(3) 
+   } 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Transport protocol used to transport SCI PDUs" 
+   ::= { VSCtrlConfigEntry 4 } 
+ 
+VSSciTCPPortNumber OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "The local port number used to access the virtual  
+               switch. Meaningful only when the transport type is  
+               TCP" 
+   ::= { VSCtrlConfigEntry 5 } 
+ 
+VSSciPortInterfaceNum OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This is the physical interface over which control 
+                messages are exchanged. " 
+   ::= { VSCtrlConfigEntry 6 } 
+ 
+VSSciVpiNumber OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "The VPI on which the control messages are  
+               exchanged. Meaningful only when the SCI transport  
+               is ATM" 
+   ::= { VSCtrlConfigEntry 7 } 
+ 
+VSSciVciNumber OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "The VCI on which the control messages are  
+               exchanged. Meaningful only when the SCI transport  
+               is ATM" 
+   ::= { VSCtrlConfigEntry 8 } 
+ 
+--=============================== 
+--END OF VSCtrlConfigTable 
+--=============================== 
+ 
+VSPortConfigTable OBJECT-TYPE 
+   SYNTAX    SEQUENCE OF VSPortConfigEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS    mandatory 
+   DESCRIPTION "Resource configuration for the virtual ports" 
+   ::= { VSConfig 3 } 
+ 
+VSPortConfigEntry OBJECT-TYPE 
+   SYNTAX VSPortConfigEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This table gives the per port resource configured  
+               for the virtual switch" 
+   INDEX { VSConfigVSID } 
+   UNIQUENESS { VSConfigVSID, VSPortConfigPortID } 
+   ::= { VSPortConfigTable 1 } 
+ 
+VSPortConfigEntry ::= 
+   SEQUENCE { 
+      VSPortConfigVSID             PolicyInstanceId, 
+      VSPortConfigPortID           INTEGER, 
+      VSPhysicalPortNumber         INTEGER, 
+      VSPortConfigPortNumBWs       INTEGER, 
+      VSPortConfigNumLabelRanges   INTEGER, 
+        VSPortNumRoutingEntries      INTEGER 
+} 
+ 
+VSPortConfigVSID OBJECT-TYPE 
+   SYNTAX PolicyInstanceId 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This is the virtual switch ID of the virtual  
+               switch" 
+   ::= { VSPortConfigEntry 1 } 
+ 
+VSPortConfigPortID OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This is the virtual port id in the current virtual          
+               switch" 
+   ::= { VSPortConfigEntry 2 } 
+ 
+VSPhysicalPortNumber OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "The physical port number that is mapped to virtual  
+               port" 
+   ::= { VSPortConfigEntry 3 } 
+ 
+VSPortConfigPortNumBWs OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Number of equivalent bandwidth pointing to  
+               different performance targets (packet loss ratio  
+               and delay) in both incoming and outgoing directions  
+               for this port." 
+   ::= { VSPortConfigEntry 4 } 
+ 
+VSPortConfigNumLabelRanges OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Number of label ranges for this port. The label  
+               can be of different types depending on the  
+               interface service type." 
+   ::= { VSPortConfigEntry 5} 
+ 
+VSPortNumRoutingEntries OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "The number of routing table entries allocated to   
+               this virtual port from the physical port.  This  
+               value is used only if the switch has per port  
+               routing tables" 
+   ::= {VSPortConfigEntry 6 } 
+ 
+--================================ 
+-- END OF VSPortConfigTable  
+--================================ 
+ 
+ 
+-- 
+================================================================== 
+-- The table VSConfigBWTable gives the equivalent bandwidth  
+--pointing to different service category for input and output at  
+--the virtual ports. The table has 3 indices; virtual switch ID,  
+--port ID and Bandwidth ID 
+================================================================== 
+ 
+VSPortConfigBWTable OBJECT-TYPE 
+   SYNTAX SEQUENCE OF VSPortConfigBWEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Table giving the configured bandwidth information  
+                for the various virtual ports" 
+   ::= { VSConfig 4 } 
+ 
+VSPortConfigBWEntry OBJECT-TYPE 
+   SYNTAX VSPortConfigBWEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This table gives the configured bandwidth  
+               information for the various virtual ports" 
+   INDEX { VSPortConfigVSID } 
+   UNIQUENESS { VSPortConfigVSID, 
+                VSPortConfigPortID, 
+                VSPortConfigBWID } 
+   ::= { VSPortConfigBWTable 1 } 
+ 
+VSPortConfigBWConfigEntry ::= 
+   SEQUENCE { 
+      VSPortConfigVSID                 PolicyInstanceId, 
+      VSPortConfigPortID               INTEGER, 
+      VSPortConfigBWID                 INTEGER, 
+      VSPortConfigEqiBW                INTEGER, 
+      performParamIndex                OBJECT IDENTIFIER, 
+      VSPortConfigBWPortDirection      PortDirection 
+} 
+ 
+VSPortConfigVSID OBJECT-TYPE 
+   SYNTAX PolicyInstanceId 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This is the virtual switch ID of the virtual  
+               switch" 
+   ::= { VSPortConfigBWEntry 1 } 
+ 
+VSPortConfigPortID OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This is the virtual port id in the current virtual  
+               switch" 
+   ::= { VSPortConfigBWEntry 2 } 
+ 
+VSPortConfigBWID OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This is the equivalent bandwidth ID in the current 
+                virtual switch" 
+   ::= { VSPortConfigBWEntry 3 } 
+ 
+VSPortConfigEqiBW OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Indicates the equivalent bandwidth assigned 
+                to this VS " 
+   ::= { VSPortConfigBWEntry 4 } 
+ 
+performParamIndex OBJECT-TYPE 
+   SYNTAX OBJECT IDENTIFIER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION " Indicates an entry in the performParamTable 
+                 which represents the performance target 
+                 associated to by this equivalent bandwidth " 
+   ::= { VSPortConfigBWEntry 5 } 
+ 
+VSPortConfigBWPortDirection OBJECT-TYPE 
+   SYNTAX PortDirection 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Indicates the direction for which this equivalent 
+                bandwidth is valid" 
+   ::= { VSPortConfigBWEntry 6 } 
+ 
+--================================== 
+-- END OF VSPortConfigBWTable  
+--================================== 
+ 
+ 
+-- 
+================================================================== 
+-- The VSLabelRangeConfigTable gives the label ranges for input  
+-- and output at the virtual ports. 
+-- The tables have 3 indices; virtual switch ID, port ID and Range  
+-- ID 
+================================================================== 
+ 
+VSPortConfigLabelRangeTable OBJECT-TYPE 
+   SYNTAX SEQUENCE OF VSPortConfigLabelRangeEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Table giving the configured label range  
+               information for the various virtual ports" 
+   ::= { VSConfig 5 } 
+ 
+VSPortConfigLabelRangeEntry OBJECT-TYPE 
+   SYNTAX VSPortConfigLabelRangeEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This table gives the per port label ranges  
+               configured for the virtual switch." 
+   INDEX { VSPortConfigVSID } 
+   UNIQUENESS { VSPortConfigVSID,  
+                VSPortConfigPortID, 
+                VSPortConfigLabelRangeID } 
+   ::= { VSPortConfigLabelRangeTable 1 } 
+ 
+VSPortConfigLabelRangeEntry ::= 
+   SEQUENCE { 
+      VSPortConfigLabelRangeID          PolicyInstanceId, 
+      VSPortConfigPortDirection         PortDirection, 
+      VSPortConfigRangeType             INTEGER, 
+      VSPortConfigRangeIndex            INTEGER 
+}  
+ 
+VSPortConfigLabelRangeID OBJECT-TYPE 
+   SYNTAX PolicyInstanceId 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Identifies the label range" 
+   ::= { VSPortConfigLabelRangeEntry 1 } 
+ 
+VSPortConfigPortDirection OBJECT-TYPE 
+   SYNTAX PortDirection 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Indicates the direction for which this range is  
+               valid" 
+   ::= { VSPortConfigLabelRangeEntry 2 } 
+ 
+VSPortConfigLabelRangeType OBJECT-TYPE 
+   SYNTAX INTEGER  
+   POLICY-ACCESS INSTALL 
+   DESCRIPTION "Indicates the type of protocol for this label  
+               range." 
+   STATUS mandatory 
+   ::= { VSPortConfigLabelRangeEntry 3 } 
+ 
+VSPortConfigLabelRangeIndex OBJECT-TYPE 
+   SYNTAX INTEGER  
+   POLICY-ACCESS INSTALL 
+   DESCRIPTION "The index into the protocol-dependent label  
+                range table for this virtual switch." 
+   STATUS mandatory 
+   ::= { VSPortConfigLabelRangeEntry 4 } 
+ 
+--==================================== 
+-- END OF VSPortConfigLabelRangeTable   
+--==================================== 
+ 
+ 
+-- 
+================================================================== 
+-- The table VSAtmLabelRangeTable is used to give the VPI/VCI 
+-- label ranges at the ATM virtual switch level.  
+================================================================== 
+ 
+VSAtmLabelRangeTable OBJECT-TYPE 
+   SYNTAX SEQUENCE OF VSAtmLabelRangeEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Table giving the configured ATM label range  
+               information for the various switch ports on this  
+               virtual switch." 
+   ::= { VSConfig 6 } 
+ 
+VSAtmLabelRangeEntry OBJECT-TYPE 
+   SYNTAX VSAtmLabelRangeEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This table gives the per port ATM label ranges and 
+                capabilities." 
+   INDEX { VSAtmLabelRangeIndex } 
+   ::= { VSAtmLabelRangeTable 1 } 
+ 
+VSAtmLabelRangeEntry ::= 
+   SEQUENCE { 
+      VSAtmLabelRangeIndex              PolicyInstanceId, 
+      VSAtmLabelRangeMinVpiVci          VectorString, 
+      VSAtmLabelRangeMaxVpiVci          VectorString, 
+      VSAtmLabelRangeAllowsVP           BOOLEAN, 
+      VSAtmLabelRangeAllowsP2MP         BOOLEAN, 
+      VSAtmLabelRangeAllowsMP2P         BOOLEAN, 
+      VSAtmLabelRangeMaxMulticast       INTEGER 
+} 
+ 
+VSAtmLabelRangeIndex OBJECT-TYPE 
+   SYNTAX PolicyInstanceId 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Index into this table." 
+   ::= { VSAtmLabelRangeEntry 1 } 
+ 
+VSAtmLabelRangeMinVpiVci OBJECT-TYPE 
+   SYNTAX VectorString 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Lower bound of the vpi and vci range." 
+   ::= { VSAtmLabelRangeEntry 2 } 
+ 
+VSAtmLabelRangeMaxVpiVci OBJECT-TYPE 
+   SYNTAX VectorString 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Upper bound of the vpi and vci range." 
+   ::= { VSAtmLabelRangeEntry 3 } 
+ 
+VSAtmLabelRangeAllowsVP OBJECT-TYPE 
+   SYNTAX BOOLEAN 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Indicates whether this label range can be used for  
+               VP connections." 
+   ::= { VSAtmLabelRangeEntry 4 } 
+ 
+VSAtmLabelRangeAllowsP2MP OBJECT-TYPE 
+   SYNTAX BOOLEAN 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Indicates whether this label range can be used to  
+               create point-to-multipoint connections." 
+   ::= { VSAtmLabelRangeEntry 5 } 
+ 
+VSAtmLabelRangeAllowsMP2P OBJECT-TYPE 
+   SYNTAX BOOLEAN 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Indicates whether this label range can be used to  
+               create multipoint-to-point connections." 
+   ::= { VSAtmLabelRangeEntry 6 } 
+ 
+VSAtmLabelRangeMaxMulticast OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Indicates the maximum number of multicast  
+               connections that can be created within this range." 
+   ::= { VSAtmLabelRangeEntry 7 } 
+ 
+--==================================== 
+-- END OF VSAtmLabelRangeTable   
+--==================================== 
+ 
+ 
+-- 
+================================================================== 
+-- The table VSFrLabelRangeTable is used to give the DLCI label  
+-- ranges on a Frame Relay interface for a virtual switch. 
+================================================================== 
+ 
+VSFrLabelRangeTable OBJECT-TYPE 
+   SYNTAX SEQUENCE OF VSFrLabelRangeEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Table giving the configured label range  
+               information for the various frame relay ports." 
+   ::= { VSConfig 7 } 
+ 
+VSFrLabelRangeEntry OBJECT-TYPE 
+   SYNTAX VSFrLabelRangeEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This table gives the per port label ranges" 
+   INDEX { VSFrLabelRangeIndex } 
+   ::= { VSFrLabelRangeTable 1 } 
+ 
+VSFrLabelRangeEntry ::= 
+   SEQUENCE { 
+      VSFrLabelRangeIndex             PolicyInstanceId, 
+      VSFrLabelRangeMinDLCI           INTEGER, 
+      VSFrLabelRangeMaxDLCI           INTEGER 
+} 
+ 
+VSFrLabelRangeIndex OBJECT-TYPE 
+   SYNTAX PolicyInstanceId 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Index into this table." 
+   ::= { VSFrLabelRangeEntry 1 } 
+ 
+ 
+VSFrLabelRangeMinDLCI OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Lower bound of the DLCI range for this Frame Relay  
+                interface." 
+   ::= { VSFrLabelRangeEntry 2 } 
+ 
+VSFrLabelRangeMaxDLCI OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Upper bound of the DLCI range for this Frame Relay 
+                interface." 
+   ::= { VSFrLabelRangeEntry 3 } 
+ 
+ 
+--==================================== 
+-- END OF VSFrLabelRangeTable   
+--==================================== 
+ 
+-- 
+================================================================== 
+-- The table VSVlanLabelRangeTable is used to give the VLAN ID  
+-- label ranges on a VLAN-aware Ethernet interface for a virtual  
+-- switch. 
+================================================================== 
+ 
+VSVlanLabelRangeTable OBJECT-TYPE 
+   SYNTAX SEQUENCE OF VSVlanLabelRangeEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Table giving the configured label range  
+               information for the VLAN-aware Ethernet ports." 
+   ::= { VSConfig 8 } 
+ 
+VSVlanLabelRangeEntry OBJECT-TYPE 
+   SYNTAX VSVlanLabelRangeEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This table gives the per port VLAN ID ranges" 
+   INDEX { VSVlanLabelRangeIndex } 
+   ::= { VSVlanLabelRangeTable 1 } 
+ 
+VSVlanLabelRangeEntry ::= 
+   SEQUENCE { 
+      VSVlanLabelRangeIndex           PolicyInstanceId, 
+      VSVlanLabelRangeMinID           INTEGER, 
+      VSVlanLabelRangeMaxID           INTEGER 
+} 
+ 
+VSVlanLabelRangeIndex OBJECT-TYPE 
+   SYNTAX PolicyInstanceId 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Index into this table." 
+   ::= { VSVlanLabelRangeEntry 1 } 
+ 
+VSVlanLabelRangeMinID OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Lower bound of the VLAN ID range on this VLAN- 
+               aware Ethernet switch interface." 
+   ::= { VSVlanLabelRangeEntry 2 } 
+ 
+VSVlanLabelRangeMaxID OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Upper bound of the VLAN ID range on this VLAN-     
+               aware Ethernet switch interface." 
+   ::= { VSVlanLabelRangeEntry 3 } 
+ 
+--==================================== 
+-- END OF VSVlanLabelRangeTable   
+--==================================== 
+ 
+-- 
+================================================================== 
+-- The table mplsLabelRangeTable is used to give the label ranges 
+-- on a MPLS interface. 
+================================================================== 
+ 
+VSMplsLabelRangeTable OBJECT-TYPE 
+   SYNTAX SEQUENCE OF VSMplsLabelRangeEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Table giving the configured label range  
+               information for MPLS ports." 
+   ::= { VSConfig 9 } 
+ 
+VSMplsLabelRangeEntry OBJECT-TYPE 
+   SYNTAX VSMplsLabelRangeEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This table gives the per port MPLS ranges." 
+   INDEX { VSMplsLabelRangeIndex } 
+   ::= { VSMplsLabelRangeTable 1 } 
+ 
+VSMplsLabelRangeEntry ::= 
+   SEQUENCE { 
+      VSMplsLabelRangeIndex           PolicyInstanceId, 
+      VSMplsLabelRangeMinID           INTEGER, 
+      VSMplsLabelRangeMaxID           INTEGER 
+} 
+ 
+VSMplsLabelRangeIndex OBJECT-TYPE 
+   SYNTAX PolicyInstanceId 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Index into this table." 
+   ::= { VSMplsLabelRangeEntry 1 } 
+ 
+ 
+VSMplsLabelRangeMinID OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Lower bound of the MPLS label range." 
+   ::= { VSMplsLabelRangeEntry 2 } 
+ 
+VSMplsLabelRangeMaxID OBJECT-TYPE 
+   SYNTAX INTEGER 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Upper bound of the MPLS label range." 
+   ::= { VSMplsLabelRangeEntry 3 } 
+ 
+--==================================== 
+-- END OF VSMplsLabelRangeTable   
+--==================================== 
+ 
+================================================================== 
+-- The table VSIpLabelRangeTable is used to give the IP ranges on  
+-- an IP interface for a virtual switch. 
+================================================================== 
+ 
+VSIpLabelRangeTable OBJECT-TYPE 
+   SYNTAX SEQUENCE OF VSIpLabelRangeEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Table giving the configured IP ranges for IP  
+               ports." 
+   ::= { VSConfig 10 } 
+ 
+VSIpLabelRangeEntry OBJECT-TYPE 
+   SYNTAX VSIpLabelRangeEntry 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "This table gives the per port IP ranges." 
+   INDEX { VSIpLabelRangeIndex } 
+   ::= { VSIpLabelRangeTable 1 } 
+ 
+VSIpLabelRangeEntry ::= 
+   SEQUENCE { 
+      VSIpLabelRangeIndex        PolicyInstanceId, 
+      VSIpLabelRangeIP           IpAddress, 
+      VSIpLabelRangeIPMask       IpAddress 
+} 
+ 
+VSIpLabelRangeIndex OBJECT-TYPE 
+   SYNTAX PolicyInstanceId 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Index into this table." 
+   ::= { VSIpLabelRangeEntry 1 } 
+ 
+VSIpLabelRangeIP OBJECT-TYPE 
+   SYNTAX IpAddress 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Indicates the IP address for a particular network. 
+   ::= { VSIpLabelRangeEntry 2 } 
+ 
+VSIpLabelRangeIPMask OBJECT-TYPE 
+   SYNTAX IpAddress 
+   POLICY-ACCESS INSTALL 
+   STATUS mandatory 
+   DESCRIPTION "Indicates the subnet's mask address." 
+   ::= { VSIpLabelRangeEntry 3 } 
+ 
+--==================================== 
+-- END OF VSIpLabelRangeTable   
+--==================================== 
+ 
+END 

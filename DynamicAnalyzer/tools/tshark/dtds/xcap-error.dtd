@@ -1,0 +1,67 @@
+<? wireshark:protocol
+   proto_name="xcap-error"
+   description="XCAP Error XML doc (RFC 4825)"
+   hierarchy="yes" ?>
+<!--
+$Id$
+-->
+
+<!ELEMENT xcap-error (schema-validation-error?,
+                      not-xml-frag?,
+                      no-parent?,
+                      cannot-insert?,
+                      not-xml-att-value?,
+                      uniqueness-failure?,
+                      not-well-formed?,
+                      constraint-failure?,
+                      cannot-delete?,
+                      not-utf-8?)*  >
+<!ATTLIST xcap-error xmlns CDATA #IMPLIED >
+
+
+<!ELEMENT schema-validation-error (#PCDATA)>
+<!ATTLIST schema-validation-error phrase CDATA #IMPLIED>
+
+
+<!ELEMENT not-xml-frag (#PCDATA)>
+<!ATTLIST not-xml-frag phrase CDATA #IMPLIED>
+
+
+<!ELEMENT ancestor (#PCDATA)>
+
+<!ELEMENT no-parent (ancestor)>
+<!ATTLIST no-parent phrase CDATA #IMPLIED>
+
+
+<!ELEMENT cannot-insert (#PCDATA)>
+<!ATTLIST cannot-insert phrase CDATA #IMPLIED>
+
+
+<!ELEMENT alt-value (#PCDATA)>
+
+<!ELEMENT exists (alt-value)>
+<!ATTLIST exists field CDATA #IMPLIED>
+
+<!ELEMENT uniqueness-failure (exists)*>
+<!ATTLIST uniqueness-failure phrase CDATA #IMPLIED>
+
+
+<!ELEMENT not-xml-att-value (#PCDATA)>
+<!ATTLIST not-xml-att-value phrase CDATA #IMPLIED>
+
+
+<!ELEMENT not-well-formed (#PCDATA)>
+<!ATTLIST not-well-formed phrase CDATA #IMPLIED>
+
+
+<!ELEMENT constraint-failure (#PCDATA)>
+<!ATTLIST constraint-failure phrase CDATA #IMPLIED>
+
+
+<!ELEMENT cannot-delete (#PCDATA)>
+<!ATTLIST cannot-delete phrase CDATA #IMPLIED>
+
+
+<!ELEMENT not-utf-8 (#PCDATA)>
+<!ATTLIST not-utf-8 phrase CDATA #IMPLIED>
+

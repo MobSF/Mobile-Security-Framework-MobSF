@@ -1,0 +1,1794 @@
+FIBRE-CHANNEL-FE-MIB DEFINITIONS ::= BEGIN
+  IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Unsigned32, Counter32, Gauge32, Integer32, mib-2
+      FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, TruthValue, TimeStamp
+      FROM SNMPv2-TC
+    SnmpAdminString
+      FROM SNMP-FRAMEWORK-MIB                   -- rfc2571
+    MODULE-COMPLIANCE, OBJECT-GROUP
+      FROM SNMPv2-CONF;
+
+  fcFeMIB MODULE-IDENTITY
+    LAST-UPDATED "200005180000Z"
+    ORGANIZATION "IETF IPFC Working Group"
+    CONTACT-INFO "Kha Sin Teow
+                  Brocade Communications Systems,
+                  1901 Guadalupe Parkway,
+                  San Jose, CA 95131
+                  U.S.A
+                  Tel: +1 408 487 8180
+                  Fax: +1 408 487 8190
+                  Email: khasin@Brocade.COM
+
+                 WG Mailing list:ipfc@standards.gadzoox.com
+                 To Subscribe: ipfc-request@standards.gadzoox.com
+                 In Body: subscribe"
+
+    DESCRIPTION "The MIB module for Fibre Channel Fabric Element."
+    REVISION "200005180000Z"
+    DESCRIPTION "Initial revision, published as RFC 2837."
+    ::= { mib-2 75 }
+
+  fcFeMIBObjects OBJECT IDENTIFIER ::= { fcFeMIB 1 }
+
+   --  Note:
+   --  fcFeMIBConformance OBJECT IDENTIFIER ::= { fcFeMIB 2 }
+   --  see at the end of the module
+
+  -- Groups under fcFeMIBObjects
+  fcFeConfig       OBJECT IDENTIFIER ::= { fcFeMIBObjects 1 }
+  fcFeStatus       OBJECT IDENTIFIER ::= { fcFeMIBObjects 2 }
+  fcFeError        OBJECT IDENTIFIER ::= { fcFeMIBObjects 3 }
+  fcFeAccounting   OBJECT IDENTIFIER ::= { fcFeMIBObjects 4 }
+  fcFeCapabilities OBJECT IDENTIFIER ::= { fcFeMIBObjects 5 }
+
+  -- Textual Conventions
+  MilliSeconds ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents time unit value in milliseconds."
+    SYNTAX         Unsigned32
+
+  MicroSeconds ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents time unit value in microseconds."
+    SYNTAX         Unsigned32
+
+  FcNameId ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents the Worldwide Name associated with
+                    a Fibre Channel (FC) entity."
+    SYNTAX         OCTET STRING (SIZE (8))
+
+  FcAddressId ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents Fibre Channel Address ID, a 24-bit
+                    value unique within the address space of a Fabric."
+    SYNTAX         OCTET STRING (SIZE (3))
+
+  FcRxDataFieldSize ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents the receive data field size of an
+                    NxPort or FxPort."
+    SYNTAX         Integer32 (128..2112)
+
+  FcBbCredit ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents the buffer-to-buffer credit of an
+                    NxPort or FxPort."
+    SYNTAX         Integer32 (0..32767)
+
+  FcphVersion ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents the version of FC-PH supported by an
+                    NxPort or FxPort."
+    SYNTAX         Integer32 (0..255)
+
+  FcStackedConnMode ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents an enumerated value used to indicate
+                    the Class 1 Stacked Connect Mode supported by
+                    an NxPort or FxPort."
+    SYNTAX         INTEGER {
+                        none(1),
+                        transparent(2),
+                        lockedDown(3)
+    }
+
+  FcCosCap ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents the class of service capability of an
+                    NxPort or FxPort."
+    SYNTAX         BITS { classF(0), class1(1), class2(2), class3(3),
+                          class4(4), class5(5), class6(6) }
+
+  FcFeModuleCapacity ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents the maximum number of modules within
+                    a Fabric Element."
+    SYNTAX         Unsigned32
+
+  FcFeFxPortCapacity ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents the maximum number of FxPorts within
+                    a module."
+    SYNTAX         Unsigned32
+
+  FcFeModuleIndex ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents the module index within a conceptual table."
+    SYNTAX         Unsigned32
+
+  FcFeFxPortIndex ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents the FxPort index within a conceptual table."
+    SYNTAX         Unsigned32
+
+  FcFeNxPortIndex ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents the NxPort index within a conceptual table."
+    SYNTAX         Integer32 (1..126)
+
+  FcBbCreditModel ::= TEXTUAL-CONVENTION
+    STATUS         current
+    DESCRIPTION    "Represents the BB_Credit model of an FxPort."
+    SYNTAX         INTEGER { regular(1), alternate (2) }
+
+  -- The Configuration group
+
+  -- This group consists of scalar objects and tables.
+  -- It contains the configuration and service parameters
+  -- of the Fabric Element and the FxPorts.
+  -- The group represents a set of parameters associated with
+  -- the Fabric Element  or an FxPort to support its NxPorts.
+
+  fcFeFabricName OBJECT-TYPE
+      SYNTAX      FcNameId
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+         "The Name_Identifier of the Fabric to which this Fabric
+          Element belongs."
+  ::= { fcFeConfig 1 }
+
+  fcFeElementName OBJECT-TYPE
+      SYNTAX      FcNameId
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+         "The Name_Identifier of the Fabric Element."
+  ::= { fcFeConfig 2 }
+
+  fcFeModuleCapacity OBJECT-TYPE
+      SYNTAX      FcFeModuleCapacity
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The maximum number of modules in the Fabric Element,
+          regardless of their current state."
+  ::= { fcFeConfig 3 }
+
+  -- The Module Table.
+  -- This table contains one entry for each module,
+  -- information of the modules.
+
+  fcFeModuleTable OBJECT-TYPE
+      SYNTAX      SEQUENCE OF FcFeModuleEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "A table that contains, one entry for each module in the
+          Fabric Element, information of the modules."
+  ::= { fcFeConfig 4 }
+
+  fcFeModuleEntry OBJECT-TYPE
+      SYNTAX      FcFeModuleEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "An entry containing the configuration parameters of a
+          module."
+      INDEX { fcFeModuleIndex }
+  ::= { fcFeModuleTable 1 }
+
+
+  FcFeModuleEntry ::=
+      SEQUENCE {
+          fcFeModuleIndex
+              FcFeModuleIndex,
+          fcFeModuleDescr
+              SnmpAdminString,
+          fcFeModuleObjectID
+              OBJECT IDENTIFIER,
+          fcFeModuleOperStatus
+              INTEGER,
+          fcFeModuleLastChange
+              TimeStamp,
+          fcFeModuleFxPortCapacity
+              FcFeFxPortCapacity,
+          fcFeModuleName
+              FcNameId
+      }
+
+  fcFeModuleIndex OBJECT-TYPE
+      SYNTAX      FcFeModuleIndex
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "This object identifies the module within the Fabric Element
+          for which this entry contains information. This value is
+          never greater than fcFeModuleCapacity."
+  ::= { fcFeModuleEntry 1 }
+
+  fcFeModuleDescr OBJECT-TYPE
+      SYNTAX      SnmpAdminString
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A textual description of the module. This value should
+          include the full name and version identification of the
+          module."
+  ::= { fcFeModuleEntry 2 }
+
+  fcFeModuleObjectID OBJECT-TYPE
+      SYNTAX      OBJECT IDENTIFIER
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The vendor's authoritative identification of the module.
+          This value may be allocated within the SMI enterprises
+          subtree (1.3.6.1.4.1) and provides a straight-forward and
+          unambiguous means for determining what kind of module is
+          being managed.
+
+          For example, this object could take the value
+          1.3.6.1.4.1.99649.3.9 if vendor 'Neufe Inc.' was assigned
+          the subtree 1.3.6.1.4.1.99649, and had assigned the
+          identifier 1.3.6.1.4.1.99649.3.9 to its 'FeFiFo-16
+          PlugInCard.'"
+  ::= { fcFeModuleEntry 3 }
+
+  fcFeModuleOperStatus    OBJECT-TYPE
+      SYNTAX      INTEGER {
+                      online  (1), -- functional
+                      offline (2), -- not available
+                      testing (3), -- under testing
+                      faulty  (4)  -- defective
+                  }
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "This object indicates the operational status of the module:
+          online(1)   the module is functioning properly;
+          offline(2)  the module is not available;
+          testing(3)  the module is under testing; and
+          faulty(4)   the module is defective in some way."
+  ::= { fcFeModuleEntry 4 }
+
+  fcFeModuleLastChange OBJECT-TYPE
+      SYNTAX      TimeStamp
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "This object contains the value of sysUpTime when the module
+          entered its current operational status. A value of zero
+          indicates that the operational status of the module has not
+          changed since the agent last restarted."
+  ::= { fcFeModuleEntry 5 }
+
+  fcFeModuleFxPortCapacity OBJECT-TYPE
+      SYNTAX      FcFeFxPortCapacity
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of FxPort that can be contained within the
+          module. Within each module, the ports are uniquely numbered
+          in the range from 1 to fcFeModuleFxPortCapacity inclusive.
+          However, the numbers are not required to be contiguous."
+  ::= { fcFeModuleEntry 6 }
+
+  fcFeModuleName OBJECT-TYPE
+      SYNTAX      FcNameId
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+         "The Name_Identifier of the module."
+  ::= { fcFeModuleEntry 7 }
+
+  -- the FxPort Configuration Table.
+  -- This table contains, one entry for each FxPort,
+  -- configuration parameters of the ports.
+
+ fcFxPortTable OBJECT-TYPE
+     SYNTAX      SEQUENCE OF FcFxPortEntry
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+        "A table that contains, one entry for each FxPort in the
+         Fabric Element, configuration and service parameters of the
+         FxPorts."
+ ::= { fcFeConfig 5 }
+
+ fcFxPortEntry OBJECT-TYPE
+     SYNTAX      FcFxPortEntry
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+        "An entry containing the configuration and service parameters
+         of a FxPort."
+     INDEX { fcFeModuleIndex, fcFxPortIndex }
+ ::= { fcFxPortTable 1 }
+
+
+ FcFxPortEntry ::=
+     SEQUENCE {
+         fcFxPortIndex
+             FcFeFxPortIndex,
+         fcFxPortName
+             FcNameId,
+
+         -- FxPort common service parameters
+         fcFxPortFcphVersionHigh
+             FcphVersion,
+         fcFxPortFcphVersionLow
+             FcphVersion,
+         fcFxPortBbCredit
+             FcBbCredit,
+         fcFxPortRxBufSize
+             FcRxDataFieldSize,
+         fcFxPortRatov
+             MilliSeconds,
+         fcFxPortEdtov
+             MilliSeconds,
+         -- FxPort class service parameters
+         fcFxPortCosSupported
+             FcCosCap,
+         fcFxPortIntermixSupported
+             TruthValue,
+         fcFxPortStackedConnMode
+             FcStackedConnMode,
+         fcFxPortClass2SeqDeliv
+             TruthValue,
+         fcFxPortClass3SeqDeliv
+             TruthValue,
+         -- other configuration parameters
+         fcFxPortHoldTime
+             MicroSeconds
+     }
+
+  fcFxPortIndex OBJECT-TYPE
+      SYNTAX      FcFeFxPortIndex
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "This object identifies the FxPort within the module.  This
+          number ranges from 1 to the value of fcFeModulePortCapacity
+          for the associated module. The value remains constant for
+          the identified FxPort until the module is re-initialized."
+  ::= { fcFxPortEntry 1 }
+
+  fcFxPortName OBJECT-TYPE
+      SYNTAX      FcNameId
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The World_wide Name of this FxPort.  Each FxPort has a
+          unique Port World_wide Name within the Fabric."
+  ::= { fcFxPortEntry 2 }
+
+  -- FxPort common service parameters
+
+  fcFxPortFcphVersionHigh OBJECT-TYPE
+      SYNTAX      FcphVersion
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The highest or most recent version of FC-PH that the FxPort
+          is configured to support."
+  ::= { fcFxPortEntry 3 }
+
+  fcFxPortFcphVersionLow OBJECT-TYPE
+      SYNTAX      FcphVersion
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The lowest or earliest version of FC-PH that the FxPort is
+          configured to support."
+  ::= { fcFxPortEntry 4 }
+
+  fcFxPortBbCredit OBJECT-TYPE
+      SYNTAX      FcBbCredit
+      UNITS       "buffers"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The total number of receive buffers available for holding
+          Class 1 connect-request, Class 2 or 3 frames from the
+          attached NxPort.  It is for buffer-to-buffer flow control
+          in the direction from the attached NxPort (if applicable)
+          to FxPort."
+      ::= { fcFxPortEntry 5 }
+
+  fcFxPortRxBufSize OBJECT-TYPE
+      SYNTAX      FcRxDataFieldSize
+      UNITS       "bytes"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The largest Data_Field Size (in octets) for an FT_1 frame
+          that can be received by the FxPort."
+  ::= { fcFxPortEntry 6 }
+
+  fcFxPortRatov OBJECT-TYPE
+      SYNTAX      MilliSeconds
+      UNITS       "milliseconds"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The Resource_Allocation_Timeout Value configured for the
+          FxPort.  This is used as the timeout value for determining
+          when to reuse an NxPort resource such as a
+          Recovery_Qualifier.  It represents E_D_TOV (see next
+          object) plus twice the maximum time that a frame may be
+          delayed within the Fabric and still be delivered."
+      ::= { fcFxPortEntry 7 }
+
+  fcFxPortEdtov OBJECT-TYPE
+      SYNTAX      MilliSeconds
+      UNITS       "milliseconds"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The E_D_TOV value configured for the FxPort. The
+          Error_Detect_Timeout Value is used as the timeout value for
+          detecting an error condition."
+  ::= { fcFxPortEntry 8 }
+
+
+  -- FxPort class service parameters
+
+  fcFxPortCosSupported OBJECT-TYPE
+      SYNTAX      FcCosCap
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A value indicating the set of Classes of Service supported
+          by the FxPort."
+  ::= { fcFxPortEntry 9 }
+
+  fcFxPortIntermixSupported OBJECT-TYPE
+      SYNTAX      TruthValue
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A flag indicating whether or not the FxPort supports an
+          Intermixed Dedicated Connection."
+  ::= { fcFxPortEntry 10 }
+
+  fcFxPortStackedConnMode OBJECT-TYPE
+      SYNTAX      FcStackedConnMode
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A value indicating the mode of Stacked Connect supported by
+          the FxPort."
+  ::= { fcFxPortEntry 11 }
+
+  fcFxPortClass2SeqDeliv OBJECT-TYPE
+      SYNTAX      TruthValue
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A flag indicating whether or not Class 2 Sequential
+          Delivery is supported by the FxPort."
+  ::= { fcFxPortEntry 12 }
+
+  fcFxPortClass3SeqDeliv OBJECT-TYPE
+      SYNTAX      TruthValue
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A flag indicating whether or not Class 3 Sequential
+          Delivery is supported by the FxPort."
+  ::= { fcFxPortEntry 13 }
+
+
+  -- other FxPort parameters
+
+  fcFxPortHoldTime OBJECT-TYPE
+      SYNTAX      MicroSeconds
+      UNITS       "microseconds"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The maximum time (in microseconds) that the FxPort shall
+          hold a frame before discarding the frame if it is unable to
+          deliver the frame. The value 0 means that the FxPort does
+          not support this parameter."
+  ::= { fcFxPortEntry 14 }
+
+
+  -- the Status group
+
+  -- This group consists of tables that contains operational
+  -- status and established service parameters for the Fabric
+  -- Element and the attached NxPorts.
+
+  -- The FxPort Status table
+  -- This table contains, one entry for each FxPort,
+  -- the operational status and parameters of the FxPorts.
+
+  fcFxPortStatusTable OBJECT-TYPE
+      SYNTAX      SEQUENCE OF FcFxPortStatusEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "A table that contains, one entry for each FxPort in the
+          Fabric Element, operational status and parameters of the
+          FxPorts."
+  ::= { fcFeStatus 1 }
+
+  fcFxPortStatusEntry OBJECT-TYPE
+      SYNTAX      FcFxPortStatusEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "An entry containing operational status and parameters of a
+          FxPort."
+      AUGMENTS { fcFxPortEntry }
+  ::= { fcFxPortStatusTable 1 }
+
+
+  FcFxPortStatusEntry ::=
+      SEQUENCE {
+          fcFxPortID
+              FcAddressId,
+          fcFxPortBbCreditAvailable
+              Gauge32,
+          fcFxPortOperMode
+              INTEGER,
+          fcFxPortAdminMode
+              INTEGER
+      }
+
+  fcFxPortID   OBJECT-TYPE
+      SYNTAX      FcAddressId
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The address identifier by which this FxPort is identified
+          within the Fabric.  The FxPort may assign its address
+          identifier to its attached NxPort(s) during Fabric Login."
+  ::= { fcFxPortStatusEntry 1 }
+
+  fcFxPortBbCreditAvailable OBJECT-TYPE
+      SYNTAX      Gauge32
+      UNITS       "buffers"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of buffers currently available for receiving
+          frames from the attached port in the buffer-to-buffer flow
+          control. The value should be less than or equal to
+          fcFxPortBbCredit."
+  ::= { fcFxPortStatusEntry 2 }
+
+  fcFxPortOperMode    OBJECT-TYPE
+      SYNTAX              INTEGER { unknown(1), fPort(2), flPort(3) }
+      MAX-ACCESS          read-only
+      STATUS              current
+      DESCRIPTION
+         "The current operational mode of the FxPort."
+  ::= { fcFxPortStatusEntry 3 }
+
+  fcFxPortAdminMode   OBJECT-TYPE
+      SYNTAX              INTEGER { fPort(2), flPort(3) }
+      MAX-ACCESS          read-write
+      STATUS              current
+      DESCRIPTION
+         "The desired operational mode of the FxPort."
+  ::= { fcFxPortStatusEntry 4 }
+
+
+  -- the FxPort Physical Level table
+  -- This table contains, one entry for each FxPort in the
+  -- Fabric Element, the physical level status and parameters
+  -- of the FxPorts.
+
+  fcFxPortPhysTable OBJECT-TYPE
+      SYNTAX      SEQUENCE OF FcFxPortPhysEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "A table that contains, one entry for each FxPort in the
+          Fabric Element, physical level status and parameters of the
+          FxPorts."
+  ::= { fcFeStatus 2 }
+
+  fcFxPortPhysEntry OBJECT-TYPE
+      SYNTAX      FcFxPortPhysEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "An entry containing physical level status and parameters of
+          a FxPort."
+      AUGMENTS { fcFxPortEntry }
+  ::= { fcFxPortPhysTable 1 }
+
+  FcFxPortPhysEntry ::=
+      SEQUENCE {
+          fcFxPortPhysAdminStatus
+              INTEGER,
+          fcFxPortPhysOperStatus
+              INTEGER,
+          fcFxPortPhysLastChange
+              TimeStamp,
+          fcFxPortPhysRttov
+              MilliSeconds
+      }
+
+  fcFxPortPhysAdminStatus OBJECT-TYPE
+      SYNTAX      INTEGER {
+                      online  (1),  -- place port online
+                      offline (2),  -- take port offline
+                      testing (3)   -- initiate test procedures
+                  }
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+         "The desired state of the FxPort.  A management station may
+          place the FxPort in a desired state by setting this object
+          accordingly.  The testing(3) state indicates that no
+          operational frames can be passed.  When a Fabric Element
+          initializes, all FxPorts start with fcFxPortPhysAdminStatus
+          in the offline(2) state.  As the result of either explicit
+          management action or per configuration information
+          accessible by the Fabric Element, fcFxPortPhysAdminStatus
+          is then changed to either the online(1) or testing(3)
+          states, or remains in the offline state."
+  ::= { fcFxPortPhysEntry 1 }
+
+  fcFxPortPhysOperStatus   OBJECT-TYPE
+      SYNTAX      INTEGER {
+          online       (1), -- Login may proceed
+          offline      (2), -- Login cannot proceed
+          testing      (3), -- port is under test
+          linkFailure  (4)  -- failure after online/testing
+      }
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The current operational status of the FxPort.  The
+          testing(3) indicates that no operational frames can be
+          passed.  If fcFxPortPhysAdminStatus is offline(2) then
+          fcFxPortPhysOperStatus should be offline(2). If
+          fcFxPortPhysAdminStatus is changed to online(1) then
+          fcFxPortPhysOperStatus should change to online(1) if the
+          FxPort is ready to accept Fabric Login request from the
+          attached NxPort; it should proceed and remain in the link-
+          failure(4) state if and only if there is a fault that
+          prevents it from going to the online(1) state."
+  ::= { fcFxPortPhysEntry 2 }
+
+  fcFxPortPhysLastChange OBJECT-TYPE
+      SYNTAX      TimeStamp
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The value of sysUpTime at the time the FxPort entered its
+          current operational status. A value of zero indicates that
+          the FxPort's operational status has not changed since the
+          agent last restarted."
+  ::= { fcFxPortPhysEntry 3 }
+
+  fcFxPortPhysRttov OBJECT-TYPE
+      SYNTAX      MilliSeconds
+      UNITS       "milliseconds"
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+         "The Receiver_Transmitter_Timeout value of the FxPort. This
+          is used by the receiver logic to detect Loss of
+          Synchronization."
+  ::= { fcFxPortPhysEntry 4 }
+
+  -- The FxPort Fabric Login table
+  --
+  -- This table contains, one entry for each FxPort in the
+  -- Fabric Element, the Service Parameters that have been
+  -- established from the most recent Fabric Login,
+  -- implicit or explicit.
+
+  fcFxLoginTable OBJECT-TYPE
+      SYNTAX      SEQUENCE OF FcFxLoginEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "A table that contains, one entry for each NxPort attached
+          to a particular FxPort in the Fabric Element, services
+          parameters established from the most recent Fabric Login,
+          explicit or implicit. Note that an FxPort may have one or
+          more NxPort attached to it."
+  ::= { fcFeStatus 3 }
+
+  fcFxLoginEntry OBJECT-TYPE
+      SYNTAX      FcFxLoginEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "An entry containing service parameters established from a
+          successful Fabric Login."
+      INDEX { fcFeModuleIndex, fcFxPortIndex, fcFxPortNxLoginIndex }
+  ::= { fcFxLoginTable 1 }
+
+  FcFxLoginEntry ::=
+      SEQUENCE {
+          fcFxPortNxLoginIndex
+              FcFeNxPortIndex,
+          fcFxPortFcphVersionAgreed
+              FcphVersion,
+          fcFxPortNxPortBbCredit
+              FcBbCredit,
+          fcFxPortNxPortRxDataFieldSize
+              FcRxDataFieldSize,
+          fcFxPortCosSuppAgreed
+              FcCosCap,
+          fcFxPortIntermixSuppAgreed
+              TruthValue,
+          fcFxPortStackedConnModeAgreed
+              FcStackedConnMode,
+          fcFxPortClass2SeqDelivAgreed
+              TruthValue,
+          fcFxPortClass3SeqDelivAgreed
+              TruthValue,
+          --
+          fcFxPortNxPortName
+              FcNameId,
+          fcFxPortConnectedNxPort
+              FcAddressId,
+          fcFxPortBbCreditModel
+              FcBbCreditModel
+      }
+
+  fcFxPortNxLoginIndex OBJECT-TYPE
+      SYNTAX      FcFeNxPortIndex
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "The object identifies the associated NxPort in the
+          attachment for which the entry contains information."
+  ::= { fcFxLoginEntry 1 }
+
+  fcFxPortFcphVersionAgreed OBJECT-TYPE
+      SYNTAX      FcphVersion
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The version of FC-PH that the FxPort has agreed to support
+          from the Fabric Login"
+  ::= { fcFxLoginEntry 2 }
+
+  fcFxPortNxPortBbCredit OBJECT-TYPE
+      SYNTAX      FcBbCredit
+      UNITS       "buffers"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The total number of buffers available for holding Class 1
+          connect-request, Class 2 or Class 3 frames to be
+          transmitted to the attached NxPort.  It is for buffer-to-
+          buffer flow control in the direction from FxPort to NxPort.
+          The buffer-to-buffer flow control mechanism is indicated in
+          the respective fcFxPortBbCreditModel."
+  ::= { fcFxLoginEntry 3 }
+
+  fcFxPortNxPortRxDataFieldSize OBJECT-TYPE
+      SYNTAX      FcRxDataFieldSize
+      UNITS       "bytes"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The Receive Data Field Size of the attached NxPort. This
+          object specifies the largest Data Field Size for an FT_1
+          frame that can be received by the NxPort."
+  ::= { fcFxLoginEntry 4 }
+
+  fcFxPortCosSuppAgreed OBJECT-TYPE
+      SYNTAX      FcCosCap
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A variable indicating that the attached NxPort has
+          requested the FxPort for the support of classes of services
+          and the FxPort has granted the request."
+  ::= { fcFxLoginEntry 5 }
+
+  fcFxPortIntermixSuppAgreed OBJECT-TYPE
+      SYNTAX      TruthValue
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A variable indicating that the attached NxPort has
+          requested the FxPort for the support of Intermix and the
+          FxPort has granted the request. This flag is only valid if
+          Class 1 service is supported."
+  ::= { fcFxLoginEntry 6 }
+
+  fcFxPortStackedConnModeAgreed OBJECT-TYPE
+      SYNTAX      FcStackedConnMode
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A variable indicating whether the FxPort has agreed to
+          support stacked connect from the Fabric Login. This is only
+          meaningful if Class 1 service has been agreed."
+  ::= { fcFxLoginEntry 7 }
+
+  fcFxPortClass2SeqDelivAgreed OBJECT-TYPE
+      SYNTAX      TruthValue
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A variable indicating whether the FxPort has agreed to
+          support Class 2 sequential delivery from the Fabric Login.
+          This is only meaningful if Class 2 service has been
+          agreed."
+  ::= { fcFxLoginEntry 8 }
+
+  fcFxPortClass3SeqDelivAgreed OBJECT-TYPE
+      SYNTAX      TruthValue
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A flag indicating whether the FxPort has agreed to support
+          Class 3 sequential delivery from the Fabric Login. This is
+          only meaningful if Class 3 service has been agreed."
+  ::= { fcFxLoginEntry 9 }
+
+  fcFxPortNxPortName OBJECT-TYPE
+      SYNTAX      FcNameId
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The port name of the attached NxPort."
+  ::= { fcFxLoginEntry 10 }
+
+  fcFxPortConnectedNxPort OBJECT-TYPE
+      SYNTAX      FcAddressId
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The address identifier of the destination NxPort with which
+          this FxPort is currently engaged in a either a Class 1 or
+          loop connection. If this FxPort is not engaged in a
+          connection, then the value of this object is '000000'H."
+  ::= { fcFxLoginEntry 11 }
+
+  fcFxPortBbCreditModel OBJECT-TYPE
+      SYNTAX      FcBbCreditModel
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+         "This object identifies the BB_Credit model used by the
+          FxPort."
+  ::= { fcFxLoginEntry 12 }
+
+
+  -- the Error group
+  -- This group consists of tables that contain information about
+  -- the various types of errors detected.  The management station
+  -- may use the information in this group to determine the
+  -- quality of the link between the FxPort and its attached NxPort.
+
+  -- the FxPort Error table
+  -- This table contains, one entry for each FxPort in the Fabric
+  -- Element, counters recording numbers of errors detected
+  -- since the management agent re-initialized.
+  -- The first 6 columnar objects after the port index corresponds
+  -- to the counters in the Link Error Status Block.
+
+  fcFxPortErrorTable OBJECT-TYPE
+      SYNTAX      SEQUENCE OF FcFxPortErrorEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "A table that contains, one entry for each FxPort, counters
+          that record the numbers of errors detected."
+  ::= { fcFeError 1 }
+
+  fcFxPortErrorEntry OBJECT-TYPE
+      SYNTAX      FcFxPortErrorEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "An entry containing error counters of a FxPort."
+      AUGMENTS { fcFxPortEntry }
+  ::= { fcFxPortErrorTable 1 }
+
+
+  FcFxPortErrorEntry ::=
+      SEQUENCE {
+          fcFxPortLinkFailures
+              Counter32,
+          fcFxPortSyncLosses
+              Counter32,
+          fcFxPortSigLosses
+              Counter32,
+          fcFxPortPrimSeqProtoErrors
+              Counter32,
+          fcFxPortInvalidTxWords
+              Counter32,
+          fcFxPortInvalidCrcs
+              Counter32,
+          fcFxPortDelimiterErrors
+              Counter32,
+          fcFxPortAddressIdErrors
+              Counter32,
+          fcFxPortLinkResetIns
+              Counter32,
+          fcFxPortLinkResetOuts
+              Counter32,
+          fcFxPortOlsIns
+              Counter32,
+          fcFxPortOlsOuts
+              Counter32
+      }
+
+  fcFxPortLinkFailures OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of link failures detected by this FxPort."
+  ::= { fcFxPortErrorEntry 1 }
+
+  fcFxPortSyncLosses OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of loss of synchronization detected by the
+          FxPort."
+  ::= { fcFxPortErrorEntry 2 }
+
+  fcFxPortSigLosses OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of loss of signal detected by the FxPort."
+  ::= { fcFxPortErrorEntry 3 }
+
+  fcFxPortPrimSeqProtoErrors OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of primitive sequence protocol errors detected
+          by the FxPort."
+  ::= { fcFxPortErrorEntry 4 }
+
+  fcFxPortInvalidTxWords OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of invalid transmission word detected by the
+          FxPort."
+  ::= { fcFxPortErrorEntry 5 }
+
+  fcFxPortInvalidCrcs OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of invalid CRC detected by this FxPort."
+  ::= { fcFxPortErrorEntry 6 }
+
+  fcFxPortDelimiterErrors OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Delimiter Errors detected by this FxPort."
+  ::= { fcFxPortErrorEntry 7 }
+
+  fcFxPortAddressIdErrors OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of address identifier errors detected by this
+          FxPort."
+  ::= { fcFxPortErrorEntry 8 }
+
+  fcFxPortLinkResetIns OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Link Reset Protocol received by this FxPort
+          from the attached NxPort."
+  ::= { fcFxPortErrorEntry 9 }
+
+  fcFxPortLinkResetOuts OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Link Reset Protocol issued by this FxPort to
+          the attached NxPort."
+  ::= { fcFxPortErrorEntry 10 }
+
+  fcFxPortOlsIns OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Offline Sequence received by this FxPort."
+  ::= { fcFxPortErrorEntry 11 }
+
+  fcFxPortOlsOuts OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Offline Sequence issued by this FxPort."
+  ::= { fcFxPortErrorEntry 12 }
+
+
+
+  -- Accounting Groups:
+  -- (1) Class 1 Accounting Group,
+  -- (2) Class 2 Accounting Group, and
+  -- (3) Class 3 Accounting Group.
+  -- Each group consists of a table that contains accounting
+  -- information for the FxPorts in the Fabric Element.
+
+  -- the Class 1 Accounting table
+  -- This table contains, one entry for each FxPort in the Fabric
+
+  -- Element, Counter32s for certain types of events occurred in the
+  -- the FxPorts since the the management agent has re-initialized.
+
+  fcFxPortC1AccountingTable OBJECT-TYPE
+      SYNTAX      SEQUENCE OF FcFxPortC1AccountingEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "A table that contains, one entry for each FxPort in the
+          Fabric Element, Class 1 accounting information recorded
+          since the management agent has re-initialized."
+  ::= { fcFeAccounting 1 }
+
+  fcFxPortC1AccountingEntry OBJECT-TYPE
+      SYNTAX      FcFxPortC1AccountingEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "An entry containing Class 1 accounting information for each
+          FxPort."
+      AUGMENTS { fcFxPortEntry }
+  ::= { fcFxPortC1AccountingTable 1 }
+
+
+  FcFxPortC1AccountingEntry ::=
+      SEQUENCE {
+          fcFxPortC1InFrames
+              Counter32,
+          fcFxPortC1OutFrames
+              Counter32,
+          fcFxPortC1InOctets
+              Counter32,
+          fcFxPortC1OutOctets
+              Counter32,
+          fcFxPortC1Discards
+              Counter32,
+          fcFxPortC1FbsyFrames
+              Counter32,
+          fcFxPortC1FrjtFrames
+              Counter32,
+          fcFxPortC1InConnections
+              Counter32,
+          fcFxPortC1OutConnections
+              Counter32,
+          fcFxPortC1ConnTime
+              MilliSeconds
+      }
+
+  fcFxPortC1InFrames OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 1 frames (other than Class 1 connect-
+          request) received by this FxPort from its attached NxPort."
+  ::= { fcFxPortC1AccountingEntry 1 }
+
+  fcFxPortC1OutFrames OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 1 frames (other than Class 1 connect-
+          request) delivered through this FxPort to its attached
+          NxPort."
+  ::= { fcFxPortC1AccountingEntry 2 }
+
+  fcFxPortC1InOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 1 frame octets, including the frame
+          delimiters,  received by this FxPort from its attached
+          NxPort."
+  ::= { fcFxPortC1AccountingEntry 3 }
+
+  fcFxPortC1OutOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 1 frame octets, including the frame
+          delimiters, delivered through this FxPort its attached
+          NxPort."
+  ::= { fcFxPortC1AccountingEntry 4 }
+
+  fcFxPortC1Discards OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 1 frames discarded by this FxPort."
+  ::= { fcFxPortC1AccountingEntry 5 }
+
+  fcFxPortC1FbsyFrames OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of F_BSY frames generated by this FxPort against
+          Class 1 connect-request."
+  ::= { fcFxPortC1AccountingEntry 6 }
+
+  fcFxPortC1FrjtFrames OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of F_RJT frames generated by this FxPort against
+          Class 1 connect-request."
+  ::= { fcFxPortC1AccountingEntry 7 }
+
+  fcFxPortC1InConnections OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 1 connections successfully established
+          in which the attached NxPort is the source of the connect-
+          request."
+  ::= { fcFxPortC1AccountingEntry 8 }
+
+  fcFxPortC1OutConnections OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 1 connections successfully established
+          in which the attached NxPort is the destination of the
+          connect-request."
+  ::= { fcFxPortC1AccountingEntry 9 }
+
+  fcFxPortC1ConnTime OBJECT-TYPE
+      SYNTAX      MilliSeconds
+      UNITS       "milliseconds"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The cumulative time that this FxPort has been engaged in
+          Class 1 connection.  The amount of time is counted from
+          after a connect-request has been accepted until the
+          connection is disengaged, either by an EOFdt or Link
+          Reset."
+  ::= { fcFxPortC1AccountingEntry 10 }
+
+
+  -- the Class 2 Accounting table
+  -- This table contains, one entry for each FxPort in the Fabric
+  -- Element, Counter32s for certain types of events occurred in the
+  -- the FxPorts since the the management agent has re-initialized.
+
+
+  fcFxPortC2AccountingTable OBJECT-TYPE
+      SYNTAX      SEQUENCE OF FcFxPortC2AccountingEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "A table that contains, one entry for each FxPort in the
+          Fabric Element, Class 2 accounting information recorded
+          since the management agent has re-initialized."
+  ::= { fcFeAccounting 2 }
+
+  fcFxPortC2AccountingEntry OBJECT-TYPE
+      SYNTAX      FcFxPortC2AccountingEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "An entry containing Class 2 accounting information for each
+          FxPort."
+      AUGMENTS { fcFxPortEntry }
+  ::= { fcFxPortC2AccountingTable 1 }
+
+  FcFxPortC2AccountingEntry ::=
+      SEQUENCE {
+          fcFxPortC2InFrames
+              Counter32,
+          fcFxPortC2OutFrames
+                 Counter32,
+          fcFxPortC2InOctets
+                 Counter32,
+          fcFxPortC2OutOctets
+                 Counter32,
+          fcFxPortC2Discards
+                 Counter32,
+          fcFxPortC2FbsyFrames
+                 Counter32,
+          fcFxPortC2FrjtFrames
+                 Counter32
+      }
+
+  fcFxPortC2InFrames OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 2 frames received by this FxPort from
+          its attached NxPort."
+  ::= { fcFxPortC2AccountingEntry 1 }
+
+  fcFxPortC2OutFrames OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 2 frames delivered through this FxPort
+          to its attached NxPort."
+  ::= { fcFxPortC2AccountingEntry 2 }
+
+  fcFxPortC2InOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 2 frame octets, including the frame
+          delimiters, received by this FxPort from its attached
+          NxPort."
+  ::= { fcFxPortC2AccountingEntry 3 }
+
+  fcFxPortC2OutOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 2 frame octets, including the frame
+          delimiters, delivered through this FxPort to its attached
+          NxPort."
+  ::= { fcFxPortC2AccountingEntry 4 }
+
+  fcFxPortC2Discards OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 2 frames discarded by this FxPort."
+  ::= { fcFxPortC2AccountingEntry 5 }
+
+  fcFxPortC2FbsyFrames OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of F_BSY frames generated by this FxPort against
+          Class 2 frames."
+  ::= { fcFxPortC2AccountingEntry 6 }
+
+  fcFxPortC2FrjtFrames OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of F_RJT frames generated by this FxPort against
+          Class 2 frames."
+  ::= { fcFxPortC2AccountingEntry 7 }
+
+  -- the Class 3 Accounting Group
+  -- This table contains, one entry for each FxPort in the Fabric
+  -- Element, Counter32s for certain types of events occurred in the
+  -- the FxPorts since the management agent has re-initialized.
+
+  fcFxPortC3AccountingTable OBJECT-TYPE
+      SYNTAX      SEQUENCE OF FcFxPortC3AccountingEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "A table that contains, one entry for each FxPort in the
+          Fabric Element, Class 3 accounting information recorded
+          since the management agent has re-initialized."
+  ::= { fcFeAccounting 3 }
+
+  fcFxPortC3AccountingEntry OBJECT-TYPE
+      SYNTAX      FcFxPortC3AccountingEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "An entry containing Class 3 accounting information for each
+          FxPort."
+      AUGMENTS { fcFxPortEntry }
+  ::= { fcFxPortC3AccountingTable 1 }
+
+
+  FcFxPortC3AccountingEntry ::=
+      SEQUENCE {
+          fcFxPortC3InFrames
+              Counter32,
+          fcFxPortC3OutFrames
+              Counter32,
+          fcFxPortC3InOctets
+              Counter32,
+          fcFxPortC3OutOctets
+              Counter32,
+          fcFxPortC3Discards
+              Counter32
+      }
+
+  fcFxPortC3InFrames OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 3 frames received by this FxPort from
+          its attached NxPort."
+  ::= { fcFxPortC3AccountingEntry 1 }
+
+  fcFxPortC3OutFrames OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 3 frames delivered through this FxPort
+          to its attached NxPort."
+  ::= { fcFxPortC3AccountingEntry 2 }
+
+  fcFxPortC3InOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 3 frame octets, including the frame
+          delimiters, received by this FxPort from its attached
+          NxPort."
+  ::= { fcFxPortC3AccountingEntry 3 }
+
+  fcFxPortC3OutOctets OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 3 frame octets, including the frame
+          delimiters, delivered through this FxPort to its attached
+          NxPort."
+  ::= { fcFxPortC3AccountingEntry 4 }
+
+  fcFxPortC3Discards OBJECT-TYPE
+      SYNTAX      Counter32
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The number of Class 3 frames discarded by this FxPort."
+  ::= { fcFxPortC3AccountingEntry 5 }
+
+
+  -- The Capability Group - consists of a table describing
+  -- information about what each FxPort is inherently capable
+  -- of operating or supporting.
+  -- A capability may be used, as expressed in its respective
+  -- object value in the Configuration group.
+
+  fcFxPortCapTable OBJECT-TYPE
+      SYNTAX      SEQUENCE OF FcFxPortCapEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "A table that contains, one entry for each FxPort, the
+          capabilities of the port within the Fabric Element."
+  ::= { fcFeCapabilities 1 }
+
+  fcFxPortCapEntry OBJECT-TYPE
+      SYNTAX      FcFxPortCapEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+         "An entry containing the Cap of a FxPort."
+      AUGMENTS { fcFxPortEntry }
+  ::= { fcFxPortCapTable 1 }
+
+
+  FcFxPortCapEntry ::=
+      SEQUENCE {
+          fcFxPortCapFcphVersionHigh
+              FcphVersion,
+          fcFxPortCapFcphVersionLow
+              FcphVersion,
+          fcFxPortCapBbCreditMax
+              FcBbCredit,
+          fcFxPortCapBbCreditMin
+              FcBbCredit,
+          fcFxPortCapRxDataFieldSizeMax
+              FcRxDataFieldSize,
+          fcFxPortCapRxDataFieldSizeMin
+              FcRxDataFieldSize,
+          fcFxPortCapCos
+              FcCosCap,
+          fcFxPortCapIntermix
+              TruthValue,
+          fcFxPortCapStackedConnMode
+              FcStackedConnMode,
+          fcFxPortCapClass2SeqDeliv
+              TruthValue,
+          fcFxPortCapClass3SeqDeliv
+              TruthValue,
+          fcFxPortCapHoldTimeMax
+              MicroSeconds,
+          fcFxPortCapHoldTimeMin
+              MicroSeconds
+      }
+
+  fcFxPortCapFcphVersionHigh OBJECT-TYPE
+      SYNTAX      FcphVersion
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The highest or most recent version of FC-PH that the FxPort
+          is capable of supporting."
+  ::= { fcFxPortCapEntry 1 }
+
+  fcFxPortCapFcphVersionLow OBJECT-TYPE
+      SYNTAX      FcphVersion
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The lowest or earliest version of FC-PH that the FxPort is
+          capable of supporting."
+  ::= { fcFxPortCapEntry 2 }
+
+  fcFxPortCapBbCreditMax OBJECT-TYPE
+      SYNTAX      FcBbCredit
+      UNITS       "buffers"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The maximum number of receive buffers available for holding
+          Class 1 connect-request, Class 2 or Class 3 frames from the
+          attached NxPort."
+  ::= { fcFxPortCapEntry 3 }
+
+  fcFxPortCapBbCreditMin OBJECT-TYPE
+      SYNTAX      FcBbCredit
+      UNITS       "buffers"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The minimum number of receive buffers available for holding
+          Class 1 connect-request, Class 2 or Class 3 frames from the
+          attached NxPort."
+  ::= { fcFxPortCapEntry 4 }
+
+  fcFxPortCapRxDataFieldSizeMax OBJECT-TYPE
+      SYNTAX      FcRxDataFieldSize
+      UNITS       "bytes"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The maximum size in bytes of the Data Field in a frame that
+          the FxPort is capable of receiving from its attached
+          NxPort."
+  ::= { fcFxPortCapEntry 5 }
+
+  fcFxPortCapRxDataFieldSizeMin OBJECT-TYPE
+      SYNTAX      FcRxDataFieldSize
+      UNITS       "bytes"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The minimum size in bytes of the Data Field in a frame that
+          the FxPort is capable of receiving from its attached
+          NxPort."
+  ::= { fcFxPortCapEntry 6 }
+
+  fcFxPortCapCos OBJECT-TYPE
+      SYNTAX      FcCosCap
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A value indicating the set of Classes of Service that the
+          FxPort is capable of supporting."
+  ::= { fcFxPortCapEntry 7 }
+
+  fcFxPortCapIntermix OBJECT-TYPE
+      SYNTAX      TruthValue
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A flag indicating whether or not the FxPort is capable of
+          supporting the intermixing of Class 2 and Class 3 frames
+          during a Class 1 connection. This flag is only valid if the
+          port is capable of supporting Class 1 service."
+  ::= { fcFxPortCapEntry 8 }
+
+  fcFxPortCapStackedConnMode OBJECT-TYPE
+      SYNTAX      FcStackedConnMode
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A value indicating the mode of Stacked Connect request that
+          the FxPort is capable of supporting."
+  ::= { fcFxPortCapEntry 9 }
+
+  fcFxPortCapClass2SeqDeliv OBJECT-TYPE
+      SYNTAX      TruthValue
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A flag indicating whether or not the FxPort is capable of
+          supporting Class 2 Sequential Delivery."
+  ::= { fcFxPortCapEntry 10 }
+
+  fcFxPortCapClass3SeqDeliv OBJECT-TYPE
+      SYNTAX      TruthValue
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "A flag indicating whether or not the FxPort is capable of
+          supporting Class 3 Sequential Delivery."
+  ::= { fcFxPortCapEntry 11 }
+
+  fcFxPortCapHoldTimeMax OBJECT-TYPE
+      SYNTAX      MicroSeconds
+      UNITS       "microseconds"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The maximum holding time (in microseconds) that the FxPort
+          is capable of supporting."
+  ::= { fcFxPortCapEntry 12 }
+
+  fcFxPortCapHoldTimeMin OBJECT-TYPE
+      SYNTAX      MicroSeconds
+      UNITS       "microseconds"
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+         "The minimum holding time (in microseconds) that the FxPort
+          is capable of supporting."
+  ::= { fcFxPortCapEntry 13 }
+
+  -- conformance information
+  fcFeMIBConformance OBJECT IDENTIFIER  ::= { fcFeMIB 2 }
+  fcFeMIBCompliances  OBJECT IDENTIFIER ::= { fcFeMIBConformance 1 }
+  fcFeMIBGroups       OBJECT IDENTIFIER ::= { fcFeMIBConformance 2 }
+
+  -- compliance statements
+  fcFeMIBMinimumCompliance   MODULE-COMPLIANCE
+      STATUS   current
+      DESCRIPTION
+         "The minimum compliance statement for SNMP entities
+          which implement the FIBRE-CHANNEL-FE-MIB."
+      MODULE  -- this module
+      MANDATORY-GROUPS { fcFeConfigGroup, fcFeStatusGroup,
+                         fcFeErrorGroup }
+
+      OBJECT        fcFeFabricName
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+      OBJECT        fcFeElementName
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+      OBJECT        fcFeModuleName
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+      OBJECT        fcFxPortAdminMode
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+      OBJECT        fcFxPortPhysAdminStatus
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+      OBJECT        fcFxPortPhysRttov
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+      OBJECT        fcFxPortBbCreditModel
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+   ::= { fcFeMIBCompliances 1 }
+
+  fcFeMIBFullCompliance   MODULE-COMPLIANCE
+      STATUS   current
+      DESCRIPTION
+         "The full compliance statement for SNMP entities
+          which implement the FIBRE-CHANNEL-FE-MIB."
+      MODULE  -- this module
+      MANDATORY-GROUPS { fcFeConfigGroup, fcFeStatusGroup,
+                         fcFeErrorGroup,  fcFeCapabilitiesGroup }
+
+      GROUP fcFeClass1AccountingGroup
+      DESCRIPTION
+         "This group is mandatory for all fibre channel fabric
+          elements which support class 1 frames."
+
+      GROUP fcFeClass2AccountingGroup
+      DESCRIPTION
+         "This group is mandatory for all fibre channel fabric
+          elements which support class 2 frames."
+
+      GROUP fcFeClass3AccountingGroup
+      DESCRIPTION
+         "This group is mandatory for all fibre channel fabric
+          elements which support class 3 frames."
+
+      OBJECT        fcFeFabricName
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+      OBJECT        fcFeElementName
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+      OBJECT        fcFeModuleName
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+      OBJECT        fcFxPortAdminMode
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+      OBJECT        fcFxPortPhysAdminStatus
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+      OBJECT        fcFxPortPhysRttov
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+      OBJECT        fcFxPortBbCreditModel
+      MIN-ACCESS    read-only
+      DESCRIPTION
+         "Write access is not required."
+
+   ::= { fcFeMIBCompliances 2 }
+
+   -- units of conformance
+   fcFeConfigGroup  OBJECT-GROUP
+      OBJECTS { fcFeFabricName, fcFeElementName, fcFeModuleCapacity,
+                fcFeModuleDescr, fcFeModuleObjectID,
+                fcFeModuleOperStatus, fcFeModuleLastChange,
+                fcFeModuleFxPortCapacity, fcFeModuleName,
+                fcFxPortName, fcFxPortFcphVersionHigh,
+                fcFxPortFcphVersionLow, fcFxPortBbCredit,
+                fcFxPortRxBufSize, fcFxPortRatov, fcFxPortEdtov,
+                fcFxPortCosSupported, fcFxPortIntermixSupported,
+                fcFxPortStackedConnMode, fcFxPortClass2SeqDeliv,
+                fcFxPortClass3SeqDeliv, fcFxPortHoldTime }
+      STATUS    current
+      DESCRIPTION
+         "A collection of objects providing the configuration and service
+          parameters of the Fabric Element, the modules, and FxPorts."
+   ::= { fcFeMIBGroups 1 }
+
+  fcFeStatusGroup  OBJECT-GROUP
+     OBJECTS { fcFxPortID, fcFxPortBbCreditAvailable,
+               fcFxPortOperMode, fcFxPortAdminMode,
+               fcFxPortPhysAdminStatus, fcFxPortPhysOperStatus,
+               fcFxPortPhysLastChange, fcFxPortPhysRttov,
+               fcFxPortFcphVersionAgreed, fcFxPortNxPortBbCredit,
+               fcFxPortNxPortRxDataFieldSize, fcFxPortCosSuppAgreed,
+               fcFxPortIntermixSuppAgreed,
+               fcFxPortStackedConnModeAgreed,
+               fcFxPortClass2SeqDelivAgreed,
+               fcFxPortClass3SeqDelivAgreed,
+               fcFxPortNxPortName, fcFxPortConnectedNxPort,
+               fcFxPortBbCreditModel }
+     STATUS    current
+     DESCRIPTION
+        "A collection of objects providing the operational status and
+         established service parameters for the Fabric Element and the
+         attached NxPorts."
+   ::= { fcFeMIBGroups 2 }
+
+   fcFeErrorGroup  OBJECT-GROUP
+      OBJECTS { fcFxPortLinkFailures, fcFxPortSyncLosses,
+                fcFxPortSigLosses, fcFxPortPrimSeqProtoErrors,
+                fcFxPortInvalidTxWords, fcFxPortInvalidCrcs,
+                fcFxPortDelimiterErrors, fcFxPortAddressIdErrors,
+                fcFxPortLinkResetIns, fcFxPortLinkResetOuts,
+                fcFxPortOlsIns, fcFxPortOlsOuts }
+      STATUS    current
+      DESCRIPTION
+         "A collection of objects providing various error
+          statistics detected by the FxPorts."
+   ::= { fcFeMIBGroups 3 }
+
+   fcFeClass1AccountingGroup  OBJECT-GROUP
+      OBJECTS { fcFxPortC1InFrames, fcFxPortC1OutFrames,
+                fcFxPortC1InOctets, fcFxPortC1OutOctets,
+                fcFxPortC1Discards, fcFxPortC1FbsyFrames,
+                fcFxPortC1FrjtFrames, fcFxPortC1InConnections,
+                fcFxPortC1OutConnections, fcFxPortC1ConnTime
+      }
+      STATUS    current
+      DESCRIPTION
+         "A collection of objects providing various class 1
+  performance statistics detected by the FxPorts."
+   ::= { fcFeMIBGroups 4 }
+
+   fcFeClass2AccountingGroup  OBJECT-GROUP
+      OBJECTS { fcFxPortC2InFrames, fcFxPortC2OutFrames,
+                fcFxPortC2InOctets, fcFxPortC2OutOctets,
+                fcFxPortC2Discards, fcFxPortC2FbsyFrames,
+                fcFxPortC2FrjtFrames
+      }
+      STATUS    current
+      DESCRIPTION
+         "A collection of objects providing various class 2
+  performance statistics detected by the FxPorts."
+   ::= { fcFeMIBGroups 5 }
+
+   fcFeClass3AccountingGroup  OBJECT-GROUP
+      OBJECTS { fcFxPortC3InFrames, fcFxPortC3OutFrames,
+                fcFxPortC3InOctets, fcFxPortC3OutOctets,
+                fcFxPortC3Discards
+      }
+      STATUS    current
+      DESCRIPTION
+         "A collection of objects providing various class 3
+          performance statistics detected by the FxPorts."
+   ::= { fcFeMIBGroups 6 }
+
+  fcFeCapabilitiesGroup  OBJECT-GROUP
+     OBJECTS { fcFxPortCapFcphVersionHigh, fcFxPortCapFcphVersionLow,
+               fcFxPortCapBbCreditMax, fcFxPortCapBbCreditMin,
+               fcFxPortCapRxDataFieldSizeMax,
+               fcFxPortCapRxDataFieldSizeMin,
+               fcFxPortCapCos, fcFxPortCapIntermix,
+               fcFxPortCapStackedConnMode, fcFxPortCapClass2SeqDeliv,
+               fcFxPortCapClass3SeqDeliv, fcFxPortCapHoldTimeMax,
+               fcFxPortCapHoldTimeMin
+     }
+     STATUS    current
+     DESCRIPTION
+        "A collection of objects providing the inherent
+         capability of each FxPort within the Fabric Element."
+   ::= { fcFeMIBGroups 7 }
+
+
+  END

@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+
+<application id="0" name="Diameter Common Messages" uri="http://www.ietf.org/rfc/rfc3588.txt?number=3588">
+<!-- *********** Last updated 2007-04-12 ************ -->
+	<avp name="Acc-Service-Type" code="261" mandatory="must" vendor-bit="must" vendor-id="Ericsson" may-encrypt="no" protected="mustnot">
+	   <type type-name="Enumerated"/>
+		<enum name="Audio Conference" code="0"/>
+		<enum name="Video Conference" code="1"/>
+	</avp>
+	<avp name="Rule-Space-Suggestion" code="290" mandatory="must" vendor-bit="must" vendor-id="Ericsson" may-encrypt="no" protected="mustnot">
+		<type type-name="UTF8String"/>
+	</avp>
+	<avp name="Rule-Space-Decision" code="291" mandatory="must" vendor-bit="must" vendor-id="Ericsson" may-encrypt="no" protected="mustnot">
+		<type type-name="UTF8String"/>
+	</avp>
+	<avp name="Bearer-Control-Options" code="292" mandatory="must" vendor-bit="must" vendor-id="Ericsson" may-encrypt="no" protected="mustnot">
+		<type type-name="Unsigned32"/>
+	</avp>
+
+	<!-- ************************** SCAP AVPS, see 155 19-FAY 112 51/2 rev B ********************* -->
+        <avp name="Currency-Code" code="544" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="Unsigned32"/>
+        </avp>
+        <avp name="Subscription-Id" code="553" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <grouped>
+                <gavp name="Subscription-Id-Data"/>
+                <gavp name="Subscription-Id-Type"/>
+            </grouped>
+        </avp>
+        <avp name="Subscription-Id-Data" code="554" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="UTF8String"/>
+        </avp>
+        <avp name="Subscription-Id-Type" code="555" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="Unsigned32"/>
+            <enum name="End User MSISDN" code="0"/>
+            <enum name="End User IMSI" code="1"/>
+            <enum name="End User SIP URL" code="2"/>
+            <enum name="End User NAI" code="3"/>
+            <enum name="End User PRIVATE (operator defined)" code="4"/>
+        </avp>
+        <avp name="Original-Subscription-Id" code="559" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <grouped>
+                <gavp name="Subscription-Id-Data"/>
+                <gavp name="Subscription-Id-Type"/>
+            </grouped>
+        </avp>
+
+	<avp name="Abnormal-Termination-Reason" code="600" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="Unsigned32"/>
+            <enum name="Service Element Termination" code="0"/>
+            <enum name="Connection to User Broken" code="1"/>
+        </avp>
+        <avp name="Final-Unit-Indication" code="601" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="Unsigned32"/>
+        </avp>
+        <avp name="Granted-Service-Unit" code="602" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <grouped>
+                <gavp name="Unit-Type"/>
+                <gavp name="Unit-Value"/>
+                <gavp name="Currency-Code"/>
+            </grouped>
+        </avp>
+        <avp name="Cost" code="603" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="Float64"/>
+        </avp>
+        <avp name="Cost-Information" code="604" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <grouped>
+                <gavp name="Cost"/>
+                <gavp name="Currency-Code"/>
+            </grouped>
+        </avp>
+        <avp name="Accounting-Correlation-Id" code="605" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="UTF8String"/>
+        </avp>
+
+        <avp name="Requested-Service-Unit" code="606" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <grouped>
+                <gavp name="Unit-Type"/>
+                <gavp name="Unit-Value"/>
+                <gavp name="Currency-Code"/>
+            </grouped>
+        </avp>
+        <avp name="Service-Parameter-Info" code="607" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <grouped>
+                <gavp name="Service-Parameter-Type"/>
+                <gavp name="Service-Parameter-Value"/>
+            </grouped>
+        </avp>
+        <avp name="Service-Parameter-Type" code="608" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="Unsigned32"/>
+            <!-- CCN Specific Interpretation, see 1553-HSD 108 06/1 rev A -->
+            <enum name="Service Provider Id (CCN)" code="0"/>
+            <enum name="Extension Number 1 (CCN)" code="1"/>
+            <enum name="Extension Number 2 (CCN)" code="2"/>
+            <enum name="Extension Number 3 (CCN)" code="3"/>
+            <enum name="Extension Number 4 (CCN)" code="4"/>
+            <enum name="Extension Text (CCN)" code="5"/>
+            <enum name="GPRS Quality of Service (CCN)" code="6"/>
+            <enum name="Redirecting Party Number (CCN)" code="7"/>
+            <enum name="Originating Location Information (CCN)" code="8"/>
+            <enum name="Terminating Location Information (CCN)" code="9"/>
+            <enum name="Region Charging Origin (CCN)" code="10"/>
+            <enum name="Subscription Type (CCN)" code="11"/>
+            <enum name="SMS Delivery Status (CCN)" code="12"/>
+            <enum name="Time Zone (CCN)" code="13"/>
+            <enum name="Traffic Case (CCN)" code="14"/>
+            <enum name="Dedicated Account Id (CCN)" code="15"/>
+            <enum name="Calling Party Number (CCN)" code="16"/>
+            <enum name="Called Party Number (CCN)" code="17"/>
+            <enum name="Tele Service Code (CCN)" code="18"/>
+            <enum name="Service Key (CCN)" code="19"/>
+        </avp>
+        <avp name="Service-Parameter-Value" code="609" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="OctetString"/>
+        </avp>
+        <avp name="Event-Timestamp" code="610" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="Time"/>
+        </avp>
+        <avp name="Unit-Type" code="611" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="Unsigned32"/>
+            <enum name="Service Credit Time (seconds)" code="0"/>
+            <enum name="Service Credit Volume (bytes)" code="1"/>
+            <enum name="Service Credit Events (number of events)" code="2"/>
+            <enum name="Serivce Credit Money (monetary value)" code="3"/>
+        </avp>
+        <avp name="Unit-Value" code="612" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <grouped>
+                <gavp name="Value-Digits"/>
+                <gavp name="Exponent"/>
+            </grouped>
+        </avp>
+        <avp name="Used-Service-Unit" code="613" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <grouped>
+                <gavp name="Unit-Type"/>
+                <gavp name="Unit-Value"/>
+                <gavp name="Currency-Code"/>
+            </grouped>
+        </avp>
+        <avp name="Check-Balance-Result" code="614" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="Unsigned32"/>
+            <enum name="Enough Credit" code="0"/>
+            <enum name="No Credit" code="1"/>
+        </avp>
+        <avp name="Requested-Action" code="615" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="Unsigned32"/>
+            <enum name="Direct Debiting" code="0"/>
+            <enum name="Refund Account" code="1"/>
+            <enum name="Check Balance" code="2"/>
+            <enum name="Price Enquiry" code="3"/>
+        </avp>
+        <avp name="Exponent" code="616" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="Integer32"/>
+        </avp>
+        <avp name="Value-Digits" code="617" mandatory="must" vendor-bit="must" vendor-id="Ericsson" protected="may" may-encrypt="yes">
+            <type type-name="Unsigned64"/>
+        </avp>
+        <!-- ************************ END SCAP AVPS ******************* -->
+
+
+	<avp name="Charging-Rule-Authorization" code="1055" mandatory="must" vendor-bit="must" vendor-id="Ericsson" may-encrypt="no" protected="mustnot">
+		<grouped>
+			<gavp name="Authorization-State"/>
+			<gavp name="Authorization-State-Change-Time"/>
+			<gavp name="Next-Authorization-State"/>
+		</grouped>
+	</avp>
+	<avp name="Authorization-State" code="1056" mandatory="must" vendor-bit="must" vendor-id="Ericsson" may-encrypt="no" protected="mustnot">
+		<type type-name="Enumerated"/>
+		<enum name="Authorized" code="0"/>
+		<enum name="Unauthorized due to calendar time" code="1"/>
+		<enum name="Unauthorized due to roaming" code="2"/>
+		<enum name="Unauthorized due to QoS" code="3"/>
+		<enum name="Unauthorized due to blacklisting" code="4"/>
+		<enum name="Unauthorized due to terminal limitations" code="5"/>
+		<enum name="Unauthorized due to user defined reason 1" code="6"/>
+		<enum name="Unauthorized due to user defined reason 2" code="7"/>
+		<enum name="Unauthorized due to user defined reason 3" code="8"/>
+		<enum name="Unauthorized due to user defined reason 4" code="9"/>
+		<enum name="Unauthorized due to user defined reason 5" code="10"/>
+		<enum name="Unauthorized due to unknown reason" code="11"/>
+		<enum name="Unauthorized due to Usage Reporting over Gx" code="12"/>
+	</avp>
+	<avp name="Authorization-State-Change-Time" code="1057" mandatory="must" vendor-bit="must" vendor-id="Ericsson" may-encrypt="no" protected="mustnot">
+		<type type-name="OctetString"/>
+	</avp>
+	<avp name="Next-Authorization-State" code="1059" mandatory="must" vendor-bit="must" vendor-id="Ericsson" may-encrypt="no" protected="mustnot">
+		<type type-name="Enumerated"/>
+		<enum name="Authorized" code="0"/>
+		<enum name="Unauthorized due to calendar time" code="1"/>
+	</avp>
+	<avp name="Gx-Capability-List" code="1060" mandatory="must" vendor-bit="must" vendor-id="Ericsson" may-encrypt="no" protected="mustnot">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Customer-Id" code="1146" mandatory="must" vendor-bit="must" vendor-id="Ericsson" may-encrypt="no" protected="mustnot">
+		<type type-name="UTF8String"/>
+	</avp>
+
+</application>

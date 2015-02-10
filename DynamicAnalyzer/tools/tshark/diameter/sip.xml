@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+
+
+	<application id="6" name="Diameter Session Initiation Protocol (SIP) Application" uri="http://www.ietf.org/internet-drafts/draft-ietf-aaa-diameter-sip-app-12.txt">
+
+		<command name="User-Authorization" code="283" vendor-id="None"/>
+		<command name="Server-Assignment" code="284" vendor-id="None"/>
+		<command name="Location-Info" code="285" vendor-id="None"/>
+		<command name="Multimedia-Auth" code="286" vendor-id="None"/>
+		<command name="Registration-Termination" code="287" vendor-id="None"/>
+		<command name="Push-Profile" code="288" vendor-id="None"/>
+
+		<!-- ************************* SIP AVPs ************************ -->
+                <!-- This list is not complete yet -->
+		<avp name="SIP-Accounting-Information" code="368" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<grouped>
+				<gavp name="SIP-Accounting-Server-URI"/>
+				<gavp name="SIP-Credit-Control-Server-URI"/>
+			</grouped>
+		</avp>
+		<avp name="SIP-Accounting-Server-URI" code="369" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="DiameterURI"/>
+		</avp>
+		<avp name="SIP-Credit-Control-Server-URI" code="370" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="DiameterURI"/>
+		</avp>
+		<avp name="SIP-Server-URI" code="371" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="SIP-Server-Capabilities" code="372" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<grouped>
+				<gavp name="SIP-Mandatory-Capability"/>
+				<gavp name="SIP-Optional-Capability"/>
+				<gavp name="SIP-Server-URI"/>
+			</grouped>
+		</avp>
+		<avp name="SIP-Mandatory-Capability" code="373" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="SIP-Optional-Capability" code="374" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="SIP-Server-Assignment-Type" code="375" mandatory="must" may-encrypt="yes">
+			<type type-name="Enumerated"/>
+			<enum name="NO_ASSIGNMENT" code="0"/>
+			<enum name="REGISTRATION" code="1"/>
+			<enum name="RE_REGISTRATION" code="2"/>
+			<enum name="UNREGISTERED_USER" code="3"/>
+			<enum name="TIMEOUT_DEREGISTRATION" code="4"/>
+			<enum name="USER_DEREGISTRATION" code="5"/>
+			<enum name="TIMEOUT_DEREGISTRATION_STORE_SERVER_NAME" code="6"/>
+			<enum name="USER_DEREGISTRATION_STORE_SERVER_NAME" code="7"/>
+			<enum name="ADMINISTRATIVE_DEREGISTRATION" code="8"/>
+			<enum name="AUTHENTICATION_FAILURE" code="9"/>
+			<enum name="AUTHENTICATION_TIMEOUT" code="10"/>
+			<enum name="DEREGISTRATION_TOO_MUCH_DATA" code="11"/>
+		</avp>
+		<avp name="SIP-Auth-Data-Item" code="376" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<grouped>
+				<gavp name="SIP-Authentication-Scheme"/>
+				<gavp name="SIP-Item-Number"/>
+				<gavp name="SIP-Authenticate"/>
+				<gavp name="SIP-Authorization"/>
+				<gavp name="SIP-Authentication-Info"/>
+			</grouped>
+		</avp>
+		<avp name="SIP-Authentication-Scheme" code="377" mandatory="must" may-encrypt="yes">
+			<type type-name="Enumerated"/>
+			<enum name="DIGEST" code="0"/>
+		</avp>
+		<avp name="SIP-Item-Number" code="378" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="SIP-Authenticate" code="379" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<grouped>
+				<gavp name="Digest-Realm"/>
+				<gavp name="Digest-Nonce"/>
+				<gavp name="Digest-Domain"/>
+				<gavp name="Digest-Opaque"/>
+				<gavp name="Digest-Stale"/>
+				<gavp name="Digest-Algorithm"/>
+				<gavp name="Digest-QoP"/>
+				<gavp name="Digest-HA1"/>
+				<gavp name="Digest-Auth-Param"/>
+			</grouped>
+		</avp>
+		<avp name="SIP-Authorization" code="380" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<grouped>
+				<gavp name="Digest-Username"/>
+				<gavp name="Digest-Realm"/>
+				<gavp name="Digest-Nonce"/>
+				<gavp name="Digest-URI"/>
+				<gavp name="Digest-Response"/>
+				<gavp name="Digest-Algorithm"/>
+				<gavp name="Digest-CNonce"/>
+				<gavp name="Digest-Opaque"/>
+				<gavp name="Digest-QoP"/>
+				<gavp name="Digest-Nonce-Count"/>
+				<gavp name="Digest-Method"/>
+				<gavp name="Digest-Entity-Body-Hash"/>
+				<gavp name="Digest-Auth-Param"/>
+			</grouped>
+		</avp>
+		<avp name="SIP-Authentication-Info" code="381" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<grouped>
+				<gavp name="Digest-Nextnonce"/>
+				<gavp name="Digest-QoP"/>
+				<gavp name="Digest-Response-Auth"/>
+				<gavp name="Digest-CNonce"/>
+				<gavp name="Digest-Nonce-Count"/>
+			</grouped>
+		</avp>
+		<avp name="SIP-Number-Auth-Items" code="382" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="SIP-Deregistration-Reason" code="383" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<grouped>
+				<gavp name="SIP-Reason-Code"/>
+				<gavp name="SIP-Reason-Info"/>
+			</grouped>
+		</avp>
+		<avp name="SIP-Reason-Code" code="384" mandatory="must" may-encrypt="yes">
+			<type type-name="Enumerated"/>
+			<enum name="PERMANENT_TERMINATION" code="0"/>
+			<enum name="NEW_SIP_SERVER_ASSIGNED" code="1"/>
+			<enum name="SIP_SERVER_CHANGE" code="2"/>
+			<enum name="REMOVE_SIP_SERVER" code="3"/>
+		</avp>
+		<avp name="SIP-Reason-Info" code="385" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="SIP-Visited-Network-Id" code="386" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="SIP-User-Authorization-Type" code="387" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="Enumerated"/>
+			<enum name="REGISTRATION" code="0"/>
+			<enum name="DEREGISTRATION" code="1"/>
+			<enum name="REGISTRATION_AND_CAPABILITIES" code="2"/>
+		</avp>
+    <avp name="SIP-Supported-User-Data-Type" code="388" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="SIP-User-Data" code="389" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<grouped>
+				<gavp name="SIP-User-Data-Type"/>
+				<gavp name="SIP-User-Data-Contents"/>
+			</grouped>
+		</avp>
+		<avp name="SIP-User-Data-Type" code="390" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="SIP-User-Data-Contents" code="391" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="SIP-User-Data-Already-Available" code="392" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="Enumerated"/>
+			<enum name="USER_DATA_NOT_AVAILABLE" code="0"/>
+			<enum name="USER_DATA_ALREADY_AVAILABLE" code="1"/>
+		</avp>
+		<avp name="SIP-Method" code="393" mandatory="may" may-encrypt="no" protected="may" vendor-bit="mustnot">
+			<type type-name="UTF8String"/>
+		</avp>
+	</application>

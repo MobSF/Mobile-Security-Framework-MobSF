@@ -1,0 +1,41 @@
+# -*- text -*-
+#
+#	Attributes and values defined in RFC 5580.
+#	http://www.ietf.org/rfc/rfc5580.txt
+#
+#	$Id$
+#
+
+# One ASCII character of Namespace ID
+#	0 = TADIG	(GSM)
+#	1 = Realm
+#	2 = E212
+#
+#
+# Followed by the actual string
+ATTRIBUTE	Operator-Name				126	string
+
+#
+#  Large blobs of stuff
+#
+ATTRIBUTE	Location-Information			127	octets
+ATTRIBUTE	Location-Data				128	octets
+ATTRIBUTE	Basic-Location-Policy-Rules		129	octets
+ATTRIBUTE	Extended-Location-Policy-Rules		130	octets
+
+#
+#  Really a bit-packed field
+#
+ATTRIBUTE	Location-Capable			131	integer
+VALUE	Location-Capable		Civix-Location		1
+VALUE	Location-Capable		Geo-Location		2
+VALUE	Location-Capable		Users-Location		4
+VALUE	Location-Capable		NAS-Location		8
+
+ATTRIBUTE	Requested-Location-Info			132	integer
+VALUE	Requested-Location-Info		Civix-Location		1
+VALUE	Requested-Location-Info		Geo-Location		2
+VALUE	Requested-Location-Info		Users-Location		4
+VALUE	Requested-Location-Info		NAS-Location		8
+VALUE	Requested-Location-Info		Future-Requests		16
+VALUE	Requested-Location-Info		None			32

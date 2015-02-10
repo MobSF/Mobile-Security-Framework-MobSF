@@ -1,0 +1,93 @@
+# -*- text -*-
+##############################################################################
+#
+#	ASN Attributes.
+#
+#	Taken from http://svn.asn.pl/misc/freeradius/dictionary.asn
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR		ASN				23782
+
+BEGIN-VENDOR	ASN
+
+## Server-side extensions
+# dynamic IP pool name
+ATTRIBUTE	ASN-IP-Pool-Name			1	string
+
+### 2-99: free ###
+
+## limits
+ATTRIBUTE	ASN-Kbps-Down				100	integer
+ATTRIBUTE	ASN-Kbps-Down-Localmedia		112	integer
+ATTRIBUTE	ASN-Kbps-Up				101	integer
+ATTRIBUTE	ASN-Pps-Down				102	integer
+ATTRIBUTE	ASN-Pps-Up				103	integer
+ATTRIBUTE	ASN-TCP-Connlimit			104	integer
+
+## firewall
+ATTRIBUTE	ASN-Firewall-Available			110	integer
+VALUE	ASN-Firewall-Available		Yes			1
+VALUE	ASN-Firewall-Available		No			2
+
+ATTRIBUTE	ASN-Firewall-State			105	integer
+VALUE	ASN-Firewall-State		Enabled			1
+VALUE	ASN-Firewall-State		Disabled		2
+
+ATTRIBUTE	ASN-Firewall-Block-Ping			107	integer
+VALUE	ASN-Firewall-Block-Ping		Enabled			1
+VALUE	ASN-Firewall-Block-Ping		Disabled		2
+
+# hosts to allow "<tcp/udp/sctp> <host> <port1,port2,...>"
+ATTRIBUTE	ASN-Firewall-Open			106	string
+
+## QoS
+ATTRIBUTE	ASN-QoS-Available			111	integer
+VALUE	ASN-QoS-Available		Yes			1
+VALUE	ASN-QoS-Available		No			2
+
+ATTRIBUTE	ASN-QoS-State				108	integer
+VALUE	ASN-QoS-State			Enabled			1
+VALUE	ASN-QoS-State			Disabled		2
+
+# IP redirection, with optional randomness
+#  "<tcp/udp/sctp> src/dst [<dsthost[/mask]>:]<port1,port2,...> <host>:<port> [<random%>]"
+# where src/dst decides whether to match source or destination ports
+#       random is an integer number from 1 to 99, or null - no randomness
+ATTRIBUTE	ASN-IP-Redirect				109	string
+
+## web filtering
+# decides whether to deny or to allow only the specified web topics
+ATTRIBUTE	ASN-Webfilter-Mode			113	integer
+VALUE	ASN-Webfilter-Mode		Deny			1
+VALUE	ASN-Webfilter-Mode		Allow			2
+
+# where to redirect blocked request
+#  "[301:302]<new url>"
+#  301/302   - redirect permanently (301) or temporarily (302) (default 302)
+#  <new url> - an URL address, with following possible substitutions:
+#    %a - IP address of the client
+#    %i - user ID (RFC931) or "unknown"
+#    %n - domainname of the client or "unknown"
+#    %p - REQUEST_URI, ie. the path and the optional
+#         query string of %u, but note for convenience
+#         without the leading "/".
+#    %t - matched destination group or "unknown"
+#    %u - requested URL
+#    %% - single '%'
+#
+ATTRIBUTE	ASN-Webfilter-Redirect			114	string
+
+# squidGuard destination group to match
+#   destinations available by default: sglists-<tag> - tags:
+#   ads adult audioandvideo banks blogs chatandforum finance freemail games
+#   home jobsearch keylogger news onlineGames phishing proxies recreation
+#   reference science searchengine
+ATTRIBUTE	ASN-Webfilter-Destination		115	string
+
+# web domain to match (will match all subdomains, too)
+ATTRIBUTE	ASN-Webfilter-Domain			116	string
+
+END-VENDOR                             ASN

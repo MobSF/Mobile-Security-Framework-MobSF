@@ -1,0 +1,52 @@
+# -*- text -*-
+##############################################################################
+#
+#	See support@tropos.com
+#
+#	$Id$
+#
+##############################################################################
+VENDOR		Tropos				14529
+
+BEGIN-VENDOR	Tropos
+
+ATTRIBUTE	Tropos-Unicast-Cipher			1	integer
+ATTRIBUTE	Tropos-Layer2-Input-Octets		2	integer
+ATTRIBUTE	Tropos-Layer2-Output-Octets		3	integer
+ATTRIBUTE	Tropos-Layer2-Input-Frames		4	integer
+ATTRIBUTE	Tropos-Layer2-Output-Frames		5	integer
+ATTRIBUTE	Tropos-Layer2-Input-Drops		6	integer
+ATTRIBUTE	Tropos-Noise-Floor			7	ifid
+ATTRIBUTE	Tropos-Noise-Upper-Bound		8	ifid
+ATTRIBUTE	Tropos-Release				9	string
+ATTRIBUTE	Tropos-Secondary-IP			11	octets
+ATTRIBUTE	Tropos-Terminate-Cause			12	integer
+ATTRIBUTE	Tropos-Average-RSSI			13	integer
+ATTRIBUTE	Tropos-Channel				15	ifid
+ATTRIBUTE	Tropos-Retries-Sent			16	integer
+ATTRIBUTE	Tropos-Retry-Bits			17	integer
+ATTRIBUTE	Tropos-Rates-Sent			18	octets
+ATTRIBUTE	Tropos-Rates-Received			19	octets
+ATTRIBUTE	Tropos-Routed-Time			21	integer
+ATTRIBUTE	Tropos-Routless-Since			22	integer
+ATTRIBUTE	Tropos-Capability-Info			23	octets
+ATTRIBUTE	Tropos-Input-Cap			24	integer
+ATTRIBUTE	Tropos-Output-Cap			25	integer
+ATTRIBUTE	Tropos-Class-Mult			26	integer
+ATTRIBUTE	Tropos-Cell-Name			27	string
+ATTRIBUTE	Tropos-Cell-Location			28	string
+ATTRIBUTE	Tropos-Serial-Number			29	string
+ATTRIBUTE	Tropos-Latitude				30	string
+ATTRIBUTE	Tropos-Longitude			31	string
+
+#   These are commented out because FreeRadius does not have a way of
+#   putting the numerical value into SQL.
+#
+#VALUE          Tropos-Unicast-Cipher        Legacy-Open                    0
+#VALUE          Tropos-Unicast-Cipher        Legacy-WEP                     1
+#VALUE          Tropos-Unicast-Cipher        WPA-TKIP                 5304834
+#VALUE          Tropos-Unicast-Cipher        WPA-AES-CCMP             5304836
+#VALUE          Tropos-Unicast-Cipher        WPA2-TKIP                1027074
+#VALUE          Tropos-Unicast-Cipher        WPA2-AES-CCMP            1027076
+
+END-VENDOR	Tropos

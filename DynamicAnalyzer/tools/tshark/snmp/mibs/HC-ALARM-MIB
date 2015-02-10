@@ -1,0 +1,745 @@
+HC-ALARM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+        Integer32, Counter32, Unsigned32
+                FROM SNMPv2-SMI
+        MODULE-COMPLIANCE, OBJECT-GROUP,
+        NOTIFICATION-GROUP
+                FROM SNMPv2-CONF
+        RowStatus, VariablePointer, StorageType,
+        TEXTUAL-CONVENTION
+                FROM SNMPv2-TC
+        CounterBasedGauge64
+                FROM HCNUM-TC
+        rmon, OwnerString, rmonEventGroup
+                FROM RMON-MIB;
+
+hcAlarmMIB MODULE-IDENTITY
+    LAST-UPDATED    "200212160000Z"
+    ORGANIZATION    "IETF RMONMIB Working Group"
+    CONTACT-INFO
+            "        Andy Bierman
+                     Cisco Systems, Inc.
+                Tel: +1 408 527-3711
+
+
+
+             E-mail: abierman@cisco.com
+             Postal: 170 West Tasman Drive
+                     San Jose, CA USA 95134
+
+                     Keith McCloghrie
+                     Cisco Systems, Inc.
+                Tel: +1 408 526-5260
+             E-mail: kzm@cisco.com
+             Postal: 170 West Tasman Drive
+                     San Jose, CA USA 95134
+
+             Send comments to <rmonmib@ietf.org>
+             Mailing list subscription info:
+                 http://www.ietf.org/mailman/listinfo/rmonmib "
+    DESCRIPTION
+            "This module defines Remote Monitoring MIB extensions for
+             High Capacity Alarms.
+
+             Copyright (C) The Internet Society (2002). This version
+             of this MIB module is part of RFC 3434; see the RFC
+             itself for full legal notices."
+
+    REVISION        "200212160000Z"
+    DESCRIPTION
+            "Initial version of the High Capacity Alarm MIB module.
+             This version published as RFC 3434."
+    ::= { rmon 29 }
+
+hcAlarmObjects       OBJECT IDENTIFIER ::= { hcAlarmMIB 1 }
+hcAlarmNotifications OBJECT IDENTIFIER ::= { hcAlarmMIB 2 }
+hcAlarmConformance   OBJECT IDENTIFIER ::= { hcAlarmMIB 3 }
+
+hcAlarmControlObjects OBJECT IDENTIFIER ::= { hcAlarmObjects 1 }
+hcAlarmCapabilitiesObjects OBJECT IDENTIFIER
+                                        ::= { hcAlarmObjects 2 }
+
+--
+-- Textual Conventions
+--
+
+HcValueStatus ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+            "This data type indicates the validity and sign of the data
+            in associated object instances which represent the absolute
+            value of a high capacity numeric quantity.  Such an object
+            may be represented with one or more object instances. An
+            object of type HcValueStatus MUST be defined within the same
+
+
+
+            structure as the object(s) representing the high capacity
+            absolute value.
+
+            If the associated object instance(s) representing the high
+            capacity absolute value could not be accessed during the
+            sampling interval, and is therefore invalid, then the
+            associated HcValueStatus object will contain the value
+            'valueNotAvailable(1)'.
+
+            If the associated object instance(s) representing the high
+            capacity absolute value are valid and actual value of the
+            sample is greater than or equal to zero, then the associated
+            HcValueStatus object will contain the value
+            'valuePositive(2)'.
+
+            If the associated object instance(s) representing the high
+            capacity absolute value are valid and the actual value of
+            the sample is less than zero, then the associated
+            HcValueStatus object will contain the value
+            'valueNegative(3)'.  The associated absolute value should be
+            multiplied by -1 to obtain the true sample value."
+    SYNTAX INTEGER {
+        valueNotAvailable(1),
+        valuePositive(2),
+        valueNegative(3)
+    }
+
+--
+-- High Capacity Alarm Table
+--
+
+hcAlarmTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF HcAlarmEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of entries for the configuration of high capacity
+            alarms."
+    ::= { hcAlarmControlObjects 1 }
+
+hcAlarmEntry OBJECT-TYPE
+    SYNTAX      HcAlarmEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the hcAlarmTable. Entries are usually
+            created in this table by management application action, but
+            may also be created by agent action as well."
+
+
+
+    INDEX { hcAlarmIndex }
+    ::= { hcAlarmTable 1 }
+
+HcAlarmEntry ::= SEQUENCE {
+    hcAlarmIndex                     Integer32,
+    hcAlarmInterval                  Integer32,
+    hcAlarmVariable                  VariablePointer,
+    hcAlarmSampleType                INTEGER,
+    hcAlarmAbsValue                  CounterBasedGauge64,
+    hcAlarmValueStatus               HcValueStatus,
+    hcAlarmStartupAlarm              INTEGER,
+    hcAlarmRisingThreshAbsValueLo    Unsigned32,
+    hcAlarmRisingThreshAbsValueHi    Unsigned32,
+    hcAlarmRisingThresholdValStatus  HcValueStatus,
+    hcAlarmFallingThreshAbsValueLo   Unsigned32,
+    hcAlarmFallingThreshAbsValueHi   Unsigned32,
+    hcAlarmFallingThresholdValStatus HcValueStatus,
+    hcAlarmRisingEventIndex          Integer32,
+    hcAlarmFallingEventIndex         Integer32,
+    hcAlarmValueFailedAttempts       Counter32,
+    hcAlarmOwner                     OwnerString,
+    hcAlarmStorageType               StorageType,
+    hcAlarmStatus                    RowStatus }
+
+hcAlarmIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An arbitrary integer index value used to uniquely identify
+            this high capacity alarm entry."
+    ::= { hcAlarmEntry 1 }
+
+hcAlarmInterval OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    UNITS      "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The interval in seconds over which the data is sampled and
+            compared with the rising and falling thresholds.  When
+            setting this variable, care should be taken in the case of
+            deltaValue sampling - the interval should be set short
+            enough that the sampled variable is very unlikely to
+            increase or decrease by more than 2^63 - 1 during a single
+            sampling interval.
+
+
+
+
+
+            This object may not be modified if the associated
+            hcAlarmStatus object is equal to active(1)."
+    ::= { hcAlarmEntry 2 }
+
+hcAlarmVariable OBJECT-TYPE
+    SYNTAX      VariablePointer
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The object identifier of the particular variable to be
+            sampled.  Only variables that resolve to an ASN.1 primitive
+            type of INTEGER (INTEGER, Integer32, Counter32, Counter64,
+            Gauge, or TimeTicks) may be sampled.
+
+            Because SNMP access control is articulated entirely in terms
+            of the contents of MIB views, no access control mechanism
+            exists that can restrict the value of this object to
+            identify only those objects that exist in a particular MIB
+            view.  Because there is thus no acceptable means of
+            restricting the read access that could be obtained through
+            the alarm mechanism, the probe must only grant write access
+            to this object in those views that have read access to all
+            objects on the probe.
+
+            This object may not be modified if the associated
+            hcAlarmStatus object is equal to active(1)."
+    ::= { hcAlarmEntry 3 }
+
+hcAlarmSampleType OBJECT-TYPE
+    SYNTAX INTEGER {
+               absoluteValue(1),
+               deltaValue(2)
+           }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The method of sampling the selected variable and
+            calculating the value to be compared against the thresholds.
+            If the value of this object is absoluteValue(1), the value
+            of the selected variable will be compared directly with the
+            thresholds at the end of the sampling interval.  If the
+            value of this object is deltaValue(2), the value of the
+            selected variable at the last sample will be subtracted from
+            the current value, and the difference compared with the
+            thresholds.
+
+            If the associated hcAlarmVariable instance could not be
+            obtained at the previous sample interval, then a delta
+
+
+
+            sample is not possible, and the value of the associated
+            hcAlarmValueStatus object for this interval will be
+            valueNotAvailable(1).
+
+            This object may not be modified if the associated
+            hcAlarmStatus object is equal to active(1)."
+    ::= { hcAlarmEntry 4 }
+
+hcAlarmAbsValue OBJECT-TYPE
+    SYNTAX      CounterBasedGauge64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The absolute value (i.e., unsigned value) of the
+            hcAlarmVariable statistic during the last sampling period.
+            The value during the current sampling period is not made
+            available until the period is completed.
+
+            To obtain the true value for this sampling interval, the
+            associated instance of hcAlarmValueStatus must be checked,
+            and the value of this object adjusted as necessary.
+
+            If the MIB instance could not be accessed during the
+            sampling interval, then this object will have a value of
+            zero and the associated instance of hcAlarmValueStatus will
+            be set to 'valueNotAvailable(1)'."
+    ::= { hcAlarmEntry 5 }
+
+hcAlarmValueStatus OBJECT-TYPE
+    SYNTAX      HcValueStatus
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This object indicates the validity and sign of the data for
+            the hcAlarmAbsValue object, as described in the
+            HcValueStatus textual convention."
+    ::= { hcAlarmEntry 6 }
+
+hcAlarmStartupAlarm OBJECT-TYPE
+    SYNTAX     INTEGER {
+                  risingAlarm(1),
+                  fallingAlarm(2),
+                  risingOrFallingAlarm(3)
+               }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The alarm that may be sent when this entry is first set to
+
+
+
+            active.  If the first sample after this entry becomes active
+            is greater than or equal to the rising threshold and this
+            object is equal to risingAlarm(1) or
+            risingOrFallingAlarm(3), then a single rising alarm will be
+            generated.  If the first sample after this entry becomes
+            valid is less than or equal to the falling threshold and
+            this object is equal to fallingAlarm(2) or
+            risingOrFallingAlarm(3), then a single falling alarm will be
+            generated.
+
+            This object may not be modified if the associated
+            hcAlarmStatus object is equal to active(1)."
+    ::= { hcAlarmEntry 7 }
+
+hcAlarmRisingThreshAbsValueLo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The lower 32 bits of the absolute value for threshold for
+            the sampled statistic.  The actual threshold value is
+            determined by the associated instances of the
+            hcAlarmRisingThreshAbsValueHi and
+            hcAlarmRisingThresholdValStatus objects, as follows:
+
+               ABS(threshold) = hcAlarmRisingThreshAbsValueLo +
+                     (hcAlarmRisingThreshAbsValueHi * 2^^32)
+
+            The absolute value of the threshold is adjusted as required,
+            as described in the HcValueStatus textual convention.  These
+            three object instances are conceptually combined to
+            represent the rising threshold for this entry.
+
+            When the current sampled value is greater than or equal to
+            this threshold, and the value at the last sampling interval
+            was less than this threshold, a single event will be
+            generated.  A single event will also be generated if the
+            first sample after this entry becomes valid is greater than
+            or equal to this threshold and the associated
+            hcAlarmStartupAlarm is equal to risingAlarm(1) or
+            risingOrFallingAlarm(3).
+
+            After a rising event is generated, another such event will
+            not be generated until the sampled value falls below this
+            threshold and reaches the threshold identified by the
+            hcAlarmFallingThreshAbsValueLo,
+            hcAlarmFallingThreshAbsValueHi, and
+            hcAlarmFallingThresholdValStatus objects.
+
+
+
+            This object may not be modified if the associated
+            hcAlarmStatus object is equal to active(1)."
+
+    ::= { hcAlarmEntry 8 }
+
+hcAlarmRisingThreshAbsValueHi OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The upper 32 bits of the absolute value for threshold for
+            the sampled statistic.  The actual threshold value is
+            determined by the associated instances of the
+            hcAlarmRisingThreshAbsValueLo and
+            hcAlarmRisingThresholdValStatus objects, as follows:
+
+               ABS(threshold) = hcAlarmRisingThreshAbsValueLo +
+                     (hcAlarmRisingThreshAbsValueHi * 2^^32)
+
+            The absolute value of the threshold is adjusted as required,
+            as described in the HcValueStatus textual convention.  These
+            three object instances are conceptually combined to
+            represent the rising threshold for this entry.
+
+            When the current sampled value is greater than or equal to
+            this threshold, and the value at the last sampling interval
+            was less than this threshold, a single event will be
+            generated.  A single event will also be generated if the
+            first sample after this entry becomes valid is greater than
+            or equal to this threshold and the associated
+            hcAlarmStartupAlarm is equal to risingAlarm(1) or
+            risingOrFallingAlarm(3).
+
+            After a rising event is generated, another such event will
+            not be generated until the sampled value falls below this
+            threshold and reaches the threshold identified by the
+            hcAlarmFallingThreshAbsValueLo,
+            hcAlarmFallingThreshAbsValueHi, and
+            hcAlarmFallingThresholdValStatus objects.
+
+            This object may not be modified if the associated
+            hcAlarmStatus object is equal to active(1)."
+    ::= { hcAlarmEntry 9 }
+
+hcAlarmRisingThresholdValStatus OBJECT-TYPE
+    SYNTAX      HcValueStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+
+
+
+    DESCRIPTION
+            "This object indicates the sign of the data for the rising
+            threshold, as defined by the hcAlarmRisingThresAbsValueLo
+            and hcAlarmRisingThresAbsValueHi objects, as described in
+            the HcValueStatus textual convention.
+
+            The enumeration 'valueNotAvailable(1)' is not allowed, and
+            the associated hcAlarmStatus object cannot be equal to
+            'active(1)' if this object is set to this value.
+
+            This object may not be modified if the associated
+            hcAlarmStatus object is equal to active(1)."
+    ::= { hcAlarmEntry 10 }
+
+hcAlarmFallingThreshAbsValueLo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The lower 32 bits of the absolute value for threshold for
+            the sampled statistic.  The actual threshold value is
+            determined by the associated instances of the
+            hcAlarmFallingThreshAbsValueHi and
+            hcAlarmFallingThresholdValStatus objects, as follows:
+
+               ABS(threshold) = hcAlarmFallingThreshAbsValueLo +
+                     (hcAlarmFallingThreshAbsValueHi * 2^^32)
+
+            The absolute value of the threshold is adjusted as required,
+            as described in the HcValueStatus textual convention.  These
+            three object instances are conceptually combined to
+            represent the falling threshold for this entry.
+
+            When the current sampled value is less than or equal to this
+            threshold, and the value at the last sampling interval was
+            greater than this threshold, a single event will be
+            generated.  A single event will also be generated if the
+            first sample after this entry becomes valid is less than or
+            equal to this threshold and the associated
+            hcAlarmStartupAlarm is equal to fallingAlarm(2) or
+            risingOrFallingAlarm(3).
+
+            After a falling event is generated, another such event will
+            not be generated until the sampled value rises above this
+            threshold and reaches the threshold identified by the
+            hcAlarmRisingThreshAbsValueLo,
+            hcAlarmRisingThreshAbsValueHi, and
+            hcAlarmRisingThresholdValStatus objects.
+
+
+
+            This object may not be modified if the associated
+            hcAlarmStatus object is equal to active(1)."
+    ::= { hcAlarmEntry 11 }
+
+hcAlarmFallingThreshAbsValueHi OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The upper 32 bits of the absolute value for threshold for
+            the sampled statistic.  The actual threshold value is
+            determined by the associated instances of the
+            hcAlarmFallingThreshAbsValueLo and
+            hcAlarmFallingThresholdValStatus objects, as follows:
+
+               ABS(threshold) = hcAlarmFallingThreshAbsValueLo +
+                     (hcAlarmFallingThreshAbsValueHi * 2^^32)
+
+            The absolute value of the threshold is adjusted as required,
+            as described in the HcValueStatus textual convention.  These
+            three object instances are conceptually combined to
+            represent the falling threshold for this entry.
+
+            When the current sampled value is less than or equal to this
+            threshold, and the value at the last sampling interval was
+            greater than this threshold, a single event will be
+            generated.  A single event will also be generated if the
+            first sample after this entry becomes valid is less than or
+            equal to this threshold and the associated
+            hcAlarmStartupAlarm is equal to fallingAlarm(2) or
+            risingOrFallingAlarm(3).
+
+            After a falling event is generated, another such event will
+            not be generated until the sampled value rises above this
+            threshold and reaches the threshold identified by the
+            hcAlarmRisingThreshAbsValueLo,
+            hcAlarmRisingThreshAbsValueHi, and
+            hcAlarmRisingThresholdValStatus objects.
+
+            This object may not be modified if the associated
+            hcAlarmStatus object is equal to active(1)."
+    ::= { hcAlarmEntry 12 }
+
+hcAlarmFallingThresholdValStatus OBJECT-TYPE
+    SYNTAX      HcValueStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+
+
+
+            "This object indicates the sign of the data for the falling
+            threshold, as defined by the hcAlarmFallingThreshAbsValueLo
+            and hcAlarmFallingThreshAbsValueHi objects, as described in
+            the HcValueStatus textual convention.
+
+            The enumeration 'valueNotAvailable(1)' is not allowed, and
+            the associated hcAlarmStatus object cannot be equal to
+            'active(1)' if this object is set to this value.
+
+            This object may not be modified if the associated
+            hcAlarmStatus object is equal to active(1)."
+    ::= { hcAlarmEntry 13 }
+
+hcAlarmRisingEventIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The index of the eventEntry that is used when a rising
+            threshold is crossed.  The eventEntry identified by a
+            particular value of this index is the same as identified by
+            the same value of the eventIndex object.  If there is no
+            corresponding entry in the eventTable, then no association
+            exists.  In particular, if this value is zero, no associated
+            event will be generated, as zero is not a valid event index.
+
+            This object may not be modified if the associated
+            hcAlarmStatus object is equal to active(1)."
+    ::= { hcAlarmEntry 14 }
+
+hcAlarmFallingEventIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The index of the eventEntry that is used when a falling
+            threshold is crossed.  The eventEntry identified by a
+            particular value of this index is the same as identified by
+            the same value of the eventIndex object.  If there is no
+            corresponding entry in the eventTable, then no association
+            exists.  In particular, if this value is zero, no associated
+            event will be generated, as zero is not a valid event index.
+
+            This object may not be modified if the associated
+            hcAlarmStatus object is equal to active(1)."
+    ::= { hcAlarmEntry 15 }
+
+hcAlarmValueFailedAttempts OBJECT-TYPE
+
+
+
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of times the associated hcAlarmVariable instance
+            was polled on behalf of this hcAlarmEntry, (while in the
+            active state) and the value was not available.  This counter
+            may experience a discontinuity if the agent restarts,
+            indicated by the value of sysUpTime."
+    ::= { hcAlarmEntry 16 }
+
+hcAlarmOwner OBJECT-TYPE
+    SYNTAX     OwnerString
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The entity that configured this entry and is therefore
+            using the resources assigned to it."
+    ::= { hcAlarmEntry 17 }
+
+hcAlarmStorageType OBJECT-TYPE
+    SYNTAX     StorageType
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The type of non-volatile storage configured for this entry.
+            If this object is equal to 'permanent(4)', then the
+            associated hcAlarmRisingEventIndex and
+            hcAlarmFallingEventIndex objects must be writable."
+    ::= { hcAlarmEntry 18 }
+
+hcAlarmStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The status of this row.
+
+            An entry MUST NOT exist in the active state unless all
+            objects in the entry have an appropriate value, as described
+            in the description clause for each writable object.
+
+            The hcAlarmStatus object may be modified if the associated
+            instance of this object is equal to active(1),
+            notInService(2), or notReady(3).  All other writable objects
+            may be modified if the associated instance of this object is
+            equal to notInService(2) or notReady(3)."
+    ::= { hcAlarmEntry 19 }
+
+
+
+--
+-- Capabilities
+--
+
+hcAlarmCapabilities OBJECT-TYPE
+    SYNTAX      BITS {
+       hcAlarmCreation(0),
+       hcAlarmNvStorage(1)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "An indication of the high capacity alarm capabilities
+            supported by this agent.
+
+            If the 'hcAlarmCreation' BIT is set, then this agent allows
+            NMS applications to create entries in the hcAlarmTable.
+
+            If the 'hcAlarmNvStorage' BIT is set, then this agent allows
+            entries in the hcAlarmTable which will be recreated after a
+            system restart, as controlled by the hcAlarmStorageType
+            object."
+    ::= { hcAlarmCapabilitiesObjects 1 }
+
+--
+-- Notifications
+--
+
+hcAlarmNotifPrefix OBJECT IDENTIFIER
+      ::= { hcAlarmNotifications 0 }
+
+hcRisingAlarm NOTIFICATION-TYPE
+    OBJECTS  { hcAlarmVariable,
+               hcAlarmSampleType,
+               hcAlarmAbsValue,
+               hcAlarmValueStatus,
+               hcAlarmRisingThreshAbsValueLo,
+               hcAlarmRisingThreshAbsValueHi,
+               hcAlarmRisingThresholdValStatus,
+               hcAlarmRisingEventIndex }
+    STATUS   current
+    DESCRIPTION
+            "The SNMP notification that is generated when a high
+            capacity alarm entry crosses its rising threshold and
+            generates an event that is configured for sending SNMP
+            traps.
+
+            The hcAlarmEntry object instances identified in the OBJECTS
+
+
+
+            clause are from the entry that causes this notification to
+            be generated."
+     ::= { hcAlarmNotifPrefix 1 }
+
+hcFallingAlarm NOTIFICATION-TYPE
+    OBJECTS { hcAlarmVariable,
+              hcAlarmSampleType,
+              hcAlarmAbsValue,
+              hcAlarmValueStatus,
+              hcAlarmFallingThreshAbsValueLo,
+              hcAlarmFallingThreshAbsValueHi,
+              hcAlarmFallingThresholdValStatus,
+              hcAlarmFallingEventIndex }
+    STATUS    current
+    DESCRIPTION
+            "The SNMP notification that is generated when a high
+            capacity alarm entry crosses its falling threshold and
+            generates an event that is configured for sending SNMP
+            traps.
+
+            The hcAlarmEntry object instances identified in the OBJECTS
+            clause are from the entry that causes this notification to
+            be generated."
+     ::= { hcAlarmNotifPrefix 2 }
+
+--
+-- Conformance Section
+--
+
+hcAlarmCompliances OBJECT IDENTIFIER ::= { hcAlarmConformance 1 }
+hcAlarmGroups      OBJECT IDENTIFIER ::= { hcAlarmConformance 2 }
+
+hcAlarmCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "Describes the requirements for conformance to the High
+            Capacity Alarm MIB."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+                           hcAlarmControlGroup,
+                           hcAlarmCapabilitiesGroup,
+                           hcAlarmNotificationsGroup
+                         }
+
+    MODULE RMON-MIB
+        MANDATORY-GROUPS { rmonEventGroup }
+
+    ::= { hcAlarmCompliances 1 }
+
+
+
+-- Object Groups
+
+hcAlarmControlGroup OBJECT-GROUP
+    OBJECTS {
+             hcAlarmInterval,
+             hcAlarmVariable,
+             hcAlarmSampleType,
+             hcAlarmAbsValue,
+             hcAlarmValueStatus,
+             hcAlarmStartupAlarm,
+             hcAlarmRisingThreshAbsValueLo,
+             hcAlarmRisingThreshAbsValueHi,
+             hcAlarmRisingThresholdValStatus,
+             hcAlarmFallingThreshAbsValueLo,
+             hcAlarmFallingThreshAbsValueHi,
+             hcAlarmFallingThresholdValStatus,
+             hcAlarmRisingEventIndex,
+             hcAlarmFallingEventIndex,
+             hcAlarmValueFailedAttempts,
+             hcAlarmOwner,
+             hcAlarmStorageType,
+             hcAlarmStatus
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects used to configure entries for high
+            capacity alarm threshold monitoring purposes."
+    ::= { hcAlarmGroups 1 }
+
+hcAlarmCapabilitiesGroup OBJECT-GROUP
+    OBJECTS {
+             hcAlarmCapabilities
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects used to indicate an agent's high
+            capacity alarm threshold monitoring capabilities."
+    ::= { hcAlarmGroups 2 }
+
+hcAlarmNotificationsGroup NOTIFICATION-GROUP
+    NOTIFICATIONS {
+            hcRisingAlarm,
+            hcFallingAlarm
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of notifications to deliver information
+            related to a high capacity rising or falling threshold event
+
+
+
+            to a management application."
+    ::= { hcAlarmGroups 3 }
+
+END

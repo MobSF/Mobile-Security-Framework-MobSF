@@ -1,0 +1,2489 @@
+Q-BRIDGE-MIB DEFINITIONS ::= BEGIN
+
+-- -------------------------------------------------------------
+-- MIB for IEEE 802.1Q Devices
+-- -------------------------------------------------------------
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Counter32, Counter64, Unsigned32, TimeTicks, Integer32
+        FROM SNMPv2-SMI
+    RowStatus, TruthValue, TEXTUAL-CONVENTION, MacAddress
+        FROM SNMPv2-TC
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF
+    dot1dBridge, dot1dBasePortEntry, dot1dBasePort
+        FROM BRIDGE-MIB
+    EnabledStatus
+        FROM P-BRIDGE-MIB
+    TimeFilter
+        FROM RMON2-MIB;
+
+qBridgeMIB MODULE-IDENTITY
+    LAST-UPDATED "200601090000Z"
+    ORGANIZATION "IETF Bridge MIB Working Group"
+    CONTACT-INFO
+        "Email:  Bridge-mib@ietf.org
+                 ietfmibs@ops.ietf.org
+
+                 David Levi
+         Postal: Nortel Networks
+                 4655 Great America Parkway
+                 Santa Clara, CA 95054
+                 USA
+         Phone:  +1 865 686 0432
+         Email:  dlevi@nortel.com
+
+                 David Harrington
+         Postal: Effective Software
+                 50 Harding Rd.
+                 Portsmouth, NH 03801
+                 USA
+         Phone:  +1 603 436 8634
+         Email:  ietfdbh@comcast.net
+
+
+
+                 Les Bell
+         Postal: Hemel Hempstead, Herts. HP2 7YU
+                 UK
+          Email: elbell@ntlworld.com
+
+                 Andrew Smith
+         Postal: Beijing Harbour Networks
+                 Jiuling Building
+                 21 North Xisanhuan Ave.
+                 Beijing, 100089
+                 PRC
+            Fax: +1 415 345 1827
+          Email: ah_smith@acm.org
+
+                 Paul Langille
+         Postal: Newbridge Networks
+                 5 Corporate Drive
+                 Andover, MA 01810
+                 USA
+          Phone: +1 978 691 4665
+          Email: langille@newbridge.com
+
+                 Anil Rijhsinghani
+         Postal: Accton Technology Corporation
+                 5 Mount Royal Ave
+                 Marlboro, MA 01752
+                 USA
+          Phone:
+          Email: anil@accton.com
+
+                 Keith McCloghrie
+         Postal: Cisco Systems, Inc.
+                 170 West Tasman Drive
+                 San Jose, CA 95134-1706
+                 USA
+          Phone: +1 408 526 5260
+          Email: kzm@cisco.com"
+    DESCRIPTION
+        "The VLAN Bridge MIB module for managing Virtual Bridged
+        Local Area Networks, as defined by IEEE 802.1Q-2003,
+        including Restricted Vlan Registration defined by
+        IEEE 802.1u-2001 and Vlan Classification defined by
+        IEEE 802.1v-2001.
+
+        Copyright (C) The Internet Society (2006).  This version of
+        this MIB module is part of RFC 4363; See the RFC itself for
+        full legal notices."
+    REVISION     "200601090000Z"
+
+
+
+    DESCRIPTION
+         "Added Vlan TEXTUAL-CONVENTIONs,
+          dot1qPortRestrictedVlanRegistration, dot1vProtocol subtree,
+          qBridgeClassificationDeviceGroup, qBridgePortGroup2,
+          qBridgeClassificationPortGroup, and qBridgeCompliance2.
+          Clarified dot1qForwardAllStaticPorts,
+          qPortAcceptableFrameTypes, and qBridgeCompliance.
+          Deprecated qBridgePortGroup and qBridgeCompliance."
+
+    REVISION     "199908250000Z"
+    DESCRIPTION
+         "The VLAN Bridge MIB module for managing Virtual Bridged
+        Local Area Networks, as defined by IEEE 802.1Q-1998.
+
+        Initial version, published as RFC 2674."
+
+    ::= { dot1dBridge 7 }
+
+qBridgeMIBObjects OBJECT IDENTIFIER ::= { qBridgeMIB 1 }
+
+-- -------------------------------------------------------------
+-- Textual Conventions
+-- -------------------------------------------------------------
+
+PortList ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "Each octet within this value specifies a set of eight
+        ports, with the first octet specifying ports 1 through
+        8, the second octet specifying ports 9 through 16, etc.
+        Within each octet, the most significant bit represents
+        the lowest numbered port, and the least significant bit
+        represents the highest numbered port.  Thus, each port
+        of the bridge is represented by a single bit within the
+        value of this object.  If that bit has a value of '1',
+        then that port is included in the set of ports; the port
+        is not included if its bit has a value of '0'."
+    SYNTAX      OCTET STRING
+
+VlanIndex ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS      current
+    DESCRIPTION
+        "A value used to index per-VLAN tables: values of 0 and
+        4095 are not permitted.  If the value is between 1 and
+        4094 inclusive, it represents an IEEE 802.1Q VLAN-ID with
+        global scope within a given bridged domain (see VlanId
+        textual convention).  If the value is greater than 4095,
+
+
+
+        then it represents a VLAN with scope local to the
+        particular agent, i.e., one without a global VLAN-ID
+        assigned to it.  Such VLANs are outside the scope of
+        IEEE 802.1Q, but it is convenient to be able to manage them
+        in the same way using this MIB."
+    SYNTAX      Unsigned32
+
+VlanId ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS      current
+    DESCRIPTION
+        "The VLAN-ID that uniquely identifies a VLAN.  This
+        is the 12-bit VLAN-ID used in the VLAN Tag header.
+        The range is defined by the REFERENCEd specification."
+    REFERENCE
+        "IEEE Std 802.1Q 2003 Edition, Virtual Bridged
+        Local Area Networks."
+    SYNTAX      Integer32 (1..4094)
+
+VlanIdOrAny ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "The VLAN-ID that uniquely identifies a specific VLAN,
+        or any VLAN.  The special value of 4095 is used to
+        indicate a wildcard, i.e., any VLAN.  This can be used
+        in any situation where an object or table entry must
+        refer either to a specific VLAN or to any VLAN.
+
+        Note that a MIB object that is defined using this
+        TEXTUAL-CONVENTION should clarify the meaning of
+        'any VLAN' (i.e., the special value 4095)."
+    SYNTAX       Integer32 (1..4094 | 4095)
+
+VlanIdOrNone ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "The VLAN-ID that uniquely identifies a specific VLAN,
+        or no VLAN.  The special value of zero is used to
+        indicate that no VLAN-ID is present or used.  This can
+        be used in any situation where an object or a table entry
+        must refer either to a specific VLAN, or to no VLAN.
+
+        Note that a MIB object that is defined using this
+        TEXTUAL-CONVENTION should clarify the meaning of
+        'no VLAN' (i.e., the special value 0)."
+    SYNTAX       Integer32 (0 | 1..4094)
+
+
+
+VlanIdOrAnyOrNone ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "The VLAN-ID that uniquely identifies a specific VLAN,
+        any VLAN, or no VLAN.  The special values 0 and 4095
+        have the same meaning as described in the VlanIdOrAny
+        and VlanIdOrNone TEXTUAL-CONVENTIONs.
+
+        Note that a MIB object that is defined using this
+        TEXTUAL-CONVENTION should clarify the meaning of
+        'any VLAN' and 'no VLAN' (i.e., the special values
+        0 and 4095)."
+    SYNTAX       Integer32 (0 | 1..4094 | 4095)
+
+-- -------------------------------------------------------------
+-- subtrees in the Q-BRIDGE MIB
+-- -------------------------------------------------------------
+
+dot1qBase       OBJECT IDENTIFIER ::= { qBridgeMIBObjects 1 }
+dot1qTp         OBJECT IDENTIFIER ::= { qBridgeMIBObjects 2 }
+dot1qStatic     OBJECT IDENTIFIER ::= { qBridgeMIBObjects 3 }
+dot1qVlan       OBJECT IDENTIFIER ::= { qBridgeMIBObjects 4 }
+dot1vProtocol   OBJECT IDENTIFIER ::= { qBridgeMIBObjects 5 }
+
+-- -------------------------------------------------------------
+-- dot1qBase subtree
+-- -------------------------------------------------------------
+
+dot1qVlanVersionNumber OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    version1(1)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The version number of IEEE 802.1Q that this device
+        supports."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.10.1.1"
+    ::= { dot1qBase 1 }
+
+dot1qMaxVlanId OBJECT-TYPE
+    SYNTAX      VlanId
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum IEEE 802.1Q VLAN-ID that this device
+
+
+
+        supports."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 9.3.2.3"
+    ::= { dot1qBase 2 }
+
+dot1qMaxSupportedVlans OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of IEEE 802.1Q VLANs that this
+        device supports."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.10.1.1"
+    ::= { dot1qBase 3 }
+
+dot1qNumVlans OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current number of IEEE 802.1Q VLANs that are
+        configured in this device."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.7.1.1"
+    ::= { dot1qBase 4 }
+
+dot1qGvrpStatus OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The administrative status requested by management for
+        GVRP.  The value enabled(1) indicates that GVRP should
+        be enabled on this device, on all ports for which it has
+        not been specifically disabled.  When disabled(2), GVRP
+        is disabled on all ports, and all GVRP packets will be
+        forwarded transparently.  This object affects all GVRP
+        Applicant and Registrar state machines.  A transition
+        from disabled(2) to enabled(1) will cause a reset of all
+        GVRP state machines on all ports.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    DEFVAL      { enabled }
+    ::= { dot1qBase 5 }
+
+-- -------------------------------------------------------------
+
+
+
+-- the dot1qTp subtree
+-- -------------------------------------------------------------
+
+-- -------------------------------------------------------------
+-- the current Filtering Database Table
+-- -------------------------------------------------------------
+
+dot1qFdbTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qFdbEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains configuration and control
+        information for each Filtering Database currently
+        operating on this device.  Entries in this table appear
+        automatically when VLANs are assigned FDB IDs in the
+        dot1qVlanCurrentTable."
+    ::= { dot1qTp 1 }
+
+dot1qFdbEntry OBJECT-TYPE
+    SYNTAX      Dot1qFdbEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about a specific Filtering Database."
+    INDEX   { dot1qFdbId }
+    ::= { dot1qFdbTable 1 }
+
+Dot1qFdbEntry ::=
+    SEQUENCE {
+        dot1qFdbId
+            Unsigned32,
+        dot1qFdbDynamicCount
+            Counter32
+    }
+
+dot1qFdbId OBJECT-TYPE
+    SYNTAX       Unsigned32
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The identity of this Filtering Database."
+    ::= { dot1qFdbEntry 1 }
+
+dot1qFdbDynamicCount OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+
+
+
+    DESCRIPTION
+        "The current number of dynamic entries in this
+        Filtering Database."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.7.1.1.3"
+    ::= { dot1qFdbEntry 2 }
+
+-- -------------------------------------------------------------
+-- Multiple Forwarding Databases for 802.1Q Transparent Devices
+-- This table is an alternative to the dot1dTpFdbTable,
+-- previously defined for 802.1D devices that only support a
+-- single Forwarding Database.
+-- -------------------------------------------------------------
+
+dot1qTpFdbTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qTpFdbEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains information about unicast entries
+        for which the device has forwarding and/or filtering
+        information.  This information is used by the
+        transparent bridging function in determining how to
+        propagate a received frame."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.7.7"
+    ::= { dot1qTp 2 }
+
+dot1qTpFdbEntry OBJECT-TYPE
+    SYNTAX      Dot1qTpFdbEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information about a specific unicast MAC address for
+        which the device has some forwarding and/or filtering
+        information."
+    INDEX   { dot1qFdbId, dot1qTpFdbAddress }
+    ::= { dot1qTpFdbTable 1 }
+
+Dot1qTpFdbEntry ::=
+    SEQUENCE {
+        dot1qTpFdbAddress
+            MacAddress,
+        dot1qTpFdbPort
+            Integer32,
+        dot1qTpFdbStatus
+            INTEGER
+    }
+
+
+
+dot1qTpFdbAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A unicast MAC address for which the device has
+        forwarding and/or filtering information."
+    ::= { dot1qTpFdbEntry 1 }
+
+dot1qTpFdbPort OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Either the value '0', or the port number of the port on
+        which a frame having a source address equal to the value
+        of the corresponding instance of dot1qTpFdbAddress has
+        been seen.  A value of '0' indicates that the port
+        number has not been learned but that the device does
+        have some forwarding/filtering information about this
+        address (e.g., in the dot1qStaticUnicastTable).
+        Implementors are encouraged to assign the port value to
+        this object whenever it is learned, even for addresses
+        for which the corresponding value of dot1qTpFdbStatus is
+        not learned(3)."
+    ::= { dot1qTpFdbEntry 2 }
+
+dot1qTpFdbStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    other(1),
+                    invalid(2),
+                    learned(3),
+                    self(4),
+                    mgmt(5)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The status of this entry.  The meanings of the values
+        are:
+            other(1) - none of the following.  This may include
+                the case where some other MIB object (not the
+                corresponding instance of dot1qTpFdbPort, nor an
+                entry in the dot1qStaticUnicastTable) is being
+                used to determine if and how frames addressed to
+                the value of the corresponding instance of
+                dot1qTpFdbAddress are being forwarded.
+            invalid(2) - this entry is no longer valid (e.g., it
+
+
+
+                was learned but has since aged out), but has not
+                yet been flushed from the table.
+            learned(3) - the value of the corresponding instance
+                of dot1qTpFdbPort was learned and is being used.
+            self(4) - the value of the corresponding instance of
+                dot1qTpFdbAddress represents one of the device's
+                addresses.  The corresponding instance of
+                dot1qTpFdbPort indicates which of the device's
+                ports has this address.
+            mgmt(5) - the value of the corresponding instance of
+                dot1qTpFdbAddress is also the value of an
+                existing instance of dot1qStaticAddress."
+    ::= { dot1qTpFdbEntry 3 }
+
+-- -------------------------------------------------------------
+-- Dynamic Group Registration Table
+-- -------------------------------------------------------------
+
+dot1qTpGroupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qTpGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing filtering information for VLANs
+        configured into the bridge by (local or network)
+        management, or learned dynamically, specifying the set of
+        ports to which frames received on a VLAN for this FDB
+        and containing a specific Group destination address are
+        allowed to be forwarded."
+    ::= { dot1qTp 3 }
+
+dot1qTpGroupEntry OBJECT-TYPE
+    SYNTAX      Dot1qTpGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Filtering information configured into the bridge by
+        management, or learned dynamically, specifying the set of
+        ports to which frames received on a VLAN and containing
+        a specific Group destination address are allowed to be
+        forwarded.  The subset of these ports learned dynamically
+        is also provided."
+    INDEX   { dot1qVlanIndex, dot1qTpGroupAddress }
+    ::= { dot1qTpGroupTable 1 }
+
+Dot1qTpGroupEntry ::=
+    SEQUENCE {
+        dot1qTpGroupAddress
+
+
+
+            MacAddress,
+        dot1qTpGroupEgressPorts
+            PortList,
+        dot1qTpGroupLearnt
+            PortList
+    }
+
+dot1qTpGroupAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The destination Group MAC address in a frame to which
+        this entry's filtering information applies."
+    ::= { dot1qTpGroupEntry 1 }
+
+dot1qTpGroupEgressPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The complete set of ports, in this VLAN, to which
+        frames destined for this Group MAC address are currently
+        being explicitly forwarded.  This does not include ports
+        for which this address is only implicitly forwarded, in
+        the dot1qForwardAllPorts list."
+    ::= { dot1qTpGroupEntry 2 }
+
+dot1qTpGroupLearnt OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The subset of ports in dot1qTpGroupEgressPorts that
+        were learned by GMRP or some other dynamic mechanism, in
+        this Filtering database."
+    ::= { dot1qTpGroupEntry 3 }
+
+-- -------------------------------------------------------------
+-- Service Requirements subtree
+-- -------------------------------------------------------------
+
+dot1qForwardAllTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qForwardAllEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing forwarding information for each
+
+
+
+        VLAN, specifying the set of ports to which forwarding of
+        all multicasts applies, configured statically by
+        management or dynamically by GMRP.  An entry appears in
+        this table for all VLANs that are currently
+        instantiated."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.7.2, 12.7.7"
+    ::= { dot1qTp 4 }
+
+dot1qForwardAllEntry OBJECT-TYPE
+    SYNTAX      Dot1qForwardAllEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Forwarding information for a VLAN, specifying the set
+        of ports to which all multicasts should be forwarded,
+        configured statically by management or dynamically by
+        GMRP."
+    INDEX   { dot1qVlanIndex }
+    ::= { dot1qForwardAllTable 1 }
+
+Dot1qForwardAllEntry ::=
+    SEQUENCE {
+        dot1qForwardAllPorts
+            PortList,
+        dot1qForwardAllStaticPorts
+            PortList,
+        dot1qForwardAllForbiddenPorts
+            PortList
+    }
+
+dot1qForwardAllPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The complete set of ports in this VLAN to which all
+        multicast group-addressed frames are to be forwarded.
+        This includes ports for which this need has been
+        determined dynamically by GMRP, or configured statically
+        by management."
+    ::= { dot1qForwardAllEntry 1 }
+
+dot1qForwardAllStaticPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+
+
+
+        "The set of ports configured by management in this VLAN
+        to which all multicast group-addressed frames are to be
+        forwarded.  Ports entered in this list will also appear
+        in the complete set shown by dot1qForwardAllPorts.  This
+        value will be restored after the device is reset.  This
+        only applies to ports that are members of the VLAN,
+        defined by dot1qVlanCurrentEgressPorts.  A port may not
+        be added in this set if it is already a member of the
+        set of ports in dot1qForwardAllForbiddenPorts.  The
+        default value is a string of ones of appropriate length,
+        to indicate the standard behaviour of using basic
+        filtering services, i.e., forward all multicasts to all
+        ports.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    ::= { dot1qForwardAllEntry 2 }
+
+dot1qForwardAllForbiddenPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The set of ports configured by management in this VLAN
+        for which the Service Requirement attribute Forward All
+        Multicast Groups may not be dynamically registered by
+        GMRP.  This value will be restored after the device is
+        reset.  A port may not be added in this set if it is
+        already a member of the set of ports in
+        dot1qForwardAllStaticPorts.  The default value is a
+        string of zeros of appropriate length.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    ::= { dot1qForwardAllEntry 3 }
+
+dot1qForwardUnregisteredTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qForwardUnregisteredEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing forwarding information for each
+        VLAN, specifying the set of ports to which forwarding of
+        multicast group-addressed frames for which no
+        more specific forwarding information applies.  This is
+        configured statically by management and determined
+        dynamically by GMRP.  An entry appears in this table for
+        all VLANs that are currently instantiated."
+
+
+
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.7.2, 12.7.7"
+    ::= { dot1qTp 5 }
+
+dot1qForwardUnregisteredEntry OBJECT-TYPE
+    SYNTAX      Dot1qForwardUnregisteredEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Forwarding information for a VLAN, specifying the set
+        of ports to which all multicasts for which there is no
+        more specific forwarding information shall be forwarded.
+        This is configured statically by management or
+        dynamically by GMRP."
+    INDEX   { dot1qVlanIndex }
+    ::= { dot1qForwardUnregisteredTable 1 }
+
+Dot1qForwardUnregisteredEntry ::=
+    SEQUENCE {
+        dot1qForwardUnregisteredPorts
+            PortList,
+        dot1qForwardUnregisteredStaticPorts
+            PortList,
+        dot1qForwardUnregisteredForbiddenPorts
+            PortList
+    }
+
+dot1qForwardUnregisteredPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The complete set of ports in this VLAN to which
+        multicast group-addressed frames for which there is no
+        more specific forwarding information will be forwarded.
+        This includes ports for which this need has been
+        determined dynamically by GMRP, or configured statically
+        by management."
+    ::= { dot1qForwardUnregisteredEntry 1 }
+
+dot1qForwardUnregisteredStaticPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The set of ports configured by management, in this
+        VLAN, to which multicast group-addressed frames for
+        which there is no more specific forwarding information
+
+
+
+        are to be forwarded.  Ports entered in this list will
+        also appear in the complete set shown by
+        dot1qForwardUnregisteredPorts.  This value will be
+        restored after the device is reset.  A port may not be
+        added in this set if it is already a member of the set
+        of ports in dot1qForwardUnregisteredForbiddenPorts.  The
+        default value is a string of zeros of appropriate
+        length, although this has no effect with the default
+        value of dot1qForwardAllStaticPorts.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    ::= { dot1qForwardUnregisteredEntry 2 }
+
+dot1qForwardUnregisteredForbiddenPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The set of ports configured by management in this VLAN
+        for which the Service Requirement attribute Forward
+        Unregistered Multicast Groups may not be dynamically
+        registered by GMRP.  This value will be restored after
+        the device is reset.  A port may not be added in this
+        set if it is already a member of the set of ports in
+        dot1qForwardUnregisteredStaticPorts.  The default value
+        is a string of zeros of appropriate length.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    ::= { dot1qForwardUnregisteredEntry 3 }
+
+-- -------------------------------------------------------------
+-- The Static (Destination-Address Filtering) Database
+-- -------------------------------------------------------------
+
+dot1qStaticUnicastTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qStaticUnicastEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing filtering information for Unicast
+        MAC addresses for each Filtering Database, configured
+        into the device by (local or network) management
+        specifying the set of ports to which frames received
+        from specific ports and containing specific unicast
+        destination addresses are allowed to be forwarded.  A
+        value of zero in this table (as the port number from
+
+
+
+        which frames with a specific destination address are
+        received) is used to specify all ports for which there
+        is no specific entry in this table for that particular
+        destination address.  Entries are valid for unicast
+        addresses only."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.7.7,
+        ISO/IEC 15802-3 Section 7.9.1"
+    ::= { dot1qStatic 1 }
+
+dot1qStaticUnicastEntry OBJECT-TYPE
+    SYNTAX      Dot1qStaticUnicastEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Filtering information configured into the device by
+        (local or network) management specifying the set of
+        ports to which frames received from a specific port and
+        containing a specific unicast destination address are
+        allowed to be forwarded."
+    INDEX   {
+        dot1qFdbId,
+        dot1qStaticUnicastAddress,
+        dot1qStaticUnicastReceivePort
+    }
+    ::= { dot1qStaticUnicastTable 1 }
+
+Dot1qStaticUnicastEntry ::=
+    SEQUENCE {
+        dot1qStaticUnicastAddress
+            MacAddress,
+        dot1qStaticUnicastReceivePort
+            Integer32,
+        dot1qStaticUnicastAllowedToGoTo
+            PortList,
+        dot1qStaticUnicastStatus
+            INTEGER
+    }
+
+dot1qStaticUnicastAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The destination MAC address in a frame to which this
+        entry's filtering information applies.  This object must
+        take the value of a unicast address."
+    ::= { dot1qStaticUnicastEntry 1 }
+
+
+
+dot1qStaticUnicastReceivePort OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Either the value '0' or the port number of the port
+        from which a frame must be received in order for this
+        entry's filtering information to apply.  A value of zero
+        indicates that this entry applies on all ports of the
+        device for which there is no other applicable entry."
+    ::= { dot1qStaticUnicastEntry 2 }
+
+dot1qStaticUnicastAllowedToGoTo OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The set of ports for which a frame with a specific
+        unicast address will be flooded in the event that it
+        has not been learned.  It also specifies the set of
+        ports on which a specific unicast address may be dynamically
+        learned.  The dot1qTpFdbTable will have an equivalent
+        entry with a dot1qTpFdbPort value of '0' until this
+        address has been learned, at which point it will be updated
+        with the port the address has been seen on.  This only
+        applies to ports that are members of the VLAN, defined
+        by dot1qVlanCurrentEgressPorts.  The default value of
+        this object is a string of ones of appropriate length.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    REFERENCE
+        "IEEE 802.1Q/D11 Table 8-5, ISO/IEC 15802-3 Table 7-5"
+    ::= { dot1qStaticUnicastEntry 3 }
+
+dot1qStaticUnicastStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    other(1),
+                    invalid(2),
+                    permanent(3),
+                    deleteOnReset(4),
+                    deleteOnTimeout(5)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the status of this entry.
+            other(1) - this entry is currently in use, but
+
+
+
+                the conditions under which it will remain
+                so differ from the following values.
+            invalid(2) - writing this value to the object
+                removes the corresponding entry.
+            permanent(3) - this entry is currently in use
+                and will remain so after the next reset of
+                the bridge.
+            deleteOnReset(4) - this entry is currently in
+                use and will remain so until the next
+                reset of the bridge.
+            deleteOnTimeout(5) - this entry is currently in
+                use and will remain so until it is aged out.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    DEFVAL      { permanent }
+    ::= { dot1qStaticUnicastEntry 4 }
+
+dot1qStaticMulticastTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qStaticMulticastEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing filtering information for Multicast
+        and Broadcast MAC addresses for each VLAN, configured
+        into the device by (local or network) management
+        specifying the set of ports to which frames received
+        from specific ports and containing specific Multicast
+        and Broadcast destination addresses are allowed to be
+        forwarded.  A value of zero in this table (as the port
+        number from which frames with a specific destination
+        address are received) is used to specify all ports for
+        which there is no specific entry in this table for that
+        particular destination address.  Entries are valid for
+        Multicast and Broadcast addresses only."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.7.7,
+        ISO/IEC 15802-3 Section 7.9.1"
+    ::= { dot1qStatic 2 }
+
+dot1qStaticMulticastEntry OBJECT-TYPE
+    SYNTAX      Dot1qStaticMulticastEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Filtering information configured into the device by
+        (local or network) management specifying the set of
+        ports to which frames received from this specific port
+
+
+
+        for this VLAN and containing this Multicast or Broadcast
+        destination address are allowed to be forwarded."
+    INDEX   {
+        dot1qVlanIndex,
+        dot1qStaticMulticastAddress,
+        dot1qStaticMulticastReceivePort
+    }
+    ::= { dot1qStaticMulticastTable 1 }
+
+Dot1qStaticMulticastEntry ::=
+    SEQUENCE {
+        dot1qStaticMulticastAddress
+            MacAddress,
+        dot1qStaticMulticastReceivePort
+            Integer32,
+        dot1qStaticMulticastStaticEgressPorts
+            PortList,
+        dot1qStaticMulticastForbiddenEgressPorts
+            PortList,
+        dot1qStaticMulticastStatus
+            INTEGER
+    }
+
+dot1qStaticMulticastAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The destination MAC address in a frame to which this
+        entry's filtering information applies.  This object must
+        take the value of a Multicast or Broadcast address."
+    ::= { dot1qStaticMulticastEntry 1 }
+
+dot1qStaticMulticastReceivePort OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Either the value '0' or the port number of the port
+        from which a frame must be received in order for this
+        entry's filtering information to apply.  A value of zero
+        indicates that this entry applies on all ports of the
+        device for which there is no other applicable entry."
+    ::= { dot1qStaticMulticastEntry 2 }
+
+dot1qStaticMulticastStaticEgressPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-write
+
+
+
+    STATUS      current
+    DESCRIPTION
+        "The set of ports to which frames received from a
+        specific port and destined for a specific Multicast or
+        Broadcast MAC address must be forwarded, regardless of
+        any dynamic information, e.g., from GMRP.  A port may not
+        be added in this set if it is already a member of the
+        set of ports in dot1qStaticMulticastForbiddenEgressPorts.
+        The default value of this object is a string of ones of
+        appropriate length.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    ::= { dot1qStaticMulticastEntry 3 }
+
+dot1qStaticMulticastForbiddenEgressPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The set of ports to which frames received from a
+        specific port and destined for a specific Multicast or
+        Broadcast MAC address must not be forwarded, regardless
+        of any dynamic information, e.g., from GMRP.  A port may
+        not be added in this set if it is already a member of the
+        set of ports in dot1qStaticMulticastStaticEgressPorts.
+        The default value of this object is a string of zeros of
+        appropriate length.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    ::= { dot1qStaticMulticastEntry 4 }
+
+dot1qStaticMulticastStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    other(1),
+                    invalid(2),
+                    permanent(3),
+                    deleteOnReset(4),
+                    deleteOnTimeout(5)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the status of this entry.
+            other(1) - this entry is currently in use, but
+                the conditions under which it will remain
+                so differ from the following values.
+
+
+
+            invalid(2) - writing this value to the object
+                removes the corresponding entry.
+            permanent(3) - this entry is currently in use
+                and will remain so after the next reset of
+                the bridge.
+            deleteOnReset(4) - this entry is currently in
+                use and will remain so until the next
+                reset of the bridge.
+            deleteOnTimeout(5) - this entry is currently in
+                use and will remain so until it is aged out.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    DEFVAL      { permanent }
+    ::= { dot1qStaticMulticastEntry 5 }
+
+-- -------------------------------------------------------------
+-- The Current VLAN Database
+-- -------------------------------------------------------------
+
+dot1qVlanNumDeletes OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of times a VLAN entry has been deleted from
+        the dot1qVlanCurrentTable (for any reason).  If an entry
+        is deleted, then inserted, and then deleted, this
+        counter will be incremented by 2."
+    ::= { dot1qVlan 1 }
+
+dot1qVlanCurrentTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qVlanCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing current configuration information
+        for each VLAN currently configured into the device by
+        (local or network) management, or dynamically created
+        as a result of GVRP requests received."
+    ::= { dot1qVlan 2 }
+
+dot1qVlanCurrentEntry OBJECT-TYPE
+    SYNTAX      Dot1qVlanCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information for a VLAN configured into the device by
+
+
+
+        (local or network) management, or dynamically created
+        as a result of GVRP requests received."
+    INDEX   { dot1qVlanTimeMark, dot1qVlanIndex }
+    ::= { dot1qVlanCurrentTable 1 }
+
+Dot1qVlanCurrentEntry ::=
+    SEQUENCE {
+        dot1qVlanTimeMark
+            TimeFilter,
+        dot1qVlanIndex
+            VlanIndex,
+        dot1qVlanFdbId
+            Unsigned32,
+        dot1qVlanCurrentEgressPorts
+            PortList,
+        dot1qVlanCurrentUntaggedPorts
+            PortList,
+        dot1qVlanStatus
+            INTEGER,
+        dot1qVlanCreationTime
+            TimeTicks
+    }
+
+dot1qVlanTimeMark OBJECT-TYPE
+    SYNTAX      TimeFilter
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A TimeFilter for this entry.  See the TimeFilter
+        textual convention to see how this works."
+    ::= { dot1qVlanCurrentEntry 1 }
+
+dot1qVlanIndex OBJECT-TYPE
+    SYNTAX      VlanIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The VLAN-ID or other identifier referring to this VLAN."
+    ::= { dot1qVlanCurrentEntry 2 }
+
+dot1qVlanFdbId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Filtering Database used by this VLAN.  This is one
+        of the dot1qFdbId values in the dot1qFdbTable.  This
+        value is allocated automatically by the device whenever
+
+
+
+        the VLAN is created: either dynamically by GVRP, or by
+        management, in dot1qVlanStaticTable.  Allocation of this
+        value follows the learning constraints defined for this
+        VLAN in dot1qLearningConstraintsTable."
+    ::= { dot1qVlanCurrentEntry 3 }
+
+dot1qVlanCurrentEgressPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The set of ports that are transmitting traffic for
+        this VLAN as either tagged or untagged frames."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.10.2.1"
+    ::= { dot1qVlanCurrentEntry 4 }
+
+dot1qVlanCurrentUntaggedPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The set of ports that are transmitting traffic for
+        this VLAN as untagged frames."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.10.2.1"
+    ::= { dot1qVlanCurrentEntry 5 }
+
+dot1qVlanStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    other(1),
+                    permanent(2),
+                    dynamicGvrp(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the status of this entry.
+            other(1) - this entry is currently in use, but the
+                conditions under which it will remain so differ
+                from the following values.
+            permanent(2) - this entry, corresponding to an entry
+                in dot1qVlanStaticTable, is currently in use and
+                will remain so after the next reset of the
+                device.  The port lists for this entry include
+                ports from the equivalent dot1qVlanStaticTable
+                entry and ports learned dynamically.
+            dynamicGvrp(3) - this entry is currently in use
+
+
+
+                and will remain so until removed by GVRP.  There
+                is no static entry for this VLAN, and it will be
+                removed when the last port leaves the VLAN."
+    ::= { dot1qVlanCurrentEntry 6 }
+
+dot1qVlanCreationTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of sysUpTime when this VLAN was created."
+    ::= { dot1qVlanCurrentEntry 7 }
+
+-- -------------------------------------------------------------
+-- The Static VLAN Database
+-- -------------------------------------------------------------
+
+dot1qVlanStaticTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qVlanStaticEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing static configuration information for
+        each VLAN configured into the device by (local or
+        network) management.  All entries are permanent and will
+        be restored after the device is reset."
+    ::= { dot1qVlan 3 }
+
+dot1qVlanStaticEntry OBJECT-TYPE
+    SYNTAX      Dot1qVlanStaticEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Static information for a VLAN configured into the
+        device by (local or network) management."
+    INDEX   { dot1qVlanIndex }
+    ::= { dot1qVlanStaticTable 1 }
+
+Dot1qVlanStaticEntry ::=
+    SEQUENCE {
+        dot1qVlanStaticName
+            SnmpAdminString,
+        dot1qVlanStaticEgressPorts
+            PortList,
+        dot1qVlanForbiddenEgressPorts
+            PortList,
+        dot1qVlanStaticUntaggedPorts
+            PortList,
+
+
+
+        dot1qVlanStaticRowStatus
+            RowStatus
+    }
+
+dot1qVlanStaticName OBJECT-TYPE
+    SYNTAX      SnmpAdminString (SIZE (0..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An administratively assigned string, which may be used
+        to identify the VLAN."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.10.2.1"
+    ::= { dot1qVlanStaticEntry 1 }
+
+dot1qVlanStaticEgressPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The set of ports that are permanently assigned to the
+        egress list for this VLAN by management.  Changes to a
+        bit in this object affect the per-port, per-VLAN
+        Registrar control for Registration Fixed for the
+        relevant GVRP state machine on each port.  A port may
+        not be added in this set if it is already a member of
+        the set of ports in dot1qVlanForbiddenEgressPorts.  The
+        default value of this object is a string of zeros of
+        appropriate length, indicating not fixed."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.7.7.3, 11.2.3.2.3"
+    ::= { dot1qVlanStaticEntry 2 }
+
+dot1qVlanForbiddenEgressPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The set of ports that are prohibited by management
+        from being included in the egress list for this VLAN.
+        Changes to this object that cause a port to be included
+        or excluded affect the per-port, per-VLAN Registrar
+        control for Registration Forbidden for the relevant GVRP
+        state machine on each port.  A port may not be added in
+        this set if it is already a member of the set of ports
+        in dot1qVlanStaticEgressPorts.  The default value of
+        this object is a string of zeros of appropriate length,
+        excluding all ports from the forbidden set."
+
+
+
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.7.7.3, 11.2.3.2.3"
+    ::= { dot1qVlanStaticEntry 3 }
+
+dot1qVlanStaticUntaggedPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The set of ports that should transmit egress packets
+        for this VLAN as untagged.  The default value of this
+        object for the default VLAN (dot1qVlanIndex = 1) is a string
+        of appropriate length including all ports.  There is no
+        specified default for other VLANs.  If a device agent cannot
+        support the set of ports being set, then it will reject the
+        set operation with an error.  For example, a
+        manager might attempt to set more than one VLAN to be untagged
+        on egress where the device does not support this IEEE 802.1Q
+        option."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.10.2.1"
+    ::= { dot1qVlanStaticEntry 4 }
+
+dot1qVlanStaticRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the status of this entry."
+    ::= { dot1qVlanStaticEntry 5 }
+
+dot1qNextFreeLocalVlanIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0|4096..2147483647)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The next available value for dot1qVlanIndex of a local
+        VLAN entry in dot1qVlanStaticTable.  This will report
+        values >=4096 if a new Local VLAN may be created or else
+        the value 0 if this is not possible.
+
+        A row creation operation in this table for an entry with a local
+        VlanIndex value may fail if the current value of this object
+        is not used as the index.  Even if the value read is used,
+        there is no guarantee that it will still be the valid index
+        when the create operation is attempted; another manager may
+        have already got in during the intervening time interval.
+        In this case, dot1qNextFreeLocalVlanIndex should be re-read
+
+
+
+        and the creation re-tried with the new value.
+
+        This value will automatically change when the current value is
+        used to create a new row."
+    ::= { dot1qVlan 4 }
+
+-- -------------------------------------------------------------
+-- The VLAN Port Configuration Table
+-- -------------------------------------------------------------
+
+dot1qPortVlanTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qPortVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing per-port control and status
+        information for VLAN configuration in the device."
+    ::= { dot1qVlan 5 }
+
+dot1qPortVlanEntry OBJECT-TYPE
+    SYNTAX      Dot1qPortVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information controlling VLAN configuration for a port
+        on the device.  This is indexed by dot1dBasePort."
+    AUGMENTS { dot1dBasePortEntry }
+    ::= { dot1qPortVlanTable 1 }
+
+Dot1qPortVlanEntry ::=
+    SEQUENCE {
+        dot1qPvid
+            VlanIndex,
+        dot1qPortAcceptableFrameTypes
+            INTEGER,
+        dot1qPortIngressFiltering
+            TruthValue,
+        dot1qPortGvrpStatus
+            EnabledStatus,
+        dot1qPortGvrpFailedRegistrations
+            Counter32,
+        dot1qPortGvrpLastPduOrigin
+            MacAddress,
+        dot1qPortRestrictedVlanRegistration
+            TruthValue
+    }
+
+dot1qPvid OBJECT-TYPE
+
+
+
+    SYNTAX      VlanIndex
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The PVID, the VLAN-ID assigned to untagged frames or
+        Priority-Tagged frames received on this port.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.10.1.1"
+    DEFVAL      { 1 }
+    ::= { dot1qPortVlanEntry 1 }
+
+dot1qPortAcceptableFrameTypes OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    admitAll(1),
+                    admitOnlyVlanTagged(2)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When this is admitOnlyVlanTagged(2), the device will
+        discard untagged frames or Priority-Tagged frames
+        received on this port.  When admitAll(1), untagged
+        frames or Priority-Tagged frames received on this port
+        will be accepted and assigned to a VID based on the
+        PVID and VID Set for this port.
+
+        This control does not affect VLAN-independent Bridge
+        Protocol Data Unit (BPDU) frames, such as GVRP and
+        Spanning Tree Protocol (STP).  It does affect VLAN-
+        dependent BPDU frames, such as GMRP.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.10.1.3"
+    DEFVAL      { admitAll }
+    ::= { dot1qPortVlanEntry 2 }
+
+dot1qPortIngressFiltering OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When this is true(1), the device will discard incoming
+        frames for VLANs that do not include this Port in its
+
+
+
+        Member set.  When false(2), the port will accept all
+        incoming frames.
+
+        This control does not affect VLAN-independent BPDU
+        frames, such as GVRP and STP.  It does affect VLAN-
+        dependent BPDU frames, such as GMRP.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.10.1.4"
+    DEFVAL      { false }
+    ::= { dot1qPortVlanEntry 3 }
+
+dot1qPortGvrpStatus OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The state of GVRP operation on this port.  The value
+        enabled(1) indicates that GVRP is enabled on this port,
+        as long as dot1qGvrpStatus is also enabled for this
+        device.  When disabled(2) but dot1qGvrpStatus is still
+        enabled for the device, GVRP is disabled on this port:
+        any GVRP packets received will be silently discarded, and
+        no GVRP registrations will be propagated from other
+        ports.  This object affects all GVRP Applicant and
+        Registrar state machines on this port.  A transition
+        from disabled(2) to enabled(1) will cause a reset of all
+        GVRP state machines on this port.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    DEFVAL      { enabled }
+    ::= { dot1qPortVlanEntry 4 }
+
+dot1qPortGvrpFailedRegistrations OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of failed GVRP registrations, for any
+        reason, on this port."
+    ::= { dot1qPortVlanEntry 5 }
+
+dot1qPortGvrpLastPduOrigin OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+
+
+
+    STATUS      current
+    DESCRIPTION
+        "The Source MAC Address of the last GVRP message
+        received on this port."
+    ::= { dot1qPortVlanEntry 6 }
+
+dot1qPortRestrictedVlanRegistration OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The state of Restricted VLAN Registration on this port.
+         If the value of this control is true(1), then creation
+         of a new dynamic VLAN entry is permitted only if there
+         is a Static VLAN Registration Entry for the VLAN concerned,
+         in which the Registrar Administrative Control value for
+         this port is Normal Registration.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    REFERENCE
+        "IEEE 802.1u clause 11.2.3.2.3, 12.10.1.7."
+    DEFVAL      { false }
+    ::= { dot1qPortVlanEntry 7 }
+
+-- -------------------------------------------------------------
+-- Per port VLAN Statistics Table
+-- -------------------------------------------------------------
+
+dot1qPortVlanStatisticsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qPortVlanStatisticsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing per-port, per-VLAN statistics for
+        traffic received.  Separate objects are provided for both the
+        most-significant and least-significant bits of statistics
+        counters for ports that are associated with this transparent
+        bridge.  The most-significant bit objects are only required on
+        high-capacity interfaces, as defined in the conformance clauses
+        for these objects.  This mechanism is provided as a way to read
+        64-bit counters for agents that support only SNMPv1.
+
+        Note that the reporting of most-significant and least-
+        significant counter bits separately runs the risk of missing
+        an overflow of the lower bits in the interval between sampling.
+        The manager must be aware of this possibility, even within the
+        same varbindlist, when interpreting the results of a request or
+
+
+
+        asynchronous notification."
+    ::= { dot1qVlan 6 }
+
+dot1qPortVlanStatisticsEntry OBJECT-TYPE
+    SYNTAX      Dot1qPortVlanStatisticsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Traffic statistics for a VLAN on an interface."
+    INDEX   { dot1dBasePort, dot1qVlanIndex }
+    ::= { dot1qPortVlanStatisticsTable 1 }
+
+Dot1qPortVlanStatisticsEntry ::=
+    SEQUENCE {
+        dot1qTpVlanPortInFrames
+            Counter32,
+        dot1qTpVlanPortOutFrames
+            Counter32,
+        dot1qTpVlanPortInDiscards
+            Counter32,
+        dot1qTpVlanPortInOverflowFrames
+            Counter32,
+        dot1qTpVlanPortOutOverflowFrames
+            Counter32,
+        dot1qTpVlanPortInOverflowDiscards
+            Counter32
+    }
+
+dot1qTpVlanPortInFrames OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of valid frames received by this port from
+        its segment that were classified as belonging to this
+        VLAN.  Note that a frame received on this port is
+        counted by this object if and only if it is for a
+        protocol being processed by the local forwarding process
+        for this VLAN.  This object includes received bridge
+        management frames classified as belonging to this VLAN
+        (e.g., GMRP, but not GVRP or STP."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.6.1.1.3(a)"
+    ::= { dot1qPortVlanStatisticsEntry 1 }
+
+dot1qTpVlanPortOutFrames OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+
+
+
+    STATUS      current
+    DESCRIPTION
+        "The number of valid frames transmitted by this port to
+        its segment from the local forwarding process for this
+        VLAN.  This includes bridge management frames originated
+        by this device that are classified as belonging to this
+        VLAN (e.g., GMRP, but not GVRP or STP)."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.6.1.1.3(d)"
+    ::= { dot1qPortVlanStatisticsEntry 2 }
+
+dot1qTpVlanPortInDiscards OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of valid frames received by this port from
+        its segment that were classified as belonging to this
+        VLAN and that were discarded due to VLAN-related reasons.
+        Specifically, the IEEE 802.1Q counters for Discard
+        Inbound and Discard on Ingress Filtering."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.6.1.1.3"
+    ::= { dot1qPortVlanStatisticsEntry 3 }
+
+dot1qTpVlanPortInOverflowFrames OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times the associated
+        dot1qTpVlanPortInFrames counter has overflowed."
+    REFERENCE
+        "ISO/IEC 15802-3 Section 14.6.1.1.3"
+    ::= { dot1qPortVlanStatisticsEntry 4 }
+
+dot1qTpVlanPortOutOverflowFrames OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times the associated
+        dot1qTpVlanPortOutFrames counter has overflowed."
+    REFERENCE
+        "ISO/IEC 15802-3 Section 14.6.1.1.3"
+    ::= { dot1qPortVlanStatisticsEntry 5 }
+
+dot1qTpVlanPortInOverflowDiscards OBJECT-TYPE
+
+
+
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times the associated
+        dot1qTpVlanPortInDiscards counter has overflowed."
+    REFERENCE
+        "ISO/IEC 15802-3 Section 14.6.1.1.3"
+    ::= { dot1qPortVlanStatisticsEntry 6 }
+
+dot1qPortVlanHCStatisticsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qPortVlanHCStatisticsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing per-port, per-VLAN statistics for
+        traffic on high-capacity interfaces."
+    ::= { dot1qVlan 7 }
+
+dot1qPortVlanHCStatisticsEntry OBJECT-TYPE
+    SYNTAX      Dot1qPortVlanHCStatisticsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Traffic statistics for a VLAN on a high-capacity
+        interface."
+    INDEX   { dot1dBasePort, dot1qVlanIndex }
+    ::= { dot1qPortVlanHCStatisticsTable 1 }
+
+Dot1qPortVlanHCStatisticsEntry ::=
+    SEQUENCE {
+        dot1qTpVlanPortHCInFrames
+            Counter64,
+        dot1qTpVlanPortHCOutFrames
+            Counter64,
+        dot1qTpVlanPortHCInDiscards
+            Counter64
+    }
+
+dot1qTpVlanPortHCInFrames OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of valid frames received by this port from
+        its segment that were classified as belonging to this
+        VLAN.  Note that a frame received on this port is
+        counted by this object if and only if it is for a
+
+
+
+        protocol being processed by the local forwarding process
+        for this VLAN.  This object includes received bridge
+        management frames classified as belonging to this VLAN
+        (e.g., GMRP, but not GVRP or STP)."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.6.1.1.3(a)"
+    ::= { dot1qPortVlanHCStatisticsEntry 1 }
+
+dot1qTpVlanPortHCOutFrames OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of valid frames transmitted by this port to
+        its segment from the local forwarding process for this
+        VLAN.  This includes bridge management frames originated
+        by this device that are classified as belonging to this
+        VLAN (e.g., GMRP, but not GVRP or STP)."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.6.1.1.3(d)"
+    ::= { dot1qPortVlanHCStatisticsEntry 2 }
+
+dot1qTpVlanPortHCInDiscards OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of valid frames received by this port from
+        its segment that were classified as belonging to this
+        VLAN and that were discarded due to VLAN-related reasons.
+        Specifically, the IEEE 802.1Q counters for Discard
+        Inbound and Discard on Ingress Filtering."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.6.1.1.3"
+    ::= { dot1qPortVlanHCStatisticsEntry 3 }
+
+-- -------------------------------------------------------------
+-- The VLAN Learning Constraints Table
+-- -------------------------------------------------------------
+
+dot1qLearningConstraintsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1qLearningConstraintsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing learning constraints for sets of
+        Shared and Independent VLANs."
+    REFERENCE
+
+
+
+        "IEEE 802.1Q/D11 Section 12.10.3.1"
+    ::= { dot1qVlan 8 }
+
+dot1qLearningConstraintsEntry OBJECT-TYPE
+    SYNTAX      Dot1qLearningConstraintsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A learning constraint defined for a VLAN."
+    INDEX   { dot1qConstraintVlan, dot1qConstraintSet }
+    ::= { dot1qLearningConstraintsTable 1 }
+
+Dot1qLearningConstraintsEntry ::=
+    SEQUENCE {
+        dot1qConstraintVlan
+            VlanIndex,
+        dot1qConstraintSet
+            Integer32,
+        dot1qConstraintType
+            INTEGER,
+        dot1qConstraintStatus
+            RowStatus
+    }
+
+dot1qConstraintVlan OBJECT-TYPE
+    SYNTAX      VlanIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The index of the row in dot1qVlanCurrentTable for the
+        VLAN constrained by this entry."
+    ::= { dot1qLearningConstraintsEntry 1 }
+
+dot1qConstraintSet OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The identity of the constraint set to which
+        dot1qConstraintVlan belongs.  These values may be chosen
+        by the management station."
+    ::= { dot1qLearningConstraintsEntry 2 }
+
+dot1qConstraintType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    independent(1),
+                    shared(2)
+                }
+
+
+
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of constraint this entry defines.
+            independent(1) - the VLAN, dot1qConstraintVlan,
+                uses a filtering database independent from all
+                other VLANs in the same set, defined by
+                dot1qConstraintSet.
+            shared(2) - the VLAN, dot1qConstraintVlan, shares
+                the same filtering database as all other VLANs
+                in the same set, defined by dot1qConstraintSet."
+    ::= { dot1qLearningConstraintsEntry 3 }
+
+dot1qConstraintStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The status of this entry."
+    ::= { dot1qLearningConstraintsEntry 4 }
+
+dot1qConstraintSetDefault OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The identity of the constraint set to which a VLAN
+        belongs, if there is not an explicit entry for that VLAN
+        in dot1qLearningConstraintsTable.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    ::= { dot1qVlan 9 }
+
+dot1qConstraintTypeDefault OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    independent(1),
+                    shared(2)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The type of constraint set to which a VLAN belongs, if
+        there is not an explicit entry for that VLAN in
+        dot1qLearningConstraintsTable.  The types are as defined
+        for dot1qConstraintType.
+
+        The value of this object MUST be retained across
+
+
+
+        reinitializations of the management system."
+    ::= { dot1qVlan 10 }
+
+-- -------------------------------------------------------------
+-- dot1vProtocol subtree
+-- -------------------------------------------------------------
+
+dot1vProtocolGroupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1vProtocolGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains mappings from Protocol
+         Templates to Protocol Group Identifiers used for
+         Port-and-Protocol-based VLAN Classification."
+    REFERENCE
+        "IEEE 802.1v clause 8.6.4"
+    ::= { dot1vProtocol 1 }
+
+dot1vProtocolGroupEntry OBJECT-TYPE
+    SYNTAX      Dot1vProtocolGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A mapping from a Protocol Template to a Protocol
+         Group Identifier."
+    INDEX       { dot1vProtocolTemplateFrameType,
+                  dot1vProtocolTemplateProtocolValue }
+    ::= { dot1vProtocolGroupTable 1 }
+
+Dot1vProtocolGroupEntry ::=
+    SEQUENCE {
+        dot1vProtocolTemplateFrameType
+            INTEGER,
+        dot1vProtocolTemplateProtocolValue
+            OCTET STRING,
+        dot1vProtocolGroupId
+            Integer32,
+        dot1vProtocolGroupRowStatus
+            RowStatus
+    }
+
+dot1vProtocolTemplateFrameType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                  ethernet  (1),
+                  rfc1042   (2),
+                  snap8021H (3),
+                  snapOther (4),
+
+
+
+                  llcOther  (5)
+                }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The data-link encapsulation format or the
+         'detagged_frame_type' in a Protocol Template."
+    REFERENCE
+        "IEEE 802.1v clause 8.6.2"
+    ::= { dot1vProtocolGroupEntry 1 }
+
+dot1vProtocolTemplateProtocolValue OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (2 | 5))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The identification of the protocol above the data-link
+         layer in a Protocol Template.  Depending on the
+         frame type, the octet string will have one of the
+         following values:
+
+         For 'ethernet', 'rfc1042' and 'snap8021H',
+             this is the 16-bit (2-octet) IEEE 802.3 Type Field.
+         For 'snapOther',
+             this is the 40-bit (5-octet) PID.
+         For 'llcOther',
+             this is the 2-octet IEEE 802.2 Link Service Access
+             Point (LSAP) pair: first octet for Destination Service
+             Access Point (DSAP) and second octet for Source Service
+             Access Point (SSAP)."
+    REFERENCE
+        "IEEE 802.1v clause 8.6.2"
+    ::= { dot1vProtocolGroupEntry 2 }
+
+dot1vProtocolGroupId OBJECT-TYPE
+    SYNTAX      Integer32 (0..2147483647)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents a group of protocols that are associated
+         together when assigning a VID to a frame."
+    REFERENCE
+        "IEEE 802.1v clause 8.6.3, 12.10.2.1"
+    ::= { dot1vProtocolGroupEntry 3 }
+
+dot1vProtocolGroupRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+
+
+
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the status of this entry."
+    ::= { dot1vProtocolGroupEntry 4 }
+
+dot1vProtocolPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1vProtocolPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains VID sets used for
+         Port-and-Protocol-based VLAN Classification."
+    REFERENCE
+        "IEEE 802.1v clause 8.4.4"
+    ::= { dot1vProtocol 2 }
+
+dot1vProtocolPortEntry OBJECT-TYPE
+    SYNTAX      Dot1vProtocolPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A VID set for a port."
+    INDEX       { dot1dBasePort,
+                  dot1vProtocolPortGroupId }
+    ::= { dot1vProtocolPortTable 1 }
+
+Dot1vProtocolPortEntry ::=
+    SEQUENCE {
+        dot1vProtocolPortGroupId
+            Integer32,
+        dot1vProtocolPortGroupVid
+            Integer32,
+        dot1vProtocolPortRowStatus
+            RowStatus
+    }
+
+dot1vProtocolPortGroupId OBJECT-TYPE
+    SYNTAX      Integer32 (1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Designates a group of protocols in the Protocol
+         Group Database."
+    REFERENCE
+        "IEEE 802.1v clause 8.6.3, 12.10.1.2"
+    ::= { dot1vProtocolPortEntry 1 }
+
+dot1vProtocolPortGroupVid OBJECT-TYPE
+
+
+
+    SYNTAX      Integer32 (1..4094)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The VID associated with a group of protocols for
+         each port."
+    REFERENCE
+        "IEEE 802.1v clause 8.4.4, 12.10.1.2"
+    ::= { dot1vProtocolPortEntry 2 }
+
+dot1vProtocolPortRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the status of this entry."
+    ::= { dot1vProtocolPortEntry 3 }
+
+-- -------------------------------------------------------------
+-- IEEE 802.1Q MIB - Conformance Information
+-- -------------------------------------------------------------
+
+qBridgeConformance OBJECT IDENTIFIER ::= { qBridgeMIB 2 }
+
+qBridgeGroups OBJECT IDENTIFIER ::= { qBridgeConformance 1 }
+
+qBridgeCompliances OBJECT IDENTIFIER ::= { qBridgeConformance 2 }
+
+-- -------------------------------------------------------------
+-- units of conformance
+-- -------------------------------------------------------------
+
+qBridgeBaseGroup OBJECT-GROUP
+    OBJECTS {
+        dot1qVlanVersionNumber,
+        dot1qMaxVlanId,
+        dot1qMaxSupportedVlans,
+        dot1qNumVlans,
+        dot1qGvrpStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing device-level control
+        and status information for the Virtual LAN bridge
+        services."
+    ::= { qBridgeGroups 1 }
+
+qBridgeFdbUnicastGroup OBJECT-GROUP
+
+
+
+    OBJECTS {
+        dot1qFdbDynamicCount,
+        dot1qTpFdbPort,
+        dot1qTpFdbStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about all
+        unicast addresses, learned dynamically or statically
+        configured by management, in each Filtering Database."
+    ::= { qBridgeGroups 2 }
+
+qBridgeFdbMulticastGroup OBJECT-GROUP
+    OBJECTS {
+        dot1qTpGroupEgressPorts,
+        dot1qTpGroupLearnt
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about all
+        multicast addresses, learned dynamically or statically
+        configured by management, in each Filtering Database."
+    ::= { qBridgeGroups 3 }
+
+qBridgeServiceRequirementsGroup OBJECT-GROUP
+    OBJECTS {
+        dot1qForwardAllPorts,
+        dot1qForwardAllStaticPorts,
+        dot1qForwardAllForbiddenPorts,
+        dot1qForwardUnregisteredPorts,
+        dot1qForwardUnregisteredStaticPorts,
+        dot1qForwardUnregisteredForbiddenPorts
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+        service requirements, learned dynamically or statically
+        configured by management, in each Filtering Database."
+    ::= { qBridgeGroups 4 }
+
+qBridgeFdbStaticGroup OBJECT-GROUP
+    OBJECTS {
+        dot1qStaticUnicastAllowedToGoTo,
+        dot1qStaticUnicastStatus,
+        dot1qStaticMulticastStaticEgressPorts,
+        dot1qStaticMulticastForbiddenEgressPorts,
+        dot1qStaticMulticastStatus
+    }
+
+
+
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+        unicast and multicast addresses statically configured by
+        management, in each Filtering Database or VLAN."
+    ::= { qBridgeGroups 5 }
+
+qBridgeVlanGroup OBJECT-GROUP
+    OBJECTS {
+        dot1qVlanNumDeletes,
+        dot1qVlanFdbId,
+        dot1qVlanCurrentEgressPorts,
+        dot1qVlanCurrentUntaggedPorts,
+        dot1qVlanStatus,
+        dot1qVlanCreationTime
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+        all VLANs currently configured on this device."
+    ::= { qBridgeGroups 6 }
+
+qBridgeVlanStaticGroup OBJECT-GROUP
+    OBJECTS {
+        dot1qVlanStaticName,
+        dot1qVlanStaticEgressPorts,
+        dot1qVlanForbiddenEgressPorts,
+        dot1qVlanStaticUntaggedPorts,
+        dot1qVlanStaticRowStatus,
+        dot1qNextFreeLocalVlanIndex
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing information about
+        VLANs statically configured by management."
+    ::= { qBridgeGroups 7 }
+
+qBridgePortGroup OBJECT-GROUP
+    OBJECTS {
+        dot1qPvid,
+        dot1qPortAcceptableFrameTypes,
+        dot1qPortIngressFiltering,
+        dot1qPortGvrpStatus,
+        dot1qPortGvrpFailedRegistrations,
+        dot1qPortGvrpLastPduOrigin
+    }
+    STATUS      deprecated
+    DESCRIPTION
+
+
+
+        "A collection of objects providing port-level VLAN
+        control and status information for all ports."
+    ::= { qBridgeGroups 8 }
+
+qBridgeVlanStatisticsGroup OBJECT-GROUP
+    OBJECTS {
+        dot1qTpVlanPortInFrames,
+        dot1qTpVlanPortOutFrames,
+        dot1qTpVlanPortInDiscards
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing per-port packet
+        statistics for all VLANs currently configured on this
+        device."
+    ::= { qBridgeGroups 9 }
+
+qBridgeVlanStatisticsOverflowGroup OBJECT-GROUP
+    OBJECTS {
+        dot1qTpVlanPortInOverflowFrames,
+        dot1qTpVlanPortOutOverflowFrames,
+        dot1qTpVlanPortInOverflowDiscards
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing overflow counters for
+        per-port packet statistics for all VLANs currently configured
+        on this device for high-capacity interfaces, defined as those
+        that have the value of the corresponding instance of
+        ifSpeed greater than 650,000,000 bits/second."
+    ::= { qBridgeGroups 10 }
+
+qBridgeVlanHCStatisticsGroup OBJECT-GROUP
+    OBJECTS {
+        dot1qTpVlanPortHCInFrames,
+        dot1qTpVlanPortHCOutFrames,
+        dot1qTpVlanPortHCInDiscards
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing per-port packet
+        statistics for all VLANs currently configured on this
+        device for high-capacity interfaces, defined as those
+        that have the value of the corresponding instance of
+        ifSpeed greater than 650,000,000 bits/second."
+    ::= { qBridgeGroups 11 }
+
+qBridgeLearningConstraintsGroup OBJECT-GROUP
+
+
+
+    OBJECTS {
+        dot1qConstraintType,
+        dot1qConstraintStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects defining the Filtering Database
+        constraints all VLANs have with each other."
+    ::= { qBridgeGroups 12 }
+
+qBridgeLearningConstraintDefaultGroup OBJECT-GROUP
+    OBJECTS {
+        dot1qConstraintSetDefault,
+        dot1qConstraintTypeDefault
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects defining the default Filtering
+        Database constraints for VLANs that have no specific
+        constraints defined."
+    ::= { qBridgeGroups 13 }
+
+qBridgeClassificationDeviceGroup OBJECT-GROUP
+    OBJECTS {
+        dot1vProtocolGroupId,
+        dot1vProtocolGroupRowStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "VLAN classification information for the bridge."
+    ::= { qBridgeGroups 14 }
+
+qBridgeClassificationPortGroup OBJECT-GROUP
+    OBJECTS {
+        dot1vProtocolPortGroupVid,
+        dot1vProtocolPortRowStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "VLAN classification information for individual ports."
+    ::= { qBridgeGroups 15 }
+
+qBridgePortGroup2 OBJECT-GROUP
+    OBJECTS {
+        dot1qPvid,
+        dot1qPortAcceptableFrameTypes,
+        dot1qPortIngressFiltering,
+        dot1qPortGvrpStatus,
+
+
+
+        dot1qPortGvrpFailedRegistrations,
+        dot1qPortGvrpLastPduOrigin,
+        dot1qPortRestrictedVlanRegistration
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing port-level VLAN
+        control and status information for all ports."
+    ::= { qBridgeGroups 16 }
+
+-- -------------------------------------------------------------
+-- compliance statements
+-- -------------------------------------------------------------
+
+qBridgeCompliance MODULE-COMPLIANCE
+    STATUS  deprecated
+    DESCRIPTION
+        "The compliance statement for device support of Virtual
+        LAN Bridge services.
+
+        RFC2674 was silent about the expected persistence of the
+        read-write objects in this MIB module.  Applications MUST
+        NOT assume that the values of the read-write objects are
+        persistent across reinitializations of the management
+        system and MUST NOT assume that the values are not
+        persistent across reinitializations of the management
+        system."
+
+    MODULE
+        MANDATORY-GROUPS {
+            qBridgeBaseGroup,
+            qBridgeVlanGroup,
+            qBridgeVlanStaticGroup,
+            qBridgePortGroup
+        }
+
+        GROUP       qBridgeFdbUnicastGroup
+        DESCRIPTION
+            "This group is mandatory for bridges that implement
+            802.1Q transparent bridging."
+
+        GROUP       qBridgeFdbMulticastGroup
+        DESCRIPTION
+            "This group is mandatory for bridges that implement
+            802.1Q transparent bridging."
+
+        GROUP       qBridgeServiceRequirementsGroup
+        DESCRIPTION
+
+
+
+            "This group is mandatory for bridges that implement
+            extended filtering services.  All objects must be
+            read-write if extended-filtering services are
+            enabled."
+
+        GROUP       qBridgeFdbStaticGroup
+        DESCRIPTION
+            "This group is optional."
+
+        GROUP       qBridgeVlanStatisticsGroup
+        DESCRIPTION
+            "This group is optional as there may be significant
+            implementation cost associated with its support."
+
+        GROUP       qBridgeVlanStatisticsOverflowGroup
+        DESCRIPTION
+            "This group is optional as there may be significant
+            implementation cost associated with its support.  It is most
+            relevant for high-capacity interfaces where the SNMP agent
+            supports only SNMPv1."
+
+        GROUP       qBridgeVlanHCStatisticsGroup
+        DESCRIPTION
+            "This group is optional as there may be significant
+            implementation cost associated with its support.  It is most
+            relevant for high-capacity interfaces."
+
+        GROUP       qBridgeLearningConstraintsGroup
+        DESCRIPTION
+            "This group is mandatory for devices implementing
+             both Independent VLAN Learning (IVL) and Shared
+             VLAN Learning (SVL) modes of operation of the
+             filtering database, as defined by IEEE 802.1Q."
+
+        GROUP       qBridgeLearningConstraintDefaultGroup
+        DESCRIPTION
+            "This group is mandatory for devices implementing
+             both Independent VLAN Learning (IVL) and Shared
+             VLAN Learning (SVL) modes of operation of the
+             filtering database, as defined by IEEE 802.1Q."
+
+        OBJECT      dot1qPortAcceptableFrameTypes
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required as this is an optional
+            capability in IEEE 802.1Q."
+
+        OBJECT      dot1qPortIngressFiltering
+
+
+
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required as this is an optional
+            capability in IEEE 802.1Q."
+
+        OBJECT      dot1qConstraintSetDefault
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required as this is an optional
+            capability in IEEE 802.1Q."
+
+        OBJECT      dot1qConstraintTypeDefault
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required as this is an optional
+            capability in IEEE 802.1Q."
+
+       ::= { qBridgeCompliances 1 }
+
+qBridgeCompliance2 MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for device support of Virtual
+        LAN Bridge services.
+
+        This document clarifies the persistence requirements for
+        the read-write objects in this MIB module.  All
+        implementations claiming compliance to qBridgeCompliance2
+        MUST retain the values of those read-write objects that
+        specify this requirement."
+
+    MODULE
+        MANDATORY-GROUPS {
+            qBridgeBaseGroup,
+            qBridgeVlanGroup,
+            qBridgeVlanStaticGroup,
+            qBridgePortGroup2
+        }
+
+        GROUP       qBridgeFdbUnicastGroup
+        DESCRIPTION
+            "This group is mandatory for bridges that implement
+            802.1Q transparent bridging."
+
+        GROUP       qBridgeFdbMulticastGroup
+        DESCRIPTION
+            "This group is mandatory for bridges that implement
+            802.1Q transparent bridging."
+
+
+
+        GROUP       qBridgeServiceRequirementsGroup
+        DESCRIPTION
+            "This group is mandatory for bridges that implement
+            extended filtering services.  All objects must be
+            read-write if extended-filtering services are
+            enabled."
+
+        GROUP       qBridgeFdbStaticGroup
+        DESCRIPTION
+            "This group is optional."
+
+        GROUP       qBridgeVlanStatisticsGroup
+        DESCRIPTION
+            "This group is optional as there may be significant
+            implementation cost associated with its support."
+
+        GROUP       qBridgeVlanStatisticsOverflowGroup
+        DESCRIPTION
+            "This group is optional as there may be significant
+            implementation cost associated with its support.  It is most
+            relevant for high-capacity interfaces where the SNMP agent
+            supports only SNMPv1."
+
+        GROUP       qBridgeVlanHCStatisticsGroup
+        DESCRIPTION
+            "This group is optional as there may be significant
+            implementation cost associated with its support.  It is most
+            relevant for high-capacity interfaces."
+
+        GROUP       qBridgeLearningConstraintsGroup
+        DESCRIPTION
+            "This group is mandatory for devices implementing
+             both Independent VLAN Learning (IVL) and Shared
+             VLAN Learning (SVL) modes of operation of the
+             filtering database, as defined by IEEE 802.1Q."
+
+        GROUP       qBridgeLearningConstraintDefaultGroup
+        DESCRIPTION
+            "This group is mandatory for devices implementing
+             both Independent VLAN Learning (IVL) and Shared
+             VLAN Learning (SVL) modes of operation of the
+             filtering database, as defined by IEEE 802.1Q."
+
+        GROUP       qBridgeClassificationDeviceGroup
+        DESCRIPTION
+            "This group is mandatory ONLY for devices implementing
+             VLAN Classification as specified in IEEE 802.1v."
+
+
+
+
+        GROUP       qBridgeClassificationPortGroup
+        DESCRIPTION
+            "This group is mandatory ONLY for devices implementing
+             VLAN Classification as specified in IEEE 802.1v."
+
+        OBJECT      dot1qPortAcceptableFrameTypes
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required as this is an optional
+            capability in IEEE 802.1Q."
+
+        OBJECT      dot1qPortIngressFiltering
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required as this is an optional
+            capability in IEEE 802.1Q."
+
+        OBJECT      dot1qConstraintSetDefault
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required as this is an optional
+            capability in IEEE 802.1Q."
+
+        OBJECT      dot1qConstraintTypeDefault
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required as this is an optional
+            capability in IEEE 802.1Q."
+
+        OBJECT      dot1vProtocolGroupId
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required as this is an optional
+            capability in IEEE 802.1v."
+
+        OBJECT      dot1vProtocolGroupRowStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required as this is an optional
+            capability in IEEE 802.1v."
+
+        ::= { qBridgeCompliances 2 }
+
+END

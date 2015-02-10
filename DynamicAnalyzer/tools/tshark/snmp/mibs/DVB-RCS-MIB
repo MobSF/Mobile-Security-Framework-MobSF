@@ -1,0 +1,3558 @@
+DVB-RCS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Integer32,
+    Unsigned32,
+    transmission
+        FROM SNMPv2-SMI          -- [RFC2578]
+    TEXTUAL-CONVENTION,
+    RowStatus
+        FROM SNMPv2-TC           -- [RFC2579]
+    OBJECT-GROUP,
+    MODULE-COMPLIANCE
+        FROM SNMPv2-CONF         -- [RFC2580]
+    SnmpAdminString
+        FROM SNMP-FRAMEWORK-MIB  -- [RFC3411]
+    InetAddressType,
+    InetAddress,
+    InetAddressPrefixLength,
+    InetPortNumber
+        FROM INET-ADDRESS-MIB    -- [RFC4001]
+    Uri
+        FROM URI-TC-MIB          -- [RFC5017]
+    Dscp,
+    DscpOrAny
+        FROM DIFFSERV-DSCP-TC    -- [RFC3289]
+    ;
+
+dvbRcsMib MODULE-IDENTITY
+    LAST-UPDATED "201002161200Z"
+    ORGANIZATION "The SatLabs Group"
+    CONTACT-INFO
+           "The SatLabs Group
+            Web:    www.satlabs.org
+            E-mail: info@satlabs.org"
+    DESCRIPTION
+        "DVB-RCS MIB subtree.
+
+         This MIB module applies to equipment that is a Return
+         Channel Satellite Terminal (RCST), defined in the Digital
+         Video Broadcasting Return Channel via Satellite system
+         (DVB-RCS) standard (ETSI EN 301 790 Digital Video
+         Broadcasting (DVB); Interaction Channel for Satellite
+         Distribution Systems, European Telecommunications
+         Standards Institute (ETSI)).
+
+
+
+         It defines a set of MIB objects to characterize the
+         behavior and performance of network-layer entities
+         implementing DVB-RCS.
+         This MIB module is intended to be used by DVB-RCS
+         equipment following the SatLabs System Recommendations,
+         defined by the SatLabs Group and available at
+         www.satlabs.org.
+         Note that, if not stated otherwise in the object
+         DESCRIPTION clause, all writable objects are
+         persistent.
+
+         Copyright (C) The IETF Trust (2010).  This version of
+         this MIB module is part of RFC 5728; see the RFC itself
+         for full legal notices."
+    REVISION "200907201200Z"
+    DESCRIPTION
+        "Revision of this MIB module, following MIB doctor review
+        and adjustments based on the MIB authoring guidelines
+        from the IETF."
+        ::= { transmission 239 }
+
+--==============================================================
+-- Textual Conventions
+--==============================================================
+DvbRcsSatLabsProfileMap ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "This textual convention enumerates the declaration of
+        the SatLabs-defined terminal profiles.  The mapping to
+        the profiles is to be understood as described here.  (0)
+        refers to the most significant bit.
+
+         dvbs(0) -> DVBS profile (DVB-S support)
+         dvbs2ccm(1) -> DVB-S2 CCM profile (CCM support)
+         dvbs2acm(2) -> DVB-S2 ACM profile (CCM, VCM and ACM
+         support)"
+    REFERENCE
+       "SatLabs System Recommendations, available at
+       www.satlabs.org."
+    SYNTAX BITS     {
+            dvbs(0),
+            dvbs2ccm(1),
+            dvbs2acm(2),
+            spare1(3),
+            spare2(4),
+            spare3(5),
+            spare4(6),
+            spare5(7),
+
+
+
+            spare6(8),
+            spare7(9),
+            spare8(10),
+            spare9(11),
+            spare10(12),
+            spare11(13),
+            spare12(14),
+            spare13(15),
+            spare14(16),
+            spare15(17),
+            spare16(18),
+            spare17(19),
+            spare18(20),
+            spare19(21),
+            spare20(22),
+            spare21(23),
+            spare22(24),
+            spare23(25),
+            spare24(26),
+            spare25(27),
+            spare26(28),
+            spare27(29),
+            spare28(30),
+            spare29(31)
+            }
+
+DvbRcsSatLabsOptionMap ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "This textual convention enumerates the declaration of
+        the SatLabs-defined options.  A value of 1 indicates
+        that the respective option is supported.  The mapping
+        to the options is to be understood as described here.
+        (0) refers to the most significant bit.
+
+            mpegTrf(0) -> MPEG_TRF
+            coarseSync(1) -> COARSE_SYNC
+            wideHop(2) -> WIDE_HOPP
+            fastHop(3) -> FAST_HOPP
+            dynamicMfTdma(4) -> Dynamic_MF_TDMA
+            contentionSync(5) -> CONTENTION_SYNC
+            qpskLow(6) -> QPSKLOW
+            mod16Apsk(7) -> 16APSK
+            mod32Apsk(8) -> 32APSK
+            normalFec(9) -> NORMALFEC
+            multiTs(10) -> MULTITS
+            gsTs(11) -> GSTS
+            enhQoS(12) -> ENHQOS
+
+
+
+            pep(13) -> PEP
+            http(14) -> HTTP
+            ftp(15) -> FTP
+            dns(16) -> DNS
+            chIdStrict(17) -> CHID_STRICT
+            nlid(18) -> NLID
+            snmpMisc(19) -> SNMPMISC
+
+        The support of specific options mandates the support of
+        specific objects and access levels."
+    REFERENCE
+       "SatLabs System Recommendations, available at
+       www.satlabs.org."
+    SYNTAX BITS     {
+            mpegTrf(0),
+            coarseSync(1),
+            wideHop(2),
+            fastHop(3),
+            dynamicMfTdma(4),
+            contentionSync(5),
+            qpskLow(6),
+            mod16Apsk(7),
+            mod32Apsk(8),
+            normalFec(9),
+            multiTs(10),
+            gsTs(11),
+            enhQoS(12),
+            pep(13),
+            http(14),
+            ftp(15),
+            dns(16),
+            chIdStrict(17),
+            nlid(18),
+            snmpMisc(19),
+            spare1(20),
+            spare2(21),
+            spare3(22),
+            spare4(23),
+            spare5(24),
+            spare6(25),
+            spare7(26),
+            spare8(27),
+            spare9(28),
+            spare10(29),
+            spare11(30),
+            spare12(31)
+            }
+
+
+
+
+DvbRcsSatLabsFeatureMap ::= TEXTUAL-CONVENTION
+       STATUS current
+       DESCRIPTION
+           "This textual convention enumerates the declaration
+           of the SatLabs-specified compatibility and
+           configuration features.  A value of 1 indicates that
+           the respective feature is supported.  The mapping to
+           the features is to be understood as described here.
+           (0) refers to the most significant bit.
+
+               rcstPara(0) -> RCST_PARA feature
+               installLog(1) -> INSTALL_LOG feature
+               enhClassifier(2) -> ENHCLASSIFIER feature
+               routeId(3) -> ROUTE_ID feature
+               oduList(4) -> ODULIST feature
+               extNetwork(5) -> EXTNETWORK feature
+               extControl(6) -> EXTCONTROL feature
+               extConfig(7) -> EXTCONFIG feature
+               extStatus(8) -> EXTSTATUS feature
+               mpaf(9) -> MPAF feature
+
+        The support of specific features mandates the support of
+        specific objects and access levels."
+       REFERENCE
+          "SatLabs System Recommendations, available at
+           www.satlabs.org."
+       SYNTAX BITS     {
+               rcstPara(0),
+               installLog(1),
+               enhClassifier(2),
+               routeId(3),
+               oduList(4),
+               extNetwork(5),
+               extControl(6),
+               extConfig(7),
+               extStatus(8),
+               mpaf(9),
+               spare1(10),
+               spare2(11),
+               spare3(12),
+               spare4(13),
+               spare5(14),
+               spare6(15),
+               spare7(16),
+               spare8(17),
+               spare9(18),
+               spare10(19),
+               spare11(20),
+
+
+
+               spare12(21),
+               spare13(22),
+               spare14(23),
+               spare15(24),
+               spare16(25),
+               spare17(26),
+               spare18(27),
+               spare19(28),
+               spare20(29),
+               spare21(30),
+               spare22(31)
+               }
+
+--==============================================================
+-- object type definitions
+--==============================================================
+dvbRcsMibObjects      OBJECT IDENTIFIER ::= {dvbRcsMib 1}
+dvbRcsConformance     OBJECT IDENTIFIER ::= {dvbRcsMib 2}
+
+dvbRcsRcst        OBJECT IDENTIFIER ::= {dvbRcsMibObjects 1}
+dvbRcsFwdLink     OBJECT IDENTIFIER ::= {dvbRcsMibObjects 2}
+dvbRcsRtnLink     OBJECT IDENTIFIER ::= {dvbRcsMibObjects 3}
+
+dvbRcsRcstSystem        OBJECT IDENTIFIER ::= {dvbRcsRcst 1}
+dvbRcsRcstNetwork       OBJECT IDENTIFIER ::= {dvbRcsRcst 2}
+dvbRcsRcstInstall       OBJECT IDENTIFIER ::= {dvbRcsRcst 3}
+dvbRcsRcstQos           OBJECT IDENTIFIER ::= {dvbRcsRcst 4}
+dvbRcsRcstControl       OBJECT IDENTIFIER ::= {dvbRcsRcst 5}
+dvbRcsRcstState         OBJECT IDENTIFIER ::= {dvbRcsRcst 6}
+
+dvbRcsFwdConfig         OBJECT IDENTIFIER ::= {dvbRcsFwdLink 1}
+dvbRcsFwdStatus         OBJECT IDENTIFIER ::= {dvbRcsFwdLink 2}
+
+dvbRcsRtnConfig         OBJECT IDENTIFIER ::= {dvbRcsRtnLink 1}
+dvbRcsRtnStatus         OBJECT IDENTIFIER ::= {dvbRcsRtnLink 2}
+
+--==============================================================
+--    dvbRcsRcstSystem sub-tree object types
+--==============================================================
+dvbRcsSystemMibRevision        OBJECT-TYPE
+    SYNTAX              SnmpAdminString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "This object allows the SNMP agent to report the
+        implemented MIB module revision.
+        The supported REVISION of this module is reported."
+::= {dvbRcsRcstSystem 1}
+
+
+
+--==============================================================
+-- Options declared according to the textual conventions
+--==============================================================
+dvbRcsSystemSatLabsProfilesDeclaration OBJECT-TYPE
+    SYNTAX        DvbRcsSatLabsProfileMap
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Indicates the SatLabs profiles supported, as defined in
+        the SatLabs System Recommendations."
+::= {dvbRcsRcstSystem 2}
+
+dvbRcsSystemSatLabsOptionsDeclaration OBJECT-TYPE
+    SYNTAX        DvbRcsSatLabsOptionMap
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Indicates the SatLabs options supported, as defined in
+        the SatLabs System Recommendations."
+::= {dvbRcsRcstSystem 3}
+
+dvbRcsSystemSatLabsFeaturesDeclaration OBJECT-TYPE
+    SYNTAX        DvbRcsSatLabsFeatureMap
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Indicates the optional compatibility features and minor
+         options supported, as defined in the SatLabs System
+         Recommendations."
+::= {dvbRcsRcstSystem 4}
+
+dvbRcsSystemLocation OBJECT-TYPE
+    SYNTAX              SnmpAdminString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Physical location of the ODU antenna expressed as
+         longitude, latitude, and altitude.  The string
+         shall have 31 characters in the following format:
+             <xxxx.xxx>,<a>,<yyyyy.yyy>,<b>,<zzzz.z>,M
+         where x, y and z represents digits,
+             a=N or S,
+             b=E or W,
+         Reading the digits from left to right:
+             'x' 7 latitude digits;
+              x digits 1-2 contain the degrees,
+              x digits 3-7 contain the minutes in decimal;
+             'y' 8 longitude digits;
+
+
+
+              y digits 1-3 contain the degrees,
+              y digits 4-8 contain the minutes in decimal;
+             'z' 5 altitude digits;
+                 meters above sea level in decimal;
+             '.' is the decimal point;
+             ',' is the field separator;
+             'M' is the indicator for altitude meters.
+         This format is a modified subset of the NMEA 0183
+         (National Marine Electronics Association, Interface
+         Standard) format for Global Positioning System Fix
+         Data.
+         This location and the satellite position are used to
+         calculate the RCST-satellite path delay.
+         Note: The system.sysLocation object of MIB-II provides
+         physical location of the IDU unit."
+::= {dvbRcsRcstSystem 5}
+
+dvbRcsSystemOduAntennaSize OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "cm"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Diameter of the antenna."
+::= {dvbRcsRcstSystem 6}
+
+dvbRcsSystemOduAntennaGain OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x0.1 dBi"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Antenna peak gain of the ODU."
+::= {dvbRcsRcstSystem 7}
+
+dvbRcsSystemOduSspa OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x0.1 W"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Power level of the Solid State Power Amplifier
+        installed in the ODU."
+::= {dvbRcsRcstSystem 8}
+
+dvbRcsSystemOduTxType OBJECT-TYPE
+    SYNTAX              SnmpAdminString
+    MAX-ACCESS          read-write
+
+
+
+    STATUS              current
+    DESCRIPTION
+        "Type of transmitter installed in the ODU."
+::= {dvbRcsRcstSystem 9}
+
+dvbRcsSystemOduRxType OBJECT-TYPE
+    SYNTAX              SnmpAdminString
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+         "Type of LNB installed in the ODU, with
+         information such as vendor type, output type (single,
+         twin, quad,...), etc."
+::= {dvbRcsRcstSystem 10}
+
+dvbRcsSystemOduRxBand OBJECT-TYPE
+    SYNTAX              INTEGER   {
+                        oduHighRxBand (0),
+                        oduLowRxBand  (1)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "LNB High Band / Low Band selector.  High Band corresponds
+        to the emission of an 18-26 kHz tone with 0.4-0.8 Vpp in
+        the Rx IFL cable:
+        (0)    - High Band
+        (1)    - Low Band"
+::= {dvbRcsRcstSystem 11}
+
+dvbRcsSystemOduRxLO OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x100 Hz"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Frequency of LNB Local Oscillator (in 100 Hz)"
+::= {dvbRcsRcstSystem 12}
+
+dvbRcsSystemOduTxLO OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x100 Hz"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Frequency of Block Up-Converter Local Oscillator
+        (in 100 Hz)."
+::= {dvbRcsRcstSystem 13}
+
+
+
+dvbRcsSystemIduPep OBJECT IDENTIFIER ::= {dvbRcsRcstSystem 14}
+
+dvbRcsTcpPep OBJECT-TYPE
+    SYNTAX             INTEGER{
+                          disabled (0),
+                          enabled (1)
+                              }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Status and control of embedded TCP PEP.
+            0 - disabled or not implemented
+            1 - enabled"
+::={dvbRcsSystemIduPep 1}
+
+dvbRcsHttpPep  OBJECT-TYPE
+    SYNTAX              INTEGER{
+                           disabled (0),
+                           enabled (1)
+                               }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Status and control of embedded HTTP PEP.
+            0 - disabled or not implemented
+            1 - enabled"
+::={dvbRcsSystemIduPep 2}
+
+--==============================================================
+-- ODU structural entities
+--==============================================================
+
+dvbRcsOduTx         OBJECT IDENTIFIER ::= {dvbRcsRcstSystem 15}
+dvbRcsOduRx         OBJECT IDENTIFIER ::= {dvbRcsRcstSystem 16}
+dvbRcsOduAntenna    OBJECT IDENTIFIER ::= {dvbRcsRcstSystem 17}
+
+--==============================================================
+-- ODU BUC
+--==============================================================
+
+dvbRcsOduTxTypeTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF DvbRcsOduTxTypeEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "This table contains the identification of each well-
+        known BUC type supported by the IDU and provides its
+        associated index."
+
+
+
+::={dvbRcsOduTx 1}
+
+dvbRcsOduTxTypeEntry OBJECT-TYPE
+    SYNTAX            DvbRcsOduTxTypeEntry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "An entry in the BUC type table."
+       INDEX   { dvbRcsOduTxTypeIndex }
+::={dvbRcsOduTxTypeTable 1}
+
+DvbRcsOduTxTypeEntry ::= SEQUENCE {
+                  dvbRcsOduTxTypeIndex          Unsigned32,
+                  dvbRcsOduTxTypeDescription    SnmpAdminString
+                  }
+
+dvbRcsOduTxTypeIndex OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..32)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Index for the BUC type."
+::={dvbRcsOduTxTypeEntry 1}
+
+dvbRcsOduTxTypeDescription OBJECT-TYPE
+    SYNTAX     SnmpAdminString
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Text-based identification of a BUC type."
+::={dvbRcsOduTxTypeEntry 2}
+
+dvbRcsOduTxType OBJECT-TYPE
+    SYNTAX              Unsigned32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Index of the selected BUC type."
+::={dvbRcsOduTx 2}
+
+--==============================================================
+-- ODU LNB
+--==============================================================
+
+dvbRcsOduRxTypeTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF DvbRcsOduRxTypeEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+
+
+
+    DESCRIPTION
+        "This table contains the identification of each well-
+        known LNB type supported by the IDU and provides its
+        associated index."
+::={dvbRcsOduRx 1}
+
+dvbRcsOduRxTypeEntry OBJECT-TYPE
+    SYNTAX            DvbRcsOduRxTypeEntry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "An entry in the LNB type table."
+    INDEX   { dvbRcsOduRxTypeIndex }
+ ::={dvbRcsOduRxTypeTable 1}
+
+DvbRcsOduRxTypeEntry ::= SEQUENCE {
+                  dvbRcsOduRxTypeIndex           Unsigned32,
+                  dvbRcsOduRxTypeDescription     SnmpAdminString
+                  }
+
+dvbRcsOduRxTypeIndex OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..32)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Index for the LNB type."
+::={dvbRcsOduRxTypeEntry 1}
+
+dvbRcsOduRxTypeDescription OBJECT-TYPE
+    SYNTAX     SnmpAdminString
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Text-based identification of an LNB type."
+::={dvbRcsOduRxTypeEntry 2}
+
+dvbRcsOduRxType OBJECT-TYPE
+    SYNTAX              Unsigned32
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Index of the selected LNB type."
+::={dvbRcsOduRx 2}
+
+
+
+
+
+
+
+
+--==============================================================
+-- ODU Antenna
+--==============================================================
+
+dvbRcsOduAntennaTypeTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF DvbRcsOduAntennaTypeEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+        "This table contains the identification of each well-
+        known antenna type supported by the IDU and provides
+        its associated index."
+::={dvbRcsOduAntenna 1}
+
+dvbRcsOduAntennaTypeEntry OBJECT-TYPE
+    SYNTAX            DvbRcsOduAntennaTypeEntry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "An entry in the antenna type table."
+    INDEX   { dvbRcsOduAntennaTypeIndex }
+::={dvbRcsOduAntennaTypeTable 1}
+
+DvbRcsOduAntennaTypeEntry ::= SEQUENCE {
+              dvbRcsOduAntennaTypeIndex          Unsigned32,
+              dvbRcsOduAntennaTypeDescription    SnmpAdminString
+              }
+
+dvbRcsOduAntennaTypeIndex OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..32)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Index for the antenna type."
+::={dvbRcsOduAntennaTypeEntry 1}
+
+dvbRcsOduAntennaTypeDescription OBJECT-TYPE
+    SYNTAX     SnmpAdminString
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Text-based identification of an antenna type."
+::={dvbRcsOduAntennaTypeEntry 2}
+
+dvbRcsOduAntennaType OBJECT-TYPE
+    SYNTAX              Unsigned32
+    MAX-ACCESS          read-write
+    STATUS              current
+
+
+
+    DESCRIPTION
+        "Index of the selected antenna type."
+::={dvbRcsOduAntenna 2}
+
+--==============================================================
+-- dvbRcsRcstNetwork sub-tree object types
+--==============================================================
+
+dvbRcsNetworkOamInetAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The type of Internet address of
+        dvbRcsNetworkOamInetAddress.
+        If the terminal OAM Internet address is unassigned or
+        unknown, then the value of this object is unknown(0)."
+::= {dvbRcsRcstNetwork 1}
+
+dvbRcsNetworkOamInetAddress OBJECT-TYPE
+    SYNTAX              InetAddress
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "OAM IP Address of the RCST.  This object is used with
+        both IP and interfaces MIB-II subgroups.  It uniquely
+        determines the interface through which OAM traffic
+        passes.
+        The OAM IP address may be statically or dynamically
+        assigned.  It is system dependent whether the OAM IP
+        address and the Traffic IP address are the same address.
+        If the terminal has no OAM Internet address assigned or if
+        this Internet address is unknown, the value of this
+        object is the zero-length OCTET STRING.
+        The InetAddressType is given by the
+        dvbRcsNetworkOamInetAddressType object."
+::= {dvbRcsRcstNetwork 2}
+
+dvbRcsNetworkOamInetAddressPrefixLength OBJECT-TYPE
+    SYNTAX              InetAddressPrefixLength
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Prefix length for the OAM IP Address.  If this address
+        prefix is unknown or does not apply, the value is zero."
+::= {dvbRcsRcstNetwork 3}
+
+dvbRcsNetworkOamInetAddressAssign OBJECT-TYPE
+
+
+
+    SYNTAX             INTEGER    {
+                oamInetAddressStatic    (1),
+                oamInetAddressDynamic   (2)
+    }
+    MAX-ACCESS         read-write
+    STATUS             current
+    DESCRIPTION
+        "Identifies whether the OAM IP address is statically
+        (1) or dynamically (2) assigned."
+::= {dvbRcsRcstNetwork 4}
+
+dvbRcsNetworkLanInetAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The type of Internet address of dvbRcsNetworkLanInetAddress.
+        If the terminal Internet address on the LAN interface is
+        unassigned or unknown, then the value of this object is
+        unknown(0)."
+::= {dvbRcsRcstNetwork 5}
+
+dvbRcsNetworkLanInetAddress OBJECT-TYPE
+    SYNTAX              InetAddress
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "IP address of the LAN interface of the terminal.  If the
+        terminal has no Internet address assigned on the LAN
+        interface or if this Internet address is unknown, the
+        value of this object is the zero-length OCTET STRING.
+        The InetAddressType is given by the
+        dvbRcsNetworkLanInetAddressType object."
+::= {dvbRcsRcstNetwork 6}
+
+dvbRcsNetworkLanInetAddressPrefixLength OBJECT-TYPE
+    SYNTAX              InetAddressPrefixLength
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Prefix length for the LAN IP Address of the terminal.
+        If this address prefix is unknown or does not apply, the
+        value is zero."
+::= {dvbRcsRcstNetwork 7}
+
+dvbRcsNetworkAirInterfaceDefaultGatewayInetAddressType
+OBJECT-TYPE
+    SYNTAX      InetAddressType
+
+
+
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The type of Internet address of
+        dvbRcsNetworkAirInterfaceDefaultGatewayInetAddress.
+        If the default gateway Internet address is unassigned or
+        unknown, then the value of this object is unknown(0)."
+::= {dvbRcsRcstNetwork 8}
+
+dvbRcsNetworkAirInterfaceDefaultGatewayInetAddress OBJECT-TYPE
+    SYNTAX              InetAddress
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "IP address of the default gateway for the air
+        interface.  If the terminal has no default gateway
+        assigned on the air interface or if this Internet address
+        is unknown, the value of this object is the zero-length
+        OCTET STRING.
+        The InetAddressType is given by the
+        dvbRcsNetworkAirInterfaceDefaultGatewayInetAddressType
+        object."
+::= {dvbRcsRcstNetwork 9}
+
+dvbRcsNetworkAirInterfaceDefaultGatewayInetAddressPrefixLength
+OBJECT-TYPE
+    SYNTAX              InetAddressPrefixLength
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Prefix length for the IP address of the default gateway
+        for the air interface.
+        If this address prefix is unknown or does not apply, the
+        value is zero."
+::= {dvbRcsRcstNetwork 10}
+
+dvbRcsNetworkDnsServers OBJECT IDENTIFIER ::= {dvbRcsRcstNetwork
+11}
+
+dvbRcsPrimaryDnsServerInetAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The type of Internet address of
+        dvbRcsPrimaryDnsServerInetAddress.  If the primary DNS
+        server Internet address is unassigned or unknown, then
+        the value of this object is unknown(0)."
+
+
+
+::= { dvbRcsNetworkDnsServers 1}
+
+dvbRcsPrimaryDnsServerInetAddress OBJECT-TYPE
+    SYNTAX              InetAddress
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "IP address of the primary DNS server in the NCC.  If
+        the terminal has no primary DNS server assigned or if this
+        Internet address is unknown, the value of this object is
+        the zero-length OCTET STRING.
+        The InetAddressType is given by the
+        dvbRcsPrimaryDnsServerInetAddressType object."
+::= {dvbRcsNetworkDnsServers 2}
+
+dvbRcsPrimaryDnsServerInetAddressPrefixLength OBJECT-TYPE
+    SYNTAX              InetAddressPrefixLength
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Prefix length for the IP address of the primary DNS
+        server in the NCC.
+        If this address prefix is unknown or does not apply, the
+        value is zero."
+::= { dvbRcsNetworkDnsServers 3}
+
+dvbRcsSecondaryDnsServerInetAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The type of Internet address of
+        dvbRcsSecondaryDnsServerInetAddress.  If the secondary
+        DNS server Internet address is unassigned or unknown,
+        then the value of this object is unknown(0)."
+::= { dvbRcsNetworkDnsServers 4}
+
+dvbRcsSecondaryDnsServerInetAddress OBJECT-TYPE
+    SYNTAX              InetAddress
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "IP address of the secondary DNS server in the NCC.  If
+        the terminal has no secondary DNS server assigned or if
+        this Internet address is unknown, the value of this
+        object is the zero-length OCTET STRING.
+        The InetAddressType is given by the
+        dvbRcsSecondaryDnsServerInetAddressType object."
+
+
+
+::= {dvbRcsNetworkDnsServers 5}
+
+dvbRcsSecondaryDnsServerInetAddressPrefixLength OBJECT-TYPE
+    SYNTAX              InetAddressPrefixLength
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Prefix length for the IP address of the secondary DNS
+        server in the NCC.
+        If this address prefix is unknown or does not apply, the
+        value is zero."
+::= { dvbRcsNetworkDnsServers 6}
+
+dvbRcsNetworkNccMgtInetAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The type of Internet address of
+        dvbRcsNetworkNccMgtInetAddress.  If the management server
+        Internet address is unassigned or unknown, then the
+        value of this object is unknown(0)."
+::= {dvbRcsRcstNetwork 12}
+
+dvbRcsNetworkNccMgtInetAddress OBJECT-TYPE
+    SYNTAX              InetAddress
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "IP address of the management server in the NCC.  If
+        the terminal has no management server assigned or if this
+        Internet address is unknown, the value of this object is
+        the zero-length OCTET STRING.
+        The InetAddressType is given by the
+        dvbRcsNetworkNccMgtInetAddressType object."
+::= {dvbRcsRcstNetwork 13}
+
+dvbRcsNetworkNccMgtInetAddressPrefixLength OBJECT-TYPE
+    SYNTAX              InetAddressPrefixLength
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Prefix length for the IP address of the management
+        server in the NCC.
+        If this address prefix is unknown or does not apply, the
+        value is zero."
+::= { dvbRcsRcstNetwork 14}
+
+
+
+
+dvbRcsNetworkConfigFileDownloadUrl OBJECT-TYPE
+    SYNTAX              Uri (SIZE(0..65535))
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Full path name for the configuration file download.
+        It includes the protocol type (TFTP or FTP) and the
+        associated server IP address or hostname.  Hostname can
+        only be used if DNS is supported by the RCST.
+        The format of this parameter follows RFC 3986."
+::= {dvbRcsRcstNetwork 15}
+
+dvbRcsNetworkInstallLogFileDownloadUrl OBJECT-TYPE
+    SYNTAX              Uri (SIZE(0..65535))
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Full path of the installation log file to download.
+        It includes the protocol type (TFTP or FTP) and the
+        associated server IP address or hostname.  Hostname can
+        only be used if DNS is supported by the RCST.  The
+        installation log file can be created on the installer's
+        computer and downloaded to the RCST.
+        The format of this parameter follows RFC 3986."
+::= {dvbRcsRcstNetwork 16}
+
+dvbRcsNetworkConfigFileUploadUrl OBJECT-TYPE
+    SYNTAX              Uri(SIZE(0..65535))
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Full path name for the configuration file upload.
+        It includes the protocol type (TFTP or FTP) and the
+        associated server IP address or hostname.  Hostname can
+        only be used if DNS is supported by the RCST.
+        The format of this parameter follows RFC 3986."
+::= {dvbRcsRcstNetwork 17}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+dvbRcsNetworkLogFileUploadUrl OBJECT-TYPE
+    SYNTAX              Uri(SIZE(0..65535))
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Full path of the event log file.  It includes the
+        protocol type (TFTP or FTP) and the associated server IP
+        address or hostname.  Hostname can only be used if DNS is
+        supported by the RCST.
+        The format of this parameter follows RFC 3986."
+::= {dvbRcsRcstNetwork 18}
+
+dvbRcsNetworkInstallLogFileUploadUrl OBJECT-TYPE
+    SYNTAX              Uri(SIZE(0..65535))
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Full path of the installation log file.  It includes the
+        protocol type (TFTP or FTP) and the associated server
+        IP address or hostname.  Hostname can only be used if DNS
+        is supported by the RCST.  The installation log file can
+        be retrieved from the RCST by the NCC or by the
+        installer via the LAN.
+        The format of this parameter follows RFC 3986."
+::= {dvbRcsRcstNetwork 19}
+
+--==============================================================
+--    dvbRcsRcstInstall sub-tree object types
+--==============================================================
+dvbRcsInstallAntennaAlignmentState OBJECT-TYPE
+    SYNTAX              INTEGER {
+                antennaAlignmentStart   (1),
+                antennaAlignmentDeny    (2),
+                antennaAlignmentContinue(3),
+                antennaAlignmentStop    (4),
+                antennaAlignmentSuccess (5),
+                antennaAlignmentFail    (6)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+
+
+
+
+
+
+
+
+
+
+
+    DESCRIPTION
+        "Indicates the alignment state of the antenna:
+            (1)-Start;
+            (2)-Deny;
+            (3)-Continue;
+            (4)-Stop;
+            (5)-Success;
+            (6)-Fail"
+::= {dvbRcsRcstInstall 1}
+
+dvbRcsInstallCwFrequency OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x100 Hz"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Frequency of the transmitted Continuous Wave
+        carrier (in 100 Hz).
+        Minimum required precision is 1 kHz."
+::= {dvbRcsRcstInstall 2}
+
+dvbRcsInstallCwMaxDuration OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "seconds"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Time after which the Continuous Wave carrier must be
+        put down (in seconds)."
+::= {dvbRcsRcstInstall 3}
+
+dvbRcsInstallCwPower OBJECT-TYPE
+    SYNTAX              Integer32
+    UNITS               "x0.1 dBm"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "IDU TX output level when the IDU is configured to send
+        CW.  The resolution is 0.1 dBm and the accuracy is +/- 1
+        dBm.  Reconfiguration is applied immediately to a CW."
+::= {dvbRcsRcstInstall 4}
+
+
+
+
+
+
+
+
+
+
+dvbRcsInstallCoPolReading OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x0.1 dB"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Co-polarization measured value during installation
+        procedure (in 0.1 dB)."
+::= {dvbRcsRcstInstall 5}
+
+dvbRcsInstallXPolReading OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x0.1 dB"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Cross-polarization measured value during installation
+        procedure (in 0.1 dB)."
+::= {dvbRcsRcstInstall 6}
+
+dvbRcsInstallCoPolTarget OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x0.1 dB"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Co-polarization target value during installation
+        procedure (in 0.1 dB)."
+::= {dvbRcsRcstInstall 7}
+
+dvbRcsInstallXPolTarget OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x0.1 dB"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Cross-polarization target value during installation
+        procedure (in 0.1 dB)."
+ ::= {dvbRcsRcstInstall 8}
+
+dvbRcsInstallStandByDuration OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "seconds"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Time to wait in stand-by mode (in seconds)."
+::= {dvbRcsRcstInstall 9}
+
+
+
+dvbRcsInstallTargetEsN0 OBJECT-TYPE
+    SYNTAX              Unsigned32(0..315)
+    UNITS               "x0.1 dB"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "This value describes the wanted Es/N0 value that
+        enables operation of the return link with the required
+        error performance.  The values shall be given in tenth of
+        dB and the initial value shall be equal to 7 dB.  The
+        range shall be from 0 dB to 31.5 dB, with a precision
+        of 0.1 dB."
+    DEFVAL        { 70 }
+::= {dvbRcsRcstInstall 10}
+
+--==============================================================
+-- dvbRcsRcstQos sub-tree object types
+--==============================================================
+dvbRcsPktClassTable OBJECT-TYPE
+    SYNTAX              SEQUENCE OF DvbRcsPktClassEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "This table describes the packet classification used in
+        the DVB-RCS terminal.  The number of entries is specified
+        by dvbRcsPktClassIndex. "
+::={dvbRcsRcstQos 1}
+
+dvbRcsPktClassEntry OBJECT-TYPE
+    SYNTAX            DvbRcsPktClassEntry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "An entry in the packet classification table.  One object
+        type of each entry may have a value in the active range
+        (a non-default value).  The other object types are then
+        assumed to be set to 'inactive'.  The entry with the lowest
+        index value takes precedence when classifying a packet."
+    INDEX   { dvbRcsPktClassIndex }
+::= {dvbRcsPktClassTable 1}
+
+DvbRcsPktClassEntry ::= SEQUENCE {
+            dvbRcsPktClassIndex                 Unsigned32,
+            dvbRcsPktClassDscpLow               Dscp,
+            dvbRcsPktClassDscpHigh              Dscp,
+            dvbRcsPktClassDscpMarkValue         DscpOrAny,
+            dvbRcsPktClassIpProtocol            Unsigned32,
+            dvbRcsPktClassSrcInetAddressType    InetAddressType,
+
+
+
+            dvbRcsPktClassSrcInetAddress        InetAddress,
+            dvbRcsPktClassSrcInetAddressPrefixLength
+                                        InetAddressPrefixLength,
+            dvbRcsPktClassDstInetAddressType    InetAddressType,
+            dvbRcsPktClassDstInetAddress        InetAddress,
+            dvbRcsPktClassDstInetAddressPrefixLength
+                                        InetAddressPrefixLength,
+            dvbRcsPktClassSrcPortLow            InetPortNumber,
+            dvbRcsPktClassSrcPortHigh           InetPortNumber,
+            dvbRcsPktClassDstPortLow            InetPortNumber,
+            dvbRcsPktClassDstPortHigh           InetPortNumber,
+            dvbRcsPktClassVlanUserPri           Integer32,
+            dvbRcsPktClassPhbAssociation        Unsigned32,
+            dvbRcsPktClassRowStatus             RowStatus
+        }
+
+dvbRcsPktClassIndex OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..64)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Index automatically incremented by one at row
+        creation."
+::={dvbRcsPktClassEntry 1}
+
+dvbRcsPktClassDscpLow OBJECT-TYPE
+    SYNTAX              Dscp
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "This object specifies the low value of a range of
+        Diffserv Code Point (DSCP) values to which a packet is
+        compared."
+    DEFVAL { 0 }
+::={dvbRcsPktClassEntry 2}
+
+dvbRcsPktClassDscpHigh OBJECT-TYPE
+    SYNTAX              Dscp
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "This object specifies the high value of a range of
+        Diffserv Code Point (DSCP) values to which a packet is
+        compared."
+    DEFVAL { 63 }
+::={dvbRcsPktClassEntry 3}
+
+dvbRcsPktClassDscpMarkValue OBJECT-TYPE
+
+
+
+    SYNTAX              DscpOrAny
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "This object is the Diffserv Code Point (DSCP) value
+        used to mark the packet; -1 indicates no DSCP marking.
+        Possible DSCP marks values are (0..63)"
+    DEFVAL { -1 }
+::={dvbRcsPktClassEntry 4}
+
+dvbRcsPktClassIpProtocol OBJECT-TYPE
+    SYNTAX              Unsigned32 (0..255)
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "This object specifies the IP protocol to which a
+        packet is compared.  A value of 255 means match all."
+    DEFVAL { 255 }
+::={dvbRcsPktClassEntry 5}
+
+dvbRcsPktClassSrcInetAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of Internet address of
+        dvbRcsPktClassSrcInetAddress.  If the packet class source
+        Internet address is unassigned or unknown, then the
+        value of this object is unknown(0)."
+::= { dvbRcsPktClassEntry 6}
+
+
+dvbRcsPktClassSrcInetAddress OBJECT-TYPE
+    SYNTAX              InetAddress
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "This object specifies the IP source address to which a
+        packet is compared.  If the packet class has no source
+        Internet address assigned or if this Internet address is
+        unknown, the value of this object is the zero-length
+        OCTET STRING.
+        The InetAddressType is given by the
+        dvbRcsPktClassSrcInetAddressType object."
+::={dvbRcsPktClassEntry 7}
+
+dvbRcsPktClassSrcInetAddressPrefixLength OBJECT-TYPE
+    SYNTAX              InetAddressPrefixLength
+
+
+
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Prefix length of the IP source address that will be
+        matched for this packet class.  A value of zero indicates
+        that the selectivity is inactive."
+    DEFVAL { 0 }
+::={dvbRcsPktClassEntry 8}
+
+dvbRcsPktClassDstInetAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of Internet address of
+        dvbRcsPktClassDstInetAddress.  If the packet class
+        destination Internet address is unassigned or unknown,
+        then the value of this object is unknown(0)."
+::= { dvbRcsPktClassEntry 9}
+
+dvbRcsPktClassDstInetAddress OBJECT-TYPE
+    SYNTAX              InetAddress
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "This object specifies the IP destination address to
+        which a packet is compared.  If the packet class has no
+        destination Internet address assigned or if this Internet
+        address is unknown, the value of this object is the
+        zero-length OCTET STRING.
+        The InetAddressType is given by the
+        dvbRcsPktClassDstInetAddressType object."
+::={dvbRcsPktClassEntry 10}
+
+dvbRcsPktClassDstInetAddressPrefixLength OBJECT-TYPE
+    SYNTAX              InetAddressPrefixLength
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Prefix length of the IP source address that will be
+        matched for this packet class.  A value of zero indicates
+        that the selectivity is inactive."
+    DEFVAL { 0 }
+::={dvbRcsPktClassEntry 11}
+
+
+
+
+
+
+
+dvbRcsPktClassSrcPortLow OBJECT-TYPE
+    SYNTAX              InetPortNumber
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "This object specifies the low range of the source
+        port to which a packet is compared.  A value of 0
+        indicates that the selectivity is inactive."
+    DEFVAL { 0 }
+::={dvbRcsPktClassEntry 12}
+
+dvbRcsPktClassSrcPortHigh OBJECT-TYPE
+    SYNTAX              InetPortNumber
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "This object specifies the high range of the source port
+        to which a packet is compared.  A value of 0 indicates
+        that the selectivity is inactive."
+    DEFVAL { 65535 }
+::={dvbRcsPktClassEntry 13}
+
+dvbRcsPktClassDstPortLow OBJECT-TYPE
+    SYNTAX              InetPortNumber
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "This object specifies the low range of the destination
+        port to which a packet is compared.  A value of 0
+        indicates that the selectivity is inactive."
+    DEFVAL { 0 }
+::={dvbRcsPktClassEntry 14}
+
+dvbRcsPktClassDstPortHigh OBJECT-TYPE
+    SYNTAX              InetPortNumber
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "This object specifies the high range of the destination
+        port to which a packet is compared.  A value of 0
+        indicates that the selectivity is inactive."
+    DEFVAL { 65535 }
+::={dvbRcsPktClassEntry 15}
+
+dvbRcsPktClassVlanUserPri OBJECT-TYPE
+    SYNTAX              Integer32 (-1..7)
+    MAX-ACCESS          read-create
+    STATUS              current
+
+
+
+    DESCRIPTION
+      "This object specifies the VLAN User Priority to which a
+       packet is compared.  A value of -1 indicates that the
+       selectivity is inactive."
+    DEFVAL { -1 }
+::={dvbRcsPktClassEntry 16}
+
+dvbRcsPktClassPhbAssociation OBJECT-TYPE
+    SYNTAX              Unsigned32 (0..65535)
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Associate the filter entry to a specific PHB (refer to
+        dvbRcsPhbIdentifier)."
+::={dvbRcsPktClassEntry 17}
+
+dvbRcsPktClassRowStatus OBJECT-TYPE
+    SYNTAX              RowStatus
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "The status of this conceptual row.  All writable objects
+        in this row may be modified at any time."
+::={dvbRcsPktClassEntry 18}
+
+--==============================================================
+-- dvbRcsPhbMappingTable
+--==============================================================
+dvbRcsPhbMappingTable OBJECT-TYPE
+    SYNTAX              SEQUENCE OF DvbRcsPhbMappingEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "This table is a list of Per-Hop Behavior (PHB) MIB
+        entries.
+        It describes the PHB mapping to the Request Class."
+::={dvbRcsRcstQos 2}
+
+dvbRcsPhbMappingEntry OBJECT-TYPE
+    SYNTAX            DvbRcsPhbMappingEntry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "An entry in the PHB mapping table."
+    INDEX   {dvbRcsPhbIdentifier}
+::= {dvbRcsPhbMappingTable 1}
+
+DvbRcsPhbMappingEntry ::= SEQUENCE {
+
+
+
+                dvbRcsPhbIdentifier               Unsigned32,
+                dvbRcsPhbName
+                                             SnmpAdminString,
+                dvbRcsPhbRequestClassAssociation  Unsigned32,
+                dvbRcsPhbMappingRowStatus          RowStatus
+                }
+
+dvbRcsPhbIdentifier OBJECT-TYPE
+    SYNTAX              Unsigned32 (0..65535)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Identification of the Per-Hop Behavior (PHB).  It
+        follows the unsigned 16-bit binary encoding as specified
+        in RFC 3140.  The value 0 designates the Default PHB."
+::={dvbRcsPhbMappingEntry 1}
+
+dvbRcsPhbName OBJECT-TYPE
+    SYNTAX              SnmpAdminString
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "The name of the Per-Hop Behavior (PHB)."
+::={dvbRcsPhbMappingEntry 2}
+
+dvbRcsPhbRequestClassAssociation OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..16)
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "This object is an association of this Per-Hop Behavior
+        (PHB) to a Request Class (by reference to a Request
+        Class index)."
+::={dvbRcsPhbMappingEntry 3}
+
+dvbRcsPhbMappingRowStatus OBJECT-TYPE
+    SYNTAX              RowStatus
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "The status of this conceptual row.  All writable
+        objects in this row may be modified at any time."
+    DEFVAL { active }
+::={dvbRcsPhbMappingEntry 4}
+
+
+
+
+
+
+
+--==============================================================
+--   dvbRcsRequestClassTable
+--==============================================================
+dvbRcsRequestClassTable OBJECT-TYPE
+    SYNTAX              SEQUENCE OF DvbRcsRequestClassEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "This table is a list of Request Class entries.  This
+        class describes the layer 2 QoS objects."
+::={dvbRcsRcstQos 3}
+
+dvbRcsRequestClassEntry OBJECT-TYPE
+    SYNTAX            DvbRcsRequestClassEntry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "An entry in the Request Class table."
+    INDEX {dvbRcsRequestClassIndex}
+::= {dvbRcsRequestClassTable 1}
+
+DvbRcsRequestClassEntry ::= SEQUENCE {
+                dvbRcsRequestClassIndex              Unsigned32,
+                dvbRcsRequestClassName
+                                                SnmpAdminString,
+                dvbRcsRequestClassChanId             Unsigned32,
+                dvbRcsRequestClassVccVpi             Unsigned32,
+                dvbRcsRequestClassVccVci             Unsigned32,
+                dvbRcsRequestClassPidPoolReference   Unsigned32,
+                dvbRcsRequestClassCra                Unsigned32,
+                dvbRcsRequestClassRbdcMax            Unsigned32,
+                dvbRcsRequestClassRbdcTimeout        Unsigned32,
+                dvbRcsRequestClassVbdcMax            Unsigned32,
+                dvbRcsRequestClassVbdcTimeout        Unsigned32,
+                dvbRcsRequestClassVbdcMaxBackLog     Unsigned32,
+                dvbRcsRequestClassRowStatus          RowStatus
+                }
+
+dvbRcsRequestClassIndex OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..16)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Index of the Request Class table.  A total of 16 entries
+        are supported."
+::={dvbRcsRequestClassEntry 1}
+
+dvbRcsRequestClassName OBJECT-TYPE
+
+
+
+    SYNTAX              SnmpAdminString
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Name of the Request Class."
+::={dvbRcsRequestClassEntry 2}
+
+dvbRcsRequestClassChanId OBJECT-TYPE
+    SYNTAX              Unsigned32 (0..15)
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Channel ID of the Request Class."
+::={dvbRcsRequestClassEntry 3}
+
+dvbRcsRequestClassVccVpi OBJECT-TYPE
+    SYNTAX              Unsigned32 (0..255)
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Defines the VPI used for the Request Class (ATM profile)."
+ ::={dvbRcsRequestClassEntry 4}
+
+dvbRcsRequestClassVccVci OBJECT-TYPE
+    SYNTAX              Unsigned32 (0..65535)
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Defines the VCI used for the Request Class (ATM profile)."
+::={dvbRcsRequestClassEntry 5}
+
+dvbRcsRequestClassPidPoolReference OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..16)
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Reference to the Packet IDentifier (PID) pool
+        applicable for the Request Class."
+::={dvbRcsRequestClassEntry 6}
+
+dvbRcsRequestClassCra OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "bit/s"
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Defines the Continuous Rate Assignment (CRA) level for the
+        Request Class in bits per second (bit/s)."
+
+
+
+::={dvbRcsRequestClassEntry 7}
+
+dvbRcsRequestClassRbdcMax OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x2 kbit/s"
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Maximum Rate-Based Dynamic Capacity (RBDC) that can be
+        requested for the Request Class, in number of 2 kbit/s."
+::={dvbRcsRequestClassEntry 8}
+
+dvbRcsRequestClassRbdcTimeout OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "superframes"
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Persistence of the Rate-Based Dynamic Capacity (RBDC)
+        request, expressed in superframes."
+::={dvbRcsRequestClassEntry 9}
+
+dvbRcsRequestClassVbdcMax OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "ATM cells/MPEG packets"
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Maximum Volume-Based Dynamic Capacity (VBDC) that can
+        be allocated to the Request Class, in payload units (one
+        ATM cell or one MPEG packet) per superframe."
+::={dvbRcsRequestClassEntry 10}
+
+dvbRcsRequestClassVbdcTimeout OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "superframes"
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Time after which the RCST considers that the pending
+        requests are lost.  The RCST may issue new requests for
+        that traffic.  Volume-Based Dynamic Capacity (VBDC)
+        Timeout is expressed in superframes."
+::={dvbRcsRequestClassEntry 11}
+
+dvbRcsRequestClassVbdcMaxBackLog OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "bytes"
+
+
+
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Volume-Based Dynamic Capacity (VBDC) back log per
+        Request Class (expressed in bytes)."
+::={dvbRcsRequestClassEntry 12}
+
+dvbRcsRequestClassRowStatus OBJECT-TYPE
+    SYNTAX              RowStatus
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "The status of this conceptual row.  It is not possible
+        to change values in a row of this table while the row is
+        active."
+::={dvbRcsRequestClassEntry 13}
+
+--==============================================================
+-- The table of PID pools
+--==============================================================
+
+dvbRcsPidPoolTable OBJECT-TYPE
+    SYNTAX              SEQUENCE OF DvbRcsPidPoolEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "This table contains the Packet IDentifier (PID) pools.
+        For the MPEG profile, several Request Classes may be mapped
+        within a pool of several PIDs to allow Section Packing
+        across several Request Classes.
+        A PID value may occur in more than one PID pool.  Each
+        PID value can effectively occur only once in each pool."
+::={dvbRcsRcstQos 4}
+
+dvbRcsPidPoolEntry OBJECT-TYPE
+    SYNTAX            DvbRcsPidPoolEntry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "An entry in the PID pool table."
+    INDEX { dvbRcsPidPoolIndex, dvbRcsPidIndex }
+::= {dvbRcsPidPoolTable 1}
+
+DvbRcsPidPoolEntry ::= SEQUENCE {
+        dvbRcsPidPoolIndex            Unsigned32,
+        dvbRcsPidIndex                Unsigned32,
+        dvbRcsPidValue                Unsigned32,
+        dvbRcsPidPoolRowStatus        RowStatus
+
+
+
+        }
+
+dvbRcsPidPoolIndex OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..16)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Index of the PID pool in the PID pool table."
+::={dvbRcsPidPoolEntry 1}
+
+dvbRcsPidIndex OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..16)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Index of the PID entry within the PID pool."
+::={dvbRcsPidPoolEntry 2}
+
+dvbRcsPidValue OBJECT-TYPE
+    SYNTAX              Unsigned32 (0..8191)
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Defines one of the PIDs to be used in a PID pool of
+        dvbRcsPidPoolIndex.
+        A PID value may occur in more than one PID pool.  Each
+        PID value can effectively occur only once in each pool."
+::={dvbRcsPidPoolEntry 3}
+
+dvbRcsPidPoolRowStatus OBJECT-TYPE
+    SYNTAX              RowStatus
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "The status of this conceptual row.  All writable
+        objects in this row may be modified at any time."
+    DEFVAL { active }
+::={dvbRcsPidPoolEntry 4}
+
+dvbRcsQosGlobalRbdcMax OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x2 kbit/s"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Global maximum RBDC that can be requested for the RCST,
+        in number of 2 kbit/s."
+::={dvbRcsRcstQos 5}
+
+
+
+dvbRcsQosGlobalVbdcMax OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "ATM cells/MPEG packets"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Global maximum VBDC that can be allocated to the RCST,
+        in payload units (one ATM cell or one MPEG packet) per
+        superframe."
+::={dvbRcsRcstQos 6}
+
+dvbRcsQosGlobalVbdcMaxBackLog OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "bytes"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Global VBDC back log at the RCST level (expressed in
+        bytes).  It is used only if the VBDC back log is not
+        configured in the Request Class (expressed in bytes)."
+::={dvbRcsRcstQos 7}
+
+dvbRcsQosChannelIdStrictDispatching OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                notStrict (0),
+                                strict    (1)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Indicates whether the RCST will strictly follow RC
+        association when signaled through Channel_ID in the
+        TBTP:
+            (0)- no strict association
+            (1)- strict association"
+::={dvbRcsRcstQos 8}
+
+--==============================================================
+-- dvbRcsRcstControl sub-tree object types
+--==============================================================
+dvbRcsCtrlRebootCommand OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                idle        (1),
+                                normal      (2),
+                                alternate   (3)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+
+
+
+    DESCRIPTION
+        "This variable shall force the RCST to reboot:
+            (1)- idle
+            (2)- normal reboot (from current software load)
+            (3)- reboot from alternate load (swap to alternate
+                 load before reboot)"
+    DEFVAL {idle}
+::={dvbRcsRcstControl 1}
+
+dvbRcsCtrlRcstTxDisable OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                idle        (1),
+                                disable     (2)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "This variable shall force the RCST to stop transmission
+        (transmit disabled as defined in SatLabs System
+         Recommendations):
+            (1)- idle
+            (2)- initiate Tx Disabled"
+    DEFVAL {idle}
+::={dvbRcsRcstControl 2}
+
+dvbRcsCtrlUserTrafficDisable OBJECT-TYPE
+    SYNTAX           INTEGER {
+                             idle        (1),
+                             disable     (2)
+    }
+    MAX-ACCESS       read-write
+    STATUS           current
+    DESCRIPTION
+        "This variable shall disable user traffic (only RCST
+        management traffic can be transmitted):
+            (1)- idle
+            (2)- disable user traffic"
+    DEFVAL {idle}
+::={dvbRcsRcstControl 3}
+
+dvbRcsCtrlCwEnable OBJECT-TYPE
+    SYNTAX           INTEGER {
+                             off    (1),
+                             on     (2)
+    }
+    MAX-ACCESS       read-write
+    STATUS           current
+    DESCRIPTION
+
+
+
+        "This variable will force the RCST to start transmission
+        of CW, if the RCST is first set to the installation
+        state and is properly configured for CW transmission:
+           (1)- off
+           (2)- on"
+    DEFVAL {off}
+::={dvbRcsRcstControl 4}
+
+dvbRcsCtrlOduTxReferenceEnable OBJECT-TYPE
+    SYNTAX           INTEGER {
+                             off    (1),
+                             on     (2)
+    }
+    MAX-ACCESS       read-write
+    STATUS           current
+    DESCRIPTION
+        "Enables activation and deactivation of the 10 MHz reference
+         clock in the Tx IFL cable:
+            (1) off
+            (2) on"
+    DEFVAL {on}
+::={dvbRcsRcstControl 5}
+
+dvbRcsCtrlOduTxDCEnable OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                off    (1),
+                                on     (2)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Enables activation and deactivation of DC in the Tx IFL
+        cable:
+          (1) off
+          (2) on"
+    DEFVAL {on}
+::={dvbRcsRcstControl 6}
+
+dvbRcsCtrlOduRxDCEnable OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                off    (1),
+                                on     (2)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Enables activation and deactivation of DC in the Rx IFL
+        cable:
+
+
+
+          (1) off
+          (2) on"
+    DEFVAL {on}
+::={dvbRcsRcstControl 7}
+
+dvbRcsCtrlDownloadFileCommand OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                idle            (1),
+                                config          (2),
+                                installationLog (3)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "This variable will initiate an RCST configuration file
+        download process:
+        (1) idle
+        (2) download RCST configuration file from TFTP/FTP
+            server
+        (3) download RCST installation log file from TFTP/FTP
+            server (INSTALL_LOG feature)"
+    DEFVAL {idle}
+::={dvbRcsRcstControl 8}
+
+dvbRcsCtrlUploadFileCommand OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                idle              (1),
+                                config            (2),
+                                eventAlarm        (3),
+                                installationLog   (4)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "This variable will initiate an RCST upload process:
+        (1) idle
+        (2) upload RCST configuration file to TFTP/FTP server
+        (3) upload RCST event/alarm log file to TFTP/FTP server
+        (4) upload RCST installation log file to TFTP/FTP server
+            (INSTALL_LOG feature)"
+    DEFVAL {idle}
+::={dvbRcsRcstControl 9}
+
+dvbRcsCtrlActivateConfigFileCommand OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                idle            (1),
+                                activate        (2)
+    }
+
+
+
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Triggers the RCST to use the configuration file and
+        update its parameters accordingly.  Some RCST
+        implementations may require a reboot for the parameters
+        to take effect (vendor specific).
+        (1)    idle
+        (2)    activate"
+    DEFVAL {idle}
+::={dvbRcsRcstControl 10}
+
+dvbRcsCtrlRcstLogonCommand OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                idle           (1),
+                                logon          (2)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "This variable will initiate an RCST logon:
+           (1) idle
+           (2) initiate RCST logon"
+    DEFVAL {idle}
+::={dvbRcsRcstControl 11}
+
+dvbRcsCtrlRcstLogoffCommand OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                idle      (1),
+                                logoff    (2)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "This variable will initiate an RCST logoff:
+           (1) idle
+           (2) initiate RCST logoff"
+    DEFVAL {idle}
+::={dvbRcsRcstControl 12}
+
+dvbRcsCtrlRcstRxReacquire OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                idle                    (1),
+                                reacquireForwardLink    (2)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+
+
+
+        "This variable will force the RCST to acquire the
+        forward link and start receiving:
+           (1) idle
+           (2) reacquire forward link"
+    DEFVAL {idle}
+::={dvbRcsRcstControl 13}
+
+--==============================================================
+-- dvbRcsRcstState sub-tree object types
+--==============================================================
+dvbRcsRcstMode OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                installation (0),
+                                operational  (1)
+    }
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+      "Identifies the current mode of the RCST and allows the RCST
+      to return to the installation mode when needed.  Values for
+      the RCST mode are:
+          Installation (0)
+          Operational (1)"
+::={dvbRcsRcstState 1}
+
+dvbRcsRcstFaultStatus OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                nofault (0),
+                                fault   (1)
+    }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Provides the fault status of the terminal.  The fault
+        status management is vendor specific.  Values for the
+        fault status are:
+            no fault (0)
+            fault (1)"
+::={dvbRcsRcstState 2}
+
+dvbRcsRcstFwdLinkStatus OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                notAcquired (0),
+                                acquired    (1)
+    }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+
+
+
+        "Provides the status of the RCST forward link.  Values
+        for the forward link status are:
+          Not acquired (0)
+          Acquired (1)"
+::={dvbRcsRcstState 3}
+
+dvbRcsRcstRtnLinkStatus OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                loggedOff (0),
+                                loggedOn  (1)
+    }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Provides the status of the RCST return link.  Values for
+        the return link status are:
+            Logged-off (0)
+            Logged-on (1)"
+::={dvbRcsRcstState 4}
+
+dvbRcsRcstLogUpdated OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                noUpdate         (0),
+                                logfileUpdated   (1)
+    }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Indicates the existence of an updated event log file:
+            No update (0)
+            Event Log file updated (1)
+        The RCST should remove the 'Event Log file updated'
+        indication as the log file is fetched by the NCC."
+::={dvbRcsRcstState 5}
+
+dvbRcsRcstCurrentSoftwareVersion OBJECT-TYPE
+    SYNTAX              SnmpAdminString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Current RCST software version."
+::={dvbRcsRcstState 6}
+
+dvbRcsRcstAlternateSoftwareVersion OBJECT-TYPE
+    SYNTAX              SnmpAdminString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+
+
+
+        "Alternate (backup/new) RCST software version."
+::={dvbRcsRcstState 7}
+
+dvbRcsRcstActivatedConfigFileVersion OBJECT-TYPE
+    SYNTAX              SnmpAdminString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Version of the most recently activated configuration
+        file.
+        The version is vendor specific."
+::={dvbRcsRcstState 8}
+
+dvbRcsRcstDownloadedConfigFileVersion OBJECT-TYPE
+    SYNTAX              SnmpAdminString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+      "Version of the most recently downloaded configuration
+       file.
+       Version is vendor specific.  If the value is different
+       from dvbRcsRcstActivatedConfigFileVersion, it is pending
+       for activation."
+::={dvbRcsRcstState 9}
+
+--==============================================================
+-- dvbRcsFwdConfig sub-tree object types
+--==============================================================
+dvbRcsFwdStartTable OBJECT-TYPE
+    SYNTAX              SEQUENCE OF DvbRcsFwdStartEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Lists forward link attachment points (e.g., different
+        for installation and operation).
+        The table describes the forward link parameters used for
+        the start-up stream with the NCC."
+::={dvbRcsFwdConfig 1}
+
+dvbRcsFwdStartEntry OBJECT-TYPE
+    SYNTAX            DvbRcsFwdStartEntry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "An entry in the Forward Link Start Configuration table."
+    INDEX {dvbRcsFwdStartIndex}
+::= {dvbRcsFwdStartTable 1}
+
+
+
+
+DvbRcsFwdStartEntry ::= SEQUENCE {
+                    dvbRcsFwdStartIndex         Unsigned32,
+                    dvbRcsFwdStartPopId         Integer32,
+                    dvbRcsFwdStartFrequency     Unsigned32,
+                    dvbRcsFwdStartPolar         INTEGER,
+                    dvbRcsFwdStartFormat        INTEGER,
+                    dvbRcsFwdStartRolloff       INTEGER,
+                    dvbRcsFwdStartSymbolRate    Unsigned32,
+                    dvbRcsFwdStartInnerFec      INTEGER,
+                    dvbRcsFwdStartRowStatus     RowStatus
+}
+
+dvbRcsFwdStartIndex OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..8)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "Index of the Forward Link StartConfig table."
+::={dvbRcsFwdStartEntry 1}
+
+dvbRcsFwdStartPopId OBJECT-TYPE
+    SYNTAX              Integer32 (-1..65535)
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Population identifier associated with the start-up
+         forward link:
+            -1: any (auto)
+            0-65535: specific StartPopId
+         If 'any' is set, the RCST will assume membership of any
+         announced population ID and will commence with logon in
+         accordance with this assumption."
+::={dvbRcsFwdStartEntry 2}
+
+dvbRcsFwdStartFrequency OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x100 kHz"
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Frequency of the start transponder carrying a
+        Network Information Table to which any RCST shall
+        trigger to acquire forward link.  Its value shall be
+        given in multiples of 100 kHz."
+::={dvbRcsFwdStartEntry 3}
+
+dvbRcsFwdStartPolar OBJECT-TYPE
+    SYNTAX              INTEGER   {
+
+
+
+                                  linearHorizontal (0),
+                                  linearVertical   (1),
+                                  circularLeft     (2),
+                                  circularRight    (3)
+    }
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "2-bit field giving the polarization of the start
+        transponder carrying a Network Information Table to
+        which any RCST shall trigger to acquire forward link:
+            00: linear and horizontal
+            01: linear and vertical
+            10: circular left
+            11: circular right"
+::={dvbRcsFwdStartEntry 4}
+
+dvbRcsFwdStartFormat OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                auto     (-1),
+                                dvbs      (0),
+                                dvbs2ccm  (1),
+                                dvbs2acm  (2)
+    }
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Specifies the transmission format standard applied for
+        the startup stream.  The start transport stream carries a
+        Network Information Table that the RCST uses for
+        acquiring the forward link signaling.  Supported values
+        are:
+            -1: unspecified (automatic format acquisition is
+                assumed)
+             0: DVB-S (support of this value is mandatory if
+                DVB-S support is claimed)
+             1: DVB-S2 with CCM (support of this value is
+                mandatory if DVB-S2 CCM support is claimed)
+             2: DVB-S2 with VCM or ACM (support of this value is
+                mandatory if DVB-S2 ACM support is claimed)
+        This allows the RCST to discriminate between CCM and
+        VCM/ACM when selecting the forward link.
+        The support of automatic format selection is optional.
+        One or several of the other format selections must be
+        supported, according to the claimed SatLabs profile
+        support."
+::={dvbRcsFwdStartEntry 5}
+
+
+
+
+dvbRcsFwdStartRolloff OBJECT-TYPE
+    SYNTAX        INTEGER {
+                          autoRolloff    (0),
+                          rolloff020     (1),
+                          rolloff025     (2),
+                          rolloff035     (3)
+    }
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "Specifies the receive filter roll-off applied on the
+        start transponder.  The start transponder carries a
+        Network Information Table that the RCST uses for
+        acquiring the forward link signaling.
+        Supported values are:
+            0: any (auto)
+            1: 0.20
+            2: 0.25
+            3: 0.35"
+::={dvbRcsFwdStartEntry 6}
+
+dvbRcsFwdStartSymbolRate OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x100 symbols/s"
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Specifies the symbol rate on the start transponder
+        carrying a Network Information Table to which any RCST
+        shall trigger to acquire forward link.  Its value shall
+        be given in multiples of 100 symbols/s."
+::={dvbRcsFwdStartEntry 7}
+
+dvbRcsFwdStartInnerFec OBJECT-TYPE
+    SYNTAX              INTEGER     {
+                                    autoFec     (-1),
+                                    fecRate12    (0),
+                                    fecRate23    (1),
+                                    fecRate34    (2),
+                                    fecRate56    (3),
+                                    fecRate78    (4),
+                                    fecRate89    (5),
+                                    fecRate35    (6),
+                                    fecRate45    (7),
+                                    fecRate910   (8),
+                                    fecRate25    (9),
+                                    fecRate13   (10),
+                                    fecRate14   (11),
+
+
+
+                                    noInnerCode (12)
+    }
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "Specifies the inner Forward Error Correction used on
+        the start transponder carrying a Network Information
+        Table to which any RCST shall trigger to acquire forward
+        link.
+        Supported values are:
+                autoFec      (-1),
+                fecRate1/2    (0),
+                fecRate2/3    (1),
+                fecRate3/4    (2),
+                fecRate5/6    (3),
+                fecRate7/8    (4),
+                fecRate8/9    (5),
+                fecRate3/5    (6),
+                fecRate4/5    (7),
+                fecRate9/10   (8),
+                fecRate2/5    (9),
+                fecRate1/3    (10),
+                fecRate1/4    (11),
+                noInnerCode   (12)
+    The support of autoFec is optional."
+::={dvbRcsFwdStartEntry 8}
+
+dvbRcsFwdStartRowStatus OBJECT-TYPE
+    SYNTAX              RowStatus
+    MAX-ACCESS          read-create
+    STATUS              current
+    DESCRIPTION
+        "The status of this conceptual row.  It is not possible
+        to change values in a row of this table while the row is
+        active."
+::={dvbRcsFwdStartEntry 9}
+
+--==============================================================
+--  dvbRcsFwdStatus sub-tree object types
+--==============================================================
+dvbRcsFwdStatusPopId OBJECT-TYPE
+    SYNTAX              Unsigned32 (0..65535)
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Population identifier applied at log-on:
+            0-65535: specific StartPopId
+        If the RCST was allowed to logon with any population,
+
+
+
+        the RCST will report the base number of the announced
+        population ID indicated by the RCS Map Table linkage
+        descriptor used at logon."
+::={dvbRcsFwdStatus 1}
+
+dvbRcsFwdStatusTable OBJECT-TYPE
+    SYNTAX              SEQUENCE OF DvbRcsFwdStatusEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+        "This table describes the current status of Forward Link
+        interfaces."
+::={dvbRcsFwdStatus 2}
+
+dvbRcsFwdStatusEntry OBJECT-TYPE
+    SYNTAX            DvbRcsFwdStatusEntry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "An entry in the forward link status table.  Each entry
+        is associated with a physical interface.
+        An RCST shall support at least one entry."
+    INDEX { dvbRcsFwdStatusIndex }
+::= {dvbRcsFwdStatusTable 1}
+
+DvbRcsFwdStatusEntry ::= SEQUENCE {
+                dvbRcsFwdStatusIndex             Unsigned32,
+                dvbRcsFwdStatusIfReference       Unsigned32,
+                dvbRcsFwdStatusNetId             Unsigned32,
+                dvbRcsFwdStatusNetName
+                                            SnmpAdminString,
+                dvbRcsFwdStatusFormat            INTEGER,
+                dvbRcsFwdStatusFrequency         Unsigned32,
+                dvbRcsFwdStatusPolar             INTEGER,
+                dvbRcsFwdStatusInnerFec          INTEGER,
+                dvbRcsFwdStatusSymbolRate        Unsigned32,
+                dvbRcsFwdStatusRolloff           INTEGER,
+                dvbRcsFwdStatusModulation        INTEGER,
+                dvbRcsFwdStatusFecFrame          INTEGER,
+                dvbRcsFwdStatusPilot             INTEGER,
+                dvbRcsFwdStatusBer               Integer32,
+                dvbRcsFwdStatusCnr               Integer32,
+                dvbRcsFwdStatusRxPower           Integer32
+}
+
+dvbRcsFwdStatusIndex OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..8)
+    MAX-ACCESS          not-accessible
+
+
+
+    STATUS              current
+    DESCRIPTION
+        "Index of the forward link status table."
+::={dvbRcsFwdStatusEntry 1}
+
+dvbRcsFwdStatusIfReference OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..8)
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Cross reference to the interface table."
+::={dvbRcsFwdStatusEntry 2}
+
+dvbRcsFwdStatusNetId OBJECT-TYPE
+    SYNTAX              Unsigned32
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Interactive network identifier of the forward
+        link (from the RCS Map Table)."
+::={dvbRcsFwdStatusEntry 3}
+
+dvbRcsFwdStatusNetName OBJECT-TYPE
+    SYNTAX              SnmpAdminString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The name of the interactive network of the forward
+        link (from the RCS Map Table)."
+::={dvbRcsFwdStatusEntry 4}
+
+dvbRcsFwdStatusFormat OBJECT-TYPE
+    SYNTAX              INTEGER  {
+                                 dvbs            (0),
+                                 dvbs2ccm        (1),
+                                 dvbs2acm        (2),
+                                 reservedFormat  (3)
+    }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Specifies the transmission format applied on the
+        forward link.  Supported values are (from RCS Map Table):
+            0: DVB-S
+            1: DVB-S2 using CCM
+            2: DVB-S2 using VCM or ACM
+            3: reserved"
+::={dvbRcsFwdStatusEntry 5}
+
+
+
+dvbRcsFwdStatusFrequency OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x100 kHz"
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "An estimate of the frequency of the forward link.  Its
+        value shall be given in multiples of 100 kHz."
+::={dvbRcsFwdStatusEntry 6}
+
+dvbRcsFwdStatusPolar OBJECT-TYPE
+    SYNTAX              INTEGER   {
+                                  linearHorizontal (0),
+                                  linearVertical   (1),
+                                  circularLeft     (2),
+                                  circularRight    (3)
+    }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "2-bit field giving the polarization of the forward link
+        Supported values are (from RCS Map Table):
+            00: linear and horizontal
+            01: linear and vertical
+            10: circular left
+            11: circular right"
+::={dvbRcsFwdStatusEntry 7}
+
+dvbRcsFwdStatusInnerFec OBJECT-TYPE
+    SYNTAX              INTEGER     {
+                                    unknown     (-1),
+                                    fecRate12    (0),
+                                    fecRate23    (1),
+                                    fecRate34    (2),
+                                    fecRate56    (3),
+                                    fecRate78    (4),
+                                    fecRate89    (5),
+                                    fecRate35    (6),
+                                    fecRate45    (7),
+                                    fecRate910   (8),
+                                    fecRate25    (9),
+                                    fecRate13   (10),
+                                    fecRate14   (11),
+                                    noInnerCode (12)
+    }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+
+
+
+        "Specifies the inner Forward Error Correction used on
+        the forward link for transmission to the RCST.
+        Supported values are:
+                unknown      (-1),
+                fecRate1/2    (0),
+                fecRate2/3    (1),
+                fecRate3/4    (2),
+                fecRate5/6    (3),
+                fecRate7/8    (4),
+                fecRate8/9    (5),
+                fecRate3/5    (6),
+                fecRate4/5    (7),
+                fecRate9/10   (8),
+                fecRate2/5    (9),
+                fecRate1/3    (10),
+                fecRate1/4    (11),
+                noInnerCode   (12)
+        The RCST will report a value that has been used for
+        transmission to the RCST within the most recent 60
+        seconds.  If this is not relevant, the RCST will report
+        'unknown'."
+::={dvbRcsFwdStatusEntry 8}
+
+dvbRcsFwdStatusSymbolRate OBJECT-TYPE
+    SYNTAX              Unsigned32
+    UNITS               "x100 symbols/s"
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "An estimate of the symbol rate of the forward link.
+        Its value shall be given in multiples of 100 symbols/s."
+::={dvbRcsFwdStatusEntry 9}
+
+dvbRcsFwdStatusRolloff OBJECT-TYPE
+    SYNTAX              INTEGER   {
+                                  undefRolloff       (0),
+                                  rolloff020         (1),
+                                  rolloff025         (2),
+                                  rolloff035         (3)
+    }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "An estimate of the roll-off applied on the forward
+        link.
+        Supported values are:
+            0: undefined
+            1: 0.20
+
+
+
+            2: 0.25
+            3: 0.35"
+::={dvbRcsFwdStatusEntry 10}
+
+ dvbRcsFwdStatusModulation OBJECT-TYPE
+    SYNTAX              INTEGER   {
+                                  unknown        (0),
+                                  mBPSK          (1),
+                                  mQPSK          (2),
+                                  m8PSK          (3),
+                                  m16APSK        (4),
+                                  m32APSK        (5)
+    }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Indicates the modulation on the forward link used for
+        transmission to the RCST. Supported values are:
+            0: unknown
+            1: BPSK
+            2: QPSK
+            3: 8PSK
+            4: 16APSK
+            5: 32APSK
+        The RCST will report a value that has been used for
+        transmission to the RCST within the most recent 60
+        seconds.
+        If this is not relevant, the RCST will report
+        'unknown'."
+::={dvbRcsFwdStatusEntry 11}
+
+dvbRcsFwdStatusFecFrame OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                unknown       (0),
+                                shortframe    (1),
+                                longframe     (2)
+    }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Indicates the frame length used on the forward link for
+        transmission to the RCST.
+        Supported values are:
+            0: Unknown
+            1: Short frame
+            2: Normal frame
+        The RCST will report a value that has been used for
+        transmission to the RCST within the most recent 60
+
+
+
+        seconds.
+        If this is not relevant, the RCST will report
+        'unknown'."
+::={dvbRcsFwdStatusEntry 12}
+
+dvbRcsFwdStatusPilot OBJECT-TYPE
+    SYNTAX              INTEGER {
+                                unknown      (0),
+                                pilotNotused (1),
+                                pilotUsed    (2)
+    }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Indicates whether pilots are used on the forward link
+        for transmission to the RCST.
+        Supported values are:
+            0: Unknown
+            1: Pilots are not used
+            2: Pilots are used
+        The RCST will report a value that has been used for
+        transmission to the RCST within the most recent 60
+        seconds.
+        If this is not relevant, the RCST will report
+        'unknown'."
+::={dvbRcsFwdStatusEntry 13}
+
+dvbRcsFwdStatusBer OBJECT-TYPE
+    SYNTAX              Integer32
+    UNITS               "exponent of 10"
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Provides the RCST BER on the Forward Link in log10
+        units."
+::={dvbRcsFwdStatusEntry 14}
+
+dvbRcsFwdStatusCnr OBJECT-TYPE
+    SYNTAX              Integer32
+    UNITS               "0.1 dB"
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Provides the RCST CNR on the Forward Link in 0.1 dB
+        units."
+::={dvbRcsFwdStatusEntry 15}
+
+dvbRcsFwdStatusRxPower OBJECT-TYPE
+
+
+
+    SYNTAX              Integer32
+    UNITS               "0.1 dBm"
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Provides the power level of the forward link as
+        received at the IDU, in 0.1 dBm units."
+    DEFVAL { -500 }
+::={dvbRcsFwdStatusEntry 16}
+
+--==============================================================
+--  dvbRcsRtnConfig sub-tree object types
+--==============================================================
+dvbRcsRtnConfigMaxEirp OBJECT-TYPE
+    SYNTAX              Integer32
+    UNITS               "x0.1 dBm"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+        "Max Equivalent Isotropic Radiated Power (EIRP) of the RCST,
+         given in resolution of 0.1 dBm and applied when the IDU
+         can, itself, set the necessary IDU TX output level, e.g.,
+         when using a BUC that has a power level detector and that
+         provides sufficient feedback to the IDU."
+::= {dvbRcsRtnConfig 1}
+
+dvbRcsRtnConfigDefIfLevel OBJECT-TYPE
+    SYNTAX              Integer32
+    UNITS               "x0.1 dBm"
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION
+         "IDU TX output level applied in case the
+         dvbRcsRtnConfigMaxEirp cannot be used.  The resolution
+         is 0.1 dBm and the accuracy is +/- 1 dBm."
+::= {dvbRcsRtnConfig 2}
+
+--==============================================================
+--  dvbRcsRtnStatus sub-tree object types
+--==============================================================
+dvbRcsRtnStatusEbN0 OBJECT-TYPE
+    SYNTAX              Integer32
+    UNITS               "x0.1 dB"
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The EbN0 value reported for the return link, referenced
+        to the regular SYNC burst transmission, in 0.1 dB
+
+
+
+        units."
+::= {dvbRcsRtnStatus 1}
+
+dvbRcsRtnStatusSFDuration OBJECT-TYPE
+    SYNTAX              Unsigned32 (250..7500)
+    UNITS               "0.1 ms"
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "The duration of the currently applied return link
+        superframe structure, in tenths of milliseconds."
+::= {dvbRcsRtnStatus 2}
+
+dvbRcsRtnStatusPayloadUnit OBJECT-TYPE
+    SYNTAX              INTEGER   {
+                                  unitATM    (0),
+                                  unitMPEG   (1)
+    }
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+        "Indicates if the payload unit used for the return link
+        is ATM or MPEG."
+::= {dvbRcsRtnStatus 3}
+
+--=============================================================
+--    conformance information
+--=============================================================
+dvbRcsRcstGroups          OBJECT IDENTIFIER ::=
+{dvbRcsConformance 1}
+dvbRcsRcstCompliances     OBJECT IDENTIFIER ::=
+{dvbRcsConformance 2}
+
+--=============================================================
+--    conformance statements
+--=============================================================
+dvbRcsRcstCompliance1 MODULE-COMPLIANCE
+     STATUS          current
+     DESCRIPTION
+         "The compliance statement for DVB-RCS terminals that
+         are compliant with SatLabs System Recommendations.
+         Compliance is linked to the support by the terminal of
+         the options or features defined in the SatLabs System
+         Recommendations.
+         The supported options and features of a terminal are
+         declared in objects
+         dvbRcsSystemSatLabsOptionsDeclaration
+         and dvbRcsSystemSatLabsFeaturesDeclaration
+
+
+
+         respectively."
+
+    MODULE  -- this module
+
+           MANDATORY-GROUPS    {dvbRcsRcstSystemGroup,
+dvbRcsRcstNetworkGroup, dvbRcsRcstInstallGroup,
+dvbRcsRcstQosGroup, dvbRcsRcstControlGroup,
+dvbRcsRcstStateGroup, dvbRcsFwdConfigGroup,
+dvbRcsFwdStatusGroup, dvbRcsRtnConfigGroup,
+dvbRcsRtnStatusGroup}
+
+GROUP dvbRcsRcstExtNetworkGroup
+     DESCRIPTION
+         "This group is mandatory for an RCST that supports extended
+         networking management functionality.  Such RCST is qualified
+         as supporting the EXTNETWORK feature, as defined in the
+         SatLabs System Recommendations."
+
+GROUP dvbRcsRcstDnsGroup
+     DESCRIPTION
+         "This group is mandatory for an RCST that supports the DNS
+         protocol.  Such RCST is qualified as supporting the DNS
+         option, as defined in the SatLabs System Recommendations."
+
+GROUP dvbRcsRcstExtInstallGroup
+     DESCRIPTION
+         "This group is mandatory for an RCST that supports the
+         installation log file.  Such RCST is qualified as supporting
+         the INSTALL_LOG feature, as defined in the SatLabs System
+         Recommendations."
+
+GROUP dvbRcsRcstEnhancedClassifierGroup
+     DESCRIPTION
+         "This group is mandatory for an RCST that supports the
+         enhanced classifier feature.  Such RCST is qualified as
+         supporting the ENHCLASSIFIER feature, as defined in the
+         SatLabs System Recommendations."
+
+GROUP dvbRcsRcstMpegQosGroup
+     DESCRIPTION
+         "This group is mandatory for an RCST that supports MPEG
+         traffic bursts.  Such RCST is qualified as supporting the
+         MPEG_TRF option, as defined in the SatLabs System
+         Recommendations."
+
+GROUP dvbRcsRcstGlobalQosGroup
+     DESCRIPTION
+         "This group is mandatory for an RCST that supports global
+
+
+
+         RCST QoS configuration data.  Such RCST is qualified as
+         supporting the RCST_PARA feature, as defined in the SatLabs
+         System Recommendations."
+
+GROUP dvbRcsRcstStrictQosGroup
+     DESCRIPTION
+         "This group is mandatory for an RCST that supports strict
+         channel ID dispatching.  Such RCST is qualified as
+         supporting the CHID_STRICT option, as defined in the SatLabs
+         System Recommendations."
+
+GROUP dvbRcsRcstExtControlGroup
+     DESCRIPTION
+         "This group is mandatory for an RCST that supports extended
+         control management functionality.  Such RCST is qualified as
+         supporting the EXTCONTROL feature, as defined in the SatLabs
+         System Recommendations."
+
+GROUP dvbRcsRtnExtConfigGroup
+     DESCRIPTION
+         "This group is mandatory for an RCST that supports extended
+         return link configuration management functionality.  Such
+         RCST is qualified as supporting the EXTCONFIG feature, as
+         defined in the SatLabs System Recommendations."
+
+GROUP dvbRcsRtnExtStatusGroup
+     DESCRIPTION
+         "This group is mandatory for an RCST that supports extended
+         return link status report functionality.  Such RCST is
+         qualified as supporting the EXTSTATUS feature, as defined in
+         the SatLabs System Recommendations."
+
+GROUP dvbRcsRcstOduListGroup
+     DESCRIPTION
+         "This group is mandatory for an RCST that supports the ODU
+         structural entities defined under dvbRcsOduTx, dvbRcsOduRx,
+         and dvbRcsOduAntenna.  Such RCST is qualified as supporting
+         the ODULIST feature, as defined in the SatLabs System
+         Recommendations."
+
+OBJECT dvbRcsSystemOduAntennaSize
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Write access must be supported if dvbRcsRcstOduListGroup is
+         not supported."
+
+OBJECT dvbRcsSystemOduAntennaGain
+     MIN-ACCESS read-only
+
+
+
+     DESCRIPTION
+         "Write access must be supported if dvbRcsRcstOduListGroup is
+         not supported."
+
+OBJECT dvbRcsSystemOduSspa
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Write access must be supported if dvbRcsRcstOduListGroup is
+         not supported."
+
+OBJECT dvbRcsSystemOduTxType
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Write access must be supported if dvbRcsRcstOduListGroup is
+         not supported."
+
+OBJECT dvbRcsSystemOduRxType
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Write access must be supported if dvbRcsRcstOduListGroup is
+         not supported."
+
+OBJECT dvbRcsSystemOduRxBand
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Write access must be supported if dvbRcsRcstOduListGroup is
+         not supported."
+
+OBJECT dvbRcsSystemOduRxLO
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Write access must be supported if dvbRcsRcstOduListGroup is
+         not supported."
+
+OBJECT dvbRcsSystemOduTxLO
+  MIN-ACCESS read-only
+  DESCRIPTION
+      "Write access must be supported if dvbRcsRcstOduListGroup is
+      not supported."
+
+OBJECT dvbRcsNetworkOamInetAddressType
+     SYNTAX InetAddressType { ipv4(1) }
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsNetworkOamInetAddress
+     SYNTAX InetAddress (SIZE(4))
+
+
+
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsNetworkLanInetAddressType
+     SYNTAX InetAddressType { ipv4(1) }
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsNetworkLanInetAddress
+     SYNTAX InetAddress (SIZE(4))
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsNetworkAirInterfaceDefaultGatewayInetAddressType
+     SYNTAX InetAddressType { ipv4(1) }
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsNetworkAirInterfaceDefaultGatewayInetAddress
+     SYNTAX InetAddress (SIZE(4))
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsPrimaryDnsServerInetAddressType
+     SYNTAX InetAddressType { ipv4(1) }
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsPrimaryDnsServerInetAddress
+     SYNTAX InetAddress (SIZE(4))
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsSecondaryDnsServerInetAddressType
+     SYNTAX InetAddressType { ipv4(1) }
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsSecondaryDnsServerInetAddress
+      SYNTAX InetAddress (SIZE(4))
+
+
+
+      DESCRIPTION
+          "An implementation is only required to support IPv4
+          addresses."
+
+OBJECT dvbRcsNetworkNccMgtInetAddressType
+     SYNTAX InetAddressType { ipv4(1) }
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsNetworkNccMgtInetAddress
+     SYNTAX InetAddress (SIZE(4))
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsPktClassDscpLow
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports the
+         enhanced classifier feature.  Such RCST is qualified as
+         supporting the ENHCLASSIFIER feature, as defined in the
+         SatLabs System Recommendations."
+
+OBJECT dvbRcsPktClassDscpHigh
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports the
+         enhanced classifier feature.  Such RCST is qualified as
+         supporting the ENHCLASSIFIER feature, as defined in the
+         SatLabs System Recommendations."
+
+OBJECT dvbRcsPktClassDscpMarkValue
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports the
+         enhanced classifier feature.  Such RCST is qualified as
+         supporting the ENHCLASSIFIER feature, as defined in the
+         SatLabs System Recommendations."
+
+OBJECT dvbRcsPktClassSrcInetAddressType
+     SYNTAX InetAddressType { ipv4(1) }
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsPktClassSrcInetAddress
+     SYNTAX InetAddress (SIZE(4))
+
+
+
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsPktClassDstInetAddressType
+     SYNTAX InetAddressType { ipv4(1) }
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsPktClassDstInetAddress
+     SYNTAX InetAddress (SIZE(4))
+     DESCRIPTION
+         "An implementation is only required to support IPv4
+         addresses."
+
+OBJECT dvbRcsPhbName
+    MIN-ACCESS read-only
+    DESCRIPTION
+        "Create access only required if the RCST supports extended
+        management support.  Such RCST is qualified as supporting
+        the SNMPMISC option, as defined in the SatLabs System
+        Recommendations."
+
+OBJECT dvbRcsPhbRequestClassAssociation
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports extended
+         management support.  Such RCST is qualified as supporting
+         the SNMPMISC option, as defined in the SatLabs System
+         Recommendations."
+
+OBJECT dvbRcsPhbMappingRowStatus
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports extended
+         management support.  Such RCST is qualified as supporting
+         the SNMPMISC option, as defined in the SatLabs System
+         Recommendations."
+
+OBJECT dvbRcsRequestClassName
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports extended
+         management support.  Such RCST is qualified as supporting
+         the SNMPMISC option, as defined in the SatLabs System
+         Recommendations."
+
+
+
+
+OBJECT dvbRcsRequestClassChanId
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports extended
+         management support.  Such RCST is qualified as supporting
+         the SNMPMISC option, as defined in the SatLabs System
+         Recommendations."
+
+OBJECT dvbRcsRequestClassVccVpi
+    MIN-ACCESS read-only
+    DESCRIPTION
+        "Create access only required if the RCST supports extended
+        management support.  Such RCST is qualified as supporting
+        the SNMPMISC option, as defined in the SatLabs System
+        Recommendations."
+
+OBJECT dvbRcsRequestClassVccVci
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports extended
+         management support.  Such RCST is qualified as supporting
+         the SNMPMISC option, as defined in the SatLabs System
+         Recommendations."
+
+OBJECT dvbRcsRequestClassPidPoolReference
+     MIN-ACCESS not-accessible
+     DESCRIPTION
+         "Read-only access required if the RCST supports MPEG traffic
+         bursts, according to the MPEG_TRF option, as defined in the
+         SatLabs System Recommendations.  Create access only required
+         if the RCST also supports extended management support,
+         according to the SNMPMISC option, as defined in the SatLabs
+         System Recommendations."
+
+OBJECT dvbRcsRequestClassCra
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports extended
+         management support, according to the SNMPMISC option, as
+         defined in the SatLabs System Recommendations."
+
+OBJECT dvbRcsRequestClassRbdcMax
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports extended
+         management support, according to the SNMPMISC option, as
+         defined in the SatLabs System Recommendations."
+
+
+
+
+OBJECT dvbRcsRequestClassRbdcTimeout
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports extended
+         management support, according to the SNMPMISC option, as
+         defined in the SatLabs System Recommendations."
+
+OBJECT dvbRcsRequestClassVbdcMax
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports extended
+         management support, according to the SNMPMISC option, as
+         defined in the SatLabs System Recommendations."
+
+OBJECT dvbRcsRequestClassVbdcTimeout
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports extended
+         management support, according to the SNMPMISC option, as
+         defined in the SatLabs System Recommendations."
+
+OBJECT dvbRcsRequestClassVbdcMaxBackLog
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports extended
+         management support, according to the SNMPMISC option, as
+         defined in the SatLabs System Recommendations."
+
+OBJECT dvbRcsRequestClassRowStatus
+     MIN-ACCESS read-only
+     DESCRIPTION
+         "Create access only required if the RCST supports extended
+         management support, according to the SNMPMISC option, as
+         defined in the SatLabs System Recommendations."
+
+OBJECT dvbRcsPidValue
+     MIN-ACCESS not-accessible
+     DESCRIPTION
+         "Read-only access required if the RCST supports MPEG traffic
+         bursts, according to the MPEG_TRF option, as defined in the
+         SatLabs System Recommendations.  Create access only required
+         if the RCST also supports extended management support,
+         according to the SNMPMISC option, as defined in the SatLabs
+         System Recommendations."
+
+OBJECT dvbRcsPidPoolRowStatus
+     MIN-ACCESS not-accessible
+     DESCRIPTION
+
+
+
+         "Read-only access required if the RCST supports MPEG traffic
+         bursts, according to the MPEG_TRF option, as defined in the
+         SatLabs System Recommendations.  Create access only required
+         if the RCST also supports extended management support,
+         according to the SNMPMISC option, as defined in the SatLabs
+         System Recommendations."
+
+        ::= {dvbRcsRcstCompliances 1}
+
+--=============================================================
+--    units of conformance
+--=============================================================
+
+--=============================================================
+--    object groups for RCST system
+--=============================================================
+dvbRcsRcstSystemGroup OBJECT-GROUP
+    OBJECTS {
+        dvbRcsSystemMibRevision,
+        dvbRcsSystemSatLabsProfilesDeclaration,
+        dvbRcsSystemSatLabsOptionsDeclaration,
+        dvbRcsSystemSatLabsFeaturesDeclaration,
+        dvbRcsSystemLocation,
+        dvbRcsSystemOduAntennaSize,
+        dvbRcsSystemOduAntennaGain,
+        dvbRcsSystemOduSspa,
+        dvbRcsSystemOduTxType,
+        dvbRcsSystemOduRxType,
+        dvbRcsSystemOduRxBand,
+        dvbRcsSystemOduRxLO,
+        dvbRcsSystemOduTxLO,
+        dvbRcsTcpPep,
+        dvbRcsHttpPep
+        }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects providing information
+        applicable for basic device management support."
+::= {dvbRcsRcstGroups 1}
+
+--=============================================================
+--    object groups for RCST networking
+--=============================================================
+dvbRcsRcstNetworkGroup OBJECT-GROUP
+    OBJECTS {
+        dvbRcsNetworkOamInetAddressType,
+        dvbRcsNetworkOamInetAddress,
+        dvbRcsNetworkOamInetAddressPrefixLength,
+
+
+
+        dvbRcsNetworkLanInetAddressType,
+        dvbRcsNetworkLanInetAddress,
+        dvbRcsNetworkLanInetAddressPrefixLength,
+        dvbRcsNetworkConfigFileDownloadUrl,
+        dvbRcsNetworkConfigFileUploadUrl,
+        dvbRcsNetworkLogFileUploadUrl
+        }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects providing basic networking
+        management support."
+::= {dvbRcsRcstGroups 2}
+
+dvbRcsRcstExtNetworkGroup OBJECT-GROUP
+    OBJECTS {
+      dvbRcsNetworkOamInetAddressAssign,
+      dvbRcsNetworkAirInterfaceDefaultGatewayInetAddressType,
+      dvbRcsNetworkAirInterfaceDefaultGatewayInetAddress,
+      dvbRcsNetworkAirInterfaceDefaultGatewayInetAddressPrefixLength,
+      dvbRcsNetworkNccMgtInetAddressType,
+      dvbRcsNetworkNccMgtInetAddress,
+      dvbRcsNetworkNccMgtInetAddressPrefixLength
+      }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects providing extended networking
+        management support."
+::= {dvbRcsRcstGroups 3}
+
+dvbRcsRcstDnsGroup OBJECT-GROUP
+    OBJECTS {
+        dvbRcsPrimaryDnsServerInetAddressType,
+        dvbRcsPrimaryDnsServerInetAddress,
+        dvbRcsPrimaryDnsServerInetAddressPrefixLength,
+        dvbRcsSecondaryDnsServerInetAddressType,
+        dvbRcsSecondaryDnsServerInetAddress,
+        dvbRcsSecondaryDnsServerInetAddressPrefixLength
+        }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects providing DNS management
+        support."
+::= {dvbRcsRcstGroups 4}
+
+
+
+
+
+
+
+
+--=============================================================
+--    object groups for RCST installation
+--=============================================================
+
+dvbRcsRcstInstallGroup OBJECT-GROUP
+    OBJECTS {
+        dvbRcsInstallAntennaAlignmentState,
+        dvbRcsInstallCwFrequency,
+        dvbRcsInstallCwMaxDuration,
+        dvbRcsInstallCwPower,
+        dvbRcsInstallCoPolReading,
+        dvbRcsInstallXPolReading,
+        dvbRcsInstallCoPolTarget,
+        dvbRcsInstallXPolTarget,
+        dvbRcsInstallStandByDuration,
+        dvbRcsInstallTargetEsN0
+        }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects providing information
+        applicable for basic installation support."
+::= {dvbRcsRcstGroups 5}
+
+dvbRcsRcstExtInstallGroup OBJECT-GROUP
+    OBJECTS {
+        dvbRcsNetworkInstallLogFileDownloadUrl,
+        dvbRcsNetworkInstallLogFileUploadUrl
+        }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects providing extended device
+        installation support."
+::= {dvbRcsRcstGroups 6}
+
+--=============================================================
+--    object groups for QoS
+--=============================================================
+
+dvbRcsRcstQosGroup OBJECT-GROUP
+   OBJECTS {
+       dvbRcsPktClassDscpLow,
+       dvbRcsPktClassDscpHigh,
+       dvbRcsPktClassDscpMarkValue,
+       dvbRcsPktClassPhbAssociation,
+       dvbRcsPktClassRowStatus,
+       dvbRcsPhbName,
+       dvbRcsPhbRequestClassAssociation,
+       dvbRcsPhbMappingRowStatus,
+
+
+
+       dvbRcsRequestClassName,
+       dvbRcsRequestClassChanId,
+       dvbRcsRequestClassVccVpi,
+       dvbRcsRequestClassVccVci,
+       dvbRcsRequestClassCra,
+       dvbRcsRequestClassRbdcMax,
+       dvbRcsRequestClassRbdcTimeout,
+       dvbRcsRequestClassVbdcMax,
+       dvbRcsRequestClassVbdcTimeout,
+       dvbRcsRequestClassVbdcMaxBackLog,
+       dvbRcsRequestClassRowStatus
+       }
+   STATUS    current
+   DESCRIPTION
+       "A collection of objects providing basic access to QoS
+       configuration data."
+::= {dvbRcsRcstGroups 7}
+
+dvbRcsRcstEnhancedClassifierGroup OBJECT-GROUP
+   OBJECTS {
+       dvbRcsPktClassIpProtocol,
+       dvbRcsPktClassSrcInetAddressType,
+       dvbRcsPktClassSrcInetAddress,
+       dvbRcsPktClassSrcInetAddressPrefixLength,
+       dvbRcsPktClassDstInetAddressType,
+       dvbRcsPktClassDstInetAddress,
+       dvbRcsPktClassDstInetAddressPrefixLength,
+       dvbRcsPktClassSrcPortLow,
+       dvbRcsPktClassSrcPortHigh,
+       dvbRcsPktClassDstPortLow,
+       dvbRcsPktClassDstPortHigh,
+       dvbRcsPktClassVlanUserPri
+       }
+   STATUS    current
+   DESCRIPTION
+       "A collection of objects providing support for
+       management of the enhanced classifier."
+::= {dvbRcsRcstGroups 8}
+
+dvbRcsRcstMpegQosGroup OBJECT-GROUP
+   OBJECTS {
+       dvbRcsRequestClassPidPoolReference,
+       dvbRcsPidValue,
+       dvbRcsPidPoolRowStatus
+       }
+   STATUS    current
+   DESCRIPTION
+       "A collection of objects providing access to
+
+
+
+       MPEG-related link QoS configuration data."
+
+::= {dvbRcsRcstGroups 9}
+
+dvbRcsRcstGlobalQosGroup OBJECT-GROUP
+   OBJECTS {
+       dvbRcsQosGlobalRbdcMax,
+       dvbRcsQosGlobalVbdcMax,
+       dvbRcsQosGlobalVbdcMaxBackLog
+       }
+   STATUS    current
+   DESCRIPTION
+       "A collection of objects providing access to global RCST
+       QoS configuration data."
+::= {dvbRcsRcstGroups 10}
+
+dvbRcsRcstStrictQosGroup OBJECT-GROUP
+   OBJECTS {
+       dvbRcsQosChannelIdStrictDispatching
+       }
+   STATUS    current
+   DESCRIPTION
+       "A collection of objects allowing management of strict
+       channel ID dispatching."
+::= {dvbRcsRcstGroups 11}
+
+--=============================================================
+--    object groups for RCST control
+--=============================================================
+dvbRcsRcstControlGroup OBJECT-GROUP
+    OBJECTS {
+        dvbRcsCtrlRebootCommand,
+        dvbRcsCtrlUserTrafficDisable,
+        dvbRcsCtrlCwEnable,
+        dvbRcsCtrlDownloadFileCommand,
+        dvbRcsCtrlUploadFileCommand,
+        dvbRcsCtrlActivateConfigFileCommand,
+        dvbRcsCtrlRcstRxReacquire
+        }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects allowing basic RCST control."
+::= {dvbRcsRcstGroups 12}
+
+dvbRcsRcstExtControlGroup OBJECT-GROUP
+    OBJECTS {
+        dvbRcsCtrlRcstTxDisable,
+        dvbRcsCtrlOduTxReferenceEnable,
+
+
+
+        dvbRcsCtrlOduTxDCEnable,
+        dvbRcsCtrlOduRxDCEnable,
+        dvbRcsCtrlRcstLogonCommand,
+        dvbRcsCtrlRcstLogoffCommand
+        }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects allowing extended RCST
+        control."
+::= {dvbRcsRcstGroups 13}
+
+--=============================================================
+--    object groups for RCST state
+--=============================================================
+
+dvbRcsRcstStateGroup OBJECT-GROUP
+    OBJECTS {
+        dvbRcsRcstMode,
+        dvbRcsRcstFaultStatus,
+        dvbRcsRcstFwdLinkStatus,
+        dvbRcsRcstLogUpdated,
+        dvbRcsRcstCurrentSoftwareVersion,
+        dvbRcsRcstAlternateSoftwareVersion,
+        dvbRcsRcstActivatedConfigFileVersion,
+        dvbRcsRcstDownloadedConfigFileVersion
+        }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects allowing access to RCST state."
+::= {dvbRcsRcstGroups 14}
+
+--=============================================================
+--    object groups for forward link
+--=============================================================
+
+dvbRcsFwdConfigGroup OBJECT-GROUP
+    OBJECTS {
+            dvbRcsFwdStartPopId,
+            dvbRcsFwdStartFrequency,
+            dvbRcsFwdStartPolar,
+            dvbRcsFwdStartFormat,
+            dvbRcsFwdStartRolloff,
+            dvbRcsFwdStartSymbolRate,
+            dvbRcsFwdStartInnerFec,
+            dvbRcsFwdStartRowStatus
+        }
+    STATUS    current
+    DESCRIPTION
+
+
+
+        "A collection of objects providing basic start forward
+        link configuration support."
+::= {dvbRcsRcstGroups 15}
+
+dvbRcsFwdStatusGroup OBJECT-GROUP
+   OBJECTS {
+       dvbRcsFwdStatusPopId,
+       dvbRcsFwdStatusIfReference,
+       dvbRcsFwdStatusNetId,
+       dvbRcsFwdStatusNetName,
+       dvbRcsFwdStatusFormat,
+       dvbRcsFwdStatusFrequency,
+       dvbRcsFwdStatusPolar,
+       dvbRcsFwdStatusInnerFec,
+       dvbRcsFwdStatusSymbolRate,
+       dvbRcsFwdStatusRolloff,
+       dvbRcsFwdStatusModulation,
+       dvbRcsFwdStatusFecFrame,
+       dvbRcsFwdStatusPilot,
+       dvbRcsFwdStatusBer,
+       dvbRcsFwdStatusCnr,
+       dvbRcsFwdStatusRxPower
+    }
+   STATUS    current
+   DESCRIPTION
+       "A collection of objects providing forward link status."
+::= {dvbRcsRcstGroups 16}
+
+--=============================================================
+--    object groups for return link
+--=============================================================
+ dvbRcsRtnConfigGroup OBJECT-GROUP
+    OBJECTS {
+        dvbRcsRtnConfigDefIfLevel
+        }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects providing basic return link
+        configuration support."
+::= {dvbRcsRcstGroups 17}
+
+dvbRcsRtnExtConfigGroup OBJECT-GROUP
+   OBJECTS {
+       dvbRcsRtnConfigMaxEirp
+       }
+   STATUS    current
+   DESCRIPTION
+       "A collection of objects providing extended return link
+
+
+
+       configuration support."
+::= {dvbRcsRcstGroups 18}
+
+dvbRcsRtnStatusGroup OBJECT-GROUP
+   OBJECTS {
+       dvbRcsRtnStatusPayloadUnit
+       }
+   STATUS    current
+   DESCRIPTION
+       "A collection of objects allowing access to return link
+       status."
+::= {dvbRcsRcstGroups 19}
+
+dvbRcsRtnExtStatusGroup OBJECT-GROUP
+    OBJECTS {
+        dvbRcsRcstRtnLinkStatus,
+        dvbRcsRtnStatusEbN0,
+        dvbRcsRtnStatusSFDuration
+        }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects allowing access to extended
+        return link status."
+::= {dvbRcsRcstGroups 20}
+
+dvbRcsRcstOduListGroup OBJECT-GROUP
+       OBJECTS {
+           dvbRcsOduTxTypeDescription,
+           dvbRcsOduTxType,
+           dvbRcsOduRxTypeDescription,
+           dvbRcsOduRxType,
+           dvbRcsOduAntennaTypeDescription,
+           dvbRcsOduAntennaType
+           }
+       STATUS    current
+       DESCRIPTION
+           "A collection of objects supporting flexible
+           selection of ODU devices."
+::= {dvbRcsRcstGroups 21}
+
+END

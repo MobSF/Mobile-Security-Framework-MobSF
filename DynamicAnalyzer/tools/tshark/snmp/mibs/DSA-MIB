@@ -1,0 +1,653 @@
+DSA-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS
+          MODULE-IDENTITY,  OBJECT-TYPE,
+          NOTIFICATION-TYPE
+                     FROM SNMPv2-SMI
+          DisplayString,    TimeStamp,
+          TEXTUAL-CONVENTION
+                     FROM SNMPv2-TC
+          MODULE-COMPLIANCE, OBJECT-GROUP
+                     FROM SNMPv2-CONF
+          mib-2
+                     FROM RFC1213-MIB
+          applIndex, DistinguishedName
+                     FROM NETWORK-SERVICES-MIB;
+
+        dsaMIB MODULE-IDENTITY
+           LAST-UPDATED "9311250000Z"
+           ORGANIZATION "IETF Mail and Directory Management Working
+                         Group"
+           CONTACT-INFO
+             "        Glenn Mansfield
+
+              Postal: AIC Systems Laboratory
+                      6-6-3, Minami Yoshinari
+                      Aoba-ku, Sendai, 989-32
+                      JP
+
+              Tel:    +81 22 279 3310
+              Fax:    +81 22 279 3640
+              E-Mail: glenn@aic.co.jp"
+         DESCRIPTION
+            " The MIB module for monitoring Directory System Agents."
+         ::= { mib-2 29 }
+
+
+        dsaOpsTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF DsaOpsEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+              " The table holding information related to the
+                DSA operations."
+            ::= {dsaMIB 1}
+
+        dsaOpsEntry OBJECT-TYPE
+            SYNTAX DsaOpsEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+              " Entry containing operations related statistics
+                for a DSA."
+            INDEX { applIndex }
+            ::= {dsaOpsTable 1}
+
+        DsaOpsEntry ::= SEQUENCE {
+
+ -- Bindings
+            dsaAnonymousBinds
+                Counter32,
+            dsaUnauthBinds
+                Counter32,
+            dsaSimpleAuthBinds
+                Counter32,
+            dsaStrongAuthBinds
+                Counter32,
+            dsaBindSecurityErrors
+                Counter32,
+
+ -- In-coming operations
+
+            dsaInOps
+                Counter32,
+            dsaReadOps
+                Counter32,
+            dsaCompareOps
+                Counter32,
+            dsaAddEntryOps
+                Counter32,
+            dsaRemoveEntryOps
+                Counter32,
+            dsaModifyEntryOps
+                Counter32,
+            dsaModifyRDNOps
+                Counter32,
+            dsaListOps
+                Counter32,
+            dsaSearchOps
+                Counter32,
+            dsaOneLevelSearchOps
+                Counter32,
+            dsaWholeTreeSearchOps
+                Counter32,
+
+ -- Out going operations
+
+            dsaReferrals
+                Counter32,
+            dsaChainings
+                Counter32,
+
+ -- Errors
+
+            dsaSecurityErrors
+                Counter32,
+            dsaErrors
+                Counter32
+        }
+
+        dsaAnonymousBinds OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of anonymous  binds to this DSA from DUAs
+                since application start."
+            ::= {dsaOpsEntry 1}
+
+        dsaUnauthBinds OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of un-authenticated binds to this
+                DSA since application start."
+            ::= {dsaOpsEntry 2}
+
+        dsaSimpleAuthBinds OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of binds to this DSA that were authenticated
+                using simple authentication procedures since
+                application start."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 8.1.2.1.1."
+            ::= {dsaOpsEntry 3}
+
+
+        dsaStrongAuthBinds OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of binds to this DSA that were authenticated
+                using the strong authentication procedures since
+                application start. This includes the binds that were
+                authenticated using external authentication procedures."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Sections 8.1.2.1.2 &  8.1.2.1.3."
+            ::= {dsaOpsEntry 4}
+
+        dsaBindSecurityErrors OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of bind operations that have been rejected
+                by this DSA due to inappropriateAuthentication or
+                invalidCredentials."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 12.7.2"
+            ::= {dsaOpsEntry 5}
+
+        dsaInOps OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of operations forwarded to this DSA
+                from DUAs or other DSAs since application
+                start up."
+            ::= {dsaOpsEntry 6}
+
+        dsaReadOps OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of read operations serviced by
+                this DSA since application startup."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 9.1."
+            ::= {dsaOpsEntry 7}
+
+        dsaCompareOps OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of compare operations serviced by
+                this DSA  since application startup."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 9.2."
+            ::= {dsaOpsEntry 8}
+
+        dsaAddEntryOps OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of addEntry operations serviced by
+                this DSA since application startup."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 11.1."
+            ::= {dsaOpsEntry 9}
+
+        dsaRemoveEntryOps OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of removeEntry operations serviced by
+                this DSA since application startup."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 11.2."
+            ::= {dsaOpsEntry 10}
+
+        dsaModifyEntryOps OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of modifyEntry operations serviced by
+                this DSA since application startup."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 11.3."
+            ::= {dsaOpsEntry 11}
+
+        dsaModifyRDNOps OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of modifyRDN operations serviced by
+                this DSA since application startup."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 11.4."
+            ::= {dsaOpsEntry 12}
+
+        dsaListOps OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of list operations serviced by
+                this DSA since application startup."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 10.1."
+            ::= {dsaOpsEntry 13}
+
+        dsaSearchOps OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of search operations- baseObjectSearches,
+                oneLevelSearches and  subTreeSearches, serviced
+                by this DSA  since application startup."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 10.2."
+            ::= {dsaOpsEntry 14}
+
+        dsaOneLevelSearchOps OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of oneLevelSearch operations serviced
+                by this DSA since application startup."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 10.2.2.2."
+            ::= {dsaOpsEntry 15}
+
+        dsaWholeTreeSearchOps   OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of wholeTreeSearch operations serviced
+                by this DSA since application startup."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 10.2.2.2."
+            ::= {dsaOpsEntry 16}
+
+        dsaReferrals OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of referrals returned by this DSA in response
+                to requests for operations since application startup."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 12.6."
+            ::= {dsaOpsEntry 17}
+
+        dsaChainings OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of operations forwarded by this DSA
+                to other DSAs since application startup."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.518, 1988:
+                Section 14."
+            ::= {dsaOpsEntry 18}
+
+        dsaSecurityErrors OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of operations forwarded to this DSA
+                which did not meet the security requirements. "
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Section 12.7."
+            ::= {dsaOpsEntry 19}
+
+        dsaErrors        OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of operations that could not be serviced
+                due to errors other than security errors, and
+                referrals.
+                A partially serviced operation will not be counted
+                as an error.
+                The errors include NameErrors, UpdateErrors, Attribute
+                errors and ServiceErrors."
+            REFERENCE
+              " CCITT Blue Book Fascicle VIII.8 - Rec. X.511, 1988:
+                Sections 12.4, 12.5, 12.8 & 12.9."
+            ::= {dsaOpsEntry 20}
+
+ -- Entry statistics/Cache performance
+        dsaEntriesTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF DsaEntriesEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+              " The table holding information related to the
+                entry statistics and cache performance of the DSAs."
+            ::= {dsaMIB 2}
+
+        dsaEntriesEntry OBJECT-TYPE
+            SYNTAX DsaEntriesEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+              " Entry containing statistics pertaining to entries
+                held by a DSA."
+            INDEX { applIndex }
+            ::= {dsaEntriesTable 1}
+
+        DsaEntriesEntry ::= SEQUENCE {
+            dsaMasterEntries
+                Gauge32,
+            dsaCopyEntries
+                Gauge32,
+            dsaCacheEntries
+                Gauge32,
+            dsaCacheHits
+                Counter32,
+            dsaSlaveHits
+                Counter32
+        }
+
+        dsaMasterEntries OBJECT-TYPE
+            SYNTAX Gauge32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of entries mastered in the DSA."
+            ::= {dsaEntriesEntry 1}
+
+        dsaCopyEntries OBJECT-TYPE
+            SYNTAX Gauge32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of entries for which systematic (slave)
+                copies are maintained in the DSA."
+            ::= {dsaEntriesEntry 2}
+
+        dsaCacheEntries OBJECT-TYPE
+            SYNTAX Gauge32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of entries cached (non-systematic copies) in
+                the DSA. This will include the entries that are
+                cached partially. The negative cache is not counted."
+            ::= {dsaEntriesEntry 3}
+
+        dsaCacheHits OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of operations that were serviced from
+                the locally held cache since application
+                startup."
+            ::= {dsaEntriesEntry 4}
+
+        dsaSlaveHits  OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Number of operations that were serviced from
+                the locally held object replications [ shadow
+                entries] since application startup."
+            ::= {dsaEntriesEntry 5}
+
+
+ -- The dsaIntTable contains statistical data on the peer DSAs
+ -- with which the monitored DSAs [attempt to] interact.  This
+ -- table  will provide a useful insight into  the   effect of
+ -- neighbours on the DSA performance.
+ -- The table keeps track of the last "N" DSAs with which  the
+ -- monitored  DSAs  has  interacted  [attempted to interact],
+ -- where "N" is a locally-defined constant.
+
+          dsaIntTable OBJECT-TYPE
+                  SYNTAX  SEQUENCE OF DsaIntEntry
+                  MAX-ACCESS  not-accessible
+                  STATUS  current
+                  DESCRIPTION
+                    " Each row of this table contains some details
+                      related to the history of the interaction
+                      of the monitored DSAs with their respective
+                      peer DSAs."
+                  ::= { dsaMIB 3 }
+
+          dsaIntEntry OBJECT-TYPE
+                  SYNTAX  DsaIntEntry
+                  MAX-ACCESS  not-accessible
+                  STATUS  current
+                  DESCRIPTION
+                    " Entry containing interaction details of a DSA
+                      with a peer DSA."
+                  INDEX { applIndex,dsaIntIndex }
+                  ::= { dsaIntTable 1 }
+
+          DsaIntEntry ::= SEQUENCE {
+              dsaIntIndex
+                  INTEGER,
+              dsaName
+                  DistinguishedName,
+              dsaTimeOfCreation
+                  TimeStamp,
+              dsaTimeOfLastAttempt
+                  TimeStamp,
+              dsaTimeOfLastSuccess
+                  TimeStamp,
+              dsaFailuresSinceLastSuccess
+                  Counter32,
+              dsaFailures
+                  Counter32,
+              dsaSuccesses
+                  Counter32
+          }
+
+        dsaIntIndex  OBJECT-TYPE
+            SYNTAX INTEGER (1..2147483647)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+              " Together with applIndex it forms the unique key to
+                identify the conceptual row which contains useful info
+                on the (attempted) interaction between the DSA (referred
+                to by applIndex) and a peer DSA."
+            ::= {dsaIntEntry 1}
+
+        dsaName  OBJECT-TYPE
+            SYNTAX DistinguishedName
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Distinguished Name of the peer DSA to which this
+                entry pertains."
+            ::= {dsaIntEntry 2}
+
+        dsaTimeOfCreation  OBJECT-TYPE
+            SYNTAX TimeStamp
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " The value of sysUpTime when this row was created.
+                If the entry was created before the network management
+                subsystem was initialized, this object will contain
+                a value of zero."
+            ::= {dsaIntEntry 3}
+
+        dsaTimeOfLastAttempt  OBJECT-TYPE
+            SYNTAX TimeStamp
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " The value of sysUpTime when the last attempt was made
+                to contact this DSA. If the last attempt was made before
+                the network management subsystem was initialized, this
+                object will contain a value of zero."
+            ::= {dsaIntEntry 4}
+
+        dsaTimeOfLastSuccess  OBJECT-TYPE
+            SYNTAX TimeStamp
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " The value of sysUpTime when the last attempt made to
+                contact this DSA was successful. If there have
+                been no successful attempts this entry will have a value
+                of zero. If the last successful attempt was made before
+                the network management subsystem was initialized, this
+                object will contain a value of zero."
+            ::= {dsaIntEntry 5}
+
+        dsaFailuresSinceLastSuccess  OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " The number of failures since the last time an
+                attempt to contact this DSA was successful. If
+                there has been no successful attempts, this counter
+                will contain the number of failures since this entry
+                was created."
+            ::= {dsaIntEntry 6}
+
+        dsaFailures  OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Cumulative failures since the creation of
+                this entry."
+            ::= {dsaIntEntry 7}
+
+        dsaSuccesses  OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+              " Cumulative successes since the creation of
+                this entry."
+            ::= {dsaIntEntry 8}
+
+
+ -- Conformance information
+
+        dsaConformance OBJECT IDENTIFIER ::= { dsaMIB 4 }
+
+        dsaGroups      OBJECT IDENTIFIER ::= { dsaConformance 1 }
+        dsaCompliances OBJECT IDENTIFIER ::= { dsaConformance 2 }
+
+ -- Compliance statements
+
+        dsaOpsCompliance MODULE-COMPLIANCE
+            STATUS  current
+            DESCRIPTION
+                    "The compliance statement for SNMPv2 entities
+                    which implement the DSA-MIB for monitoring
+                    DSA operations."
+
+            MODULE  -- this module
+                MANDATORY-GROUPS { dsaOpsGroup }
+
+            ::= { dsaCompliances 1 }
+
+        dsaEntryCompliance MODULE-COMPLIANCE
+            STATUS  current
+            DESCRIPTION
+                    "The compliance statement for SNMPv2 entities
+                    which implement the DSA-MIB for monitoring
+                    DSA operations,  entry statistics and cache
+                    performance."
+
+            MODULE  -- this module
+                MANDATORY-GROUPS { dsaOpsGroup,dsaEntryGroup }
+            ::= { dsaCompliances 2 }
+
+        dsaIntCompliance MODULE-COMPLIANCE
+            STATUS  current
+            DESCRIPTION
+                    " The compliance statement  for SNMPv2  entities
+                      which implement the DSA-MIB for monitoring DSA
+                      operations and the interaction of the DSA with
+                      peer DSAs."
+
+            MODULE  -- this module
+                MANDATORY-GROUPS { dsaOpsGroup, dsaIntGroup }
+
+            ::= { dsaCompliances 3 }
+
+
+ -- Units of conformance
+
+        dsaOpsGroup    OBJECT-GROUP
+            OBJECTS {
+              dsaAnonymousBinds,  dsaUnauthBinds,       dsaSimpleAuthBinds,
+              dsaStrongAuthBinds, dsaBindSecurityErrors,dsaInOps,
+              dsaReadOps,         dsaCompareOps,        dsaAddEntryOps,
+              dsaRemoveEntryOps,  dsaModifyEntryOps,    dsaModifyRDNOps,
+              dsaListOps,         dsaSearchOps,         dsaOneLevelSearchOps,
+              dsaWholeTreeSearchOps,dsaReferrals,       dsaChainings,
+              dsaSecurityErrors,  dsaErrors}
+            STATUS  current
+            DESCRIPTION
+                    " A collection of objects for monitoring the DSA
+                      operations."
+            ::= { dsaGroups 1 }
+
+        dsaEntryGroup    OBJECT-GROUP
+            OBJECTS {dsaMasterEntries,   dsaCopyEntries,       dsaCacheEntries,
+                     dsaCacheHits,       dsaSlaveHits}
+            STATUS  current
+            DESCRIPTION
+                    " A collection of objects for monitoring the DSA
+                      entry statistics and cache performance."
+            ::= { dsaGroups 2 }
+
+        dsaIntGroup    OBJECT-GROUP
+            OBJECTS {
+              dsaName,             dsaTimeOfCreation, dsaTimeOfLastAttempt,
+              dsaTimeOfLastSuccess,dsaFailuresSinceLastSuccess,dsaFailures,
+              dsaSuccesses}
+            STATUS  current
+            DESCRIPTION
+                    " A collection of objects for monitoring the DSA's
+                      interaction with peer DSAs."
+            ::= { dsaGroups 3 }
+
+
+END

@@ -1,0 +1,1090 @@
+SSPM-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+
+       MODULE-IDENTITY, OBJECT-TYPE,
+       Counter32, Integer32, Unsigned32
+                                   FROM SNMPv2-SMI  --[RFC2578]
+
+       TEXTUAL-CONVENTION, StorageType,
+       TruthValue, RowStatus
+                                   FROM SNMPv2-TC  --[RFC2579]
+
+       MODULE-COMPLIANCE, OBJECT-GROUP
+                                   FROM SNMPv2-CONF --[RFC2578,
+                                                    -- RFC2579,
+                                                    -- RFC2580]
+       OwnerString, rmon
+                                   FROM RMON-MIB  --[RFC2819]
+
+       InetAddressType, InetAddress
+                                   FROM INET-ADDRESS-MIB  --[RFC3291]
+
+
+
+
+       InterfaceIndexOrZero
+                                   FROM IF-MIB  --[RFC2863]
+
+       AppLocalIndex
+                                   FROM APM-MIB  --[RFC3729]
+
+       Utf8String
+                                   FROM SYSAPPL-MIB;  --[RFC2287]
+
+   sspmMIB MODULE-IDENTITY
+       LAST-UPDATED "200507280000Z"  -- July 28, 2005
+       ORGANIZATION "IETF RMON MIB working group"
+       CONTACT-INFO
+           "        Carl W. Kalbfleisch
+                    Consultant
+
+            E-mail: ietf@kalbfleisch.us
+
+            Working group mailing list: rmonmib@ietf.org
+            To subscribe send email to rmonmib-request@ietf.org"
+       DESCRIPTION
+           "This SSPM MIB module is applicable to probes
+            implementing Synthetic Source for Performance
+            Monitoring functions.
+
+            Copyright (C) The Internet Society (2005).  This version
+            of this MIB module is part of RFC 4149; see the RFC
+            itself for full legal notices."
+
+          -- revision history
+
+          REVISION    "200507280000Z"   -- July 28, 2005
+          DESCRIPTION
+              "The original version of this MIB module,
+              was published as RFC4149."
+          ::= { rmon 28 }
+
+--
+-- Object Identifier Assignments
+--
+sspmMIBObjects       OBJECT IDENTIFIER ::= { sspmMIB 1 }
+sspmMIBNotifications OBJECT IDENTIFIER ::= { sspmMIB 2 }
+sspmMIBConformance   OBJECT IDENTIFIER ::= { sspmMIB 3 }
+
+--
+-- Textual Conventions
+--
+
+
+
+
+SspmMicroSeconds ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS current
+    DESCRIPTION
+        "A unit of time with resolution of MicroSeconds."
+    SYNTAX Unsigned32
+
+SspmClockSource ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS current
+    DESCRIPTION
+        "An indication of the source of the clock as defined by the
+         NTP specification RFC1305 [RFC1305] definition of stratum:
+
+         Stratum (sys.stratum, peer.stratum, pkt.stratum): This is
+         an integer indicating the stratum of the local clock,
+         with values defined as follows:
+
+         0      unspecified
+
+         1      primary reference (e.g., calibrated atomic clock,
+                radio clock)
+
+         2-255  secondary reference (via NTP)."
+    REFERENCE
+        "RFC1305."
+    SYNTAX Integer32 (0..255)
+
+SspmClockMaxSkew ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS current
+    -- UNITS "Seconds"
+    DESCRIPTION
+        "An indication of the accuracy of the clock as defined by
+         RFC1305.  This variable indicates the maximum offset
+         error due to skew of the local clock over the
+         time interval 86400 seconds, in seconds."
+    REFERENCE
+        "RFC1305."
+    SYNTAX Integer32 (1..65535)
+
+--
+-- sspmGeneral
+--
+sspmGeneral           OBJECT IDENTIFIER ::= { sspmMIBObjects 1 }
+sspmGeneralClockResolution OBJECT-TYPE
+    SYNTAX      SspmMicroSeconds
+    MAX-ACCESS  read-only
+
+
+
+    STATUS      current
+    -- UNITS       Microseconds
+    DESCRIPTION
+        "A read-only variable indicating the resolution
+      of the measurements possible by this device."
+    ::= { sspmGeneral 1 }
+
+sspmGeneralClockMaxSkew OBJECT-TYPE
+    SYNTAX SspmClockMaxSkew
+    MAX-ACCESS read-only
+    STATUS current
+    -- UNITS Seconds
+    DESCRIPTION
+        "A read-only variable indicating the maximum offset
+         error due to skew of the local clock over the
+         time interval 86400 seconds, in seconds."
+    ::= { sspmGeneral 2 }
+
+
+sspmGeneralClockSource OBJECT-TYPE
+    SYNTAX SspmClockSource
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "A read-only variable indicating the source of the clock.
+         This is provided to allow a user to determine how accurate
+         the timing mechanism is compared with other devices.  This
+         is needed for the coordination of time values
+         between probes for one-way measurements."
+    ::= { sspmGeneral 3 }
+
+sspmGeneralMinFrequency OBJECT-TYPE
+    SYNTAX     SspmMicroSeconds
+    MAX-ACCESS read-only
+    -- units   MicroSeconds
+    STATUS     current
+    DESCRIPTION
+         "A read-only variable that indicates the devices'
+          capability for the minimum supported
+          sspmSourceFrequency.  If sspmSourceFrequency is
+          set to a value lower than the value reported
+          by this attribute, then the set of sspmSourceFrequency
+          will fail with an inconsistent value error."
+    ::= { sspmGeneral 4 }
+
+--
+-- sspmCapabilities
+--
+
+
+
+-- Describes the capabilities of the SSPM device.
+--
+sspmCapabilitiesTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF SspmCapabilitiesEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table of SSPM capabilities."
+    ::= { sspmGeneral 5 }
+
+sspmCapabilitiesEntry OBJECT-TYPE
+    SYNTAX      SspmCapabilitiesEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Details about a particular SSPM capability."
+    INDEX { sspmCapabilitiesInstance }
+    ::= { sspmCapabilitiesTable 1 }
+
+SspmCapabilitiesEntry ::= SEQUENCE {
+    sspmCapabilitiesInstance AppLocalIndex
+    }
+
+sspmCapabilitiesInstance OBJECT-TYPE
+    SYNTAX      AppLocalIndex
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Indicates whether SSPM configuration of the corresponding
+         AppLocalIndex is supported by this device.  Generally,
+         entries in this table are only made by the device when the
+         configuration of the measurement is available."
+     ::= { sspmCapabilitiesEntry 1 }
+
+--
+-- sspmSource
+--
+-- Contains the details of the source of the
+-- Synthetic Sources for Performance Monitoring algorithms.
+-- This information is split into two tables.  The first defines
+-- profiles that can be applied to specific sources in the
+-- control table.
+--
+sspmSource           OBJECT IDENTIFIER ::= { sspmMIBObjects 2 }
+
+--
+-- sspmSourceProfileTable
+-- Defines template profiles for measurements.
+
+
+
+--
+sspmSourceProfileTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF SspmSourceProfileEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table of SSPM Source Profiles configured."
+    ::= { sspmSource 1 }
+
+sspmSourceProfileEntry OBJECT-TYPE
+    SYNTAX      SspmSourceProfileEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Details about a particular SSPM Source Profile
+         configuration.  Entries must exist in this table
+         in order to be referenced by rows in the
+         sspmSourceControlTable."
+    INDEX { sspmSourceProfileInstance }
+    ::= { sspmSourceProfileTable 1 }
+
+SspmSourceProfileEntry ::= SEQUENCE {
+    sspmSourceProfileInstance           Unsigned32,
+    sspmSourceProfileType               AppLocalIndex,
+    sspmSourceProfilePacketSize         Unsigned32,
+    sspmSourceProfilePacketFillType     INTEGER,
+    sspmSourceProfilePacketFillValue    OCTET STRING,
+    sspmSourceProfileTOS                Integer32,
+    sspmSourceProfileFlowLabel          Integer32,
+    sspmSourceProfileLooseSrcRteFill    OCTET STRING,
+    sspmSourceProfileLooseSrcRteLen     Integer32,
+    sspmSourceProfileTTL                Integer32,
+    sspmSourceProfileNoFrag             TruthValue,
+    sspmSourceProfile8021Tagging        Integer32,
+    sspmSourceProfileUsername           Utf8String,
+    sspmSourceProfilePassword           Utf8String,
+    sspmSourceProfileParameter          OCTET STRING,
+    sspmSourceProfileOwner              OwnerString,
+    sspmSourceProfileStorageType        StorageType,
+    sspmSourceProfileStatus             RowStatus
+}
+
+sspmSourceProfileInstance OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An arbitrary index."
+
+
+
+     ::= { sspmSourceProfileEntry 1 }
+
+sspmSourceProfileType OBJECT-TYPE
+    SYNTAX      AppLocalIndex
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The AppLocalIndex value that uniquely identifies the
+         measurement per the APM-MIB.  In order to create a row
+         in this table, there must be a corresponding row in the
+         sspmCapabilitiesTable.
+
+         When attempting to set this object, if no
+         corresponding row exists in the sspmCapabilitiesTable,
+         then the agent should return a 'badValue' error."
+    ::= { sspmSourceProfileEntry 2}
+
+sspmSourceProfilePacketSize OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The size of packet to be transmitted in bytes.  The
+         size accounts for all data within the IPv4 or IPv6
+         payloads, excluding the IP headers, IP header options
+         and link-level protocol headers.
+
+         If the size is set smaller than the minimum allowed
+         packet size or greater than the maximum allowed
+         packet size, then the set should fail, and the agent
+         should return a 'badValue' error."
+    ::= { sspmSourceProfileEntry 3 }
+
+sspmSourceProfilePacketFillType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        random (1),
+                        pattern (2),
+                        url(3)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Indicates how the packet is filled.
+
+         'random' indicates that the packet contains random
+         data patterns.  This is probe and implementation
+         dependent.
+
+
+
+
+         'pattern' indicates that the pattern defined in the
+         sspmSourceProfilePacketFillValue attribute is used to
+         fill the packet.
+
+         'url' indicates that the value of
+         sspmSourceProfilePacketFillValue should
+         contain a URL.  The contents of the document
+         at that URL are retrieved when sspmSourceStatus becomes
+         active and utilized in the packet.  If the attempt to
+         access that URL fails, then the row status is set to
+         'notReady', and the set should fail with
+         'inconsistentValue'.  This value must contain a
+         dereferencable URL of the type 'http:', 'https:', or
+         'ftp:' only."
+    ::= { sspmSourceProfileEntry 4 }
+
+sspmSourceProfilePacketFillValue OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..255))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The string value with which to fill the packet.  If
+         sspmSourceProfilePacketFillType is set to 'pattern',
+         then this pattern is repeated until the packet is
+         sspmSourcePacketSize in bytes.  Note that if the
+         length of the octet string specified for this
+         value does not divide evenly into the packet
+         size, then an incomplete last copy of this data
+         may be copied into the packet.  If the value of
+         sspmSourceProfilePacketFillType is set to 'random', then
+         this attribute is unused.  If the value of the
+         sspmSourceProfilePacketFillType is set to 'url', then
+         the URL specified in this attribute is retrieved
+         and used by the probe.  In the case of a URL, this value
+         must contain a dereferencable URL of the type
+         'http:', 'https:', or 'ftp:' only."
+    ::= { sspmSourceProfileEntry 5 }
+
+sspmSourceProfileTOS OBJECT-TYPE
+    SYNTAX      Integer32 (0..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the TOS field in the IP packet header.  The
+        value of this object defaults to zero if not set."
+    DEFVAL { 0 }
+    ::= { sspmSourceProfileEntry 6 }
+
+
+
+
+sspmSourceProfileFlowLabel OBJECT-TYPE
+    SYNTAX      Integer32 (0..1048575) -- 20-bit range (0 to 0xfffff)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This object is used to specify the Flow Label in a IPv6
+         packet (RFC 2460) to force special handling by the IPv6
+         routers; e.g., non-default quality-of-service handling.
+
+         This object is meaningful only when the object
+         sspmSourceDestAddressType is IPv6(2).
+         The value of this object defaults to zero if not set."
+    DEFVAL { 0 }
+    ::= { sspmSourceProfileEntry 7 }
+
+sspmSourceProfileLooseSrcRteFill OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..240))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "In the event that the test should run over a
+         specific route, the intent is to force the route using the
+         Loose Source Route option in IPv4 [RFC791] and
+         IPv6 [RFC2460].  This object contains a
+         series of IP addresses along the path that would be
+         put into the loose source route option in the IP header.
+
+         The IPv4 addresses are to be listed as 32-bit
+         address values, and the IPv6 addresses are to be
+         listed as a string of 128-bit addresses.  The
+         maximum length allowed within the IPv4 source route
+         option is 63 addresses.  To simply account for
+         IPv6 addresses as well, the maximum length of the
+         octet string is 240.  This allows up to 60
+         IPv4 addresses or up to 15 IPv6 addresses in the
+         string."
+    ::= { sspmSourceProfileEntry 8 }
+
+sspmSourceProfileLooseSrcRteLen OBJECT-TYPE
+    SYNTAX      Integer32(0..240)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "In the event that the test should run over a
+         specific route, the intent is to force the route.
+         This attribute specifies the length of data to
+         be copied from the sspmSourceProfileLooseSrcRteFill
+         into the route data fields of the loose source route
+
+
+
+         options in the IPv4 or IPv6 headers."
+    ::= { sspmSourceProfileEntry 9 }
+
+sspmSourceProfileTTL OBJECT-TYPE
+    SYNTAX      Integer32(1..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "If non-zero, this specifies the value to place into
+         the TTL field on transmission."
+    ::= { sspmSourceProfileEntry 10 }
+
+sspmSourceProfileNoFrag OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "When true, the 'Don't Fragment Bit' should be set
+         on the packet header."
+    ::= { sspmSourceProfileEntry 11 }
+
+sspmSourceProfile8021Tagging OBJECT-TYPE
+    SYNTAX      Integer32 (-1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "IEEE 802.1Q tagging used in IEEE 802.1D bridged
+        environments.
+
+        A value of -1 indicates that the packets are untagged.
+
+        A value of 0 to 65535 is the value of the tag to be
+        inserted in the tagged packets.
+
+        Note that according to IEEE 802.1Q, VLAN-ID tags with
+        a value of 4095 shall not be transmitted on the wire.
+        As the VLAN-ID is encoded in the 12 least significant
+        bits on the tag, values that translate in a binary
+        representation of all 1's in the last 12 bits
+        SHALL NOT be configured.  In this case, the set should
+        fail, and return an error-status of 'inconsistentValue'."
+    ::= { sspmSourceProfileEntry 12 }
+
+sspmSourceProfileUsername OBJECT-TYPE
+    SYNTAX      Utf8String
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+
+
+
+        "An optional username used by the application protocol."
+    ::= { sspmSourceProfileEntry 13 }
+
+sspmSourceProfilePassword OBJECT-TYPE
+    SYNTAX      Utf8String
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "An optional password used by the application protocol."
+    ::= { sspmSourceProfileEntry 14 }
+
+sspmSourceProfileParameter OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..65535))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "An optional parameter used by the application protocol.
+         For DNS, this would be the hostname or IP.  For HTTP,
+         this would be the URL.  For nntp, this would be the
+         news group.  For TCP, this would be the port number.
+         For SMTP, this would be the recipient (and could
+         assume the message is predefined)."
+    ::= { sspmSourceProfileEntry 15 }
+
+sspmSourceProfileOwner OBJECT-TYPE
+    SYNTAX      OwnerString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Name of the management station/application that
+        set up the profile."
+    ::= { sspmSourceProfileEntry 16 }
+
+sspmSourceProfileStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The storage type of this sspmSourceProfileEntry.  If the
+        value of this object is 'permanent', no objects in this row
+        need to be writable."
+    ::= { sspmSourceProfileEntry 17 }
+
+sspmSourceProfileStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+
+
+
+        "Status of this profile.
+
+        An entry may not exist in the active state unless all
+        objects in the entry have an appropriate value.
+
+        Once this object is set to active(1), no objects in the
+        sspmSourceProfileTable can be changed."
+    ::= { sspmSourceProfileEntry 18 }
+
+--
+-- sspmSourceControlTable
+-- Defines specific measurement instances based on template
+-- profiles in the sspmSourceProfileTable which must be
+-- pre-configured.
+--
+
+sspmSourceControlTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF SspmSourceControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table of SSPM measurements configured."
+    ::= { sspmSource 2 }
+
+sspmSourceControlEntry OBJECT-TYPE
+    SYNTAX      SspmSourceControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Details about a particular SSPM configuration."
+    INDEX { sspmSourceControlInstance }
+    ::= { sspmSourceControlTable 1 }
+
+SspmSourceControlEntry ::= SEQUENCE {
+    sspmSourceControlInstance          Unsigned32,
+    sspmSourceControlProfile           Integer32,
+    sspmSourceControlSrc               InterfaceIndexOrZero,
+    sspmSourceControlDestAddrType      InetAddressType,
+    sspmSourceControlDestAddr          InetAddress,
+    sspmSourceControlEnabled           TruthValue,
+    sspmSourceControlTimeOut           SspmMicroSeconds,
+    sspmSourceControlSamplingDist      INTEGER,
+    sspmSourceControlFrequency         SspmMicroSeconds,
+    sspmSourceControlFirstSeqNum       Unsigned32,
+    sspmSourceControlLastSeqNum        Unsigned32,
+    sspmSourceControlOwner             OwnerString,
+    sspmSourceControlStorageType       StorageType,
+    sspmSourceControlStatus            RowStatus
+
+
+
+}
+
+sspmSourceControlInstance OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An arbitrary index."
+     ::= { sspmSourceControlEntry 1 }
+
+sspmSourceControlProfile OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "A pointer to the profile (sspmSourceProfileEntry) that
+         this control entry uses to define the test being
+         performed."
+     ::= { sspmSourceControlEntry 2 }
+
+sspmSourceControlSrc OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The ifIndex where the packet should originate from the
+         probe (if it matters).  A value of zero indicates that
+         it does not matter and that the device decides."
+    ::= { sspmSourceControlEntry 3 }
+
+sspmSourceControlDestAddrType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of Internet address by which the destination
+         is accessed."
+    ::= { sspmSourceControlEntry 4 }
+
+sspmSourceControlDestAddr OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The Internet address for the destination.  The formatting
+        of this object is controlled by the
+        sspmSourceControlDestAddrType object above.
+
+
+
+
+        When this object contains a DNS name, then the name is
+        resolved to an address each time measurement is to be made.
+        Further, the agent should not cache this address,
+        but instead should perform the resolution prior to each
+        measurement."
+    ::= { sspmSourceControlEntry 5 }
+
+sspmSourceControlEnabled OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "When set to 'true', this test is enabled.  When set to
+         'false', it is disabled."
+    ::= { sspmSourceControlEntry 6 }
+
+sspmSourceControlTimeOut OBJECT-TYPE
+    SYNTAX      SspmMicroSeconds
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Timeout value for the measurement response.  If no
+         response is received in the time specified, then
+         the test fails."
+    ::= { sspmSourceControlEntry 7 }
+
+sspmSourceControlSamplingDist OBJECT-TYPE
+    SYNTAX      INTEGER {
+                         deterministic(1),
+                         poisson(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "When this attribute is set to 'deterministic', then
+         packets are generated at with a fixed inter-packet
+         injection time specified by sspmSourceFrequency.
+
+         When this attribute is set to 'Poisson', then packets
+         are generated with inter-packet injection times sampled
+         from an exponential distribution with the single
+         distributional parameter determined by the inverse
+         frequency)."
+    ::= { sspmSourceControlEntry 8 }
+
+sspmSourceControlFrequency OBJECT-TYPE
+    SYNTAX      SspmMicroSeconds
+    MAX-ACCESS  read-create
+
+
+
+    STATUS      current
+    DESCRIPTION
+        "The inverse of this value is the rate at which packets
+         are generated.  Refer to sspmSourceSamplingDistribution.
+         If the value set is less than the value of
+         sspmGeneralMinFrequency, then the set will fail with an
+         error-status of 'inconsistentValue'."
+    ::= { sspmSourceControlEntry 9 }
+
+sspmSourceControlFirstSeqNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The first sequence number of packets to be transmitted."
+    ::= { sspmSourceControlEntry 10 }
+
+sspmSourceControlLastSeqNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The last sequence number transmitted.  This value is updated
+         by the agent after packet generation."
+    ::= { sspmSourceControlEntry 11 }
+
+sspmSourceControlOwner OBJECT-TYPE
+    SYNTAX      OwnerString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Name of the management station/application that set
+        up the test."
+    ::= { sspmSourceControlEntry 12 }
+
+sspmSourceControlStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The storage type of this sspmSourceControlEntry.  If the
+        value of this object is 'permanent', no objects in this row
+        need to be writable."
+    ::= { sspmSourceControlEntry 13 }
+
+sspmSourceControlStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+
+
+
+    STATUS      current
+    DESCRIPTION
+        "Status of this source control entry.
+
+        An entry may not exist in the active state unless all
+        objects in the entry have an appropriate value.
+
+        When this attribute has the value of
+        'active', none of the read-write or read-create attributes
+        in this table may be modified, with the exception of
+        sspmSourceControlEnabled."
+    ::= { sspmSourceControlEntry 14 }
+
+--
+-- sspmSinkTable
+--
+-- Contains attributes for configuration of Synthetic
+-- Sources for Performance Monitoring sinks, i.e.,
+-- sinks for receipt of one-way delay measurements.
+--
+sspmSink           OBJECT IDENTIFIER ::= { sspmMIBObjects 5 }
+
+sspmSinkTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF SspmSinkEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table configuring the sink for measurements."
+    ::= { sspmSink 1 }
+
+sspmSinkEntry OBJECT-TYPE
+    SYNTAX      SspmSinkEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The details of a particular sink entry.  If the measurement
+         is a round-trip type, then the sink entry will be on the
+         same probe as the corresponding sspmSourceEntry.  If the
+         measurement is a one-way, type then the sink entry will be
+         on a different probe."
+    INDEX { sspmSinkInstance }
+    ::= { sspmSinkTable 1}
+
+SspmSinkEntry ::= SEQUENCE {
+    sspmSinkInstance                       Unsigned32,
+    sspmSinkType                           AppLocalIndex,
+    sspmSinkSourceAddressType              InetAddressType,
+    sspmSinkSourceAddress                  InetAddress,
+
+
+
+    sspmSinkExpectedRate                   SspmMicroSeconds,
+    sspmSinkEnable                         TruthValue,
+    sspmSinkExpectedFirstSequenceNum       Unsigned32,
+    sspmSinkLastSequenceNumber             Unsigned32,
+    sspmSinkLastSequenceInvalid            Counter32,
+    sspmSinkStorageType                    StorageType,
+    sspmSinkStatus                         RowStatus
+}
+
+sspmSinkInstance OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An index.  When the measurement is for a round-trip
+         measurement, then this table entry is on the same probe as
+         the corresponding sspmSourceEntry, and the value of this
+         attribute should correspond to the value of
+         sspmSourceInstance.  Management applications configuring
+         sinks for one-way measurements could define some
+         scheme whereby the sspmSinkInstance is unique across
+         all probes.  Note that the unique key to this entry is
+         also constructed with sspmSinkType,
+         sspmSinkSourceAddressType, and sspmSinkSourceAddress.
+         To make the implementation simpler, those other
+         attributes are not included in the index but uniqueness
+         is still needed to receive all the packets."
+     ::= { sspmSinkEntry 1 }
+
+sspmSinkType OBJECT-TYPE
+    SYNTAX      AppLocalIndex
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The AppLocalIndex value that uniquely identifies the
+         measurement per the APM-MIB.  In order to create a row
+         in this table, there must be a corresponding row in the
+         sspmCapabilitiesTable.  If there is no corresponding
+         row in the sspmCapabilitiestable, then the agent will
+         return an error-status of 'inconsistentValue'."
+    ::= { sspmSinkEntry 2}
+
+sspmSinkSourceAddressType OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The type of Internet address of the source."
+
+
+
+    ::= { sspmSinkEntry 3 }
+
+sspmSinkSourceAddress OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The Internet address of the source.  The formatting
+        of this object is controlled by the sspmSinkSourceAddressType
+        object above.
+
+        This object should be set only to a valid device address
+        that has been administratively configured into the
+        device.  If a set attempts to set this object to an
+        address that does not belong (i.e., is not administratively
+        configured into the device), the set should fail, and the
+        agent should return a error-status of 'inconsistentValue'."
+    ::= { sspmSinkEntry 4 }
+
+sspmSinkExpectedRate OBJECT-TYPE
+    SYNTAX      SspmMicroSeconds
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The expected rate at which packets will arrive."
+    ::= { sspmSinkEntry 5 }
+
+sspmSinkEnable OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Indicates if the sink is enabled or not."
+    ::= { sspmSinkEntry 6 }
+
+sspmSinkExpectedFirstSequenceNum OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The expected first sequence number of packets.
+         This is used by the sink to determine if packets
+         were lost at the initiation of the test."
+    ::= { sspmSinkEntry 7 }
+
+sspmSinkLastSequenceNumber OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+
+
+
+    STATUS      current
+    DESCRIPTION
+        "The last sequence number received."
+    ::= { sspmSinkEntry 8 }
+
+sspmSinkLastSequenceInvalid OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets that arrived whose
+         sequence number was not one plus the value of
+         sspmSinkLastSequenceNumber."
+    ::= { sspmSinkEntry 9 }
+
+sspmSinkStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The storage type of this sspmSinkEntry.  If the value
+        of this object is 'permanent', no objects in this row
+        need to be writable."
+    ::= { sspmSinkEntry 10 }
+
+sspmSinkStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+         "Status of this conceptual row.
+         An entry may not exist in the active state unless all
+         objects in the entry have an appropriate value.
+
+         Once this object is set to active(1), no objects with
+         MAX-ACCESS of read-create in the sspmSinkTable can
+         be changed."
+    ::= { sspmSinkEntry 11 }
+
+--
+-- Notifications
+--
+
+--
+-- Conformance information
+--
+sspmCompliances OBJECT IDENTIFIER ::= { sspmMIBConformance 1 }
+sspmGroups      OBJECT IDENTIFIER ::= { sspmMIBConformance 2 }
+
+
+
+-- Compliance Statements
+sspmGeneralCompliance MODULE-COMPLIANCE
+  STATUS current
+  DESCRIPTION
+    "A general compliance that allows all things to be optional."
+  MODULE -- this module
+
+  MANDATORY-GROUPS { sspmGeneralGroup }
+
+  GROUP sspmSourceGroup
+  DESCRIPTION
+    "The SSPM Source Group is optional."
+
+  GROUP sspmSinkGroup
+  DESCRIPTION
+    "The SSPM Sink Group is optional."
+
+  GROUP sspmUserPassGroup
+  DESCRIPTION
+    "The SSPM User Pass Group is optional."
+
+  ::= { sspmCompliances 1 }
+
+--
+-- SSPM Source Compliance
+--
+sspmSourceFullCompliance MODULE-COMPLIANCE
+  STATUS current
+  DESCRIPTION
+    "A source compliance.  Use this compliance when implementing
+     a traffic-source-only device.  This is useful for implementing
+     devices that probe other devices for intrusive application
+     monitoring.  It is also useful for implementing the source
+     of one-way tests used with a sink-only device."
+  MODULE -- this module
+
+  MANDATORY-GROUPS { sspmGeneralGroup, sspmSourceGroup }
+
+  GROUP sspmUserPassGroup
+  DESCRIPTION
+    "The SSPM User Pass Group is optional."
+  ::= { sspmCompliances 2 }
+
+--
+-- SSPM Sink Compliance
+--
+sspmSinkFullCompliance MODULE-COMPLIANCE
+  STATUS current
+
+
+
+  DESCRIPTION
+    "A sink-only compliance.  Use this compliance when implementing a
+     sink-only device.  This is useful for devices to receive one-way
+     measurements."
+  MODULE -- this module
+
+  MANDATORY-GROUPS { sspmGeneralGroup, sspmSinkGroup }
+
+  ::= { sspmCompliances 3 }
+
+--
+-- Groups
+--
+sspmGeneralGroup OBJECT-GROUP
+    OBJECTS {
+    sspmGeneralClockResolution,
+    sspmGeneralClockMaxSkew,
+    sspmGeneralClockSource,
+    sspmGeneralMinFrequency,
+    sspmCapabilitiesInstance
+    }
+    STATUS      current
+    DESCRIPTION
+        "The objects in the SSPM General Group."
+    ::= { sspmGroups 1 }
+
+sspmSourceGroup OBJECT-GROUP
+    OBJECTS {
+    sspmSourceProfileType,
+    sspmSourceProfilePacketSize,
+    sspmSourceProfilePacketFillType,
+    sspmSourceProfilePacketFillValue,
+    sspmSourceProfileTOS,
+    sspmSourceProfileFlowLabel,
+    sspmSourceProfileLooseSrcRteFill,
+    sspmSourceProfileLooseSrcRteLen,
+    sspmSourceProfileTTL,
+    sspmSourceProfileNoFrag,
+    sspmSourceProfile8021Tagging,
+    sspmSourceProfileUsername,
+    sspmSourceProfilePassword,
+    sspmSourceProfileParameter,
+    sspmSourceProfileOwner,
+    sspmSourceProfileStorageType,
+    sspmSourceProfileStatus,
+    sspmSourceControlProfile,
+    sspmSourceControlSrc,
+    sspmSourceControlDestAddrType,
+
+
+
+    sspmSourceControlDestAddr,
+    sspmSourceControlEnabled,
+    sspmSourceControlTimeOut,
+    sspmSourceControlSamplingDist,
+    sspmSourceControlFrequency,
+    sspmSourceControlFirstSeqNum,
+    sspmSourceControlLastSeqNum,
+    sspmSourceControlOwner,
+    sspmSourceControlStorageType,
+    sspmSourceControlStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "The objects in the SSPM Source Group."
+    ::= { sspmGroups 2 }
+
+sspmUserPassGroup OBJECT-GROUP
+    OBJECTS {
+    sspmSourceProfileUsername,
+    sspmSourceProfilePassword
+    }
+    STATUS      current
+    DESCRIPTION
+        "The objects in the SSPM Username and password group."
+    ::= { sspmGroups 3 }
+
+sspmSinkGroup OBJECT-GROUP
+    OBJECTS {
+    sspmSinkType,
+    sspmSinkSourceAddressType,
+    sspmSinkSourceAddress,
+    sspmSinkExpectedRate,
+    sspmSinkEnable,
+    sspmSinkExpectedFirstSequenceNum,
+    sspmSinkLastSequenceNumber,
+    sspmSinkLastSequenceInvalid,
+    sspmSinkStorageType,
+    sspmSinkStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "The objects in the SSPM Sink Group."
+    ::= { sspmGroups 4 }
+
+END

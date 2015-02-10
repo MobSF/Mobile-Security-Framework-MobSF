@@ -1,0 +1,41 @@
+<? wireshark:protocol
+   proto_name="reginfo"
+   description="Reginfo XML doc (RFC 3680)"
+   hierarchy="yes" ?>
+
+<!--
+$Id$    
+-->
+
+<!ELEMENT reginfo (registration)* >
+<!ATTLIST reginfo xmlns CDATA #IMPLIED
+                  version CDATA #REQUIRED
+                  state CDATA #REQUIRED>
+
+<!ELEMENT registration (contact)*>
+<!ATTLIST registration aor CDATA #REQUIRED
+                       id CDATA #REQUIRED
+                       state CDATA #REQUIRED>
+
+<!ELEMENT contact (uri | display-name? | unknown-param?)* >
+<!ATTLIST contact      id CDATA #REQUIRED
+                       state CDATA #REQUIRED
+                       event CDATA #REQUIRED
+                       expires CDATA #IMPLIED
+                       retry-after CDATA #IMPLIED
+                       duration-registered CDATA #IMPLIED
+                       q CDATA #IMPLIED
+                       cseq CDATA #IMPLIED
+                       callid CDATA #IMPLIED>
+
+<!ELEMENT uri (#PCDATA)>
+
+<!ELEMENT display-name (#PCDATA)>
+<!ATTLIST display-name  lang CDATA #IMPLIED>
+
+<!ELEMENT unknown-param (#PCDATA)>
+<!ATTLIST unknown-param  name CDATA #REQUIRED>
+
+
+
+

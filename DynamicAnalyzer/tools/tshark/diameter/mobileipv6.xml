@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+
+	<application id="7" name="Diameter Mobile IPv6 IKE   (MIP6I)" uri="http://www.ietf.org/rfc/rfc5778.txt">
+	</application>
+	<application id="8" name="Diameter Mobile IPv6 Auth  (MIP6A)" uri="http://www.ietf.org/rfc/rfc5778.txt">
+
+		<!-- Mobile-IPv6 Application -->
+		<command name="MIP6-Request/Answer" code="325" vendor-id="None"/>
+
+		<!-- ************************** Mobile-IPv6 AVPS ********************* -->
+
+<!--
+http://www.iana.org/assignments/aaa-parameters
+-->
+
+		<!-- RFC5447 -->
+
+		<avp name="MIP6-Agent-Info" code="486" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<grouped>
+				<gavp name="MIP-Home-Agent-Address"/>
+				<gavp name="MIP-Home-Agent-Host"/>
+				<gavp name="MIP6-Home-Link-Prefix"/>
+				<gavp name="AVP"/>
+			</grouped>
+		</avp>
+
+		<!-- RFC5778 -->
+
+		<avp name="MIP-Careof-Address" code="487" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="IPAddress"/>
+		</avp>
+		<avp name="MIP-Authenticator" code="488" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="MIP-MAC-Mobility-Data" code="489" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="MIP-Timestamp" code="490" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="OctetString"/>
+		</avp>
+		<avp name="MIP-MN-HA-SPI" code="491" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<avp name="MIP-MN-HA-MSA" code="492" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<grouped>
+				<gavp name="MIP-Session-Key"/>
+				<gavp name="MIP-MSA-Lifetime"/>
+				<gavp name="MIP-MN-HA-SPI"/>
+				<gavp name="MIP-Algorithm-Type"/>
+				<gavp name="MIP-Replay-Mode"/>
+				<gavp name="AVP"/>
+			</grouped>
+		</avp>
+		<avp name="Service-Selection" code="493" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="MIP6-Auth-Mode" code="494" mandatory="must" protected="may" vendor-bit="mustnot" may-encrypt="yes">
+			<type type-name="Enumerated"/>
+			<enum name="Reserved" code="0"/>
+			<enum name="IP6_AUTH_MN_AAA" code="1"/>
+		</avp>
+
+		<!-- RFC5779 -->
+
+		<avp name="PMIP6-DHCP-Server-Address" code="504">
+			<type type-name="IPAddress"/>
+		</avp>
+		<avp name="PMIP6-IPv4-Home-Address" code="505">
+			<type type-name="IPAddress"/>
+		</avp>
+		<avp name="Mobile-Node-Identifier" code="506">
+			<type type-name="UTF8String"/>
+		</avp>
+		<avp name="Service-Configuration" code="507">
+			<grouped>
+				<gavp name="MIP6-Agent-Info"/>
+				<gavp name="Service-Selection"/>
+				<gavp name="AVP"/>
+			</grouped>
+		</avp>
+
+		<!-- ************************ END Mobile-IPv6 AVPS ******************* -->
+
+	</application>

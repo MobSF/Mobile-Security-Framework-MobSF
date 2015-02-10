@@ -1,0 +1,369 @@
+# -*- text -*-
+##############################################################################
+#
+#	WiMAX Forum
+#
+#	Updated from NWG_R1_V1.2.1-Stage-3.pdf
+#
+#	NWG_R1_V1.2-Stage-3.pdf
+#	RADIUS discussion is on pp. 432-498
+#	WiMAX VSA's are on p. 450 and following.
+#
+#	DHCP && MIP keys are on p.48 and following.
+#
+#	WiMAX VSA's have a non-standard format:
+#
+#		type		1 octet
+#		length		1 octet
+#		continuation	1 octet      0bcrrrrrrr
+#		value		1+ octets
+#
+#	If the high bit of the "continuation" field is set, then
+#	the next attribute of the same WiMAX type should have it's
+#	value concatenated to this one.
+#
+#	The C bit MUST be zero for all small types.  e.g.  integer,
+#	ipaddr, ipv6addr, etc.  It MAY be set for "string" and "octet"
+#	types.  The maximum attribute length for "string" and "octet"
+#	types is still 253 bytes, even with continuations.  The WiMAX
+#	specifications do not specify a maximum length, so we have chosen
+#	to keep the traditional RADIUS maximum length here.
+#
+#	The C bit MAY be 1 for TLV types.  There is no restriction on
+#	TLV length other than maximum packet size (a bit less than 4K).
+#
+#	The rest of the bits in the "continuation" octet are reserved,
+#	and MUST be zero.
+#
+#	Each WiMAX VSA is packed into one Vendor-Specific attribute
+#	with Vendor-Id of WiMAX.  Multiple WiMAX sub-TLV's ARE packed
+#	into one VSA with an encapsulating TLV.
+#
+#	The WiMAX forum adds the following (non-standard) data types:
+#
+#	byte	 - one-octet unsigned integer
+#	short	 - two-octet unsigned integer in network byte order
+#	signed	 - 4-octet signed integer in network byte order.
+#	combo-ip - if length 4, is the same as the "ipaddr" type.
+#		   if length 16, is the same as "ipv6addr" type.
+#	tlv	 - encapsulated sub-attributes
+#		   i.e. Vendor-Specific -> WiMAX TLV -> WiMAX sub-tlv.
+#
+##############################################################################
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR		WiMAX				24757	format=1,1,c
+
+BEGIN-VENDOR	WiMAX
+
+ATTRIBUTE	WiMAX-Capability			1	tlv
+
+BEGIN-TLV 	WiMAX-Capability
+ATTRIBUTE	WiMAX-Release				1	string
+ATTRIBUTE	WiMAX-Accounting-Capabilities		2	byte
+ATTRIBUTE	WiMAX-Hotlining-Capabilities		3	byte
+ATTRIBUTE	WiMAX-Idle-Mode-Notification-Cap	4	byte
+
+# This is really a bitmap
+VALUE	WiMAX-Accounting-Capabilities	No-Accounting		0
+VALUE	WiMAX-Accounting-Capabilities	IP-Session-Based	1
+VALUE	WiMAX-Accounting-Capabilities	Flow-Based		2
+
+# This is really a bitmap
+VALUE	WiMAX-Hotlining-Capabilities	Not-Supported		0
+VALUE	WiMAX-Hotlining-Capabilities	Hotline-Profile-Id	1
+VALUE	WiMAX-Hotlining-Capabilities	NAS-Filter-Rule		2
+VALUE	WiMAX-Hotlining-Capabilities	HTTP-Redirection	4
+VALUE	WiMAX-Hotlining-Capabilities	IP-Redirection		8
+
+VALUE	WiMAX-Idle-Mode-Notification-Cap Not-Supported		0
+VALUE	WiMAX-Idle-Mode-Notification-Cap Supported		1
+
+END-TLV		WiMAX-Capability
+
+ATTRIBUTE	WiMAX-Device-Authentication-Indicator	2	byte
+ATTRIBUTE	WiMAX-GMT-Timezone-offset		3	signed
+ATTRIBUTE	WiMAX-AAA-Session-Id			4	octets
+
+# 32 octets in length
+ATTRIBUTE	WiMAX-MSK				5	octets encrypt=2
+ATTRIBUTE	WiMAX-hHA-IP-MIP4			6	ipaddr
+ATTRIBUTE	WiMAX-hHA-IP-MIP6			7	ipv6addr
+ATTRIBUTE	WiMAX-DHCPv4-Server			8	combo-ip
+ATTRIBUTE	WiMAX-DHCPv6-Server			9	combo-ip
+
+# MN-HA-CMIP4 = H(MIP-RK, "CMIP4 MN HA" | HA-IPv4 | MN-NAI), or
+# MN-HA-PMIP4 = H(MIP-RK, "PMIP4 MN HA" | HA-IPv4 | MN-NAI)
+ATTRIBUTE	WiMAX-MN-hHA-MIP4-Key			10	octets encrypt=2
+
+# MN-HA-CMIP4-SPI == MIP-SPI, or
+# MN-HA-PIMP4-SPI == MIP-SPI + 1
+ATTRIBUTE	WiMAX-MN-hHA-MIP4-SPI			11	integer
+
+# MN-HA-CMIP6 = H(MIP-RK, "CMIP6 MN HA" | HA-IPv6 | MN-NAI)
+ATTRIBUTE	WiMAX-MN-hHA-MIP6-Key			12	octets encrypt=2
+
+# MN-HA-CMIP6-SPI == MIP-SPI + 2
+ATTRIBUTE	WiMAX-MN-hHA-MIP6-SPI			13	integer
+
+# FA-RK = H(MIP-RK, "FA-RK")
+ATTRIBUTE	WiMAX-FA-RK-Key				14	octets encrypt=2
+
+# 160 bit random number
+ATTRIBUTE	WiMAX-HA-RK-Key				15	octets encrypt=2
+# SPI-CMIP4
+ATTRIBUTE	WiMAX-HA-RK-SPI				16	integer
+
+ATTRIBUTE	WiMAX-HA-RK-Lifetime			17	integer
+
+#  The same as MN-HA-CMIP4, etc.  But in different packets.
+ATTRIBUTE	WiMAX-RRQ-HA-IP				18	combo-ip
+ATTRIBUTE	WiMAX-RRQ-MN-HA-Key			19	octets encrypt=2
+ATTRIBUTE	WiMAX-RRQ-MN-HA-SPI			20	integer
+
+ATTRIBUTE	WiMAX-Session-Continue			21	integer
+ATTRIBUTE	WiMAX-Beginning-Of-Session		22	integer
+ATTRIBUTE	WiMAX-IP-Technology			23	integer
+
+VALUE	WiMAX-IP-Technology		Reserved-0		0
+VALUE	WiMAX-IP-Technology		Reserved-1		1
+VALUE	WiMAX-IP-Technology		PMIP4			2
+VALUE	WiMAX-IP-Technology		CMIP4			3
+VALUE	WiMAX-IP-Technology		CMIP6			4
+VALUE	WiMAX-IP-Technology		Ethernet-CS		5
+
+ATTRIBUTE	WiMAX-Hotline-Indicator			24	string
+ATTRIBUTE	WiMAX-Prepaid-Indicator			25	byte
+ATTRIBUTE	WiMAX-PDFID				26	short
+ATTRIBUTE	WiMAX-SDFID				27	short
+ATTRIBUTE	WiMAX-Packet-Flow-Descriptor		28	tlv
+
+BEGIN-TLV WiMAX-Packet-Flow-Descriptor
+ATTRIBUTE	WiMAX-Packet-Data-Flow-Id		1	short
+ATTRIBUTE	WiMAX-Service-Data-Flow-Id		2	short
+ATTRIBUTE	WiMAX-Service-Profile-Id		3	integer
+ATTRIBUTE	WiMAX-Direction				4	byte
+
+VALUE	WiMAX-Direction			Reserved-0		0
+VALUE	WiMAX-Direction			Uplink			1
+VALUE	WiMAX-Direction			Downlink		2
+VALUE	WiMAX-Direction			Bi-Directional		3
+
+ATTRIBUTE	WiMAX-Activation-Trigger		5	byte	# bitmap
+ATTRIBUTE	WiMAX-Transport-Type			6	byte
+
+VALUE	WiMAX-Transport-Type		Reserved-0		0
+VALUE	WiMAX-Transport-Type		IPv4-CS			1
+VALUE	WiMAX-Transport-Type		IPv6-CS			2
+VALUE	WiMAX-Transport-Type		Ethernet		3
+
+ATTRIBUTE	WiMAX-Uplink-QOS-Id			7	byte
+ATTRIBUTE	WiMAX-Downlink-QOS-Id			8	byte
+ATTRIBUTE	WiMAX-Uplink-Classifier			9	string
+ATTRIBUTE	WiMAX-Downlink-Classifier		10	string
+END-TLV	WiMAX-Packet-Flow-Descriptor
+
+ATTRIBUTE	WiMAX-QoS-Descriptor			29	tlv
+
+BEGIN-TLV WiMAX-QoS-Descriptor
+ATTRIBUTE	WiMAX-QoS-Id				1	byte
+ATTRIBUTE	WiMAX-Global-Service-Class-Name		2	string # 6 octets
+ATTRIBUTE	WiMAX-Service-Class-Name		3	string
+ATTRIBUTE	WiMAX-Schedule-Type			4	byte
+ATTRIBUTE	WiMAX-Traffic-Priority			5	byte
+ATTRIBUTE	WiMAX-Maximum-Sustained-Traffic-Rate	6	integer
+ATTRIBUTE	WiMAX-Minimum-Reserved-Traffic-Rate	7	integer
+ATTRIBUTE	WiMAX-Maximum-Traffic-Burst		8	integer
+ATTRIBUTE	WiMAX-Tolerated-Jitter			9	integer
+ATTRIBUTE	WiMAX-Maximum-Latency			10	integer
+ATTRIBUTE	WiMAX-Reduced-Resources-Code		11	byte
+ATTRIBUTE	WiMAX-Media-Flow-Type			12	byte
+ATTRIBUTE	WiMAX-Unsolicited-Grant-Interval	13	short
+ATTRIBUTE	WiMAX-SDU-Size				14	short
+ATTRIBUTE	WiMAX-Unsolicited-Polling-Interval	15	short
+ATTRIBUTE	WiMAX-Media-Flow-Description-SDP	16	string
+
+VALUE	WiMAX-Schedule-Type		Best-Effort		2
+VALUE	WiMAX-Schedule-Type		nrtPS			3
+VALUE	WiMAX-Schedule-Type		rtPS			4
+VALUE	WiMAX-Schedule-Type		Extended-rtPS		5
+VALUE	WiMAX-Schedule-Type		UGS			6
+
+VALUE	WiMAX-Media-Flow-Type		VoIP			1
+VALUE	WiMAX-Media-Flow-Type		Robust-Browser		2
+VALUE	WiMAX-Media-Flow-Type		Secure-Browser-VPN	3
+VALUE	WiMAX-Media-Flow-Type		Streaming-Video		4
+VALUE	WiMAX-Media-Flow-Type		Streaming-Live-TV	5
+VALUE	WiMAX-Media-Flow-Type		Music-Photo-Download	6
+VALUE	WiMAX-Media-Flow-Type		Multi-Player-Gaming	7
+VALUE	WiMAX-Media-Flow-Type		Location-Based-Services	8
+VALUE	WiMAX-Media-Flow-Type		Text-Audio-Books	9
+VALUE	WiMAX-Media-Flow-Type		Video-Conversation	10
+VALUE	WiMAX-Media-Flow-Type		Message			11
+VALUE	WiMAX-Media-Flow-Type		Control			12
+VALUE	WiMAX-Media-Flow-Type		Data			13
+
+END-TLV WiMAX-QoS-Descriptor
+
+ATTRIBUTE	WiMAX-Uplink-Granted-QoS		30	string
+ATTRIBUTE	WiMAX-Control-Packets-In		31	integer
+ATTRIBUTE	WiMAX-Control-Octets-In			32	integer
+ATTRIBUTE	WiMAX-Control-Packets-Out		33	integer
+ATTRIBUTE	WiMAX-Control-Octets-Out		34	integer
+ATTRIBUTE	WiMAX-PPAC				35	tlv
+
+BEGIN-TLV WiMAX-PPAC
+ATTRIBUTE	WiMAX-Available-In-Client		1	integer
+
+# Really a bitmap
+VALUE	WiMAX-Available-In-Client	Volume-Metering		1
+VALUE	WiMAX-Available-In-Client	Duration-Metering	2
+VALUE	WiMAX-Available-In-Client	Resource-Metering	4
+VALUE	WiMAX-Available-In-Client	Pools			8
+VALUE	WiMAX-Available-In-Client	Rating-Groups		0x10
+VALUE	WiMAX-Available-In-Client	Multi-Services		0x20
+VALUE	WiMAX-Available-In-Client	Tariff-Switch		0x40
+END-TLV WiMAX-PPAC
+
+ATTRIBUTE	WiMAX-Session-Termination-Capability	36	integer
+
+# Really a bitmap
+VALUE	WiMAX-Session-Termination-Capability Dynamic-Authorization 1
+
+ATTRIBUTE	WiMAX-PPAQ				37	tlv
+
+BEGIN-TLV	WiMAX-PPAQ
+ATTRIBUTE	WiMAX-PPAQ-Quota-Identifier		1	octets
+ATTRIBUTE	WiMAX-Volume-Quota			2	integer #kb
+ATTRIBUTE	WiMAX-Volume-Threshold			3	integer #kb
+ATTRIBUTE	WiMAX-Duration-Quota			4	integer #s
+ATTRIBUTE	WiMAX-Duration-Threshold		5	integer #s
+ATTRIBUTE	WiMAX-Resource-Quota			6	integer
+ATTRIBUTE	WiMAX-Resource-Threshold		7	integer
+ATTRIBUTE	WiMAX-Update-Reason			8	integer
+ATTRIBUTE	WiMAX-Prepaid-Server			9	combo-ip
+ATTRIBUTE	WiMAX-Service-Id			10	string
+ATTRIBUTE	WiMAX-Rating-Group-Id			11	integer
+ATTRIBUTE	WiMAX-Termination-Action		12	byte
+ATTRIBUTE	WiMAX-Pool-Id				13	integer
+ATTRIBUTE	WiMAX-Pool-Multiplier			14	integer
+ATTRIBUTE	WiMAX-Requested-Action			15	byte
+ATTRIBUTE	WiMAX-Check-Balance-Result		16	byte
+
+#
+#  4 octets - integer representing 1/10's of lowest currency (e.g. cents)
+#  4 octets - currency code as in ISO-4217
+#  1+	    - UTF8 string containing text like "cost is $1 per minute"
+#
+ATTRIBUTE	WiMAX-Cost-Information-AVP		17	octets
+
+VALUE	WiMAX-Update-Reason		Pre-Initialization	1
+VALUE	WiMAX-Update-Reason		Initial-Request		2
+VALUE	WiMAX-Update-Reason		Threshold-Reached	3
+VALUE	WiMAX-Update-Reason		Quota-Reached		4
+VALUE	WiMAX-Update-Reason		TITSU-Approaching	5
+VALUE	WiMAX-Update-Reason		Remote-Forced-Disconnect 6
+VALUE	WiMAX-Update-Reason		Client-Service-Termination 7
+VALUE	WiMAX-Update-Reason		Access-Service-Terminated 8
+VALUE	WiMAX-Update-Reason		Service-Not-Established	9
+VALUE	WiMAX-Update-Reason		One-Time-Charging	10
+
+VALUE	WiMAX-Termination-Action	Terminate		1
+VALUE	WiMAX-Termination-Action	Request-More-Quota	2
+VALUE	WiMAX-Termination-Action	Redirect-Or-Filter	3
+
+VALUE	WiMAX-Requested-Action		Balance-Check		1
+VALUE	WiMAX-Requested-Action		Price-Enquiry		2
+
+END-TLV		WiMAX-PPAQ
+
+ATTRIBUTE	WiMAX-Prepaid-Tariff-Switching		38	tlv
+
+BEGIN-TLV	WiMAX-Prepaid-Tariff-Switching
+ATTRIBUTE	WiMAX-Prepaid-Quota-Identifier		1	string
+ATTRIBUTE	WiMAX-Volume-Used-After			2	integer #1k
+ATTRIBUTE	WiMAX-Tariff-Switch-Interval		3	integer #s
+ATTRIBUTE	WiMAX-Time-Interval-After		4	integer #s
+END-TLV		WiMAX-Prepaid-Tariff-Switching
+
+ATTRIBUTE	WiMAX-Active-Time-Duration		39	integer
+ATTRIBUTE	WiMAX-DHCP-RK				40	octets encrypt=2
+ATTRIBUTE	WiMAX-DHCP-RK-Key-Id			41	integer
+ATTRIBUTE	WiMAX-DHCP-RK-Lifetime			42	integer
+ATTRIBUTE	WiMAX-DHCP-Msg-Server-IP		43	ipaddr
+ATTRIBUTE	WiMAX-Idle-Mode-Transition		44	byte
+ATTRIBUTE	WiMAX-NAP-Id				45	octets
+
+# 3 octets of NAP Id
+# 3 octets of base-station Id
+ATTRIBUTE	WiMAX-BS-Id				46	octets
+ATTRIBUTE	WiMAX-Location				47	octets
+
+# Number of times Acct-Input-Packets rolled over 2^32.
+ATTRIBUTE	WiMAX-Acct-Input-Packets-Gigaword	48	integer
+ATTRIBUTE	WiMAX-Acct-Output-Packets-Gigaword	49	integer
+
+# Formatted as per IP Filter rule specification.
+ATTRIBUTE	WiMAX-Uplink-Flow-Description		50	string
+
+ATTRIBUTE	WiMAX-Blu-Coa-IPv6			51	ipv6addr
+ATTRIBUTE	WiMAX-DNS-Server			52	combo-ip
+ATTRIBUTE	WiMAX-Hotline-Profile-Id		53	string
+
+# Formatted as per IP Filter rule specification.
+ATTRIBUTE	WiMAX-HTTP-Redirection-Rule		54	string
+
+# Formatted as per IP Filter rule specification.
+ATTRIBUTE	WiMAX-IP-Redirection-Rule		55	string
+ATTRIBUTE	WiMAX-Hotline-Session-Timer		56	integer
+
+# 3 octets
+ATTRIBUTE	WiMAX-NSP-Id				57	octets
+ATTRIBUTE	WiMAX-HA-RK-Key-Requested		58	integer
+
+VALUE	WiMAX-HA-RK-Key-Requested	No			0
+VALUE	WiMAX-HA-RK-Key-Requested	Yes			1
+
+ATTRIBUTE	WiMAX-Count-Type			59	byte
+ATTRIBUTE	WiMAX-DM-Action-Code			60	integer
+
+VALUE	WiMAX-DM-Action-Code		Deregister-MS		0
+VALUE	WiMAX-DM-Action-Code		Suspend-MS-Traffic	1
+VALUE	WiMAX-DM-Action-Code		Suspend-User-Traffic	2
+VALUE	WiMAX-DM-Action-Code		Resume-Traffic		3
+VALUE	WiMAX-DM-Action-Code		MS-Terminate		4
+VALUE	WiMAX-DM-Action-Code		MS-Idle			5
+VALUE	WiMAX-DM-Action-Code		MS-Completed-IPv6-Handover 6
+VALUE	WiMAX-DM-Action-Code		BS-Sends-RES-Cmd	0xffff
+
+# FA-RK-SPI = SPI-CMIP4 = MIP-SPI
+ATTRIBUTE	WiMAX-FA-RK-SPI				61	integer
+
+# Formatted as per IP Filter rule specification.
+ATTRIBUTE	WiMAX-Downlink-Flow-Description		62	string
+
+# Same as QoS-Descriptor... dang.
+ATTRIBUTE	WiMAX-Downlink-Granted-QoS		63	tlv
+
+# More MIP keys, calculated as above... but in different packets.
+# Why, oh why?
+ATTRIBUTE	WiMAX-vHA-IP-MIP4			64	ipaddr
+ATTRIBUTE	WiMAX-vHA-IP-MIP6			65	ipv6addr
+ATTRIBUTE	WiMAX-vHA-MIP4-Key			66	octets encrypt=2
+ATTRIBUTE	WiMAX-vHA-RK-Key			67	octets encrypt=2
+ATTRIBUTE	WiMAX-vHA-RK-SPI			68	integer
+ATTRIBUTE	WiMAX-vHA-RK-Lifetime			69	integer
+
+ATTRIBUTE	WiMAX-MN-vHA-MIP6-Key			70	octets encrypt=2
+ATTRIBUTE	WiMAX-MN-vHA-MIP4-SPI			71	integer
+ATTRIBUTE	WiMAX-MN-vHA-MIP6-SPI			72	integer
+ATTRIBUTE	WiMAX-vDHCPv4-Server			73	ipaddr
+ATTRIBUTE	WiMAX-vDHCPv6-Server			74	ipv6addr
+ATTRIBUTE	WiMAX-vDHCP-RK				75	octets encrypt=2
+ATTRIBUTE	WiMAX-vDHCP-RK-Key-ID			76	integer
+ATTRIBUTE	WiMAX-vDHCP-RK-Lifetime			77	integer
+
+END-VENDOR	WIMAX

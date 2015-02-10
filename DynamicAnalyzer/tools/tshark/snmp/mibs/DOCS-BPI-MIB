@@ -1,0 +1,1625 @@
+DOCS-BPI-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+MODULE-IDENTITY, OBJECT-TYPE,
+Integer32, Counter32, IpAddress
+FROM SNMPv2-SMI
+DisplayString, MacAddress, RowStatus, TruthValue, DateAndTime
+FROM SNMPv2-TC
+OBJECT-GROUP, MODULE-COMPLIANCE
+FROM SNMPv2-CONF
+ifIndex
+FROM IF-MIB
+docsIfMib, docsIfCmServiceId, docsIfCmtsServiceId
+FROM DOCS-IF-MIB
+;
+
+docsBpiMIB      MODULE-IDENTITY
+LAST-UPDATED "200103130000Z"
+ORGANIZATION "IETF IPCDN Working Group"
+CONTACT-INFO "Rich Woundy
+              Postal: Cisco Systems
+                      250 Apollo Drive
+                      Chelmsford, MA 01824 U.S.A.
+              Tel: +1 978 244 8000
+              E-mail: rwoundy@cisco.com
+
+              IETF IPCDN Working Group
+              General Discussion: ipcdn@ietf.org
+              Subscribe: http://www.ietf.org/mailman/listinfo/ipcdn
+              Archive: ftp://ftp.ietf.org/ietf-mail-archive/ipcdn
+              Co-chairs: Richard Woundy, rwoundy@cisco.com
+                         Andrew Valentine, a.valentine@eu.hns.com"
+DESCRIPTION
+"This is the MIB Module for the DOCSIS Baseline Privacy Interface
+(BPI) at cable modems (CMs) and cable modem termination systems
+(CMTSs). CableLabs requires the implementation of this MIB in
+DOCSIS 1.0 cable modems that implement the Baseline Privacy
+Interface, as a prerequisite for DOCSIS 1.0 certification."
+
+REVISION "200103130000Z"
+DESCRIPTION
+"Version published as RFC 3083."
+
+REVISION "200011031930Z"
+DESCRIPTION
+"Modified by Richard Woundy to fix problems identified by the MIB
+
+
+doctor. I marked docsBpiCmtsDefaultAuthGraceTime and
+docsBpiCmtsDefaultTEKGraceTime as obsolete objects, to prevent OID
+reassignment. Several object descriptions were also corrected."
+
+REVISION "200002161930Z"
+DESCRIPTION
+"Initial version.
+CableLabs requires the implementation of this MIB in certified DOCSIS
+1.0 cable modems implementing the Baseline Privacy Interface, per
+DOCSIS 1.0 engineering change notice oss-n-99027."
+::= { docsIfMib 5 }
+
+docsBpiMIBObjects  OBJECT IDENTIFIER ::= { docsBpiMIB 1 }
+
+-- Cable Modem Group
+
+docsBpiCmObjects OBJECT IDENTIFIER ::= { docsBpiMIBObjects 1 }
+
+--
+-- The BPI base and authorization table for CMs, indexed by ifIndex
+--
+
+docsBpiCmBaseTable      OBJECT-TYPE
+SYNTAX                  SEQUENCE OF     DocsBpiCmBaseEntry
+MAX-ACCESS              not-accessible
+STATUS                  current
+DESCRIPTION
+"This table describes the basic and authorization-related Baseline
+Privacy attributes of each CM MAC interface."
+::= { docsBpiCmObjects 1 }
+
+docsBpiCmBaseEntry      OBJECT-TYPE
+SYNTAX                  DocsBpiCmBaseEntry
+MAX-ACCESS              not-accessible
+STATUS                  current
+DESCRIPTION
+"Each entry contains objects describing attributes of one CM MAC
+interface. An entry in this table exists for each ifEntry with an
+ifType of docsCableMaclayer(127)."
+INDEX                   { ifIndex }
+::= { docsBpiCmBaseTable 1 }
+
+DocsBpiCmBaseEntry ::= SEQUENCE {
+docsBpiCmPrivacyEnable                  TruthValue,
+docsBpiCmPublicKey                      OCTET STRING,
+docsBpiCmAuthState                      INTEGER,
+docsBpiCmAuthKeySequenceNumber          Integer32,
+docsBpiCmAuthExpires                    DateAndTime,
+
+
+docsBpiCmAuthReset                      TruthValue,
+docsBpiCmAuthGraceTime                  Integer32,
+docsBpiCmTEKGraceTime                   Integer32,
+docsBpiCmAuthWaitTimeout                Integer32,
+docsBpiCmReauthWaitTimeout              Integer32,
+docsBpiCmOpWaitTimeout                  Integer32,
+docsBpiCmRekeyWaitTimeout               Integer32,
+docsBpiCmAuthRejectWaitTimeout          Integer32,
+docsBpiCmAuthRequests                   Counter32,
+docsBpiCmAuthReplies                    Counter32,
+docsBpiCmAuthRejects                    Counter32,
+docsBpiCmAuthInvalids                   Counter32,
+docsBpiCmAuthRejectErrorCode            INTEGER,
+docsBpiCmAuthRejectErrorString          DisplayString,
+docsBpiCmAuthInvalidErrorCode           INTEGER,
+docsBpiCmAuthInvalidErrorString         DisplayString
+}
+
+docsBpiCmPrivacyEnable  OBJECT-TYPE
+SYNTAX                  TruthValue
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"This object identifies whether this CM is provisioned to run
+Baseline Privacy. This is analogous to the presence (or absence)
+of the Baseline Privacy Configuration Setting option. The status
+of each individual SID with respect to Baseline Privacy is
+captured in the docsBpiCmTEKPrivacyEnable object."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.1.1."
+::= { docsBpiCmBaseEntry 1 }
+
+docsBpiCmPublicKey      OBJECT-TYPE
+SYNTAX                  OCTET STRING (SIZE (74 | 106 | 140 | 270))
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is a DER-encoded RSAPublicKey ASN.1 type
+string, as defined in the RSA Encryption Standard (PKCS #1) [22],
+corresponding to the public key of the CM. The 74, 106, 140, and
+270 byte key encoding lengths correspond to 512 bit, 768 bit, 1024
+bit, and 2048 public moduli respectively."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.2.4."
+::= { docsBpiCmBaseEntry 2 }
+
+docsBpiCmAuthState      OBJECT-TYPE
+SYNTAX                  INTEGER {
+
+
+                                authWait(2),
+                                authorized(3),
+                                reauthWait(4),
+                                authRejectWait(5)
+                        }
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the state of the CM authorization
+FSM.  The start state indicates that FSM is in its initial state."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.1.2.1."
+::= { docsBpiCmBaseEntry 3 }
+
+docsBpiCmAuthKeySequenceNumber  OBJECT-TYPE
+SYNTAX                          Integer32 (0..15)
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the authorization key sequence number
+for this FSM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.2
+and 4.2.2.10."
+::= { docsBpiCmBaseEntry 4 }
+
+docsBpiCmAuthExpires    OBJECT-TYPE
+SYNTAX                  DateAndTime
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the actual clock time when the current
+authorization for this FSM expires. If the CM does not have an active
+authorization, then the value is of the expiration date and time of
+the last active authorization."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.2
+and 4.2.2.9."
+::= { docsBpiCmBaseEntry 5 }
+
+docsBpiCmAuthReset      OBJECT-TYPE
+SYNTAX                  TruthValue
+MAX-ACCESS              read-write
+STATUS                  current
+DESCRIPTION
+"Setting this object to TRUE generates a Reauthorize event in the
+authorization FSM. Reading this object always returns FALSE."
+REFERENCE
+
+
+"DOCSIS Baseline Privacy Interface Specification, Section 4.1.2.3.4."
+::= { docsBpiCmBaseEntry 6 }
+
+docsBpiCmAuthGraceTime  OBJECT-TYPE
+SYNTAX                  Integer32 (1..1800)
+UNITS                   "seconds"
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the grace time for an authorization key.
+A CM is expected to start trying to get a new authorization key
+beginning AuthGraceTime seconds before the authorization key actually
+expires."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.1.1.1.3."
+::= { docsBpiCmBaseEntry 7 }
+
+docsBpiCmTEKGraceTime   OBJECT-TYPE
+SYNTAX                  Integer32 (1..1800)
+UNITS                   "seconds"
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the grace time for a TEK.  A CM is
+expected to start trying to get a new TEK beginning TEKGraceTime
+seconds before the TEK actually expires."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.1.1.1.6."
+::= { docsBpiCmBaseEntry 8 }
+
+docsBpiCmAuthWaitTimeout        OBJECT-TYPE
+SYNTAX                          Integer32 (1..30)
+UNITS                           "seconds"
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the Authorize Wait Timeout."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.1.1.1.1."
+::= { docsBpiCmBaseEntry 9 }
+
+docsBpiCmReauthWaitTimeout      OBJECT-TYPE
+SYNTAX                          Integer32 (1..30)
+UNITS                           "seconds"
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the Reauthorize Wait Timeout in seconds."
+
+
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.1.1.1.2."
+::= { docsBpiCmBaseEntry 10 }
+
+docsBpiCmOpWaitTimeout  OBJECT-TYPE
+SYNTAX                  Integer32 (1..10)
+UNITS                   "seconds"
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the Operational Wait Timeout in seconds."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.1.1.1.4."
+::= { docsBpiCmBaseEntry 11 }
+
+docsBpiCmRekeyWaitTimeout       OBJECT-TYPE
+SYNTAX                          Integer32 (1..10)
+UNITS                           "seconds"
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the Rekey Wait Timeout in seconds."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.1.1.1.5."
+::= { docsBpiCmBaseEntry 12 }
+
+docsBpiCmAuthRejectWaitTimeout  OBJECT-TYPE
+SYNTAX                          Integer32 (1..600)
+UNITS                           "seconds"
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the Authorization Reject Wait Timeout in
+seconds."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.1.1.1.7."
+::= { docsBpiCmBaseEntry 13 }
+
+docsBpiCmAuthRequests   OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CM has
+transmitted an Authorization Request message."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.1."
+::= { docsBpiCmBaseEntry 14 }
+
+
+docsBpiCmAuthReplies    OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CM has
+received an Authorization Reply message."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.2."
+::= { docsBpiCmBaseEntry 15 }
+
+docsBpiCmAuthRejects    OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CM has
+received an Authorization Reject message."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.3."
+::= { docsBpiCmBaseEntry 16 }
+
+docsBpiCmAuthInvalids   OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CM has
+received an Authorization Invalid message."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.7."
+::= { docsBpiCmBaseEntry 17 }
+
+docsBpiCmAuthRejectErrorCode    OBJECT-TYPE
+SYNTAX                          INTEGER {
+                                        none(1),
+                                        unknown(2),
+                                        unauthorizedCm(3),
+                                        unauthorizedSid(4)
+                                }
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the enumerated description of the
+Error-Code in most recent Authorization Reject message received by
+the CM.  This has value unknown(2) if the last Error-Code value was
+0, and none(1) if no Authorization Reject message has been received
+since reboot."
+
+
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.3
+and 4.2.2.16."
+::= { docsBpiCmBaseEntry 18 }
+
+docsBpiCmAuthRejectErrorString  OBJECT-TYPE
+SYNTAX                          DisplayString (SIZE (0..128))
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the Display-String in most recent
+Authorization Reject message received by the CM.  This is a zero
+length string if no Authorization Reject message has been received
+since reboot."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.3
+and 4.2.2.6."
+::= { docsBpiCmBaseEntry 19 }
+
+docsBpiCmAuthInvalidErrorCode   OBJECT-TYPE
+SYNTAX                  INTEGER {
+                                none(1),
+                                unknown(2),
+                                unauthorizedCm(3),
+                                unsolicited(5),
+                                invalidKeySequence(6),
+                                keyRequestAuthenticationFailure(7)
+                        }
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the enumerated description of the
+Error-Code in most recent Authorization Invalid message received by
+the CM.  This has value unknown(2) if the last Error-Code value was
+0, and none(1) if no Authorization Invalid message has been received
+since reboot."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.7
+and 4.2.2.16."
+::= { docsBpiCmBaseEntry 20 }
+
+docsBpiCmAuthInvalidErrorString OBJECT-TYPE
+SYNTAX                          DisplayString (SIZE (0..128))
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the Display-String in most recent
+Authorization Invalid message received by the CM.  This is a zero
+
+
+length string if no Authorization Invalid message has been received
+since reboot."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.7
+and 4.2.2.6."
+::= { docsBpiCmBaseEntry 21 }
+
+--
+-- The CM TEK Table, indexed by ifIndex and SID
+--
+
+docsBpiCmTEKTable       OBJECT-TYPE
+SYNTAX                  SEQUENCE OF     DocsBpiCmTEKEntry
+MAX-ACCESS              not-accessible
+STATUS                  current
+DESCRIPTION
+"This table describes the attributes of each CM Traffic Encryption Key
+(TEK) association. The CM maintains (no more than) one TEK association
+per SID per CM MAC interface."
+::= { docsBpiCmObjects 2 }
+
+docsBpiCmTEKEntry       OBJECT-TYPE
+SYNTAX                  DocsBpiCmTEKEntry
+MAX-ACCESS              not-accessible
+STATUS                  current
+DESCRIPTION
+"Each entry contains objects describing the TEK association attributes
+of one SID. The CM MUST create one entry per unicast SID, regardless
+of whether the SID was obtained from a Registration Response message,
+or from an Authorization Reply message."
+INDEX                   { ifIndex, docsIfCmServiceId }
+::= { docsBpiCmTEKTable 1 }
+
+DocsBpiCmTEKEntry ::= SEQUENCE {
+docsBpiCmTEKPrivacyEnable               TruthValue,
+docsBpiCmTEKState                       INTEGER,
+docsBpiCmTEKExpiresOld                  DateAndTime,
+docsBpiCmTEKExpiresNew                  DateAndTime,
+docsBpiCmTEKKeyRequests                 Counter32,
+docsBpiCmTEKKeyReplies                  Counter32,
+docsBpiCmTEKKeyRejects                  Counter32,
+docsBpiCmTEKInvalids                    Counter32,
+docsBpiCmTEKAuthPends                   Counter32,
+docsBpiCmTEKKeyRejectErrorCode          INTEGER,
+docsBpiCmTEKKeyRejectErrorString        DisplayString,
+docsBpiCmTEKInvalidErrorCode            INTEGER,
+docsBpiCmTEKInvalidErrorString          DisplayString
+}
+
+
+docsBpiCmTEKPrivacyEnable       OBJECT-TYPE
+SYNTAX                          TruthValue
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"This object identifies whether this SID is provisioned to run
+Baseline Privacy. This is analogous to enabling Baseline Privacy on
+a provisioned SID using the Class-of-Service Privacy Enable option.
+Baseline Privacy is not effectively enabled for any SID unless
+Baseline Privacy is enabled for the CM, which is managed via the
+docsBpiCmPrivacyEnable object."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.1.2."
+::= { docsBpiCmTEKEntry 1 }
+
+docsBpiCmTEKState       OBJECT-TYPE
+SYNTAX                  INTEGER {
+                                start(1),
+                                opWait(2),
+                                opReauthWait(3),
+                                operational(4),
+                                rekeyWait(5),
+                                rekeyReauthWait(6)
+                        }
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the state of the indicated TEK FSM.
+The start(1) state indicates that FSM is in its initial state."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.1.3.1."
+::= { docsBpiCmTEKEntry 2 }
+
+docsBpiCmTEKExpiresOld  OBJECT-TYPE
+SYNTAX                  DateAndTime
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the actual clock time for expiration
+of the immediate predecessor of the most recent TEK for this FSM.
+If this FSM has only one TEK, then the value is the time of activation
+of this FSM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.5 and
+4.2.2.9."
+::= { docsBpiCmTEKEntry 3 }
+
+docsBpiCmTEKExpiresNew  OBJECT-TYPE
+
+
+SYNTAX                  DateAndTime
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the actual clock time for expiration
+of the most recent TEK for this FSM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.5 and
+4.2.2.9."
+::= { docsBpiCmTEKEntry 4 }
+
+docsBpiCmTEKKeyRequests OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CM has transmitted
+a Key Request message."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.4."
+::= { docsBpiCmTEKEntry 5 }
+
+docsBpiCmTEKKeyReplies  OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CM has received
+a Key Reply message, including a message whose authentication failed."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.5."
+::= { docsBpiCmTEKEntry 6 }
+
+docsBpiCmTEKKeyRejects  OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CM has received
+a Key Reject message, including a message whose authentication failed."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.6."
+::= { docsBpiCmTEKEntry 7 }
+
+docsBpiCmTEKInvalids    OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+
+
+DESCRIPTION
+"The value of this object is the count of times the CM has received
+a TEK Invalid message, including a message whose authentication failed."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.8."
+::= { docsBpiCmTEKEntry 8 }
+
+docsBpiCmTEKAuthPends   OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times an Authorization
+Pending (Auth Pend) event occurred in this FSM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.1.3.3.3."
+::= { docsBpiCmTEKEntry 9 }
+
+docsBpiCmTEKKeyRejectErrorCode  OBJECT-TYPE
+SYNTAX                          INTEGER {
+                                        none(1),
+                                        unknown(2),
+                                        unauthorizedSid(4)
+                                }
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the enumerated description of the
+Error-Code in most recent Key Reject message received by the CM. This
+has value unknown(2) if the last Error-Code value was 0, and none(1)
+if no Key Reject message has been received since reboot."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.1.2.6
+and 4.2.2.16."
+::= { docsBpiCmTEKEntry 10 }
+
+docsBpiCmTEKKeyRejectErrorString        OBJECT-TYPE
+SYNTAX                                  DisplayString (SIZE (0..128))
+MAX-ACCESS                              read-only
+STATUS                                  current
+DESCRIPTION
+"The value of this object is the Display-String in most recent Key
+Reject message received by the CM. This is a zero length string if no
+Key Reject message has been received since reboot."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.1.2.6
+and 4.2.2.6."
+::= { docsBpiCmTEKEntry 11 }
+
+
+docsBpiCmTEKInvalidErrorCode    OBJECT-TYPE
+SYNTAX                          INTEGER {
+                                        none(1),
+                                        unknown(2),
+                                        invalidKeySequence(6)
+                                }
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the enumerated description of the
+Error-Code in most recent TEK Invalid message received by the CM.
+This has value unknown(2) if the last Error-Code value was 0, and
+none(1) if no TEK Invalid message has been received since reboot."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.1.2.8
+and 4.2.2.16."
+::= { docsBpiCmTEKEntry 12 }
+
+docsBpiCmTEKInvalidErrorString  OBJECT-TYPE
+SYNTAX                          DisplayString (SIZE (0..128))
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the Display-String in most recent TEK
+Invalid message received by the CM. This is a zero length string if
+no TEK Invalid message has been received since reboot."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.1.2.8
+and 4.2.2.6."
+::= { docsBpiCmTEKEntry 13 }
+
+-- Cable Modem Termination System Group
+
+docsBpiCmtsObjects OBJECT IDENTIFIER ::= { docsBpiMIBObjects 2 }
+
+--
+-- The BPI base table for CMTSs, indexed by ifIndex
+--
+
+docsBpiCmtsBaseTable    OBJECT-TYPE
+SYNTAX                  SEQUENCE OF     DocsBpiCmtsBaseEntry
+MAX-ACCESS              not-accessible
+STATUS                  current
+DESCRIPTION
+"This table describes the basic Baseline Privacy attributes of each
+CMTS MAC interface."
+::= { docsBpiCmtsObjects 1 }
+
+
+
+docsBpiCmtsBaseEntry    OBJECT-TYPE
+SYNTAX                  DocsBpiCmtsBaseEntry
+MAX-ACCESS              not-accessible
+STATUS                  current
+DESCRIPTION
+"Each entry contains objects describing attributes of one CMTS MAC
+interface. An entry in this table exists for each ifEntry with an
+ifType of docsCableMaclayer(127)."
+INDEX                   { ifIndex }
+::= { docsBpiCmtsBaseTable 1 }
+
+DocsBpiCmtsBaseEntry ::= SEQUENCE {
+docsBpiCmtsDefaultAuthLifetime  Integer32,
+docsBpiCmtsDefaultTEKLifetime   Integer32,
+docsBpiCmtsDefaultAuthGraceTime Integer32,
+docsBpiCmtsDefaultTEKGraceTime  Integer32,
+docsBpiCmtsAuthRequests         Counter32,
+docsBpiCmtsAuthReplies          Counter32,
+docsBpiCmtsAuthRejects          Counter32,
+docsBpiCmtsAuthInvalids         Counter32
+}
+
+docsBpiCmtsDefaultAuthLifetime  OBJECT-TYPE
+SYNTAX                          Integer32 (1..6048000)
+UNITS                           "seconds"
+MAX-ACCESS                      read-write
+STATUS                          current
+DESCRIPTION
+"The value of this object is the default lifetime, in seconds, the
+CMTS assigns to a new authorization key."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.2."
+::= { docsBpiCmtsBaseEntry 1 }
+
+docsBpiCmtsDefaultTEKLifetime   OBJECT-TYPE
+SYNTAX                          Integer32 (1..604800)
+UNITS                           "seconds"
+MAX-ACCESS                      read-write
+STATUS                          current
+DESCRIPTION
+"The value of this object is the default lifetime, in seconds, the
+CMTS assigns to a new Traffic Encryption Key (TEK)."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.2."
+::= { docsBpiCmtsBaseEntry 2 }
+
+-- Note: the following two objects have been obsoleted from this MIB.
+
+
+
+docsBpiCmtsDefaultAuthGraceTime OBJECT-TYPE
+SYNTAX                          Integer32 (1..1800)
+UNITS                           "seconds"
+MAX-ACCESS                      read-write
+STATUS                          obsolete
+DESCRIPTION
+"This object was obsoleted because the provisioning system, not the CMTS,
+manages the authorization key grace time for DOCSIS CMs."
+::= { docsBpiCmtsBaseEntry 3 }
+
+docsBpiCmtsDefaultTEKGraceTime  OBJECT-TYPE
+SYNTAX                          Integer32 (1..1800)
+UNITS                           "seconds"
+MAX-ACCESS                      read-write
+STATUS                          obsolete
+DESCRIPTION
+"This object was obsoleted because the provisioning system, not the CMTS,
+manages the Traffic Encryption Key (TEK) grace time for DOCSIS CMs."
+::= { docsBpiCmtsBaseEntry 4 }
+
+docsBpiCmtsAuthRequests OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CMTS has
+received an Authorization Request message from any CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.1."
+::= { docsBpiCmtsBaseEntry 5 }
+
+docsBpiCmtsAuthReplies  OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CMTS has
+transmitted an Authorization Reply message to any CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.2."
+::= { docsBpiCmtsBaseEntry 6 }
+
+docsBpiCmtsAuthRejects  OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CMTS has
+
+
+transmitted an Authorization Reject message to any CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.3."
+::= { docsBpiCmtsBaseEntry 7 }
+
+docsBpiCmtsAuthInvalids OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CMTS has
+transmitted an Authorization Invalid message to any CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.7."
+::= { docsBpiCmtsBaseEntry 8 }
+
+--
+-- The CMTS Authorization Table, indexed by ifIndex and CM MAC address
+--
+
+docsBpiCmtsAuthTable    OBJECT-TYPE
+SYNTAX                  SEQUENCE OF     DocsBpiCmtsAuthEntry
+MAX-ACCESS              not-accessible
+STATUS                  current
+DESCRIPTION
+"This table describes the attributes of each CM authorization
+association. The CMTS maintains one authorization association with
+each Baseline Privacy-enabled CM on each CMTS MAC interface."
+::= { docsBpiCmtsObjects 2 }
+
+docsBpiCmtsAuthEntry    OBJECT-TYPE
+SYNTAX                  DocsBpiCmtsAuthEntry
+MAX-ACCESS              not-accessible
+STATUS                  current
+DESCRIPTION
+"Each entry contains objects describing attributes of one
+authorization association. The CMTS MUST create one entry per CM per
+MAC interface, based on the receipt of an Authorization Request
+message, and MUST not delete the entry before the CM authorization
+permanently expires."
+INDEX                   { ifIndex, docsBpiCmtsAuthCmMacAddress }
+::= { docsBpiCmtsAuthTable 1 }
+
+DocsBpiCmtsAuthEntry ::= SEQUENCE {
+docsBpiCmtsAuthCmMacAddress             MacAddress,
+docsBpiCmtsAuthCmPublicKey              OCTET STRING,
+docsBpiCmtsAuthCmKeySequenceNumber      Integer32,
+docsBpiCmtsAuthCmExpires                DateAndTime,
+
+
+docsBpiCmtsAuthCmLifetime               Integer32,
+docsBpiCmtsAuthCmGraceTime              Integer32,
+docsBpiCmtsAuthCmReset                  INTEGER,
+docsBpiCmtsAuthCmRequests               Counter32,
+docsBpiCmtsAuthCmReplies                Counter32,
+docsBpiCmtsAuthCmRejects                Counter32,
+docsBpiCmtsAuthCmInvalids               Counter32,
+docsBpiCmtsAuthRejectErrorCode          INTEGER,
+docsBpiCmtsAuthRejectErrorString        DisplayString,
+docsBpiCmtsAuthInvalidErrorCode         INTEGER,
+docsBpiCmtsAuthInvalidErrorString       DisplayString
+}
+
+docsBpiCmtsAuthCmMacAddress     OBJECT-TYPE
+SYNTAX                          MacAddress
+MAX-ACCESS                      not-accessible
+STATUS                          current
+DESCRIPTION
+"The value of this object is the physical address of the CM to
+which the authorization association applies."
+::= { docsBpiCmtsAuthEntry 1 }
+
+docsBpiCmtsAuthCmPublicKey      OBJECT-TYPE
+SYNTAX                          OCTET STRING
+                                (SIZE (0 | 74 | 106 | 140 | 270))
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is a DER-encoded RSAPublicKey ASN.1 type
+string, as defined in the RSA Encryption Standard (PKCS #1) [22],
+corresponding to the public key of the CM. The 74, 106, 140, and
+270 byte key encoding lengths correspond to 512 bit, 768 bit, 1024
+bit, and 2048 public moduli respectively. This is a zero-length
+string if the CMTS does not retain the public key."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.2.4."
+::= { docsBpiCmtsAuthEntry 2 }
+
+docsBpiCmtsAuthCmKeySequenceNumber      OBJECT-TYPE
+SYNTAX                                  Integer32 (0..15)
+MAX-ACCESS                              read-only
+STATUS                                  current
+DESCRIPTION
+"The value of this object is the authorization key sequence number
+for this CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.2
+and 4.2.2.10."
+
+
+::= { docsBpiCmtsAuthEntry 3 }
+
+docsBpiCmtsAuthCmExpires        OBJECT-TYPE
+SYNTAX                          DateAndTime
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the actual clock time when the current
+authorization for this CM expires. If this CM does not have an
+active authorization, then the value is of the expiration date and
+time of the last active authorization."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.2
+and 4.2.2.9."
+::= { docsBpiCmtsAuthEntry 4 }
+
+docsBpiCmtsAuthCmLifetime       OBJECT-TYPE
+SYNTAX                          Integer32 (1..6048000)
+UNITS                           "seconds"
+MAX-ACCESS                      read-write
+STATUS                          current
+DESCRIPTION
+"The value of this object is the lifetime, in seconds, the CMTS
+assigns to an authorization key for this CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.2
+and Appendix A.2."
+::= { docsBpiCmtsAuthEntry 5 }
+
+docsBpiCmtsAuthCmGraceTime      OBJECT-TYPE
+SYNTAX                          Integer32 (1..1800)
+UNITS                           "seconds"
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the grace time for the authorization key
+in seconds.  The CM is expected to start trying to get a new
+authorization key beginning AuthGraceTime seconds before the
+authorization key actually expires."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.1.1.1.3."
+::= { docsBpiCmtsAuthEntry 6 }
+
+docsBpiCmtsAuthCmReset  OBJECT-TYPE
+SYNTAX                  INTEGER {
+                                noResetRequested(1),
+                                invalidateAuth(2),
+                                sendAuthInvalid(3),
+
+
+                                invalidateTeks(4)
+                        }
+MAX-ACCESS              read-write
+STATUS                  current
+DESCRIPTION
+"Setting this object to invalidateAuth(2) causes the CMTS to
+invalidate the current CM authorization key, but not to transmit an
+Authorization Invalid message nor to invalidate unicast TEKs.  Setting
+this object to sendAuthInvalid(3) causes the CMTS to invalidate the
+current CM authorization key, and to transmit an Authorization Invalid
+message to the CM, but not to invalidate unicast TEKs.  Setting this
+object to invalidateTeks(4) causes the CMTS to invalidate the current
+CM authorization key, to transmit an Authorization Invalid message to
+the CM, and to invalidate all unicast TEKs associated with this CM
+authorization. Reading this object returns the most-recently-set value
+of this object, or returns noResetRequested(1) if the object has not
+been set since the last CMTS reboot."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.1.2.3.4,
+4.1.2.3.5, and 4.1.3.3.5."
+::= { docsBpiCmtsAuthEntry 7 }
+
+docsBpiCmtsAuthCmRequests       OBJECT-TYPE
+SYNTAX                          Counter32
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the count of times the CMTS has
+received an Authorization Request message from this CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.1."
+::= { docsBpiCmtsAuthEntry 8 }
+
+docsBpiCmtsAuthCmReplies        OBJECT-TYPE
+SYNTAX                          Counter32
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the count of times the CMTS has
+transmitted an Authorization Reply message to this CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.2."
+::= { docsBpiCmtsAuthEntry 9 }
+
+docsBpiCmtsAuthCmRejects        OBJECT-TYPE
+SYNTAX                          Counter32
+MAX-ACCESS                      read-only
+STATUS                          current
+
+
+DESCRIPTION
+"The value of this object is the count of times the CMTS has
+transmitted an Authorization Reject message to this CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.3."
+::= { docsBpiCmtsAuthEntry 10 }
+
+docsBpiCmtsAuthCmInvalids       OBJECT-TYPE
+SYNTAX                          Counter32
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the count of times the CMTS has
+transmitted an Authorization Invalid message to this CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.7."
+::= { docsBpiCmtsAuthEntry 11 }
+
+docsBpiCmtsAuthRejectErrorCode  OBJECT-TYPE
+SYNTAX                  INTEGER {
+                                none(1),
+                                unknown(2),
+                                unauthorizedCm(3),
+                                unauthorizedSid(4)
+                        }
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the enumerated description of the
+Error-Code in most recent Authorization Reject message transmitted to
+the CM.  This has value unknown(2) if the last Error-Code value was
+0, and none(1) if no Authorization Reject message has been transmitted
+to the CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.3
+and 4.2.2.16."
+::= { docsBpiCmtsAuthEntry 12 }
+
+docsBpiCmtsAuthRejectErrorString        OBJECT-TYPE
+SYNTAX                                  DisplayString (SIZE (0..128))
+MAX-ACCESS                              read-only
+STATUS                                  current
+DESCRIPTION
+"The value of this object is the Display-String in most recent
+Authorization Reject message transmitted to the CM.  This is a
+zero length string if no Authorization Reject message has been
+transmitted to the CM."
+REFERENCE
+
+
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.3
+and 4.2.2.6."
+::= { docsBpiCmtsAuthEntry 13 }
+
+docsBpiCmtsAuthInvalidErrorCode OBJECT-TYPE
+SYNTAX                  INTEGER {
+                                none(1),
+                                unknown(2),
+                                unauthorizedCm(3),
+                                unsolicited(5),
+                                invalidKeySequence(6),
+                                keyRequestAuthenticationFailure(7)
+                        }
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the enumerated description of the
+Error-Code in most recent Authorization Invalid message transmitted
+to the CM.  This has value unknown(2) if the last Error-Code value was
+0, and none(1) if no Authorization Invalid message has been
+transmitted to the CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.7
+and 4.2.2.16."
+::= { docsBpiCmtsAuthEntry 14 }
+
+docsBpiCmtsAuthInvalidErrorString       OBJECT-TYPE
+SYNTAX                                  DisplayString (SIZE (0..128))
+MAX-ACCESS                              read-only
+STATUS                                  current
+DESCRIPTION
+"The value of this object is the Display-String in most recent
+Authorization Invalid message transmitted to the CM.  This is a
+zero length string if no Authorization Invalid message has been
+transmitted to the CM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.7
+and 4.2.2.6."
+::= { docsBpiCmtsAuthEntry 15 }
+
+--
+-- The CMTS TEK Table, indexed by ifIndex and SID
+--
+
+docsBpiCmtsTEKTable     OBJECT-TYPE
+SYNTAX                  SEQUENCE OF     DocsBpiCmtsTEKEntry
+MAX-ACCESS              not-accessible
+STATUS                  current
+
+
+DESCRIPTION
+"This table describes the attributes of each CM Traffic Encryption
+Key (TEK) association. The CMTS maintains one TEK association per BPI
+SID on each CMTS MAC interface."
+::= { docsBpiCmtsObjects 3 }
+
+docsBpiCmtsTEKEntry     OBJECT-TYPE
+SYNTAX                  DocsBpiCmtsTEKEntry
+MAX-ACCESS              not-accessible
+STATUS                  current
+DESCRIPTION
+"Each entry contains objects describing attributes of one TEK
+association on a particular CMTS MAC interface. The CMTS MUST create
+one entry per SID per MAC interface, based on the receipt of an
+Key Request message, and MUST not delete the entry before the CM
+authorization for the SID permanently expires."
+INDEX                   { ifIndex, docsIfCmtsServiceId }
+::= { docsBpiCmtsTEKTable 1 }
+
+DocsBpiCmtsTEKEntry ::= SEQUENCE {
+docsBpiCmtsTEKLifetime                  Integer32,
+docsBpiCmtsTEKGraceTime                 Integer32,
+docsBpiCmtsTEKExpiresOld                DateAndTime,
+docsBpiCmtsTEKExpiresNew                DateAndTime,
+docsBpiCmtsTEKReset                     TruthValue,
+docsBpiCmtsKeyRequests                  Counter32,
+docsBpiCmtsKeyReplies                   Counter32,
+docsBpiCmtsKeyRejects                   Counter32,
+docsBpiCmtsTEKInvalids                  Counter32,
+docsBpiCmtsKeyRejectErrorCode           INTEGER,
+docsBpiCmtsKeyRejectErrorString         DisplayString,
+docsBpiCmtsTEKInvalidErrorCode          INTEGER,
+docsBpiCmtsTEKInvalidErrorString        DisplayString
+}
+
+docsBpiCmtsTEKLifetime  OBJECT-TYPE
+SYNTAX                  Integer32 (1..604800)
+UNITS                   "seconds"
+MAX-ACCESS              read-write
+STATUS                  current
+DESCRIPTION
+"The value of this object is the lifetime, in seconds, the CMTS assigns
+to keys for this TEK association."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.5
+and Appendix A.2."
+::= { docsBpiCmtsTEKEntry 1 }
+
+
+
+docsBpiCmtsTEKGraceTime OBJECT-TYPE
+SYNTAX                  Integer32 (1..1800)
+UNITS                   "seconds"
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the grace time for the TEK in seconds.
+The CM is expected to start trying to get a new TEK beginning
+TEKGraceTime seconds before the TEK actually expires."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Appendix A.1.1.1.6."
+::= { docsBpiCmtsTEKEntry 2 }
+
+docsBpiCmtsTEKExpiresOld        OBJECT-TYPE
+SYNTAX                  DateAndTime
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the actual clock time for expiration
+of the immediate predecessor of the most recent TEK for this FSM.
+If this FSM has only one TEK, then the value is the time of activation
+of this FSM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.5
+and 4.2.2.9."
+::= { docsBpiCmtsTEKEntry 3 }
+
+docsBpiCmtsTEKExpiresNew        OBJECT-TYPE
+SYNTAX                          DateAndTime
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the actual clock time for expiration
+of the most recent TEK for this FSM."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.5
+and 4.2.2.9."
+::= { docsBpiCmtsTEKEntry 4 }
+
+docsBpiCmtsTEKReset     OBJECT-TYPE
+SYNTAX                  TruthValue
+MAX-ACCESS              read-write
+STATUS                  current
+DESCRIPTION
+"Setting this object to TRUE causes the CMTS to invalidate the current
+active TEK(s) (plural due to key transition periods), and to generate
+a new TEK for the associated SID; the CMTS MAY also generate an
+unsolicited TEK Invalid message, to optimize the TEK synchronization
+
+
+between the CMTS and the CM. Reading this object always returns
+FALSE."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.1.3.3.5."
+::= { docsBpiCmtsTEKEntry 5 }
+
+docsBpiCmtsKeyRequests  OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CMTS has
+received a Key Request message."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.4."
+::= { docsBpiCmtsTEKEntry 6 }
+
+docsBpiCmtsKeyReplies   OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CMTS has
+transmitted a Key Reply message."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.5."
+::= { docsBpiCmtsTEKEntry 7 }
+
+docsBpiCmtsKeyRejects   OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CMTS has
+transmitted a Key Reject message."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.6."
+::= { docsBpiCmtsTEKEntry 8 }
+
+docsBpiCmtsTEKInvalids  OBJECT-TYPE
+SYNTAX                  Counter32
+MAX-ACCESS              read-only
+STATUS                  current
+DESCRIPTION
+"The value of this object is the count of times the CMTS has
+transmitted a TEK Invalid message."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Section 4.2.1.8."
+
+
+::= { docsBpiCmtsTEKEntry 9 }
+
+docsBpiCmtsKeyRejectErrorCode   OBJECT-TYPE
+SYNTAX                          INTEGER {
+                                        none(1),
+                                        unknown(2),
+                                        unauthorizedSid(4)
+                                }
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the enumerated description of the
+Error-Code in the most recent Key Reject message sent in response to
+a Key Request for this BPI SID. This has value unknown(2) if the last
+Error-Code value was 0, and none(1) if no Key Reject message has been
+received since reboot."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.6
+and 4.2.2.16."
+::= { docsBpiCmtsTEKEntry 10 }
+
+docsBpiCmtsKeyRejectErrorString OBJECT-TYPE
+SYNTAX                          DisplayString (SIZE (0..128))
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the Display-String in the most recent
+Key Reject message sent in response to a Key Request for this BPI
+SID.  This is a zero length string if no Key Reject message has been
+received since reboot."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.6
+and 4.2.2.6."
+::= { docsBpiCmtsTEKEntry 11 }
+
+docsBpiCmtsTEKInvalidErrorCode  OBJECT-TYPE
+SYNTAX                          INTEGER {
+                                        none(1),
+                                        unknown(2),
+                                        invalidKeySequence(6)
+                                }
+MAX-ACCESS                      read-only
+STATUS                          current
+DESCRIPTION
+"The value of this object is the enumerated description of the
+Error-Code in the most recent TEK Invalid message sent in association
+with this BPI SID.  This has value unknown(2) if the last Error-Code
+value was 0, and none(1) if no TEK Invalid message has been received
+
+
+since reboot."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.8
+and 4.2.2.16."
+::= { docsBpiCmtsTEKEntry 12 }
+
+docsBpiCmtsTEKInvalidErrorString        OBJECT-TYPE
+SYNTAX                                  DisplayString (SIZE (0..128))
+MAX-ACCESS                              read-only
+STATUS                                  current
+DESCRIPTION
+"The value of this object is the Display-String in the most recent TEK
+Invalid message sent in association with this BPI SID.  This is a zero
+length string if no TEK Invalid message has been received since reboot."
+REFERENCE
+"DOCSIS Baseline Privacy Interface Specification, Sections 4.2.1.8
+and 4.2.2.6."
+::= { docsBpiCmtsTEKEntry 13 }
+
+--
+-- The CMTS Multicast Control Group
+--
+
+docsBpiMulticastControl OBJECT IDENTIFIER ::= { docsBpiCmtsObjects 4 }
+
+--
+-- The CMTS IP Multicast Mapping Table, indexed by IP multicast
+-- address and prefix, and by ifindex
+--
+
+docsBpiIpMulticastMapTable      OBJECT-TYPE
+SYNTAX                          SEQUENCE OF DocsBpiIpMulticastMapEntry
+MAX-ACCESS                      not-accessible
+STATUS                          current
+DESCRIPTION
+"This table describes the mapping of IP multicast address prefixes to
+multicast SIDs on each CMTS MAC interface."
+::= { docsBpiMulticastControl 1 }
+
+docsBpiIpMulticastMapEntry      OBJECT-TYPE
+SYNTAX                          DocsBpiIpMulticastMapEntry
+MAX-ACCESS                      not-accessible
+STATUS                          current
+DESCRIPTION
+"Each entry contains objects describing the mapping of one IP
+multicast address prefix to one multicast SID on one CMTS MAC
+interface. The CMTS uses the mapping when forwarding downstream IP
+multicast traffic."
+
+
+INDEX                           { ifIndex, docsBpiIpMulticastAddress,
+                                  docsBpiIpMulticastPrefixLength }
+::= { docsBpiIpMulticastMapTable 1 }
+
+DocsBpiIpMulticastMapEntry ::= SEQUENCE {
+docsBpiIpMulticastAddress       IpAddress,
+docsBpiIpMulticastPrefixLength  Integer32,
+docsBpiIpMulticastServiceId     Integer32,
+docsBpiIpMulticastMapControl    RowStatus
+}
+
+docsBpiIpMulticastAddress       OBJECT-TYPE
+SYNTAX                          IpAddress
+MAX-ACCESS                      not-accessible
+STATUS                          current
+DESCRIPTION
+"This object represents the IP multicast address (prefix) to be
+mapped by this row, in conjunction with
+docsBpiIpMulticastPrefixLength."
+::= { docsBpiIpMulticastMapEntry 1 }
+
+docsBpiIpMulticastPrefixLength  OBJECT-TYPE
+SYNTAX                          Integer32 (0..32)
+MAX-ACCESS                      not-accessible
+STATUS                          current
+DESCRIPTION
+"This object represents the IP multicast address prefix length
+for this row. The value of this object represents the length in
+bits of docsBpiIpMulticastAddress for multicast address
+comparisons, using big-endian ordering. An IP multicast address
+matches this row if the (docsBpiIpMulticastPrefixLength) most
+significant bits of the IP multicast address and of the
+(docsBpiIpMulticastAddress) are identical.
+This object is similar in usage to an IP address mask. The value
+0 corresponds to IP address mask 0.0.0.0, the value 1 corresponds
+to IP address mask 128.0.0.0, the value 8 corresponds to IP
+address mask 255.0.0.0, and the value 32 corresponds to IP
+address mask 255.255.255.255."
+::= { docsBpiIpMulticastMapEntry 2 }
+
+docsBpiIpMulticastServiceId     OBJECT-TYPE
+SYNTAX                          Integer32 (8192..16368)
+MAX-ACCESS                      read-create
+STATUS                          current
+DESCRIPTION
+"This object represents the multicast SID to be used in this
+IP multicast address prefix mapping entry."
+-- DEFVAL is an unused multicast SID value chosen by CMTS.
+
+
+::= { docsBpiIpMulticastMapEntry 3 }
+
+docsBpiIpMulticastMapControl    OBJECT-TYPE
+SYNTAX                          RowStatus
+MAX-ACCESS                      read-create
+STATUS                          current
+DESCRIPTION
+"This object controls and reflects the IP multicast address prefix
+mapping entry. There is no restriction on the ability to change values
+in this row while the row is active."
+::= { docsBpiIpMulticastMapEntry 4 }
+
+--
+-- The CMTS Multicast SID Authorization Table, indexed by ifIndex by
+-- multicast SID by CM MAC address
+--
+
+docsBpiMulticastAuthTable       OBJECT-TYPE
+SYNTAX                          SEQUENCE OF DocsBpiMulticastAuthEntry
+MAX-ACCESS                      not-accessible
+STATUS                          current
+DESCRIPTION
+"This table describes the multicast SID authorization for each
+CM on each CMTS MAC interface."
+::= { docsBpiMulticastControl 2 }
+
+docsBpiMulticastAuthEntry       OBJECT-TYPE
+SYNTAX                          DocsBpiMulticastAuthEntry
+MAX-ACCESS                      not-accessible
+STATUS                          current
+DESCRIPTION
+"Each entry contains objects describing the key authorization of one
+cable modem for one multicast SID for one CMTS MAC interface."
+INDEX                           { ifIndex, docsBpiMulticastServiceId,
+                                  docsBpiMulticastCmMacAddress }
+::= { docsBpiMulticastAuthTable 1 }
+
+DocsBpiMulticastAuthEntry ::= SEQUENCE {
+docsBpiMulticastServiceId       Integer32,
+docsBpiMulticastCmMacAddress    MacAddress,
+docsBpiMulticastAuthControl     RowStatus
+}
+
+docsBpiMulticastServiceId       OBJECT-TYPE
+SYNTAX                          Integer32 (8192..16368)
+MAX-ACCESS                      not-accessible
+STATUS                          current
+DESCRIPTION
+
+
+"This object represents the multicast SID for authorization."
+::= { docsBpiMulticastAuthEntry 1 }
+
+docsBpiMulticastCmMacAddress    OBJECT-TYPE
+SYNTAX                          MacAddress
+MAX-ACCESS                      not-accessible
+STATUS                          current
+DESCRIPTION
+"This object represents the MAC address of the CM to which the
+multicast SID authorization applies."
+::= { docsBpiMulticastAuthEntry 2 }
+
+docsBpiMulticastAuthControl     OBJECT-TYPE
+SYNTAX                          RowStatus
+MAX-ACCESS                      read-create
+STATUS                          current
+DESCRIPTION
+"This object controls and reflects the CM authorization for each
+multicast SID. There is no restriction on the ability to change
+values in this row while the row is active."
+::= { docsBpiMulticastAuthEntry 3 }
+
+--
+-- The BPI MIB Conformance Statements (with a placeholder for
+-- notifications)
+--
+
+docsBpiNotification     OBJECT IDENTIFIER ::= { docsBpiMIB 2 }
+docsBpiConformance      OBJECT IDENTIFIER ::= { docsBpiMIB 3 }
+docsBpiCompliances      OBJECT IDENTIFIER ::= { docsBpiConformance 1 }
+docsBpiGroups           OBJECT IDENTIFIER ::= { docsBpiConformance 2 }
+
+docsBpiBasicCompliance MODULE-COMPLIANCE
+STATUS          current
+DESCRIPTION
+"This is the compliance statement for devices which implement the
+DOCSIS Baseline Privacy Interface."
+
+MODULE  -- docsBpiMIB
+
+-- conditionally mandatory group
+GROUP   docsBpiCmGroup
+DESCRIPTION
+"This group is implemented only in CMs, not in CMTSs."
+
+-- conditionally mandatory group
+GROUP   docsBpiCmtsGroup
+DESCRIPTION
+
+
+"This group is implemented only in CMTSs, not in CMs."
+
+-- relaxation on mandatory range (unnecessary since object is read-only)
+-- OBJECT       docsBpiCmAuthGraceTime
+-- SYNTAX       Integer32 (300..1800)
+-- DESCRIPTION
+-- "The refined range corresponds to the minimum and maximum values in
+-- operational networks, according to Appendix A.2 in [18]."
+
+-- relaxation on mandatory range (unnecessary since object is read-only)
+-- OBJECT       docsBpiCmTEKGraceTime
+-- SYNTAX       Integer32 (300..1800)
+-- DESCRIPTION
+-- "The refined range corresponds to the minimum and maximum values in
+-- operational networks, according to Appendix A.2 in [18]."
+
+-- relaxation on mandatory range
+OBJECT  docsBpiCmtsDefaultAuthLifetime
+SYNTAX  Integer32 (86400..6048000)
+DESCRIPTION
+"The refined range corresponds to the minimum and maximum values in
+operational networks, according to Appendix A.2 in [18]."
+
+-- relaxation on mandatory range
+OBJECT  docsBpiCmtsDefaultTEKLifetime
+SYNTAX  Integer32 (1800..604800)
+DESCRIPTION
+"The refined range corresponds to the minimum and maximum values in
+operational networks, according to Appendix A.2 in [18]."
+
+-- relaxation on mandatory range (object removed from MIB)
+-- OBJECT       docsBpiCmtsDefaultAuthGraceTime
+-- SYNTAX       INTEGER (300..1800)
+-- DESCRIPTION
+-- "The refined range corresponds to the minimum and maximum values in
+-- operational networks, according to Appendix A.2 in [18]."
+
+-- relaxation on mandatory range  (object removed from MIB)
+-- OBJECT       docsBpiCmtsDefaultTEKGraceTime
+-- SYNTAX       INTEGER (300..1800)
+-- DESCRIPTION
+-- "The refined range corresponds to the minimum and maximum values in
+-- operational networks, according to Appendix A.2 in [18]."
+
+-- relaxation on mandatory range
+OBJECT  docsBpiCmtsAuthCmLifetime
+SYNTAX  Integer32 (86400..6048000)
+DESCRIPTION
+
+
+"The refined range corresponds to the minimum and maximum values in
+operational networks, according to Appendix A.2 in [18]."
+
+-- relaxation on mandatory range (unnecessary since object is read-only)
+-- OBJECT       docsBpiCmtsAuthCmGraceTime
+-- SYNTAX       Integer32 (300..1800)
+-- DESCRIPTION
+-- "The refined range corresponds to the minimum and maximum values in
+-- operational networks, according to Appendix A.2 in [18]."
+
+-- relaxation on mandatory range
+OBJECT  docsBpiCmtsTEKLifetime
+SYNTAX  Integer32 (1800..604800)
+DESCRIPTION
+"The refined range corresponds to the minimum and maximum values in
+operational networks, according to Appendix A.2 in [18]."
+
+-- relaxation on mandatory range (unnecessary since object is read-only)
+-- OBJECT       docsBpiCmtsTEKGraceTime
+-- SYNTAX       Integer32 (300..1800)
+-- DESCRIPTION
+-- "The refined range corresponds to the minimum and maximum values in
+-- operational networks, according to Appendix A.2 in [18]."
+
+::= { docsBpiCompliances 1 }
+
+docsBpiCmGroup  OBJECT-GROUP
+OBJECTS {
+docsBpiCmPrivacyEnable,
+docsBpiCmPublicKey,
+docsBpiCmAuthState,
+docsBpiCmAuthKeySequenceNumber,
+docsBpiCmAuthExpires,
+docsBpiCmAuthReset,
+docsBpiCmAuthGraceTime,
+docsBpiCmTEKGraceTime,
+docsBpiCmAuthWaitTimeout,
+docsBpiCmReauthWaitTimeout,
+docsBpiCmOpWaitTimeout,
+docsBpiCmRekeyWaitTimeout,
+docsBpiCmAuthRejectWaitTimeout,
+docsBpiCmAuthRequests,
+docsBpiCmAuthReplies,
+docsBpiCmAuthRejects,
+docsBpiCmAuthInvalids,
+docsBpiCmAuthRejectErrorCode,
+docsBpiCmAuthRejectErrorString,
+docsBpiCmAuthInvalidErrorCode,
+
+
+docsBpiCmAuthInvalidErrorString,
+docsBpiCmTEKPrivacyEnable,
+docsBpiCmTEKState,
+docsBpiCmTEKExpiresOld,
+docsBpiCmTEKExpiresNew,
+docsBpiCmTEKKeyRequests,
+docsBpiCmTEKKeyReplies,
+docsBpiCmTEKKeyRejects,
+docsBpiCmTEKInvalids,
+docsBpiCmTEKAuthPends,
+docsBpiCmTEKKeyRejectErrorCode,
+docsBpiCmTEKKeyRejectErrorString,
+docsBpiCmTEKInvalidErrorCode,
+docsBpiCmTEKInvalidErrorString
+}
+STATUS                  current
+DESCRIPTION
+"This collection of objects provides CM BPI status and control."
+::= { docsBpiGroups 1 }
+
+docsBpiCmtsGroup        OBJECT-GROUP
+OBJECTS {
+docsBpiCmtsDefaultAuthLifetime,
+docsBpiCmtsDefaultTEKLifetime,
+docsBpiCmtsAuthRequests,
+docsBpiCmtsAuthReplies,
+docsBpiCmtsAuthRejects,
+docsBpiCmtsAuthInvalids,
+docsBpiCmtsAuthCmPublicKey,
+docsBpiCmtsAuthCmKeySequenceNumber,
+docsBpiCmtsAuthCmExpires,
+docsBpiCmtsAuthCmLifetime,
+docsBpiCmtsAuthCmGraceTime,
+docsBpiCmtsAuthCmReset,
+docsBpiCmtsAuthCmRequests,
+docsBpiCmtsAuthCmReplies,
+docsBpiCmtsAuthCmRejects,
+docsBpiCmtsAuthCmInvalids,
+docsBpiCmtsAuthRejectErrorCode,
+docsBpiCmtsAuthRejectErrorString,
+docsBpiCmtsAuthInvalidErrorCode,
+docsBpiCmtsAuthInvalidErrorString,
+docsBpiCmtsTEKLifetime,
+docsBpiCmtsTEKGraceTime,
+docsBpiCmtsTEKExpiresOld,
+docsBpiCmtsTEKExpiresNew,
+docsBpiCmtsTEKReset,
+docsBpiCmtsKeyRequests,
+
+
+docsBpiCmtsKeyReplies,
+docsBpiCmtsKeyRejects,
+docsBpiCmtsTEKInvalids,
+docsBpiCmtsKeyRejectErrorCode,
+docsBpiCmtsKeyRejectErrorString,
+docsBpiCmtsTEKInvalidErrorCode,
+docsBpiCmtsTEKInvalidErrorString,
+docsBpiIpMulticastServiceId,
+docsBpiIpMulticastMapControl,
+docsBpiMulticastAuthControl
+}
+STATUS          current
+DESCRIPTION
+"This collection of objects provides CMTS BPI status and control."
+::= { docsBpiGroups 2 }
+
+docsBpiObsoleteObjectsGroup     OBJECT-GROUP
+OBJECTS {
+docsBpiCmtsDefaultAuthGraceTime,
+docsBpiCmtsDefaultTEKGraceTime
+}
+STATUS          obsolete
+DESCRIPTION
+"This is a collection of obsolete BPI objects."
+::= { docsBpiGroups 3 }
+
+END

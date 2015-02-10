@@ -1,0 +1,669 @@
+SLS-NEGOTIATION-PIB PIB-DEFINITIONS ::= BEGIN
+   IMPORTS
+        Unsigned32, InstanceId, MODULE-IDENTITY, OBJECT-TYPE
+             FROM COPS-PR-SPPI
+        ZerroDotZero
+             FROM SNMPv2-SMI
+        ExtUTCTime
+             FROM SNMPv2-SMI
+        InetAddressType, InetAddress, InetAddressPrefixLength,
+        InetPortNumber
+             FROM INET-ADDRESS-MIB
+        DscpOrAny
+             FROM DIFFSERV-DSCP-TC
+   slsPolicyPib MODULE-IDENTITY
+        SUBJECT-CATEGORIES { tbd - COPS-SLS Client Type }
+        LAST-UPDATED "200202281200Z"
+        ORGANIZATION "Alcatel, ENST Paris and University of Paris 6"
+        CONTACT-INFO "
+                      Thi Mai Trang Nguyen
+                      INFRES-ENST
+                      46 Rue Barrault
+                      75013 Paris - France
+                      Phone: +33 1 45 81 74 61
+                      Email: trnguyen@enst.fr
+                      Nadia Boukhatem
+                      INFRES-ENST
+                      46 Rue Barrault
+                      75013 Paris - France
+                      Phone: +33 1 45 81 82 16
+                      Email: Nadia.BouKhatem@enst.fr
+                      Yacine El Mghazli
+                      Alcatel R&amp;I
+                      Route de Nozay
+                      F-91460 Marcoussis - FRANCE
+                      Phone: +33 1 69 63 41 87
+                      Email: yacine.el_mghazli@alcatel.fr
+                      Nathalie Charton
+                      Alcatel R&amp;I
+                      Route de Nozay
+                      F-91460 Marcoussis - FRANCE
+                      Phone: +33 1 69 63 14 85
+                      Email: Nathalie.Charton@ms.alcatel.fr
+                      Guy Pujolle
+                      RP-LIP6-UPMC
+                      8 Rue du Capitaine Scott
+                      75015 Paris - France
+                      Phone: +33 1 44 27 75 14
+                      Email: Guy.Pujolle@lip6.fr"
+        DESCRIPTION
+             "The PIB module contains a set of classes
+             describing the policies in SLS negotiation"
+        ::= { tbd }
+
+   slsCapabilityClasses OBJECT IDENTIFIER ::= { slsPolicyPib 1 }
+   slsPolicyClasses OBJECT IDENTIFIER ::= { slsPolicyPib 2 }
+   slsParamClasses OBJECT IDENTIFIER ::= { slsPolicyPib 3 }
+   slsReportClasses OBJECT IDENTIFIER ::= { slsPolicyPib 4}
+
+   slsNegoCapsTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF SlsCapsEntry
+        PIB-ACCESS  notify        
+        STATUS      current
+        DESCRIPTION
+             "SLS negotiation capabilities supported by the client"
+        ::= { slsCapabilityClasses 1}
+   slsNegoCapsEntry OBJECT-TYPE
+        SYNTAX      SlsNegoCapsEntry
+        STATUS      current
+        DESCRIPTION
+             "An instance of this class describes the SLS negotiation
+              capabilities of a client"
+        ::= { slsNegoCapsTable 1 }
+        PIB-INDEX { slsNegoCapsPrid }
+   SlsNegoCapsEntry ::= SEQUENCE {
+             slsNegoCapsPrid InstanceId
+             slsNegoCapsNegoMode BITS
+             slsNegoCapsNegoInt Unsigned32
+             slsNegoCapsMaxPredefSls Unsigned32
+   }
+   slsNegoCapsPrid OBJECT-TYPE
+        SYNTAX     InstanceId
+        STATUS     current
+        DESCRIPTION
+             "An arbitrary integer index that uniquely identifies an
+             instance of the class"   
+     ::= { slsNegoCapsEntry 1 }
+   slsNegoCapsNegoMode OBJECT-TYPE
+        SYNTAX BITS {
+                    predefSls(1)
+                    -- the ability to support predefined SLS mode
+                    non-predefinedSls (2)
+                    -- the ability to support non-predefined SLS mode"
+               }
+        STATUS current
+        DESCRIPTION
+             "The SLS negotiation mode supported by the PEP
+             (1) - predefined SLS mode
+             (2) - non-predefined SLS mode"
+        ::= { slsNegoCapsEntry 2 }
+   slsNegoCapsNegoInt OBJECT-TYPE
+        SYNTAX        Unsigned32
+        STATUS        current
+        DESCRIPTION
+             "The desired interval before which the client could
+             send another REQ message to modify a
+             negotiated SLS"
+       ::= { slsNegoCapsEntry 3 }
+   slsNegoCapsMaxPredefSls OBJECT-TYPE
+        SYNTAX             Unsigned32
+        STATUS             current
+        DESCRIPTION
+             "The maximum number of predefined SLSs that the PDP can
+              install at the client device. If the client does not 
+              support the predefined SLS negotiation mode, this value 
+              MUST be 0"
+        ::= { slsNegoCapsEntry 4 }
+   slsNegoTable OBJECT-TYPE
+        SYNTAX       SEQUENCE OF SlsNegoEntry
+        PIB-ACCESS   install
+        STATUS       current
+        DESCRIPTION
+             "SLS negotiation policies to be installed by the PDP"
+        ::= { slsPolicyClasses 1 }
+   slsNegoEntry OBJECT-TYPE
+        SYNTAX      SlsNegoEntry
+        STATUS      current
+        DESCRIPTION
+             "An instance of this class describes the policies about
+              SLS negotiation that the PDP installs at the PEP"
+        PIB-INDEX { slsNegoPrid }
+        ::= { slsNegoTable 1 }
+   SlsNegoEntry ::= SEQUENCE {
+            slsNegoPrid InstanceId
+            slsNegoMode BITS
+            slsNegoMaxInt Unsigned32
+   }
+   slsNegoPrid OBJECT-TYPE
+        SYNTAX InstanceId
+        STATUS current
+        DESCRIPTION
+             "An arbitrary integer index that uniquely identifies an
+             instance of the class"
+        ::= { slsNegoEntry 1 }
+   slsNegoMode OBJECT-TYPE
+        SYNTAX BITS{
+                    predefSls(1)
+                    -- predefined SLS mode
+                    non-predefinedSls (2)
+                    -- non-predefined SLS mode"
+        }
+        STATUS current
+        DESCRIPTION
+             "The negotiation mode used by the client. 
+- indicates the predefined SLS mode. 
+- indicates the non-predefined SLS mode"
+        ::= { slsNegoEntry 2 }
+   slsNegoMaxInt OBJECT-TYPE
+        SYNTAX   Unsigned32
+        STATUS   current
+        DESCRIPTION
+             "The maximum interval during which the client cannot issue
+             a REQ message to change a negotiated SLS"
+        ::= { slsNegoEntry 3 }
+   slsSlsTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF slsSlsEntry
+        PIB-ACCESS install-notify
+        STATUS     current
+        DESCRIPTION
+             "Represent an SLS"
+        ::= { slsPolicyClasses 2 }
+   slsSlsEntry OBJECT-TYPE
+        SYNTAX SEQUENCE OF SlsSlsEntry
+        STATUS current
+        DESCRIPTION
+             "An instance of this class specifies an SLS"
+        ::= { slsSlsTable 1 }
+   SlsSlsEntry ::= SEQUENCE {
+        slsSlsPrid InstanceId
+        slsSlsScope Prid
+        slsSlsFlowId Prid
+        slsSlsTrafficConformance Prid
+        slsSlsExcessTreatment Prid
+        slsSlsPerformance Prid
+        slsSlsServiceSchedule Prid
+   }
+   slsSlsPrid OBJECT-TYPE
+        SYNTAX InstanceId
+        STATUS current
+        DESCRIPTION
+             "An arbitrary integer that uniquely identifies an instance
+              of the class"
+        ::= { slsSlsEntry 1}
+   slsSlsScope OBJECT-TYPE
+        SYNTAX Prid
+        STATUS current
+        DESCRIPTION
+             " This attribute uniquely indicates where the QoS policy 
+               for that specific service is to be enforced. The value 
+               must point to a valid instance of one of these classes:
+                    slsScopeParamEntryö
+        ::= { slsSlsEntry 2 }
+   slsSlsFlowId OBJECT-TYPE
+        SYNTAX Prid
+        STATUS current
+        DESCRIPTION
+             " This attribute specifies the identification of a flow. It 
+               indentifies a stream of IP packets sharing at least one 
+               common characteristic. The value must point to a valid 
+               instance of one of these classes:
+                    slsFlowIdParamEntry"
+        ::= { slsSlsEntry 3 }
+   slsSlsTrafficConformance OBJECT-TYPE
+        SYNTAX Prid
+        STATUS current
+        DESCRIPTION
+             " This attribute specifies the traffic conformance of the
+               flow identified in slsSlsFlowId. The traffic conformance 
+               parameters describes how the packet stream should look 
+               like to get the guarantees indicated by the perfomance 
+               parameters. The value must point to 
+               a valid instance of one of these classes: 
+                   slsConformParamEntry"
+        ::= { slsSlsEntry 4 }
+   slsSlsExcessTreatment OBJECT-TYPE
+        SYNTAX Prid
+        STATUS current
+        DESCRIPTION
+             "This attribute specifies the excess treatment applied to
+              the flow identified by slsSlsFlowId if it does not conform
+              to parameters specified in slsSlsTrafficConformance. 
+              Excess traffic may be dropped, shaped and/or remarked.
+              The value must point to a valid instance of one of these
+              classes:
+                   slsExcTreatParamEntry" 
+        ::= { slsSlsEntry 5 }
+   slsSlsPerformance OBJECT-TYPE
+        SYNTAX Prid
+        STATUS current
+        DESCRIPTION
+             "This attribute specifies the performance guarantees the 
+             network offers to the customer for the flow identified by 
+             slsSlsFlowId. The value must point to an instance of one of 
+             these classes:
+                   slsPerformanceParamEntry "
+        ::= { slsSlsEntry 6 }
+   slsSlsServiceSchedule OBJECT-TYPE
+        SYNTAX Prid
+        STATUS current
+        DESCRIPTION
+             " This attribute indicates the start time and end time of 
+             the service, i.e. when the service is available. The value 
+             must point to an valid instance of one of these classes:
+                  slsScheduleParamEntry
+                  zeroDotZero (non specified)"
+        ::= { slsSlsEntry 7 }
+   slsScopeParamTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF slsScopeParamEntry
+        PIB-ACESS install-notify
+        STATUS current
+        DESCRIPTION
+             "This class specifies the scope parameters"
+        ::= { slsParamClasses 1}
+   slsScopeParamEntry OBJECT-TYPE
+        SYNTAX SlsScopeParamEntry
+        STATUS current
+        DESCRIPTION
+             "This PRC uniquely identifies the geographical/topological 
+              region over which the QoS is to be enforced by indicating 
+              the boundaries of that region."
+        ::= { slsScopeParamTable 1 }
+   slsScopeParamEntry ::= SEQUENCE {
+        SlsScopeParamPrid      Prid
+        slsScopeParamId TagReferenceId
+   }
+   slsScopeParamPrid OBJECT-TYPE 
+       SYNTAX       InstanceId 
+       STATUS       current 
+       DESCRIPTION 
+          "An arbitrary integer index that uniquely identifies an 
+           instance of the class." 
+       ::= { slsScopeParamEntry 1 } 
+   slsScopeParamId OBJECT-TYPE 
+       SYNTAX       TagReferenceId 
+       PIB-TAG      {slsScopeIfParamId} 
+       STATUS       current 
+       DESCRIPTION 
+          "Identifies an SLS Scope." 
+       ::= { slsScopeParamEntry 2 } 
+   slsScopeIfParamTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF slsScopeInterfaceParamEntry
+        PIB-ACCESS install-notify
+        STATUS current
+        DESCRIPTION
+             "The entry points (interfaces) of the IP packets relative 
+              to the region (network)."
+        ::= { slsParamClasses 2 }
+   slsScopeIfParamEntry OBJECT-TYPE
+        SYNTAX SlsScopeIfParamEntry
+        STATUS current
+        DESCRIPTION
+             ôAn entry in the scope interface table describes a single 
+             interface of the scope.ö
+        ::= { slsScopeIfParamTable 1 }   
+   slsScopeIfParamEntry ::= SEQUENCE {
+        SlsScopeIfParamPrid        Prid
+        slsScopeIfParamId          TagId
+        slsScopeIfParamIfIndex     InterfaceIndex
+        slsScopeIfParamDirection   BITS
+   }
+   slsScopeIfParamPrid OBJECT-TYPE
+        SYNTAX Prid
+        STATUS current
+        DESCRIPTION
+             "An arbitrary integer index that uniquely identifies an 
+             instance of the class."
+        ::= { slsScopeIfParamEntry 1 }
+   slsScopeIfParamId OBJECT-TYPE
+        SYNTAX TagId
+        STATUS current
+        DESCRIPTION
+             "An SLS Scope is composed of one or more entry/exit 
+             points. Each interface belonging to the same scope uses the 
+             same Scope ID. Hence, A scope Id identifies which scope 
+             this interface is a part of. This needs to be the value of 
+             slsScopeParamId attribute for an existing instance of 
+             slsScopeParamEntry."
+        ::= { slsScopeIfParamEntry 2 }
+   slsScopeIfParamIfIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        STATUS current
+        DESCRIPTION
+             " This value contains the interface index of the entry/exit 
+             interface."
+        ::= { slsScopeIfParamEntry 3 }
+   slsScopeIfParamDirection OBJECT-TYPE
+        SYNTAX BITS{
+                      ingress (0)
+                      egress (1)
+                    }
+        STATUS current
+        DESCRIPTION
+             " This attribute specifies whether the interface is an 
+             entry point (ingress) or an exit point (egress) of thez SLS 
+             scope."
+        ::= { slsScopeIfParamEntry 4 }
+   slsFlowIdParamTable OBJECT-TYPE
+       SYNTAX SEQUENCE OF slsFlowIdParamEntry
+       PIB-ACCESS install-notify
+       STATUS current
+       DESCRIPTION
+            "This class specifies parameters identifying a traffic 
+            stream"   
+       ::= { slsParamClasses 3 }
+   slsFlowIdParamEntry OBJECT-TYPE
+        SYNTAX SlsFlowIdParamEntry
+        STATUS current
+        DESCRIPTION
+            "The instance of this class identifies a traffic stream"
+        ::= { slsFlowIdParamTable 1 }
+   SlsFlowIdParamEntry ::= SEQUENCE{
+        slsFlowIdParamPrid            InstanceId
+        slsFlowIdParamAddrType        InetAddressType,
+        slsFlowIdParamDstAddr         InetAddress,
+        slsFlowIdParamDstPrefixLength InetAddressPrefixLength
+        slsFlowIdParamSrcAddr         InetAddress,
+        slsFlowIdParamSrcPrefixLength InetAddressPrefixLength,
+        slsFlowIdParamDscp            DscpOrAny,
+        slsFlowIdParamFlowLable       Unsigned32,
+        slsFlowIdParamProtocol        Integer32,
+        slsFlowIdParamDstL4PortMin    InetPortNumber,
+        slsFlowIdParamDstL4PortMax    InetPortNumber,
+        slsFlowIdParamSrcL4PortMin    InetPortNumber,
+        slsFlowIdParamSrcL4PortMax    InetPortNumber
+   }
+   slsFlowIdParamPrid OBJECT-TYPE
+        SYNTAX     InstanceId
+        STATUS     current
+        DESCRIPTION
+             "An arbitrary integer index that uniquely identifies an
+             instance of the class"   
+        ::= { slsFlowIdParamEntry 1 } 
+   slsFlowIdParamAddrType  OBJECT-TYPE
+        SYNTAX      InetAddressType
+        STATUS      current
+        DESCRIPTION
+             "Specify the type of packet's IP address."
+        ::= { slsFlowIdParamEntry 2 }
+   slsFlowIdParamDstAddr OBJECT-TYPE
+        SYNTAX         InetAddress
+        STATUS         current
+        DESCRIPTION
+             "The IP address of the packet's destination."
+        ::= { slsFlowIdParamEntry 3 }
+   slsFlowIdParamDstPrefixLength  OBJECT-TYPE
+        SYNTAX         InetAddressPrefixLength
+        STATUS         current
+        DESCRIPTION
+             "The length of a mask for the matching of the destination 
+             IP address. The value of 0 indicates that the address 
+            always matches."
+        ::= { slsFlowIdParamEntry 4 }
+   slsFlowIdParamSrcAddr OBJECT-TYPE
+        SYNTAX       InetAddress
+        STATUS         current
+        DESCRIPTION
+             "The IP address of the packet's source."
+        ::= { slsFlowIdParamEntry 5 }
+   slsFlowIdParamSrcPrefixLength OBJECT-TYPE
+        SYNTAX       InetAddressPrefixLength
+        STATUS       current
+        DESCRIPTION
+             "The length of a mask for the matching of the destination 
+             IP address. A value of 0 indicates that the address always 
+             matches."
+        ::= { slsFlowIdParamEntry 6 }
+   slsFlowIdParamDscp OBJECT-TYPE
+        SYNTAX        DscpOrAny
+        STATUS        current
+        DESCRIPTION
+             "The DSCP value of the packet. A value of û1 indicates that 
+              DSCP value has not been defined."
+        ::= { slsFlowIdParamEntry 7 }
+   slsFlowIdParamFlowLable OBJECT-TYPE
+        SYNTAX      Unsigned32
+        STATUS      current
+        DESCRIPTION
+             "The value of the Flow Label field in IPv6 header."
+        ::= { slsFlowIdParamEntry 8 }
+   slsFlowIdParamProtocol OBJECT-TYPE
+        SYNTAX       Integer32
+        STATUS       current
+        DESCRIPTION
+             "The value of the Protocol field in IP header."
+        ::= { slsFlowIdParamEntry 9 }
+   slsFlowIdParamDstL4PortMin OBJECT-TYPE
+        SYNTAX       InetPortNumber
+        STATUS       current
+        DESCRIPTION
+             "The minimum value that the packet's layer 4 destination 
+             port number can have."
+        ::= { slsFlowIdParamEntry 10 }
+   slsFlowIdParamDstL4PortMax OBJECT-TYPE
+        SYNTAX       InetPortNumber
+        STATUS       current
+        DESCRIPTION
+             "The maximum value that the packet's layer 4 destination 
+             port number can have."
+        ::= { slsFlowIdParamEntry 11 }
+   slsFlowIdParamSrcL4PortMin OBJECT-TYPE
+        SYNTAX       InetPortNumber
+        STATUS       current
+        DESCRIPTION
+             "The minimum value that the packet's layer 4 source port 
+             number can have."
+        ::= { slsFlowIdParamEntry 12 }
+   slsFlowIdParamSrcL4PortMax  OBJECT-TYPE
+        SYNTAX      InetPortNumber
+        STATUS      current
+        DESCRIPTION
+             "The minimum value that the packet's layer 4 source port 
+             number can have."
+        ::= { slsFlowIdParamEntry 13 }
+   slsConformParamTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF slsConformParamEntry
+        PIB-ACCESS install-notify
+        STATUS current
+        DESCRIPTION
+             "This class defines the traffic conformance of a traffic 
+             stream."
+        ::= { slsParamClasses 4 }
+   slsConformParamEntry OBJECT-TYPE
+        SYNTAX SlsConformParamEntry
+        STATUS current
+        DESCRIPTION
+            "The instance of this class specifies algorithm and profile 
+            to verify the conformance of a traffic stream"
+        ::= { slsConformParamTable 1 }
+   SlsConformParamEntry ::= SEQUENCE {
+        slsConformParamPrid     InstanceId
+        slsConformParamAlgo     Unsigned32
+        slsConformParamRate     Unsigned32
+        slsConformParamBurstSize Unsigned32
+   }
+   slsConformPrid OBJECT-TYPE
+        SYNTAX      InstanceId  
+        STATUS      current
+        DESCRIPTION
+             "An arbitrary integer that uniquely identifies an instance
+              of the class." 
+        ::= { slsConformParamEntry 1 }  
+   slsConformParamAlgo  OBJECT-TYPE
+        SYNTAX      Unsigned32
+        STATUS      current
+        DESCRIPTION
+             "Specify the algorithm used to verify the conformance of 
+             the traffic stream.
+              1 û Simple Token Bucket"
+        ::= { slsConformParamEntry 2 }
+   slsConformParamRate  OBJECT-TYPE
+        SYNTAX      Unsigned32
+        STATUS      current
+        DESCRIPTION
+             "The rate value used in Simple Token Bucket algorithm."
+        ::= { slsConformParamEntry 3 }
+   slsConformParamBurstSize OBJECT-TYPE
+        SYNTAX      Unsigned32
+        STATUS      current
+        DESCRIPTION
+             "The burst size value used in Simple Token Bucket 
+             algorithm."
+        ::= { slsConformParamEntry 4 }
+   slsExcTreatParamTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF slsExcTreatParamEntry
+        PIB-ACCESS install-notify
+        STATUS current
+        DESCRIPTION
+             "This class specifies parameters of schedule of service"
+        ::= { slsParamClasses 5 }
+   slsExcTreatParamEntry OBJECT-TYPE
+        SYNTAX SlsExctreatParamEntry
+        STATUS current
+        DESCRIPTION
+            "The instance of this class identifies a traffic stream"
+        ::= { slsExcTreatParamTable 1 }
+   SlsExcTreatParamEntry ::= SEQUENCE {
+        slsExcTreatParamPrid   InstanceId
+        slsExcTreatParamAction BITS
+   }
+   slsExcTreatParamPrid OBJECT-TYPE
+        SYNTAX      InstanceId  
+        STATUS      current
+        DESCRIPTION
+             "An arbitrary integer that uniquely identifies an instance
+              of the class." 
+        ::= { slsExcTreatParamEntry 1 }
+   slsExcTreatParamAction OBJECT-TYPE
+        SYNTAX      BITS{
+                    shapping(1)
+                    -- traffic exceeding the conformance parameters
+                       negotiated will be shaped.
+                    dropping (2)
+                    -- traffic exceeding the conformance parameters
+                       negotiated will be dropped
+               }
+        STATUS      current
+        DESCRIPTION
+             "Specify the treatment applied to the packet out of the 
+             data stream's conformance negotiated
+             (1) û shapping exceeding traffic
+             (2) û dropping exceeding traffic"
+        ::= { slsExcTreatParamEntry 2 }
+   slsPerformanceParamTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF slsPerformanceParamEntry
+        PIB-ACCESS install-notify   
+        STATUS current
+        DESCRIPTION
+             "This class specifies parameters of performance of a flow"
+        ::= { slsParamClasses 6 }
+   slsPerformanceParamEntry  OBJECT-TYPE
+        SYNTAX SlsPerformanceParamEntry
+        STATUS current
+        DESCRIPTION
+             "Describes performance parameters of a flow"
+        ::= { sls PerformanceParamTable 1 }
+   SlsPerformanceParamEntry ::= SEQUENCE {
+        slsPerformanceParamPrid       InstanceId
+        slsPerformanceParamDelay      Unsigned32
+        slsPerformanceParamJitter     Unsigned32
+        slsPerformanceParamPacketLoss Unsigned32
+   }
+   slsPerformanceParamPrid OBJECT-TYPE
+        SYNTAX      InstanceId  
+        STATUS      current
+        DESCRIPTION
+             "An arbitrary integer that uniquely identifies an instance
+              of the class." 
+        ::= { slsPerformanceParamEntry 1 }
+   slsPerformanceParamDelay OBJECT-TYPE
+        SYNTAX Unsigned32        
+        STATUS current
+        DESCRIPTION
+             "Specifies the delay value in milisecond"
+        ::= { slsPerformanceParamEntry 2 }
+   slsPerformanceParamJitter OBJECT-TYPE
+        SYNTAX Unsigned32
+        STATUS current
+        DESCRIPTION
+             "Specifies the jitter value in milisecond"
+        ::= { slsPerformanceParamEntry 3 }
+   slsPerformanceParamPacketLoss OBJECT-TYPE
+        SYNTAX Unsigned32
+        STATUS current
+        DESCRIPTION
+             "Specifies the packet loss ratio in %"
+        ::= { slsPerformanceParamEntry 4 }
+slsScheduleParamTable OBJECT-TYPE
+        SYNTAX       SEQUENCE OF slsScheduleParamEntry
+        PIB-ACCESS   install-notify
+        STATUS       current
+        DESCRIPTION
+             "This class specifies parameters of schedule of service"
+        ::= { slsParamClasses 7}
+   slsScheduleParamEntry OBJECT-TYPE
+        SYNTAX SlsScheduleParamEntry
+        STATUS current
+        DESCRIPTION
+             "Specifies a service schedule"
+        ::= { slsScheduleParamTable 1 }
+   SlsScheduleParamEntry ::= SEQUENCE {
+        slsScheduleParamPrid      InstanceId
+        slsScheduleParamStartTime ExtUTCTime
+        slsScheduleParamStopTime  ExtUTCTime
+   }
+   slsScheduleParamPrid OBJECT-TYPE
+        SYNTAX      InstanceId  
+        STATUS      current
+        DESCRIPTION
+             "An arbitrary integer that uniquely identifies an instance
+              of the class." 
+        ::= { slsScheduleParamEntry 1 }
+   slsScheduleParamStartTime OBJECT-TYPE
+        SYNTAX ExtUTCTime
+        STATUS current
+        DESCRIPTION
+             "The time the service starts"
+        ::= { slsScheduleParamEntry 2 }
+   slsScheduleParamStopTime OBJECT-TYPE
+        SYNTAX ExtUTCTime
+        STATUS current
+        DESCRIPTION
+             "The time the service terminate"
+        ::= { slsScheduleParamEntry 3 }
+   slsNegoRptTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF SlsNegoRptEntry
+        PIB-ACCESS report-only
+        STATUS     current
+        DESCRIPTION
+             "This class is used by the PEP to convey negotiation 
+             information in RPT message"
+        ::= { slsReportClasses 1 }
+   slsNegoRptEntry OBJECT-TYPE
+        SYNTAX     SlsNegoRptEntry
+        STATUS     current
+        DESCRIPTION
+             "An instance of this class reports on the SLS negotiation"
+        ::= { slsNegoRptTable 1 }
+   SlsNegoRptEntry ::= SEQUENCE {
+        slsNegoRptPrid   InstanceId
+        slsNegoRptFailRea BITS
+   }
+   slsNegoRptPrid OBJECT-TYPE
+        SYNTAX    InstanceId
+        STATUS    current
+        DESCRIPTION
+             "An arbitrary integer that uniquely identifies an instance 
+             of the class"
+        ::= { slsNEgoRptEntry 1 }
+   slsNegoRptFailRea OBJECT-TYPE
+        SYNTAX    BITS {
+                      slsNonAccepted (1) 
+                  }
+        STATUS    current
+        DESCRIPTION
+             "This attribute specifies the reason by which the PEP sends
+             a 'failure' report
+             (1) û the PEP does not accept the SLS suggested"
+        ::= { slsNEgoRptEntry 1 }
+
+   END.

@@ -1,0 +1,1216 @@
+P-BRIDGE-MIB DEFINITIONS ::= BEGIN
+
+-- -------------------------------------------------------------
+-- MIB for IEEE 802.1p devices
+-- -------------------------------------------------------------
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Counter32, Integer32, Counter64
+        FROM SNMPv2-SMI
+    TruthValue, TimeInterval, MacAddress, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF
+    dot1dTp, dot1dTpPort, dot1dBridge,
+    dot1dBasePortEntry, dot1dBasePort
+        FROM BRIDGE-MIB;
+
+pBridgeMIB MODULE-IDENTITY
+    LAST-UPDATED "200601090000Z"
+    ORGANIZATION "IETF Bridge MIB Working Group"
+    CONTACT-INFO
+        "Email:  bridge-mib@ietf.org
+                 ietfmibs@ops.ietf.org
+
+                 David Levi
+         Postal: Nortel Networks
+                 4655 Great America Parkway
+                 Santa Clara, CA 95054
+                 USA
+                 Phone: +1 865 686 0432
+                 Email: dlevi@nortel.com
+
+                 David Harrington
+         Postal: Effective Software
+                 50 Harding Rd.
+                 Portsmouth, NH 03801
+                 USA
+                 Phone: +1 603 436 8634
+                 Email: ietfdbh@comcast.net
+
+                 Les Bell
+         Postal: Hemel Hempstead, Herts. HP2 7YU
+                 UK
+          Email: elbell@ntlworld.com
+
+                 Vivian Ngai
+
+
+
+          Email: vivian_ngai@acm.org
+
+                 Andrew Smith
+         Postal: Beijing Harbour Networks
+                 Jiuling Building
+                 21 North Xisanhuan Ave.
+                 Beijing, 100089
+                 PRC
+            Fax: +1 415 345 1827
+          Email: ah_smith@acm.org
+
+                 Paul Langille
+         Postal: Newbridge Networks
+                 5 Corporate Drive
+                 Andover, MA 01810
+                 USA
+          Phone: +1 978 691 4665
+          Email: langille@newbridge.com
+
+                 Anil Rijhsinghani
+         Postal: Accton Technology Corporation
+                 5 Mount Royal Ave
+                 Marlboro, MA 01752
+                 USA
+          Phone:
+          Email: anil@accton.com
+
+                 Keith McCloghrie
+         Postal: Cisco Systems, Inc.
+                 170 West Tasman Drive
+                 San Jose, CA 95134-1706
+                 USA
+          Phone: +1 408 526 5260
+          Email: kzm@cisco.com"
+    DESCRIPTION
+        "The Bridge MIB Extension module for managing Priority
+        and Multicast Filtering, defined by IEEE 802.1D-1998,
+        including Restricted Group Registration defined by
+        IEEE 802.1t-2001.
+
+        Copyright (C) The Internet Society (2006).  This version of
+        this MIB module is part of RFC 4363; See the RFC itself for
+        full legal notices."
+    REVISION     "200601090000Z"
+    DESCRIPTION
+         "Added dot1dPortRestrictedGroupRegistration.
+          Deprecated pBridgePortGmrpGroup and pBridgeCompliance
+          and added pBridgePortGmrpGroup2 and pBridgeCompliance2."
+
+
+
+    REVISION     "199908250000Z"
+    DESCRIPTION
+         "The Bridge MIB Extension module for managing Priority
+          and Multicast Filtering, defined by IEEE 802.1D-1998.
+
+          Initial version, published as RFC 2674."
+
+    ::= { dot1dBridge 6 }
+
+pBridgeMIBObjects OBJECT IDENTIFIER ::= { pBridgeMIB 1 }
+
+-- -------------------------------------------------------------
+-- Textual Conventions
+-- -------------------------------------------------------------
+
+EnabledStatus ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "A simple status value for the object."
+    SYNTAX      INTEGER { enabled(1), disabled(2) }
+
+-- -------------------------------------------------------------
+-- subtrees in the P-BRIDGE MIB
+-- -------------------------------------------------------------
+
+dot1dExtBase    OBJECT IDENTIFIER ::= { pBridgeMIBObjects 1 }
+dot1dPriority   OBJECT IDENTIFIER ::= { pBridgeMIBObjects 2 }
+dot1dGarp       OBJECT IDENTIFIER ::= { pBridgeMIBObjects 3 }
+dot1dGmrp       OBJECT IDENTIFIER ::= { pBridgeMIBObjects 4 }
+
+-- -------------------------------------------------------------
+-- the dot1dExtBase subtree
+-- -------------------------------------------------------------
+
+dot1dDeviceCapabilities OBJECT-TYPE
+    SYNTAX      BITS {
+        dot1dExtendedFilteringServices(0),
+        dot1dTrafficClasses(1),
+        dot1qStaticEntryIndividualPort(2),
+        dot1qIVLCapable(3),
+        dot1qSVLCapable(4),
+        dot1qHybridCapable(5),
+        dot1qConfigurablePvidTagging(6),
+        dot1dLocalVlanCapable(7)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+
+
+
+        "Indicates the optional parts of IEEE 802.1D and 802.1Q
+        that are implemented by this device and are manageable
+        through this MIB.  Capabilities that are allowed on a
+        per-port basis are indicated in dot1dPortCapabilities.
+
+        dot1dExtendedFilteringServices(0),
+                              -- can perform filtering of
+                              -- individual multicast addresses
+                              -- controlled by GMRP.
+        dot1dTrafficClasses(1),
+                              -- can map user priority to
+                              -- multiple traffic classes.
+        dot1qStaticEntryIndividualPort(2),
+                              -- dot1qStaticUnicastReceivePort &
+                              -- dot1qStaticMulticastReceivePort
+                              -- can represent non-zero entries.
+        dot1qIVLCapable(3),   -- Independent VLAN Learning (IVL).
+        dot1qSVLCapable(4),   -- Shared VLAN Learning (SVL).
+        dot1qHybridCapable(5),
+                              -- both IVL & SVL simultaneously.
+        dot1qConfigurablePvidTagging(6),
+                              -- whether the implementation
+                              -- supports the ability to
+                              -- override the default PVID
+                              -- setting and its egress status
+                              -- (VLAN-Tagged or Untagged) on
+                              -- each port.
+        dot1dLocalVlanCapable(7)
+                              -- can support multiple local
+                              -- bridges, outside of the scope
+                              -- of 802.1Q defined VLANs."
+    REFERENCE
+        "ISO/IEC 15802-3 Section 5.2,
+        IEEE 802.1Q/D11 Section 5.2, 12.10.1.1.3/b/2"
+    ::= { dot1dExtBase 1 }
+
+dot1dTrafficClassesEnabled OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value true(1) indicates that Traffic Classes are
+        enabled on this bridge.  When false(2), the bridge
+        operates with a single priority level for all traffic.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    DEFVAL      { true }
+
+
+
+    ::= { dot1dExtBase 2 }
+
+dot1dGmrpStatus OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The administrative status requested by management for
+        GMRP.  The value enabled(1) indicates that GMRP should
+        be enabled on this device, in all VLANs, on all ports
+        for which it has not been specifically disabled.  When
+        disabled(2), GMRP is disabled, in all VLANs and on all
+        ports, and all GMRP packets will be forwarded
+        transparently.  This object affects both Applicant and
+        Registrar state machines.  A transition from disabled(2)
+        to enabled(1) will cause a reset of all GMRP state
+        machines on all ports.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    DEFVAL      { enabled }
+    ::= { dot1dExtBase 3 }
+
+-- -------------------------------------------------------------
+-- Port Capabilities Table
+-- -------------------------------------------------------------
+
+dot1dPortCapabilitiesTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1dPortCapabilitiesEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains capabilities information about
+        every port that is associated with this bridge."
+    ::= { dot1dExtBase 4 }
+
+dot1dPortCapabilitiesEntry OBJECT-TYPE
+    SYNTAX      Dot1dPortCapabilitiesEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A set of capabilities information about this port
+        indexed by dot1dBasePort."
+    AUGMENTS { dot1dBasePortEntry }
+    ::= { dot1dPortCapabilitiesTable 1 }
+
+Dot1dPortCapabilitiesEntry ::=
+    SEQUENCE {
+
+
+
+        dot1dPortCapabilities
+            BITS
+    }
+
+dot1dPortCapabilities OBJECT-TYPE
+    SYNTAX      BITS {
+        dot1qDot1qTagging(0),
+        dot1qConfigurableAcceptableFrameTypes(1),
+        dot1qIngressFiltering(2)
+    }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Indicates the parts of IEEE 802.1D and 802.1Q that are
+        optional on a per-port basis, that are implemented by
+        this device, and that are manageable through this MIB.
+
+        dot1qDot1qTagging(0), -- supports 802.1Q VLAN tagging of
+                              -- frames and GVRP.
+        dot1qConfigurableAcceptableFrameTypes(1),
+                              -- allows modified values of
+                              -- dot1qPortAcceptableFrameTypes.
+        dot1qIngressFiltering(2)
+                              -- supports the discarding of any
+                              -- frame received on a Port whose
+                              -- VLAN classification does not
+                              -- include that Port in its Member
+                              -- set."
+    REFERENCE
+        "ISO/IEC 15802-3 Section 5.2,
+        IEEE 802.1Q/D11 Section 5.2"
+    ::= { dot1dPortCapabilitiesEntry 1 }
+
+-- -------------------------------------------------------------
+-- the dot1dPriority subtree
+-- -------------------------------------------------------------
+
+-- -------------------------------------------------------------
+-- Port Priority Table
+-- -------------------------------------------------------------
+
+dot1dPortPriorityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1dPortPriorityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains information about every port that
+        is associated with this transparent bridge."
+
+
+
+    ::= { dot1dPriority 1 }
+
+dot1dPortPriorityEntry OBJECT-TYPE
+    SYNTAX      Dot1dPortPriorityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of Default User Priorities for each port of a
+        transparent bridge.  This is indexed by dot1dBasePort."
+    AUGMENTS { dot1dBasePortEntry }
+    ::= { dot1dPortPriorityTable 1 }
+
+Dot1dPortPriorityEntry ::=
+    SEQUENCE {
+        dot1dPortDefaultUserPriority
+            Integer32,
+        dot1dPortNumTrafficClasses
+            Integer32
+    }
+
+dot1dPortDefaultUserPriority OBJECT-TYPE
+    SYNTAX      Integer32 (0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The default ingress User Priority for this port.  This
+        only has effect on media, such as Ethernet, that do not
+        support native User Priority.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    ::= { dot1dPortPriorityEntry 1 }
+
+dot1dPortNumTrafficClasses OBJECT-TYPE
+    SYNTAX      Integer32 (1..8)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The number of egress traffic classes supported on this
+        port.  This object may optionally be read-only.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    ::= { dot1dPortPriorityEntry 2 }
+
+-- -------------------------------------------------------------
+-- User Priority Regeneration Table
+-- -------------------------------------------------------------
+
+
+
+dot1dUserPriorityRegenTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1dUserPriorityRegenEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A list of Regenerated User Priorities for each received
+        User Priority on each port of a bridge.  The Regenerated
+        User Priority value may be used to index the Traffic
+        Class Table for each input port.  This only has effect
+        on media that support native User Priority.  The default
+        values for Regenerated User Priorities are the same as
+        the User Priorities."
+    REFERENCE
+        "ISO/IEC 15802-3 Section 6.4"
+    ::= { dot1dPriority 2 }
+
+dot1dUserPriorityRegenEntry OBJECT-TYPE
+    SYNTAX      Dot1dUserPriorityRegenEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A mapping of incoming User Priority to a Regenerated
+        User Priority."
+    INDEX   { dot1dBasePort, dot1dUserPriority }
+    ::= { dot1dUserPriorityRegenTable 1 }
+
+Dot1dUserPriorityRegenEntry ::=
+    SEQUENCE {
+        dot1dUserPriority
+            Integer32,
+        dot1dRegenUserPriority
+            Integer32
+    }
+
+dot1dUserPriority OBJECT-TYPE
+    SYNTAX      Integer32 (0..7)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The User Priority for a frame received on this port."
+    ::= { dot1dUserPriorityRegenEntry 1 }
+
+dot1dRegenUserPriority OBJECT-TYPE
+    SYNTAX      Integer32 (0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The Regenerated User Priority that the incoming User
+
+
+
+        Priority is mapped to for this port.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    ::= { dot1dUserPriorityRegenEntry 2 }
+
+-- -------------------------------------------------------------
+-- Traffic Class Table
+-- -------------------------------------------------------------
+
+dot1dTrafficClassTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1dTrafficClassEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table mapping evaluated User Priority to Traffic
+        Class, for forwarding by the bridge.  Traffic class is a
+        number in the range (0..(dot1dPortNumTrafficClasses-1))."
+    REFERENCE
+        "ISO/IEC 15802-3 Table 7-2"
+    ::= { dot1dPriority 3 }
+
+dot1dTrafficClassEntry OBJECT-TYPE
+    SYNTAX      Dot1dTrafficClassEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "User Priority to Traffic Class mapping."
+    INDEX   { dot1dBasePort, dot1dTrafficClassPriority }
+    ::= { dot1dTrafficClassTable 1 }
+
+Dot1dTrafficClassEntry ::=
+    SEQUENCE {
+        dot1dTrafficClassPriority
+            Integer32,
+        dot1dTrafficClass
+            Integer32
+    }
+
+dot1dTrafficClassPriority OBJECT-TYPE
+    SYNTAX      Integer32 (0..7)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The Priority value determined for the received frame.
+        This value is equivalent to the priority indicated in
+        the tagged frame received, or one of the evaluated
+        priorities, determined according to the media-type.
+
+
+
+        For untagged frames received from Ethernet media, this
+        value is equal to the dot1dPortDefaultUserPriority value
+        for the ingress port.
+
+        For untagged frames received from non-Ethernet media,
+        this value is equal to the dot1dRegenUserPriority value
+        for the ingress port and media-specific user priority."
+    ::= { dot1dTrafficClassEntry 1 }
+
+dot1dTrafficClass OBJECT-TYPE
+    SYNTAX      Integer32 (0..7)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The Traffic Class the received frame is mapped to.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    ::= { dot1dTrafficClassEntry 2 }
+
+-- -------------------------------------------------------------
+-- Outbound Access Priority Table
+-- -------------------------------------------------------------
+
+dot1dPortOutboundAccessPriorityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1dPortOutboundAccessPriorityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table mapping Regenerated User Priority to Outbound
+        Access Priority.  This is a fixed mapping for all port
+        types, with two options for 802.5 Token Ring."
+    REFERENCE
+        "ISO/IEC 15802-3 Table 7-3"
+    ::= { dot1dPriority 4 }
+
+dot1dPortOutboundAccessPriorityEntry OBJECT-TYPE
+    SYNTAX      Dot1dPortOutboundAccessPriorityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Regenerated User Priority to Outbound Access Priority
+        mapping."
+    INDEX   { dot1dBasePort, dot1dRegenUserPriority }
+    ::= { dot1dPortOutboundAccessPriorityTable 1 }
+
+Dot1dPortOutboundAccessPriorityEntry ::=
+    SEQUENCE {
+
+
+
+        dot1dPortOutboundAccessPriority
+            Integer32
+    }
+
+dot1dPortOutboundAccessPriority OBJECT-TYPE
+    SYNTAX      Integer32 (0..7)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Outbound Access Priority the received frame is
+        mapped to."
+    ::= { dot1dPortOutboundAccessPriorityEntry 1 }
+
+-- -------------------------------------------------------------
+-- the dot1dGarp subtree
+-- -------------------------------------------------------------
+
+-- -------------------------------------------------------------
+-- The GARP Port Table
+-- -------------------------------------------------------------
+
+dot1dPortGarpTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1dPortGarpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of GARP control information about every bridge
+        port.  This is indexed by dot1dBasePort."
+    ::= { dot1dGarp 1 }
+
+dot1dPortGarpEntry OBJECT-TYPE
+    SYNTAX      Dot1dPortGarpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "GARP control information for a bridge port."
+    AUGMENTS { dot1dBasePortEntry }
+    ::= { dot1dPortGarpTable 1 }
+
+Dot1dPortGarpEntry ::=
+    SEQUENCE {
+        dot1dPortGarpJoinTime
+            TimeInterval,
+        dot1dPortGarpLeaveTime
+            TimeInterval,
+        dot1dPortGarpLeaveAllTime
+            TimeInterval
+    }
+
+
+
+dot1dPortGarpJoinTime OBJECT-TYPE
+    SYNTAX      TimeInterval
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The GARP Join time, in centiseconds.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    DEFVAL      { 20 }
+    ::= { dot1dPortGarpEntry 1 }
+
+dot1dPortGarpLeaveTime OBJECT-TYPE
+    SYNTAX      TimeInterval
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The GARP Leave time, in centiseconds.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    DEFVAL      { 60 }
+    ::= { dot1dPortGarpEntry 2 }
+
+dot1dPortGarpLeaveAllTime OBJECT-TYPE
+    SYNTAX      TimeInterval
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The GARP LeaveAll time, in centiseconds.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    DEFVAL      { 1000 }
+    ::= { dot1dPortGarpEntry 3 }
+
+-- -------------------------------------------------------------
+-- The GMRP Port Configuration and Status Table
+-- -------------------------------------------------------------
+
+dot1dPortGmrpTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1dPortGmrpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of GMRP control and status information about
+        every bridge port.  Augments the dot1dBasePortTable."
+    ::= { dot1dGmrp 1 }
+
+
+
+dot1dPortGmrpEntry OBJECT-TYPE
+    SYNTAX      Dot1dPortGmrpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "GMRP control and status information for a bridge port."
+    AUGMENTS { dot1dBasePortEntry }
+    ::= { dot1dPortGmrpTable 1 }
+
+Dot1dPortGmrpEntry ::=
+    SEQUENCE {
+        dot1dPortGmrpStatus
+            EnabledStatus,
+        dot1dPortGmrpFailedRegistrations
+            Counter32,
+        dot1dPortGmrpLastPduOrigin
+            MacAddress,
+        dot1dPortRestrictedGroupRegistration
+            TruthValue
+    }
+
+dot1dPortGmrpStatus OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The administrative state of GMRP operation on this port.  The
+        value enabled(1) indicates that GMRP is enabled on this port
+        in all VLANs as long as dot1dGmrpStatus is also enabled(1).
+        A value of disabled(2) indicates that GMRP is disabled on
+        this port in all VLANs: any GMRP packets received will
+        be silently discarded, and no GMRP registrations will be
+        propagated from other ports.  Setting this to a value of
+        enabled(1) will be stored by the agent but will only take
+        effect on the GMRP protocol operation if dot1dGmrpStatus
+        also indicates the value enabled(1).  This object affects
+        all GMRP Applicant and Registrar state machines on this
+        port.  A transition from disabled(2) to enabled(1) will
+        cause a reset of all GMRP state machines on this port.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    DEFVAL      { enabled }
+    ::= { dot1dPortGmrpEntry 1 }
+
+dot1dPortGmrpFailedRegistrations OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+
+
+
+    STATUS      current
+    DESCRIPTION
+        "The total number of failed GMRP registrations, for any
+        reason, in all VLANs, on this port."
+    ::= { dot1dPortGmrpEntry 2 }
+
+dot1dPortGmrpLastPduOrigin OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The Source MAC Address of the last GMRP message
+        received on this port."
+    ::= { dot1dPortGmrpEntry 3 }
+
+dot1dPortRestrictedGroupRegistration OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The state of Restricted Group Registration on this port.
+         If the value of this control is true(1), then creation
+         of a new dynamic entry is permitted only if there is a
+         Static Filtering Entry for the VLAN concerned, in which
+         the Registrar Administrative Control value is Normal
+         Registration.
+
+        The value of this object MUST be retained across
+        reinitializations of the management system."
+    REFERENCE
+        "IEEE 802.1t clause 10.3.2.3, 14.10.1.3."
+    DEFVAL      { false }
+    ::= { dot1dPortGmrpEntry 4 }
+
+-- -------------------------------------------------------------
+--  High-Capacity Port Table for Transparent Bridges
+-- -------------------------------------------------------------
+
+dot1dTpHCPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1dTpHCPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains information about every high-
+        capacity port that is associated with this transparent
+        bridge."
+    ::= { dot1dTp 5 }
+
+
+
+
+dot1dTpHCPortEntry OBJECT-TYPE
+    SYNTAX      Dot1dTpHCPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Statistics information for each high-capacity port of a
+        transparent bridge."
+    INDEX   { dot1dTpPort }
+    ::= { dot1dTpHCPortTable 1 }
+
+Dot1dTpHCPortEntry ::=
+    SEQUENCE {
+        dot1dTpHCPortInFrames
+            Counter64,
+        dot1dTpHCPortOutFrames
+            Counter64,
+        dot1dTpHCPortInDiscards
+            Counter64
+    }
+
+dot1dTpHCPortInFrames OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of frames that have been received by this
+        port from its segment.  Note that a frame received on
+        the interface corresponding to this port is only counted
+        by this object if and only if it is for a protocol being
+        processed by the local bridging function, including
+        bridge management frames."
+    REFERENCE
+        "ISO/IEC 15802-3 Section 14.6.1.1.3"
+    ::= { dot1dTpHCPortEntry 1 }
+
+dot1dTpHCPortOutFrames OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of frames that have been transmitted by this
+        port to its segment.  Note that a frame transmitted on
+        the interface corresponding to this port is only counted
+        by this object if and only if it is for a protocol being
+        processed by the local bridging function, including
+        bridge management frames."
+    REFERENCE
+        "ISO/IEC 15802-3 Section 14.6.1.1.3"
+
+
+
+    ::= { dot1dTpHCPortEntry 2 }
+
+dot1dTpHCPortInDiscards OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Count of valid frames that have been received by this
+        port from its segment that were discarded (i.e.,
+        filtered) by the Forwarding Process."
+    REFERENCE
+        "ISO/IEC 15802-3 Section 14.6.1.1.3"
+    ::= { dot1dTpHCPortEntry 3 }
+
+-- ----------------------------------------------------
+--  Upper part of High-Capacity Port Table for Transparent Bridges
+-- ----------------------------------------------------
+
+dot1dTpPortOverflowTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot1dTpPortOverflowEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that contains the most-significant bits of
+        statistics counters for ports that are associated with this
+        transparent bridge that are on high-capacity interfaces, as
+        defined in the conformance clauses for this table.  This table
+        is provided as a way to read 64-bit counters for agents that
+        support only SNMPv1.
+
+        Note that the reporting of most-significant and
+        least-significant counter bits separately runs the risk of
+        missing an overflow of the lower bits in the interval between
+        sampling.  The manager must be aware of this possibility, even
+        within the same varbindlist, when interpreting the results of
+        a request or asynchronous notification."
+    ::= { dot1dTp 6 }
+
+dot1dTpPortOverflowEntry OBJECT-TYPE
+    SYNTAX      Dot1dTpPortOverflowEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The most significant bits of statistics counters for a high-
+        capacity interface of a transparent bridge.  Each object is
+        associated with a corresponding object in dot1dTpPortTable
+        that indicates the least significant bits of the counter."
+    INDEX   { dot1dTpPort }
+
+
+
+    ::= { dot1dTpPortOverflowTable 1 }
+
+Dot1dTpPortOverflowEntry ::=
+    SEQUENCE {
+        dot1dTpPortInOverflowFrames
+            Counter32,
+        dot1dTpPortOutOverflowFrames
+            Counter32,
+        dot1dTpPortInOverflowDiscards
+            Counter32
+    }
+
+dot1dTpPortInOverflowFrames OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times the associated dot1dTpPortInFrames
+        counter has overflowed."
+    REFERENCE
+        "ISO/IEC 15802-3 Section 14.6.1.1.3"
+    ::= { dot1dTpPortOverflowEntry 1 }
+
+dot1dTpPortOutOverflowFrames OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times the associated dot1dTpPortOutFrames
+        counter has overflowed."
+    REFERENCE
+        "ISO/IEC 15802-3 Section 14.6.1.1.3"
+    ::= { dot1dTpPortOverflowEntry 2 }
+
+dot1dTpPortInOverflowDiscards OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of times the associated
+        dot1dTpPortInDiscards counter has overflowed."
+    REFERENCE
+        "ISO/IEC 15802-3 Section 14.6.1.1.3"
+    ::= { dot1dTpPortOverflowEntry 3 }
+
+-- -------------------------------------------------------------
+-- IEEE 802.1p MIB - Conformance Information
+-- -------------------------------------------------------------
+
+
+
+pBridgeConformance OBJECT IDENTIFIER ::= { pBridgeMIB 2 }
+
+pBridgeGroups OBJECT IDENTIFIER ::= { pBridgeConformance 1 }
+
+pBridgeCompliances OBJECT IDENTIFIER
+    ::= { pBridgeConformance 2 }
+
+-- -------------------------------------------------------------
+-- units of conformance
+-- -------------------------------------------------------------
+
+pBridgeExtCapGroup OBJECT-GROUP
+    OBJECTS {
+        dot1dDeviceCapabilities,
+        dot1dPortCapabilities
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects indicating the optional
+        capabilities of the device."
+    ::= { pBridgeGroups 1 }
+
+pBridgeDeviceGmrpGroup OBJECT-GROUP
+    OBJECTS {
+        dot1dGmrpStatus
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing device-level control
+        for the Multicast Filtering extended bridge services."
+    ::= { pBridgeGroups 2 }
+
+pBridgeDevicePriorityGroup OBJECT-GROUP
+    OBJECTS {
+        dot1dTrafficClassesEnabled
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing device-level control
+        for the Priority services."
+    ::= { pBridgeGroups 3 }
+
+pBridgeDefaultPriorityGroup OBJECT-GROUP
+    OBJECTS {
+        dot1dPortDefaultUserPriority
+    }
+    STATUS      current
+    DESCRIPTION
+
+
+
+        "A collection of objects defining the User Priority
+        applicable to each port for media that do not support
+        native User Priority."
+    ::= { pBridgeGroups 4 }
+
+pBridgeRegenPriorityGroup OBJECT-GROUP
+    OBJECTS {
+        dot1dRegenUserPriority
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects defining the User Priorities
+        applicable to each port for media that support native
+        User Priority."
+    ::= { pBridgeGroups 5 }
+
+pBridgePriorityGroup OBJECT-GROUP
+    OBJECTS {
+        dot1dPortNumTrafficClasses,
+        dot1dTrafficClass
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects defining the traffic classes
+        within a bridge for each evaluated User Priority."
+    ::= { pBridgeGroups 6 }
+
+pBridgeAccessPriorityGroup OBJECT-GROUP
+    OBJECTS {
+        dot1dPortOutboundAccessPriority
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects defining the media-dependent
+        outbound access level for each priority."
+    ::= { pBridgeGroups 7 }
+
+pBridgePortGarpGroup OBJECT-GROUP
+    OBJECTS {
+        dot1dPortGarpJoinTime,
+        dot1dPortGarpLeaveTime,
+        dot1dPortGarpLeaveAllTime
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing port level control
+        and status information for GARP operation."
+    ::= { pBridgeGroups 8 }
+
+
+
+pBridgePortGmrpGroup OBJECT-GROUP
+    OBJECTS {
+        dot1dPortGmrpStatus,
+        dot1dPortGmrpFailedRegistrations,
+        dot1dPortGmrpLastPduOrigin
+    }
+    STATUS      deprecated
+    DESCRIPTION
+        "A collection of objects providing port level control
+        and status information for GMRP operation."
+    ::= { pBridgeGroups 9 }
+
+pBridgeHCPortGroup OBJECT-GROUP
+    OBJECTS {
+        dot1dTpHCPortInFrames,
+        dot1dTpHCPortOutFrames,
+        dot1dTpHCPortInDiscards
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing 64-bit statistics
+         counters for high-capacity bridge ports."
+    ::= { pBridgeGroups 10 }
+
+pBridgePortOverflowGroup OBJECT-GROUP
+    OBJECTS {
+        dot1dTpPortInOverflowFrames,
+        dot1dTpPortOutOverflowFrames,
+        dot1dTpPortInOverflowDiscards
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing overflow statistics
+        counters for high-capacity bridge ports."
+    ::= { pBridgeGroups 11 }
+
+pBridgePortGmrpGroup2 OBJECT-GROUP
+    OBJECTS {
+        dot1dPortGmrpStatus,
+        dot1dPortGmrpFailedRegistrations,
+        dot1dPortGmrpLastPduOrigin,
+        dot1dPortRestrictedGroupRegistration
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing port level control
+        and status information for GMRP operation."
+    ::= { pBridgeGroups 12 }
+
+
+
+-- -------------------------------------------------------------
+-- compliance statements
+-- -------------------------------------------------------------
+
+pBridgeCompliance MODULE-COMPLIANCE
+    STATUS  deprecated
+    DESCRIPTION
+        "The compliance statement for device support of Priority
+        and Multicast Filtering extended bridging services."
+
+    MODULE
+        MANDATORY-GROUPS { pBridgeExtCapGroup }
+
+        GROUP       pBridgeDeviceGmrpGroup
+        DESCRIPTION
+            "This group is mandatory for devices supporting the GMRP
+            application, defined by IEEE 802.1D Extended Filtering
+            Services."
+
+        GROUP       pBridgeDevicePriorityGroup
+        DESCRIPTION
+            "This group is mandatory only for devices supporting
+            the priority forwarding operations defined by IEEE
+            802.1D."
+
+        GROUP       pBridgeDefaultPriorityGroup
+        DESCRIPTION
+            "This group is mandatory only for devices supporting
+            the priority forwarding operations defined by the
+            extended bridge services with media types, such as
+            Ethernet, that do not support native User Priority."
+
+        GROUP       pBridgeRegenPriorityGroup
+        DESCRIPTION
+            "This group is mandatory only for devices supporting
+            the priority forwarding operations defined by IEEE 802.1D
+            and that have interface media types that support
+            native User Priority, e.g., IEEE 802.5."
+
+        GROUP       pBridgePriorityGroup
+        DESCRIPTION
+            "This group is mandatory only for devices supporting
+            the priority forwarding operations defined by IEEE 802.1D."
+
+        GROUP       pBridgeAccessPriorityGroup
+        DESCRIPTION
+            "This group is optional and is relevant only for devices
+            supporting the priority forwarding operations defined by
+
+
+
+            IEEE 802.1D and that have interface media types that
+            support native Access Priority, e.g., IEEE 802.5."
+
+        GROUP       pBridgePortGarpGroup
+        DESCRIPTION
+            "This group is mandatory for devices supporting any
+            of the GARP applications: e.g., GMRP, defined by the
+            extended filtering services of 802.1D; or GVRP,
+            defined by 802.1Q (refer to the Q-BRIDGE-MIB for
+            conformance statements for GVRP)."
+
+        GROUP       pBridgePortGmrpGroup
+        DESCRIPTION
+            "This group is mandatory for devices supporting the
+            GMRP application, as defined by IEEE 802.1D Extended
+            Filtering Services."
+
+        GROUP       pBridgeHCPortGroup
+        DESCRIPTION
+            "Support for this group in a device is mandatory for those
+            bridge ports that map to network interfaces that have the
+            value of the corresponding instance of ifSpeed
+            greater than 650,000,000 bits/second."
+
+        GROUP       pBridgePortOverflowGroup
+        DESCRIPTION
+            "Support for this group in a device is mandatory for those
+            bridge ports that map to network interfaces that have the
+            value of the corresponding instance of ifSpeed
+            greater than 650,000,000 bits/second."
+
+        OBJECT      dot1dPortNumTrafficClasses
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      dot1dTrafficClass
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      dot1dRegenUserPriority
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+       ::= { pBridgeCompliances 1 }
+
+
+
+
+pBridgeCompliance2 MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for device support of Priority
+        and Multicast Filtering extended bridging services."
+
+    MODULE
+        MANDATORY-GROUPS { pBridgeExtCapGroup }
+
+        GROUP       pBridgeDeviceGmrpGroup
+        DESCRIPTION
+            "This group is mandatory for devices supporting the GMRP
+            application, defined by IEEE 802.1D Extended Filtering
+            Services."
+
+        GROUP       pBridgeDevicePriorityGroup
+        DESCRIPTION
+            "This group is mandatory only for devices supporting
+            the priority forwarding operations defined by IEEE
+            802.1D."
+
+        GROUP       pBridgeDefaultPriorityGroup
+        DESCRIPTION
+            "This group is mandatory only for devices supporting
+            the priority forwarding operations defined by the
+            extended bridge services with media types, such as
+            Ethernet, that do not support native User Priority."
+
+        GROUP       pBridgeRegenPriorityGroup
+        DESCRIPTION
+            "This group is mandatory only for devices supporting
+            the priority forwarding operations defined by IEEE 802.1D
+            and that have interface media types that support
+            native User Priority, e.g., IEEE 802.5."
+
+        GROUP       pBridgePriorityGroup
+        DESCRIPTION
+            "This group is mandatory only for devices supporting
+            the priority forwarding operations defined by IEEE 802.1D."
+
+        GROUP       pBridgeAccessPriorityGroup
+        DESCRIPTION
+            "This group is optional and is relevant only for devices
+            supporting the priority forwarding operations defined by
+            IEEE 802.1D and that have interface media types that
+            support native Access Priority, e.g., IEEE 802.5."
+
+        GROUP       pBridgePortGarpGroup
+
+
+
+        DESCRIPTION
+            "This group is mandatory for devices supporting any
+            of the GARP applications: e.g., GMRP, defined by the
+            extended filtering services of 802.1D; or GVRP,
+            defined by 802.1Q (refer to the Q-BRIDGE-MIB for
+            conformance statements for GVRP)."
+
+        GROUP       pBridgePortGmrpGroup2
+        DESCRIPTION
+            "This group is mandatory for devices supporting the
+            GMRP application, as defined by IEEE 802.1D Extended
+            Filtering Services."
+
+        GROUP       pBridgeHCPortGroup
+        DESCRIPTION
+            "Support for this group in a device is mandatory for those
+            bridge ports that map to network interfaces that have the
+            value of the corresponding instance of ifSpeed
+            greater than 650,000,000 bits/second."
+
+        GROUP       pBridgePortOverflowGroup
+        DESCRIPTION
+            "Support for this group in a device is mandatory for those
+            bridge ports that map to network interfaces that have the
+            value of the corresponding instance of ifSpeed
+            greater than 650,000,000 bits/second."
+
+        OBJECT      dot1dPortNumTrafficClasses
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      dot1dTrafficClass
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      dot1dRegenUserPriority
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+       ::= { pBridgeCompliances 2 }
+
+END

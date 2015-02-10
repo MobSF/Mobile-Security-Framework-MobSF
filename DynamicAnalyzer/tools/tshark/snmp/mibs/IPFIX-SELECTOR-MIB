@@ -1,0 +1,185 @@
+IPFIX-SELECTOR-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, mib-2
+        FROM SNMPv2-SMI                                -- RFC2578
+    TruthValue
+        FROM SNMPv2-TC                                 -- RFC2579
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF;                              -- RFC2580
+
+ipfixSelectorMIB MODULE-IDENTITY
+    LAST-UPDATED "201003150000Z"         -- 15 March 2010
+    ORGANIZATION "IETF IPFIX Working Group"
+    CONTACT-INFO
+        "WG charter:
+          http://www.ietf.org/html.charters/ipfix-charter.html
+
+        Mailing Lists:
+          General Discussion: ipfix@ietf.org
+          To Subscribe: http://www1.ietf.org/mailman/listinfo/ipfix
+          Archive:
+      http://www1.ietf.org/mail-archive/web/ipfix/current/index.html
+
+
+
+
+
+
+
+        Editor:
+          Thomas Dietz
+          NEC Europe Ltd.
+          NEC Laboratories Europe
+          Network Research Division
+          Kurfuersten-Anlage 36
+          69115 Heidelberg
+          Germany
+          Phone: +49 6221 4342-128
+          Email: Thomas.Dietz@nw.neclab.eu
+
+          Atsushi Kobayashi
+          NTT Information Sharing Platform Laboratories
+          3-9-11 Midori-cho
+          Musashino-shi
+          180-8585
+          Japan
+          Phone: +81-422-59-3978
+          Email: akoba@nttv6.net
+
+          Benoit Claise
+          Cisco Systems, Inc.
+          De Kleetlaan 6a b1
+          Degem 1831
+          Belgium
+          Phone:  +32 2 704 5622
+          Email: bclaise@cisco.com
+
+          Gerhard Muenz
+          Technische Universitaet Muenchen
+          Department of Informatics
+          Chair for Network Architectures and Services (I8)
+          Boltzmannstr. 3
+          85748 Garching
+          Germany
+          Phone: +49 89 289-18008
+          Email: muenz@net.in.tum.de
+          URI:   http://www.net.in.tum.de/~muenz"
+    DESCRIPTION
+        "The IPFIX SELECTOR MIB module defines the standard
+        filtering and sampling functions that can be referenced in
+        the ipfixSelectorTable of the IPFIX MIB.  The subtree
+        ipfixSelectorFunctions is a placeholder where all standard
+        filtering and sampling functions should be located.
+
+        The IPFIX SELECTOR MIB module is maintained by IANA and can
+        be extended through Expert Review [RFC5226], i.e., review by
+        one of a group of experts designated by an IETF Area
+
+
+        Director.  The group of experts MUST check the requested MIB
+        objects for completeness and accuracy of the description.
+        Requests for MIB objects that duplicate the functionality of
+        existing objects SHOULD be declined.  The smallest available
+        OID SHOULD be assigned to a new MIB objects.  The
+        specification of new MIB objects SHOULD follow the structure
+        specified in RFC 5815 and MUST be published using a
+        well-established and persistent publication medium.  The
+        experts will initially be drawn from the Working Group
+        Chairs and document editors of the IPFIX and PSAMP Working
+        Groups.
+
+        Copyright (c) 2010 IETF Trust and the persons identified as
+        authors of the code. All rights reserved.
+
+        Redistribution and use in source and binary forms, with or
+        without modification, is permitted pursuant to, and subject
+        to the license terms contained in, the Simplified BSD
+        License set forth in Section 4.c of the IETF Trust's
+        Legal Provisions Relating to IETF Documents
+        (http://trustee.ietf.org/license-info)."
+
+--  Revision history
+
+    REVISION     "201003150000Z"         -- 15 March 2010
+    DESCRIPTION
+        "Initial version, published as RFC 5815."
+
+    ::= { mib-2 194 }
+
+--******************************************************************
+-- Top Level Structure of the MIB
+--******************************************************************
+
+ipfixSelectorObjects     OBJECT IDENTIFIER
+    ::= { ipfixSelectorMIB 1 }
+ipfixSelectorConformance OBJECT IDENTIFIER
+    ::= { ipfixSelectorMIB 2 }
+
+--==================================================================
+-- 1: Objects used by all IPFIX implementations
+--==================================================================
+--------------------------------------------------------------------
+-- 1.1: Packet Selector Functions for IPFIX
+--------------------------------------------------------------------
+ipfixSelectorFunctions OBJECT IDENTIFIER
+    ::= { ipfixSelectorObjects 1 }
+
+
+
+--------------------------------------------------------------------
+-- 1.1.1: Function 1: Selecting All Packets
+--------------------------------------------------------------------
+ipfixFuncSelectAll OBJECT IDENTIFIER
+    ::= { ipfixSelectorFunctions 1 }
+
+ipfixFuncSelectAllAvail OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This object indicates the availability of the trivial
+        function of selecting all packets.  This function is always
+        available."
+    ::= { ipfixFuncSelectAll 1 }
+
+--==================================================================
+-- 2: Conformance Information
+--==================================================================
+ipfixSelectorCompliances OBJECT IDENTIFIER
+    ::= { ipfixSelectorConformance 1 }
+ipfixSelectorGroups      OBJECT IDENTIFIER
+    ::= { ipfixSelectorConformance 2 }
+
+--------------------------------------------------------------------
+-- 2.1: Compliance Statements
+--------------------------------------------------------------------
+ipfixSelectorBasicCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "An implementation that builds an IPFIX Exporter that
+        complies to this module MUST implement the objects defined
+        in the mandatory group ipfixBasicGroup.  The implementation
+        of all other objects depends on the implementation of the
+        corresponding functionality in the equipment."
+    MODULE  -- this module
+    MANDATORY-GROUPS {
+            ipfixSelectorBasicGroup
+    }
+    ::= { ipfixSelectorCompliances 1 }
+
+--------------------------------------------------------------------
+-- 2.2: MIB Grouping
+--------------------------------------------------------------------
+ipfixSelectorBasicGroup OBJECT-GROUP
+    OBJECTS {
+        ipfixFuncSelectAllAvail
+    }
+
+
+    STATUS      current
+    DESCRIPTION
+        "The main IPFIX objects."
+    ::= { ipfixSelectorGroups 1 }
+
+END

@@ -1,0 +1,2661 @@
+DOT3-EPON-MIB DEFINITIONS ::= BEGIN
+
+     IMPORTS
+         MODULE-IDENTITY, mib-2, OBJECT-TYPE, Counter32,
+         Integer32, Unsigned32, Counter64
+             FROM SNMPv2-SMI
+         TruthValue, MacAddress
+             FROM SNMPv2-TC
+         ifIndex
+             FROM IF-MIB
+         MODULE-COMPLIANCE, OBJECT-GROUP
+             FROM SNMPv2-CONF
+         ;
+
+dot3EponMIB MODULE-IDENTITY
+    LAST-UPDATED "200703290000Z"  -- March 29, 2007
+    ORGANIZATION "IETF Ethernet Interfaces and Hub MIB Working
+                 Group"
+    CONTACT-INFO
+                 "WG charter:
+              http://www.ietf.org/html.charters/hubmib-charter.html
+                  Mailing Lists:
+                    General Discussion: hubmib@ietf.org
+                    To Subscribe: hubmib-request@ietf.org
+
+
+
+                    In Body: subscribe your_email_address
+                    Chair: Bert Wijnen
+                    Postal: Lucent Technologies
+                            Schagen 33
+                            3461 GL Linschoten
+                            Netherlands
+                    Tel: +31-348-407-775
+                    E-mail: bwijnen@lucent.com
+
+                    Editor: Lior Khermosh
+                    Postal: PMC-SIERRA
+                            Kohav Hertzelia bldg,
+                            4 Hasadnaot St.
+                            Hertzliya Pituach 46120,
+                            ISRAEL
+                            P.O.Box 2089 Hertzliya Pituach 46120 Israel
+                    Tel: +972-9-9628000 Ext: 302
+                    E-mail: lior_khermosh@pmc-sierra.com"
+    DESCRIPTION
+            "The objects in this MIB module are used to manage the
+             Ethernet in the First Mile (EFM) Ethernet Passive Optical
+             Network (EPON) Interfaces as defined in IEEE P802.3ah
+             clauses 60, 64, and 65.
+         The following reference is used throughout this MIB module:
+           [802.3ah] refers to:
+             Information technology - Telecommunications and
+             information exchange between systems - Local and
+             metropolitan area networks - Specific requirements -
+             Part 3: Carrier sense multiple access with collision
+             detection (CSMA/CD) access method and physical layer
+             specifications - Media Access Control Parameters,
+             Physical Layers and Management Parameters for subscriber
+             access networks.  IEEE Std 802.3ah-2004, October 2004.
+
+          Of particular interest are clause 64 (Multi-Point Control
+          Protocol - MPCP), clause 65 (Point-to-Multipoint
+          Reconciliation Sublayer - P2MP RS), clause 60 (Ethernet
+          Passive Optical Network Physical Medium Dependent - EPON
+          PMDs), clause 30, 'Management', and clause 45, 'Management
+          Data Input/Output (MDIO) Interface'.
+
+          Copyright (C) The IETF Trust (2007).  This version
+          of this MIB module is part of 4837; see the RFC itself for
+          full legal notices.
+
+          Key abbreviations:
+            BER - Bit Error Rate
+            BW - bandwidth
+
+
+
+            CRC - Cyclic Redundancy Check
+            EFM - Ethernet First Mile
+            EPON - Ethernet Passive Optical Network
+            FEC  - Forward Error Correction
+            LLID - Logical Link Identifier
+            MAC - Media Access Control
+            Mbps - Megabit per second
+            MDIO - Management Data Input/Output
+            MPCP - Multi-Point Control Protocol
+            OLT - Optical Line Terminal (Server unit of the EPON)
+            OMP - Optical Multi-Point
+            ONU - Optical Network Unit (Client unit of the EPON)
+            P2MP - Point-to-Multipoint
+            PHY - Physical Layer
+            PMD - Physical Medium Dependent
+            PON - Passive Optical Network
+            RTT - Round Trip Time
+            SLD - Start of LLID Delimiter
+            TQ - Time Quanta
+          "
+
+    REVISION    "200703290000Z"  -- March 29, 2007
+    DESCRIPTION "Initial version, published as RFC 4837."
+
+    ::= { mib-2 155 }
+
+dot3EponObjects OBJECT IDENTIFIER ::= { dot3EponMIB 1}
+
+dot3EponConformance OBJECT IDENTIFIER ::= { dot3EponMIB 2}
+
+-- MPCP MIB modules definitions ([802.3ah], clause 30.3.5)
+
+dot3EponMpcpObjects
+     OBJECT IDENTIFIER ::= { dot3EponObjects 1 }
+
+dot3MpcpControlTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot3MpcpControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A Table of dot3 Multi-Point Control Protocol (MPCP)
+             MIB objects.  The entries in the table are control and
+             status objects of the MPCP.
+             Each object has a row for every virtual link denoted by
+             the corresponding ifIndex.
+             The LLID field, as defined in the [802.3ah], is a 2-byte
+             register (15-bit field and a broadcast bit) limiting the
+             number of virtual links to 32768.  Typically the number
+
+
+
+             of expected virtual links in a PON is like the number of
+             ONUs, which is 32-64, plus an additional entry for
+             broadcast LLID (with a value of 0xffff)."
+    ::= { dot3EponMpcpObjects 1 }
+
+dot3MpcpControlEntry OBJECT-TYPE
+    SYNTAX  Dot3MpcpControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the dot3 MPCP Control table.
+             Rows exist for an OLT interface and an ONU interface.
+             A row in the table is denoted by the ifIndex of the link
+             and it is created when the ifIndex is created.
+             The rows in the table for an ONU interface are created
+             at system initialization.
+             The row in the table corresponding to the OLT ifIndex
+             and the row corresponding to the broadcast virtual link
+             are created at system initialization.
+             A row in the table corresponding to the ifIndex of a
+             virtual links is created when a virtual link is
+             established (ONU registers) and deleted when the virtual
+             link is deleted (ONU deregisters)."
+    INDEX  { ifIndex }
+    ::= { dot3MpcpControlTable 1}
+
+Dot3MpcpControlEntry ::=
+    SEQUENCE {
+        dot3MpcpOperStatus                   TruthValue,
+        dot3MpcpAdminState                   TruthValue,
+        dot3MpcpMode                         INTEGER,
+        dot3MpcpSyncTime                     Unsigned32,
+        dot3MpcpLinkID                       Unsigned32,
+        dot3MpcpRemoteMACAddress             MacAddress,
+        dot3MpcpRegistrationState            INTEGER,
+        dot3MpcpTransmitElapsed              Unsigned32,
+        dot3MpcpReceiveElapsed               Unsigned32,
+        dot3MpcpRoundTripTime                Unsigned32,
+        dot3MpcpMaximumPendingGrants         Unsigned32
+    }
+
+dot3MpcpOperStatus OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object reflects the operational state of the
+             Multi-Point MAC Control sublayer as defined in
+
+
+
+             [802.3ah], clause 64.  When the value is true(1), the
+             interface will act as if the Multi-Point Control Protocol
+             is enabled.  When the value is false(2), the interface
+             will act as if the Multi-Point Control Protocol is
+             disabled.  The operational state can be changed using the
+             dot3MpcpAdminState object.
+             This object is applicable for an OLT, with the same
+             value for all virtual interfaces, and for an ONU."
+    REFERENCE   "[802.3ah], 30.3.5.1.2."
+    ::= { dot3MpcpControlEntry 1 }
+
+dot3MpcpAdminState OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "This object is used to define the admin state of the
+             Multi-Point MAC Control sublayer, as defined in
+             [802.3ah], clause 64, and to reflect its state.
+             When selecting the value as true(1), the Multi-Point
+             Control Protocol of the interface is enabled.
+             When selecting the value as false(2), the Multi-Point
+             Control Protocol of the interface is disabled.
+             This object reflects the administrative state of the
+             Multi-Point Control Protocol of the interface.
+             The write operation is not restricted in this document
+             and can be done at any time.  Changing
+             dot3MpcpAdminState state can lead to disabling the
+             Multi-Point Control Protocol on the respective interface,
+             leading to the interruption of service for the users
+             connected to the respective EPON interface.
+             This object is applicable for an OLT, with the same
+             value for all virtual interfaces, and for an ONU."
+    REFERENCE   "[802.3ah], 30.3.5.2.1."
+    DEFVAL { false }
+    ::= { dot3MpcpControlEntry 2 }
+
+dot3MpcpMode  OBJECT-TYPE
+    SYNTAX  INTEGER {
+            olt(1),
+            onu(2)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object is used to identify the operational
+             state of the Multi-Point MAC Control sublayer as
+             defined in [802.3ah], clause 64.  Reading olt(1) for an
+
+
+
+             OLT (server) mode and onu(2) for an ONU (client) mode.
+             This object is used to identify the operational mode
+             for the MPCP tables.
+             This object is applicable for an OLT, with the same
+             value for all virtual interfaces, and for an ONU."
+    REFERENCE   "[802.3ah], 30.3.5.1.3."
+    DEFVAL { olt }
+    ::= { dot3MpcpControlEntry 3 }
+
+dot3MpcpSyncTime OBJECT-TYPE
+    SYNTAX  Unsigned32
+    UNITS       "TQ (16nsec)"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "An object that reports the 'sync lock time' of the
+             OLT receiver in increments of Time Quanta (TQ)-16ns
+             as defined in [802.3ah], clauses 60, 64, and 65.  The
+             value returned shall be (sync lock time ns)/16.  If
+             this value exceeds (2^32-1), the value (2^32-1) shall
+             be returned.  This object is applicable for an OLT,
+             with the same value for all virtual interfaces, and
+             for an ONU."
+    REFERENCE   "[802.3ah], 64.3.3.2."
+   ::= { dot3MpcpControlEntry 4 }
+
+dot3MpcpLinkID OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "An object that identifies the Logical Link
+             Identifier (LLID) associated with the MAC of the virtual
+             link as specified in [802.3ah], clause 65.1.3.2.2.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             The ONU and the corresponding virtual MAC of the OLT,
+             for the same virtual link, have the same value.
+             Value is assigned when the ONU registers.
+             Value is freed when the ONU deregisters."
+    REFERENCE   "[802.3ah], 30.3.5.1.4."
+    ::= { dot3MpcpControlEntry 5 }
+
+dot3MpcpRemoteMACAddress OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+
+
+
+            "An object that identifies the source_address
+             parameter of the last MPCPDUs passed to the MAC Control.
+             This value is updated on reception of a valid frame with
+             1) a destination Field equal to the reserved multicast
+             address for MAC Control as specified in [802.3], Annex
+             31A; 2) the lengthOrType field value equal to the reserved
+             Type for MAC Control as specified in [802.3], Annex
+             31A; 3) an MPCP subtype value equal to the subtype
+             reserved for MPCP as specified in [802.3ah], Annex 31A.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             The value reflects the MAC address of the remote entity
+             and therefore the OLT holds a value for each LLID, which
+             is the MAC address of the ONU; the ONU has a single
+             value that is the OLT MAC address."
+    REFERENCE   "[802.3ah], 30.3.5.1.5."
+    ::= { dot3MpcpControlEntry 6 }
+
+dot3MpcpRegistrationState OBJECT-TYPE
+    SYNTAX  INTEGER {
+            unregistered(1),
+            registering(2),
+            registered(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "An object that identifies the registration state
+             of the Multi-Point MAC Control sublayer as defined in
+             [802.3ah], clause 64.  When this object has the
+             enumeration unregistered(1), the interface is
+             unregistered and may be used for registering a link
+             partner.  When this object has the enumeration
+             registering(2), the interface is in the process of
+             registering a link-partner.  When this object has the
+             enumeration registered(3), the interface has an
+             established link-partner.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface."
+    REFERENCE   "[802.3ah], 30.3.5.1.6."
+    ::= { dot3MpcpControlEntry 7 }
+
+dot3MpcpTransmitElapsed OBJECT-TYPE
+    SYNTAX  Unsigned32
+    UNITS       "TQ (16nsec)"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+
+
+
+            "An object that reports the interval from the last
+             MPCP frame transmission in increments of Time Quanta
+             (TQ)-16ns.  The value returned shall be (interval from
+             last MPCP frame transmission in ns)/16.  If this value
+             exceeds (2^32-1), the value (2^32-1) shall be returned.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface."
+    REFERENCE   "[802.3ah], 30.3.5.1.19."
+    ::= { dot3MpcpControlEntry 8 }
+
+dot3MpcpReceiveElapsed OBJECT-TYPE
+    SYNTAX  Unsigned32
+    UNITS       "TQ (16nsec)"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "An object that reports the interval from last MPCP frame
+             reception in increments of Time Quanta (TQ)-16ns.  The
+             value returned shall be (interval from last MPCP frame
+             reception in ns)/16.  If this value exceeds (2^32-1), the
+             value (2^32-1) shall be returned.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface."
+    REFERENCE   "[802.3ah], 30.3.5.1.20."
+    ::= { dot3MpcpControlEntry 9 }
+
+dot3MpcpRoundTripTime OBJECT-TYPE
+    SYNTAX  Unsigned32 (0..'ffff'h)
+    UNITS       "TQ (16nsec)"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "An object that reports the MPCP round trip time in
+             increments of Time Quanta (TQ)-16ns.  The value returned
+             shall be (round trip time in ns)/16.  If this value
+             exceeds (2^16-1), the value (2^16-1) shall be returned.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface."
+    REFERENCE   "[802.3ah], 30.3.5.1.21."
+    ::= { dot3MpcpControlEntry 10 }
+
+dot3MpcpMaximumPendingGrants OBJECT-TYPE
+    SYNTAX  Unsigned32 (0..255)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "An object that reports the maximum number of grants
+             that an ONU can store for handling.  The maximum number
+
+
+
+             of grants that an ONU can store for handling has a
+             range of 0 to 255.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the OLT, the value should be zero."
+    REFERENCE   "[802.3ah], 30.3.5.1.24."
+    ::= { dot3MpcpControlEntry 11 }
+
+dot3MpcpStatTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF Dot3MpcpStatEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "This table defines the list of statistics counters of
+             an interface implementing the [802.3ah], clause 64 MPCP.
+             Each object has a row for every virtual link denoted by
+             the corresponding ifIndex.
+             The LLID field, as defined in the [802.3ah], is a 2-byte
+             register (15-bit field and a broadcast bit) limiting the
+             number of virtual links to 32768.  Typically the number
+             of expected virtual links in a PON is like the number of
+             ONUs, which is 32-64, plus an additional entry for
+             broadcast LLID (with a value of 0xffff)."
+::= { dot3EponMpcpObjects 2 }
+
+dot3MpcpStatEntry OBJECT-TYPE
+    SYNTAX     Dot3MpcpStatEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry in the table of statistics counters of the
+             [802.3ah], clause 64, MPCP interface.
+             Rows exist for an OLT interface and an ONU interface.
+             A row in the table is denoted by the ifIndex of the link
+             and it is created when the ifIndex is created.
+             The rows in the table for an ONU interface are created
+             at system initialization.
+             The row in the table corresponding to the OLT ifIndex
+             and the row corresponding to the broadcast virtual link
+             are created at system initialization.
+             A row in the table corresponding to the ifIndex of a
+             virtual link is created when a virtual link is
+             established (ONU registers) and deleted when the virtual
+             link is deleted (ONU deregisters)."
+    INDEX  { ifIndex}
+    ::= { dot3MpcpStatTable 1 }
+
+Dot3MpcpStatEntry ::=
+
+
+
+    SEQUENCE {
+            dot3MpcpMACCtrlFramesTransmitted       Counter64,
+            dot3MpcpMACCtrlFramesReceived          Counter64,
+            dot3MpcpDiscoveryWindowsSent           Counter32,
+            dot3MpcpDiscoveryTimeout               Counter32,
+            dot3MpcpTxRegRequest                   Counter64,
+            dot3MpcpRxRegRequest                   Counter64,
+            dot3MpcpTxRegAck                       Counter64,
+            dot3MpcpRxRegAck                       Counter64,
+            dot3MpcpTxReport                       Counter64,
+            dot3MpcpRxReport                       Counter64,
+            dot3MpcpTxGate                         Counter64,
+            dot3MpcpRxGate                         Counter64,
+            dot3MpcpTxRegister                     Counter64,
+            dot3MpcpRxRegister                     Counter64
+    }
+
+dot3MpcpMACCtrlFramesTransmitted OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of MPCP frames passed to the MAC sublayer for
+             transmission.  This counter is incremented when a
+             MA_CONTROL.request service primitive is generated within
+             the MAC control sublayer with an opcode indicating an
+             MPCP frame.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT it has a distinct value for each virtual interface.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system, and at other
+             times as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.3.5.1.7."
+    ::= { dot3MpcpStatEntry 1 }
+
+dot3MpcpMACCtrlFramesReceived OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of MPCP frames passed by the MAC sublayer to the
+             MAC Control sublayer.  This counter is incremented when a
+             ReceiveFrame function call returns a valid frame with
+             1) a lengthOrType field value equal to the reserved
+
+
+
+             Type for 802.3_MAC_Control as specified in clause 31.4.1.3,
+             and
+             2) an opcode indicating an MPCP frame.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+   REFERENCE   "[802.3ah], 30.3.5.1.8."
+    ::= { dot3MpcpStatEntry 2}
+
+dot3MpcpDiscoveryWindowsSent OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of discovery windows generated.  The counter is
+             incremented by one for each generated discovery window.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the ONU, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+   REFERENCE   "[802.3ah], 30.3.5.1.22."
+    ::= { dot3MpcpStatEntry 3}
+
+dot3MpcpDiscoveryTimeout OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of the number of times a discovery timeout
+             occurs.  Increment the counter by one for each discovery
+             processing state-machine reset resulting from timeout
+             waiting for message arrival.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+   REFERENCE   "[802.3ah], 30.3.5.1.23."
+
+
+
+    ::= { dot3MpcpStatEntry 4}
+
+dot3MpcpTxRegRequest OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of the number of times a REGISTER_REQ MPCP
+             frame transmission occurs.  Increment the counter by one
+             for each REGISTER_REQ MPCP frame transmitted as defined
+             in [802.3ah], clause 64.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the OLT, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.3.5.1.12."
+    ::= { dot3MpcpStatEntry 5}
+
+dot3MpcpRxRegRequest OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of the number of times a REGISTER_REQ MPCP
+             frame reception occurs.
+             Increment the counter by one for each REGISTER_REQ MPCP
+             frame received as defined in [802.3ah], clause 64.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the ONU, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+  REFERENCE   "[802.3ah], 30.3.5.1.17."
+    ::= { dot3MpcpStatEntry 6}
+
+dot3MpcpTxRegAck OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+
+
+
+    STATUS  current
+    DESCRIPTION
+            "A count of the number of times a REGISTER_ACK MPCP
+             frame transmission occurs.  Increment the counter by one
+             for each REGISTER_ACK MPCP frame transmitted as defined
+             in [802.3ah], clause 64.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the OLT, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+ REFERENCE   "[802.3ah], 30.3.5.1.10."
+    ::= { dot3MpcpStatEntry 7}
+
+dot3MpcpRxRegAck OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of the number of times a REGISTER_ACK MPCP
+             frame reception occurs.
+             Increment the counter by one for each REGISTER_ACK MPCP
+             frame received as defined in [802.3ah], clause 64.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the ONU, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.3.5.1.15."
+    ::= { dot3MpcpStatEntry 8}
+
+dot3MpcpTxReport OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of the number of times a REPORT MPCP frame
+             transmission occurs.  Increment the counter by one for
+             each REPORT MPCP frame transmitted as defined in
+             [802.3ah], clause 64.
+
+
+
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the OLT, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.3.5.1.13."
+    ::= { dot3MpcpStatEntry 9}
+
+dot3MpcpRxReport OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of the number of times a REPORT MPCP frame
+             reception occurs.
+             Increment the counter by one for each REPORT MPCP frame
+             received as defined in [802.3ah], clause 64.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the ONU, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.3.5.1.18."
+    ::= { dot3MpcpStatEntry 10}
+
+dot3MpcpTxGate OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of the number of times a GATE MPCP frame
+             transmission occurs.
+             Increment the counter by one for each GATE MPCP frame
+             transmitted as defined in [802.3ah], clause 64.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the ONU, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+
+
+
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.3.5.1.9."
+    ::= { dot3MpcpStatEntry 11}
+
+dot3MpcpRxGate OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of the number of times a GATE MPCP frame
+             reception occurs.
+             Increment the counter by one for each GATE MPCP frame
+             received as defined in [802.3ah], clause 64.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the OLT, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.3.5.1.14."
+    ::= { dot3MpcpStatEntry 12}
+
+dot3MpcpTxRegister OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of the number of times a REGISTER MPCP frame
+             transmission occurs.
+             Increment the counter by one for each REGISTER MPCP
+             frame transmitted as defined in [802.3ah], clause 64.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the ONU, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+   REFERENCE   "[802.3ah], 30.3.5.1.11."
+    ::= { dot3MpcpStatEntry 13}
+
+dot3MpcpRxRegister OBJECT-TYPE
+
+
+
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of the number of times a REGISTER MPCP frame
+             reception occurs.
+             Increment the counter by one for each REGISTER MPCP
+             frame received as defined in [802.3ah], clause 64.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the OLT, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.3.5.1.16."
+    ::= { dot3MpcpStatEntry 14}
+
+-- Optical Multi Point Emulation (OMPEmulation)
+-- managed object definitions
+
+dot3OmpEmulationObjects OBJECT IDENTIFIER ::={dot3EponObjects 2}
+
+dot3OmpEmulationTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot3OmpEmulationEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table of dot3 OmpEmulation MIB objects.  The table
+             contain objects for the management of the OMPEmulation
+             sublayer.
+             Each object has a row for every virtual link denoted by
+             the corresponding ifIndex.
+             The LLID field, as defined in the [802.3ah], is a 2-byte
+             register (15-bit field and a broadcast bit) limiting the
+             number of virtual links to 32768.  Typically the number
+             of expected virtual links in a PON is like the number of
+             ONUs, which is 32-64, plus an additional entry for
+             broadcast LLID (with a value of 0xffff)."
+    ::= { dot3OmpEmulationObjects 1 }
+
+dot3OmpEmulationEntry OBJECT-TYPE
+    SYNTAX  Dot3OmpEmulationEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+
+
+
+            "An entry in the dot3 OmpEmulation table.
+             Rows exist for an OLT interface and an ONU interface.
+             A row in the table is denoted by the ifIndex of the link
+             and it is created when the ifIndex is created.
+             The rows in the table for an ONU interface are created
+             at system initialization.
+             The row in the table corresponding to the OLT ifIndex
+             and the row corresponding to the broadcast virtual link
+             are created at system initialization.
+             A row in the table corresponding to the ifIndex of a
+             virtual links is created when a virtual link is
+             established (ONU registers) and deleted when the virtual
+             link is deleted (ONU deregisters)."
+    INDEX  { ifIndex }
+    ::= { dot3OmpEmulationTable 1 }
+
+    Dot3OmpEmulationEntry ::=
+    SEQUENCE {
+            dot3OmpEmulationType               INTEGER
+    }
+
+dot3OmpEmulationType OBJECT-TYPE
+    SYNTAX  INTEGER {
+            unknown(1),
+            olt(2),
+            onu(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "An object that indicates the mode of operation
+             of the Reconciliation Sublayer for Point-to-Point
+             Emulation (see [802.3ah], clause 65.1).  unknown(1) value
+             is assigned in initialization; true state or type is not
+             yet known.  olt(2) value is assigned when the sublayer is
+             operating in OLT mode.  onu(3) value is assigned when the
+             sublayer is operating in ONU mode.
+             This object is applicable for an OLT, with the same
+             value for all virtual interfaces, and for an ONU."
+    REFERENCE   "[802.3ah], 30.3.7.1.2."
+    ::= { dot3OmpEmulationEntry 1}
+
+dot3OmpEmulationStatTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF Dot3OmpEmulationStatEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "This table defines the list of statistics counters of
+
+
+
+             [802.3ah], clause 65, OMPEmulation sublayer.
+             Each object has a row for every virtual link denoted by
+             the corresponding ifIndex.
+             The LLID field, as defined in the [802.3ah], is a 2-byte
+             register (15-bit field and a broadcast bit) limiting the
+             number of virtual links to 32768.  Typically the number
+             of expected virtual links in a PON is like the number of
+             ONUs, which is 32-64, plus an additional entry for
+             broadcast LLID (with a value of 0xffff)."
+    ::= { dot3OmpEmulationObjects 2}
+
+dot3OmpEmulationStatEntry OBJECT-TYPE
+    SYNTAX     Dot3OmpEmulationStatEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry in the table of statistics counters of
+             [802.3ah], clause 65, OMPEmulation sublayer.
+             Rows exist for an OLT interface and an ONU interface.
+             A row in the table is denoted by the ifIndex of the link
+             and it is created when the ifIndex is created.
+             The rows in the table for an ONU interface are created
+             at system initialization.
+             The row in the table corresponding to the OLT ifIndex
+             and the row corresponding to the broadcast virtual link
+             are created at system initialization.
+             A row in the table corresponding to the ifIndex of a
+             virtual links is created when a virtual link is
+             established (ONU registers) and deleted when the virtual
+             link is deleted (ONU deregisters)."
+    INDEX  { ifIndex}
+    ::= { dot3OmpEmulationStatTable 1 }
+
+Dot3OmpEmulationStatEntry::=
+    SEQUENCE {
+            dot3OmpEmulationSLDErrors                 Counter64,
+            dot3OmpEmulationCRC8Errors                Counter64,
+            dot3OmpEmulationBadLLID                   Counter64,
+            dot3OmpEmulationGoodLLID                  Counter64,
+            dot3OmpEmulationOnuPonCastLLID            Counter64,
+            dot3OmpEmulationOltPonCastLLID            Counter64,
+            dot3OmpEmulationBroadcastBitNotOnuLlid    Counter64,
+            dot3OmpEmulationOnuLLIDNotBroadcast       Counter64,
+            dot3OmpEmulationBroadcastBitPlusOnuLlid    Counter64,
+            dot3OmpEmulationNotBroadcastBitNotOnuLlid  Counter64
+    }
+
+dot3OmpEmulationSLDErrors OBJECT-TYPE
+
+
+
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received that do not contain a valid
+             SLD field as defined in [802.3ah], clause 65.1.3.3.1.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.3.7.1.3."
+    ::= { dot3OmpEmulationStatEntry 1}
+
+dot3OmpEmulationCRC8Errors OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received that contain a valid SLD
+             field, as defined in [802.3ah], clause 65.1.3.3.1, but do
+             not pass the CRC-8 check as defined in [802.3ah], clause
+             65.1.3.3.3.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.3.7.1.4."
+    ::= { dot3OmpEmulationStatEntry 2}
+
+dot3OmpEmulationBadLLID OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received that contain a valid SLD
+             field, as defined in [802.3ah], clause 65.1.3.3.1, and
+             pass the CRC-8 check, as defined in [802.3ah], clause
+             65.1.3.3.3, but are discarded due to the LLID check as
+             defined in [802.3ah], clause 65.1.3.3.2.
+
+
+
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.3.7.1.8."
+    ::= { dot3OmpEmulationStatEntry 3}
+
+dot3OmpEmulationGoodLLID OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received that contain a valid SLD
+             field, as defined in [802.3ah], clause 65.1.3.3.1, and
+             pass the CRC-8 check as defined in [802.3ah], clause
+             65.1.3.3.3.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.3.7.1.5."
+    ::= { dot3OmpEmulationStatEntry 4}
+
+dot3OmpEmulationOnuPonCastLLID OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received that contain a valid SLD
+             field, as defined in [802.3ah], clause 65.1.3.3.1,
+             pass the CRC-8 check, as defined in [802.3ah], clause
+             65.1.3.3.3, and meet the rules of acceptance for an
+             ONU defined in [802.3ah], clause 65.1.3.3.2.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the OLT, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+
+
+
+             module."
+    REFERENCE   "[802.3ah], 30.3.7.1.6."
+    ::= { dot3OmpEmulationStatEntry 5}
+
+dot3OmpEmulationOltPonCastLLID OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received that contain a valid SLD
+             field, as defined in [802.3ah], clause 65.1.3.3.1,
+             pass the CRC-8 check, as defined in [802.3ah], clause
+             65.1.3.3.3, and meet the rules of acceptance for an
+             OLT defined in [802.3ah], 65.1.3.3.2.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the ONU, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+  REFERENCE   "[802.3ah], 30.3.7.1.7."
+    ::= { dot3OmpEmulationStatEntry 6}
+
+dot3OmpEmulationBroadcastBitNotOnuLlid OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received that contain a valid SLD
+             field, as defined in [802.3ah], clause
+             65.1.3.3.1, pass the CRC-8 check, as defined in
+             [802.3ah], clause 65.1.3.3.3, and contain the broadcast
+             bit in the LLID and not the ONU's LLID (frame accepted)
+             as defined in [802.3ah], clause 65.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the OLT, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+   ::= { dot3OmpEmulationStatEntry 7}
+
+
+
+
+dot3OmpEmulationOnuLLIDNotBroadcast OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received that contain a valid SLD
+             field, as defined in [802.3ah], clause
+             65.1.3.3.1, pass the CRC-8 check, as defined in
+             [802.3ah], clause 65.1.3.3.3, and contain the ONU's LLID
+             as defined in [802.3ah], clause 65.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the OLT, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+   ::= { dot3OmpEmulationStatEntry 8}
+
+dot3OmpEmulationBroadcastBitPlusOnuLlid OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received that contain a valid SLD
+             field, as defined in [802.3ah], clause
+             65.1.3.3.1, pass the CRC-8 check, as defined in
+             [802.3ah], clause 65.1.3.3.3, and contain the broadcast
+             bit in the LLID and match the ONU's LLID (frame
+             reflected) as defined in [802.3ah], clause 65.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the OLT, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    ::= { dot3OmpEmulationStatEntry 9}
+
+dot3OmpEmulationNotBroadcastBitNotOnuLlid OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "frames"
+    MAX-ACCESS  read-only
+    STATUS  current
+
+
+
+    DESCRIPTION
+            "A count of frames received that contain a valid SLD
+             field, as defined in [802.3ah], clause
+             65.1.3.3.1, pass the CRC-8 check, as defined in
+             [802.3ah], clause 65.1.3.3.3, and do not contain
+             the ONU's LLID as defined in [802.3ah], clause 65.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             At the OLT, the value should be zero.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    ::= { dot3OmpEmulationStatEntry 10}
+
+--  FEC managed object definitions (30.5.1)
+
+dot3EponFecObjects OBJECT IDENTIFIER ::={dot3EponObjects 3}
+
+dot3EponFecTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot3EponFecEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table of dot3 EPON FEC management objects.
+             The entries in the table are control and status objects
+             and statistic counters for the FEC layer.
+             Each object has a row for every virtual link denoted by
+             the corresponding ifIndex.
+             The LLID field, as defined in the [802.3ah], is a 2-byte
+             register (15-bit field and a broadcast bit) limiting the
+             number of virtual links to 32768.  Typically the number
+             of expected virtual links in a PON is like the number of
+             ONUs, which is 32-64, plus an additional entry for
+             broadcast LLID (with a value of 0xffff)."
+    ::= { dot3EponFecObjects 1 }
+
+dot3EponFecEntry OBJECT-TYPE
+    SYNTAX  Dot3EponFecEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the dot3 EPON FEC table.
+             Rows exist for an OLT interface and an ONU interface.
+             A row in the table is denoted by the ifIndex of the link
+             and it is created when the ifIndex is created.
+             The rows in the table for an ONU interface are created
+
+
+
+             at system initialization.
+             The row in the table corresponding to the OLT ifIndex
+             and the row corresponding to the broadcast virtual link
+             are created at system initialization.
+             A row in the table corresponding to the ifIndex of a
+             virtual links is created when a virtual link is
+             established (ONU registers) and deleted when the virtual
+             link is deleted (ONU deregisters)."
+    INDEX  { ifIndex}
+    ::= { dot3EponFecTable 1 }
+
+Dot3EponFecEntry ::=
+    SEQUENCE {
+            dot3EponFecPCSCodingViolation           Counter64,
+            dot3EponFecAbility                      INTEGER,
+            dot3EponFecMode                         INTEGER,
+            dot3EponFecCorrectedBlocks              Counter64,
+            dot3EponFecUncorrectableBlocks          Counter64,
+            dot3EponFecBufferHeadCodingViolation    Counter64
+    }
+
+dot3EponFecPCSCodingViolation OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "octets"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "For a 100 Mbps operation, it is a count of the number of
+             times an invalid code-group is received, other than the
+             /H/ code-group.  For a 1000 Mbps operation, it is a count
+             of the number of times an invalid codegroup is received,
+             other than the /V/ code-group.  /H/ denotes a special
+             4b5b codeword of [802.3] 100 Mbps PCS layer (clause 24),
+             and /V/ denotes a special 8b10b codeword of the [802.3]
+             1000 Mbps PCS layer (clause 36).
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.5.1.1.12."
+    ::= { dot3EponFecEntry 1}
+
+dot3EponFecAbility OBJECT-TYPE
+    SYNTAX  INTEGER {
+            unknown(1),
+
+
+
+            supported(2),
+            unsupported(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "An object that indicates the support of operation of the
+             optional FEC sublayer of the 1000BASE-PX PHY specified
+             in [802.3ah], clause 65.2.
+             unknown(1) value is assigned in the initialization, for non
+             FEC support state or type not yet known.  unsupported(3)
+             value is assigned when the sublayer is not supported.
+             supported(2) value is assigned when the sublayer is
+             supported.
+             This object is applicable for an OLT, with the same
+             value for all virtual interfaces, and for an ONU.
+             The FEC counters will have a zero value when the
+             interface is not supporting FEC.
+             The counters:
+              dot3EponFecPCSCodingViolation - not affected by FEC
+              ability.
+              dot3EponFecCorrectedBlocks    - has a zero value when
+               dot3EponFecAbility is unknown(1) and unsupported(3).
+              dot3EponFecUncorrectableBlocks  - has a zero value when
+               dot3EponFecAbility is unknown(1) and unsupported(3).
+              dot3EponFecBufferHeadCodingViolation - has a zero value
+               when dot3EponFecAbility is unknown(1) and
+               unsupported(3)."
+    REFERENCE   "[802.3ah], 30.5.1.1.13."
+    ::= { dot3EponFecEntry 2}
+
+dot3EponFecMode OBJECT-TYPE
+    SYNTAX  INTEGER {
+            unknown(1),
+            disabled(2),
+            enabled(3)
+    }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "An object that defines the mode of operation of the
+             optional FEC sublayer of the 1000BASE-PX PHY, specified
+             in [802.3ah], clause 65.2, and reflects its state.
+             A GET operation returns the current mode of operation
+             of the PHY.  A SET operation changes the mode of
+             operation of the PHY to the indicated value.
+             unknown(1) value is assigned in the initialization for non
+               FEC support state or type not yet known.
+
+
+
+             disabled(2) value is assigned when the FEC sublayer is
+               operating in disabled mode.
+             enabled(3) value is assigned when the FEC sublayer is
+               operating in FEC mode.
+             The write operation is not restricted in this document
+             and can be done at any time.  Changing dot3EponFecMode
+             state can lead to disabling the Forward Error Correction
+             on the respective interface, which can lead to a
+             degradation of the optical link, and therefore may lead
+             to an interruption of service for the users connected to
+             the respective EPON interface.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             The counting of
+             the FEC counters will stop when the FEC of the interface
+             is disabled.
+             The counters:
+              dot3EponFecPCSCodingViolation - not affected by FEC
+              mode.
+              dot3EponFecCorrectedBlocks - stops counting when
+              Rx_FEC is not enabled.  (unknown(1) and disabled(2)).
+              dot3EponFecUncorrectableBlocks - stops counting when
+              Rx_FEC is not enabled (unknown(1) and disabled(2)).
+              dot3EponFecBufferHeadCodingViolation - stops counting
+              when Rx_FEC is not enabled (unknown(1) and
+              disabled(2)).
+             The object:
+              dot3EponFecAbility - indicates the FEC ability and
+              is not affected by the dot3EponFecMode object."
+    REFERENCE   "[802.3ah], 30.5.1.1.14."
+    DEFVAL { unknown }
+    ::= { dot3EponFecEntry 3}
+
+dot3EponFecCorrectedBlocks OBJECT-TYPE
+    SYNTAX  Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "For 10PASS-TS, 2BASE-TL, and 1000BASE-PX PHYs, it is a
+             count of corrected FEC blocks.  This counter will not
+             increment for other PHY Types.  Increment the counter by
+             one for each received block that is corrected by the FEC
+             function in the PHY.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+
+
+
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.5.1.1.15."
+    ::= { dot3EponFecEntry 4}
+
+dot3EponFecUncorrectableBlocks OBJECT-TYPE
+    SYNTAX  Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "For 10PASS-TS, 2BASE-TL, and 1000BASE-PX PHYs, it is a
+             count of uncorrectable FEC blocks.  This counter will not
+             increment for other PHY Types.  Increment the counter by
+             one for each FEC block that is determined to be
+             uncorrectable by the FEC function in the PHY.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    REFERENCE   "[802.3ah], 30.5.1.1.16."
+    ::= { dot3EponFecEntry 5}
+
+dot3EponFecBufferHeadCodingViolation OBJECT-TYPE
+    SYNTAX  Counter64
+    UNITS      "octets"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "For a 1000 Mbps operation, it is a count of the number of
+             invalid code-group received directly from the link.  The
+             value has a meaning only in 1000 Mbps mode and it is
+             zero otherwise.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             Discontinuities of this counter can occur at
+             re-initialization of the management system and at other
+             times, as indicated by the value of the
+             ifCounterDiscontinuityTime object of the Interface MIB
+             module."
+    ::= { dot3EponFecEntry 6}
+
+-- ExtendedPackage managed object definitions
+
+dot3ExtPkgObjects OBJECT IDENTIFIER ::={dot3EponObjects 4}
+
+
+
+
+dot3ExtPkgControlObjects OBJECT IDENTIFIER ::= { dot3ExtPkgObjects 1}
+
+dot3ExtPkgControlTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot3ExtPkgControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table of Extended package Control management
+             objects.  Entries in the table are control and status
+             indication objects of an EPON interface, which are
+             gathered in an extended package as an addition to the
+             objects based on the [802.3ah], clause 30, attributes.
+             Each object has a row for every virtual link denoted by
+             the corresponding ifIndex.
+             The LLID field, as defined in the [802.3ah], is a 2-byte
+             register (15-bit field and a broadcast bit) limiting the
+             number of virtual links to 32768.  Typically the number
+             of expected virtual links in a PON is like the number of
+             ONUs, which is 32-64, plus an additional entry for
+             broadcast LLID (with a value of 0xffff)."
+    ::= { dot3ExtPkgControlObjects 1 }
+
+dot3ExtPkgControlEntry OBJECT-TYPE
+    SYNTAX  Dot3ExtPkgControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the Extended package Control table.
+             Rows exist for an OLT interface and an ONU interface.
+             A row in the table is denoted by the ifIndex of the link
+             and it is created when the ifIndex is created.
+             The rows in the table for an ONU interface are created
+             at system initialization.
+             The row in the table corresponding to the OLT ifIndex
+             and the row corresponding to the broadcast virtual link
+             are created at system initialization.
+             A row in the table corresponding to the ifIndex of a
+             virtual links is created when a virtual link is
+             established (ONU registers) and deleted when the virtual
+             link is deleted (ONU deregisters)."
+    INDEX  { ifIndex}
+    ::= { dot3ExtPkgControlTable 1 }
+
+Dot3ExtPkgControlEntry ::=
+    SEQUENCE {
+     dot3ExtPkgObjectReset                       INTEGER,
+     dot3ExtPkgObjectPowerDown                   TruthValue,
+     dot3ExtPkgObjectNumberOfLLIDs               Unsigned32,
+
+
+
+     dot3ExtPkgObjectFecEnabled                  INTEGER,
+     dot3ExtPkgObjectReportMaximumNumQueues      Unsigned32,
+     dot3ExtPkgObjectRegisterAction              INTEGER
+    }
+
+dot3ExtPkgObjectReset OBJECT-TYPE
+    SYNTAX  INTEGER {
+            running(1),
+            reset(2)
+    }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "This object is used to reset the EPON interface.  The
+             interface may be unavailable while the reset occurs and
+             data may be lost.
+             Setting this object to running(1) will cause the
+             interface to enter into running mode.  Setting this
+             object to reset(2) will cause the interface to go into
+             reset mode.  When getting running(1), the interface is in
+             running mode.  When getting reset(2), the interface is in
+             reset mode.
+             The write operation is not restricted in this document
+             and can be done at any time.  Changing
+             dot3ExtPkgObjectReset state can lead to a reset of the
+             respective interface, leading to an interruption of
+             service for the users connected to the respective EPON
+             interface.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             A reset for a specific virtual interface resets only
+             this virtual interface and not the physical interface.
+             Thus, a virtual link that is malfunctioning can be
+             reset without affecting the operation of other virtual
+             interfaces.
+             The reset can cause Discontinuities in the values of the
+             counters of the interface, similar to re-initialization
+             of the management system.  Discontinuity should be
+             indicated by the ifCounterDiscontinuityTime object of
+             the Interface MIB module."
+    DEFVAL { running }
+    ::= { dot3ExtPkgControlEntry 1 }
+
+dot3ExtPkgObjectPowerDown OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+
+
+
+            "This object is used to power down the EPON interface.
+             The interface may be unavailable while the power down
+             occurs and data may be lost.
+             Setting this object to true(1) will cause the interface
+             to enter into power down mode.  Setting this object to
+             false(2) will cause the interface to go out of power
+             down mode.  When getting true(1), the interface is in
+             power down mode.  When getting false(2), the interface is
+             not in power down mode.
+             The write operation is not restricted in this document
+             and can be done at any time.  Changing
+             dot3ExtPkgObjectPowerDown state can lead to a power down
+             of the respective interface, leading to an interruption
+             of service of the users connected to the respective EPON
+             interface.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface.
+             A power down/up of a specific virtual interface affects
+             only the virtual interface and not the physical
+             interface.  Hence a virtual link, which needs a certain
+             handling, can be powered down and then powered up without
+             disrupting the operation of other virtual interfaces.
+             The object is relevant when the admin state of the
+             interface is active as set by the dot3MpcpAdminState."
+    DEFVAL { false }
+    ::= { dot3ExtPkgControlEntry 2 }
+
+dot3ExtPkgObjectNumberOfLLIDs OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A read only object that indicates the number of
+             registered LLIDs.  The initialization value is 0.
+             This object is applicable for an OLT with the same
+             value for all virtual interfaces and for an ONU.
+             The LLID field, as defined in the [802.3ah], is a 2-byte
+             register (15-bit field and a broadcast bit) limiting the
+             number of virtual links to 32768.  Typically the number
+             of expected virtual links in a PON is like the number of
+             ONUs, which is 32-64, plus an additional entry for
+             broadcast LLID (with a value of 0xffff).  At the ONU the
+             number of LLIDs for an interface is one."
+    ::= { dot3ExtPkgControlEntry 3 }
+
+dot3ExtPkgObjectFecEnabled OBJECT-TYPE
+    SYNTAX  INTEGER {
+            noFecEnabled(1),
+
+
+
+            fecTxEnabled(2),
+            fecRxEnabled(3),
+            fecTxRxEnabled(4)
+    }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+           "An object defining the FEC mode of operation of the
+            interface, and indicating its state.  The modes defined in
+            this object are extensions to the FEC modes defined in
+            the dot3EponFecMode object.
+            When noFECEnabled(1), the interface does not enable FEC
+            mode.
+            When fecTxEnabled(2), the interface enables the FEC
+            transmit mode.
+            When fecRxEnabled(3), the interface enables the FEC
+            receive mode.
+            When fecTxRxEnabled(4), the interface enables the FEC
+            transmit and receive mode.
+            This object is applicable for an OLT and an ONU.  At the
+            OLT, it has a distinct value for each virtual interface.
+            The FEC counters are referring to the receive path.  The
+            FEC counters will stop when the FEC receive mode of the
+            interface is disabled, as defined by fecRxEnabled(3)
+            and fecTxRxEnabled(4) values.
+            The counters:
+             dot3EponFecPCSCodingViolation - not affected by FEC
+             mode.
+             dot3EponFecCorrectedBlocks - stops counting when
+             Rx_FEC is not enabled (noFecEnabled(1) and
+             fecTxEnabled(2)).
+             dot3EponFecUncorrectableBlocks - stops counting when
+             Rx_FEC is not enabled (noFecEnabled(1) and
+             fecTxEnabled(2)).
+             dot3EponFecBufferHeadCodingViolation - stops counting
+             when Rx_FEC is not enabled (noFecEnabled(1) and
+             fecTxEnabled(2)).
+            The objects:
+             dot3EponFecAbility - indicates the FEC ability and is
+             not affected by the FEC mode.
+             dot3EponFecMode - indicates the FEC mode for combined RX
+             and TX.
+            The write operation is not restricted in this document
+            and can be done at any time.  Changing
+            dot3ExtPkgObjectFecEnabled state can lead to disabling
+            the Forward Error Correction on the respective interface,
+            which can lead to a degradation of the optical link, and
+            therefore may lead to an interruption of service for the
+
+
+
+            users connected to the respective EPON interface."
+    DEFVAL { noFecEnabled }
+    ::= { dot3ExtPkgControlEntry 4 }
+
+dot3ExtPkgObjectReportMaximumNumQueues OBJECT-TYPE
+    SYNTAX  Unsigned32 (0..7)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "An object, that defines the maximal number of queues in
+             the REPORT message as defined in [802.3ah], clause 64.  For
+             further information please see the description of the
+             queue table.
+             This object is applicable for an OLT and an ONU.  At the
+             OLT, it has a distinct value for each virtual interface."
+    DEFVAL { 0 }
+    ::= { dot3ExtPkgControlEntry 5 }
+
+dot3ExtPkgObjectRegisterAction OBJECT-TYPE
+    SYNTAX  INTEGER {
+            none(1),
+            register(2),
+            deregister(3),
+            reregister(4)
+    }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+           "An object configuring the registration state of an
+           interface, and indicating its registration state.
+            Write operation changes the registration state to its new
+            value.
+            Read operation returns the value of the state.
+            The registration state is reflected in this object and in
+            the dot3MpcpRegistrationState object.
+            none(1) indicates an unknown state,
+            register(2) indicates a registered LLID,
+            deregister(3) indicates a deregistered LLID,
+            reregister(4) indicates an LLID that is reregistering.
+            The following list describes the operation of the
+            interface, as specified in the [802.3ah], when a write
+            operation is setting a value.
+             none(1) - not doing any action.
+             register(2) - registering an LLID that has been requested
+             for registration (The LLID is in registering mode.
+               dot3MpcpRegistrationState - registering(2) ).
+               deregister(3) - deregisters an LLID that is registered
+                 (dot3MpcpRegistrationState - registered(3) ).
+
+
+
+               reregister(4) - reregister an LLID that is registered
+                 (dot3MpcpRegistrationState - registered(3) ).
+               The behavior of an ONU and OLT interfaces, at each one
+               of the detailed operation at each state, is described in
+               the registration state machine of figure 64-22,
+               [802.3ah].
+              This object is applicable for an OLT and an ONU.  At the
+              OLT, it has a distinct value for each virtual interface.
+              The write operation is not restricted in this document
+              and can be done at any time.  Changing
+              dot3ExtPkgObjectRegisterAction state can lead to a change
+              in the registration state of the respective interface
+              leading to a deregistration and an interruption of
+              service of the users connected to the respective EPON
+              interface."
+      DEFVAL { none }
+      ::= { dot3ExtPkgControlEntry 6 }
+
+  dot3ExtPkgQueueTable OBJECT-TYPE
+      SYNTAX  SEQUENCE OF Dot3ExtPkgQueueEntry
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+              "A table of the extended package objects for queue
+               management.  The [802.3ah] MPCP defines a report message
+               of the occupancy of the transmit queues for the feedback
+               BW request from the ONUs.  These queues serve the uplink
+               transmission of the ONU and data is gathered there until
+               the ONU is granted for transmission.
+               The management table of the queues is added here mainly
+               to control the reporting and to gather some statistics
+               of their operation.  This table is not duplicating
+               existing management objects of bridging queues,
+               specified in [802.1d], since the existence of a
+               dedicated transmit queuing mechanism is implied in the
+               [802.3ah], and the ONU may be a device that is not a
+               bridge with embedded bridging queues.
+               The format of the REPORT message, as specified
+               in [802.3], is presented below:
+               +-----------------------------------+
+               |          Destination Address      |
+               +-----------------------------------+
+               |          Source Address           |
+               +-----------------------------------+
+               |          Length/Type              |
+               +-----------------------------------+
+               |          OpCode                   |
+               +-----------------------------------+
+
+
+
+               |          TimeStamp                |
+               +-----------------------------------+
+               |          Number of queue Sets     |
+               +-----------------------------------+   /|\
+               |          Report bitmap            |    |
+               +-----------------------------------+    |
+               |          Queue 0 report           |    |
+               +-----------------------------------+    | repeated for
+               |          Queue 1 report           |    | every
+               +-----------------------------------+    | queue_set
+               |          Queue 2 report           |    |
+               +-----------------------------------+    |
+               |          Queue 3 report           |    |
+               +-----------------------------------+    |
+               |          Queue 4 report           |    |
+               +-----------------------------------+    |
+               |          Queue 5 report           |    |
+               +-----------------------------------+    |
+               |          Queue 6 report           |    |
+               +-----------------------------------+    |
+               |          Queue 7 report           |    |
+               +-----------------------------------+   \|/
+               |          Pad/reserved             |
+               +-----------------------------------+
+               |          FCS                      |
+               +-----------------------------------+
+
+               The 'Queue report' field reports the occupancy of each
+               uplink transmission queue.
+               The number of queue sets defines the number of the
+               reported sets, as would be explained in the description
+               of the dot3ExtPkgQueueSetsTable table.  For each set the
+               report bitmap defines which queue is present in the
+               report, meaning that although the MPCP REPORT message
+               can report up to 8 queues in a REPORT message, the
+               actual number is flexible.  The Queue table has a
+               variable size that is limited by the
+               dot3ExtPkgObjectReportMaximumNumQueues object, as an
+               ONU can have fewer queues to report.
+               The entries in the table are control and status
+               indication objects for managing the queues of an EPON
+               interface that are gathered in an extended package as
+               an addition to the objects that are based on the
+               [802.3ah] attributes.
+               Each object has a row for every virtual link and for
+               every queue in the report.
+               The LLID field, as defined in the [802.3ah], is a 2-byte
+               register (15-bit field and a broadcast bit) limiting the
+
+
+
+               number of virtual links to 32768.  Typically the number
+               of expected virtual links in a PON is like the number of
+               ONUs, which is 32-64, plus an additional entry for
+               broadcast LLID (with a value of 0xffff).
+               The number of queues is between 0 and 7 and limited by
+               dot3ExtPkgObjectReportMaximumNumQueues."
+      ::= { dot3ExtPkgControlObjects 2 }
+
+  dot3ExtPkgQueueEntry OBJECT-TYPE
+      SYNTAX  Dot3ExtPkgQueueEntry
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+              "An entry in the Extended package Queue table.  At the
+               OLT, the rows exist for each ifIndex and dot3QueueIndex.
+               At the ONU, rows exist for the single ifIndex for each
+               dot3QueueIndex.
+               Rows in the table are created when the ifIndex of the
+               link is created.  A set of rows per queue are added for
+               each ifIndex, denoted by the dot3QueueIndex.
+               A set of rows per queue in the table, for an ONU
+               interface, are created at the system initialization.
+               A set of rows per queue in the table, corresponding to
+               the OLT ifIndex and a set of rows per queue
+               corresponding to the broadcast virtual link, are
+               created at the system initialization.
+               A set of rows per queue in the table, corresponding to
+               the ifIndex of a virtual link, are created when the
+               virtual link is established (ONU registers), and deleted
+               when the virtual link is deleted (ONU deregisters)."
+      INDEX  { ifIndex, dot3QueueIndex }
+      ::= { dot3ExtPkgQueueTable 1 }
+
+  Dot3ExtPkgQueueEntry ::=
+      SEQUENCE {
+       dot3QueueIndex                              Unsigned32,
+       dot3ExtPkgObjectReportNumThreshold           Unsigned32,
+       dot3ExtPkgObjectReportMaximumNumThreshold    Unsigned32,
+       dot3ExtPkgStatTxFramesQueue                  Counter64,
+       dot3ExtPkgStatRxFramesQueue                  Counter64,
+       dot3ExtPkgStatDroppedFramesQueue             Counter64
+      }
+
+  dot3QueueIndex OBJECT-TYPE
+      SYNTAX  Unsigned32 (0..7)
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+
+
+
+              "An object that identifies an index for the queue table
+               reflecting the queue index of the queues that are
+               reported in the MPCP REPORT message as defined in
+               [802.3ah], clause 64.
+               The number of queues is between 0 and 7, and limited by
+               dot3ExtPkgObjectReportMaximumNumQueues."
+      ::= { dot3ExtPkgQueueEntry 1 }
+
+  dot3ExtPkgObjectReportNumThreshold OBJECT-TYPE
+      SYNTAX  Unsigned32 (0..7)
+      MAX-ACCESS  read-write
+      STATUS  current
+      DESCRIPTION
+              "An object that defines the number of thresholds for each
+               queue in the REPORT message as defined in [802.3ah],
+               clause 64.
+               Each queue_set reporting will provide information on the
+               queue occupancy of frames below the matching Threshold.
+               Read operation reflects the number of thresholds.
+               Write operation sets the number of thresholds for each
+               queue.
+               The write operation is not restricted in this document
+               and can be done at any time.  Value cannot exceed the
+               maximal value defined by the
+               dot3ExtPkgObjectReportMaximumNumThreshold object.
+               Changing dot3ExtPkgObjectReportNumThreshold can lead to
+               a change in the reporting of the ONU interface and
+               therefore to a change in the bandwidth allocation of the
+               respective interface.  This change may lead a degradation
+               or an interruption of service of the users connected to
+               the respective EPON interface.
+               This object is applicable for an OLT and an ONU.  At the
+               OLT, it has a distinct value for each virtual interface
+               and for each queue.  At the ONU, it has a distinct value
+               for each queue."
+      DEFVAL { 0 }
+      ::= { dot3ExtPkgQueueEntry 2 }
+
+  dot3ExtPkgObjectReportMaximumNumThreshold OBJECT-TYPE
+      SYNTAX  Unsigned32 (0..7)
+      MAX-ACCESS  read-only
+      STATUS  current
+      DESCRIPTION
+              "An object, that defines the maximal number of thresholds
+               for each queue in the REPORT message as defined in
+               [802.3ah], clause 64.  Each queue_set reporting will
+               provide information on the queue occupancy of frames
+               below the matching Threshold.
+
+
+
+               This object is applicable for an OLT and an ONU.  At the
+               OLT, it has a distinct value for each virtual interface
+               and for each queue.  At the ONU, it has a distinct value
+               for each queue."
+      DEFVAL { 0 }
+      ::= { dot3ExtPkgQueueEntry 3 }
+
+   dot3ExtPkgStatTxFramesQueue OBJECT-TYPE
+      SYNTAX  Counter64
+      UNITS      "frames"
+      MAX-ACCESS  read-only
+      STATUS  current
+      DESCRIPTION
+              "A count of the number of times a frame transmission
+               occurs from the corresponding 'Queue'.
+               Increment the counter by one for each frame transmitted,
+               which is an output of the 'Queue'.
+               The 'Queue' marking matches the REPORT MPCP message
+               Queue field as defined in [802.3ah], clause 64.
+               This object is applicable for an OLT and an ONU.  At the
+               OLT, it has a distinct value for each virtual interface
+               and for each queue.  At the ONU, it has a distinct value
+               for each queue.
+               At the OLT the value should be zero.
+               Discontinuities of this counter can occur at
+               re-initialization of the management system and at other
+               times, as indicated by the value of the
+               ifCounterDiscontinuityTime object of the Interface MIB
+               module."
+      ::= { dot3ExtPkgQueueEntry 4}
+
+  dot3ExtPkgStatRxFramesQueue OBJECT-TYPE
+      SYNTAX  Counter64
+      UNITS      "frames"
+      MAX-ACCESS  read-only
+      STATUS  current
+      DESCRIPTION
+              "A count of the number of times a frame reception
+               occurs from the corresponding 'Queue'.
+               Increment the counter by one for each frame received,
+               which is an input to the corresponding 'Queue'.
+               The 'Queue' marking matches the REPORT MPCP message
+               Queue field as defined in [802.3ah], clause 64.
+               This object is applicable for an OLT and an ONU.  At the
+               OLT, it has a distinct value for each virtual interface
+               and for each queue.  At the ONU, it has a distinct value
+               for each queue.
+               Discontinuities of this counter can occur at
+
+
+
+               re-initialization of the management system and at other
+               times, as indicated by the value of the
+               ifCounterDiscontinuityTime object of the Interface MIB
+               module."
+      ::= { dot3ExtPkgQueueEntry 5}
+
+  dot3ExtPkgStatDroppedFramesQueue OBJECT-TYPE
+      SYNTAX  Counter64
+      UNITS      "frames"
+      MAX-ACCESS  read-only
+      STATUS  current
+      DESCRIPTION
+               "A count of the number of times a frame drop
+               occurs from the corresponding 'Queue'.
+               Increment the counter by one for each frame dropped
+               from the corresponding 'Queue'.
+               The 'Queue' marking matches the REPORT MPCP message
+               Queue field as defined in [802.3ah], clause 64.
+               This object is applicable for an OLT and an ONU.  At the
+               OLT, it has a distinct value for each virtual interface
+               and for each queue.  At the ONU, it has a distinct value
+               for each queue.
+               At the OLT, the value should be zero.
+               Discontinuities of this counter can occur at
+               re-initialization of the management system and at other
+               times, as indicated by the value of the
+               ifCounterDiscontinuityTime object of the Interface MIB
+               module."
+     ::= { dot3ExtPkgQueueEntry 6}
+
+  dot3ExtPkgQueueSetsTable OBJECT-TYPE
+      SYNTAX  SEQUENCE OF Dot3ExtPkgQueueSetsEntry
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+              "A table of Extended package objects used for the
+               management of the queue_sets.  Entries are control and
+               status indication objects of an EPON interface, which
+               are gathered in an extended package as an addition to
+               the objects based on the [802.3ah] attributes.  The
+               objects in this table are specific for the queue_sets,
+               which are reported in the MPCP REPORT message as defined
+               in [802.3ah], clause 64.
+               The [802.3ah] MPCP defines a report message of the
+               occupancy of the transmit queues for the feedback BW
+               request from the ONUs.  These queues serve the uplink
+               transmission of the ONU and data is gathered there until
+               the ONU is granted for transmission.
+
+
+
+               The management table of the queues_sets is added here
+               mainly to control the reporting and to gather some
+               statistics of their operation.  This table is not
+               duplicating existing management objects of bridging
+               queues, specified in [802.1d], since the existence of a
+               dedicated transmit queuing mechanism is implied in the
+               [802.3ah], and the ONU may be a device that is not a
+               bridge with embedded bridging queues.
+               The format of the REPORT message, as specified
+               in [802.3], is presented below:
+               +-----------------------------------+
+               |          Destination Address      |
+               +-----------------------------------+
+               |          Source Address           |
+               +-----------------------------------+
+               |          Length/Type              |
+               +-----------------------------------+
+               |          OpCode                   |
+               +-----------------------------------+
+               |          TimeStamp                |
+               +-----------------------------------+
+               |          Number of queue Sets     |
+               +-----------------------------------+   /|\
+               |          Report bitmap            |    |
+               +-----------------------------------+    |
+               |          Queue 0 report           |    |
+               +-----------------------------------+    | repeated for
+               |          Queue 1 report           |    | every
+               +-----------------------------------+    | queue_set
+               |          Queue 2 report           |    |
+               +-----------------------------------+    |
+               |          Queue 3 report           |    |
+               +-----------------------------------+    |
+               |          Queue 4 report           |    |
+               +-----------------------------------+    |
+               |          Queue 5 report           |    |
+               +-----------------------------------+    |
+               |          Queue 6 report           |    |
+               +-----------------------------------+    |
+               |          Queue 7 report           |    |
+               +-----------------------------------+   \|/
+               |          Pad/reserved             |
+               +-----------------------------------+
+               |          FCS                      |
+               +-----------------------------------+
+
+               As can be seen from the message format, the ONU
+               interface reports of the status of up to 8 queues
+
+
+
+               and it can report in a single MPCP REPORT message
+               of a few sets of queues.
+               The number of queue_sets defines the number of the
+               reported sets, and it can reach a value of up to 8.
+               It means that an ONU can hold a variable number of
+               sets between 0 and 7.
+               The dot3ExtPkgQueueSetsTable table has a variable
+               queue_set size that is limited by the
+               dot3ExtPkgObjectReportMaximumNumThreshold object as an
+               ONU can have fewer queue_sets to report.
+               The 'Queue report' field reports the occupancy of each
+               uplink transmission queue.  The queue_sets can be used to
+               report the occupancy of the queues in a few levels as to
+               allow granting, in an accurate manner, of only part of
+               the data available in the queues.  A Threshold is
+               defined for each queue_set to define the level of the
+               queue that is counted for the report of the occupancy.
+               The threshold is reflected in the queue_set table by the
+               dot3ExtPkgObjectReportThreshold object.
+               For each queue set, the report bitmap defines which
+               queues are present in the report, meaning that
+               although the MPCP REPORT message can report of up to 8
+               queues in a REPORT message, the actual number is
+               flexible.
+               The dot3ExtPkgQueueSetsTable table has a variable queue
+               size that is limited by the
+               dot3ExtPkgObjectReportMaximumNumQueues object as an ONU
+               can have fewer queues to report.
+               Each object has a row for every virtual link, for each
+               queue in the report and for each queue_set in the queue.
+               The LLID field, as defined in the [802.3ah], is a 2-byte
+               register (15-bit field and a broadcast bit) limiting the
+               number of virtual links to 32768.  Typically the number
+               of expected virtual links in a PON is like the number of
+               ONUs, which is 32-64, plus an additional entry for
+               broadcast LLID (with a value of 0xffff).
+               The number of queues is between 0 and 7 and limited by
+               dot3ExtPkgObjectReportMaximumNumQueues.
+               The number of queues_sets is between 0 and 7 and limited
+               by dot3ExtPkgObjectReportMaximumNumThreshold."
+      ::= { dot3ExtPkgControlObjects 3 }
+
+  dot3ExtPkgQueueSetsEntry OBJECT-TYPE
+      SYNTAX  Dot3ExtPkgQueueSetsEntry
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+              "An entry in the Extended package queue_set table.  At
+
+
+
+               the OLT, the rows exist for each ifIndex,
+               dot3QueueSetQueueIndex and dot3QueueSetIndex.  At the
+               ONU, rows exist for the single ifIndex, for each
+               dot3QueueSetQueueIndex and dot3QueueSetIndex.
+               Rows in the table are created when the ifIndex of the
+               link is created.  A set of rows per queue and per
+               queue_set are added for each ifIndex, denoted by
+               dot3QueueSetIndex and dot3QueueSetQueueIndex.
+               A set of rows per queue and per queue_set in the table,
+               for an ONU interface are created at system
+               initialization.
+               A set of rows per queue and per queue_Set in the table,
+               corresponding to the OLT ifIndex and a set of rows per
+               queue and per queue_set, corresponding to the broadcast
+               virtual link, are created at system initialization.
+               A set of rows per queue and per queue_set in the table,
+               corresponding to the ifIndex of a virtual link are
+               created when the virtual link is established (ONU
+               registers) and deleted when the virtual link is deleted
+               (ONU deregisters)."
+               INDEX { ifIndex,
+              dot3QueueSetQueueIndex,dot3QueueSetIndex}
+      ::= { dot3ExtPkgQueueSetsTable 1 }
+
+  Dot3ExtPkgQueueSetsEntry ::=
+      SEQUENCE {
+       dot3QueueSetQueueIndex                      Unsigned32,
+       dot3QueueSetIndex                           Unsigned32,
+       dot3ExtPkgObjectReportThreshold             Unsigned32
+      }
+
+  dot3QueueSetQueueIndex OBJECT-TYPE
+      SYNTAX  Unsigned32 (0..7)
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+              "An object that identifies the queue index for the
+               dot3ExtPkgQueueSetsTable table.  The queues are reported
+               in the MPCP REPORT message as defined in [802.3ah],
+               clause 64.
+               The number of queues is between 0 and 7, and limited by
+               dot3ExtPkgObjectReportMaximumNumQueues.
+               Value corresponds to the dot3QueueIndex of the queue
+               table."
+      ::= { dot3ExtPkgQueueSetsEntry 1 }
+
+  dot3QueueSetIndex OBJECT-TYPE
+      SYNTAX  Unsigned32 (0..7)
+
+
+
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+              "An object that identifies the queue_set index for the
+               dot3ExtPkgQueueSetsTable table.  The queues are reported
+               in the MPCP REPORT message as defined in [802.3ah],
+               clause 64.
+               The number of queues_sets is between 0 and 7, and
+               limited by dot3ExtPkgObjectReportMaximumNumThreshold."
+      ::= { dot3ExtPkgQueueSetsEntry 2 }
+
+      dot3ExtPkgObjectReportThreshold OBJECT-TYPE
+      SYNTAX  Unsigned32
+      UNITS       "TQ (16nsec)"
+      MAX-ACCESS  read-write
+      STATUS  current
+      DESCRIPTION
+              "An object that defines the value of a threshold report
+               for each queue_set in the REPORT message as defined in
+               [802.3ah], clause 64.  The number of sets for each queue
+               is dot3ExtPkgObjectReportNumThreshold.
+               In the REPORT message, each queue_set reporting will
+               provide information on the occupancy of the queues for
+               frames below the matching Threshold.
+               The value returned shall be in Time quanta (TQ), which
+               is 16nsec or 2 octets increments.
+               Read operation provides the threshold value.  Write
+               operation sets the value of the threshold.
+               The write operation is not restricted in this document
+               and can be done at any time.  Changing
+               dot3ExtPkgObjectReportThreshold can lead to a change in
+               the reporting of the ONU interface and therefore to a
+               change in the bandwidth allocation of the respective
+               interface.  This change may lead a degradation or an
+               interruption of service for the users connected to the
+               respective EPON interface.
+               This object is applicable for an OLT and an ONU.  At the
+               OLT, it has a distinct value for each virtual interface,
+               for each queue and for each queue_set.  At the ONU, it has
+               a distinct value for each queue and for each queue_set."
+      DEFVAL { 0 }
+      ::= { dot3ExtPkgQueueSetsEntry 3 }
+
+  --Optical Interface status tables
+
+  dot3ExtPkgOptIfTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF Dot3ExtPkgOptIfEntry
+      MAX-ACCESS not-accessible
+
+
+
+      STATUS     current
+      DESCRIPTION
+              "This table defines the control and status indication
+               objects for the optical interface of the EPON interface.
+               Each object has a row for every virtual link denoted by
+               the corresponding ifIndex.
+               The LLID field, as defined in the [802.3ah], is a 2-byte
+               register (15-bit field and a broadcast bit) limiting the
+               number of virtual links to 32768.  Typically the number
+               of expected virtual links in a PON is like the number of
+               ONUs, which is 32-64, plus an additional entry for
+               broadcast LLID (with a value of 0xffff).
+               Although the optical interface is a physical interface,
+               there is a row in the table for each virtual interface.
+               The reason for having a separate row for each virtual
+               link is that the OLT has a separate link for each one of
+               the ONUs.  For instance, ONUs could be in different
+               distances with different link budgets and different
+               receive powers, therefore having different power alarms.
+               It is quite similar to a case of different physical
+               interfaces."
+      ::= { dot3ExtPkgControlObjects 5}
+
+  dot3ExtPkgOptIfEntry OBJECT-TYPE
+      SYNTAX     Dot3ExtPkgOptIfEntry
+      MAX-ACCESS not-accessible
+      STATUS     current
+      DESCRIPTION
+              "An entry in the optical interface table of the EPON
+               interface.
+               Rows exist for an OLT interface and an ONU interface.
+               A row in the table is denoted by the ifIndex of the link
+               and it is created when the ifIndex is created.
+               The rows in the table for an ONU interface are created
+               at system initialization.
+               The row in the table corresponding to the OLT ifIndex
+               and the row corresponding to the broadcast virtual link
+               are created at system initialization.
+               A row in the table corresponding to the ifIndex of a
+               virtual links is created when a virtual link is
+               established (ONU registers) and deleted when the virtual
+               link is deleted (ONU deregisters)."
+      INDEX       { ifIndex }
+      ::= { dot3ExtPkgOptIfTable 1 }
+
+   Dot3ExtPkgOptIfEntry ::=
+     SEQUENCE {
+       dot3ExtPkgOptIfSuspectedFlag             TruthValue,
+
+
+
+       dot3ExtPkgOptIfInputPower                Integer32,
+       dot3ExtPkgOptIfLowInputPower             Integer32,
+       dot3ExtPkgOptIfHighInputPower            Integer32,
+       dot3ExtPkgOptIfLowerInputPowerThreshold  Integer32,
+       dot3ExtPkgOptIfUpperInputPowerThreshold  Integer32,
+       dot3ExtPkgOptIfOutputPower               Integer32,
+       dot3ExtPkgOptIfLowOutputPower            Integer32,
+       dot3ExtPkgOptIfHighOutputPower           Integer32,
+       dot3ExtPkgOptIfLowerOutputPowerThreshold Integer32,
+       dot3ExtPkgOptIfUpperOutputPowerThreshold Integer32,
+       dot3ExtPkgOptIfSignalDetect              TruthValue,
+       dot3ExtPkgOptIfTransmitAlarm             TruthValue,
+       dot3ExtPkgOptIfTransmitEnable            TruthValue
+       }
+
+  dot3ExtPkgOptIfSuspectedFlag OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+      "This object is a reliability indication.
+       If true, the data in this entry may be unreliable.
+       This object is applicable for an OLT and an ONU.  At the
+       OLT, it has a distinct value for each virtual interface."
+    ::= { dot3ExtPkgOptIfEntry 1 }
+
+  dot3ExtPkgOptIfInputPower OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS  "0.1 dbm"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+      "The optical power monitored at the input.
+       This object is applicable for an OLT and an ONU.  At the
+       OLT, it has a distinct value for each virtual interface."
+  ::= { dot3ExtPkgOptIfEntry 2 }
+
+  dot3ExtPkgOptIfLowInputPower OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS  "0.1 dbm"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+      "The lowest optical power monitored at the input during the
+       current 15-minute interval.
+       This object is applicable for an OLT and an ONU.  At the
+       OLT, it has a distinct value for each virtual interface."
+    ::= { dot3ExtPkgOptIfEntry 3 }
+
+
+
+  dot3ExtPkgOptIfHighInputPower OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS  "0.1 dbm"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+      "The highest optical power monitored at the input during the
+       current 15-minute interval.
+       This object is applicable for an OLT and an ONU.  At the
+       OLT, it has a distinct value for each virtual interface."
+    ::= { dot3ExtPkgOptIfEntry 4 }
+
+  dot3ExtPkgOptIfLowerInputPowerThreshold OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS  "0.1 dbm"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+      "The lower limit threshold on input power.  If
+       dot3ExtPkgOptIfInputPower drops to this value or below,
+       a Threshold Crossing Alert (TCA) should be sent.
+       Reading will present the threshold value.  Writing will
+       set the value of the threshold.
+       The write operation is not restricted in this document
+       and can be done at any time.  Changing
+       dot3ExtPkgOptIfLowerInputPowerThreshold can lead to a Threshold
+       Crossing Alert (TCA) being sent for the respective interface.
+       This alert may be leading to an interruption of service for the
+       users connected to the respective EPON interface, depending on
+       the system action on such an alert.
+       This object is applicable for an OLT and an ONU.  At the
+       OLT, it has a distinct value for each virtual interface."
+    ::= { dot3ExtPkgOptIfEntry 5 }
+
+  dot3ExtPkgOptIfUpperInputPowerThreshold OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS  "0.1 dbm"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+      "The upper limit threshold on input power.  If
+       dot3ExtPkgOptIfInputPower reaches or exceeds this value,
+       a Threshold Crossing Alert (TCA) should be sent.
+       Reading will present the threshold value.  Writing will
+       set the value of the threshold.
+       The write operation is not restricted in this document
+       and can be done at any time.  Changing
+       dot3ExtPkgOptIfUpperInputPowerThreshold can lead to a Threshold
+
+
+
+       Crossing Alert (TCA) being sent for the respective interface.
+       This alert may be leading to an interruption of service for the
+       users connected to the respective EPON interface, depending on
+       the system action on such an alert.
+       This object is applicable for an OLT and an ONU.  At the
+       OLT, it has a distinct value for each virtual interface."
+   ::= { dot3ExtPkgOptIfEntry 6 }
+
+  dot3ExtPkgOptIfOutputPower OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS  "0.1 dbm"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+      "The optical power monitored at the output.
+       This object is applicable for an OLT and an ONU.  At the
+       OLT, it has a distinct value for each virtual interface."
+    ::= { dot3ExtPkgOptIfEntry 7 }
+
+  dot3ExtPkgOptIfLowOutputPower OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS  "0.1 dbm"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+      "The lowest optical power monitored at the output during the
+       current 15-minute interval.
+       This object is applicable for an OLT and an ONU.  At the
+       OLT, it has a distinct value for each virtual interface."
+    ::= { dot3ExtPkgOptIfEntry 8 }
+
+  dot3ExtPkgOptIfHighOutputPower OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS  "0.1 dbm"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+      "The highest optical power monitored at the output during the
+       current 15-minute interval.
+       This object is applicable for an OLT and an ONU.  At the
+       OLT, it has a distinct value for each virtual interface."
+   ::= { dot3ExtPkgOptIfEntry 9 }
+
+  dot3ExtPkgOptIfLowerOutputPowerThreshold OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS  "0.1 dbm"
+    MAX-ACCESS  read-write
+    STATUS  current
+
+
+
+    DESCRIPTION
+      "The lower limit threshold on output power.  If
+       dot3ExtPkgOptIfOutputPower drops to this value or below,
+       a Threshold Crossing Alert (TCA) should be sent.
+       Reading will present the threshold value.  Writing will
+       set the value of the threshold.
+       The write operation is not restricted in this document
+       and can be done at any time.  Changing
+       dot3ExtPkgOptIfLowerOutputPowerThreshold can lead to a Threshold
+       Crossing Alert (TCA) being sent for the respective interface.
+       This alert may be leading to an interruption of service for the
+       users connected to the respective EPON interface, depending on
+       the system action on such an alert.
+       This object is applicable for an OLT and an ONU.  At the
+       OLT, it has a distinct value for each virtual interface."
+  ::= { dot3ExtPkgOptIfEntry 10 }
+
+  dot3ExtPkgOptIfUpperOutputPowerThreshold OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS  "0.1 dbm"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+      "The upper limit threshold on output power.  If
+       dot3ExtPkgOptIfOutputPower reaches or exceeds this value,
+       a Threshold Crossing Alert (TCA) should be sent.
+       Reading will present the threshold value.  Writing will
+       set the value of the threshold.
+       The write operation is not restricted in this document
+       and can be done at any time.  Changing
+       dot3ExtPkgOptIfUpperOutputPowerThreshold can lead to a Threshold
+       Crossing Alert (TCA) being sent for the respective interface.
+       This alert may be leading to an interruption of service of the
+       users connected to the respective EPON interface, depending on
+       the system action on such an alert.
+       This object is applicable for an OLT and an ONU.  At the
+       OLT, it has a distinct value for each virtual interface."
+    ::= { dot3ExtPkgOptIfEntry 11 }
+
+  dot3ExtPkgOptIfSignalDetect OBJECT-TYPE
+      SYNTAX  TruthValue
+      MAX-ACCESS  read-only
+      STATUS  current
+      DESCRIPTION
+              "When getting true(1), there is a valid optical signal at
+               the receive that is above the optical power level for
+               signal detection.  When getting false(2) the optical
+               signal at the receive is below the optical power level
+
+
+
+               for signal detection.
+               This object is applicable for an OLT and an ONU.  At the
+               OLT, it has a distinct value for each virtual interface."
+      DEFVAL { false }
+      ::= { dot3ExtPkgOptIfEntry 12 }
+
+  dot3ExtPkgOptIfTransmitAlarm OBJECT-TYPE
+      SYNTAX  TruthValue
+      MAX-ACCESS  read-only
+      STATUS  current
+      DESCRIPTION
+              "When getting true(1) there is a non-valid optical signal
+               at the transmit of the interface, either a higher level
+               or lower level than expected.  When getting false(2) the
+               optical signal at the transmit is valid and in the
+               required range.
+               This object is applicable for an OLT and an ONU.  At the
+               OLT, it has a distinct value for each virtual interface."
+      DEFVAL { false }
+      ::= { dot3ExtPkgOptIfEntry 13 }
+
+  dot3ExtPkgOptIfTransmitEnable OBJECT-TYPE
+      SYNTAX  TruthValue
+      MAX-ACCESS  read-write
+      STATUS  current
+      DESCRIPTION
+              "Setting this object to true(1) will cause the optical
+               interface to start transmission (according to the
+               control protocol specified for the logical interface).
+               Setting this object to false(2) will cause the
+               interface to stop the optical transmission.
+               When getting true(1), the optical interface is in
+               transmitting mode (obeying to the logical control
+               protocol).
+               When getting false(2), the optical interface is not in
+               transmitting mode.
+               The write operation is not restricted in this document
+               and can be done at any time.  Changing
+               dot3ExtPkgOptIfTransmitEnable state can lead to a halt
+               in the optical transmission of the respective interface
+               leading to an interruption of service of the users
+               connected to the respective EPON interface.
+               The object is relevant when the admin state of the
+               interface is active as set by the dot3MpcpAdminState.
+               This object is applicable for an OLT and an ONU.  At the
+               OLT it, has a distinct value for each virtual interface."
+      DEFVAL { false }
+      ::= { dot3ExtPkgOptIfEntry 14 }
+
+
+
+  -- Conformance Statements
+
+  -- Conformance Groups
+
+  dot3EponGroups      OBJECT IDENTIFIER ::= { dot3EponConformance 1 }
+
+  dot3MpcpGroupBase OBJECT-GROUP
+      OBJECTS {
+              dot3MpcpOperStatus,
+              dot3MpcpAdminState,
+              dot3MpcpMode,
+              dot3MpcpSyncTime,
+              dot3MpcpLinkID,
+              dot3MpcpRemoteMACAddress,
+              dot3MpcpRegistrationState,
+              dot3MpcpMaximumPendingGrants,
+              dot3MpcpTransmitElapsed,
+              dot3MpcpReceiveElapsed,
+              dot3MpcpRoundTripTime
+      }
+      STATUS  current
+      DESCRIPTION
+             "A collection of objects of dot3 Mpcp Control entity state
+              definition.  Objects are per LLID."
+      ::= { dot3EponGroups 1 }
+
+  dot3MpcpGroupStat OBJECT-GROUP
+      OBJECTS {
+              dot3MpcpMACCtrlFramesTransmitted,
+              dot3MpcpMACCtrlFramesReceived,
+              dot3MpcpDiscoveryWindowsSent,
+              dot3MpcpDiscoveryTimeout,
+              dot3MpcpTxRegRequest,
+              dot3MpcpRxRegRequest,
+              dot3MpcpTxRegAck,
+              dot3MpcpRxRegAck,
+              dot3MpcpTxReport,
+              dot3MpcpRxReport,
+              dot3MpcpTxGate,
+              dot3MpcpRxGate,
+              dot3MpcpTxRegister,
+              dot3MpcpRxRegister
+      }
+      STATUS  current
+      DESCRIPTION
+              "A collection of objects of dot3 Mpcp Statistics.
+               Objects are per LLID."
+      ::= { dot3EponGroups 2 }
+
+
+
+  dot3OmpeGroupID OBJECT-GROUP
+      OBJECTS {
+              dot3OmpEmulationType
+
+      }
+      STATUS  current
+      DESCRIPTION
+              "A collection of objects of dot3 OMP emulation entity
+               state definition.  Objects are per LLID."
+      ::= { dot3EponGroups 3 }
+
+  dot3OmpeGroupStat OBJECT-GROUP
+      OBJECTS {
+              dot3OmpEmulationSLDErrors,
+              dot3OmpEmulationCRC8Errors,
+              dot3OmpEmulationBadLLID,
+              dot3OmpEmulationGoodLLID,
+              dot3OmpEmulationOnuPonCastLLID,
+              dot3OmpEmulationOltPonCastLLID,
+              dot3OmpEmulationBroadcastBitNotOnuLlid,
+              dot3OmpEmulationOnuLLIDNotBroadcast,
+              dot3OmpEmulationBroadcastBitPlusOnuLlid,
+              dot3OmpEmulationNotBroadcastBitNotOnuLlid
+      }
+      STATUS  current
+      DESCRIPTION
+              "A collection of objects of dot3 OMP emulation
+               Statistics.  Objects are per LLID."
+      ::= { dot3EponGroups 4 }
+
+  dot3EponFecGroupAll OBJECT-GROUP
+      OBJECTS {
+              dot3EponFecPCSCodingViolation,
+              dot3EponFecAbility,
+              dot3EponFecMode,
+              dot3EponFecCorrectedBlocks,
+              dot3EponFecUncorrectableBlocks,
+              dot3EponFecBufferHeadCodingViolation
+      }
+      STATUS  current
+      DESCRIPTION
+              "A collection of objects of dot3 FEC group control and
+              statistics.  Objects are per LLID."
+      ::= { dot3EponGroups 5 }
+
+  dot3ExtPkgGroupControl OBJECT-GROUP
+      OBJECTS {
+              dot3ExtPkgObjectReset,
+
+
+
+              dot3ExtPkgObjectPowerDown,
+              dot3ExtPkgObjectNumberOfLLIDs,
+              dot3ExtPkgObjectFecEnabled,
+              dot3ExtPkgObjectReportMaximumNumQueues,
+              dot3ExtPkgObjectRegisterAction
+      }
+      STATUS  current
+      DESCRIPTION
+              "A collection of objects of dot3ExtPkg control
+               definition.  Objects are per LLID."
+      ::= { dot3EponGroups 6 }
+
+  dot3ExtPkgGroupQueue OBJECT-GROUP
+      OBJECTS {
+       dot3ExtPkgObjectReportNumThreshold,
+       dot3ExtPkgObjectReportMaximumNumThreshold,
+       dot3ExtPkgStatTxFramesQueue,
+       dot3ExtPkgStatRxFramesQueue,
+       dot3ExtPkgStatDroppedFramesQueue
+      }
+      STATUS  current
+      DESCRIPTION
+              "A collection of objects of dot3ExtPkg Queue
+               control.  Objects are per LLID, per queue."
+      ::= { dot3EponGroups 7 }
+
+  dot3ExtPkgGroupQueueSets OBJECT-GROUP
+      OBJECTS {
+       dot3ExtPkgObjectReportThreshold
+      }
+      STATUS  current
+      DESCRIPTION
+              "A collection of objects of dot3ExtPkg queue_set
+               control.  Objects are per LLID, per queue, per
+               queue_set."
+      ::= { dot3EponGroups 8 }
+
+  dot3ExtPkgGroupOptIf OBJECT-GROUP
+      OBJECTS {
+     dot3ExtPkgOptIfSuspectedFlag,
+       dot3ExtPkgOptIfInputPower,
+       dot3ExtPkgOptIfLowInputPower,
+       dot3ExtPkgOptIfHighInputPower,
+       dot3ExtPkgOptIfLowerInputPowerThreshold,
+       dot3ExtPkgOptIfUpperInputPowerThreshold,
+       dot3ExtPkgOptIfOutputPower,
+       dot3ExtPkgOptIfLowOutputPower,
+       dot3ExtPkgOptIfHighOutputPower,
+
+
+
+       dot3ExtPkgOptIfLowerOutputPowerThreshold,
+       dot3ExtPkgOptIfUpperOutputPowerThreshold,
+       dot3ExtPkgOptIfSignalDetect,
+       dot3ExtPkgOptIfTransmitAlarm,
+       dot3ExtPkgOptIfTransmitEnable
+       }
+      STATUS  current
+      DESCRIPTION
+              "A collection of objects of control and status indication
+               of the optical interface.
+               Objects are per LLID."
+      ::= { dot3EponGroups 9 }
+
+  -- Compliance
+
+     dot3EponCompliances
+         OBJECT IDENTIFIER ::= { dot3EponConformance 2 }
+
+  dot3MPCPCompliance MODULE-COMPLIANCE
+      STATUS      current
+      DESCRIPTION "The compliance statement for Multi-Point
+                   Control Protocol interfaces."
+
+      MODULE  -- this module
+      MANDATORY-GROUPS { dot3MpcpGroupBase}
+
+      GROUP       dot3MpcpGroupStat
+     DESCRIPTION "This group is mandatory for all MPCP supporting
+                  interfaces for statistics collection."
+     ::= { dot3EponCompliances 1}
+
+  dot3OmpeCompliance MODULE-COMPLIANCE
+      STATUS      current
+      DESCRIPTION "The compliance statement for OMPEmulation
+                   interfaces."
+
+      MODULE  -- this module
+      MANDATORY-GROUPS { dot3OmpeGroupID}
+
+      GROUP       dot3OmpeGroupStat
+      DESCRIPTION "This group is mandatory for all OMPemulation
+                   supporting interfaces for statistics collection."
+
+      ::= { dot3EponCompliances 2}
+
+  dot3EponFecCompliance MODULE-COMPLIANCE
+      STATUS      current
+      DESCRIPTION "The compliance statement for FEC EPON interfaces.
+
+
+
+                   This group is mandatory for all FEC supporting
+                   interfaces for control and statistics collection."
+
+      MODULE  -- this module
+      MANDATORY-GROUPS { dot3EponFecGroupAll }
+
+      ::= { dot3EponCompliances 3}
+
+  dot3ExtPkgCompliance MODULE-COMPLIANCE
+      STATUS      current
+      DESCRIPTION "The compliance statement for EPON Interfaces
+                   using the extended package."
+      MODULE  -- this module
+      MANDATORY-GROUPS { dot3ExtPkgGroupControl }
+
+      GROUP       dot3ExtPkgGroupQueue
+      DESCRIPTION " This group is mandatory for all EPON interfaces
+                   supporting REPORT queue management of the extended
+                   package."
+
+      GROUP       dot3ExtPkgGroupQueueSets
+      DESCRIPTION " This group is mandatory for all EPON interfaces
+                   supporting REPORT queue_sets management of the
+                   extended package."
+
+      GROUP       dot3ExtPkgGroupOptIf
+      DESCRIPTION "This group is mandatory for all EPON interfaces
+                   supporting optical interfaces management,
+                   of the extended package."
+
+      ::= { dot3EponCompliances 4}
+
+  END

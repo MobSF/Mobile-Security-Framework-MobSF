@@ -1,0 +1,307 @@
+
+IANA-GMPLS-TC-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       MODULE-IDENTITY, mib-2              FROM SNMPv2-SMI  -- RFC 2578
+       TEXTUAL-CONVENTION                  FROM SNMPv2-TC;  -- RFC 2579
+
+   ianaGmpls MODULE-IDENTITY
+       LAST-UPDATED
+                  "201004310000Z" -- 13 April 2010
+       ORGANIZATION
+                  "IANA"
+       CONTACT-INFO
+                  "Internet Assigned Numbers Authority
+                   Postal: 4676 Admiralty Way, Suite 330
+                           Marina del Rey, CA 90292
+                   Tel:    +1 310 823 9358
+                   E-Mail: iana&iana.org"
+       DESCRIPTION
+         "Copyright (C) The IETF Trust (2007).  The initial version
+          of this MIB module was published in RFC 4802.  For full legal
+          notices see the RFC itself.  Supplementary information
+          may be available on:
+          http://www.ietf.org/copyrights/ianamib.html"
+
+         REVISION
+           "201004130000Z" -- 13 April 2010
+         DESCRIPTION
+           "Added LSP Encoding Type tunnelLine(14), Switching Type evpl(30)."
+         REVISION
+           "201002220000Z" -- 22 February 2010
+         DESCRIPTION
+           "Added missing Administrative Status Information Flags 25, 26, and 28."
+         REVISION
+           "201002190000Z" -- 19 February 2010
+         DESCRIPTION
+           "Added dcsc(125)."
+         REVISION
+           "200702270000Z" -- 27 February 2007 00:00:00 GMT
+         DESCRIPTION
+           "Initial version issued as part of RFC 4802."
+
+       ::= { mib-2 152 }
+
+   IANAGmplsLSPEncodingTypeTC ::= TEXTUAL-CONVENTION
+       STATUS       current
+       DESCRIPTION
+            "This type is used to represent and control
+             the LSP encoding type of an LSP signaled by a GMPLS
+             signaling protocol.
+
+             This textual convention is strongly tied to the LSP
+             Encoding Types sub-registry of the GMPLS Signaling
+             Parameters registry managed by IANA.  Values should be
+             assigned by IANA in step with the LSP Encoding Types
+             sub-registry and using the same registry management rules.
+             However, the actual values used in this textual convention
+             are solely within the purview of IANA and do not
+             necessarily match the values in the LSP Encoding Types
+             sub-registry.
+
+             The definition of this textual convention with the
+             addition of newly assigned values is published
+             periodically by the IANA, in either the Assigned
+             Numbers RFC, or some derivative of it specific to
+             Internet Network Management number assignments.  (The
+             latest arrangements can be obtained by contacting the
+             IANA.)
+
+             Requests for new values should be made to IANA via
+             email (iana&iana.org)."
+       REFERENCE
+            "1. Generalized Multi-Protocol Label Switching (GMPLS)
+                Signaling Functional Description, RFC 3471, section
+                3.1.1.
+             2. Generalized MPLS Signalling Extensions for G.709 Optical
+                Transport Networks Control, RFC 4328, section 3.1.1."
+       SYNTAX  INTEGER {
+                  tunnelLspNotGmpls(0),        -- GMPLS is not in use
+                  tunnelLspPacket(1),          -- Packet
+                  tunnelLspEthernet(2),        -- Ethernet
+                  tunnelLspAnsiEtsiPdh(3),     -- PDH
+                  -- the value 4 is deprecated
+                  tunnelLspSdhSonet(5),        -- SDH or SONET
+                  -- the value 6 is deprecated
+                  tunnelLspDigitalWrapper(7),  -- Digital Wrapper
+                  tunnelLspLambda(8),          -- Lambda
+                  tunnelLspFiber(9),           -- Fiber
+                  -- the value 10 is deprecated
+                  tunnelLspFiberChannel(11),   -- Fiber Channel
+
+                  tunnelDigitalPath(12),       -- Digital Path
+                  tunnelOpticalChannel(13),    -- Optical Channel
+                  tunnelLine(14)               -- Line
+                }
+
+   IANAGmplsSwitchingTypeTC ::= TEXTUAL-CONVENTION
+       STATUS       current
+       DESCRIPTION
+            "This type is used to represent and
+             control the LSP switching type of an LSP signaled by a
+             GMPLS signaling protocol.
+
+             This textual convention is strongly tied to the Switching
+             Types sub-registry of the GMPLS Signaling Parameters
+             registry managed by IANA.  Values should be assigned by
+             IANA in step with the Switching Types sub-registry and
+             using the same registry management rules.  However, the
+             actual values used in this textual convention are solely
+             within the purview of IANA and do not necessarily match
+             the values in the Switching Types sub-registry.
+
+             The definition of this textual convention with the
+             addition of newly assigned values is published
+             periodically by the IANA, in either the Assigned
+             Numbers RFC, or some derivative of it specific to
+             Internet Network Management number assignments.  (The
+             latest arrangements can be obtained by contacting the
+             IANA.)
+
+             Requests for new values should be made to IANA via
+             email (iana&iana.org)."
+       REFERENCE
+            "1. Routing Extensions in Support of Generalized
+                Multi-Protocol Label Switching, RFC 4202, section 2.4.
+             2. Generalized Multi-Protocol Label Switching (GMPLS)
+                Signaling Functional Description, RFC 3471, section
+                3.1.1."
+       SYNTAX  INTEGER {
+                  unknown(0),   -- none of the following, or not known
+                  psc1(1),      -- Packet-Switch-Capable 1
+                  psc2(2),      -- Packet-Switch-Capable 2
+                  psc3(3),      -- Packet-Switch-Capable 3
+                  psc4(4),      -- Packet-Switch-Capable 4
+                  evpl(30),     -- Ethernet Virtual Private Line
+                  l2sc(51),     -- Layer-2-Switch-Capable
+                  tdm(100),     -- Time-Division-Multiplex
+                  dcsc(125),    -- Data Channel Switching Capable
+                  lsc(150),     -- Lambda-Switch-Capable
+                  fsc(200)      -- Fiber-Switch-Capable
+                }
+
+   IANAGmplsGeneralizedPidTC ::= TEXTUAL-CONVENTION
+       STATUS       current
+       DESCRIPTION
+            "This data type is used to represent and control the LSP
+             Generalized Protocol Identifier (G-PID) of an LSP
+             signaled by a GMPLS signaling protocol.
+
+             This textual convention is strongly tied to the Generalized
+             PIDs (G-PID) sub-registry of the GMPLS Signaling Parameters
+             registry managed by IANA.  Values should be assigned by
+             IANA in step with the Generalized PIDs (G-PID) sub-registry
+             and using the same registry management rules.  However, the
+             actual values used in this textual convention are solely
+             within the purview of IANA and do not necessarily match the
+             values in the Generalized PIDs (G-PID) sub-registry.
+
+             The definition of this textual convention with the
+             addition of newly assigned values is published
+             periodically by the IANA, in either the Assigned
+             Numbers RFC, or some derivative of it specific to
+             Internet Network Management number assignments.  (The
+             latest arrangements can be obtained by contacting the
+             IANA.)
+
+             Requests for new values should be made to IANA via
+             email (iana&iana.org)."
+        REFERENCE
+            "1. Generalized Multi-Protocol Label Switching (GMPLS)
+                Signaling Functional Description, RFC 3471, section
+                3.1.1.
+             2. Generalized MPLS Signalling Extensions for G.709 Optical
+                Transport Networks Control, RFC 4328, section 3.1.3."
+        SYNTAX  INTEGER {
+                  unknown(0),      -- unknown or none of the following
+                  -- the values 1, 2, 3 and 4 are reserved in RFC 3471
+                  asynchE4(5),
+                  asynchDS3T3(6),
+                  asynchE3(7),
+                  bitsynchE3(8),
+                  bytesynchE3(9),
+                  asynchDS2T2(10),
+                  bitsynchDS2T2(11),
+                  reservedByRFC3471first(12),
+                  asynchE1(13),
+                  bytesynchE1(14),
+                  bytesynch31ByDS0(15),
+                  asynchDS1T1(16),
+                  bitsynchDS1T1(17),
+
+                  bytesynchDS1T1(18),
+                  vc1vc12(19),
+                  reservedByRFC3471second(20),
+                  reservedByRFC3471third(21),
+                  ds1SFAsynch(22),
+                  ds1ESFAsynch(23),
+                  ds3M23Asynch(24),
+                  ds3CBitParityAsynch(25),
+                  vtLovc(26),
+                  stsSpeHovc(27),
+                  posNoScramble16BitCrc(28),
+                  posNoScramble32BitCrc(29),
+                  posScramble16BitCrc(30),
+                  posScramble32BitCrc(31),
+                  atm(32),
+                  ethernet(33),
+                  sdhSonet(34),
+                  digitalwrapper(36),
+                  lambda(37),
+                  ansiEtsiPdh(38),
+                  lapsSdh(40),
+                  fddi(41),
+                  dqdb(42),
+                  fiberChannel3(43),
+                  hdlc(44),
+                  ethernetV2DixOnly(45),
+                  ethernet802dot3Only(46),
+                  g709ODUj(47),
+                  g709OTUk(48),
+                  g709CBRorCBRa(49),
+                  g709CBRb(50),
+                  g709BSOT(51),
+                  g709BSNT(52),
+                  gfpIPorPPP(53),
+                  gfpEthernetMAC(54),
+                  gfpEthernetPHY(55),
+                  g709ESCON(56),
+                  g709FICON(57),
+                  g709FiberChannel(58)
+                }
+
+   IANAGmplsAdminStatusInformationTC ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "This data type determines the setting of the
+             Admin Status flags in the Admin Status object or TLV, as
+             described in RFC 3471.  Setting this object to a non-zero
+             value will result in the inclusion of the Admin Status
+
+             object or TLV on signaling messages.
+
+             This textual convention is strongly tied to the
+             Administrative Status Information Flags sub-registry of
+             the GMPLS Signaling Parameters registry managed by IANA.
+             Values should be assigned by IANA in step with the
+             Administrative Status Flags sub-registry and using the
+             same registry management rules.  However, the actual
+             values used in this textual convention are solely
+             within the purview of IANA and do not necessarily match
+             the values in the Administrative Status Information
+             Flags sub-registry.
+
+             The definition of this textual convention with the
+             addition of newly assigned values is published
+             periodically by the IANA, in either the Assigned
+             Numbers RFC, or some derivative of it specific to
+             Internet Network Management number assignments.  (The
+             latest arrangements can be obtained by contacting the
+             IANA.)
+
+             Requests for new values should be made to IANA via
+             email (iana&iana.org)."
+        REFERENCE
+            "1. Generalized Multi-Protocol Label Switching (GMPLS)
+                Signaling Functional Description, RFC 3471, section 8.
+             2. Generalized MPLS Signaling - RSVP-TE Extensions,
+                RFC 3473, section 7.
+             3. GMPLS - Communication of Alarm Information,
+                RFC 4783, section 3.2.1."
+        SYNTAX BITS {
+                  reflect(0), -- Reflect bit (RFC 3471)
+                  reserved1(1), -- reserved
+                  reserved2(2), -- reserved
+                  reserved3(3), -- reserved
+                  reserved4(4), -- reserved
+                  reserved5(5), -- reserved
+                  reserved6(6), -- reserved
+                  reserved7(7), -- reserved
+                  reserved8(8), -- reserved
+                  reserved9(9), -- reserved
+                  reserved10(10), -- reserved
+                  reserved11(11), -- reserved
+                  reserved12(12), -- reserved
+                  reserved13(13), -- reserved
+                  reserved14(14), -- reserved
+                  reserved15(15), -- reserved
+                  reserved16(16), -- reserved
+
+                  reserved17(17), -- reserved
+                  reserved18(18), -- reserved
+                  reserved19(19), -- reserved
+                  reserved20(20), -- reserved
+                  reserved21(21), -- reserved
+                  reserved22(22), -- reserved
+                  reserved23(23), -- reserved
+                  reserved24(24), -- reserved
+                  handover(25), -- Handover bit (RFC 5852)
+                  lockout(26), -- Lockout bit (RFC 4872)
+                  inhibitAlarmCommunication(27), -- Inhibit Alarm bit (RFC 4783)
+                  callControl(28), -- Call control bit (RFC 4974)
+                  testing(29), -- Testing bit (RFC 3473)
+                  administrativelyDown(30), -- Admin down (RFC 3473)
+                  deleteInProgress(31) -- Delete bit (RFC 3473)
+                }
+END
+

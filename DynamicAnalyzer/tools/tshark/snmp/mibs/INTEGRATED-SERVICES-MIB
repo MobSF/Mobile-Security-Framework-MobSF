@@ -1,0 +1,789 @@
+INTEGRATED-SERVICES-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+            MODULE-IDENTITY, OBJECT-TYPE, Counter32,
+            Gauge32, Integer32, mib-2                FROM SNMPv2-SMI
+            TimeInterval, TEXTUAL-CONVENTION, RowStatus,
+            TruthValue, TestAndIncr                  FROM SNMPv2-TC
+            MODULE-COMPLIANCE, OBJECT-GROUP          FROM SNMPv2-CONF
+            ifIndex, InterfaceIndex                  FROM IF-MIB;
+
+--  This MIB module uses the extended OBJECT-TYPE macro as
+--  defined in [9].
+
+intSrv MODULE-IDENTITY
+        LAST-UPDATED "9511030500Z" -- Thu Aug 28 09:04:13 PDT 1997
+        ORGANIZATION "IETF Integrated Services Working Group"
+        CONTACT-INFO
+       "       Fred Baker
+       Postal: Cisco Systems
+               519 Lado Drive
+               Santa Barbara, California 93111
+       Tel:    +1 805 681 0115
+       E-Mail: fred@cisco.com
+
+               John Krawczyk
+       Postal: ArrowPoint Communications
+               235 Littleton Road
+               Westford, Massachusetts 01886
+       Tel:    +1 508 692 5875
+       E-Mail: jjk@tiac.net"
+    DESCRIPTION
+       "The MIB module to describe the Integrated Services
+       Protocol"
+    ::= { mib-2 52 }
+
+intSrvObjects          OBJECT IDENTIFIER ::= { intSrv 1 }
+intSrvGenObjects       OBJECT IDENTIFIER ::= { intSrv 2 }
+intSrvNotifications    OBJECT IDENTIFIER ::= { intSrv 3 }
+intSrvConformance      OBJECT IDENTIFIER ::= { intSrv 4 }
+
+-- Textual Conventions
+--
+
+    SessionNumber ::= TEXTUAL-CONVENTION
+        STATUS   current
+        DESCRIPTION
+           "The Session  Number  convention  is  used  for
+           numbers  identifying  sessions or saved PATH or
+           RESV information. It is a number in  the  range
+           returned  by  a TestAndIncr variable, having no
+           protocol meaning whatsoever but serving instead
+           as simple identifier.
+
+           The alternative was a very complex instance  or
+           instance object that became unwieldy."
+       SYNTAX   INTEGER (0..2147483647)
+
+
+    Protocol ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+        STATUS   current
+        DESCRIPTION
+           "The value of the IP Protocol field  of  an  IP
+           Datagram  Header.  This identifies the protocol
+           layer above IP.  For example, the  value  6  is
+           used  for TCP and the value 17 is used for UDP.
+           The values of this field are defined in the As-
+           signed Numbers RFC."
+       SYNTAX   INTEGER (1..255)
+
+
+    SessionType ::= TEXTUAL-CONVENTION
+        STATUS   current
+        DESCRIPTION
+           "The value of the C-Type field of a Session ob-
+           ject,  as  defined  in  the RSVP specification.
+           This value  determines  the  lengths  of  octet
+           strings  and use of certain objects such as the
+           'port' variables. If the C-Type  calls  for  an
+           IP6  address, one would expect all source, des-
+           tination, and next/previous hop addresses to be
+           16  bytes long, and for the ports to be UDP/TCP
+           port numbers, for example."
+       SYNTAX   INTEGER (1..255)
+
+    Port ::= TEXTUAL-CONVENTION
+        -- DISPLAY-HINT "d" ---- illegal for OCTET STRING.
+        STATUS   current
+        DESCRIPTION
+           "The value of the UDP or TCP Source or Destina-
+           tion  Port field, a virtual destination port or
+           generalized port identifier used with the IPSEC
+           Authentication Header or Encapsulating Security
+           Payload, or other session discriminator.  If it
+           is  not  used, the value should be of length 0.
+           This pair, when coupled with the  IP  Addresses
+           of the source and destination system and the IP
+           protocol  field,  uniquely  identifies  a  data
+           stream."
+       SYNTAX   OCTET STRING (SIZE(2..4))
+
+
+    MessageSize ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+        STATUS   current
+        DESCRIPTION
+           "The size of a message in bytes. This  is  used
+           to  specify  the  minimum and maximum size of a
+           message along an integrated services route."
+       SYNTAX   INTEGER (0..'7FFFFFFF'h)
+
+
+    BitRate ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+        STATUS   current
+        DESCRIPTION
+           "The rate, in bits/second, that data  may  move
+           in  the context.  Applicable contexts minimally
+           include the speed of an  interface  or  virtual
+           circuit, the data rate of a (potentially aggre-
+           gated) data flow, or the data rate to be  allo-
+           cated for use by a flow."
+       SYNTAX   INTEGER (0..'7FFFFFFF'h)
+
+    BurstSize ::= TEXTUAL-CONVENTION
+         DISPLAY-HINT "d"
+         STATUS   current
+         DESCRIPTION
+           "The number of octets of IP Data, including  IP
+           Headers, that a stream may send without concern
+           for policing."
+        SYNTAX   INTEGER (0..'7FFFFFFF'h)
+
+
+    QosService ::= TEXTUAL-CONVENTION
+         STATUS   current
+         DESCRIPTION
+           "The class of service in use by a flow."
+        SYNTAX   INTEGER {
+                   bestEffort (1),         -- Best Effort Service
+                   guaranteedDelay (2),    -- Guaranteed Delay
+                   controlledLoad (5)      -- Controlled Load
+                 }
+
+--      The Integrated Services Interface Attributes Database contains
+--      information about resources allocated by resource reservation
+--      protocols, such as RSVP and ST-II.
+
+
+    intSrvIfAttribTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF IntSrvIfAttribEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The reservable attributes of the system's  in-
+           terfaces."
+       ::= { intSrvObjects 1 }
+
+
+    intSrvIfAttribEntry OBJECT-TYPE
+        SYNTAX      IntSrvIfAttribEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The reservable attributes of  a  given  inter-
+           face."
+       INDEX { ifIndex }
+       ::= { intSrvIfAttribTable 1 }
+
+IntSrvIfAttribEntry ::=
+    SEQUENCE {
+        intSrvIfAttribAllocatedBits     BitRate,
+        intSrvIfAttribMaxAllocatedBits  BitRate,
+        intSrvIfAttribAllocatedBuffer   BurstSize,
+        intSrvIfAttribFlows             Gauge32,
+        intSrvIfAttribPropagationDelay  Integer32,
+        intSrvIfAttribStatus            RowStatus
+    }
+
+    intSrvIfAttribAllocatedBits OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "Bits per second"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The number of bits/second currently  allocated
+           to reserved sessions on the interface."
+       ::= { intSrvIfAttribEntry 1 }
+
+    intSrvIfAttribMaxAllocatedBits OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "Bits per second"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The maximum number of bits/second that may  be
+           allocated  to  reserved  sessions on the inter-
+           face."
+       ::= { intSrvIfAttribEntry 2 }
+
+
+    intSrvIfAttribAllocatedBuffer OBJECT-TYPE
+        SYNTAX      BurstSize
+        UNITS       "Bytes"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The amount of buffer space  required  to  hold
+           the simultaneous burst of all reserved flows on
+           the interface."
+       ::= { intSrvIfAttribEntry 3 }
+
+
+    intSrvIfAttribFlows OBJECT-TYPE
+        SYNTAX      Gauge32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The number of reserved flows currently  active
+           on  this  interface.  A flow can be created ei-
+           ther from a reservation protocol (such as  RSVP
+           or ST-II) or via configuration information."
+       ::= { intSrvIfAttribEntry 4 }
+
+    intSrvIfAttribPropagationDelay OBJECT-TYPE
+        SYNTAX      Integer32
+        UNITS       "microseconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The amount of propagation delay that this  in-
+           terface  introduces  in addition to that intro-
+           diced by bit propagation delays."
+       DEFVAL { 0 }-- by default, interfaces are presumed to add
+                   -- no extra delays
+       ::= { intSrvIfAttribEntry 5 }
+
+
+    intSrvIfAttribStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "'active' on interfaces that are configured for
+           RSVP."
+       ::= { intSrvIfAttribEntry 6 }
+
+
+--      The Integrated Services Active Flows Database
+--      lists all flows active on an outgoing interface, including
+--      relevant attributes.
+
+
+    intSrvFlowTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF IntSrvFlowEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "Information describing the reserved flows  us-
+           ing the system's interfaces."
+       ::= { intSrvObjects 2 }
+
+
+    intSrvFlowEntry OBJECT-TYPE
+        SYNTAX      IntSrvFlowEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "Information describing the use of a given  in-
+           terface   by   a   given   flow.   The  counter
+           intSrvFlowPoliced starts counting  at  the  in-
+           stallation of the flow."
+       INDEX { intSrvFlowNumber }
+       ::= { intSrvFlowTable 1 }
+
+
+    IntSrvFlowEntry ::=
+        SEQUENCE {
+            intSrvFlowNumber                  SessionNumber,
+            intSrvFlowType                    SessionType,
+            intSrvFlowOwner                   INTEGER,
+            intSrvFlowDestAddr                OCTET STRING,
+            intSrvFlowSenderAddr              OCTET STRING,
+            intSrvFlowDestAddrLength          INTEGER,
+            intSrvFlowSenderAddrLength        INTEGER,
+            intSrvFlowProtocol                Protocol,
+            intSrvFlowDestPort                Port,
+            intSrvFlowPort                    Port,
+            intSrvFlowFlowId                  INTEGER,
+            intSrvFlowInterface               InterfaceIndex,
+            intSrvFlowIfAddr                  OCTET STRING,
+            intSrvFlowRate                    BitRate,
+            intSrvFlowBurst                   BurstSize,
+            intSrvFlowWeight                  Integer32,
+            intSrvFlowQueue                   Integer32,
+            intSrvFlowMinTU                   MessageSize,
+            intSrvFlowMaxTU                   MessageSize,
+            intSrvFlowBestEffort              Counter32,
+            intSrvFlowPoliced                 Counter32,
+            intSrvFlowDiscard                 TruthValue,
+            intSrvFlowService                 QosService,
+            intSrvFlowOrder                   INTEGER,
+            intSrvFlowStatus                  RowStatus
+        }
+
+
+    intSrvFlowNumber OBJECT-TYPE
+        SYNTAX      SessionNumber
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The number of this flow.  This is for SNMP In-
+           dexing purposes only and has no relation to any
+           protocol value."
+       ::= { intSrvFlowEntry 1 }
+
+
+    intSrvFlowType OBJECT-TYPE
+        SYNTAX      SessionType
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The type of session (IP4, IP6, IP6  with  flow
+           information, etc)."
+       ::= { intSrvFlowEntry 2 }
+
+
+    intSrvFlowOwner OBJECT-TYPE
+        SYNTAX      INTEGER {
+                         other(1),
+                         rsvp(2),
+                         management(3)
+                    }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The process that installed this  flow  in  the
+           queue policy database."
+       ::= { intSrvFlowEntry 3 }
+
+
+    intSrvFlowDestAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The destination address used by all senders in
+           this  session.   This object may not be changed
+           when the value of the RowStatus object is  'ac-
+           tive'."
+       ::= { intSrvFlowEntry 4 }
+
+
+    intSrvFlowSenderAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The source address of the sender  selected  by
+           this  reservation.  The value of all zeroes in-
+           dicates 'all senders'.  This object may not  be
+           changed  when the value of the RowStatus object
+           is 'active'."
+       ::= { intSrvFlowEntry 5 }
+
+
+    intSrvFlowDestAddrLength OBJECT-TYPE
+        SYNTAX      INTEGER(0..128)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The length of the destination address in bits.
+           This  is  the CIDR Prefix Length, which for IP4
+           hosts and multicast addresses is 32 bits.  This
+           object may not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { intSrvFlowEntry 6 }
+
+
+    intSrvFlowSenderAddrLength OBJECT-TYPE
+        SYNTAX      INTEGER(0..128)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The length of the sender's  address  in  bits.
+           This  is  the CIDR Prefix Length, which for IP4
+           hosts and multicast addresses is 32 bits.  This
+           object may not be changed when the value of the
+           RowStatus object is 'active'."
+               ::= { intSrvFlowEntry 7 }
+
+
+    intSrvFlowProtocol OBJECT-TYPE
+        SYNTAX      Protocol
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The IP Protocol used by a session.   This  ob-
+           ject  may  not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { intSrvFlowEntry 8 }
+
+
+    intSrvFlowDestPort OBJECT-TYPE
+        SYNTAX      Port
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The UDP or TCP port number used as a  destina-
+           tion  port for all senders in this session.  If
+           the  IP   protocol   in   use,   specified   by
+           intSrvResvFwdProtocol,  is 50 (ESP) or 51 (AH),
+           this  represents  a  virtual  destination  port
+           number.   A value of zero indicates that the IP
+           protocol in use does not have ports.  This  ob-
+           ject  may  not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { intSrvFlowEntry 9 }
+
+
+    intSrvFlowPort OBJECT-TYPE
+        SYNTAX      Port
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The UDP or TCP port number used  as  a  source
+           port  for  this sender in this session.  If the
+           IP    protocol    in    use,    specified    by
+           intSrvResvFwdProtocol  is  50 (ESP) or 51 (AH),
+           this represents a generalized  port  identifier
+           (GPI).   A  value of zero indicates that the IP
+           protocol in use does not have ports.  This  ob-
+           ject  may  not be changed when the value of the
+           RowStatus object is 'active'."
+       ::= { intSrvFlowEntry 10 }
+
+
+    intSrvFlowFlowId OBJECT-TYPE
+        SYNTAX      INTEGER (0..16777215)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The flow ID that  this  sender  is  using,  if
+           this  is  an IPv6 session."
+       ::= { intSrvFlowEntry 11 }
+
+
+    intSrvFlowInterface OBJECT-TYPE
+        SYNTAX      InterfaceIndex
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The ifIndex value of the  interface  on  which
+           this reservation exists."
+       ::= { intSrvFlowEntry 12 }
+
+
+    intSrvFlowIfAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(4..16))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The IP Address on the ifEntry  on  which  this
+           reservation  exists.  This is present primarily
+           to support those interfaces which layer  multi-
+           ple IP Addresses on the interface."
+       ::= { intSrvFlowEntry 13 }
+
+
+    intSrvFlowRate OBJECT-TYPE
+        SYNTAX      BitRate
+        UNITS       "bits per second"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The Reserved Rate of the sender's data stream.
+           If this is a Controlled Load service flow, this
+           rate is derived from the Tspec  rate  parameter
+           (r).   If  this  is  a Guaranteed service flow,
+           this rate is derived from  the  Rspec  clearing
+           rate parameter (R)."
+       ::= { intSrvFlowEntry 14 }
+
+
+    intSrvFlowBurst OBJECT-TYPE
+        SYNTAX      BurstSize
+        UNITS       "bytes"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The size of the largest  burst  expected  from
+           the sender at a time.
+
+           If this is less than  the  sender's  advertised
+           burst  size, the receiver is asking the network
+           to provide flow pacing  beyond  what  would  be
+           provided  under normal circumstances. Such pac-
+           ing is at the network's option."
+       ::= { intSrvFlowEntry 15 }
+
+
+    intSrvFlowWeight OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The weight used  to  prioritize  the  traffic.
+           Note  that the interpretation of this object is
+           implementation-specific,   as   implementations
+           vary in their use of weighting procedures."
+       ::= { intSrvFlowEntry 16 }
+
+    intSrvFlowQueue OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The number of the queue used by this  traffic.
+           Note  that the interpretation of this object is
+           implementation-specific,   as   implementations
+           vary in their use of queue identifiers."
+       ::= { intSrvFlowEntry 17 }
+
+
+    intSrvFlowMinTU OBJECT-TYPE
+        SYNTAX      MessageSize
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The minimum message size for  this  flow.  The
+           policing  algorithm will treat smaller messages
+           as though they are this size."
+       ::= { intSrvFlowEntry 18 }
+
+
+    intSrvFlowMaxTU OBJECT-TYPE
+        SYNTAX      MessageSize
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "The maximum datagram size for this  flow  that
+           will conform to the traffic specification. This
+           value cannot exceed the MTU of the interface."
+       ::= { intSrvFlowEntry 19 }
+
+
+    intSrvFlowBestEffort OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The number of packets that  were  remanded  to
+           best effort service."
+       ::= { intSrvFlowEntry 20 }
+
+
+    intSrvFlowPoliced OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The number of packets policed since the incep-
+           tion of the flow's service."
+       ::= { intSrvFlowEntry 21 }
+
+
+    intSrvFlowDiscard OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "If 'true', the flow  is  to  incur  loss  when
+           traffic is policed.  If 'false', policed traff-
+           ic is treated as best effort traffic."
+       DEFVAL { false } -- traffic is, by default, treated as best
+                        -- effort
+       ::= { intSrvFlowEntry 22 }
+
+
+    intSrvFlowService OBJECT-TYPE
+        SYNTAX      QosService
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+           "The QoS service being applied to this flow."
+       ::= { intSrvFlowEntry 23 }
+
+
+    intSrvFlowOrder OBJECT-TYPE
+        SYNTAX      INTEGER (0..65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "In the event of ambiguity, the order in  which
+           the  classifier  should  make  its comparisons.
+           The row with intSrvFlowOrder=0 is tried  first,
+           and  comparisons  proceed  in  the order of in-
+           creasing value.  Non-serial implementations  of
+           the classifier should emulate this behavior."
+       ::= { intSrvFlowEntry 24 }
+
+
+    intSrvFlowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "'active' for all active  flows.   This  object
+           may be used to install static classifier infor-
+           mation, delete classifier information,  or  au-
+           thorize such."
+       ::= { intSrvFlowEntry 25 }
+
+
+    intSrvFlowNewIndex OBJECT-TYPE
+        SYNTAX      TestAndIncr
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+           "This  object  is  used  to  assign  values  to
+           intSrvFlowNumber  as described in 'Textual Con-
+           ventions  for  SNMPv2'.   The  network  manager
+           reads  the  object,  and  then writes the value
+           back in the SET that creates a new instance  of
+           intSrvFlowEntry.   If  the  SET  fails with the
+           code 'inconsistentValue', then the process must
+           be  repeated; If the SET succeeds, then the ob-
+           ject is incremented, and the  new  instance  is
+           created according to the manager's directions."
+       ::= { intSrvGenObjects 1 }
+
+
+-- conformance information
+
+
+intSrvGroups      OBJECT IDENTIFIER ::= { intSrvConformance 1 }
+intSrvCompliances OBJECT IDENTIFIER ::= { intSrvConformance 2 }
+
+-- compliance statements
+
+
+    intSrvCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+           "The compliance statement "
+       MODULE  -- this module
+       MANDATORY-GROUPS { intSrvIfAttribGroup, intSrvFlowsGroup }
+
+       OBJECT       intSrvFlowType
+         MIN-ACCESS read-only
+         DESCRIPTION
+          "read-create access is not required. This may be
+          read-only."
+
+      OBJECT       intSrvFlowOwner
+        MIN-ACCESS read-only
+        DESCRIPTION
+         "read-create access is not required. This may  be
+         read-only."
+
+     OBJECT       intSrvFlowDestAddr
+       MIN-ACCESS read-only
+       DESCRIPTION
+        "read-create access is not required. This  may  be
+        read-only."
+
+    OBJECT       intSrvFlowSenderAddr
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowDestAddrLength
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowSenderAddrLength
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowProtocol
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowDestPort
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowPort
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowFlowId
+      MIN-ACCESS not-accessible
+      DESCRIPTION
+       "This object is needed only in a system that imple-
+       ments IPv6."
+
+    OBJECT       intSrvFlowInterface
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowRate
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowBurst
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowWeight
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowQueue
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowMinTU
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowMaxTU
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    OBJECT       intSrvFlowStatus
+      MIN-ACCESS read-only
+      DESCRIPTION
+       "read-create access is not required.  This  may  be
+       read-only."
+
+    ::= { intSrvCompliances 1 }
+
+
+    intSrvIfAttribGroup OBJECT-GROUP
+         OBJECTS {
+            intSrvIfAttribAllocatedBits, intSrvIfAttribMaxAllocatedBits,
+            intSrvIfAttribAllocatedBuffer, intSrvIfAttribFlows,
+            intSrvIfAttribPropagationDelay, intSrvIfAttribStatus
+        }
+        STATUS  current
+        DESCRIPTION
+           "These objects are required  for  Systems  sup-
+           porting the Integrated Services Architecture."
+       ::= { intSrvGroups 1 }
+
+    intSrvFlowsGroup OBJECT-GROUP
+         OBJECTS {
+            intSrvFlowType, intSrvFlowOwner, intSrvFlowDestAddr,
+            intSrvFlowSenderAddr, intSrvFlowDestAddrLength,
+            intSrvFlowSenderAddrLength, intSrvFlowProtocol,
+            intSrvFlowDestPort, intSrvFlowPort, intSrvFlowInterface,
+            intSrvFlowBestEffort, intSrvFlowRate, intSrvFlowBurst,
+            intSrvFlowWeight, intSrvFlowQueue, intSrvFlowMinTU,
+            intSrvFlowDiscard, intSrvFlowPoliced, intSrvFlowService,
+            intSrvFlowIfAddr, intSrvFlowOrder, intSrvFlowStatus
+        }
+        STATUS  current
+        DESCRIPTION
+           "These objects are required  for  Systems  sup-
+           porting the Integrated Services Architecture."
+       ::= { intSrvGroups 2 }
+
+END

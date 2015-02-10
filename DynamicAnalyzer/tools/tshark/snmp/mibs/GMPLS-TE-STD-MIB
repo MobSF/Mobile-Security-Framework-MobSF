@@ -1,0 +1,1849 @@
+GMPLS-TE-STD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+  Unsigned32, Counter32, Counter64, zeroDotZero, Gauge32
+    FROM SNMPv2-SMI                                   -- RFC 2578
+  MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+    FROM SNMPv2-CONF                                  -- RFC 2580
+  TruthValue, TimeStamp, RowPointer
+    FROM SNMPv2-TC                                    -- RFC 2579
+  InetAddress, InetAddressType
+    FROM INET-ADDRESS-MIB                             -- RFC 4001
+  SnmpAdminString
+    FROM SNMP-FRAMEWORK-MIB                           -- RFC 3411
+  mplsTunnelIndex, mplsTunnelInstance, mplsTunnelIngressLSRId,
+  mplsTunnelEgressLSRId, mplsTunnelHopListIndex,
+  mplsTunnelHopPathOptionIndex, mplsTunnelHopIndex,
+  mplsTunnelARHopListIndex, mplsTunnelARHopIndex,
+  mplsTunnelCHopListIndex, mplsTunnelCHopIndex,
+  mplsTunnelEntry,
+  mplsTunnelAdminStatus, mplsTunnelOperStatus,
+  mplsTunnelGroup, mplsTunnelScalarGroup
+    FROM MPLS-TE-STD-MIB                              -- RFC3812
+  IANAGmplsLSPEncodingTypeTC, IANAGmplsSwitchingTypeTC,
+  IANAGmplsGeneralizedPidTC, IANAGmplsAdminStatusInformationTC
+    FROM IANA-GMPLS-TC-MIB
+  mplsStdMIB
+    FROM MPLS-TC-STD-MIB                              -- RFC 3811
+;
+
+
+
+
+
+
+gmplsTeStdMIB MODULE-IDENTITY
+      LAST-UPDATED
+         "200702270000Z" -- 27 February 2007 00:00:00 GMT
+      ORGANIZATION
+        "IETF Common Control and Measurement Plane (CCAMP) Working
+         Group"
+      CONTACT-INFO
+        "       Thomas D. Nadeau
+                Cisco Systems, Inc.
+         Email: tnadeau@cisco.com
+                Adrian Farrel
+                Old Dog Consulting
+         Email: adrian@olddog.co.uk
+
+         Comments about this document should be emailed directly
+         to the CCAMP working group mailing list at
+         ccamp@ops.ietf.org."
+
+      DESCRIPTION
+        "Copyright (C) The IETF Trust (2007).  This version of
+         this MIB module is part of RFC 4802; see the RFC itself for
+         full legal notices.
+
+         This MIB module contains managed object definitions
+         for GMPLS Traffic Engineering (TE) as defined in:
+         1. Generalized Multi-Protocol Label Switching (GMPLS)
+            Signaling Functional Description, Berger, L. (Editor),
+            RFC 3471, January 2003.
+         2. Generalized MPLS Signaling - RSVP-TE Extensions, Berger,
+            L. (Editor), RFC 3473, January 2003.
+         "
+      REVISION
+        "200702270000Z" -- 27 February 2007 00:00:00 GMT
+      DESCRIPTION
+        "Initial version issued as part of RFC 4802."
+::= { mplsStdMIB 13 }
+
+gmplsTeNotifications OBJECT IDENTIFIER ::= { gmplsTeStdMIB 0 }
+gmplsTeScalars OBJECT IDENTIFIER ::= { gmplsTeStdMIB 1 }
+gmplsTeObjects OBJECT IDENTIFIER ::= { gmplsTeStdMIB 2 }
+gmplsTeConformance OBJECT IDENTIFIER ::= { gmplsTeStdMIB 3 }
+
+gmplsTunnelsConfigured OBJECT-TYPE
+  SYNTAX  Gauge32
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "The number of GMPLS tunnels configured on this device.  A GMPLS
+
+
+
+     tunnel is considered configured if an entry for the tunnel
+     exists in the gmplsTunnelTable and the associated
+     mplsTunnelRowStatus is active(1)."
+::= { gmplsTeScalars 1 }
+
+gmplsTunnelsActive OBJECT-TYPE
+  SYNTAX  Gauge32
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "The number of GMPLS tunnels active on this device.  A GMPLS
+     tunnel is considered active if there is an entry in the
+     gmplsTunnelTable and the associated mplsTunnelOperStatus for the
+     tunnel is up(1)."
+::= { gmplsTeScalars 2 }
+
+gmplsTunnelTable OBJECT-TYPE
+  SYNTAX  SEQUENCE OF GmplsTunnelEntry
+  MAX-ACCESS not-accessible
+  STATUS  current
+  DESCRIPTION
+    "The gmplsTunnelTable sparsely extends the mplsTunnelTable of
+     MPLS-TE-STD-MIB.  It allows GMPLS tunnels to be created between
+     an LSR and a remote endpoint, and existing tunnels to be
+     reconfigured or removed.
+
+     Note that only point-to-point tunnel segments are supported,
+     although multipoint-to-point and point-to-multipoint
+     connections are supported by an LSR acting as a cross-connect.
+     Each tunnel can thus have one out-segment originating at this
+     LSR and/or one in-segment terminating at this LSR.
+
+     The row status of an entry in this table is controlled by the
+     mplsTunnelRowStatus in the corresponding entry in the
+     mplsTunnelTable.  When the corresponding mplsTunnelRowStatus has
+     value active(1), a row in this table may not be created or
+     modified.
+
+     The exception to this rule is the
+     gmplsTunnelAdminStatusInformation object, which can be modified
+     while the tunnel is active."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Traffic Engineering (TE)
+        Management Information Base (MIB), RFC 3812."
+::= { gmplsTeObjects 1 }
+
+
+
+
+
+
+gmplsTunnelEntry OBJECT-TYPE
+  SYNTAX  GmplsTunnelEntry
+  MAX-ACCESS not-accessible
+  STATUS  current
+  DESCRIPTION
+    "An entry in this table in association with the corresponding
+     entry in the mplsTunnelTable represents a GMPLS tunnel.
+
+     An entry can be created by a network administrator via SNMP SET
+     commands, or in response to signaling protocol events."
+  INDEX {
+    mplsTunnelIndex,
+    mplsTunnelInstance,
+    mplsTunnelIngressLSRId,
+    mplsTunnelEgressLSRId
+  }
+::= { gmplsTunnelTable 1 }
+
+  GmplsTunnelEntry ::= SEQUENCE {
+   gmplsTunnelUnnumIf                       TruthValue,
+   gmplsTunnelAttributes                    BITS,
+   gmplsTunnelLSPEncoding                   IANAGmplsLSPEncodingTypeTC,
+   gmplsTunnelSwitchingType                 IANAGmplsSwitchingTypeTC,
+   gmplsTunnelLinkProtection                BITS,
+   gmplsTunnelGPid                          IANAGmplsGeneralizedPidTC,
+   gmplsTunnelSecondary                     TruthValue,
+   gmplsTunnelDirection                     INTEGER,
+   gmplsTunnelPathComp                      INTEGER,
+   gmplsTunnelUpstreamNotifyRecipientType   InetAddressType,
+   gmplsTunnelUpstreamNotifyRecipient       InetAddress,
+   gmplsTunnelSendResvNotifyRecipientType   InetAddressType,
+   gmplsTunnelSendResvNotifyRecipient       InetAddress,
+   gmplsTunnelDownstreamNotifyRecipientType InetAddressType,
+   gmplsTunnelDownstreamNotifyRecipient     InetAddress,
+   gmplsTunnelSendPathNotifyRecipientType   InetAddressType,
+   gmplsTunnelSendPathNotifyRecipient       InetAddress,
+   gmplsTunnelAdminStatusFlags        IANAGmplsAdminStatusInformationTC,
+   gmplsTunnelExtraParamsPtr                RowPointer
+   }
+
+gmplsTunnelUnnumIf OBJECT-TYPE
+  SYNTAX  TruthValue
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "Denotes whether or not this tunnel corresponds to an unnumbered
+     interface represented by an entry in the interfaces group table
+     (the ifTable) with ifType set to mpls(166).
+
+
+
+     This object is only used if mplsTunnelIsIf is set to 'true'.
+
+     If both this object and the mplsTunnelIsIf object are set to
+     'true', the originating LSR adds an LSP_TUNNEL_INTERFACE_ID
+     object to the outgoing Path message.
+
+     This object contains information that is only used by the
+     terminating LSR."
+  REFERENCE
+    "1. Signalling Unnumbered Links in RSVP-TE, RFC 3477."
+  DEFVAL  { false }
+::= { gmplsTunnelEntry 1 }
+
+gmplsTunnelAttributes OBJECT-TYPE
+  SYNTAX BITS {
+    labelRecordingDesired(0)
+  }
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "This bitmask indicates optional parameters for this tunnel.
+     These bits should be taken in addition to those defined in
+     mplsTunnelSessionAttributes in order to determine the full set
+     of options to be signaled (for example SESSION_ATTRIBUTES flags
+     in RSVP-TE).  The following describes these bitfields:
+
+     labelRecordingDesired
+       This flag is set to indicate that label information should be
+       included when doing a route record.  This bit is not valid
+       unless the recordRoute bit is set."
+  REFERENCE
+    "1. RSVP-TE: Extensions to RSVP for LSP Tunnels, RFC 3209,
+        sections 4.4.3, 4.7.1, and 4.7.2."
+  DEFVAL  { { } }
+::= { gmplsTunnelEntry 2 }
+
+gmplsTunnelLSPEncoding OBJECT-TYPE
+  SYNTAX  IANAGmplsLSPEncodingTypeTC
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "This object indicates the encoding of the LSP being requested.
+
+     A value of 'tunnelLspNotGmpls' indicates that GMPLS signaling is
+     not in use.  Some objects in this MIB module may be of use for
+     MPLS signaling extensions that do not use GMPLS signaling.  By
+     setting this object to 'tunnelLspNotGmpls', an application may
+
+
+
+
+     indicate that only those objects meaningful in MPLS should be
+     examined.
+
+     The values to use are defined in the TEXTUAL-CONVENTION
+     IANAGmplsLSPEncodingTypeTC found in the IANA-GMPLS-TC-MIB
+     module."
+  DEFVAL  { tunnelLspNotGmpls }
+::= { gmplsTunnelEntry 3 }
+
+gmplsTunnelSwitchingType OBJECT-TYPE
+  SYNTAX  IANAGmplsSwitchingTypeTC
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "Indicates the type of switching that should be performed on
+     a particular link.  This field is needed for links that
+     advertise more than one type of switching capability.
+
+     The values to use are defined in the TEXTUAL-CONVENTION
+     IANAGmplsSwitchingTypeTC found in the IANA-GMPLS-TC-MIB module.
+
+     This object is only meaningful if gmplsTunnelLSPEncodingType
+     is not set to 'tunnelLspNotGmpls'."
+  DEFVAL  { unknown }
+::= { gmplsTunnelEntry 4 }
+
+gmplsTunnelLinkProtection OBJECT-TYPE
+  SYNTAX  BITS {
+    extraTraffic(0),
+    unprotected(1),
+    shared(2),
+    dedicatedOneToOne(3),
+    dedicatedOnePlusOne(4),
+    enhanced(5)
+  }
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "This bitmask indicates the level of link protection required.  A
+     value of zero (no bits set) indicates that any protection may be
+     used.  The following describes these bitfields:
+
+     extraTraffic
+       This flag is set to indicate that the LSP should use links
+       that are protecting other (primary) traffic.  Such LSPs may be
+       preempted when the links carrying the (primary) traffic being
+       protected fail.
+
+
+
+
+     unprotected
+       This flag is set to indicate that the LSP should not use any
+       link layer protection.
+
+     shared
+       This flag is set to indicate that a shared link layer
+       protection scheme, such as 1:N protection, should be used to
+       support the LSP.
+
+     dedicatedOneToOne
+       This flag is set to indicate that a dedicated link layer
+       protection scheme, i.e., 1:1 protection, should be used to
+       support the LSP.
+
+     dedicatedOnePlusOne
+       This flag is set to indicate that a dedicated link layer
+       protection scheme, i.e., 1+1 protection, should be used to
+       support the LSP.
+
+     enhanced
+       This flag is set to indicate that a protection scheme that is
+       more reliable than Dedicated 1+1 should be used, e.g., 4 fiber
+       BLSR/MS-SPRING.
+
+     This object is only meaningful if gmplsTunnelLSPEncoding is
+     not set to 'tunnelLspNotGmpls'."
+  REFERENCE
+     "1. Generalized Multi-Protocol Label Switching (GMPLS) Signaling
+         Functional Description, RFC 3471, section 7.1."
+  DEFVAL  { { } }
+::= { gmplsTunnelEntry 5 }
+
+gmplsTunnelGPid OBJECT-TYPE
+  SYNTAX  IANAGmplsGeneralizedPidTC
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "This object indicates the payload carried by the LSP.  It is only
+     required when GMPLS will be used for this LSP.
+
+     The values to use are defined in the TEXTUAL-CONVENTION
+     IANAGmplsGeneralizedPidTC found in the IANA-GMPLS-TC-MIB module.
+
+     This object is only meaningful if gmplsTunnelLSPEncoding is not
+     set to 'tunnelLspNotGmpls'."
+  DEFVAL  { unknown }
+::= { gmplsTunnelEntry 6 }
+
+
+
+
+gmplsTunnelSecondary OBJECT-TYPE
+  SYNTAX  TruthValue
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "Indicates that the requested LSP is a secondary LSP.
+
+     This object is only meaningful if gmplsTunnelLSPEncoding is not
+     set to 'tunnelLspNotGmpls'."
+  REFERENCE
+    "1. Generalized Multi-Protocol Label Switching (GMPLS) Signaling
+        Functional Description, RFC 3471, section 7.1."
+  DEFVAL  { false }
+::= { gmplsTunnelEntry 7 }
+
+gmplsTunnelDirection OBJECT-TYPE
+  SYNTAX  INTEGER {
+    forward(0),
+    bidirectional(1)
+  }
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "Whether this tunnel carries forward data only (is
+     unidirectional) or is bidirectional.
+
+     Values of this object other than 'forward' are meaningful
+     only if gmplsTunnelLSPEncoding is not set to
+     'tunnelLspNotGmpls'."
+  DEFVAL { forward }
+::= { gmplsTunnelEntry 8 }
+
+gmplsTunnelPathComp OBJECT-TYPE
+  SYNTAX  INTEGER {
+    dynamicFull(1),   -- CSPF fully computed
+    explicit(2),      -- fully specified path
+    dynamicPartial(3) -- CSPF partially computed
+  }
+  MAX-ACCESS read-create
+  STATUS current
+  DESCRIPTION
+    "This value instructs the source node on how to perform path
+     computation on the explicit route specified by the associated
+     entries in the gmplsTunnelHopTable.
+
+     dynamicFull
+       The user specifies at least the source and
+       destination of the path and expects that the Constrained
+
+
+
+       Shortest Path First (CSPF) will calculate the remainder
+       of the path.
+
+     explicit
+       The user specifies the entire path for the tunnel to
+       take.  This path may contain strict or loose hops.
+       Evaluation of the explicit route will be performed
+       hop by hop through the network.
+
+     dynamicPartial
+       The user specifies at least the source and
+       destination of the path and expects that the CSPF
+       will calculate the remainder of the path.  The path
+       computed by CSPF is allowed to be only partially
+       computed allowing the remainder of the path to be
+       filled in across the network.
+
+     When an entry is present in the gmplsTunnelTable for a
+     tunnel, gmplsTunnelPathComp MUST be used and any
+     corresponding mplsTunnelHopEntryPathComp object in the
+     mplsTunnelHopTable MUST be ignored and SHOULD not be set.
+
+     mplsTunnelHopTable and mplsTunnelHopEntryPathComp are part of
+     MPLS-TE-STD-MIB.
+
+     This object should be ignored if the value of
+     gmplsTunnelLSPEncoding is 'tunnelLspNotGmpls'."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Traffic Engineering (TE)
+        Management Information Base (MIB), RFC 3812."
+  DEFVAL { dynamicFull }
+::= { gmplsTunnelEntry 9 }
+
+gmplsTunnelUpstreamNotifyRecipientType OBJECT-TYPE
+  SYNTAX  InetAddressType
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+   "This object is used to aid in interpretation of
+    gmplsTunnelUpstreamNotifyRecipient."
+  DEFVAL { unknown }
+::= { gmplsTunnelEntry 10 }
+
+gmplsTunnelUpstreamNotifyRecipient OBJECT-TYPE
+  SYNTAX  InetAddress
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+
+
+
+    "Indicates the address of the upstream recipient for Notify
+     messages relating to this tunnel and issued by this LSR.  This
+     information is typically received from an upstream LSR in a Path
+     message.
+
+     This object is only valid when signaling a tunnel using RSVP.
+
+     It is also not valid at the head end of a tunnel since there are
+     no upstream LSRs to which to send a Notify message.
+
+     This object is interpreted in the context of the value of
+     gmplsTunnelUpstreamNotifyRecipientType. If this object is set to
+     0, the value of gmplsTunnelUpstreamNotifyRecipientType MUST be
+     set to unknown(0)."
+  REFERENCE
+    "1. Generalized MPLS Signaling - RSVP-TE Extensions, RFC 3473,
+        section 4.2. "
+  DEFVAL { '00000000'H } -- 0.0.0.0
+::= { gmplsTunnelEntry 11 }
+
+gmplsTunnelSendResvNotifyRecipientType OBJECT-TYPE
+  SYNTAX  InetAddressType
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+   "This object is used to aid in interpretation of
+    gmplsTunnelSendResvNotifyRecipient."
+  DEFVAL { unknown }
+::= { gmplsTunnelEntry 12 }
+
+gmplsTunnelSendResvNotifyRecipient OBJECT-TYPE
+  SYNTAX  InetAddress
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "Indicates to an upstream LSR the address to which it should send
+     downstream Notify messages relating to this tunnel.
+
+     This object is only valid when signaling a tunnel using RSVP.
+
+     It is also not valid at the head end of the tunnel since no Resv
+     messages are sent from that LSR for this tunnel.
+
+     If set to 0, no Notify Request object will be included in the
+     outgoing Resv messages.
+
+     This object is interpreted in the context of the value of
+     gmplsTunnelSendResvNotifyRecipientType. If this object is set to
+
+
+
+     0, the value of gmplsTunnelSendResvNotifyRecipientType MUST be
+     set to unknown(0)."
+  REFERENCE
+    "1. Generalized MPLS Signaling - RSVP-TE Extensions, RFC 3473,
+        section 4.2. "
+  DEFVAL { '00000000'H } -- 0.0.0.0
+::= { gmplsTunnelEntry 13 }
+
+gmplsTunnelDownstreamNotifyRecipientType OBJECT-TYPE
+  SYNTAX  InetAddressType
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+   "This object is used to aid in interpretation of
+    gmplsTunnelDownstreamNotifyRecipient."
+  DEFVAL { unknown }
+::= { gmplsTunnelEntry 14 }
+
+gmplsTunnelDownstreamNotifyRecipient OBJECT-TYPE
+  SYNTAX  InetAddress
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "Indicates the address of the downstream recipient for Notify
+     messages relating to this tunnel and issued by this LSR.  This
+     information is typically received from an upstream LSR in a Resv
+     message.  This object is only valid when signaling a tunnel using
+     RSVP.
+
+     It is also not valid at the tail end of a tunnel since there are
+     no downstream LSRs to which to send a Notify message.
+
+     This object is interpreted in the context of the value of
+     gmplsTunnelDownstreamNotifyRecipientType. If this object is set
+     to 0, the value of gmplsTunnelDownstreamNotifyRecipientType MUST
+     be set to unknown(0)."
+  REFERENCE
+    "1. Generalized MPLS Signaling - RSVP-TE Extensions, RFC 3473,
+        section 4.2.
+    "
+  DEFVAL { '00000000'H } -- 0.0.0.0
+::= { gmplsTunnelEntry 15 }
+
+gmplsTunnelSendPathNotifyRecipientType OBJECT-TYPE
+  SYNTAX  InetAddressType
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+
+
+
+   "This object is used to aid in interpretation of
+    gmplsTunnelSendPathNotifyRecipient."
+  DEFVAL { unknown }
+::= { gmplsTunnelEntry 16 }
+
+gmplsTunnelSendPathNotifyRecipient OBJECT-TYPE
+  SYNTAX  InetAddress
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "Indicates to a downstream LSR the address to which it should
+     send upstream Notify messages relating to this tunnel.
+
+     This object is only valid when signaling a tunnel using RSVP.
+
+     It is also not valid at the tail end of the tunnel since no Path
+     messages are sent from that LSR for this tunnel.
+
+     If set to 0, no Notify Request object will be included in the
+     outgoing Path messages.
+
+     This object is interpreted in the context of the value of
+     gmplsTunnelSendPathNotifyRecipientType.  If this object is set to
+     0, the value of gmplsTunnelSendPathNotifyRecipientType MUST be
+     set to unknown(0)."
+  REFERENCE
+    "1. Generalized MPLS Signaling - RSVP-TE Extensions, RFC 3473,
+        section 4.2. "
+  DEFVAL { '00000000'H } -- 0.0.0.0
+::= { gmplsTunnelEntry 17 }
+
+gmplsTunnelAdminStatusFlags OBJECT-TYPE
+   SYNTAX   IANAGmplsAdminStatusInformationTC
+   MAX-ACCESS   read-create
+   STATUS       current
+   DESCRIPTION
+     "Determines the setting of the Admin Status flags in the
+      Admin Status object or TLV, as described in RFC 3471.  Setting
+      this field to a non-zero value will result in the inclusion of
+      the Admin Status object on signaling messages.
+
+      The values to use are defined in the TEXTUAL-CONVENTION
+      IANAGmplsAdminStatusInformationTC found in the
+      IANA-GMPLS-TC-MIB module.
+
+      This value of this object can be modified when the
+      corresponding mplsTunnelRowStatus and mplsTunnelAdminStatus
+      is active(1).  By doing so, a new signaling message will be
+
+
+
+      triggered including the requested Admin Status object or
+      TLV."
+  REFERENCE
+    "1. Generalized Multi-Protocol Label Switching (GMPLS) Signaling
+        Functional Description, RFC 3471, section 8."
+  DEFVAL  { { } }
+  ::= { gmplsTunnelEntry 18 }
+
+gmplsTunnelExtraParamsPtr  OBJECT-TYPE
+  SYNTAX       RowPointer
+  MAX-ACCESS   read-create
+  STATUS       current
+  DESCRIPTION
+    "Some tunnels will run over transports that can usefully support
+     technology-specific additional parameters (for example,
+     Synchronous Optical Network (SONET) resource usage).  Such
+     parameters can be supplied in an external table and referenced
+     from here.
+
+     A value of zeroDotzero in this attribute indicates that there
+     is no such additional information."
+  DEFVAL  { zeroDotZero }
+  ::= { gmplsTunnelEntry 19 }
+
+gmplsTunnelHopTable  OBJECT-TYPE
+  SYNTAX  SEQUENCE OF GmplsTunnelHopEntry
+  MAX-ACCESS not-accessible
+  STATUS  current
+  DESCRIPTION
+    "The gmplsTunnelHopTable sparsely extends the mplsTunnelHopTable
+     of MPLS-TE-STD-MIB.  It is used to indicate the Explicit Labels
+     to be used in an explicit path for a GMPLS tunnel defined in the
+     mplsTunnelTable and gmplsTunnelTable, when it is established
+     using signaling.  It does not insert new hops, but does define
+     new values for hops defined in the mplsTunnelHopTable.
+
+     Each row in this table is indexed by the same indexes as in the
+     mplsTunnelHopTable.  It is acceptable for some rows in the
+     mplsTunnelHopTable to have corresponding entries in this table
+     and some to have no corresponding entry in this table.
+
+     The storage type for this entry is given by the value
+     of mplsTunnelHopStorageType in the corresponding entry in the
+     mplsTunnelHopTable.
+
+     The row status of an entry in this table is controlled by
+     mplsTunnelHopRowStatus in the corresponding entry in the
+     mplsTunnelHopTable.  That is, it is not permitted to create a row
+
+
+
+     in this table, or to modify an existing row, when the
+     corresponding mplsTunnelHopRowStatus has the value active(1)."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Traffic Engineering (TE)
+        Management Information Base (MIB), RFC 3812.
+     2. Generalized MPLS Signaling - RSVP-TE Extensions, RFC 3473.
+    "
+::= { gmplsTeObjects 2 }
+
+gmplsTunnelHopEntry  OBJECT-TYPE
+  SYNTAX  GmplsTunnelHopEntry
+  MAX-ACCESS not-accessible
+  STATUS  current
+  DESCRIPTION
+    "An entry in this table represents additions to a tunnel hop
+     defined in mplsTunnelHopEntry.  At an ingress to a tunnel, an
+     entry in this table is created by a network administrator for an
+     ERLSP to be set up by a signaling protocol.  At transit and
+     egress nodes, an entry in this table may be used to represent the
+     explicit path instructions received using the signaling
+     protocol."
+  INDEX {
+    mplsTunnelHopListIndex,
+    mplsTunnelHopPathOptionIndex,
+    mplsTunnelHopIndex
+  }
+::= { gmplsTunnelHopTable 1 }
+
+GmplsTunnelHopEntry ::= SEQUENCE {
+  gmplsTunnelHopLabelStatuses           BITS,
+  gmplsTunnelHopExplicitForwardLabel    Unsigned32,
+  gmplsTunnelHopExplicitForwardLabelPtr RowPointer,
+  gmplsTunnelHopExplicitReverseLabel    Unsigned32,
+  gmplsTunnelHopExplicitReverseLabelPtr RowPointer
+}
+
+gmplsTunnelHopLabelStatuses OBJECT-TYPE
+  SYNTAX  BITS {
+    forwardPresent(0),
+    reversePresent(1)
+  }
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "This bitmask indicates the presence of labels indicated by the
+     gmplsTunnelHopExplicitForwardLabel or
+     gmplsTunnelHopExplicitForwardLabelPtr, and
+     gmplsTunnelHopExplicitReverseLabel or
+
+
+
+     gmplsTunnelHopExplicitReverseLabelPtr objects.
+
+     For the Present bits, a set bit indicates that a label is
+     present for this hop in the route.  This allows zero to be a
+     valid label value."
+  DEFVAL  { { } }
+::= { gmplsTunnelHopEntry 1 }
+
+gmplsTunnelHopExplicitForwardLabel OBJECT-TYPE
+  SYNTAX  Unsigned32
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "If gmplsTunnelHopLabelStatuses object indicates that a Forward
+     Label is present and gmplsTunnelHopExplicitForwardLabelPtr
+     contains the value zeroDotZero, then the label to use on this
+     hop is represented by the value of this object."
+::= { gmplsTunnelHopEntry 2 }
+
+gmplsTunnelHopExplicitForwardLabelPtr OBJECT-TYPE
+  SYNTAX  RowPointer
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "If the gmplsTunnelHopLabelStatuses object indicates that a
+     Forward Label is present, this object contains a pointer to a
+     row in another MIB table (such as the gmplsLabelTable of
+     GMPLS-LABEL-STD-MIB) that contains the label to use on this hop
+     in the forward direction.
+
+     If the gmplsTunnelHopLabelStatuses object indicates that a
+     Forward Label is present and this object contains the value
+     zeroDotZero, then the label to use on this hop is found in the
+     gmplsTunnelHopExplicitForwardLabel object."
+  DEFVAL  { zeroDotZero }
+::= { gmplsTunnelHopEntry 3 }
+
+gmplsTunnelHopExplicitReverseLabel OBJECT-TYPE
+  SYNTAX  Unsigned32
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "If the gmplsTunnelHopLabelStatuses object indicates that a
+     Reverse Label is present and
+     gmplsTunnelHopExplicitReverseLabelPtr contains the value
+     zeroDotZero, then the label to use on this hop is found in
+     this object encoded as a 32-bit integer."
+::= { gmplsTunnelHopEntry 4 }
+
+
+
+gmplsTunnelHopExplicitReverseLabelPtr OBJECT-TYPE
+  SYNTAX  RowPointer
+  MAX-ACCESS read-create
+  STATUS  current
+  DESCRIPTION
+    "If the gmplsTunnelHopLabelStatuses object indicates that a
+     Reverse Label is present, this object contains a pointer to a
+     row in another MIB table (such as the gmplsLabelTable of
+     GMPLS-LABEL-STD-MIB) that contains the label to use on this hop
+     in the reverse direction.
+
+     If the gmplsTunnelHopLabelStatuses object indicates that a
+     Reverse Label is present and this object contains the value
+     zeroDotZero, then the label to use on this hop is found in the
+     gmplsTunnelHopExplicitReverseLabel object."
+  DEFVAL  { zeroDotZero }
+::= { gmplsTunnelHopEntry 5 }
+
+gmplsTunnelARHopTable  OBJECT-TYPE
+  SYNTAX  SEQUENCE OF GmplsTunnelARHopEntry
+  MAX-ACCESS not-accessible
+  STATUS  current
+  DESCRIPTION
+    "The gmplsTunnelARHopTable sparsely extends the
+     mplsTunnelARHopTable of MPLS-TE-STD-MIB.  It is used to
+     indicate the labels currently in use for a GMPLS tunnel
+     defined in the mplsTunnelTable and gmplsTunnelTable, as
+     reported by the signaling protocol.  It does not insert
+     new hops, but does define new values for hops defined in
+     the mplsTunnelARHopTable.
+
+     Each row in this table is indexed by the same indexes as in the
+     mplsTunnelARHopTable.  It is acceptable for some rows in the
+     mplsTunnelARHopTable to have corresponding entries in this table
+     and some to have no corresponding entry in this table.
+
+     Note that since the information necessary to build entries
+     within this table is not provided by some signaling protocols
+     and might not be returned in all cases of other signaling
+     protocols, implementation of this table and the
+     mplsTunnelARHopTable is optional.  Furthermore, since the
+     information in this table is actually provided by the
+     signaling protocol after the path has been set up, the entries
+     in this table are provided only for observation, and hence,
+     all variables in this table are accessible exclusively as
+     read-only."
+  REFERENCE
+    "1. Extensions to RSVP for LSP Tunnels, RFC 3209.
+
+
+
+     2. Generalized MPLS Signaling - RSVP-TE Extensions, RFC 3473.
+     3. Multiprotocol Label Switching (MPLS) Traffic Engineering (TE)
+        Management Information Base (MIB), RFC 3812."
+::= { gmplsTeObjects 3 }
+
+gmplsTunnelARHopEntry  OBJECT-TYPE
+  SYNTAX  GmplsTunnelARHopEntry
+  MAX-ACCESS not-accessible
+  STATUS  current
+  DESCRIPTION
+    "An entry in this table represents additions to a tunnel hop
+     visible in mplsTunnelARHopEntry.  An entry is created by the
+     signaling protocol for a signaled ERLSP set up by the signaling
+     protocol.
+
+     At any node on the LSP (ingress, transit, or egress), this table
+     and the mplsTunnelARHopTable (if the tables are supported and if
+     the signaling protocol is recording actual route information)
+     contain the actual route of the whole tunnel.  If the signaling
+     protocol is not recording the actual route, this table MAY
+     report the information from the gmplsTunnelHopTable or the
+     gmplsTunnelCHopTable.
+
+     Note that the recording of actual labels is distinct from the
+     recording of the actual route in some signaling protocols.  This
+     feature is enabled using the gmplsTunnelAttributes object."
+  INDEX {
+    mplsTunnelARHopListIndex,
+    mplsTunnelARHopIndex
+  }
+::= { gmplsTunnelARHopTable 1 }
+
+GmplsTunnelARHopEntry ::= SEQUENCE {
+  gmplsTunnelARHopLabelStatuses           BITS,
+  gmplsTunnelARHopExplicitForwardLabel    Unsigned32,
+  gmplsTunnelARHopExplicitForwardLabelPtr RowPointer,
+  gmplsTunnelARHopExplicitReverseLabel    Unsigned32,
+  gmplsTunnelARHopExplicitReverseLabelPtr RowPointer,
+  gmplsTunnelARHopProtection              BITS
+}
+
+gmplsTunnelARHopLabelStatuses OBJECT-TYPE
+  SYNTAX  BITS {
+    forwardPresent(0),
+    reversePresent(1),
+    forwardGlobal(2),
+    reverseGlobal(3)
+  }
+
+
+
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "This bitmask indicates the presence and status of labels
+     indicated by the gmplsTunnelARHopExplicitForwardLabel or
+     gmplsTunnelARHopExplicitForwardLabelPtr, and
+     gmplsTunnelARHopExplicitReverseLabel or
+     gmplsTunnelARHopExplicitReverseLabelPtr objects.
+
+     For the Present bits, a set bit indicates that a label is
+     present for this hop in the route.
+
+     For the Global bits, a set bit indicates that the label comes
+     from the Global Label Space; a clear bit indicates that this is
+     a Per-Interface label.  A Global bit only has meaning if the
+     corresponding Present bit is set."
+::= { gmplsTunnelARHopEntry 1 }
+
+gmplsTunnelARHopExplicitForwardLabel OBJECT-TYPE
+  SYNTAX  Unsigned32
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "If the gmplsTunnelARHopLabelStatuses object indicates that a
+     Forward Label is present and
+     gmplsTunnelARHopExplicitForwardLabelPtr contains the value
+     zeroDotZero, then the label in use on this hop is found in this
+     object encoded as a 32-bit integer."
+::= { gmplsTunnelARHopEntry 2 }
+
+gmplsTunnelARHopExplicitForwardLabelPtr OBJECT-TYPE
+  SYNTAX  RowPointer
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "If the gmplsTunnelARHopLabelStatuses object indicates that a
+     Forward Label is present, this object contains a pointer to a
+     row in another MIB table (such as the gmplsLabelTable of
+     GMPLS-LABEL-STD-MIB) that contains the label in use on this hop
+     in the forward direction.
+
+     If the gmplsTunnelARHopLabelStatuses object indicates that a
+     Forward Label is present and this object contains the value
+     zeroDotZero, then the label in use on this hop is found in the
+     gmplsTunnelARHopExplicitForwardLabel object."
+::= { gmplsTunnelARHopEntry 3 }
+
+
+
+
+
+gmplsTunnelARHopExplicitReverseLabel OBJECT-TYPE
+  SYNTAX  Unsigned32
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "If the gmplsTunnelARHopLabelStatuses object indicates that a
+     Reverse Label is present and
+     gmplsTunnelARHopExplicitReverseLabelPtr contains the value
+     zeroDotZero, then the label in use on this hop is found in this
+     object encoded as a 32-bit integer."
+::= { gmplsTunnelARHopEntry 4 }
+
+gmplsTunnelARHopExplicitReverseLabelPtr OBJECT-TYPE
+  SYNTAX  RowPointer
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "If the gmplsTunnelARHopLabelStatuses object indicates that a
+     Reverse Label is present, this object contains a pointer to a
+     row in another MIB table (such as the gmplsLabelTable of
+     GMPLS-LABEL-STD-MIB) that contains the label in use on this hop
+     in the reverse direction.
+
+     If the gmplsTunnelARHopLabelStatuses object indicates that a
+     Reverse Label is present and this object contains the value
+     zeroDotZero, then the label in use on this hop is found in the
+     gmplsTunnelARHopExplicitReverseLabel object."
+::= { gmplsTunnelARHopEntry 5 }
+
+gmplsTunnelARHopProtection  OBJECT-TYPE
+  SYNTAX  BITS {
+    localAvailable(0),
+    localInUse(1)
+  }
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "Availability and usage of protection on the reported link.
+
+     localAvailable
+       This flag is set to indicate that the link downstream of this
+       node is protected via a local repair mechanism.
+
+     localInUse
+       This flag is set to indicate that a local repair mechanism is
+       in use to maintain this tunnel (usually in the face of an
+       outage of the link it was previously routed over)."
+  REFERENCE
+
+
+
+    "1. RSVP-TE: Extensions to RSVP for LSP Tunnels, RFC 3209,
+        section 4.4.1."
+::= { gmplsTunnelARHopEntry 6 }
+
+gmplsTunnelCHopTable  OBJECT-TYPE
+  SYNTAX  SEQUENCE OF GmplsTunnelCHopEntry
+  MAX-ACCESS not-accessible
+  STATUS  current
+  DESCRIPTION
+    "The gmplsTunnelCHopTable sparsely extends the
+     mplsTunnelCHopTable of MPLS-TE-STD-MIB.  It is used to indicate
+     additional information about the hops of a GMPLS tunnel defined
+     in the mplsTunnelTable and gmplsTunnelTable, as computed by a
+     constraint-based routing protocol, based on the
+     mplsTunnelHopTable and the gmplsTunnelHopTable.
+
+     Each row in this table is indexed by the same indexes as in the
+     mplsTunnelCHopTable.  It is acceptable for some rows in the
+     mplsTunnelCHopTable to have corresponding entries in this table
+     and some to have no corresponding entry in this table.
+
+     Please note that since the information necessary to build
+     entries within this table may not be supported by some LSRs,
+     implementation of this table is optional.
+
+     Furthermore, since the information in this table is actually
+     provided by a path computation component after the path has been
+     computed, the entries in this table are provided only for
+     observation, and hence, all objects in this table are accessible
+     exclusively as read-only."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Traffic Engineering (TE)
+        Management Information Base (MIB), RFC 3812.
+     2. Generalized MPLS Signaling - RSVP-TE Extensions, RFC 3473."
+::= { gmplsTeObjects 4 }
+
+gmplsTunnelCHopEntry  OBJECT-TYPE
+  SYNTAX  GmplsTunnelCHopEntry
+  MAX-ACCESS not-accessible
+  STATUS  current
+  DESCRIPTION
+    "An entry in this table represents additions to a computed tunnel
+     hop visible in mplsTunnelCHopEntry.  An entry is created by a
+     path computation component based on the hops specified in the
+     corresponding mplsTunnelHopTable and gmplsTunnelHopTable.
+
+     At a transit LSR, this table (if the table is supported) MAY
+     contain the path computed by a path computation engine on (or on
+
+
+
+     behalf of) the transit LSR."
+  INDEX {
+    mplsTunnelCHopListIndex,
+    mplsTunnelCHopIndex
+  }
+::= { gmplsTunnelCHopTable 1 }
+
+GmplsTunnelCHopEntry ::= SEQUENCE {
+  gmplsTunnelCHopLabelStatuses           BITS,
+  gmplsTunnelCHopExplicitForwardLabel    Unsigned32,
+  gmplsTunnelCHopExplicitForwardLabelPtr RowPointer,
+  gmplsTunnelCHopExplicitReverseLabel    Unsigned32,
+  gmplsTunnelCHopExplicitReverseLabelPtr RowPointer
+}
+
+gmplsTunnelCHopLabelStatuses OBJECT-TYPE
+  SYNTAX  BITS {
+    forwardPresent(0),
+    reversePresent(1)
+  }
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "This bitmask indicates the presence of labels indicated by the
+     gmplsTunnelCHopExplicitForwardLabel or
+     gmplsTunnelCHopExplicitForwardLabelPtr and
+     gmplsTunnelCHopExplicitReverseLabel or
+     gmplsTunnelCHopExplicitReverseLabelPtr objects.
+
+     A set bit indicates that a label is present for this hop in the
+     route, thus allowing zero to be a valid label value."
+::= { gmplsTunnelCHopEntry 1 }
+
+gmplsTunnelCHopExplicitForwardLabel OBJECT-TYPE
+  SYNTAX  Unsigned32
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "If the gmplsTunnelCHopLabelStatuses object indicates that a
+     Forward Label is present and
+     gmplsTunnelCHopExplicitForwardLabelPtr contains the value
+     zeroDotZero, then the label to use on this hop is found in this
+     object encoded as a 32-bit integer."
+::= { gmplsTunnelCHopEntry 2 }
+
+gmplsTunnelCHopExplicitForwardLabelPtr OBJECT-TYPE
+  SYNTAX  RowPointer
+  MAX-ACCESS read-only
+
+
+
+  STATUS  current
+  DESCRIPTION
+    "If the gmplsTunnelCHopLabelStatuses object indicates that a
+     Forward Label is present, this object contains a pointer to a
+     row in another MIB table (such as the gmplsLabelTable of
+     GMPLS-LABEL-STD-MIB) that contains the label to use on this hop
+     in the forward direction.
+
+     If the gmplsTunnelCHopLabelStatuses object indicates that a
+     Forward Label is present and this object contains the value
+     zeroDotZero, then the label to use on this hop is found in the
+     gmplsTunnelCHopExplicitForwardLabel object."
+::= { gmplsTunnelCHopEntry 3 }
+
+gmplsTunnelCHopExplicitReverseLabel OBJECT-TYPE
+  SYNTAX  Unsigned32
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "If the gmplsTunnelCHopLabelStatuses object indicates that a
+     Reverse Label is present and
+     gmplsTunnelCHopExplicitReverseLabelPtr contains the value
+     zeroDotZero, then the label to use on this hop is found in this
+     object encoded as a 32-bit integer."
+::= { gmplsTunnelCHopEntry 4 }
+
+gmplsTunnelCHopExplicitReverseLabelPtr OBJECT-TYPE
+  SYNTAX  RowPointer
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "If the gmplsTunnelCHopLabelStatuses object indicates that a
+     Reverse Label is present, this object contains a pointer to a
+     row in another MIB table (such as the gmplsLabelTable of
+     GMPLS-LABEL-STD-MIB) that contains the label to use on this hop
+     in the reverse direction.
+
+     If the gmplsTunnelCHopLabelStatuses object indicates that a
+     Reverse Label is present and this object contains the value
+     zeroDotZero, then the label to use on this hop is found in the
+     gmplsTunnelCHopExplicitReverseLabel object."
+::= { gmplsTunnelCHopEntry 5 }
+
+gmplsTunnelReversePerfTable  OBJECT-TYPE
+  SYNTAX  SEQUENCE OF GmplsTunnelReversePerfEntry
+  MAX-ACCESS not-accessible
+  STATUS  current
+  DESCRIPTION
+
+
+
+    "This table augments the gmplsTunnelTable to provide
+     per-tunnel packet performance information for the reverse
+     direction of a bidirectional tunnel.  It can be seen as
+     supplementing the mplsTunnelPerfTable, which augments the
+     mplsTunnelTable.
+
+     For links that do not transport packets, these packet counters
+     cannot be maintained.  For such links, attempts to read the
+     objects in this table will return noSuchInstance.
+
+     A tunnel can be known to be bidirectional by inspecting the
+     gmplsTunnelDirection object."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Traffic Engineering (TE)
+        Management Information Base (MIB), RFC 3812."
+::= { gmplsTeObjects 5 }
+
+gmplsTunnelReversePerfEntry OBJECT-TYPE
+  SYNTAX  GmplsTunnelReversePerfEntry
+  MAX-ACCESS not-accessible
+  STATUS  current
+  DESCRIPTION
+    "An entry in this table is created by the LSR for every
+     bidirectional GMPLS tunnel where packets are visible to the
+     LSR."
+  AUGMENTS { gmplsTunnelEntry }
+::= { gmplsTunnelReversePerfTable 1 }
+
+GmplsTunnelReversePerfEntry ::= SEQUENCE {
+  gmplsTunnelReversePerfPackets     Counter32,
+  gmplsTunnelReversePerfHCPackets   Counter64,
+  gmplsTunnelReversePerfErrors      Counter32,
+  gmplsTunnelReversePerfBytes       Counter32,
+  gmplsTunnelReversePerfHCBytes     Counter64
+}
+
+gmplsTunnelReversePerfPackets OBJECT-TYPE
+  SYNTAX  Counter32
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "Number of packets forwarded on the tunnel in the reverse
+     direction if it is bidirectional.
+
+     This object represents the 32-bit value of the least
+     significant part of the 64-bit value if both
+     gmplsTunnelReversePerfHCPackets and this object are returned.
+
+
+
+
+     For links that do not transport packets, this packet counter
+     cannot be maintained.  For such links, this value will return
+     noSuchInstance."
+::= { gmplsTunnelReversePerfEntry 1 }
+
+gmplsTunnelReversePerfHCPackets OBJECT-TYPE
+  SYNTAX  Counter64
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "High-capacity counter for number of packets forwarded on the
+     tunnel in the reverse direction if it is bidirectional.
+
+     For links that do not transport packets, this packet counter
+     cannot be maintained.  For such links, this value will return
+     noSuchInstance."
+::= { gmplsTunnelReversePerfEntry 2 }
+
+gmplsTunnelReversePerfErrors OBJECT-TYPE
+  SYNTAX  Counter32
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "Number of errored packets received on the tunnel in the reverse
+     direction if it is bidirectional.  For links that do not
+     transport packets, this packet counter cannot be maintained.  For
+     such links, this value will return noSuchInstance."
+::= { gmplsTunnelReversePerfEntry 3 }
+
+gmplsTunnelReversePerfBytes OBJECT-TYPE
+  SYNTAX  Counter32
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "Number of bytes forwarded on the tunnel in the reverse direction
+     if it is bidirectional.
+
+     This object represents the 32-bit value of the least
+     significant part of the 64-bit value if both
+     gmplsTunnelReversePerfHCBytes and this object are returned.
+
+     For links that do not transport packets, this packet counter
+     cannot be maintained.  For such links, this value will return
+     noSuchInstance."
+::= { gmplsTunnelReversePerfEntry 4 }
+
+gmplsTunnelReversePerfHCBytes OBJECT-TYPE
+  SYNTAX  Counter64
+
+
+
+  MAX-ACCESS read-only
+  STATUS  current
+
+  DESCRIPTION
+    "High-capacity counter for number of bytes forwarded on the
+     tunnel in the reverse direction if it is bidirectional.
+
+     For links that do not transport packets, this packet counter
+     cannot be maintained.  For such links, this value will return
+     noSuchInstance."
+::= { gmplsTunnelReversePerfEntry 5 }
+
+gmplsTunnelErrorTable  OBJECT-TYPE
+  SYNTAX  SEQUENCE OF GmplsTunnelErrorEntry
+  MAX-ACCESS not-accessible
+  STATUS  current
+  DESCRIPTION
+    "This table augments the mplsTunnelTable.
+
+     This table provides per-tunnel information about errors.  Errors
+     may be detected locally or reported through the signaling
+     protocol.  Error reporting is not exclusive to GMPLS, and this
+     table may be applied in MPLS systems.
+
+     Entries in this table are not persistent over system resets
+     or re-initializations of the management system."
+  REFERENCE
+    "1. Multiprotocol Label Switching (MPLS) Traffic Engineering (TE)
+        Management Information Base (MIB), RFC 3812."
+::= { gmplsTeObjects 6 }
+
+gmplsTunnelErrorEntry OBJECT-TYPE
+  SYNTAX  GmplsTunnelErrorEntry
+  MAX-ACCESS not-accessible
+  STATUS  current
+  DESCRIPTION
+    "An entry in this table is created by the LSR for every tunnel
+     where error information is visible to the LSR.
+
+     Note that systems that read the objects in this table one at
+     a time and do not perform atomic operations to read entire
+     instantiated table rows at once, should, for each conceptual
+     column with valid data, read gmplsTunnelErrorLastTime
+     prior to the other objects in the row and again subsequent to
+     reading the last object of the row.  They should verify that
+     the value of gmplsTunnelErrorLastTime did not change and
+     thereby ensure that all data read belongs to the same error
+     event."
+
+
+
+  AUGMENTS { mplsTunnelEntry }
+::= { gmplsTunnelErrorTable 1 }
+
+GmplsTunnelErrorEntry ::= SEQUENCE {
+  gmplsTunnelErrorLastErrorType      INTEGER,
+  gmplsTunnelErrorLastTime           TimeStamp,
+  gmplsTunnelErrorReporterType       InetAddressType,
+  gmplsTunnelErrorReporter           InetAddress,
+  gmplsTunnelErrorCode               Unsigned32,
+  gmplsTunnelErrorSubcode            Unsigned32,
+  gmplsTunnelErrorTLVs               OCTET STRING,
+  gmplsTunnelErrorHelpString         SnmpAdminString
+}
+
+gmplsTunnelErrorLastErrorType OBJECT-TYPE
+  SYNTAX  INTEGER {
+    noError(0),
+    unknown(1),
+    protocol(2),
+    pathComputation(3),
+    localConfiguration(4),
+    localResources(5),
+    localOther(6)
+  }
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "The nature of the last error.  Provides interpretation context
+     for gmplsTunnelErrorProtocolCode and
+     gmplsTunnelErrorProtocolSubcode.
+
+     A value of noError(0) shows that there is no error associated
+     with this tunnel and means that the other objects in this table
+     entry (conceptual row) have no meaning.
+
+     A value of unknown(1) shows that there is an error but that no
+     additional information about the cause is known.  The error may
+     have been received in a signaled message or generated locally.
+
+     A value of protocol(2) or pathComputation(3) indicates the
+     cause of an error and identifies an error that has been received
+     through signaling or will itself be signaled.
+
+     A value of localConfiguration(4), localResources(5) or
+     localOther(6) identifies an error that has been detected
+     by the local node but that will not be reported through
+     signaling."
+::= { gmplsTunnelErrorEntry 1 }
+
+
+
+gmplsTunnelErrorLastTime OBJECT-TYPE
+  SYNTAX  TimeStamp
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "The time at which the last error occurred.  This is presented as
+     the value of SysUpTime when the error occurred or was reported
+     to this node.
+
+     If gmplsTunnelErrorLastErrorType has the value noError(0), then
+     this object is not valid and should be ignored.
+
+     Note that entries in this table are not persistent over system
+     resets or re-initializations of the management system."
+::= { gmplsTunnelErrorEntry 2 }
+
+gmplsTunnelErrorReporterType OBJECT-TYPE
+   SYNTAX     InetAddressType
+   MAX-ACCESS read-only
+   STATUS  current
+   DESCRIPTION
+     "The address type of the error reported.
+
+      This object is used to aid in interpretation of
+      gmplsTunnelErrorReporter."
+::= { gmplsTunnelErrorEntry 3 }
+
+gmplsTunnelErrorReporter OBJECT-TYPE
+  SYNTAX  InetAddress
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "The address of the node reporting the last error, or the address
+     of the resource (such as an interface) associated with the
+     error.
+
+     If gmplsTunnelErrorLastErrorType has the value noError(0), then
+     this object is not valid and should be ignored.
+
+     If gmplsTunnelErrorLastErrorType has the value unknown(1),
+     localConfiguration(4), localResources(5), or localOther(6),
+     this object MAY contain a zero value.
+
+     This object should be interpreted in the context of the value of
+     the object gmplsTunnelErrorReporterType."
+  REFERENCE
+    "1. Textual Conventions for Internet Network Addresses, RFC 4001,
+        section 4, Usage Hints."
+
+
+
+::= { gmplsTunnelErrorEntry 4 }
+
+gmplsTunnelErrorCode OBJECT-TYPE
+  SYNTAX  Unsigned32
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "The primary error code associated with the last error.
+
+     The interpretation of this error code depends on the value of
+     gmplsTunnelErrorLastErrorType.  If the value of
+     gmplsTunnelErrorLastErrorType is noError(0), the value of this
+     object should be 0 and should be ignored.  If the value of
+     gmplsTunnelErrorLastErrorType is protocol(2), the error should
+     be interpreted in the context of the signaling protocol
+     identified by the mplsTunnelSignallingProto object."
+  REFERENCE
+    "1. Resource ReserVation Protocol -- Version 1 Functional
+        Specification, RFC 2205, section B.
+     2. RSVP-TE: Extensions to RSVP for LSP Tunnels, RFC 3209,
+        section 7.3.
+     3. Generalized MPLS Signaling - RSVP-TE Extensions, RFC 3473,
+        section 13.1."
+::= { gmplsTunnelErrorEntry 5 }
+
+gmplsTunnelErrorSubcode OBJECT-TYPE
+  SYNTAX  Unsigned32
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "The secondary error code associated with the last error and the
+     protocol used to signal this tunnel.  This value is interpreted
+     in the context of the value of gmplsTunnelErrorCode.
+     If the value of gmplsTunnelErrorLastErrorType is noError(0), the
+     value of this object should be 0 and should be ignored."
+  REFERENCE
+    "1. Resource ReserVation Protocol -- Version 1 Functional
+        Specification, RFC 2205, section B.
+     2. RSVP-TE: Extensions to RSVP for LSP Tunnels, RFC 3209,
+        section 7.3.
+     3. Generalized MPLS Signaling - RSVP-TE Extensions, RFC 3473,
+        section 13.1. "
+::= { gmplsTunnelErrorEntry 6 }
+
+gmplsTunnelErrorTLVs OBJECT-TYPE
+  SYNTAX  OCTET STRING (SIZE(0..65535))
+  MAX-ACCESS read-only
+  STATUS  current
+
+
+
+  DESCRIPTION
+    "The sequence of interface identifier TLVs reported with the
+     error by the protocol code.  The interpretation of the TLVs and
+     the encoding within the protocol are described in the
+     references.  A value of zero in the first octet indicates that no
+     TLVs are present."
+   REFERENCE
+    "1. Generalized MPLS Signaling - RSVP-TE Extensions, RFC 3473,
+        section 8.2."
+::= { gmplsTunnelErrorEntry 7 }
+
+gmplsTunnelErrorHelpString OBJECT-TYPE
+  SYNTAX  SnmpAdminString
+  MAX-ACCESS read-only
+  STATUS  current
+  DESCRIPTION
+    "A textual string containing information about the last error,
+     recovery actions, and support advice.  If there is no help string,
+     this object contains a zero length string.
+     If the value of gmplsTunnelErrorLastErrorType is noError(0),
+     this object should contain a zero length string, but may contain
+     a help string indicating that there is no error."
+::= { gmplsTunnelErrorEntry 8 }
+
+--
+-- Notifications
+--
+
+gmplsTunnelDown NOTIFICATION-TYPE
+OBJECTS  {
+  mplsTunnelAdminStatus,
+  mplsTunnelOperStatus,
+  gmplsTunnelErrorLastErrorType,
+  gmplsTunnelErrorReporterType,
+  gmplsTunnelErrorReporter,
+  gmplsTunnelErrorCode,
+  gmplsTunnelErrorSubcode
+}
+STATUS      current
+DESCRIPTION
+     "This notification is generated when an mplsTunnelOperStatus
+      object for a tunnel in the gmplsTunnelTable is about to enter
+      the down state from some other state (but not from the
+      notPresent state).  This other state is indicated by the
+      included value of mplsTunnelOperStatus.
+
+      The objects in this notification provide additional error
+      information that indicates the reason why the tunnel has
+
+
+
+      transitioned to down(2).
+
+      Note that an implementation MUST only issue one of
+      mplsTunnelDown and gmplsTunnelDown for any single event on a
+      single tunnel.  If the tunnel has an entry in the
+      gmplsTunnelTable, an implementation SHOULD use gmplsTunnelDown
+      for all tunnel-down events and SHOULD NOT use mplsTunnelDown.
+
+      This notification is subject to the control of
+      mplsTunnelNotificationEnable.  When that object is set
+      to false(2), then the notification must not be issued.
+
+      Further, this notification is also subject to
+      mplsTunnelNotificationMaxRate.  That object indicates the
+      maximum number of notifications issued per second.  If events
+      occur more rapidly, the implementation may simply fail to emit
+      some notifications during that period, or may queue them until
+      an appropriate time.  The notification rate applies to the sum
+      of all notifications in the MPLS-TE-STD-MIB and
+      GMPLS-TE-STD-MIB modules applied across the whole of the
+      reporting device.
+
+      mplsTunnelOperStatus, mplsTunnelAdminStatus, mplsTunnelDown,
+      mplsTunnelNotificationEnable, and mplsTunnelNotificationMaxRate
+      objects are found in MPLS-TE-STD-MIB."
+    REFERENCE
+      "1. Multiprotocol Label Switching (MPLS) Traffic Engineering
+          (TE) Management Information Base (MIB), RFC 3812."
+::= { gmplsTeNotifications 1 }
+
+gmplsTeGroups
+  OBJECT IDENTIFIER ::= { gmplsTeConformance 1 }
+
+gmplsTeCompliances
+  OBJECT IDENTIFIER ::= { gmplsTeConformance 2 }
+
+-- Compliance requirement for fully compliant implementations.
+
+gmplsTeModuleFullCompliance MODULE-COMPLIANCE
+STATUS current
+DESCRIPTION
+     "Compliance statement for agents that provide full support for
+      GMPLS-TE-STD-MIB.  Such devices can then be monitored and also
+      be configured using this MIB module.
+
+      The mandatory group has to be implemented by all LSRs that
+      originate, terminate, or act as transit for TE-LSPs/tunnels.
+      In addition, depending on the type of tunnels supported, other
+
+
+
+      groups become mandatory as explained below."
+
+  MODULE MPLS-TE-STD-MIB -- The MPLS-TE-STD-MIB, RFC 3812
+
+  MANDATORY-GROUPS {
+     mplsTunnelGroup,
+     mplsTunnelScalarGroup
+  }
+
+MODULE -- this module
+
+MANDATORY-GROUPS {
+  gmplsTunnelGroup,
+  gmplsTunnelScalarGroup
+}
+
+GROUP gmplsTunnelSignaledGroup
+  DESCRIPTION
+    "This group is mandatory for devices that support signaled
+     tunnel set up, in addition to gmplsTunnelGroup.  The following
+     constraints apply:
+         mplsTunnelSignallingProto should be at least read-only
+         returning a value of ldp(2) or rsvp(3)."
+
+GROUP gmplsTunnelOptionalGroup
+  DESCRIPTION
+    "Objects in this group are optional."
+
+GROUP gmplsTeNotificationGroup
+  DESCRIPTION
+    "This group is mandatory for those implementations that can
+     implement the notifications contained in this group."
+
+::= { gmplsTeCompliances 1 }
+
+-- Compliance requirement for read-only compliant implementations.
+
+gmplsTeModuleReadOnlyCompliance MODULE-COMPLIANCE
+  STATUS current
+  DESCRIPTION
+    "Compliance requirement for implementations that only provide
+     read-only support for GMPLS-TE-STD-MIB.  Such devices can then be
+     monitored but cannot be configured using this MIB module."
+
+  MODULE -- this module
+
+-- The mandatory group has to be implemented by all LSRs that
+-- originate, terminate, or act as transit for TE-LSPs/tunnels.
+
+
+
+-- In addition, depending on the type of tunnels supported, other
+-- groups become mandatory as explained below.
+
+MANDATORY-GROUPS {
+  gmplsTunnelGroup,
+  gmplsTunnelScalarGroup
+}
+
+GROUP gmplsTunnelSignaledGroup
+  DESCRIPTION
+    "This group is mandatory for devices that support signaled
+     tunnel set up, in addition to gmplsTunnelGroup.  The following
+     constraints apply:
+         mplsTunnelSignallingProto should be at least read-only
+         returning a value of ldp(2) or rsvp(3)."
+
+GROUP gmplsTunnelOptionalGroup
+  DESCRIPTION
+    "Objects in this group are optional."
+
+GROUP gmplsTeNotificationGroup
+  DESCRIPTION
+    "This group is mandatory for those implementations that can
+     implement the notifications contained in this group."
+
+OBJECT gmplsTunnelUnnumIf
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+OBJECT gmplsTunnelAttributes
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+OBJECT gmplsTunnelLSPEncoding
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+OBJECT gmplsTunnelSwitchingType
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+OBJECT gmplsTunnelLinkProtection
+  MIN-ACCESS  read-only
+  DESCRIPTION
+
+
+
+    "Write access is not required."
+
+OBJECT gmplsTunnelGPid
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+OBJECT gmplsTunnelSecondary
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+OBJECT gmplsTunnelDirection
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Only forward(0) is required."
+
+OBJECT gmplsTunnelPathComp
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Only explicit(2) is required."
+
+OBJECT gmplsTunnelUpstreamNotifyRecipientType
+  SYNTAX       InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+  MIN-ACCESS   read-only
+  DESCRIPTION  "Only unknown(0), ipv4(1), and ipv6(2) support
+                 is required."
+
+OBJECT gmplsTunnelUpstreamNotifyRecipient
+  SYNTAX      InetAddress (SIZE(0|4|16))
+  MIN-ACCESS  read-only
+  DESCRIPTION "An implementation is only required to support
+               unknown(0), ipv4(1), and ipv6(2) sizes."
+
+OBJECT gmplsTunnelSendResvNotifyRecipientType
+  SYNTAX       InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+  MIN-ACCESS read-only
+  DESCRIPTION "Only unknown(0), ipv4(1), and ipv6(2) support
+               is required."
+
+OBJECT gmplsTunnelSendResvNotifyRecipient
+  SYNTAX      InetAddress (SIZE(0|4|16))
+  MIN-ACCESS read-only
+  DESCRIPTION "An implementation is only required to support
+               unknown(0), ipv4(1), and ipv6(2) sizes."
+
+OBJECT gmplsTunnelDownstreamNotifyRecipientType
+  SYNTAX       InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+
+
+
+  MIN-ACCESS read-only
+  DESCRIPTION "Only unknown(0), ipv4(1), and ipv6(2) support
+               is required."
+
+OBJECT gmplsTunnelDownstreamNotifyRecipient
+  SYNTAX      InetAddress (SIZE(0|4|16))
+  MIN-ACCESS read-only
+  DESCRIPTION "An implementation is only required to support
+               unknown(0), ipv4(1), and ipv6(2) sizes."
+
+OBJECT gmplsTunnelSendPathNotifyRecipientType
+  SYNTAX       InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+  MIN-ACCESS read-only
+  DESCRIPTION "Only unknown(0), ipv4(1), and ipv6(2) support
+               is required."
+
+OBJECT gmplsTunnelSendPathNotifyRecipient
+  SYNTAX      InetAddress (SIZE(0|4|16))
+  MIN-ACCESS read-only
+  DESCRIPTION "An implementation is only required to support
+               unknown(0), ipv4(1), and ipv6(2) sizes."
+
+OBJECT gmplsTunnelAdminStatusFlags
+  MIN-ACCESS read-only
+  DESCRIPTION
+    "Write access is not required."
+
+OBJECT gmplsTunnelExtraParamsPtr
+  MIN-ACCESS read-only
+  DESCRIPTION
+    "Write access is not required."
+
+-- gmplsTunnelHopLabelStatuses has max access read-only
+
+OBJECT gmplsTunnelHopExplicitForwardLabel
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+OBJECT gmplsTunnelHopExplicitForwardLabelPtr
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+OBJECT gmplsTunnelHopExplicitReverseLabel
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+
+
+OBJECT gmplsTunnelHopExplicitReverseLabelPtr
+  MIN-ACCESS  read-only
+  DESCRIPTION
+    "Write access is not required."
+
+-- gmplsTunnelARHopTable
+-- all objects have max access read-only
+
+-- gmplsTunnelCHopTable
+-- all objects have max access read-only
+
+-- gmplsTunnelReversePerfTable
+-- all objects have max access read-only
+
+-- gmplsTunnelErrorTable
+-- all objects have max access read-only
+
+OBJECT gmplsTunnelErrorReporterType
+  SYNTAX       InetAddressType { unknown(0), ipv4(1), ipv6(2) }
+  DESCRIPTION "Only unknown(0), ipv4(1), and ipv6(2) support
+               is required."
+
+OBJECT gmplsTunnelErrorReporter
+  SYNTAX      InetAddress (SIZE(0|4|16))
+  DESCRIPTION "An implementation is only required to support
+               unknown(0), ipv4(1), and ipv6(2)."
+::= { gmplsTeCompliances 2 }
+
+gmplsTunnelGroup OBJECT-GROUP
+  OBJECTS {
+    gmplsTunnelDirection,
+    gmplsTunnelReversePerfPackets,
+    gmplsTunnelReversePerfHCPackets,
+    gmplsTunnelReversePerfErrors,
+    gmplsTunnelReversePerfBytes,
+    gmplsTunnelReversePerfHCBytes,
+    gmplsTunnelErrorLastErrorType,
+    gmplsTunnelErrorLastTime,
+    gmplsTunnelErrorReporterType,
+    gmplsTunnelErrorReporter,
+    gmplsTunnelErrorCode,
+    gmplsTunnelErrorSubcode,
+    gmplsTunnelErrorTLVs,
+    gmplsTunnelErrorHelpString,
+    gmplsTunnelUnnumIf
+  }
+  STATUS  current
+  DESCRIPTION
+
+
+
+    "Necessary, but not sufficient, set of objects to implement
+     tunnels.  In addition, depending on the type of the tunnels
+     supported (for example, manually configured or signaled,
+     persistent or non-persistent, etc.), the
+     gmplsTunnelSignaledGroup group is mandatory."
+::= { gmplsTeGroups 1 }
+
+gmplsTunnelSignaledGroup OBJECT-GROUP
+  OBJECTS {
+    gmplsTunnelAttributes,
+    gmplsTunnelLSPEncoding,
+    gmplsTunnelSwitchingType,
+    gmplsTunnelLinkProtection,
+    gmplsTunnelGPid,
+    gmplsTunnelSecondary,
+    gmplsTunnelPathComp,
+    gmplsTunnelUpstreamNotifyRecipientType,
+    gmplsTunnelUpstreamNotifyRecipient,
+    gmplsTunnelSendResvNotifyRecipientType,
+    gmplsTunnelSendResvNotifyRecipient,
+    gmplsTunnelDownstreamNotifyRecipientType,
+    gmplsTunnelDownstreamNotifyRecipient,
+    gmplsTunnelSendPathNotifyRecipientType,
+    gmplsTunnelSendPathNotifyRecipient,
+    gmplsTunnelAdminStatusFlags,
+    gmplsTunnelHopLabelStatuses,
+    gmplsTunnelHopExplicitForwardLabel,
+    gmplsTunnelHopExplicitForwardLabelPtr,
+    gmplsTunnelHopExplicitReverseLabel,
+    gmplsTunnelHopExplicitReverseLabelPtr
+  }
+  STATUS  current
+  DESCRIPTION
+    "Objects needed to implement signaled tunnels."
+::= { gmplsTeGroups 2 }
+
+gmplsTunnelScalarGroup OBJECT-GROUP
+  OBJECTS {
+    gmplsTunnelsConfigured,
+    gmplsTunnelsActive
+  }
+  STATUS  current
+  DESCRIPTION
+    "Scalar objects needed to implement MPLS tunnels."
+::= { gmplsTeGroups 3 }
+
+gmplsTunnelOptionalGroup OBJECT-GROUP
+  OBJECTS {
+
+
+
+    gmplsTunnelExtraParamsPtr,
+    gmplsTunnelARHopLabelStatuses,
+    gmplsTunnelARHopExplicitForwardLabel,
+    gmplsTunnelARHopExplicitForwardLabelPtr,
+    gmplsTunnelARHopExplicitReverseLabel,
+    gmplsTunnelARHopExplicitReverseLabelPtr,
+    gmplsTunnelARHopProtection,
+    gmplsTunnelCHopLabelStatuses,
+    gmplsTunnelCHopExplicitForwardLabel,
+    gmplsTunnelCHopExplicitForwardLabelPtr,
+    gmplsTunnelCHopExplicitReverseLabel,
+    gmplsTunnelCHopExplicitReverseLabelPtr
+  }
+  STATUS  current
+  DESCRIPTION
+    "The objects in this group are optional."
+::= { gmplsTeGroups 4 }
+
+gmplsTeNotificationGroup NOTIFICATION-GROUP
+  NOTIFICATIONS {
+     gmplsTunnelDown
+  }
+  STATUS  current
+  DESCRIPTION
+    "Set of notifications implemented in this module.  None is
+     mandatory."
+::= { gmplsTeGroups 5 }
+
+END

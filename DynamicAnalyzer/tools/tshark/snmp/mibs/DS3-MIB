@@ -1,0 +1,1894 @@
+DS3-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+     MODULE-IDENTITY, OBJECT-TYPE,
+     NOTIFICATION-TYPE, transmission
+          FROM SNMPv2-SMI                    -- [RFC2578]
+     DisplayString, TimeStamp, TruthValue
+          FROM SNMPv2-TC                     -- [RFC2579]
+     MODULE-COMPLIANCE, OBJECT-GROUP,
+     NOTIFICATION-GROUP
+          FROM SNMPv2-CONF                   -- [RFC2580]
+     InterfaceIndex
+          FROM IF-MIB                        -- [RFC2863]
+     PerfCurrentCount, PerfIntervalCount,
+     PerfTotalCount
+          FROM PerfHist-TC-MIB;              -- [RFC3593]
+
+
+
+
+ds3 MODULE-IDENTITY
+    LAST-UPDATED "200409080000Z"  -- September 08, 2004
+    ORGANIZATION "IETF AToM MIB Working Group"
+    CONTACT-INFO
+      "WG charter:
+         http://www.ietf.org/html.charters/atommib-charter.html
+
+       Mailing Lists:
+         General Discussion: atommib@research.telcordia.com
+         To Subscribe: atommib-request@research.telcordia.com
+
+       Editor: Orly Nicklass
+
+       Postal: RAD Data Communications, Ltd.
+               Ziv Tower, 24 Roul Walenberg
+               Tel Aviv, Israel, 69719
+
+               Tel: +9723 765 9969
+       E-mail: orly_n@rad.com"
+
+    DESCRIPTION
+         "The is the MIB module that describes
+          DS3 and E3 interfaces objects.
+
+          Copyright (c) The Internet Society (2004).  This
+          version of this MIB module is part of RFC 3896;
+          see the RFC itself for full legal notices."
+
+    REVISION "200409080000Z"  -- September 08, 2004
+
+     DESCRIPTION
+          "The RFC 3896 version of this MIB module.
+          The key changes made to this MIB module
+          since its publication in RFC 2496 are as follows:
+
+      (1) The dsx3FracIfIndex SYNTAX matches the description range.
+
+      (2) Reference was added to Circuit Identifier object.
+
+      (3) Usage of ifStackTable section was updated.
+
+      (4) Align the DESCRIPTION clauses of few statistic objects with
+          thenear end definition, the far end definition and with
+          RFC 3593.
+
+      (5) Add new value, dsx3M13, to dsx3LineType."
+
+     REVISION "199808012130Z"
+
+
+
+     DESCRIPTION
+          "The RFC 2496 version of this MIB module.
+          The key changes made to this MIB module
+          since its publication in RFC 1407 are as follows:
+
+         (1)  The Fractional Table has been deprecated.
+
+         (2)  This document uses SMIv2.
+
+         (3)  Values are given for ifTable and ifXTable.
+
+         (4)  Example usage of ifStackTable is included.
+
+         (5)  dsx3IfIndex has been deprecated.
+
+         (6)  The definition of valid intervals has been clarified
+              for the case where the agent proxied for other devices.
+              In particular, the treatment of missing intervals has
+              been clarified.
+
+        (7)  An inward loopback has been added.
+
+        (8)  Additional lineStatus bits have been added for Near End
+             in Unavailable Signal State, Carrier Equipment Out of
+             Service.
+
+        (9)  A read-write line Length object has been added.
+
+        (10) Added a lineStatus last change, trap and enabler.
+
+        (11) Textual Conventions for statistics objects have
+             been used.
+
+        (12) A new object, dsx3LoopbackStatus, has been introduced to
+             reflect the loopbacks established on a DS3/E3 interface
+             and the source to the requests.  dsx3LoopbackConfig
+             continues to be the desired loopback state while
+             dsx3LoopbackStatus reflects the actual state.
+
+        (13) A dual loopback has been added to allow the setting of
+             an inward loopback and a line loopback at the same time.
+
+        (14) An object has been added to indicated whether or not
+             this is a channelized DS3/E3.
+
+        (15) A new object has been added to indicate which DS1 is to
+             set for remote loopback."
+
+
+
+
+    REVISION "199301252028Z"
+    DESCRIPTION
+         "Initial version, published as RFC 1407."
+    ::= { transmission 30 }
+
+-- The DS3/E3 Near End Group
+
+-- The DS3/E3 Near End Group consists of four tables:
+--    DS3/E3 Configuration
+--    DS3/E3 Current
+--    DS3/E3 Interval
+--    DS3/E3 Total
+
+-- the DS3/E3 Configuration Table
+
+dsx3ConfigTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx3ConfigEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS3/E3 Configuration table."
+     ::= { ds3 5 }
+
+dsx3ConfigEntry OBJECT-TYPE
+     SYNTAX  Dsx3ConfigEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS3/E3 Configuration table."
+     INDEX   { dsx3LineIndex }
+     ::= { dsx3ConfigTable 1 }
+
+Dsx3ConfigEntry ::=
+     SEQUENCE {
+         dsx3LineIndex                        InterfaceIndex,
+         dsx3IfIndex                          InterfaceIndex,
+         dsx3TimeElapsed                      INTEGER,
+         dsx3ValidIntervals                   INTEGER,
+         dsx3LineType                         INTEGER,
+         dsx3LineCoding                       INTEGER,
+         dsx3SendCode                         INTEGER,
+         dsx3CircuitIdentifier                DisplayString,
+         dsx3LoopbackConfig                   INTEGER,
+         dsx3LineStatus                       INTEGER,
+         dsx3TransmitClockSource              INTEGER,
+         dsx3InvalidIntervals                 INTEGER,
+         dsx3LineLength                       INTEGER,
+         dsx3LineStatusLastChange             TimeStamp,
+
+
+
+         dsx3LineStatusChangeTrapEnable       INTEGER,
+         dsx3LoopbackStatus                   INTEGER,
+         dsx3Channelization                   INTEGER,
+         dsx3Ds1ForRemoteLoop                 INTEGER
+
+}
+
+dsx3LineIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+
+     STATUS  current
+     DESCRIPTION
+            "This object should be made equal to ifIndex.  The
+            next paragraph describes its previous usage.
+            Making the object equal to ifIndex allows proper
+            use of ifStackTable.
+
+            Previously, this object was the identifier of a
+            DS3/E3 Interface on a managed device.  If there is
+            an ifEntry that is directly associated with this
+            and only this DS3/E3 interface, it should have the
+            same value as ifIndex.  Otherwise, number the
+            dsx3LineIndices with an unique identifier
+            following the rules of choosing a number that is
+            greater than ifNumber and numbering the inside
+            interfaces (e.g., equipment side) with even
+            numbers and outside interfaces (e.g., network side)
+            with odd numbers."
+     ::= { dsx3ConfigEntry 1 }
+
+dsx3IfIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only
+     STATUS  deprecated
+     DESCRIPTION
+            "This value for this object is equal to the value
+            of ifIndex from the Interfaces table of MIB II
+            (RFC 1213)."
+     ::= { dsx3ConfigEntry 2 }
+
+dsx3TimeElapsed OBJECT-TYPE
+     SYNTAX  INTEGER (0..899)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of seconds that have elapsed since the
+
+
+
+            beginning of the near end current error-
+            measurement period. If, for some reason, such as
+            an adjustment in the system's time-of-day clock,
+            the current interval exceeds the maximum value,
+            the agent will return the maximum value."
+     ::= { dsx3ConfigEntry 3 }
+
+dsx3ValidIntervals OBJECT-TYPE
+     SYNTAX  INTEGER (0..96)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of previous near end intervals for
+            which data was collected.  The value will be 96
+            unless the interface was brought online within the
+            last 24 hours, in which case the value will be the
+            number of complete 15 minute near end intervals
+            since the interface has been online.  In the case
+            where the agent is a proxy, it is possible that
+            some intervals are unavailable.  In this case,
+            this interval is the maximum interval number for
+            which data is available."
+     ::= { dsx3ConfigEntry 4 }
+
+dsx3LineType OBJECT-TYPE
+     SYNTAX  INTEGER {
+                dsx3other(1),
+                dsx3M23(2),
+                dsx3SYNTRAN(3),
+                dsx3CbitParity(4),
+                dsx3ClearChannel(5),
+                e3other(6),
+                e3Framed(7),
+                e3Plcp(8),
+                dsx3M13(9)
+            }
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This variable indicates the variety of DS3 C-bit
+            or E3 application implementing this interface. The
+            type of interface affects the interpretation of
+            the usage and error statistics.  The rate of DS3
+            is 44.736 Mbps and E3 is 34.368 Mbps.  The
+            dsx3ClearChannel value means that the C-bits are
+            not used except for sending/receiving AIS.  The
+            values, in sequence, describe:
+
+
+
+
+                           TITLE:          SPECIFICATION:
+                           dsx3M23         ANSI T1.107-1988
+                           dsx3SYNTRAN     ANSI T1.107-1988
+                           dsx3CbitParity  ANSI T1.107a-1990
+                           dsx3ClearChannel ANSI T1.102-1987
+                           e3Framed        CCITT G.751
+                           e3Plcp          ETSI T/NA(91)18
+                           dsx3M13         ANSI T1.107a-1990."
+
+    REFERENCE
+            "American National Standard for telecommunications
+                 - digital hierarchy -
+                 formats specification, ANSI T1.107- 1988.
+                 ANSI T1.107a-1990.
+             American National Standard for telecommunications
+                 - digital hierarchy -
+                 electrical interfaces, ANSI T1.102- 1987.
+             CCITT - Digital Multiplex Equipment Operating at
+                 the Third Order Bit Rate of 34 368 Kbit/s and
+                 the Forth Order Bit Rate of 139 264 Kbit/s
+                 and Using Positive Justification, G.751
+             European Telecommunications Standards Institute
+                 -- ETS '34M' --
+                 Metropolitan Area Network Physical
+                 Convergence Layer Procedure for
+                 34.368 Megabits per Second, T/NA(91)18,
+                 May 1991."
+     ::= { dsx3ConfigEntry 5 }
+
+dsx3LineCoding OBJECT-TYPE
+     SYNTAX  INTEGER {
+                dsx3Other(1),
+                dsx3B3ZS(2),
+                e3HDB3(3)
+            }
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This variable describes the variety of Zero Code
+            Suppression used on this interface, which in turn
+            affects a number of its characteristics.
+            dsx3B3ZS and e3HDB3 refer to the use of specified
+            patterns of normal bits and bipolar violations
+            which are used to replace sequences of zero bits
+            of a specified length."
+     ::= { dsx3ConfigEntry 6 }
+
+dsx3SendCode OBJECT-TYPE
+
+
+
+     SYNTAX  INTEGER {
+               dsx3SendNoCode(1),
+               dsx3SendLineCode(2),
+               dsx3SendPayloadCode(3),
+               dsx3SendResetCode(4),
+               dsx3SendDS1LoopCode(5),
+               dsx3SendTestPattern(6)
+               }
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This variable indicates what type of code is
+            being sent across the DS3/E3 interface by the
+            device.  (These are optional for E3 interfaces.)
+            Setting this variable causes the interface to
+            begin sending the code requested.
+            The values mean:
+
+               dsx3SendNoCode
+                   sending looped or normal data
+
+               dsx3SendLineCode
+                   sending a request for a line loopback
+
+               dsx3SendPayloadCode
+                   sending a request for a payload loopback
+                   (i.e., all DS1/E1s in a DS3/E3 frame)
+
+               dsx3SendResetCode
+                   sending a loopback deactivation request
+
+               dsx3SendDS1LoopCode
+                   requesting to loopback a particular DS1/E1
+                   within a DS3/E3 frame.  The DS1/E1 is
+                   indicated in dsx3Ds1ForRemoteLoop.
+
+               dsx3SendTestPattern
+                   sending a test pattern."
+     ::= { dsx3ConfigEntry 7 }
+
+dsx3CircuitIdentifier OBJECT-TYPE
+     SYNTAX  DisplayString (SIZE (0..255))
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This variable contains the transmission vendor's
+            circuit identifier, for the purpose of
+            facilitating troubleshooting."
+
+
+
+     REFERENCE "ITU-T M.1400"
+     ::= { dsx3ConfigEntry 8 }
+
+dsx3LoopbackConfig OBJECT-TYPE
+     SYNTAX  INTEGER {
+                 dsx3NoLoop(1),
+                 dsx3PayloadLoop(2),
+                 dsx3LineLoop(3),
+                 dsx3OtherLoop(4),
+                 dsx3InwardLoop(5),
+                 dsx3DualLoop(6)
+               }
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+          "This variable represents the desired loopback
+          configuration of the DS3/E3 interface.
+          The values mean:
+
+          dsx3NoLoop
+            Not in the loopback state.  A device that is
+            not capable of performing a loopback on
+            the interface shall always return this as
+            its value.
+
+          dsx3PayloadLoop
+            The received signal at this interface is looped
+            through the device.  Typically the received signal
+            is looped back for retransmission after it has
+            passed through the device's framing function.
+
+          dsx3LineLoop
+            The received signal at this interface does not
+            go through the device (minimum penetration) but
+            is looped back out.
+
+          dsx3OtherLoop
+            Loopbacks that are not defined here.
+
+          dsx3InwardLoop
+            The sent signal at this interface is looped back
+            through the device.
+
+          dsx3DualLoop
+            Both dsx1LineLoop and dsx1InwardLoop will be
+            active simultaneously."
+     ::= { dsx3ConfigEntry 9 }
+
+
+
+
+dsx3LineStatus OBJECT-TYPE
+     SYNTAX  INTEGER (1..4095)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "This variable indicates the Line Status of the
+            interface.  It contains loopback state information
+            and failure state information.  The dsx3LineStatus
+            is a bit map represented as a sum, therefore, it
+            can represent multiple failures and a loopback
+            (see dsx3LoopbackConfig object for the type of
+            loopback) simultaneously.  The dsx3NoAlarm must be
+            set if and only if no other flag is set.
+
+            If the dsx3loopbackState bit is set, the loopback
+            in effect can be determined from the
+            dsx3loopbackConfig object.
+       The various bit positions are:
+        1     dsx3NoAlarm         No alarm present
+        2     dsx3RcvRAIFailure   Receiving Yellow/Remote
+                                  Alarm Indication
+        4     dsx3XmitRAIAlarm    Transmitting Yellow/Remote
+                                  Alarm Indication
+        8     dsx3RcvAIS          Receiving AIS failure state
+       16     dsx3XmitAIS         Transmitting AIS
+       32     dsx3LOF             Receiving LOF failure state
+       64     dsx3LOS             Receiving LOS failure state
+      128     dsx3LoopbackState   Looping the received signal
+      256     dsx3RcvTestCode     Receiving a Test Pattern
+      512     dsx3OtherFailure    any line status not defined
+                                  here
+     1024     dsx3UnavailSigState Near End in Unavailable
+                                  Signal State
+     2048     dsx3NetEquipOOS     Carrier Equipment Out of
+                                  Service"
+     ::= { dsx3ConfigEntry 10 }
+
+dsx3TransmitClockSource OBJECT-TYPE
+     SYNTAX  INTEGER {
+                loopTiming(1),
+                localTiming(2),
+                throughTiming(3)
+            }
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "The source of Transmit Clock.
+
+
+
+
+            loopTiming indicates that the recovered receive
+            clock is used as the transmit clock.
+
+            localTiming indicates that a local clock source is
+            used or that an external clock is attached to the
+            box containing the interface.
+
+            throughTiming indicates that transmit clock is
+            derived from the recovered receive clock of
+            another DS3 interface."
+     ::= { dsx3ConfigEntry 11 }
+
+dsx3InvalidIntervals OBJECT-TYPE
+     SYNTAX  INTEGER (0..96)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            " The number of intervals in the range from 0 to
+            dsx3ValidIntervals for which no data is available.
+            This object will typically be zero except in cases
+            where the data for some intervals are not
+            available (e.g., in proxy situations)."
+     ::= { dsx3ConfigEntry 12 }
+
+dsx3LineLength OBJECT-TYPE
+     SYNTAX  INTEGER (0..64000)
+     UNITS "meters"
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "The length of the ds3 line in meters.  This
+            object provides information for line build out
+            circuitry if it exists and can use this object to
+            adjust the line build out."
+     ::= { dsx3ConfigEntry 13 }
+
+dsx3LineStatusLastChange OBJECT-TYPE
+     SYNTAX  TimeStamp
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The value of MIB II's sysUpTime object at the
+            time this DS3/E3 entered its current line status
+            state.  If the current state was entered prior to
+            the last re-initialization of the proxy-agent,
+            then this object contains a zero value."
+     ::= { dsx3ConfigEntry 14 }
+
+
+
+
+dsx3LineStatusChangeTrapEnable  OBJECT-TYPE
+     SYNTAX      INTEGER {
+                    enabled(1),
+                    disabled(2)
+                 }
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+            "Indicates whether dsx3LineStatusChange traps
+            should be generated for this interface."
+     DEFVAL { disabled }
+     ::= { dsx3ConfigEntry 15 }
+
+dsx3LoopbackStatus  OBJECT-TYPE
+     SYNTAX      INTEGER (1..127)
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+            "This variable represents the current state of the
+            loopback on the DS3 interface.  It contains
+            information about loopbacks established by a
+            manager and remotely from the far end.
+
+            The dsx3LoopbackStatus is a bit map represented as
+            a sum, therefore is can represent multiple
+            loopbacks simultaneously.
+
+            The various bit positions are:
+             1  dsx3NoLoopback
+             2  dsx3NearEndPayloadLoopback
+             4  dsx3NearEndLineLoopback
+             8  dsx3NearEndOtherLoopback
+            16  dsx3NearEndInwardLoopback
+            32  dsx3FarEndPayloadLoopback
+            64  dsx3FarEndLineLoopback"
+     ::= { dsx3ConfigEntry 16 }
+
+dsx3Channelization  OBJECT-TYPE
+     SYNTAX      INTEGER {
+                    disabled(1),
+                    enabledDs1(2),
+                    enabledDs2(3)
+                 }
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+            "Indicates whether this ds3/e3 is channelized or
+            unchannelized.  The value of enabledDs1 indicates
+
+
+
+            that this is a DS3 channelized into DS1s.  The
+            value of enabledDs3 indicated that this is a DS3
+            channelized into DS2s.  Setting this object will
+            cause the creation or deletion of DS2 or DS1
+            entries in the ifTable.  "
+     ::= { dsx3ConfigEntry 17 }
+
+dsx3Ds1ForRemoteLoop  OBJECT-TYPE
+     SYNTAX      INTEGER (0..29)
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+            "Indicates which DS1/E1 on this DS3/E3 will be
+            indicated in the remote ds1 loopback request.  A
+            value of 0 means no DS1 will be looped.  A value
+            of 29 means all DS1s/E1s will be looped."
+     ::= { dsx3ConfigEntry 18 }
+
+-- the DS3/E3 Current Table
+
+
+dsx3CurrentTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx3CurrentEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS3/E3 current table contains various
+            statistics being collected for the current 15
+            minute interval."
+     ::= { ds3 6 }
+
+dsx3CurrentEntry OBJECT-TYPE
+     SYNTAX  Dsx3CurrentEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS3/E3 Current table."
+     INDEX   { dsx3CurrentIndex }
+     ::= { dsx3CurrentTable 1 }
+
+Dsx3CurrentEntry ::=
+     SEQUENCE {
+         dsx3CurrentIndex           InterfaceIndex,
+         dsx3CurrentPESs            PerfCurrentCount,
+         dsx3CurrentPSESs           PerfCurrentCount,
+         dsx3CurrentSEFSs           PerfCurrentCount,
+         dsx3CurrentUASs            PerfCurrentCount,
+         dsx3CurrentLCVs            PerfCurrentCount,
+
+
+
+         dsx3CurrentPCVs            PerfCurrentCount,
+         dsx3CurrentLESs            PerfCurrentCount,
+         dsx3CurrentCCVs            PerfCurrentCount,
+         dsx3CurrentCESs            PerfCurrentCount,
+         dsx3CurrentCSESs           PerfCurrentCount
+    }
+
+dsx3CurrentIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "The index value which uniquely identifies the
+            DS3/E3 interface to which this entry is
+            applicable.  The interface identified by a
+            particular value of this index is the same
+            interface as identified by the same value an
+            dsx3LineIndex object instance."
+     ::= { dsx3CurrentEntry 1 }
+
+dsx3CurrentPESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of P-bit
+            Errored Seconds."
+     ::= { dsx3CurrentEntry 2 }
+
+dsx3CurrentPSESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of P-bit
+            Severely Errored Seconds."
+     ::= { dsx3CurrentEntry 3 }
+
+dsx3CurrentSEFSs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of
+            Severely Errored Framing Seconds."
+     ::= { dsx3CurrentEntry 4 }
+
+
+
+
+dsx3CurrentUASs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of
+            Unavailable Seconds."
+     ::= { dsx3CurrentEntry 5 }
+
+dsx3CurrentLCVs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of Line
+            Coding Violations."
+     ::= { dsx3CurrentEntry 6 }
+
+dsx3CurrentPCVs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of P-bit
+            Coding Violations."
+     ::= { dsx3CurrentEntry 7 }
+
+dsx3CurrentLESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Line Errored Seconds."
+     ::= { dsx3CurrentEntry 8 }
+
+dsx3CurrentCCVs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of C-bit Coding Violations."
+     ::= { dsx3CurrentEntry 9 }
+
+dsx3CurrentCESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+
+
+
+            "The number of C-bit Errored Seconds."
+     ::= { dsx3CurrentEntry 10 }
+
+dsx3CurrentCSESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of C-bit Severely Errored Seconds."
+     ::= { dsx3CurrentEntry 11 }
+
+-- the DS3/E3 Interval Table
+
+dsx3IntervalTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx3IntervalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS3/E3 Interval Table contains various
+            statistics collected by each DS3/E3 Interface over
+            the previous 24 hours of operation.  The past 24
+            hours are broken into 96 completed 15 minute
+            intervals.  Each row in this table represents one
+            such interval (identified by dsx3IntervalNumber)
+            and for one specific interface (identified by
+            dsx3IntervalIndex)."
+     ::= { ds3 7 }
+
+dsx3IntervalEntry OBJECT-TYPE
+     SYNTAX  Dsx3IntervalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS3/E3 Interval table."
+     INDEX   { dsx3IntervalIndex, dsx3IntervalNumber }
+     ::= { dsx3IntervalTable 1 }
+
+Dsx3IntervalEntry ::=
+     SEQUENCE {
+         dsx3IntervalIndex           InterfaceIndex,
+         dsx3IntervalNumber          INTEGER,
+         dsx3IntervalPESs            PerfIntervalCount,
+         dsx3IntervalPSESs           PerfIntervalCount,
+         dsx3IntervalSEFSs           PerfIntervalCount,
+         dsx3IntervalUASs            PerfIntervalCount,
+         dsx3IntervalLCVs            PerfIntervalCount,
+         dsx3IntervalPCVs            PerfIntervalCount,
+         dsx3IntervalLESs            PerfIntervalCount,
+
+
+
+         dsx3IntervalCCVs            PerfIntervalCount,
+         dsx3IntervalCESs            PerfIntervalCount,
+         dsx3IntervalCSESs           PerfIntervalCount,
+         dsx3IntervalValidData       TruthValue
+     }
+
+dsx3IntervalIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "The index value which uniquely identifies the
+            DS3/E3 interface to which this entry is
+            applicable.  The interface identified by a
+            particular value of this index is the same
+            interface as identified by the same value an
+            dsx3LineIndex object instance."
+     ::= { dsx3IntervalEntry 1 }
+
+dsx3IntervalNumber OBJECT-TYPE
+     SYNTAX  INTEGER (1..96)
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "A number between 1 and 96, where 1 is the most
+            recently completed 15 minute interval and 96 is
+            the 15 minutes interval completed 23 hours and 45
+            minutes prior to interval 1."
+     ::= { dsx3IntervalEntry 2 }
+
+dsx3IntervalPESs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of P-bit
+            Errored Seconds."
+     ::= { dsx3IntervalEntry 3 }
+
+dsx3IntervalPSESs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of P-bit
+            Severely Errored Seconds."
+
+
+
+     ::= { dsx3IntervalEntry 4 }
+
+dsx3IntervalSEFSs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of
+            Severely Errored Framing Seconds."
+     ::= { dsx3IntervalEntry 5 }
+
+dsx3IntervalUASs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of
+            Unavailable Seconds.  This object may decrease if
+            the occurrence of unavailable seconds occurs across
+            an interval boundary."
+     ::= { dsx3IntervalEntry 6 }
+
+dsx3IntervalLCVs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of Line
+            Coding Violations."
+     ::= { dsx3IntervalEntry 7 }
+
+dsx3IntervalPCVs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of P-bit
+            Coding Violations."
+     ::= { dsx3IntervalEntry 8 }
+
+dsx3IntervalLESs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Line Errored  Seconds  (BPVs  or
+            illegal  zero  sequences)."
+     ::= { dsx3IntervalEntry 9 }
+
+
+
+ dsx3IntervalCCVs OBJECT-TYPE
+      SYNTAX  PerfIntervalCount
+      MAX-ACCESS  read-only
+      STATUS  current
+      DESCRIPTION
+             "The number of C-bit Coding Violations."
+      ::= { dsx3IntervalEntry 10 }
+
+ dsx3IntervalCESs OBJECT-TYPE
+      SYNTAX  PerfIntervalCount
+      MAX-ACCESS  read-only
+      STATUS  current
+      DESCRIPTION
+             "The number of C-bit Errored Seconds."
+      ::= { dsx3IntervalEntry 11 }
+
+ dsx3IntervalCSESs OBJECT-TYPE
+      SYNTAX  PerfIntervalCount
+      MAX-ACCESS  read-only
+      STATUS  current
+      DESCRIPTION
+             "The number of C-bit Severely Errored Seconds."
+      ::= { dsx3IntervalEntry 12 }
+
+ dsx3IntervalValidData OBJECT-TYPE
+      SYNTAX  TruthValue
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+             " This variable indicates if the data for this
+             interval is valid."
+      ::= { dsx3IntervalEntry 13 }
+
+-- the DS3/E3 Total
+
+dsx3TotalTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx3TotalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS3/E3 Total Table contains the cumulative
+            sum of the various statistics for the 24 hour
+            period preceding the current interval."
+     ::= { ds3 8 }
+
+dsx3TotalEntry OBJECT-TYPE
+     SYNTAX  Dsx3TotalEntry
+     MAX-ACCESS  not-accessible
+
+
+
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS3/E3 Total table."
+    INDEX   { dsx3TotalIndex }
+     ::= { dsx3TotalTable 1 }
+
+Dsx3TotalEntry ::=
+     SEQUENCE {
+         dsx3TotalIndex      InterfaceIndex,
+         dsx3TotalPESs       PerfTotalCount,
+         dsx3TotalPSESs      PerfTotalCount,
+         dsx3TotalSEFSs      PerfTotalCount,
+         dsx3TotalUASs       PerfTotalCount,
+         dsx3TotalLCVs       PerfTotalCount,
+         dsx3TotalPCVs       PerfTotalCount,
+         dsx3TotalLESs       PerfTotalCount,
+         dsx3TotalCCVs       PerfTotalCount,
+         dsx3TotalCESs       PerfTotalCount,
+         dsx3TotalCSESs      PerfTotalCount
+     }
+
+dsx3TotalIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "The index value which uniquely identifies the
+            DS3/E3 interface to which this entry is
+            applicable.  The interface identified by a
+            particular value of this index is the same
+            interface as identified by the same value an
+            dsx3LineIndex object instance."
+     ::= { dsx3TotalEntry 1 }
+
+dsx3TotalPESs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of P-bit
+            Errored Seconds, encountered by a DS3 interface in
+            the previous 24 hour interval. Invalid 15 minute
+            intervals count as 0."
+     ::= { dsx3TotalEntry 2 }
+
+dsx3TotalPSESs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+
+
+
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of P-bit
+            Severely Errored Seconds, encountered by a DS3
+            interface in the previous 24 hour interval.
+            Invalid 15 minute intervals count as 0."
+     ::= { dsx3TotalEntry 3 }
+
+dsx3TotalSEFSs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of
+            Severely Errored Framing Seconds, encountered by a
+            DS3/E3 interface in the previous 24 hour interval.
+            Invalid 15 minute intervals count as 0."
+     ::= { dsx3TotalEntry 4 }
+
+dsx3TotalUASs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of
+            Unavailable Seconds, encountered by a DS3
+            interface in the previous 24 hour interval.
+            Invalid 15 minute intervals count as 0."
+     ::= { dsx3TotalEntry 5 }
+
+dsx3TotalLCVs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of Line
+            Coding Violations encountered by a DS3/E3
+            interface in the previous 24 hour interval.
+            Invalid 15 minute intervals count as 0."
+     ::= { dsx3TotalEntry 6 }
+
+dsx3TotalPCVs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of P-bit
+
+
+
+            Coding Violations, encountered by a DS3 interface
+            in the previous 24 hour interval. Invalid 15
+            minute intervals count as 0."
+     ::= { dsx3TotalEntry 7 }
+
+dsx3TotalLESs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of Line Errored  Seconds  (BPVs  or
+            illegal  zero  sequences) encountered by a DS3/E3
+            interface in the previous 24 hour interval.
+            Invalid 15 minute intervals count as 0."
+     ::= { dsx3TotalEntry 8 }
+
+dsx3TotalCCVs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of C-bit Coding Violations encountered
+            by a DS3 interface in the previous 24 hour
+            interval. Invalid 15 minute intervals count as 0."
+     ::= { dsx3TotalEntry 9 }
+
+dsx3TotalCESs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of C-bit Errored Seconds encountered
+            by a DS3 interface in the previous 24 hour
+            interval. Invalid 15 minute intervals count as 0."
+     ::= { dsx3TotalEntry 10 }
+
+dsx3TotalCSESs OBJECT-TYPE
+     SYNTAX  PerfTotalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of C-bit Severely Errored Seconds
+            encountered by a DS3 interface in the previous 24
+            hour interval. Invalid 15 minute intervals count
+            as 0."
+     ::= { dsx3TotalEntry 11 }
+
+
+
+
+
+-- The DS3 Far End Group
+
+-- The DS3 Far End Group consists of four tables :
+--   DS3 Far End Configuration
+--   DS3 Far End Current
+--   DS3 Far End Interval
+--   DS3 Far End Total
+
+-- The DS3 Far End Configuration Table
+
+dsx3FarEndConfigTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx3FarEndConfigEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS3 Far End Configuration Table contains
+            configuration information reported in the C-bits
+            from the remote end."
+     ::= { ds3 9 }
+
+dsx3FarEndConfigEntry OBJECT-TYPE
+     SYNTAX  Dsx3FarEndConfigEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS3 Far End Configuration table."
+    INDEX   { dsx3FarEndLineIndex }
+     ::= { dsx3FarEndConfigTable 1 }
+
+Dsx3FarEndConfigEntry ::=
+     SEQUENCE {
+        dsx3FarEndLineIndex          InterfaceIndex,
+        dsx3FarEndEquipCode           DisplayString,
+        dsx3FarEndLocationIDCode      DisplayString,
+        dsx3FarEndFrameIDCode         DisplayString,
+        dsx3FarEndUnitCode            DisplayString,
+        dsx3FarEndFacilityIDCode      DisplayString
+     }
+
+dsx3FarEndLineIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "The index value which uniquely identifies the DS3
+            interface to which this entry is applicable.  The
+            interface identified by a particular value of this
+
+
+
+            index is the same interface as identified by the
+            same value an dsx3LineIndex object instance."
+    ::= { dsx3FarEndConfigEntry 1 }
+
+dsx3FarEndEquipCode OBJECT-TYPE
+     SYNTAX  DisplayString (SIZE (0..10))
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This is the Far End Equipment Identification code
+            that describes the specific piece of equipment.
+            It is sent within the Path Identification
+            Message."
+     ::= { dsx3FarEndConfigEntry 2 }
+
+dsx3FarEndLocationIDCode OBJECT-TYPE
+     SYNTAX  DisplayString (SIZE (0..11))
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This is the Far End Location Identification code
+            that describes the specific location of the
+            equipment.  It is sent within the Path
+            Identification Message."
+     ::= { dsx3FarEndConfigEntry 3 }
+
+dsx3FarEndFrameIDCode OBJECT-TYPE
+     SYNTAX  DisplayString (SIZE (0..10))
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This is the Far End Frame Identification code
+            that identifies where the equipment is located
+            within a building at a given location.  It is sent
+            within the Path Identification Message."
+     ::= { dsx3FarEndConfigEntry 4 }
+
+dsx3FarEndUnitCode OBJECT-TYPE
+     SYNTAX  DisplayString (SIZE (0..6))
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This is the Far End code that identifies the
+            equipment location within a bay.  It is sent
+            within the Path Identification Message."
+     ::= { dsx3FarEndConfigEntry 5 }
+
+dsx3FarEndFacilityIDCode OBJECT-TYPE
+
+
+
+     SYNTAX  DisplayString (SIZE (0..38))
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This code identifies a specific Far End DS3 path.
+            It is sent within the Path Identification
+            Message."
+     ::= { dsx3FarEndConfigEntry 6 }
+
+-- The DS3 Far End Current
+
+dsx3FarEndCurrentTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx3FarEndCurrentEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS3 Far End Current table contains various
+            statistics being collected for the current 15
+            minute interval.  The statistics are collected
+            from the far end block error code within the C-
+            bits."
+     ::= { ds3 10 }
+
+dsx3FarEndCurrentEntry OBJECT-TYPE
+     SYNTAX  Dsx3FarEndCurrentEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS3 Far End Current table."
+     INDEX   { dsx3FarEndCurrentIndex }
+     ::= { dsx3FarEndCurrentTable 1 }
+
+Dsx3FarEndCurrentEntry ::=
+     SEQUENCE {
+         dsx3FarEndCurrentIndex        InterfaceIndex,
+         dsx3FarEndTimeElapsed         INTEGER,
+         dsx3FarEndValidIntervals      INTEGER,
+         dsx3FarEndCurrentCESs         PerfCurrentCount,
+         dsx3FarEndCurrentCSESs        PerfCurrentCount,
+         dsx3FarEndCurrentCCVs         PerfCurrentCount,
+         dsx3FarEndCurrentUASs         PerfCurrentCount,
+         dsx3FarEndInvalidIntervals    INTEGER
+    }
+
+ dsx3FarEndCurrentIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+
+
+
+     STATUS  current
+     DESCRIPTION
+            "The index value which uniquely identifies the DS3
+            interface to which this entry is applicable.  The
+            interface identified by a particular value of this
+            index is identical to the interface identified by
+            the same value of dsx3LineIndex."
+     ::= { dsx3FarEndCurrentEntry 1 }
+
+dsx3FarEndTimeElapsed OBJECT-TYPE
+     SYNTAX  INTEGER (0..899)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of seconds that have elapsed since the
+            beginning of the far end current error-measurement
+            period. If, for some reason, such as an adjustment
+            in the system's time-of-day clock, the current
+            interval exceeds the maximum value, the agent will
+            return the maximum value."
+     ::= { dsx3FarEndCurrentEntry 2 }
+
+dsx3FarEndValidIntervals OBJECT-TYPE
+     SYNTAX  INTEGER (0..96)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The number of previous far end intervals for
+            which data was collected.  The value will be 96
+            unless the interface was brought online within the
+            last 24 hours, in which case the value will be the
+            number of complete 15 minute far end intervals
+            since the interface has been online. In the case
+            where the agent is a proxy, it is possible that
+            some intervals are unavailable.  In this case,
+            this interval is the maximum interval number for
+            which data is available."
+     ::= { dsx3FarEndCurrentEntry 3 }
+
+dsx3FarEndCurrentCESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of Far End
+            C-bit Errored Seconds."
+     ::= { dsx3FarEndCurrentEntry 4 }
+
+
+
+
+dsx3FarEndCurrentCSESs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of Far End
+            C-bit Severely Errored Seconds."
+     ::= { dsx3FarEndCurrentEntry 5 }
+
+dsx3FarEndCurrentCCVs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of Far End
+            C-bit Coding Violations reported via the far end
+            block error count."
+     ::= { dsx3FarEndCurrentEntry 6 }
+
+dsx3FarEndCurrentUASs OBJECT-TYPE
+     SYNTAX  PerfCurrentCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of Far End
+            unavailable seconds."
+     ::= { dsx3FarEndCurrentEntry 7 }
+
+dsx3FarEndInvalidIntervals OBJECT-TYPE
+     SYNTAX  INTEGER (0..96)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            " The number of intervals in the range from 0 to
+            dsx3FarEndValidIntervals for which no data is
+            available.  This object will typically be zero
+            except in cases where the data for some intervals
+            are not available (e.g., in proxy situations)."
+     ::= { dsx3FarEndCurrentEntry 8 }
+
+-- The DS3 Far End Interval Table
+
+dsx3FarEndIntervalTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx3FarEndIntervalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS3 Far End Interval Table contains various
+
+
+
+            statistics collected by each DS3 interface over
+            the previous 24 hours of operation.  The past 24
+            hours are broken into 96 completed 15 minute
+            intervals."
+     ::= { ds3 11 }
+
+dsx3FarEndIntervalEntry OBJECT-TYPE
+     SYNTAX  Dsx3FarEndIntervalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS3 Far End Interval table."
+     INDEX   { dsx3FarEndIntervalIndex,
+               dsx3FarEndIntervalNumber }
+     ::= { dsx3FarEndIntervalTable 1 }
+
+Dsx3FarEndIntervalEntry ::=
+     SEQUENCE {
+          dsx3FarEndIntervalIndex      InterfaceIndex,
+          dsx3FarEndIntervalNumber     INTEGER,
+          dsx3FarEndIntervalCESs       PerfIntervalCount,
+          dsx3FarEndIntervalCSESs      PerfIntervalCount,
+          dsx3FarEndIntervalCCVs       PerfIntervalCount,
+          dsx3FarEndIntervalUASs       PerfIntervalCount,
+          dsx3FarEndIntervalValidData  TruthValue
+    }
+
+dsx3FarEndIntervalIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+     STATUS  current
+     DESCRIPTION
+            "The index value which uniquely identifies the DS3
+            interface to which this entry is applicable.  The
+            interface identified by a particular value of this
+            index is identical to the interface identified by
+            the same value of dsx3LineIndex."
+     ::= { dsx3FarEndIntervalEntry 1 }
+
+dsx3FarEndIntervalNumber OBJECT-TYPE
+    SYNTAX  INTEGER (1..96)
+    MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+    STATUS  current
+    DESCRIPTION
+            "A number between 1 and 96, where 1 is the most
+            recently completed 15 minute interval and 96 is
+
+
+
+            the 15 minutes interval completed 23 hours and 45
+            minutes prior to interval 1."
+    ::= { dsx3FarEndIntervalEntry 2 }
+
+dsx3FarEndIntervalCESs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The counter associated with the number of Far End
+            C-bit Errored Seconds encountered by a DS3
+            interface in one of the previous 96, individual 15
+            minute, intervals. In the case where the agent is
+            a proxy and data is not available, return
+            noSuchInstance."
+    ::= { dsx3FarEndIntervalEntry 3 }
+
+dsx3FarEndIntervalCSESs OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The counter associated with the number of Far End
+            C-bit Severely Errored Seconds."
+     ::= { dsx3FarEndIntervalEntry 4 }
+
+dsx3FarEndIntervalCCVs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of Far End
+            C-bit Coding Violations reported via the far end
+            block error count."
+     ::= { dsx3FarEndIntervalEntry 5 }
+
+dsx3FarEndIntervalUASs OBJECT-TYPE
+     SYNTAX  PerfIntervalCount
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "The counter associated with the number of Far End
+            unavailable seconds."
+     ::= { dsx3FarEndIntervalEntry 6 }
+
+dsx3FarEndIntervalValidData OBJECT-TYPE
+     SYNTAX  TruthValue
+     MAX-ACCESS  read-only
+
+
+
+     STATUS  current
+     DESCRIPTION
+            " This variable indicates if the data for this
+            interval is valid."
+     ::= { dsx3FarEndIntervalEntry 7 }
+
+-- The DS3 Far End Total
+
+dsx3FarEndTotalTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx3FarEndTotalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS3 Far End Total Table contains the
+            cumulative sum of the various statistics for the
+            24 hour period preceding the current interval."
+     ::= { ds3 12 }
+
+dsx3FarEndTotalEntry OBJECT-TYPE
+     SYNTAX  Dsx3FarEndTotalEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS3 Far End Total table."
+     INDEX   { dsx3FarEndTotalIndex }
+     ::= { dsx3FarEndTotalTable 1 }
+
+Dsx3FarEndTotalEntry ::=
+     SEQUENCE {
+         dsx3FarEndTotalIndex       InterfaceIndex,
+         dsx3FarEndTotalCESs        PerfTotalCount,
+         dsx3FarEndTotalCSESs       PerfTotalCount,
+         dsx3FarEndTotalCCVs        PerfTotalCount,
+         dsx3FarEndTotalUASs        PerfTotalCount
+     }
+
+dsx3FarEndTotalIndex OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+    STATUS  current
+    DESCRIPTION
+            "The index value which uniquely identifies the DS3
+            interface to which this entry is applicable.  The
+            interface identified by a particular value of this
+            index is identical to the interface identified by
+            the same value of dsx3LineIndex."
+    ::= { dsx3FarEndTotalEntry 1 }
+
+
+
+dsx3FarEndTotalCESs OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The counter associated with the number of Far End
+            C-bit Errored Seconds encountered by a DS3
+            interface in the previous 24 hour interval.
+            Invalid 15 minute intervals count as 0."
+    ::= { dsx3FarEndTotalEntry 2 }
+
+dsx3FarEndTotalCSESs OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The counter associated with the number of Far End
+            C-bit Severely Errored Seconds encountered by a
+            DS3 interface in the previous 24 hour interval.
+            Invalid 15 minute intervals count as 0."
+    ::= { dsx3FarEndTotalEntry 3 }
+
+dsx3FarEndTotalCCVs OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The counter associated with the number of Far End
+            C-bit Coding Violations reported via the far end
+            block error count encountered by a DS3 interface
+            in the previous 24 hour interval. Invalid 15
+            minute intervals count as 0."
+    ::= { dsx3FarEndTotalEntry 4 }
+
+dsx3FarEndTotalUASs OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The counter associated with the number of Far End
+            unavailable seconds encountered by a DS3 interface
+            in the previous 24 hour interval.  Invalid 15
+            minute intervals count as 0."
+    ::= { dsx3FarEndTotalEntry 5 }
+
+-- the DS3/E3 Fractional Table
+
+-- This table is deprecated.
+
+
+
+dsx3FracTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx3FracEntry
+    MAX-ACCESS  not-accessible
+    STATUS  deprecated
+    DESCRIPTION
+            "This table is deprecated in favour of using
+            ifStackTable.
+
+            Implementation of this table was optional.  It was
+            designed for those systems dividing a DS3/E3 into
+            channels containing different data streams that
+            are of local interest.
+
+            The DS3/E3 fractional table identifies which
+            DS3/E3 channels associated with a CSU are being
+            used to support a logical interface, i.e., an
+            entry in the interfaces table from the Internet-
+            standard MIB.
+
+            For example, consider a DS3 device with 4 high
+            speed links carrying router traffic, a feed for
+            voice, a feed for video, and a synchronous channel
+            for a non-routed protocol.  We might describe the
+            allocation of channels, in the dsx3FracTable, as
+            follows:
+            dsx3FracIfIndex.2. 1 = 3  dsx3FracIfIndex.2.15 = 4
+            dsx3FracIfIndex.2. 2 = 3  dsx3FracIfIndex.2.16 = 6
+            dsx3FracIfIndex.2. 3 = 3  dsx3FracIfIndex.2.17 = 6
+            dsx3FracIfIndex.2. 4 = 3  dsx3FracIfIndex.2.18 = 6
+            dsx3FracIfIndex.2. 5 = 3  dsx3FracIfIndex.2.19 = 6
+            dsx3FracIfIndex.2. 6 = 3  dsx3FracIfIndex.2.20 = 6
+            dsx3FracIfIndex.2. 7 = 4  dsx3FracIfIndex.2.21 = 6
+            dsx3FracIfIndex.2. 8 = 4  dsx3FracIfIndex.2.22 = 6
+            dsx3FracIfIndex.2. 9 = 4  dsx3FracIfIndex.2.23 = 6
+            dsx3FracIfIndex.2.10 = 4  dsx3FracIfIndex.2.24 = 6
+            dsx3FracIfIndex.2.11 = 4  dsx3FracIfIndex.2.25 = 6
+            dsx3FracIfIndex.2.12 = 5  dsx3FracIfIndex.2.26 = 6
+            dsx3FracIfIndex.2.13 = 5  dsx3FracIfIndex.2.27 = 6
+            dsx3FracIfIndex.2.14 = 5  dsx3FracIfIndex.2.28 = 6
+            For dsx3M23, dsx3 SYNTRAN, dsx3CbitParity, and
+            dsx3ClearChannel  there are 28 legal channels,
+            numbered 1 through 28.
+
+            For e3Framed there are 16 legal channels, numbered
+            1 through 16.  The channels (1..16) correspond
+            directly to the equivalently numbered time-slots."
+     ::= { ds3 13 }
+
+
+
+
+dsx3FracEntry OBJECT-TYPE
+     SYNTAX  Dsx3FracEntry
+     MAX-ACCESS  not-accessible
+     STATUS  deprecated
+     DESCRIPTION
+                    "An entry in the DS3 Fractional table."
+    INDEX   { dsx3FracIndex, dsx3FracNumber }
+    ::= { dsx3FracTable 1 }
+
+Dsx3FracEntry ::=
+     SEQUENCE {
+         dsx3FracIndex     INTEGER,
+         dsx3FracNumber    INTEGER,
+         dsx3FracIfIndex   INTEGER
+    }
+
+dsx3FracIndex OBJECT-TYPE
+    SYNTAX  INTEGER (1..'7fffffff'h)
+    MAX-ACCESS  read-only -- read-only since originally an
+                              -- SMIv1 index
+    STATUS  deprecated
+    DESCRIPTION
+            "The index value which uniquely identifies  the
+            DS3  interface  to which this entry is applicable
+            The interface identified by a  particular value
+            of  this  index is the same interface as
+            identified by the same value  an  dsx3LineIndex
+            object instance."
+    ::= { dsx3FracEntry 1 }
+
+dsx3FracNumber OBJECT-TYPE
+    SYNTAX  INTEGER (1..31)
+    MAX-ACCESS  read-only  -- read-only since originally an
+                            -- SMIv1 index
+    STATUS  deprecated
+    DESCRIPTION
+            "The channel number for this entry."
+   ::= { dsx3FracEntry 2 }
+
+dsx3FracIfIndex OBJECT-TYPE
+   SYNTAX  INTEGER (0..'7fffffff'h)
+   MAX-ACCESS  read-write
+   STATUS  deprecated
+   DESCRIPTION
+           "An index value that uniquely identifies an
+           interface.  The interface identified by a
+           particular value of this index is the same
+           interface as  identified by the same value an
+
+
+
+           ifIndex object instance. If no interface is
+           currently using a channel, the value should be
+           zero.  If a single interface occupies more  than
+           one  time slot,  that ifIndex value will be found
+           in multiple time slots."
+   ::= { dsx3FracEntry 3 }
+
+ -- DS3 TRAPS
+
+ds3Traps OBJECT IDENTIFIER ::= { ds3 15 }
+
+dsx3LineStatusChange NOTIFICATION-TYPE
+    OBJECTS { dsx3LineStatus,
+              dsx3LineStatusLastChange }
+    STATUS  current
+    DESCRIPTION
+            "A dsx3LineStatusChange trap is sent when the
+            value of an instance of dsx3LineStatus changes. It
+            can be utilized by an NMS to trigger polls.  When
+            the line status change results in a lower level
+            line status change (i.e., ds1), then no traps for
+            the lower level are sent."
+     ::= { ds3Traps 0 1 }
+
+-- conformance information
+
+ds3Conformance OBJECT IDENTIFIER ::= { ds3 14 }
+ds3Groups      OBJECT IDENTIFIER ::= { ds3Conformance 1 }
+ds3Compliances OBJECT IDENTIFIER ::= { ds3Conformance 2 }
+
+-- compliance statements
+
+ds3Compliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for DS3/E3 interfaces."
+    MODULE  -- this module
+        MANDATORY-GROUPS { ds3NearEndConfigGroup,
+                           ds3NearEndStatisticsGroup }
+
+        GROUP       ds3FarEndGroup
+        DESCRIPTION
+            "Implementation of this group is optional for all
+            systems that attach to a DS3 Interface.  However,
+            only C-bit Parity and SYNTRAN DS3 applications
+            have the capability (option) of providing this
+            information."
+        GROUP       ds3NearEndOptionalTrapGroup
+
+
+
+        DESCRIPTION
+            "Implementation of this group is optional for all
+            systems that attach to a DS3 Interface.  If it is
+            implemented then ds3NearEndOptionalConfigGroup
+            should also be implemented."
+        GROUP       ds3NearEndOptionalConfigGroup
+        DESCRIPTION
+            "Implementation of this group is optional for all
+            systems that attach to a DS3 interface."
+
+        OBJECT      dsx3LineType
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access for the line type is not required."
+
+        OBJECT      dsx3LineCoding
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access for the line coding is not
+            required."
+
+        OBJECT      dsx3SendCode
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access for the send code is not required."
+
+        OBJECT      dsx3LoopbackConfig
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access for loopbacks is not required."
+
+        OBJECT      dsx3TransmitClockSource
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access for the transmit clock source is not
+            required."
+
+        OBJECT      dsx3LineLength
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access for the line length is not
+            required."
+
+        OBJECT      dsx3Channelization
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access for the channelization is not
+            required."
+
+
+
+    ::= { ds3Compliances 1 }
+
+-- units of conformance
+
+ds3NearEndConfigGroup  OBJECT-GROUP
+    OBJECTS { dsx3LineIndex,
+              dsx3TimeElapsed,
+              dsx3ValidIntervals,
+              dsx3LineType,
+              dsx3LineCoding,
+              dsx3SendCode,
+              dsx3CircuitIdentifier,
+              dsx3LoopbackConfig,
+              dsx3LineStatus,
+              dsx3TransmitClockSource,
+              dsx3InvalidIntervals,
+              dsx3LineLength,
+              dsx3LoopbackStatus,
+              dsx3Channelization,
+              dsx3Ds1ForRemoteLoop}
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing configuration
+            information applicable to all DS3/E3 interfaces."
+    ::= { ds3Groups 1 }
+
+ds3NearEndStatisticsGroup OBJECT-GROUP
+    OBJECTS { dsx3CurrentIndex,
+              dsx3CurrentPESs,
+              dsx3CurrentPSESs,
+              dsx3CurrentSEFSs,
+              dsx3CurrentUASs,
+              dsx3CurrentLCVs,
+              dsx3CurrentPCVs,
+              dsx3CurrentLESs,
+              dsx3CurrentCCVs,
+              dsx3CurrentCESs,
+              dsx3CurrentCSESs,
+              dsx3IntervalIndex,
+              dsx3IntervalNumber,
+              dsx3IntervalPESs,
+              dsx3IntervalPSESs,
+              dsx3IntervalSEFSs,
+              dsx3IntervalUASs,
+              dsx3IntervalLCVs,
+              dsx3IntervalPCVs,
+              dsx3IntervalLESs,
+              dsx3IntervalCCVs,
+
+
+
+              dsx3IntervalCESs,
+              dsx3IntervalCSESs,
+              dsx3IntervalValidData,
+              dsx3TotalIndex,
+              dsx3TotalPESs,
+              dsx3TotalPSESs,
+              dsx3TotalSEFSs,
+              dsx3TotalUASs,
+              dsx3TotalLCVs,
+              dsx3TotalPCVs,
+              dsx3TotalLESs,
+              dsx3TotalCCVs,
+              dsx3TotalCESs,
+              dsx3TotalCSESs }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing statistics
+            information applicable to all DS3/E3 interfaces."
+    ::= { ds3Groups 2 }
+
+ds3FarEndGroup  OBJECT-GROUP
+    OBJECTS { dsx3FarEndLineIndex,
+              dsx3FarEndEquipCode,
+              dsx3FarEndLocationIDCode,
+              dsx3FarEndFrameIDCode,
+              dsx3FarEndUnitCode,
+              dsx3FarEndFacilityIDCode,
+              dsx3FarEndCurrentIndex,
+              dsx3FarEndTimeElapsed,
+              dsx3FarEndValidIntervals,
+              dsx3FarEndCurrentCESs,
+              dsx3FarEndCurrentCSESs,
+              dsx3FarEndCurrentCCVs,
+              dsx3FarEndCurrentUASs,
+              dsx3FarEndInvalidIntervals,
+              dsx3FarEndIntervalIndex,
+              dsx3FarEndIntervalNumber,
+              dsx3FarEndIntervalCESs,
+              dsx3FarEndIntervalCSESs,
+              dsx3FarEndIntervalCCVs,
+              dsx3FarEndIntervalUASs,
+              dsx3FarEndIntervalValidData,
+              dsx3FarEndTotalIndex,
+              dsx3FarEndTotalCESs,
+              dsx3FarEndTotalCSESs,
+              dsx3FarEndTotalCCVs,
+              dsx3FarEndTotalUASs }
+    STATUS  current
+
+
+
+    DESCRIPTION
+            "A collection of objects providing remote
+            configuration and statistics information
+            applicable to C-bit Parity and SYNTRAN DS3
+            interfaces."
+    ::= { ds3Groups 3 }
+
+ds3DeprecatedGroup OBJECT-GROUP
+
+    OBJECTS { dsx3IfIndex,
+              dsx3FracIndex,
+              dsx3FracNumber,
+              dsx3FracIfIndex }
+    STATUS  deprecated
+    DESCRIPTION
+            "A collection of obsolete objects that may be
+            implemented for backwards compatibility."
+    ::= { ds3Groups 4 }
+
+ds3NearEndOptionalConfigGroup OBJECT-GROUP
+    OBJECTS { dsx3LineStatusLastChange,
+              dsx3LineStatusChangeTrapEnable }
+
+    STATUS    current
+    DESCRIPTION
+            "A collection of objects that may be implemented
+            on DS3/E3 interfaces."
+    ::= { ds3Groups 5 }
+
+ds3NearEndOptionalTrapGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { dsx3LineStatusChange }
+    STATUS    current
+    DESCRIPTION
+            "A collection of notifications that may be
+            implemented on DS3/E3 interfaces."
+    ::= { ds3Groups 6 }
+
+END

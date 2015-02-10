@@ -1,0 +1,183 @@
+SIP-TC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    mib-2
+          FROM SNMPv2-SMI        -- RFC 2578
+
+    TEXTUAL-CONVENTION
+          FROM SNMPv2-TC;        -- RFC 2579
+
+sipTC MODULE-IDENTITY
+    LAST-UPDATED "200704200000Z"
+    ORGANIZATION "IETF Session Initiation Protocol Working Group"
+    CONTACT-INFO
+             "SIP WG email: sip@ietf.org
+
+              Co-editor  Kevin Lingle
+                         Cisco Systems, Inc.
+              postal:    7025 Kit Creek Road
+                         P.O. Box 14987
+                         Research Triangle Park, NC 27709
+                         USA
+              email:     klingle@cisco.com
+              phone:     +1 919 476 2029
+
+              Co-editor  Joon Maeng
+              email:     jmaeng@austin.rr.com
+
+              Co-editor  Jean-Francois Mule
+                         CableLabs
+              postal:    858 Coal Creek Circle
+                         Louisville, CO 80027
+                         USA
+              email:     jf.mule@cablelabs.com
+              phone:     +1 303 661 9100
+
+              Co-editor  Dave Walker
+              email:     drwalker@rogers.com"
+    DESCRIPTION
+       "Session Initiation Protocol (SIP) MIB TEXTUAL-CONVENTION
+        module used by other SIP-related MIB Modules.
+
+        Copyright (C) The IETF Trust (2007).  This version of
+        this MIB module is part of RFC 4780; see the RFC itself for
+
+
+
+        full legal notices."
+    REVISION     "200704200000Z"
+    DESCRIPTION
+       "Initial version of the IETF SIP-TC-MIB module.  This version
+        published as part of RFC 4780."
+     ::= { mib-2 148 }
+
+--
+-- Textual Conventions
+--
+
+SipTCTransportProtocol ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+       "This convention is a bit map.  Each bit represents a transport
+        protocol.  If a bit has value 1, then that selected transport
+        protocol is in some way dependent on the context of the object
+        using this convention.  If a bit has value 0, then that
+        transport protocol is not selected.  Combinations of bits can
+        be set when multiple transport protocols are selected.
+
+        bit 0: a protocol other than those defined here
+        bit 1: User Datagram Protocol
+        bit 2: Transmission Control Protocol
+        bit 3: Stream Control Transmission Protocol
+        bit 4: Transport Layer Security Protocol over TCP
+        bit 5: Transport Layer Security Protocol over SCTP
+       "
+    REFERENCE "RFC 3261, Section 18 and RFC 4168"
+    SYNTAX      BITS {
+                  other(0),  -- none of the following
+                  udp(1),
+                  tcp(2),
+                  sctp(3),   -- RFC4168
+                  tlsTcp(4),
+                  tlsSctp(5) -- RFC 4168
+                }
+
+SipTCEntityRole ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+       "This convention defines the role of a SIP entity.  Examples of
+        SIP entities are proxies, user agents, redirect servers,
+        registrars, or combinations of the above.
+
+        User Agent (UA): A logical entity that can act as both a user
+        agent client and user agent server.
+
+
+
+
+        User Agent Client (UAC): A logical entity that creates a new
+        request, and then uses the client transaction state machinery
+        to send it.  The role of UAC lasts only for the duration of
+        that transaction.  In other words, if a piece of software
+        initiates a request, it acts as a UAC for the duration of that
+        transaction.  If it receives a request later, it assumes the
+        role of a user agent server for the processing of that
+        transaction.
+
+        User Agent Server (UAS): A logical entity that generates a
+        response to a SIP request.  The response accepts, rejects,
+        or redirects the request.  This role lasts only for the
+        duration of that transaction.  In other words, if a piece of
+        software responds to a request, it acts as a UAS for the
+        duration of that transaction.  If it generates a request
+        later, it assumes the role of a user agent client for the
+        processing of that transaction.
+
+        Proxy, Proxy Server: An intermediary entity that acts as both
+        a server and a client for the purpose of making requests on
+        behalf of other clients.  A proxy server primarily plays the
+        role of routing, which means its job is to ensure that a
+        request is sent to another entity 'closer' to the targeted
+        user.  Proxies are also useful for enforcing policy.  A proxy
+        interprets and, if necessary, rewrites specific parts of a
+        request message before forwarding it.
+
+        Redirect Server: A redirect server is a user agent server that
+        generates 3xx responses to requests it receives, directing the
+        client to contact an alternate set of URIs.
+
+        Registrar: A registrar is a server that accepts REGISTER
+        requests and places the information it receives in those
+        requests into the location service for the domain it handles."
+    REFERENCE
+       "RFC 3261, Section 6"
+    SYNTAX      BITS {
+                  other(0),
+                  userAgent(1),
+                  proxyServer(2),
+                  redirectServer(3),
+                  registrarServer(4)
+                }
+
+SipTCOptionTagHeaders ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+       "This convention defines the header fields that use the option
+
+
+
+        tags per Section 19.2 of RFC 3261.  These tags are used in
+        Require (Section 20.32), Proxy-Require (Section 20.29),
+        Supported (Section 20.37), and Unsupported (Section 20.40)
+        header fields."
+    REFERENCE
+       "RFC 3261, Sections 19.2, 20.32, 20.29, 20.37, and 20.40"
+    SYNTAX      BITS {
+                  require(0),       -- Require header
+                  proxyRequire(1),  -- Proxy-Require header
+                  supported(2),     -- Supported header
+                  unsupported(3)    -- Unsupported header
+                }
+
+SipTCMethodName ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+       "This TEXTUAL-CONVENTION is a string that uniquely identifies a
+        SIP method.  The scope of uniqueness is the context of all
+        defined SIP methods.
+
+        Experimental support of extension methods is acceptable and
+        expected.  Extension methods are those defined in
+        officially sanctioned by IANA.
+
+        To support experimental extension methods, any object using
+        this TEXTUAL-CONVENTION as syntax MAY return/accept a method
+        identifier value other than those sanctioned by IANA.  That
+        system MUST ensure no collisions with officially assigned
+        method names."
+    REFERENCE
+       "RFC 3261, Section 27.4"
+    SYNTAX      OCTET STRING (SIZE (1..100))
+
+END

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Id$ -->
+
+<!-- NOTE the Application ID is not assigned by IANA http://www.iana.org/assignments/aaa-parameters/aaa-parameters.xml -->
+<application id="111" name="ALU Sy" uri="http://www.ietf.org/internet-drafts/draft-ietf-aaa-diameter-cc-06.txt">
+
+	<avp name="Detailed-Result" code="15" mandatory="mustnot" protected="may" vendor-bit="must" vendor-id="ALU" may-encrypt="yes">
+		<grouped>
+			<gavp name="Detailed-Result-Code"/>
+			<gavp name="Detailed-Result-Cause"/>
+		</grouped>
+	</avp>
+	<avp name="Detailed-Result-Cause" code="16" mandatory="mustnot" protected="may" vendor-bit="must" vendor-id="ALU" may-encrypt="yes">
+		<type type-name="UTF8String"/>
+	</avp>
+	<avp name="Detailed-Result-Code" code="17" mandatory="must" protected="may" vendor-bit="must" vendor-id="ALU" may-encrypt="yes">
+		<type type-name="Unsigned32"/>
+	</avp>
+	<avp name="Policy-Counter" code="1135" mandatory="must" protected="may" vendor-bit="must" vendor-id="ALU" may-encrypt="yes">
+		<grouped>
+			<gavp name="Policy-Counter-Id"/>
+			<gavp name="Policy-Counter-Value"/>
+		</grouped>
+	</avp>
+	<avp name="Charging-Policy-Report" code="1134" mandatory="mustnot" protected="may" vendor-bit="must" vendor-id="ALU" may-encrypt="yes">
+		<grouped>
+			<gavp name="Policy-Counter"/>
+		</grouped>
+	</avp>
+	<avp name="Policy-Counter-Id" code="1136" mandatory="mustnot" protected="may" vendor-bit="must" vendor-id="ALU" may-encrypt="yes">
+		<type type-name="OctetString"/>
+	</avp>
+	<avp name="Policy-Counter-Value" code="1137" mandatory="mustnot" protected="may" vendor-bit="must" vendor-id="ALU" may-encrypt="yes">
+		<type type-name="Unsigned32"/>
+	</avp>
+
+</application>

@@ -1,0 +1,477 @@
+VDSL-LINE-EXT-SCM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+
+MODULE-IDENTITY,
+OBJECT-TYPE,
+Integer32,
+transmission,
+Unsigned32                      FROM SNMPv2-SMI         -- [RFC2578]
+TEXTUAL-CONVENTION,
+TruthValue,
+RowStatus                       FROM SNMPv2-TC          -- [RFC2579]
+MODULE-COMPLIANCE,
+OBJECT-GROUP                    FROM SNMPv2-CONF        -- [RFC2580]
+ifIndex                         FROM IF-MIB             -- [RFC2863]
+vdslLineConfProfileName         FROM VDSL-LINE-MIB;     -- [RFC3728]
+
+vdslExtSCMMIB MODULE-IDENTITY
+   LAST-UPDATED "200504280000Z" --     April 28, 2005
+   ORGANIZATION "ADSLMIB Working Group"
+   CONTACT-INFO "WG-email:  adslmib@ietf.org
+         Info:      https://www1.ietf.org/mailman/listinfo/adslmib
+
+         Chair:     Mike Sneed
+                    Sand Channel Systems
+         Postal:    P.O. Box 37324
+                    Raleigh NC 27627-732
+         Email:     sneedmike@hotmail.com
+         Phone:     +1 206 600 7022
+
+         Co-Chair/Co-editor:
+                    Bob Ray
+                    PESA Switching Systems, Inc.
+         Postal:    330-A Wynn Drive
+                    Huntsville, AL 35805
+                    USA
+         Email:     rray@pesa.com
+         Phone:     +1 256 726 9200 ext.  142
+
+
+
+         Co-editor: Menachem Dodge
+                    ECI Telecom Ltd.
+         Postal:    30 Hasivim St.
+                    Petach Tikva 49517,
+                    Israel
+         Email:     mbdodge@ieee.org
+         Phone:     +972 3 926 8421
+        "
+
+DESCRIPTION
+   "The VDSL-LINE-MIB found in RFC 3728 defines objects for the
+   management of a pair of VDSL transceivers at each end of the VDSL
+   line.  The VDSL-LINE-MIB configures and monitors the line code
+   independent parameters (TC layer) of the VDSL line.  This MIB
+   module is an optional extension of the VDSL-LINE-MIB and defines
+   objects for configuration and monitoring of the line code specific
+   (LCS) elements (PMD layer) for VDSL lines using SCM coding.  The
+   objects in this extension MIB MUST NOT be used for VDSL lines
+   using Multiple Carrier Modulation (MCM) line coding.  If an object
+   in this extension MIB is referenced by a line which does not use
+   SCM, it has no effect on the operation of that line.
+
+   Naming Conventions:
+
+      Vtuc -- VDSL transceiver at near (Central) end of line
+      Vtur -- VDSL transceiver at Remote end of line
+      Vtu  -- One of either Vtuc or Vtur
+      Curr -- Current
+      Atn  -- Attenuation
+      LCS  -- Line Code Specific
+      Max  -- Maximum
+      Mgn  -- Margin
+      PSD  -- Power Spectral Density
+      Rx   -- Receive
+      Snr  -- Signal to Noise Ratio
+      Tx   -- Transmit
+
+   Copyright (C) The Internet Society (2005).  This version
+   of this MIB module is part of RFC 4069: see the RFC
+   itself for full legal notices."
+           REVISION "200504280000Z" --     April 28, 2005
+           DESCRIPTION "Initial version, published as RFC 4069."
+       ::= { transmission 228 }
+
+       vdslLineExtSCMMib    OBJECT IDENTIFIER ::= { vdslExtSCMMIB 1 }
+       vdslLineExtSCMMibObjects OBJECT IDENTIFIER ::=
+                                              { vdslLineExtSCMMib 1 }
+--
+
+
+
+-- textual conventions used in this MIB
+--
+
+VdslSCMBandId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+       "This data type is used as the syntax for the VDSL SCM Band
+        Identity.  Attributes with this syntax identify the SCM Band
+        referred to.  Specified as an INTEGER, the possible values
+        are:
+
+        optionalBand (1)  -- the optional Band range [25kHz - 138kHz]
+        firstDownstreamBand (2)  -- first Downstream Band
+        firstUpstreamBand (3)    -- first Upstream Band
+        secondDownstreamBand (4) -- second Downstream Band
+        secondUpstreamBand (5)   -- second Upstream Band
+        thirdDownstreamBand (6)  -- third Downstream Band
+        thirdUpstreamBand (7)    -- third Upstream Band"
+
+
+    SYNTAX      INTEGER       {  optionalBand (1),
+                                 firstDownstreamBand (2),
+                                 firstUpstreamBand (3),
+                                 secondDownstreamBand (4),
+                                 secondUpstreamBand (5),
+                                 thirdDownstreamBand (6),
+                                 thirdUpstreamBand(7) }
+
+--
+-- Single carrier modulation (SCM) configuration profile tables
+--
+
+vdslLineSCMConfProfileBandTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslLineSCMConfProfileBandEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table contains transmit band descriptor configuration
+        information for a VDSL line.  Each entry in this table
+        reflects the configuration for one of possibly many bands
+        of a single carrier modulation (SCM) VDSL line.  For each
+        profile which is associated with a VDSL line using SCM
+        line coding, five entries in this table will exist, one for
+        each of the five bands.  Bands which are not in use will be
+        marked as unused.  These entries are defined by a manager
+        and can be used to configure the VDSL line.  If an entry in
+
+
+
+
+
+        this table is referenced by a line which does not use SCM,
+        it has no effect on the operation of that line."
+    ::= { vdslLineExtSCMMibObjects 1 }
+
+vdslLineSCMConfProfileBandEntry OBJECT-TYPE
+    SYNTAX       VdslLineSCMConfProfileBandEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "Each entry consists of a list of parameters that
+        represents the configuration of a single carrier
+        modulation VDSL modem transmit band.
+
+        A default profile with an index of 'DEFVAL', will
+        always exist and its parameters will be set to vendor
+        specific values, unless otherwise specified in this
+        document.
+
+        All read-create objects defined in this MIB module SHOULD be
+        stored persistently."
+
+    INDEX { vdslLineConfProfileName,
+     vdslLineSCMConfProfileBandId }
+    ::= { vdslLineSCMConfProfileBandTable 1 }
+
+VdslLineSCMConfProfileBandEntry ::=
+    SEQUENCE
+       {
+       vdslLineSCMConfProfileBandId                VdslSCMBandId,
+       vdslLineSCMConfProfileBandInUse             TruthValue,
+       vdslLineSCMConfProfileBandCenterFrequency   Unsigned32,
+       vdslLineSCMConfProfileBandSymbolRate        Unsigned32,
+       vdslLineSCMConfProfileBandConstellationSize Unsigned32,
+       vdslLineSCMConfProfileBandTransmitPSDLevel  Unsigned32,
+       vdslLineSCMConfProfileBandRowStatus         RowStatus
+       }
+
+vdslLineSCMConfProfileBandId OBJECT-TYPE
+    SYNTAX      VdslSCMBandId
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+       "The BandId for this entry, which specifies which band
+        is being referred to."
+    ::= { vdslLineSCMConfProfileBandEntry 1 }
+
+
+
+
+
+
+vdslLineSCMConfProfileBandInUse OBJECT-TYPE
+    SYNTAX       TruthValue
+    MAX-ACCESS   read-create
+    STATUS  current
+    DESCRIPTION
+       "Indicates whether this band is in use.
+        If set to True this band is in use."
+    ::= { vdslLineSCMConfProfileBandEntry 2 }
+
+vdslLineSCMConfProfileBandCenterFrequency OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "Hz"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "Specifies the center frequency in Hz"
+    REFERENCE    "T1E1.4/2000-011R3"    -- Part 2, SCM
+    ::= { vdslLineSCMConfProfileBandEntry 3 }
+
+vdslLineSCMConfProfileBandSymbolRate OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "baud"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The requested symbol rate in baud."
+    REFERENCE    "T1E1.4/2000-011R3"    -- Part 2, SCM
+    ::= { vdslLineSCMConfProfileBandEntry 4 }
+
+vdslLineSCMConfProfileBandConstellationSize OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..16)
+    UNITS        "log2"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "Specifies the constellation size."
+    REFERENCE    "T1E1.4/2000-011R3"    -- Part 2, SCM
+    ::= { vdslLineSCMConfProfileBandEntry 5 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+vdslLineSCMConfProfileBandTransmitPSDLevel OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "-0.25 dBm/Hz"
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "The requested transmit power spectral density for the VDSL
+        modem.  The Actual value in -0.25 dBm/Hz."
+    REFERENCE    "T1E1.4/2000-011R3"    -- Part 2, SCM
+    ::= { vdslLineSCMConfProfileBandEntry 6  }
+
+vdslLineSCMConfProfileBandRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+       "This object is used to create a new row or modify or
+        delete an existing row in this table.
+
+        A profile activated by setting this object to `active'.
+        When `active' is set, the system will validate the profile.
+
+        None of the columns in this row may be modified while the
+        row is in the `active' state.
+
+        Before a profile can be deleted or taken out of
+        service, (by setting this object to `destroy' or
+        `notInService') it must be first unreferenced
+        from all associated lines."
+
+    ::= { vdslLineSCMConfProfileBandEntry 7 }
+
+--
+-- SCM physical band
+--
+
+vdslLineSCMPhysBandTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF VdslLineSCMPhysBandEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+       "This table provides one row for each SCM Vtu band.  This
+        table is read only as it reflects the current physical
+        parameters of each band.  For each ifIndex which is
+        associated with a VDSL line using SCM line coding, five
+        entries in this table will exist, one for each of the
+        five bands.  Bands which are not in use will be marked
+        as unused."
+
+
+
+    ::= { vdslLineExtSCMMibObjects 2 }
+
+vdslLineSCMPhysBandEntry OBJECT-TYPE
+    SYNTAX        VdslLineSCMPhysBandEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+       "An entry in the vdslLineSCMPhysBandTable."
+    INDEX { ifIndex,
+            vdslLineSCMPhysBandId  }
+    ::= { vdslLineSCMPhysBandTable 1 }
+
+VdslLineSCMPhysBandEntry ::=
+    SEQUENCE
+        {
+        vdslLineSCMPhysBandId                    VdslSCMBandId,
+        vdslLineSCMPhysBandInUse                 TruthValue,
+        vdslLineSCMPhysBandCurrCenterFrequency   Unsigned32,
+        vdslLineSCMPhysBandCurrSymbolRate        Unsigned32,
+        vdslLineSCMPhysBandCurrConstellationSize Unsigned32,
+        vdslLineSCMPhysBandCurrPSDLevel          Unsigned32,
+        vdslLineSCMPhysBandCurrSnrMgn            Integer32,
+        vdslLineSCMPhysBandCurrAtn               Unsigned32
+        }
+
+vdslLineSCMPhysBandId OBJECT-TYPE
+    SYNTAX      VdslSCMBandId
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The BandId for this entry, which specifies which band
+         is being referred to."
+    ::= { vdslLineSCMPhysBandEntry 1 }
+
+vdslLineSCMPhysBandInUse OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+       "Indicates whether this band is in use.
+        If set to True this band is in use."
+    ::= { vdslLineSCMPhysBandEntry 2 }
+
+
+
+
+
+
+
+
+
+vdslLineSCMPhysBandCurrCenterFrequency OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "Hz"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The current center frequency in Hz for this band."
+    REFERENCE    "T1E1.4/2000-011R3"    -- Part 2, SCM
+    ::= { vdslLineSCMPhysBandEntry 3 }
+
+vdslLineSCMPhysBandCurrSymbolRate    OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "baud"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The current value of the symbol rate in baud for this
+        band."
+   REFERENCE    "T1E1.4/2000-011R3"    -- Part 2, SCM
+   ::= { vdslLineSCMPhysBandEntry 4 }
+
+vdslLineSCMPhysBandCurrConstellationSize OBJECT-TYPE
+    SYNTAX       Unsigned32 (0..16)
+    UNITS        "log2"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The current constellation size on this band."
+    REFERENCE    "T1E1.4/2000-011R3"    -- Part 2, SCM
+    ::= { vdslLineSCMPhysBandEntry 5 }
+
+vdslLineSCMPhysBandCurrPSDLevel    OBJECT-TYPE
+    SYNTAX       Unsigned32
+    UNITS        "- 0.25 dBm/Hz"
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+       "The transmit power spectral density for the
+        VDSL modem."
+    REFERENCE    "T1E1.4/2000-011R3"    -- Part 2, SCM
+    ::= { vdslLineSCMPhysBandEntry 6 }
+
+
+
+
+
+
+
+
+
+
+vdslLineSCMPhysBandCurrSnrMgn OBJECT-TYPE
+    SYNTAX        Integer32
+    UNITS         "0.25 dB"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+       "Noise margin as seen by this Vtu and band with respect
+        to its received signal in 0.25 dB."
+    ::= { vdslLineSCMPhysBandEntry 7 }
+
+vdslLineSCMPhysBandCurrAtn OBJECT-TYPE
+    SYNTAX        Unsigned32 (0..255)
+    UNITS         "0.25 dB"
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+       "Measured difference in the total power transmitted by
+        the peer Vtu on this band and the total power received
+        by this Vtu on this band in 0.25 dB."
+    ::= { vdslLineSCMPhysBandEntry 8 }
+
+-- conformance information
+
+vdslLineExtSCMConformance OBJECT IDENTIFIER ::=
+                                            { vdslLineExtSCMMib 2 }
+vdslLineExtSCMGroups OBJECT IDENTIFIER ::=
+                                    { vdslLineExtSCMConformance 1 }
+vdslLineExtSCMCompliances OBJECT IDENTIFIER ::=
+                                    { vdslLineExtSCMConformance 2 }
+
+vdslLineExtSCMMibCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+       "The compliance statement for SNMP entities which
+        manage VDSL interfaces."
+
+    MODULE  -- this module
+
+    MANDATORY-GROUPS
+    {
+      vdslLineExtSCMGroup
+    }
+
+    ::= { vdslLineExtSCMCompliances 1 }
+
+
+
+
+
+
+
+-- units of conformance
+
+vdslLineExtSCMGroup    OBJECT-GROUP
+    OBJECTS
+        {
+        vdslLineSCMConfProfileBandInUse,
+        vdslLineSCMConfProfileBandTransmitPSDLevel,
+        vdslLineSCMConfProfileBandSymbolRate,
+        vdslLineSCMConfProfileBandConstellationSize,
+        vdslLineSCMConfProfileBandCenterFrequency,
+        vdslLineSCMConfProfileBandRowStatus,
+        vdslLineSCMPhysBandInUse,
+        vdslLineSCMPhysBandCurrPSDLevel,
+        vdslLineSCMPhysBandCurrSymbolRate,
+        vdslLineSCMPhysBandCurrConstellationSize,
+        vdslLineSCMPhysBandCurrCenterFrequency,
+        vdslLineSCMPhysBandCurrSnrMgn,
+        vdslLineSCMPhysBandCurrAtn
+
+        }
+    STATUS      current
+    DESCRIPTION
+       "A collection of objects providing configuration
+        information for a VDSL line based upon single carrier
+        modulation modem."
+    ::= { vdslLineExtSCMGroups 1 }
+
+END

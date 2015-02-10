@@ -1,0 +1,34 @@
+# -*- text -*-
+#
+#	From:
+#	http://www.netscreen.com/support/downloads/4.0_configuring_screenOS_for_NTdomain_v11.pdf
+#
+#	$Id$
+#
+
+VENDOR		Netscreen			3224
+
+BEGIN-VENDOR	Netscreen
+
+ATTRIBUTE	NS-Admin-Privilege			1	integer
+ATTRIBUTE	NS-VSYS-Name				2	string
+ATTRIBUTE	NS-User-Group				3	string
+ATTRIBUTE	NS-Primary-DNS				4	ipaddr
+ATTRIBUTE	NS-Secondary-DNS			5	ipaddr
+ATTRIBUTE	NS-Primary-WINS				6	ipaddr
+ATTRIBUTE	NS-Secondary-WINS			7	ipaddr
+
+ATTRIBUTE	NS-NSM-User-Domain-Name			220	string
+ATTRIBUTE	NS-NSM-User-Role-Mapping		221	string
+
+#
+#  Values VSYS-Admin and Read-Only-VSYS-Admin require a NS-VSYS-Name
+#  attribute in the response packet.
+#
+VALUE	NS-Admin-Privilege		Root-Admin		1
+VALUE	NS-Admin-Privilege		All-VSYS-Root-Admin	2
+VALUE	NS-Admin-Privilege		VSYS-Admin		3
+VALUE	NS-Admin-Privilege		Read-Only-Admin		4
+VALUE	NS-Admin-Privilege		Read-Only-VSYS-Admin	5
+
+END-VENDOR	Netscreen

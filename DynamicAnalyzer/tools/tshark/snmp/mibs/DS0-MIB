@@ -1,0 +1,306 @@
+DS0-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+     MODULE-IDENTITY, OBJECT-TYPE,
+     transmission                     FROM SNMPv2-SMI
+     MODULE-COMPLIANCE, OBJECT-GROUP  FROM SNMPv2-CONF
+     DisplayString, TruthValue        FROM SNMPv2-TC
+     ifIndex, InterfaceIndex,
+     InterfaceIndexOrZero             FROM IF-MIB;
+
+--  This is the MIB module for the DS0 Interface objects.
+
+ds0 MODULE-IDENTITY
+    LAST-UPDATED "9807161630Z"
+    ORGANIZATION "IETF Trunk MIB Working Group"
+    CONTACT-INFO
+      "        David Fowler
+
+       Postal: Newbridge Networks Corporation
+               600 March Road
+               Kanata, Ontario, Canada K2K 2E6
+
+               Tel: +1 613 591 3600
+               Fax: +1 613 599 3619
+
+       E-mail: davef@newbridge.com"
+    DESCRIPTION
+         "The MIB module to describe
+          DS0 interfaces objects."
+    REVISION "9805242010Z"
+    DESCRIPTION
+         "Initial version of the DS0-MIB."
+
+    ::= { transmission 81 }
+
+-- The DS0 Config Group
+
+-- Implementation of this group is mandatory for all
+-- systems that use a DS0 Interface.
+
+-- The DS0 Config Group consists of two tables:
+--    DS0 Configuration Table
+--    DS0 Channel Mapping Table
+
+-- The DS0 Configuration Table
+
+dsx0ConfigTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx0ConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The DS0 Configuration table."
+    ::= { ds0 1 }
+
+dsx0ConfigEntry OBJECT-TYPE
+    SYNTAX  Dsx0ConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the DS0 Configuration table.  There
+            is an entry in this table for each DS0 interface."
+    INDEX   { ifIndex }
+    ::= { dsx0ConfigTable 1 }
+
+Dsx0ConfigEntry ::=
+    SEQUENCE {
+        dsx0Ds0ChannelNumber        INTEGER,
+        dsx0RobbedBitSignalling     TruthValue,
+        dsx0CircuitIdentifier       DisplayString,
+        dsx0IdleCode                INTEGER,
+        dsx0SeizedCode              INTEGER,
+        dsx0ReceivedCode            INTEGER,
+        dsx0TransmitCodesEnable     TruthValue,
+        dsx0Ds0BundleMappedIfIndex  InterfaceIndexOrZero
+}
+
+dsx0Ds0ChannelNumber OBJECT-TYPE
+    SYNTAX  INTEGER(0..31)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object indicates the channel number of the
+            ds0 on its DS1/E1."
+    ::= { dsx0ConfigEntry 1 }
+
+dsx0RobbedBitSignalling OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "This object indicates if Robbed Bit Signalling is
+            turned on or off for a given ds0.  This only
+            applies to DS0s on a DS1 link.  For E1 links the
+            value is always off (false)."
+    ::= { dsx0ConfigEntry 2 }
+
+dsx0CircuitIdentifier OBJECT-TYPE
+     SYNTAX  DisplayString (SIZE (0..255))
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This object contains the transmission vendor's
+            circuit identifier, for the purpose of
+            facilitating troubleshooting."
+    ::= { dsx0ConfigEntry 3 }
+
+dsx0IdleCode OBJECT-TYPE
+     SYNTAX  INTEGER(0..15)
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This object contains the code transmitted in the
+            ABCD bits when the ds0 is not connected and
+            dsx0TransmitCodesEnable is enabled.  The object is
+            a bitmap and the various bit positions are:
+                  1     D bit
+                  2     C bit
+                  4     B bit
+                  8     A bit"
+    ::= { dsx0ConfigEntry 4 }
+
+dsx0SeizedCode OBJECT-TYPE
+     SYNTAX  INTEGER(0..15)
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This object contains the code transmitted in the
+            ABCD bits when the ds0 is connected and
+            dsx0TransmitCodesEnable is enabled.  The object is
+            a bitmap and the various bit positions are:
+                  1     D bit
+                  2     C bit
+                  4     B bit
+                  8     A bit"
+    ::= { dsx0ConfigEntry 5 }
+
+dsx0ReceivedCode OBJECT-TYPE
+     SYNTAX  INTEGER(0..15)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "This object contains the code being received in
+            the ABCD bits.  The object is a bitmap and the
+            various bit positions are:
+                  1     D bit
+                  2     C bit
+                  4     B bit
+                  8     A bit"
+    ::= { dsx0ConfigEntry 6 }
+
+dsx0TransmitCodesEnable OBJECT-TYPE
+     SYNTAX TruthValue
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+            "This object determines if the idle and seized
+            codes are transmitted. If the value of this object
+            is true then the codes are transmitted."
+    ::= { dsx0ConfigEntry 7 }
+
+dsx0Ds0BundleMappedIfIndex OBJECT-TYPE
+     SYNTAX InterfaceIndexOrZero
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "This object indicates the ifIndex value assigned
+            by the agent for the ds0Bundle(82) ifEntry to
+            which the given ds0(81) ifEntry may belong.
+
+            If the given ds0(81) ifEntry does not belong to
+            any ds0Bundle(82) ifEntry, then this object has a
+            value of zero.
+
+            While this object provides information that can
+            also be found in the ifStackTable, it provides
+            this same information with a single table lookup,
+            rather than by walking the ifStackTable to find
+            the possibly non-existent ds0Bundle(82) ifEntry
+            that may be stacked above the given ds0(81)
+            ifTable entry."
+    ::= { dsx0ConfigEntry 8 }
+
+-- The DS0 Channel Mapping Table
+
+dsx0ChanMappingTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF Dsx0ChanMappingEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "The DS0 Channel Mapping table.  This table maps a
+            DS0 channel number on a particular DS1/E1 into an
+            ifIndex."
+     ::= { ds0 3 }
+
+dsx0ChanMappingEntry OBJECT-TYPE
+     SYNTAX  Dsx0ChanMappingEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+            "An entry in the DS0 Channel Mapping table.  There
+            is an entry in this table corresponding to each
+            ds0 ifEntry within any interface that is
+            channelized to the individual ds0 ifEntry level.
+
+            This table is intended to facilitate mapping from
+            channelized interface / channel number to DS0
+            ifEntry.  (e.g. mapping (DS1 ifIndex, DS0 Channel
+            Number) -> ifIndex)
+
+            While this table provides information that can
+            also be found in the ifStackTable and
+            dsx0ConfigTable, it provides this same information
+            with a single table lookup, rather than by walking
+            the ifStackTable to find the various constituent
+            ds0 ifTable entries, and testing various
+            dsx0ConfigTable entries to check for the entry
+            with the applicable DS0 channel number."
+     INDEX   { ifIndex, dsx0Ds0ChannelNumber }
+     ::= { dsx0ChanMappingTable 1 }
+
+Dsx0ChanMappingEntry ::=
+     SEQUENCE {
+         dsx0ChanMappedIfIndex  InterfaceIndex
+}
+
+dsx0ChanMappedIfIndex OBJECT-TYPE
+     SYNTAX  InterfaceIndex
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            "This object indicates the ifIndex value assigned
+            by the agent for the individual ds0 ifEntry that
+            corresponds to the given DS0 channel number
+            (specified by the INDEX element
+            dsx0Ds0ChannelNumber) of the given channelized
+            interface (specified by INDEX element ifIndex)."
+     ::= { dsx0ChanMappingEntry 1 }
+
+-- conformance information
+
+ds0Conformance OBJECT IDENTIFIER ::= { ds0 2 }
+
+ds0Groups      OBJECT IDENTIFIER ::= { ds0Conformance 1 }
+ds0Compliances OBJECT IDENTIFIER ::= { ds0Conformance 2 }
+
+
+
+-- compliance statements
+
+ds0Compliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for DS0 interfaces."
+    MODULE  -- this module
+        MANDATORY-GROUPS { ds0ConfigGroup }
+
+        OBJECT dsx0RobbedBitSignalling
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set RBS is not required."
+        OBJECT dsx0CircuitIdentifier
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the circuit identifier is not
+            required."
+
+        OBJECT dsx0IdleCode
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the idle code is not
+            required."
+
+        OBJECT dsx0SeizedCode
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to set the seized code is not
+            required."
+
+        OBJECT dsx0TransmitCodesEnable
+        MIN-ACCESS read-only
+        DESCRIPTION
+            "The ability to enable and disable the
+            transmitting of idle and seized codes is not
+            required."
+
+    ::= { ds0Compliances 1 }
+
+-- units of conformance
+
+ds0ConfigGroup  OBJECT-GROUP
+    OBJECTS { dsx0Ds0ChannelNumber,
+              dsx0RobbedBitSignalling,
+              dsx0CircuitIdentifier,
+              dsx0IdleCode,
+              dsx0SeizedCode,
+              dsx0ReceivedCode,
+              dsx0TransmitCodesEnable,
+              dsx0Ds0BundleMappedIfIndex,
+              dsx0ChanMappedIfIndex }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing configuration
+            information applicable to all DS0 interfaces."
+    ::= { ds0Groups 1 }
+
+END

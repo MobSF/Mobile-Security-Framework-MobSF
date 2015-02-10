@@ -1,0 +1,230 @@
+# -*- text -*-
+#
+# dictionary.acme
+# Acme Packet RADIUS Dictionary
+#
+# https://support.acmepacket.com
+#
+# Version:	6.2.0  30-Oct-2009  Hadriel Kaplan <hkaplan@acmepacket.com>
+#
+# $Id$
+#
+
+VENDOR		Acme				9148
+BEGIN-VENDOR	Acme
+
+#
+#  Voice over IP attributes.
+#
+ATTRIBUTE	Acme-FlowID_FS1_F			1	string
+ATTRIBUTE	Acme-FlowType_FS1_F			2	string
+ATTRIBUTE	Acme-Session-Ingress-CallId		3	string
+ATTRIBUTE	Acme-Session-Egress-CallId		4	string
+
+ATTRIBUTE	Acme-Flow-In-Realm_FS1_F		10	string
+ATTRIBUTE	Acme-Flow-In-Src-Addr_FS1_F		11	ipaddr
+ATTRIBUTE	Acme-Flow-In-Src-Port_FS1_F		12	integer
+ATTRIBUTE	Acme-Flow-In-Dst-Addr_FS1_F		13	ipaddr
+ATTRIBUTE	Acme-Flow-In-Dst-Port_FS1_F		14	integer
+
+ATTRIBUTE	Acme-Flow-Out-Realm_FS1_F		20	string
+ATTRIBUTE	Acme-Flow-Out-Src-Addr_FS1_F		21	ipaddr
+ATTRIBUTE	Acme-Flow-Out-Src-Port_FS1_F		22	integer
+ATTRIBUTE	Acme-Flow-Out-Dst-Addr_FS1_F		23	ipaddr
+ATTRIBUTE	Acme-Flow-Out-Dst-Port_FS1_F		24	integer
+ATTRIBUTE	Acme-Calling-Octets_FS1			28	integer
+ATTRIBUTE	Acme-Calling-Packets_FS1		29	integer
+ATTRIBUTE	Acme-Calling-RTCP-Packets-Lost_FS1	32	integer
+ATTRIBUTE	Acme-Calling-RTCP-Avg-Jitter_FS1	33	integer
+ATTRIBUTE	Acme-Calling-RTCP-Avg-Latency_FS1	34	integer
+ATTRIBUTE	Acme-Calling-RTCP-MaxJitter_FS1		35	integer
+ATTRIBUTE	Acme-Calling-RTCP-MaxLatency_FS1	36	integer
+ATTRIBUTE	Acme-Calling-RTP-Packets-Lost_FS1	37	integer
+ATTRIBUTE	Acme-Calling-RTP-Avg-Jitter_FS1		38	integer
+ATTRIBUTE	Acme-Calling-RTP-MaxJitter_FS1		39	integer
+
+ATTRIBUTE	Acme-Session-Generic-Id			40	string
+ATTRIBUTE	Acme-Session-Ingress-Realm		41	string
+ATTRIBUTE	Acme-Session-Egress-Realm		42	string
+ATTRIBUTE	Acme-Session-Protocol-Type		43	string
+
+ATTRIBUTE	Acme-Called-Octets_FS1			44	integer
+ATTRIBUTE	Acme-Called-Packets_FS1			45	integer
+ATTRIBUTE	Acme-Called-RTCP-Packets-Lost_FS1	46	integer
+ATTRIBUTE	Acme-Called-RTCP-Avg-Jitter_FS1		47	integer
+ATTRIBUTE	Acme-Called-RTCP-Avg-Latency_FS1	48	integer
+ATTRIBUTE	Acme-Called-RTCP-MaxJitter_FS1		49	integer
+ATTRIBUTE	Acme-Called-RTCP-MaxLatency_FS1		50	integer
+ATTRIBUTE	Acme-Called-RTP-Packets-Lost_FS1	51	integer
+ATTRIBUTE	Acme-Called-RTP-Avg-Jitter_FS1		52	integer
+ATTRIBUTE	Acme-Called-RTP-MaxJitter_FS1		53	integer
+
+ATTRIBUTE	Acme-Session-Charging-Vector		54	string
+ATTRIBUTE	Acme-Session-Charging-Function_Address	55	string
+
+ATTRIBUTE	Acme-Firmware-Version			56	string
+ATTRIBUTE	Acme-Local-Time-Zone			57	string
+
+ATTRIBUTE	Acme-Post-Dial-Delay			58	integer
+ATTRIBUTE	Acme-CDR-Sequence-Number		59	integer
+ATTRIBUTE	Acme-Session-Disposition		60	integer
+ATTRIBUTE	Acme-Disconnect-Initiator		61	integer
+ATTRIBUTE	Acme-Disconnect-Cause			62	integer
+ATTRIBUTE	Acme-Intermediate_Time			63	string
+ATTRIBUTE	Acme-Primary-Routing-Number		64	string
+ATTRIBUTE	Acme-Originating-Trunk-Group		65	string
+ATTRIBUTE	Acme-Terminating-Trunk-Group		66	string
+ATTRIBUTE	Acme-Originating-Trunk-Context		67	string
+ATTRIBUTE	Acme-Terminating-Trunk-Context		68	string
+ATTRIBUTE	Acme-P-Asserted-ID			69	string
+ATTRIBUTE	Acme-SIP-Diversion			70	string
+ATTRIBUTE	Acme-SIP-Status				71	integer
+# 72 unused
+# 73 unused
+ATTRIBUTE	Acme-Ingress-Local-Addr			74	string
+ATTRIBUTE	Acme-Ingress-Remote-Addr		75	string
+ATTRIBUTE	Acme-Egress-Local-Addr			76	string
+ATTRIBUTE	Acme-Egress-Remote-Addr			77	string
+
+ATTRIBUTE	Acme-FlowID_FS1_R			78	string
+ATTRIBUTE	Acme-FlowType_FS1_R			79	string
+ATTRIBUTE	Acme-Flow-In-Realm_FS1_R		80	string
+ATTRIBUTE	Acme-Flow-In-Src-Addr_FS1_R		81	ipaddr
+ATTRIBUTE	Acme-Flow-In-Src-Port_FS1_R		82	integer
+ATTRIBUTE	Acme-Flow-In-Dst-Addr_FS1_R		83	ipaddr
+ATTRIBUTE	Acme-Flow-In-Dst-Port_FS1_R		84	integer
+ATTRIBUTE	Acme-Flow-Out-Realm_FS1_R		85	string
+ATTRIBUTE	Acme-Flow-Out-Src-Addr_FS1_R		86	ipaddr
+ATTRIBUTE	Acme-Flow-Out-Src-Port_FS1_R		87	integer
+ATTRIBUTE	Acme-Flow-Out-Dst-Addr_FS1_R		88	ipaddr
+ATTRIBUTE	Acme-Flow-Out-Dst-Port_FS1_R		89	integer
+ATTRIBUTE	Acme-FlowID_FS2_F			90	string
+ATTRIBUTE	Acme-FlowType_FS2_F			91	string
+ATTRIBUTE	Acme-Flow-In-Realm_FS2_F		92	string
+ATTRIBUTE	Acme-Flow-In-Src-Addr_FS2_F		93	ipaddr
+ATTRIBUTE	Acme-Flow-In-Src-Port_FS2_F		94	integer
+ATTRIBUTE	Acme-Flow-In-Dst-Addr_FS2_F		95	ipaddr
+ATTRIBUTE	Acme-Flow-In-Dst-Port_FS2_F		96	integer
+ATTRIBUTE	Acme-Flow-Out-Realm_FS2_F		97	string
+ATTRIBUTE	Acme-Flow-Out-Src-Addr_FS2_F		98	ipaddr
+ATTRIBUTE	Acme-Flow-Out-Src-Port_FS2_F		99	integer
+ATTRIBUTE	Acme-Flow-Out-Dst-Addr_FS2_F		100	ipaddr
+ATTRIBUTE	Acme-Flow-Out-Dst-Port_FS2_F		101	integer
+ATTRIBUTE	Acme-Calling-Octets_FS2			102	integer
+ATTRIBUTE	Acme-Calling-Packets_FS2		103	integer
+ATTRIBUTE	Acme-Calling-RTCP-Packets-Lost_FS2	104	integer
+ATTRIBUTE	Acme-Calling-RTCP-Avg-Jitter_FS2	105	integer
+ATTRIBUTE	Acme-Calling-RTCP-Avg-Latency_FS2	106	integer
+ATTRIBUTE	Acme-Calling-RTCP-MaxJitter_FS2		107	integer
+ATTRIBUTE	Acme-Calling-RTCP-MaxLatency_FS2	108	integer
+ATTRIBUTE	Acme-Calling-RTP-Packets-Lost_FS2	109	integer
+ATTRIBUTE	Acme-Calling-RTP-Avg-Jitter_FS2		110	integer
+ATTRIBUTE	Acme-Calling-RTP-MaxJitter_FS2		111	integer
+
+ATTRIBUTE	Acme-FlowID_FS2_R			112	string
+ATTRIBUTE	Acme-FlowType_FS2_R			113	string
+ATTRIBUTE	Acme-Flow-In-Realm_FS2_R		114	string
+ATTRIBUTE	Acme-Flow-In-Src-Addr_FS2_R		115	ipaddr
+ATTRIBUTE	Acme-Flow-In-Src-Port_FS2_R		116	integer
+ATTRIBUTE	Acme-Flow-In-Dst-Addr_FS2_R		117	ipaddr
+ATTRIBUTE	Acme-Flow-In-Dst-Port_FS2_R		118	integer
+ATTRIBUTE	Acme-Flow-Out-Realm_FS2_R		119	string
+ATTRIBUTE	Acme-Flow-Out-Src-Addr_FS2_R		120	ipaddr
+ATTRIBUTE	Acme-Flow-Out-Src-Port_FS2_R		121	integer
+ATTRIBUTE	Acme-Flow-Out-Dst-Addr_FS2_R		122	ipaddr
+ATTRIBUTE	Acme-Flow-Out-Dst-Port_FS2_R		123	integer
+ATTRIBUTE	Acme-Called-Octets_FS2			124	integer
+ATTRIBUTE	Acme-Called-Packets_FS2			125	integer
+ATTRIBUTE	Acme-Called-RTCP-Packets-Lost_FS2	126	integer
+ATTRIBUTE	Acme-Called-RTCP-Avg-Jitter_FS2		127	integer
+ATTRIBUTE	Acme-Called-RTCP-Avg-Latency_FS2	128	integer
+ATTRIBUTE	Acme-Called-RTCP-MaxJitter_FS2		129	integer
+ATTRIBUTE	Acme-Called-RTCP-MaxLatency_FS2		130	integer
+ATTRIBUTE	Acme-Called-RTP-Packets-Lost_FS2	131	integer
+ATTRIBUTE	Acme-Called-RTP-Avg-Jitter_FS2		132	integer
+ATTRIBUTE	Acme-Called-RTP-MaxJitter_FS2		133	integer
+
+ATTRIBUTE	Acme-Egress-Final-Routing-Number	134	string
+ATTRIBUTE	Acme-Session-Ingress-RPH		135	string
+ATTRIBUTE	Acme-Session-Egress-RPH			136	string
+ATTRIBUTE	Acme-Ingress-Network-Interface-Id	137	string
+ATTRIBUTE	Acme-Ingress-Vlan-Tag-Value		138	integer
+ATTRIBUTE	Acme-Egress-Network-Interface-Id	139	string
+ATTRIBUTE	Acme-Egress-Vlan-Tag-Value		140	integer
+ATTRIBUTE	Acme-Refer-Call-Transfer-Id		141	string
+
+# Transcoding attributes
+ATTRIBUTE	Acme-FlowMediaType_FS1_F		142	string
+ATTRIBUTE	Acme-FlowMediaType_FS1_R		143	string
+ATTRIBUTE	Acme-FlowMediaType_FS2_F		144	string
+ATTRIBUTE	Acme-FlowMediaType_FS2_R		145	string
+ATTRIBUTE	Acme-Flow-PTime_FS1_F			146	integer
+ATTRIBUTE	Acme-Flow-PTime_FS1_R			147	integer
+ATTRIBUTE	Acme-Flow-PTime_FS2_F			148	integer
+ATTRIBUTE	Acme-Flow-PTime_FS2_R			149	integer
+ATTRIBUTE	Acme-Session-Media-Process		150	string
+
+# QoS measurement attributes
+ATTRIBUTE	Acme-Calling-R-Factor			151	integer
+ATTRIBUTE	Acme-Calling-MOS			152	integer
+ATTRIBUTE	Acme-Called-R-Factor			153	integer
+ATTRIBUTE	Acme-Called-MOS				154	integer
+
+# IPV6 attributes
+ATTRIBUTE	Acme-Flow-In-Src-IPv6_Addr_FS1_F	155	ipv6addr
+ATTRIBUTE	Acme-Flow-In-Dst-IPv6_Addr_FS1_F	156	ipv6addr
+ATTRIBUTE	Acme-Flow-Out-Src-IPv6_Addr_FS1_F	157	ipv6addr
+ATTRIBUTE	Acme-Flow-Out-Dst-IPv6_Addr_FS1_F	158	ipv6addr
+ATTRIBUTE	Acme-Flow-In-Src-IPv6_Addr_FS1_R	159	ipv6addr
+ATTRIBUTE	Acme-Flow-In-Dst-IPv6_Addr_FS1_R	160	ipv6addr
+ATTRIBUTE	Acme-Flow-Out-Src-IPv6_Addr_FS1_R	161	ipv6addr
+ATTRIBUTE	Acme-Flow-Out-Dst-IPv6_Addr_FS1_R	162	ipv6addr
+ATTRIBUTE	Acme-Flow-In-Src-IPv6_Addr_FS2_F	163	ipv6addr
+ATTRIBUTE	Acme-Flow-In-Dst-IPv6_Addr_FS2_F	164	ipv6addr
+ATTRIBUTE	Acme-Flow-Out-Src-IPv6_Addr_FS2_F	165	ipv6addr
+ATTRIBUTE	Acme-Flow-Out-Dst-IPv6_Addr_FS2_F	166	ipv6addr
+ATTRIBUTE	Acme-Flow-In-Src-IPv6_Addr_FS2_R	167	ipv6addr
+ATTRIBUTE	Acme-Flow-In-Dst-IPv6_Addr_FS2_R	168	ipv6addr
+ATTRIBUTE	Acme-Flow-Out-Src-IPv6_Addr_FS2_R	169	ipv6addr
+ATTRIBUTE	Acme-Flow-Out-Dst-IPv6_Addr_FS2_R	170	ipv6addr
+
+ATTRIBUTE	Acme-Session-Forked-Call-Id		171	string
+
+#
+# Customizable attributes - all strings, but content based on system config
+#
+ATTRIBUTE	Acme-Custom-VSA-200			200	string
+ATTRIBUTE	Acme-Custom-VSA-201			201	string
+ATTRIBUTE	Acme-Custom-VSA-202			202	string
+ATTRIBUTE	Acme-Custom-VSA-203			203	string
+ATTRIBUTE	Acme-Custom-VSA-204			204	string
+ATTRIBUTE	Acme-Custom-VSA-205			205	string
+ATTRIBUTE	Acme-Custom-VSA-206			206	string
+ATTRIBUTE	Acme-Custom-VSA-207			207	string
+ATTRIBUTE	Acme-Custom-VSA-208			208	string
+ATTRIBUTE	Acme-Custom-VSA-209			209	string
+ATTRIBUTE	Acme-Custom-VSA-210			210	string
+ATTRIBUTE	Acme-Custom-VSA-211			211	string
+ATTRIBUTE	Acme-Custom-VSA-212			212	string
+ATTRIBUTE	Acme-Custom-VSA-213			213	string
+ATTRIBUTE	Acme-Custom-VSA-214			214	string
+ATTRIBUTE	Acme-Custom-VSA-215			215	string
+ATTRIBUTE	Acme-Custom-VSA-216			216	string
+ATTRIBUTE	Acme-Custom-VSA-217			217	string
+ATTRIBUTE	Acme-Custom-VSA-218			218	string
+ATTRIBUTE	Acme-Custom-VSA-219			219	string
+ATTRIBUTE	Acme-Custom-VSA-220			220	string
+ATTRIBUTE	Acme-Custom-VSA-221			221	string
+ATTRIBUTE	Acme-Custom-VSA-222			222	string
+ATTRIBUTE	Acme-Custom-VSA-223			223	string
+ATTRIBUTE	Acme-Custom-VSA-224			224	string
+ATTRIBUTE	Acme-Custom-VSA-225			225	string
+ATTRIBUTE	Acme-Custom-VSA-226			226	string
+ATTRIBUTE	Acme-Custom-VSA-227			227	string
+ATTRIBUTE	Acme-Custom-VSA-228			228	string
+ATTRIBUTE	Acme-Custom-VSA-229			229	string
+ATTRIBUTE	Acme-Custom-VSA-230			230	string
+
+ATTRIBUTE	Acme-User-Class				254	string
+
+END-VENDOR Acme

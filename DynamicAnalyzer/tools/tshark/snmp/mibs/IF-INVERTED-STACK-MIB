@@ -1,0 +1,159 @@
+IF-INVERTED-STACK-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  MODULE-IDENTITY, OBJECT-TYPE, mib-2      FROM SNMPv2-SMI
+  RowStatus                                FROM SNMPv2-TC
+  MODULE-COMPLIANCE, OBJECT-GROUP          FROM SNMPv2-CONF
+  ifStackGroup2,
+  ifStackHigherLayer, ifStackLowerLayer    FROM IF-MIB;
+
+ifInvertedStackMIB MODULE-IDENTITY
+  LAST-UPDATED "200006140000Z"
+  ORGANIZATION "IETF Interfaces MIB Working Group"
+  CONTACT-INFO
+          "   Keith McCloghrie
+              Cisco Systems, Inc.
+              170 West Tasman Drive
+              San Jose, CA  95134-1706
+              US
+
+              408-526-5260
+              kzm@cisco.com"
+  DESCRIPTION
+          "The MIB module which provides the Inverted Stack Table for
+          interface sub-layers."
+  REVISION      "200006140000Z"
+  DESCRIPTION
+          "Initial revision, published as RFC 2864"
+  ::= { mib-2 77 }
+
+ifInvMIBObjects OBJECT IDENTIFIER ::= { ifInvertedStackMIB 1 }
+
+--
+--           The Inverted Interface Stack Group
+--
+
+ifInvStackTable  OBJECT-TYPE
+   SYNTAX        SEQUENCE OF IfInvStackEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+          "A table containing information on the relationships between
+
+
+          the multiple sub-layers of network interfaces.  In
+          particular, it contains information on which sub-layers run
+          'underneath' which other sub-layers, where each sub-layer
+          corresponds to a conceptual row in the ifTable.  For
+          example, when the sub-layer with ifIndex value x runs
+          underneath the sub-layer with ifIndex value y, then this
+          table contains:
+
+            ifInvStackStatus.x.y=active
+
+          For each ifIndex value, z, which identifies an active
+          interface, there are always at least two instantiated rows
+          in this table associated with z.  For one of these rows, z
+          is the value of ifStackHigherLayer; for the other, z is the
+          value of ifStackLowerLayer.  (If z is not involved in
+          multiplexing, then these are the only two rows associated
+          with z.)
+
+          For example, two rows exist even for an interface which has
+          no others stacked on top or below it:
+
+            ifInvStackStatus.z.0=active
+            ifInvStackStatus.0.z=active
+
+          This table contains exactly the same number of rows as the
+          ifStackTable, but the rows appear in a different order."
+   REFERENCE
+          "ifStackTable of RFC 2863"
+   ::= { ifInvMIBObjects 1 }
+
+ifInvStackEntry  OBJECT-TYPE
+   SYNTAX        IfInvStackEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION
+          "Information on a particular relationship between two sub-
+          layers, specifying that one sub-layer runs underneath the
+          other sub-layer.  Each sub-layer corresponds to a conceptual
+          row in the ifTable."
+   INDEX { ifStackLowerLayer, ifStackHigherLayer }
+   ::= { ifInvStackTable 1 }
+
+IfInvStackEntry ::=
+  SEQUENCE {
+      ifInvStackStatus       RowStatus
+   }
+
+ifInvStackStatus  OBJECT-TYPE
+
+
+  SYNTAX         RowStatus
+  MAX-ACCESS     read-only
+  STATUS         current
+  DESCRIPTION
+          "The status of the relationship between two sub-layers.
+
+          An instance of this object exists for each instance of the
+          ifStackStatus object, and vice versa.  For example, if the
+          variable ifStackStatus.H.L exists, then the variable
+          ifInvStackStatus.L.H must also exist, and vice versa.  In
+          addition, the two variables always have the same value.
+
+          However, unlike ifStackStatus, the ifInvStackStatus object
+          is NOT write-able.  A network management application wishing
+          to change a relationship between sub-layers H and L cannot
+          do so by modifying the value of ifInvStackStatus.L.H, but
+          must instead modify the value of ifStackStatus.H.L.  After
+          the ifStackTable is modified, the change will be reflected
+          in this table."
+  ::= { ifInvStackEntry 1 }
+
+-- conformance information
+
+ifInvConformance OBJECT IDENTIFIER ::= { ifInvMIBObjects 2 }
+
+ifInvGroups      OBJECT IDENTIFIER ::= { ifInvConformance 1 }
+ifInvCompliances OBJECT IDENTIFIER ::= { ifInvConformance 2 }
+
+-- compliance statements
+
+ifInvCompliance MODULE-COMPLIANCE
+  STATUS  current
+  DESCRIPTION
+          "The compliance statement for SNMP entities which provide
+          inverted information on the layering of network interfaces."
+
+  MODULE  -- this module
+      MANDATORY-GROUPS { ifInvStackGroup }
+
+      OBJECT       ifInvStackStatus
+      SYNTAX       INTEGER { active(1) }
+      DESCRIPTION
+          "Support is only required for 'active'."
+
+
+
+
+
+
+
+  MODULE  IF-MIB
+      MANDATORY-GROUPS { ifStackGroup2 }
+
+  ::= { ifInvCompliances 1 }
+
+-- units of conformance
+
+ifInvStackGroup    OBJECT-GROUP
+  OBJECTS { ifInvStackStatus }
+  STATUS  current
+  DESCRIPTION
+          "A collection of objects providing inverted information on
+          the layering of MIB-II interfaces."
+  ::= { ifInvGroups 1 }
+
+END

@@ -1,0 +1,1340 @@
+Modem-MIB DEFINITIONS ::= BEGIN
+
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, OBJECT-IDENTITY,
+    Counter32, Integer32 FROM SNMPv2-SMI
+    DisplayString FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP FROM SNMPv2-CONF
+    mib-2 FROM RFC1213-MIB;
+
+
+mdmMIB MODULE-IDENTITY
+    LAST-UPDATED "9406120000Z"
+    ORGANIZATION "IETF Modem Management Working Group"
+    CONTACT-INFO
+            "        Steven Waldbusser
+             Postal: Carnegie Mellon University
+                     5000 Forbes Ave
+                     Pittsburgh, PA, 15213
+                     US
+
+                Tel: +1 412 268 6628
+                Fax: +1 412 268 4987
+             E-mail: waldbusser@cmu.edu"
+    DESCRIPTION
+            "The MIB module for management of dial-up modems."
+    ::= { mdmMib 1 }
+
+mdmMib OBJECT IDENTIFIER ::= { mib-2 38 }
+
+mdmMIBObjects OBJECT IDENTIFIER ::= { mdmMIB 1 }
+
+
+-- conformance information
+
+mdmConformance OBJECT IDENTIFIER ::= { mdmMIB 2 }
+
+mdmCompliances OBJECT IDENTIFIER ::= { mdmConformance 1 }
+mdmGroups      OBJECT IDENTIFIER ::= { mdmConformance 2 }
+
+-- units of conformance
+
+mdmIDGroup    OBJECT-GROUP
+    OBJECTS   { mdmIDManufacturerOID, mdmIDProductDetails }
+    STATUS    current
+    DESCRIPTION
+            "A collection of objects that identify the manufacturer and
+            model information for a modem."
+    ::= { mdmGroups 1 }
+
+mdmLineInterfaceGroup    OBJECT-GROUP
+    OBJECTS { mdmLineCarrierLossTime,
+        mdmLineState, mdmLineCapabilitiesID,
+        mdmLineCapabilitiesEnableRequested,
+        mdmLineCapabilitiesEnableGranted }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects that describe the configuration and
+            state of the modem's line interface."
+    ::= { mdmGroups 2 }
+
+mdmDTEInterfaceGroup    OBJECT-GROUP
+    OBJECTS { mdmDTEActionDTROnToOff, mdmDTEActionDTROffToOn,
+                mdmDTESyncTimingSource, mdmDTESyncAsyncMode,
+                mdmDTEInactivityTimeout }
+    STATUS      current
+    DESCRIPTION
+            "A collection of objects that describe the configuration and
+            state of the modem's DTE interface."
+    ::= { mdmGroups 3 }
+
+mdmCallControlGroup    OBJECT-GROUP
+    OBJECTS { mdmCCRingsBeforeAnswer,
+        mdmCCCallSetUpFailTimer, mdmCCResultCodeEnable,
+        mdmCCEscapeAction, mdmCCCallDuration,
+        mdmCCConnectionFailReason, mdmCCStoredDialString }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects that describe the configuration of
+            call control capabilities on the modem and the status of
+            calls placed with this modem."
+    ::= { mdmGroups 4 }
+
+mdmErrorControlGroup   OBJECT-GROUP
+    OBJECTS { mdmECErrorControlUsed }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects that describe the configuration and
+            state of error control on a modem."
+    ::= { mdmGroups 5 }
+
+mdmDataCompressionGroup   OBJECT-GROUP
+    OBJECTS { mdmDCCompressionTypeUsed }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects that describe the configuration and
+            state of data compression on a modem."
+    ::= { mdmGroups 6 }
+
+mdmSignalConvertorGroup   OBJECT-GROUP
+OBJECTS { mdmSCCurrentLineReceiveRate, mdmSCCurrentLineTransmitRate,
+          mdmSCInitialLineReceiveRate, mdmSCInitialLineTransmitRate,
+          mdmSCModulationSchemeUsed }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects that describe the configuration and
+            state of error control on a modem."
+    ::= { mdmGroups 7 }
+
+mdmStatisticsGroup  OBJECT-GROUP
+    OBJECTS { mdmStatsRingNoAnswers,
+        mdmStatsIncomingConnectionFailures,
+        mdmStatsIncomingConnectionCompletions,
+        mdmStatsFailedDialAttempts,
+        mdmStatsOutgoingConnectionFailures,
+        mdmStatsOutgoingConnectionCompletions,
+        mdmStatsRetrains,
+        mdmStats2400OrLessConnections, mdmStats2400To14400Connections,
+        mdmStatsGreaterThan14400Connections,
+        mdmStatsErrorControlledConnections,
+        mdmStatsCompressedConnections,
+        mdmStatsCompressionEfficiency,
+        mdmStatsSentOctets, mdmStatsReceivedOctets,
+        mdmStatsSentDataFrames, mdmStatsReceivedDataFrames,
+        mdmStatsResentFrames, mdmStatsErrorFrames }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects that describe the state of calls on
+            this modem."
+    ::= { mdmGroups 8 }
+
+mdmNumber OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of modem rows in the modem table.  This value
+            defines the maximum value of the mdmIndex object."
+    ::= { mdmMIBObjects 1 }
+
+-- The modem ID table.
+
+mdmIDTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MdmIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The base table for the modems managed by this MIB.  The
+            mdmLineTable, mdmDTEInterfaceTable, mdmCallControlTable, and
+            mdmStatsTable all augment the rows defined in this table."
+    ::= { mdmMIBObjects 2 }
+
+mdmIDEntry OBJECT-TYPE
+    SYNTAX      MdmIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entries in this table are created only by the agent. One
+            entry exists for each modem managed by the agent."
+    INDEX       { mdmIndex }
+    ::= { mdmIDTable 1 }
+
+MdmIDEntry ::= SEQUENCE {
+    mdmIndex                Integer32,
+    mdmIDManufacturerOID    OBJECT IDENTIFIER,
+    mdmIDProductDetails     DisplayString
+}
+
+mdmIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A unique number for each modem that ranges from 1 to
+            mdmNumber.  The value must remain constant at least from one
+            re-initialization of the network management agent to the
+            next."
+    ::= { mdmIDEntry 1 }
+
+mdmIDManufacturerOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This value is intended to identify the manufacturer, model,
+            and version of this modem.  This may be used to identify the
+            existance of enterprise-specific functions and behaviours."
+    REFERENCE
+            "V.58 attribute manufacturerID subfield ManufacturerOI"
+    ::= { mdmIDEntry 2 }
+
+mdmIDProductDetails OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..79))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "A textual description of this device, including the
+            manufacturer's name, modem model name, hardware revision,
+            firmware revision, and optionally, its serial number.  The
+            exact format of this description is defined by the vendor.
+            This description may only contain characters from the NVT
+            ASCII character set."
+    REFERENCE
+            "V.58 attribute manufacturerID subfield productDetails"
+    ::= { mdmIDEntry 3 }
+
+-- The modem Line Interface Table
+
+mdmLineTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MdmLineEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The modem Line Table augments the modem ID table."
+    ::= { mdmMIBObjects 3 }
+
+mdmLineEntry OBJECT-TYPE
+    SYNTAX      MdmLineEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entries in this table are created only by the agent. One
+            entry exists for each modem managed by the agent."
+    AUGMENTS    { mdmIDEntry }
+    ::= { mdmLineTable 1 }
+
+MdmLineEntry ::= SEQUENCE {
+    mdmLineCarrierLossTime          Integer32,
+    mdmLineState                    INTEGER
+}
+
+mdmLineCarrierLossTime OBJECT-TYPE
+    SYNTAX      Integer32 (1..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Duration in 10ths of a second the modem waits after loss of
+            carrier before hanging up.  If this value is set to `255',
+            the modem will not hang up upon loss of carrier.  This
+            allows the modem to distinguish between a momentary lapse in
+            line quality and a true disconnect and can be useful to tune
+            the tolerance of the modem to lines of poor quality."
+    REFERENCE "V.58 lineSignalFailDisconnectTimer"
+    ::= { mdmLineEntry 1 }
+
+mdmLineState OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    unknown(1),
+                    onHook(2),
+                    offHook(3),  -- and not connected
+                    connected(4),
+                    busiedOut(5),
+                    reset(6)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Allows the inspection and alteration of the state of the
+            modem.  Management commands may change the state to `on-
+            hook', `busied-out', or `reset' from any state.  No other
+            alterations are permitted from the management protocol.
+            When this object is set to reset, the modem shall be reset
+            and the value will change to the modem's new, implementation
+            dependent state."
+    ::= { mdmLineEntry 2 }
+
+mdmLineCapabilitiesTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MdmLineCapabilitiesEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of protocol capabilities for this modem."
+    ::= { mdmMIBObjects 4 }
+
+mdmLineCapabilitiesEntry OBJECT-TYPE
+    SYNTAX      MdmLineCapabilitiesEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A listing of the protocol(s) that this modem is capable of.
+            Entries in this table are created only by the agent.  One
+            entry exists for each protocol that the modem is capable of,
+            regardless of whether that protocol is enabled or not.
+
+            This table is useful for providing an inventory of the
+            capabilities on a modem, and allowing the manager to enable
+            or disable capabilities from the menu of available
+            possibilities.  Row creation is not required to enable or
+            disable capabilities."
+    INDEX       { mdmIndex, mdmLineCapabilitiesIndex }
+    ::= { mdmLineCapabilitiesTable 1 }
+
+MdmLineCapabilitiesEntry ::= SEQUENCE {
+    mdmLineCapabilitiesIndex            Integer32,
+    mdmLineCapabilitiesID               OBJECT IDENTIFIER,
+    mdmLineCapabilitiesEnableRequested  INTEGER,
+    mdmLineCapabilitiesEnableGranted    INTEGER
+}
+
+mdmLineCapabilitiesIndex OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A unique index for this capabilities entry."
+    ::= { mdmLineCapabilitiesEntry 1 }
+
+mdmLineCapabilitiesID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "An identifier for this capability.  Standard protocol
+            capabilities will have identifiers registered in this
+            document or other companion standards documents.
+            Proprietary protocol capabilities will be registered by
+            their respective organization.  All capabilities, standard
+            or vendor-specific, shall be registered in this table."
+    ::= { mdmLineCapabilitiesEntry 2 }
+
+mdmLineCapabilitiesEnableRequested OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    disabled(1),
+                    optional(2),
+                    preferred(3)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The requested configuration of this capability.  If this
+            value is 'disabled(1)', this is a request to disable this
+            protocol.  If this value is 'preferred(3)', this is a
+            request to enable this protocol, and to prefer it in any
+            negotiation over other appropriate protocols that have a
+            value of 'optional(2)'."
+    DEFVAL      { preferred }
+    ::= { mdmLineCapabilitiesEntry 3 }
+
+mdmLineCapabilitiesEnableGranted OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    disabled(1),
+                    optional(2),
+                    preferred(3)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The actual configuration of this capability.  The agent
+            shall attempt to set this as close as possible to the
+            associated mdmLineCapabilitiesEnableRequested value.  The
+            agent shall make this determination in an implementation-
+            specific manner that may take into account the configuration
+            of other capabilities or other considerations.  The modem
+            will choose in an implementation-specific manner between
+            multiple mutually-exclusive capabilities that each have the
+            same (non-disabled) value.  However, the modem must prefer
+            all capabilities with a value of 'preferred(3)' over all
+            capabilities with a value of 'optional(2)'.
+
+            In other words, if there are one or more mutually-exclusive
+            capabilities (e.g. V.32 and V.32bis) that are set to
+            `preferred', the agent must choose one in an
+            implementation-specific manner.  Otherwise, if there are one
+            or more mutually-exclusive capabilities that are set to
+            `optional', the agent must choose one in an implementation-
+            specific manner."
+    ::= { mdmLineCapabilitiesEntry 4 }
+
+mdmLineCapabilities   OBJECT IDENTIFIER ::= { mdmMIBObjects 5 }
+
+mdmLineCapabilitiesV21 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.21"
+    ::= { mdmLineCapabilities 1 }
+
+mdmLineCapabilitiesV22 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.22"
+    ::= { mdmLineCapabilities 2 }
+
+mdmLineCapabilitiesV22bis OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.22bis"
+    ::= { mdmLineCapabilities 3 }
+
+mdmLineCapabilitiesV23CC OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.23CC"
+    ::= { mdmLineCapabilities 4 }
+
+mdmLineCapabilitiesV23SC OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.23SC"
+    ::= { mdmLineCapabilities 5 }
+
+mdmLineCapabilitiesV25bis OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.25bis"
+    ::= { mdmLineCapabilities 6 }
+
+mdmLineCapabilitiesV26bis OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.26bis"
+    ::= { mdmLineCapabilities 7 }
+
+mdmLineCapabilitiesV26ter OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.26ter"
+    ::= { mdmLineCapabilities 8 }
+
+mdmLineCapabilitiesV27ter OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.27ter"
+    ::= { mdmLineCapabilities 9 }
+
+mdmLineCapabilitiesV32 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.32"
+    ::= { mdmLineCapabilities 10 }
+
+mdmLineCapabilitiesV32bis OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.32bis"
+    ::= { mdmLineCapabilities 11 }
+
+mdmLineCapabilitiesV32terbo OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.32terbo"
+    ::= { mdmLineCapabilities 12 }
+
+mdmLineCapabilitiesVFC OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.FC"
+    ::= { mdmLineCapabilities 13 }
+
+mdmLineCapabilitiesV34 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.34"
+    ::= { mdmLineCapabilities 14 }
+
+mdmLineCapabilitiesV42 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.42"
+    ::= { mdmLineCapabilities 15 }
+
+mdmLineCapabilitiesV42bis OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.42bis"
+    ::= { mdmLineCapabilities 16 }
+
+mdmLineCapabilitiesMNP1 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "MNP1"
+    ::= { mdmLineCapabilities 17 }
+
+mdmLineCapabilitiesMNP2 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "MNP2"
+    ::= { mdmLineCapabilities 18 }
+
+mdmLineCapabilitiesMNP3 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "MNP3"
+    ::= { mdmLineCapabilities 19 }
+
+mdmLineCapabilitiesMNP4 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "MNP4"
+    ::= { mdmLineCapabilities 20 }
+
+mdmLineCapabilitiesMNP5 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "MNP5"
+    ::= { mdmLineCapabilities 21 }
+
+mdmLineCapabilitiesMNP6 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "MNP6"
+    ::= { mdmLineCapabilities 22 }
+
+mdmLineCapabilitiesMNP7 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "MNP7"
+    ::= { mdmLineCapabilities 23 }
+
+mdmLineCapabilitiesMNP8 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "MNP8"
+    ::= { mdmLineCapabilities 24 }
+
+mdmLineCapabilitiesMNP9 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "MNP9"
+    ::= { mdmLineCapabilities 25 }
+
+mdmLineCapabilitiesMNP10 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "MNP10"
+    ::= { mdmLineCapabilities 26 }
+
+mdmLineCapabilitiesV29 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.29"
+    ::= { mdmLineCapabilities 27 }
+
+mdmLineCapabilitiesV33 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "ITU V.33"
+    ::= { mdmLineCapabilities 28 }
+
+mdmLineCapabilitiesBell208 OBJECT-IDENTITY
+    STATUS  current
+    DESCRIPTION
+            "Bell 208"
+    ::= { mdmLineCapabilities 29 }
+
+
+-- DTE Interface Table
+
+mdmDTEInterfaceTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MdmDTEInterfaceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The modem DTE Interface Table augments the modem ID table."
+    ::= { mdmMIBObjects 6 }
+
+mdmDTEInterfaceEntry OBJECT-TYPE
+    SYNTAX      MdmDTEInterfaceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entries in this table are created only by the agent. One
+            entry exists for each modem managed by the agent."
+    AUGMENTS    { mdmIDEntry }
+    ::= { mdmDTEInterfaceTable 1 }
+
+MdmDTEInterfaceEntry ::= SEQUENCE {
+    mdmDTEActionDTROnToOff      INTEGER,
+    mdmDTEActionDTROffToOn      INTEGER,
+    mdmDTESyncTimingSource      INTEGER,
+    mdmDTESyncAsyncMode         INTEGER,
+    mdmDTEInactivityTimeout     Integer32
+}
+
+mdmDTEActionDTROnToOff OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    ignore(1),
+                    escapeToCommandMode(2),
+                    disconnectCall(3),
+                    resetModem(4)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Defines the action the modem will take when DTR drops.
+
+            If the value is set to ignore(1), the modem takes no action
+            when DTR drops.  Typically, mdmDTEActionDTROffToOn would
+            also be set to ignore(1) if this object is set to ignore(1).
+
+            If the value is escapeToCommandMode(2), the modem remains
+            connected and enters command mode.  If the value is
+            disconnectCall(3), the current call (if any) is terminated
+            and the modem will not auto-answer while DTR is off.  If the
+            value is resetModem(4), the current call (if any) is
+            terminated and the modem is reset."
+    DEFVAL      { disconnectCall }
+    ::= { mdmDTEInterfaceEntry 1 }
+
+mdmDTEActionDTROffToOn OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    ignore(1),
+                    enableDial(2),
+                    autoAnswerEnable(3),
+                    establishConnection(4)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Defines the action the modem will take when DTR is raised.
+
+            If the value is set to ignore(1), the modem takes no action
+            when DTR is raised.  Typically, mdmDTEActionDTROnToOff would
+            also be set to ignore(1) if this object is set to ignore(1).
+
+            If the value is set to enableDial(2), the modem prepares to
+            dial an outgoing call.  If the value is set to
+            autoAnswerEnable(3), the modem will be configured to answer
+            any incoming call.  If the value is set to
+            establishConnection(4), the modem dials an implementation
+            specific number.
+
+            Immediately after any reset or power-on of the modem, if the
+            DTR is high, the action specified here will be executed."
+    DEFVAL      { autoAnswerEnable }
+    ::= { mdmDTEInterfaceEntry 2 }
+
+mdmDTESyncTimingSource OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    internal(1),
+                    external(2),
+                    loopback(3),
+                    network(4)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The clock source for synchronous transmissions.  If set to
+            internal(1), the modem is the clock source and sends the
+            clock signals to the DTE.  If set to external(2), the
+            transmit clock signals are provided by the DTE.  If
+            loopback(3), the modem receiver clock is used for the
+            transmit clock.  If network(4), the clock signals are
+            supplied by the DCE interface.
+
+            If the modem is not in synchronous mode, setting this object
+            will have no effect on the current operations of the modem."
+    REFERENCE   "V.58 transmitClockSource"
+    DEFVAL      { internal }
+    ::= { mdmDTEInterfaceEntry 3 }
+
+mdmDTESyncAsyncMode OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    async(1),
+                    sync(2),
+                    syncAfterDial(3)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The operational mode of the modem.  If the value is
+            syncAfterDial(3), the modem will accept commands in
+            asynchronous mode and change to synchronous mode to pass
+            data after a dial sequence has been executed."
+    DEFVAL      { async }
+    ::= { mdmDTEInterfaceEntry 4 }
+
+mdmDTEInactivityTimeout OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The amount of idle time in minutes that the modem will wait
+            before disconnecting a connection.  When a call is connected
+            and no data is transferred (continuous marking condition) on
+            both circuits 103 and 104 for the specified time, the DCE
+            disconnects the call. If the value is 0, no idle disconnect
+            will occur.  This function applies to asynchronous dial
+            operations only and is intended for administrative control
+            over idle connections."
+    REFERENCE   "V.58 inactivityTimerSelect"
+    DEFVAL { 0 }
+    ::= { mdmDTEInterfaceEntry 5 }
+
+
+-- The Call Control Table
+
+mdmCallControlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MdmCallControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The modem Call Control Table augments the modem ID table."
+    ::= { mdmMIBObjects 7 }
+
+mdmCallControlEntry OBJECT-TYPE
+    SYNTAX      MdmCallControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entries in this table are created only by the agent. One
+            entry exists for each modem managed by the agent."
+    AUGMENTS    { mdmIDEntry }
+    ::= { mdmCallControlTable 1 }
+
+MdmCallControlEntry ::= SEQUENCE {
+    mdmCCRingsBeforeAnswer      Integer32,
+    mdmCCCallSetUpFailTimer     Integer32,
+    mdmCCResultCodeEnable       INTEGER,
+    mdmCCEscapeAction           INTEGER,
+    mdmCCCallDuration           Integer32,
+    mdmCCConnectionFailReason   INTEGER
+}
+
+mdmCCRingsBeforeAnswer OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Determines which ring the modem will wait to answer the
+            phone on.  If this value is `0', the modem will not go
+            offhook and answer a call when a ring signal is detected."
+    REFERENCE   "V.58 ringsBeforeAnswer"
+    DEFVAL      { 1 }
+    ::= { mdmCallControlEntry 1 }
+
+mdmCCCallSetUpFailTimer OBJECT-TYPE
+    SYNTAX      Integer32 (0..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "This parameter specifies the amount of time, in seconds,
+            that the modem shall allow between either answering a call
+            (automatically or manually) or completion of dialing, and
+            establishment of a connection with the remote modem. If no
+            connection is established during this time, the modem
+            disconnects from the line and returns a result code
+            indicating the cause of the disconnection. In TIA-602, this
+            is controlled by the value in the S7 register."
+    REFERENCE   "V.58 callSetUpFailTimer"
+    DEFVAL      { 30 }
+    ::= { mdmCallControlEntry 2 }
+
+mdmCCResultCodeEnable OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    disabled(1),
+                    numericEnabled(2),
+                    verboseEnabled(3)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "When disabled, the DCE shall issue no 'result codes' of any
+            kind to the DTE either in response to unsolicited events
+            (eg. ring signal), or commands. In TIA-602, this is
+            controlled by the ATQ command.  When numericEnabled, the DCE
+            shall issue result codes in numeric form.  When
+            verboseEnabled, the DCE shall issue result codes in a
+            verbose, textual form."
+    REFERENCE   "V.58 responseModeSelect"
+    DEFVAL      { verboseEnabled }
+    ::= { mdmCallControlEntry 3 }
+
+mdmCCEscapeAction OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    ignoreEscape(1),
+                    hangUp(2),
+                    enterCommandMode(3)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The modem's action upon successfully recognizing the
+            'escape to command mode' character sequence."
+    DEFVAL { ignoreEscape }
+    ::= { mdmCallControlEntry 4 }
+
+-- Call status portion of the call control table
+
+mdmCCCallDuration OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Present or last completed connection time in seconds. If
+            there have been no previous connections, this value should
+            be -1."
+    ::= { mdmCallControlEntry 5 }
+
+
+mdmCCConnectionFailReason OBJECT-TYPE
+    SYNTAX      INTEGER {
+                -- General
+                        unknown(1),
+                        other(2),
+                        managementCommand(3),
+                        inactivityTimeout(4),
+                        mnpIncompatibility(5),
+                        protocolError(6),
+                -- DCE
+                        powerLoss(10),
+                        equipmentFailure(11),
+                -- DTE Interface
+                        dtrDrop(20),
+                -- Line Interface
+                        noDialTone(30),
+                        lineBusy(31),
+                        noAnswer(32),
+                        voiceDetected(33),
+                -- Signal Converter
+                        carrierLost(40),
+                        trainingFailed(41),
+                        faxDetected(42)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+
+            "Indicates the reason that the last connection or attempt
+            failed. The meaning of each reason code is explained below.
+
+               unknown:
+            This code means the failure reason is unknown or
+            there has been no previous call.
+
+               other:
+            This code used when no other code is applicable.
+            Additional vendor information may be available
+            elsewhere.
+
+               managementCommand:
+            A management command terminated the call.  These
+            commands include escaping to command mode, initiating
+            dialing, restoring lines, and disconnecting.
+
+               inactivityTimeout:
+            The call was terminated because it was inactive for
+            at the minimum duration specified.
+
+               mnpIncompatibility:
+            The modems are unable to resolve MNP protocol
+            differences.
+
+               protocolError:
+            An error occured in one of protocol in use.  Further
+            information is required to determine in which
+            protocol the error occurred, and the exact nature of
+            the error.
+
+               powerLoss:
+            The modem lost power and disconnected the call.
+
+               equipmentFailure:
+            The modem equipment failed.
+
+               dtrDrop:
+            DTR has been turned off while the modem is to
+            disconnect on DTR drop. (Ref: V.58 cct108TurnedOff)
+
+               noDialTone:
+            If the modem is to monitor for call progress tones,
+            but the modem has failed to detect dial tone while
+            attempting to dial a number.
+
+               lineBusy:
+            Busy signal is detected while busy signal detection
+            is enabled, or while the 'W' or '@' dial modifier is
+            used. (Ref: V.58 engagedTone)
+
+               noAnswer:
+            The call was not answered.
+
+               voiceDetected:
+            A voice was detected on the call.
+
+               carrierLost:
+            Indicates that the modem has disconnected due to
+            detection of loss of carrier.  In TIA-602, the S10
+            register determines the time that loss of carrier
+            must be detected before the modem disconnects.
+
+               trainingFailed:
+            Indicates that the modems did not successfully train
+            and reach data mode on the previous connection.
+
+               faxDetected:
+            A fax was detected on the call."
+    REFERENCE   "V.58 callCleared"
+    ::= { mdmCallControlEntry 6 }
+
+-- The Stored Dial String table
+
+mdmCCStoredDialStringTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MdmCCStoredDialStringEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The table of stored dial strings."
+    REFERENCE   "V.58 telephoneNumbers"
+    ::= { mdmMIBObjects 8 }
+
+mdmCCStoredDialStringEntry OBJECT-TYPE
+    SYNTAX      MdmCCStoredDialStringEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A stored dial string."
+    INDEX  { mdmIndex, mdmCCStoredDialStringIndex }
+    ::= { mdmCCStoredDialStringTable 1 }
+
+MdmCCStoredDialStringEntry ::= SEQUENCE {
+    mdmCCStoredDialStringIndex     Integer32,
+    mdmCCStoredDialString          DisplayString
+}
+
+mdmCCStoredDialStringIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The unique index of a particular dial string."
+    ::= { mdmCCStoredDialStringEntry 1 }
+
+mdmCCStoredDialString OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(0..64))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "A dial string stored in the modem."
+    ::= { mdmCCStoredDialStringEntry 2 }
+
+-- The modem Error Correcting Group
+
+mdmECTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MdmECEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The modem error correcting table augments the modem ID
+            table."
+    ::= { mdmMIBObjects 9 }
+
+mdmECEntry OBJECT-TYPE
+    SYNTAX      MdmECEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entries in this table are created only by the agent. One
+            entry exists for each modem managed by the agent."
+    AUGMENTS    { mdmIDEntry }
+    ::= { mdmECTable 1 }
+
+MdmECEntry ::= SEQUENCE {
+    mdmECErrorControlUsed           OBJECT IDENTIFIER
+}
+
+mdmECErrorControlUsed OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Indicates the error control method used during the current
+            or previous call.  This shall be one of the values for error
+            control protocols registered in the capabilities table for
+            this modem.  If no error control protocol is in use, this
+            object shall have the value '{0 0}'."
+    REFERENCE   "V.58 errorControlActive"
+    ::= { mdmECEntry 1 }
+
+-- The modem Data Compression Group
+
+mdmDCTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MdmDCEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The modem data compression table augments the modem ID
+            table."
+    ::= { mdmMIBObjects 10 }
+
+mdmDCEntry OBJECT-TYPE
+    SYNTAX      MdmDCEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entries in this table are created only by the agent. One
+            entry exists for each modem managed by the agent."
+    AUGMENTS    { mdmIDEntry }
+    ::= { mdmDCTable 1 }
+
+MdmDCEntry ::= SEQUENCE {
+    mdmDCCompressionTypeUsed        OBJECT IDENTIFIER
+}
+
+mdmDCCompressionTypeUsed OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Indicates the data compression method used during the
+            current or previous call.  This shall be one of the values
+            for compression protocols registered in the capabilities
+            table for this modem.  If no compression protocol is in use,
+            this object shall have the value '{0 0}'."
+    ::= { mdmDCEntry 1 }
+
+-- The modem Signal Convertor Group
+
+mdmSCTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MdmSCEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The modem signal convertor table augments the modem ID
+            table."
+    ::= { mdmMIBObjects 11 }
+
+mdmSCEntry OBJECT-TYPE
+    SYNTAX      MdmSCEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entries in this table are created only by the agent. One
+            entry exists for each modem managed by the agent."
+    AUGMENTS    { mdmIDEntry }
+    ::= { mdmSCTable 1 }
+
+MdmSCEntry ::= SEQUENCE {
+    mdmSCCurrentLineTransmitRate        Integer32,
+    mdmSCCurrentLineReceiveRate         Integer32,
+    mdmSCInitialLineTransmitRate        Integer32,
+    mdmSCInitialLineReceiveRate         Integer32,
+    mdmSCModulationSchemeUsed           OBJECT IDENTIFIER
+}
+
+mdmSCCurrentLineTransmitRate OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The current link transmit rate of a connection, or the last
+            link transmit rate of the last connection in bits per
+            second."
+    REFERENCE   "V.58 transmissionSignallingRateActive"
+    ::= { mdmSCEntry 1 }
+
+mdmSCCurrentLineReceiveRate OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The current link receive rate of a connection, or the last
+            link receive rate of the last connection in bits per
+            second."
+    REFERENCE   "V.58 transmissionSignallingRateActive"
+    ::= { mdmSCEntry 2 }
+
+mdmSCInitialLineTransmitRate OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The initial link transmit rate of the current connection,
+            or the initial link transmit rate of the last connection in
+            bits per second."
+    ::= { mdmSCEntry 3 }
+
+mdmSCInitialLineReceiveRate OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The initial link receive rate of the current connection, or
+            the initial link receive rate of the last connection in bits
+            per second."
+    ::= { mdmSCEntry 4 }
+
+mdmSCModulationSchemeUsed OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The modulation scheme of the current or previous call.
+            This shall be one of the values for modulation protocols
+            registered in the capabilities table for this modem."
+    REFERENCE   "V.58 gstnModulationSchemeActive"
+    ::= { mdmSCEntry 5 }
+
+-- The Modem Statistics Table
+
+mdmStatsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MdmStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The modem statistics Table augments the modem ID table."
+    ::= { mdmMIBObjects 12 }
+
+mdmStatsEntry OBJECT-TYPE
+    SYNTAX      MdmStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entries in this table are created only by the agent. One
+            entry exists for each modem managed by the agent."
+    AUGMENTS    { mdmIDEntry }
+    ::= { mdmStatsTable 1 }
+
+MdmStatsEntry ::= SEQUENCE {
+    mdmStatsRingNoAnswers                   Counter32,
+    mdmStatsIncomingConnectionFailures      Counter32,
+    mdmStatsIncomingConnectionCompletions   Counter32,
+    mdmStatsFailedDialAttempts              Counter32,
+    mdmStatsOutgoingConnectionFailures      Counter32,
+    mdmStatsOutgoingConnectionCompletions   Counter32,
+    mdmStatsRetrains                        Counter32,
+    mdmStats2400OrLessConnections           Counter32,
+    mdmStats2400To14400Connections          Counter32,
+    mdmStatsGreaterThan14400Connections     Counter32,
+    mdmStatsErrorControlledConnections      Counter32,
+    mdmStatsCompressedConnections           Counter32,
+    mdmStatsCompressionEfficiency           Integer32,
+    mdmStatsSentOctets                      Counter32,
+    mdmStatsReceivedOctets                  Counter32,
+    mdmStatsSentDataFrames                  Counter32,
+    mdmStatsReceivedDataFrames              Counter32,
+    mdmStatsResentFrames                    Counter32,
+    mdmStatsErrorFrames                     Counter32
+}
+
+mdmStatsRingNoAnswers OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of events in which ringing was detected but the
+            call was not answered."
+    ::= { mdmStatsEntry 1 }
+
+mdmStatsIncomingConnectionFailures OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of incoming connection requests that this modem
+            answered in which it could not train with the other DCE."
+    ::= { mdmStatsEntry 2 }
+
+mdmStatsIncomingConnectionCompletions OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of incoming connection requests that this modem
+            answered and successfully trained with the other DCE."
+    ::= { mdmStatsEntry 3 }
+
+mdmStatsFailedDialAttempts OBJECT-TYPE
+        SYNTAX          Counter32
+        MAX-ACCESS  read-only
+        STATUS          current
+        DESCRIPTION
+                "The number of call attempts that failed because the modem
+        didn't go off hook, or there was no dialtone."
+        ::= { mdmStatsEntry 4 }
+
+mdmStatsOutgoingConnectionFailures OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of outgoing calls from this modem which
+            sucessfully went off hook and dialed, in which it could not
+            train with the other DCE."
+    ::= { mdmStatsEntry 5 }
+
+mdmStatsOutgoingConnectionCompletions OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of outgoing calls from this modem which resulted
+            in successfully training with the other DCE."
+    ::= { mdmStatsEntry 6 }
+
+mdmStatsRetrains OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of retrains experienced on connections on this
+            line."
+    ::= { mdmStatsEntry 7 }
+
+
+-- Utilization counters
+
+mdmStats2400OrLessConnections OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of connections initially established at a
+            modulation speed of 2400 bits per second or less."
+    ::= { mdmStatsEntry 8 }
+
+
+mdmStats2400To14400Connections OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of connections initially established at a
+            modulation speed of greater than 2400 bits per second and
+            less than 14400 bits per second."
+    ::= { mdmStatsEntry 9 }
+
+mdmStatsGreaterThan14400Connections OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of connections initially established at a
+            modulation speed of greater than 14400 bits per second."
+    ::= { mdmStatsEntry 10 }
+
+mdmStatsErrorControlledConnections OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of established connections using an error
+            control protocol."
+    ::= { mdmStatsEntry 11 }
+
+mdmStatsCompressedConnections OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of established connections using a compression
+            protocol."
+    ::= { mdmStatsEntry 12 }
+
+mdmStatsCompressionEfficiency OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of bytes transferred into the compression
+            encoder divided by the number of bytes transferred out of
+            the encoder, multiplied by 100 for either the current or
+            last call.  If a data compression protocol is not in use,
+            this value shall be `100'."
+    REFERENCE   "V.58 compressionEfficiency"
+    ::= { mdmStatsEntry 13 }
+
+mdmStatsSentOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of octets presented to the modem by the DTE."
+    ::= { mdmStatsEntry 14 }
+
+mdmStatsReceivedOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of octets presented to the DTE by the modem."
+    ::= { mdmStatsEntry 15 }
+
+mdmStatsSentDataFrames OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of data frames sent on the line interface.  If
+            there is no frame-oriented protocol in use on the line
+            interface, this counter shall not increment."
+    ::= { mdmStatsEntry 16 }
+
+mdmStatsReceivedDataFrames OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of data frames received on the line interface.
+            If there is no frame-oriented protocol in use on the line
+            interface, this counter shall not increment."
+    ::= { mdmStatsEntry 17 }
+
+mdmStatsResentFrames OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of times this modem retransmits frames on the
+            line interface.  If there is no frame-oriented protocol in
+            use on the line interface, this counter shall not
+            increment."
+    ::= { mdmStatsEntry 18 }
+
+mdmStatsErrorFrames OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of block errors received on the link.  If there
+            is no frame-oriented protocol in use on the line interface,
+            this counter shall not increment."
+    ::= { mdmStatsEntry 19 }
+
+
+-- compliance statements
+
+mdmCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for SNMPv2 entities which
+            implement the modem MIB."
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { mdmIDGroup, mdmLineInterfaceGroup,
+                mdmDTEInterfaceGroup, mdmCallControlGroup,
+                mdmSignalConvertorGroup, mdmStatisticsGroup }
+
+        GROUP   mdmErrorControlGroup
+        DESCRIPTION
+            "This group is mandatory only for those modems that
+            implement an error correction protocol."
+
+        GROUP mdmDataCompressionGroup
+        DESCRIPTION
+            "This group is mandatory only for those modems that
+            implement a data compression protocol."
+    ::= { mdmCompliances 1 }
+
+
+END

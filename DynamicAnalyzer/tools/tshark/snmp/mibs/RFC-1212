@@ -1,0 +1,75 @@
+RFC-1212 DEFINITIONS ::= BEGIN
+
+          IMPORTS
+              ObjectName
+                  FROM RFC1155-SMI;
+--            DisplayString
+--                FROM RFC1158-MIB;
+
+          OBJECT-TYPE MACRO ::=
+          BEGIN
+              TYPE NOTATION ::=
+                                          -- must conform to
+                                          -- RFC1155's ObjectSyntax
+                                "SYNTAX" type(ObjectSyntax)
+                                "ACCESS" Access
+                                "STATUS" Status
+                                DescrPart
+                                ReferPart
+                                IndexPart
+                                DefValPart
+              VALUE NOTATION ::= value (VALUE ObjectName)
+
+              Access ::= "read-only"
+                              | "read-write"
+                              | "write-only"
+                              | "not-accessible"
+              Status ::= "mandatory"
+                              | "optional"
+                              | "obsolete"
+                              | "deprecated"
+
+              DescrPart ::=
+                         "DESCRIPTION" value (description DisplayString)
+                              | empty
+
+              ReferPart ::=
+                         "REFERENCE" value (reference DisplayString)
+                              | empty
+
+              IndexPart ::=
+                         "INDEX" "{" IndexTypes "}"
+                              | empty
+              IndexTypes ::=
+                         IndexType | IndexTypes "," IndexType
+              IndexType ::=
+                                  -- if indexobject, use the SYNTAX
+                                  -- value of the correspondent
+                                  -- OBJECT-TYPE invocation
+                         value (indexobject ObjectName)
+                                  -- otherwise use named SMI type
+                                  -- must conform to IndexSyntax below
+                              | type (indextype)
+
+              DefValPart ::=
+                         "DEFVAL" "{" value (defvalue ObjectSyntax) "}"
+                              | empty
+
+          END
+
+          IndexSyntax ::=
+              CHOICE {
+                  number
+                      INTEGER (0..MAX),
+                  string
+                      OCTET STRING,
+                  object
+                      OBJECT IDENTIFIER,
+                  address
+                      NetworkAddress,
+                  ipAddress
+                      IpAddress
+              }
+
+END
+

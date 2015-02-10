@@ -1,0 +1,177 @@
+TOKENRING-STATION-SR-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE
+                                         FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, RowStatus, MacAddress
+                                         FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP      FROM SNMPv2-CONF
+    mib-2, ifIndex                       FROM RFC1213-MIB;
+
+dot5SrMIB MODULE-IDENTITY
+    LAST-UPDATED "9412161000Z"
+    ORGANIZATION "IETF Interfaces MIB Working Group"
+    CONTACT-INFO
+            "       Keith McCloghrie
+            Postal: Cisco Systems, Inc.
+                    170 West Tasman Drive
+                    San Jose, CA  95134-1706
+                    US
+
+             Phone: +1 408 526 5260
+             Email: kzm@cisco.com"
+    DESCRIPTION
+            "The MIB module for managing source routes in
+            end-stations on IEEE 802.5 Token Ring networks."
+    ::= { mib-2 42 }
+dot5SrMIBObjects OBJECT IDENTIFIER ::= { dot5SrMIB 1 }
+
+SourceRoute ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "1x:"
+    STATUS       current
+    DESCRIPTION
+                 "Represents a Source Route, containing an
+                 embedded sequence of bridge and ring ID's,
+                 as used by 802.5 Source Routing."
+    REFERENCE    "Annex C of ISO/IEC 10038: 1993,
+                 [ANSI/IEEE Std 802.1D, 1993]"
+    SYNTAX       OCTET STRING (SIZE(0..30))
+
+
+--           The 802.5 Station Source Route Table
+--
+
+dot5SrRouteTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Dot5SrRouteEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+               "The table of source-routing routes.
+               This represents the 802.5 RIF database."
+    ::= { dot5SrMIBObjects 1 }
+
+dot5SrRouteEntry  OBJECT-TYPE
+    SYNTAX      Dot5SrRouteEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "Information on a specific route.
+
+                An entry is created whenever a 'Single Path
+                Explorer' or an 'All Paths Explorer' discovers
+                a route to a neighbor not currently in the table,
+                or whenever an 'All Paths Explorer' discovers a
+                better (e.g., shorter) route than the route currently
+                stored in the table.  This is done on behalf of
+                any network layer client.
+
+                The ifIndex value in the INDEX clause refers to
+                the value of MIB-II's ifIndex object for the
+                interface on which the route is in effect."
+    INDEX  { ifIndex, dot5SrRouteDestination }
+    ::= { dot5SrRouteTable 1 }
+
+Dot5SrRouteEntry ::= SEQUENCE {
+    dot5SrRouteDestination   MacAddress,
+    dot5SrRouteControl       OCTET STRING,
+    dot5SrRouteDescr         SourceRoute,
+    dot5SrRouteStatus        RowStatus
+}
+
+dot5SrRouteDestination  OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+               "The destination of this route."
+    ::= { dot5SrRouteEntry 2 }
+
+dot5SrRouteControl  OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(2))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+               "The value of Routing Control field for this
+               route."
+    REFERENCE  "Annex C of ISO/IEC 10038: 1993,
+               [ANSI/IEEE Std 802.1D, 1993]"
+    ::= { dot5SrRouteEntry 3 }
+
+dot5SrRouteDescr  OBJECT-TYPE
+    SYNTAX      SourceRoute
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+               "The embedded sequence of bridge and ring ID's
+               for this route.  For destinations on the
+               local ring, the value of this object is
+               the zero-length string."
+    REFERENCE  "Annex C of ISO/IEC 10038: 1993,
+               [ANSI/IEEE Std 802.1D, 1993]"
+    ::= { dot5SrRouteEntry 4 }
+
+dot5SrRouteStatus  OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+             "The status of this row.  Values of the instances
+             of dot5SrRouteControl and dot5SrRouteDescr can be
+             modified while the row's status is 'active."
+    ::= { dot5SrRouteEntry 5 }
+
+-- conformance information
+
+dot5SrConformance OBJECT IDENTIFIER ::= { dot5SrMIB 2 }
+
+dot5SrGroups      OBJECT IDENTIFIER ::= { dot5SrConformance 1 }
+dot5SrCompliances OBJECT IDENTIFIER ::= { dot5SrConformance 2 }
+
+
+-- compliance statements
+
+dot5SrCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for SNMPv2 entities
+        which implement the IEEE 802.5 Station Source Route
+        MIB."
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { dot5SrRouteGroup }
+
+        OBJECT      dot5SrRouteStatus
+        SYNTAX      INTEGER { active(1) }   -- subset of values
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required, and only the 'active'
+            value need be supported."
+
+        OBJECT      dot5SrRouteControl
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      dot5SrRouteDescr
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+    ::= { dot5SrCompliances 1 }
+
+
+-- units of conformance
+
+dot5SrRouteGroup  OBJECT-GROUP
+    OBJECTS   { dot5SrRouteControl,
+                dot5SrRouteDescr,
+                dot5SrRouteStatus
+              }
+    STATUS    current
+    DESCRIPTION
+        "A collection of objects providing for the management of
+        source routes in stations on IEEE 802.5 source-routing
+        networks."
+    ::= { dot5SrGroups 1 }
+
+END

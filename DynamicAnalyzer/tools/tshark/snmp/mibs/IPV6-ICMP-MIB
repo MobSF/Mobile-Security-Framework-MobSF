@@ -1,0 +1,529 @@
+ IPV6-ICMP-MIB DEFINITIONS ::= BEGIN
+
+ IMPORTS
+     MODULE-IDENTITY, OBJECT-TYPE,
+     Counter32, mib-2                 FROM SNMPv2-SMI
+     MODULE-COMPLIANCE, OBJECT-GROUP  FROM SNMPv2-CONF
+     ipv6IfEntry                      FROM IPV6-MIB;
+
+ ipv6IcmpMIB MODULE-IDENTITY
+     LAST-UPDATED "9801082155Z"
+     ORGANIZATION "IETF IPv6 Working Group"
+     CONTACT-INFO
+       "           Dimitry Haskin
+
+           Postal: Bay Networks, Inc.
+                   660 Techology Park Drive.
+                   Billerica, MA  01821
+                   US
+
+              Tel: +1-978-916-8124
+           E-mail: dhaskin@baynetworks.com
+
+                   Steve Onishi
+
+           Postal: Bay Networks, Inc.
+                   3 Federal Street
+                   Billerica, MA 01821
+                   US
+
+              Tel: +1-978-916-3816
+           E-mail: sonishi@baynetworks.com"
+     DESCRIPTION
+       "The MIB module for entities implementing
+        the ICMPv6."
+     ::= { mib-2 56 }
+
+ -- the ICMPv6 group
+
+ ipv6IcmpMIBObjects OBJECT IDENTIFIER ::= { ipv6IcmpMIB  1 }
+
+
+ -- Per-interface ICMPv6 statistics table
+
+ ipv6IfIcmpTable OBJECT-TYPE
+     SYNTAX     SEQUENCE OF Ipv6IfIcmpEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+      "IPv6 ICMP statistics. This table contains statistics
+      of ICMPv6 messages that are received and sourced by
+      the entity."
+     ::= { ipv6IcmpMIBObjects 1 }
+
+ ipv6IfIcmpEntry OBJECT-TYPE
+     SYNTAX     Ipv6IfIcmpEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+      "An ICMPv6 statistics entry containing
+      objects at a particular IPv6 interface.
+
+      Note that a receiving interface is
+      the interface to which a given ICMPv6 message
+      is addressed which may not be necessarily
+      the input interface for the message.
+
+      Similarly,  the sending interface is
+      the interface that sources a given
+      ICMP message which is usually but not
+      necessarily the output interface for the message."
+     AUGMENTS { ipv6IfEntry }
+     ::= { ipv6IfIcmpTable 1 }
+
+ Ipv6IfIcmpEntry ::= SEQUENCE {
+         ipv6IfIcmpInMsgs
+               Counter32      ,
+         ipv6IfIcmpInErrors
+               Counter32      ,
+         ipv6IfIcmpInDestUnreachs
+               Counter32      ,
+         ipv6IfIcmpInAdminProhibs
+               Counter32      ,
+         ipv6IfIcmpInTimeExcds
+               Counter32      ,
+         ipv6IfIcmpInParmProblems
+               Counter32      ,
+         ipv6IfIcmpInPktTooBigs
+               Counter32      ,
+         ipv6IfIcmpInEchos
+               Counter32      ,
+         ipv6IfIcmpInEchoReplies
+               Counter32      ,
+         ipv6IfIcmpInRouterSolicits
+               Counter32      ,
+         ipv6IfIcmpInRouterAdvertisements
+               Counter32      ,
+         ipv6IfIcmpInNeighborSolicits
+               Counter32      ,
+         ipv6IfIcmpInNeighborAdvertisements
+               Counter32      ,
+         ipv6IfIcmpInRedirects
+               Counter32      ,
+         ipv6IfIcmpInGroupMembQueries
+               Counter32      ,
+         ipv6IfIcmpInGroupMembResponses
+               Counter32      ,
+         ipv6IfIcmpInGroupMembReductions
+               Counter32      ,
+         ipv6IfIcmpOutMsgs
+               Counter32      ,
+         ipv6IfIcmpOutErrors
+               Counter32      ,
+         ipv6IfIcmpOutDestUnreachs
+               Counter32      ,
+         ipv6IfIcmpOutAdminProhibs
+               Counter32      ,
+         ipv6IfIcmpOutTimeExcds
+               Counter32      ,
+         ipv6IfIcmpOutParmProblems
+               Counter32      ,
+         ipv6IfIcmpOutPktTooBigs
+               Counter32      ,
+         ipv6IfIcmpOutEchos
+               Counter32      ,
+         ipv6IfIcmpOutEchoReplies
+               Counter32      ,
+         ipv6IfIcmpOutRouterSolicits
+               Counter32      ,
+         ipv6IfIcmpOutRouterAdvertisements
+               Counter32      ,
+         ipv6IfIcmpOutNeighborSolicits
+               Counter32      ,
+         ipv6IfIcmpOutNeighborAdvertisements
+               Counter32      ,
+         ipv6IfIcmpOutRedirects
+               Counter32      ,
+         ipv6IfIcmpOutGroupMembQueries
+               Counter32      ,
+         ipv6IfIcmpOutGroupMembResponses
+               Counter32      ,
+         ipv6IfIcmpOutGroupMembReductions
+               Counter32
+     }
+
+ ipv6IfIcmpInMsgs OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The total number of ICMP messages received
+      by the interface which includes all those
+      counted by ipv6IfIcmpInErrors. Note that this
+      interface is the interface to which the
+      ICMP messages were addressed which may not be
+      necessarily the input interface for the messages."
+     ::= { ipv6IfIcmpEntry 1 }
+
+ ipv6IfIcmpInErrors OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP messages which the interface
+      received but determined as having ICMP-specific
+      errors (bad ICMP checksums, bad length, etc.)."
+     ::= { ipv6IfIcmpEntry 2 }
+
+ ipv6IfIcmpInDestUnreachs OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Destination Unreachable
+      messages received by the interface."
+     ::= { ipv6IfIcmpEntry 3 }
+
+ ipv6IfIcmpInAdminProhibs OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP destination
+      unreachable/communication administratively
+      prohibited messages received by the interface."
+     ::= { ipv6IfIcmpEntry 4 }
+
+ ipv6IfIcmpInTimeExcds OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Time Exceeded messages
+       received by the interface."
+     ::= { ipv6IfIcmpEntry 5 }
+
+ ipv6IfIcmpInParmProblems OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Parameter Problem messages
+       received by the interface."
+     ::= { ipv6IfIcmpEntry 6 }
+
+ ipv6IfIcmpInPktTooBigs OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Packet Too Big messages
+      received by the interface."
+     ::= { ipv6IfIcmpEntry 7 }
+
+ ipv6IfIcmpInEchos OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Echo (request) messages
+       received by the interface."
+     ::= { ipv6IfIcmpEntry 8 }
+
+ ipv6IfIcmpInEchoReplies OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Echo Reply messages received
+      by the interface."
+     ::= { ipv6IfIcmpEntry 9 }
+
+ ipv6IfIcmpInRouterSolicits OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Router Solicit messages
+       received by the interface."
+     ::= { ipv6IfIcmpEntry 10 }
+
+ ipv6IfIcmpInRouterAdvertisements OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Router Advertisement messages
+      received by the interface."
+     ::= { ipv6IfIcmpEntry 11 }
+
+ ipv6IfIcmpInNeighborSolicits OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Neighbor Solicit messages
+       received by the interface."
+     ::= { ipv6IfIcmpEntry 12 }
+
+ ipv6IfIcmpInNeighborAdvertisements OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Neighbor Advertisement
+      messages received by the interface."
+     ::= { ipv6IfIcmpEntry 13 }
+
+ ipv6IfIcmpInRedirects OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of Redirect messages received
+      by the interface."
+     ::= { ipv6IfIcmpEntry 14 }
+
+ ipv6IfIcmpInGroupMembQueries OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMPv6 Group Membership Query
+      messages received by the interface."
+     ::= { ipv6IfIcmpEntry 15}
+
+ ipv6IfIcmpInGroupMembResponses OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMPv6 Group Membership Response messages
+      received by the interface."
+     ::= { ipv6IfIcmpEntry 16}
+
+  ipv6IfIcmpInGroupMembReductions OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMPv6 Group Membership Reduction messages
+      received by the interface."
+     ::= { ipv6IfIcmpEntry 17}
+
+ ipv6IfIcmpOutMsgs OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The total number of ICMP messages which this
+      interface attempted to send.  Note that this counter
+      includes all those counted by icmpOutErrors."
+     ::= { ipv6IfIcmpEntry 18 }
+
+ ipv6IfIcmpOutErrors OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP messages which this interface did
+      not send due to problems discovered within ICMP
+      such as a lack of buffers.  This value should not
+      include errors discovered outside the ICMP layer
+      such as the inability of IPv6 to route the resultant
+      datagram.  In some implementations there may be no
+      types of error which contribute to this counter's
+      value."
+     ::= { ipv6IfIcmpEntry 19 }
+
+ ipv6IfIcmpOutDestUnreachs OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Destination Unreachable
+      messages sent by the interface."
+     ::= { ipv6IfIcmpEntry 20 }
+
+ ipv6IfIcmpOutAdminProhibs OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+       "Number of ICMP dest unreachable/communication
+       administratively prohibited messages sent."
+     ::= { ipv6IfIcmpEntry 21 }
+
+ ipv6IfIcmpOutTimeExcds OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Time Exceeded messages sent
+      by the interface."
+     ::= { ipv6IfIcmpEntry 22 }
+
+ ipv6IfIcmpOutParmProblems OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Parameter Problem messages
+      sent by the interface."
+     ::= { ipv6IfIcmpEntry 23 }
+
+ ipv6IfIcmpOutPktTooBigs OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Packet Too Big messages sent
+      by the interface."
+     ::= { ipv6IfIcmpEntry 24 }
+
+ ipv6IfIcmpOutEchos OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Echo (request) messages sent
+      by the interface."
+     ::= { ipv6IfIcmpEntry 25 }
+
+ ipv6IfIcmpOutEchoReplies OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Echo Reply messages sent
+      by the interface."
+     ::= { ipv6IfIcmpEntry 26 }
+
+ ipv6IfIcmpOutRouterSolicits OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Router Solicitation messages
+       sent by the interface."
+     ::= { ipv6IfIcmpEntry 27 }
+
+ ipv6IfIcmpOutRouterAdvertisements OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Router Advertisement messages
+      sent by the interface."
+     ::= { ipv6IfIcmpEntry 28 }
+
+ ipv6IfIcmpOutNeighborSolicits OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Neighbor Solicitation
+       messages sent by the interface."
+     ::= { ipv6IfIcmpEntry 29 }
+
+ ipv6IfIcmpOutNeighborAdvertisements OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMP Neighbor Advertisement
+      messages sent by the interface."
+     ::= { ipv6IfIcmpEntry 30 }
+
+ ipv6IfIcmpOutRedirects OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of Redirect messages sent. For
+      a host, this object will always be zero,
+      since hosts do not send redirects."
+     ::= { ipv6IfIcmpEntry 31 }
+
+ ipv6IfIcmpOutGroupMembQueries OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMPv6 Group Membership Query
+      messages sent."
+     ::= { ipv6IfIcmpEntry 32}
+
+ ipv6IfIcmpOutGroupMembResponses OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMPv6 Group Membership Response
+      messages sent."
+     ::= { ipv6IfIcmpEntry 33}
+
+ ipv6IfIcmpOutGroupMembReductions OBJECT-TYPE
+     SYNTAX     Counter32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+      "The number of ICMPv6 Group Membership Reduction
+      messages sent."
+     ::= { ipv6IfIcmpEntry 34}
+
+
+-- conformance information
+
+ipv6IcmpConformance OBJECT IDENTIFIER ::= { ipv6IcmpMIB 2 }
+
+ipv6IcmpCompliances
+        OBJECT IDENTIFIER ::= { ipv6IcmpConformance 1 }
+ipv6IcmpGroups
+        OBJECT IDENTIFIER ::= { ipv6IcmpConformance 2 }
+
+-- compliance statements
+
+ipv6IcmpCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+      "The compliance statement for SNMPv2 entities which
+      implement ICMPv6."
+    MODULE  -- this module
+        MANDATORY-GROUPS { ipv6IcmpGroup }
+    ::= { ipv6IcmpCompliances 1 }
+
+ipv6IcmpGroup OBJECT-GROUP
+    OBJECTS   {
+                ipv6IfIcmpInMsgs,
+                ipv6IfIcmpInErrors,
+                ipv6IfIcmpInDestUnreachs,
+                ipv6IfIcmpInAdminProhibs,
+                ipv6IfIcmpInTimeExcds,
+                ipv6IfIcmpInParmProblems,
+                ipv6IfIcmpInPktTooBigs,
+                ipv6IfIcmpInEchos,
+                ipv6IfIcmpInEchoReplies,
+                ipv6IfIcmpInRouterSolicits,
+                ipv6IfIcmpInRouterAdvertisements,
+                ipv6IfIcmpInNeighborSolicits,
+                ipv6IfIcmpInNeighborAdvertisements,
+                ipv6IfIcmpInRedirects,
+                ipv6IfIcmpInGroupMembQueries,
+                ipv6IfIcmpInGroupMembResponses,
+                ipv6IfIcmpInGroupMembReductions,
+                ipv6IfIcmpOutMsgs,
+                ipv6IfIcmpOutErrors,
+                ipv6IfIcmpOutDestUnreachs,
+                ipv6IfIcmpOutAdminProhibs,
+                ipv6IfIcmpOutTimeExcds,
+                ipv6IfIcmpOutParmProblems,
+                ipv6IfIcmpOutPktTooBigs,
+                ipv6IfIcmpOutEchos,
+                ipv6IfIcmpOutEchoReplies,
+                ipv6IfIcmpOutRouterSolicits,
+                ipv6IfIcmpOutRouterAdvertisements,
+                ipv6IfIcmpOutNeighborSolicits,
+                ipv6IfIcmpOutNeighborAdvertisements,
+                ipv6IfIcmpOutRedirects,
+                ipv6IfIcmpOutGroupMembQueries,
+                ipv6IfIcmpOutGroupMembResponses,
+                ipv6IfIcmpOutGroupMembReductions
+              }
+    STATUS    current
+    DESCRIPTION
+         "The ICMPv6 group of objects providing information
+          specific to ICMPv6."
+    ::= { ipv6IcmpGroups 1 }
+
+ END

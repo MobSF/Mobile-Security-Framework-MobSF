@@ -1,0 +1,250 @@
+SNMP-TSM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    mib-2, Counter32
+      FROM SNMPv2-SMI -- RFC2578
+    MODULE-COMPLIANCE, OBJECT-GROUP
+      FROM SNMPv2-CONF -- RFC2580
+    TruthValue
+       FROM SNMPv2-TC -- RFC2579
+    ;
+
+snmpTsmMIB MODULE-IDENTITY
+    LAST-UPDATED "200906090000Z"
+    ORGANIZATION "ISMS Working Group"
+    CONTACT-INFO "WG-EMail:   isms@lists.ietf.org
+                  Subscribe:  isms-request@lists.ietf.org
+
+                  Chairs:
+                    Juergen Quittek
+                    NEC Europe Ltd.
+                    Network Laboratories
+                    Kurfuersten-Anlage 36
+                    69115 Heidelberg
+                    Germany
+                    +49 6221 90511-15
+                    quittek@netlab.nec.de
+
+                    Juergen Schoenwaelder
+                    Jacobs University Bremen
+                    Campus Ring 1
+                    28725 Bremen
+                    Germany
+                    +49 421 200-3587
+                    j.schoenwaelder@jacobs-university.de
+
+
+
+
+
+                  Editor:
+                    David Harrington
+                    Huawei Technologies USA
+                    1700 Alma Dr.
+                    Plano TX 75075
+                    USA
+                    +1 603-436-8634
+                    ietfdbh@comcast.net
+
+                    Wes Hardaker
+                    Cobham Analytic Solutions
+                    P.O. Box 382
+                    Davis, CA  95617
+                    USA
+                    +1 530 792 1913
+                    ietf@hardakers.net
+                 "
+    DESCRIPTION
+       "The Transport Security Model MIB.
+
+        In keeping with the RFC 3411 design decisions to use
+        self-contained documents, the RFC that contains the definition
+        of this MIB module also includes the elements of procedure
+        that are needed for processing the Transport Security Model
+        for SNMP.  These MIB objects SHOULD NOT be modified via other
+        subsystems or models defined in other documents.  This allows
+        the Transport Security Model for SNMP to be designed and
+        documented as independent and self-contained, having no direct
+        impact on other modules, and this allows this module to be
+        upgraded and supplemented as the need arises, and to move
+        along the standards track on different time-lines from other
+        modules.
+
+        Copyright (c) 2009 IETF Trust and the persons
+        identified as authors of the code.  All rights reserved.
+
+        Redistribution and use in source and binary forms, with or
+        without modification, are permitted provided that the
+        following conditions are met:
+
+        - Redistributions of source code must retain the above copyright
+          notice, this list of conditions and the following disclaimer.
+
+        - Redistributions in binary form must reproduce the above
+          copyright notice, this list of conditions and the following
+          disclaimer in the documentation and/or other materials
+          provided with the distribution.
+
+
+
+
+        - Neither the name of Internet Society, IETF or IETF Trust,
+          nor the names of specific contributors, may be used to endorse
+          or promote products derived from this software without
+          specific prior written permission.
+
+        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+        CONTRIBUTORS 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+        INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+        MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+        DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+        CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+        SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+        NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+        LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+        HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+        CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+        OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+        EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+        This version of this MIB module is part of RFC 5591;
+        see the RFC itself for full legal notices."
+
+    REVISION    "200906090000Z"
+    DESCRIPTION "The initial version, published in RFC 5591."
+
+    ::= { mib-2 190 }
+
+-- ---------------------------------------------------------- --
+-- subtrees in the SNMP-TSM-MIB
+-- ---------------------------------------------------------- --
+
+snmpTsmNotifications OBJECT IDENTIFIER ::= { snmpTsmMIB 0 }
+snmpTsmMIBObjects    OBJECT IDENTIFIER ::= { snmpTsmMIB 1 }
+snmpTsmConformance   OBJECT IDENTIFIER ::= { snmpTsmMIB 2 }
+
+-- -------------------------------------------------------------
+-- Objects
+-- -------------------------------------------------------------
+
+-- Statistics for the Transport Security Model
+
+snmpTsmStats         OBJECT IDENTIFIER ::= { snmpTsmMIBObjects 1 }
+
+snmpTsmInvalidCaches OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "The number of incoming messages dropped because the
+
+
+
+                 tmStateReference referred to an invalid cache.
+                "
+    ::= { snmpTsmStats 1 }
+
+snmpTsmInadequateSecurityLevels OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "The number of incoming messages dropped because
+                 the securityLevel asserted by the Transport Model was
+                 less than the securityLevel requested by the
+                 application.
+                "
+    ::= { snmpTsmStats 2 }
+
+snmpTsmUnknownPrefixes OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "The number of messages dropped because
+                 snmpTsmConfigurationUsePrefix was set to true and
+                 there is no known prefix for the specified transport
+                 domain.
+                "
+    ::= { snmpTsmStats 3 }
+
+snmpTsmInvalidPrefixes OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "The number of messages dropped because
+                 the securityName associated with an outgoing message
+                 did not contain a valid transport domain prefix.
+                "
+    ::= { snmpTsmStats 4 }
+
+-- -------------------------------------------------------------
+-- Configuration
+-- -------------------------------------------------------------
+
+-- Configuration for the Transport Security Model
+
+snmpTsmConfiguration   OBJECT IDENTIFIER ::= { snmpTsmMIBObjects 2 }
+
+snmpTsmConfigurationUsePrefix OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+
+
+
+    DESCRIPTION "If this object is set to true, then securityNames
+                 passing to and from the application are expected to
+                 contain a transport-domain-specific prefix.  If this
+                 object is set to true, then a domain-specific prefix
+                 will be added by the TSM to the securityName for
+                 incoming messages and removed from the securityName
+                 when processing outgoing messages.  Transport domains
+                 and prefixes are maintained in a registry by IANA.
+                 This object SHOULD persist across system reboots.
+                "
+    DEFVAL { false }
+    ::= { snmpTsmConfiguration 1 }
+
+-- -------------------------------------------------------------
+-- snmpTsmMIB - Conformance Information
+-- -------------------------------------------------------------
+
+snmpTsmCompliances OBJECT IDENTIFIER ::= { snmpTsmConformance 1 }
+
+snmpTsmGroups      OBJECT IDENTIFIER ::= { snmpTsmConformance 2 }
+
+-- -------------------------------------------------------------
+-- Compliance statements
+-- -------------------------------------------------------------
+
+snmpTsmCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION "The compliance statement for SNMP engines that support
+                 the SNMP-TSM-MIB.
+                "
+    MODULE
+        MANDATORY-GROUPS { snmpTsmGroup }
+    ::= { snmpTsmCompliances 1 }
+
+-- -------------------------------------------------------------
+-- Units of conformance
+-- -------------------------------------------------------------
+snmpTsmGroup OBJECT-GROUP
+    OBJECTS {
+        snmpTsmInvalidCaches,
+        snmpTsmInadequateSecurityLevels,
+        snmpTsmUnknownPrefixes,
+        snmpTsmInvalidPrefixes,
+        snmpTsmConfigurationUsePrefix
+    }
+    STATUS      current
+    DESCRIPTION "A collection of objects for maintaining
+                 information of an SNMP engine that implements
+
+
+
+                 the SNMP Transport Security Model.
+                "
+
+    ::= { snmpTsmGroups 2 }
+
+END

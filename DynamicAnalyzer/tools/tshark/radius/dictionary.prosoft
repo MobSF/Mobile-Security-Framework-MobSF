@@ -1,0 +1,42 @@
+# -*- text -*-
+##############################################################################
+#
+#	Prosoft, as posted to the list.
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR		Prosoft				4735
+
+#
+# Custom Prosoft attributes.
+#
+
+BEGIN-VENDOR	Prosoft
+
+ATTRIBUTE	Prosoft-Home-Agent-Address		0	ipaddr
+ATTRIBUTE	Prosoft-Default-Gateway			1	ipaddr
+ATTRIBUTE	Prosoft-Primary-DNS			2	ipaddr
+ATTRIBUTE	Prosoft-Secondary-DNS			3	ipaddr
+ATTRIBUTE	Prosoft-Security-Parameter-Index	4	integer
+ATTRIBUTE	Prosoft-Security-Key			5	string
+ATTRIBUTE	Prosoft-MAC-Address			7	string
+ATTRIBUTE	Prosoft-Authentication-Reason		8	integer
+ATTRIBUTE	Prosoft-ATM-Interface			9	integer
+ATTRIBUTE	Prosoft-ATM-VPI				10	integer
+ATTRIBUTE	Prosoft-ATM-VCI				11	integer
+ATTRIBUTE	Prosoft-RSC-Identifier			12	string
+ATTRIBUTE	Prosoft-NPM-Identifier			13	string
+ATTRIBUTE	Prosoft-NPM-IP				14	string
+ATTRIBUTE	Prosoft-Sector-ID			15	string
+ATTRIBUTE	Prosoft-Auth-Role			16	integer
+
+VALUE	Prosoft-Auth-Role		Read-Status		0
+VALUE	Prosoft-Auth-Role		Read-Config		1
+VALUE	Prosoft-Auth-Role		Read-Write		2
+VALUE	Prosoft-Auth-Role		Admin			3
+VALUE	Prosoft-Auth-Role		Super-user		4
+
+
+END-VENDOR	Prosoft

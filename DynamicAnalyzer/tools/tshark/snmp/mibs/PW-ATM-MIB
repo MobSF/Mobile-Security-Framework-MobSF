@@ -1,0 +1,1276 @@
+PW-ATM-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Counter32, Unsigned32, mib-2
+          FROM SNMPv2-SMI
+
+    MODULE-COMPLIANCE, OBJECT-GROUP
+          FROM SNMPv2-CONF
+
+    TruthValue, RowStatus, RowPointer
+          FROM SNMPv2-TC
+
+    PerfCurrentCount, PerfIntervalCount
+          FROM PerfHist-TC-MIB
+
+    InterfaceIndex
+          FROM IF-MIB
+
+    pwIndex
+          FROM PW-STD-MIB
+
+    AtmVpIdentifier, AtmVcIdentifier
+          FROM ATM-TC-MIB;
+
+      pwAtmMIB MODULE-IDENTITY
+      LAST-UPDATED "200906160000Z"  -- 16 June 2009
+      ORGANIZATION "Pseudowire Emulation Edge-to-Edge (PWE3)
+                    Working Group"
+      CONTACT-INFO
+          "Thomas D. Nadeau
+           Postal: BT
+                   BT Centre
+                   81 Newgate Street
+                   London  EC1A 7AJ
+                   United Kingdom
+
+
+
+           Email:  tom.nadeau@bt.com
+
+           Orly Nicklass
+           Postal: RADVISION Ltd.
+                  24 Raul Wallenberg
+                  Tel Aviv, Israel
+           Email: orlyn@radvision.com
+
+           Discussion and general questions should be posed to
+           the PWE3 Working Group (pwe3@ietf.org)."
+
+      DESCRIPTION
+          "This MIB contains managed object definitions for
+           pseudowire emulation of ATM over Packet Switched
+           Networks (PSNs).
+
+           This MIB supplements the PW-STD-MIB module.
+           The PW-STD-MIB contains structures and MIB associations
+           generic to pseudowire (PW) emulation.  PW-specific
+           MIBs (such as this) contain config and stats for specific
+           PW types.
+
+           Copyright (c) 2009 IETF Trust and the persons identified as
+           authors of the code.  All rights reserved.
+
+           Redistribution and use in source and binary forms, with or
+           without modification, are permitted provided that the
+           following conditions are met:
+
+           - Redistributions of source code must retain the above
+             copyright notice, this list of conditions and the
+             following disclaimer.
+
+           - Redistributions in binary form must reproduce the above
+             copyright notice, this list of conditions and the
+             following disclaimer in the documentation and/or other
+             materials provided with the distribution.
+
+           - Neither the name of Internet Society, IETF or IETF Trust,
+             nor the names of specific contributors, may be used to
+             endorse or promote products derived from this software
+             without specific prior written permission.
+
+           THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+           CONTRIBUTORS 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+           INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+           MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+           DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+
+
+
+           CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+           SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+           NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+           LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+           HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+           CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+           OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+           SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+           This version of this MIB module is part of RFC 5605;
+           see the RFC itself for full legal notices.
+           "
+
+      -- Revision history.
+
+      REVISION "200906160000Z"  -- 16 June 2009
+      DESCRIPTION "Initial version published as RFC 5605."
+
+         ::= { mib-2 183 }
+
+    -- Top-level components of this MIB
+
+    pwAtmNotifications OBJECT IDENTIFIER ::= { pwAtmMIB 0 }
+    pwAtmObjects       OBJECT IDENTIFIER ::= { pwAtmMIB 1 }
+    pwAtmConformance   OBJECT IDENTIFIER ::= { pwAtmMIB 2 }
+
+-- ATM PW PSN Bound(Outbound) Table for 1 to 1 connection
+
+pwAtmOutboundTable OBJECT-TYPE
+    SYNTAX    SEQUENCE OF PwAtmOutboundEntry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "This table specifies the information for an ATM PW to
+        be carried over the PSN in the outbound direction.  An
+        entry is created in this table for every entry in
+        the pwTable with a pwType equal to one of the following:
+        atmAal5SduVcc(2), atmCell1to1Vcc(12), atmCell1to1Vpc(13)
+        or atmAal5PduVcc(14), or atmTransparent(3)."
+    ::= { pwAtmObjects 1 }
+
+pwAtmOutboundEntry OBJECT-TYPE
+    SYNTAX        PwAtmOutboundEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "A row in this table represents an ATM PW that needs to be
+         adapted and carried over the PSN.  This table is indexed by
+
+
+
+         pwIndex from pwTable.  Unless otherwise specified, all
+         writeable objects in this table MUST NOT be changed after
+         row activation in the generic pwTable, and values must
+         persist after reboot."
+    REFERENCE
+      "See [PWMIB]."
+
+    INDEX { pwIndex }
+    ::= { pwAtmOutboundTable 1 }
+
+PwAtmOutboundEntry ::= SEQUENCE {
+      pwAtmOutboundAtmIf                InterfaceIndex,
+      pwAtmOutboundVpi                  AtmVpIdentifier,
+      pwAtmOutboundVci                  AtmVcIdentifier,
+      pwAtmOutboundTrafficParamDescr    RowPointer,
+      pwAtmOutboundRowStatus            RowStatus
+      }
+
+pwAtmOutboundAtmIf OBJECT-TYPE
+    SYNTAX        InterfaceIndex
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The ATM Interface that receives cells from the ATM
+        network."
+    ::= { pwAtmOutboundEntry 1 }
+
+pwAtmOutboundVpi OBJECT-TYPE
+    SYNTAX        AtmVpIdentifier
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "VPI value of this ATM PW.  The value may indicate the
+        translated value when egress generates new VPI."
+    ::= { pwAtmOutboundEntry 2 }
+
+pwAtmOutboundVci OBJECT-TYPE
+    SYNTAX        AtmVcIdentifier
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "VCI value of this ATM PW.  The value may indicate the
+        translated value when egress generates new VCI."
+    ::= { pwAtmOutboundEntry 3 }
+
+pwAtmOutboundTrafficParamDescr OBJECT-TYPE
+    SYNTAX        RowPointer
+    MAX-ACCESS    read-create
+
+
+
+    STATUS        current
+    DESCRIPTION
+        "This object represents a pointer to an ATM
+         traffic-parameter-specific row in either a private or
+         standard table that will be employed while receiving
+         cells from the ATM network.  This row should contain a
+         set of self-consistent ATM traffic parameters including
+         the ATM traffic service category.
+         A value of 0.0 indicates Best Effort."
+     ::= { pwAtmOutboundEntry 4 }
+
+pwAtmOutboundRowStatus OBJECT-TYPE
+    SYNTAX        RowStatus
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "This object is used to create, modify, or delete a row in
+         this table.  Unless otherwise specified, all writeable
+         objects in this table MUST NOT be changed after row
+         activation as explained in the pwAtmOutboundEntry. "
+    ::= { pwAtmOutboundEntry 5 }
+
+-- End of ATM PW Outbound Table
+
+-- ATM PW CE Bound(Inbound) Table for 1 to 1 mode
+
+pwAtmInboundTable OBJECT-TYPE
+    SYNTAX    SEQUENCE OF PwAtmInboundEntry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "This table specifies the information for an ATM PW in the
+         inbound direction."
+    ::= { pwAtmObjects 3 }
+
+pwAtmInboundEntry OBJECT-TYPE
+    SYNTAX    PwAtmInboundEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "A row in this table represents an ATM PW that needs to be
+         sent into the ATM network after reconstructing cells from
+         packets received from a PSN.  This table is indexed by
+         pwIndex from pwTable.  An entry is created in this table
+         for every entry in the pwTable with a
+         pwType equal to one of the following:
+         atmAal5SduVcc(2), atmCell1to1Vcc(12), atmCell1to1Vpc(13),
+         atmAal5PduVcc(14), or atmTransparent(3).  Unless otherwise
+
+
+
+         specified, all writeable objects in this table MUST NOT
+         be changed after row activation in the generic pwTable,
+         and values must persist after reboot."
+    REFERENCE
+      "See [PWMIB]."
+
+    INDEX { pwIndex }
+    ::= { pwAtmInboundTable 1 }
+
+PwAtmInboundEntry ::= SEQUENCE {
+      pwAtmInboundAtmIf                 InterfaceIndex,
+      pwAtmInboundVpi                   AtmVpIdentifier,
+      pwAtmInboundVci                   AtmVcIdentifier,
+      pwAtmInboundTrafficParamDescr     RowPointer,
+      pwAtmInboundRowStatus             RowStatus
+          }
+
+pwAtmInboundAtmIf OBJECT-TYPE
+    SYNTAX        InterfaceIndex
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The ATM Interface that sends cells into the ATM network
+        after reconstructing cells from packets received from
+        a PSN."
+    ::= { pwAtmInboundEntry 1 }
+
+pwAtmInboundVpi OBJECT-TYPE
+    SYNTAX        AtmVpIdentifier
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "VPI value of this ATM PW.
+         If the pwType is atmTransparent, then the value will
+         be set to zero."
+        ::= { pwAtmInboundEntry 2 }
+
+pwAtmInboundVci OBJECT-TYPE
+    SYNTAX        AtmVcIdentifier
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "VCI value of this ATM PW.
+         If the pwType is atmTransparent, atmCell1to1Vpc, or
+         atmCellNto1Vpc, then the value will be set to zero."
+        ::= { pwAtmInboundEntry 3 }
+
+pwAtmInboundTrafficParamDescr OBJECT-TYPE
+
+
+
+    SYNTAX        RowPointer
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "This object represents a pointer to an ATM traffic-parameter-
+         specific row in either a private or standard table that will
+         be employed while transmitting into the ATM network.  This
+         table contains a set of self-consistent ATM traffic parameters
+         including the ATM traffic service category.  A value of 0.0
+         indicates Best Effort."
+
+        ::= { pwAtmInboundEntry 4 }
+
+pwAtmInboundRowStatus OBJECT-TYPE
+    SYNTAX        RowStatus
+    MAX-ACCESS    read-create
+    STATUS        current
+        DESCRIPTION
+        "This object is used to create, modify, or delete a row in
+         this table.  Unless otherwise specified, all writeable
+         objects in this table MUST NOT be changed after row
+         activation as explained in the pwAtmInboundEntry. "
+        ::= { pwAtmInboundEntry 5 }
+
+-- End of ATM PW Inbound Table
+
+--Generic ATM PW table for all types of ATM PW connection.
+
+pwAtmCfgTable OBJECT-TYPE
+    SYNTAX    SEQUENCE OF PwAtmCfgEntry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "This table specifies generic information for an ATM PW
+         to be carried over PSN in any mode."
+    ::= { pwAtmObjects 5 }
+
+    pwAtmCfgEntry OBJECT-TYPE
+    SYNTAX        PwAtmCfgEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+         "This table contains a set of parameters for
+         the ATM PW that needs to be adapted and carried
+         over the PSN.  This table is indexed by pwIndex from
+         pwTable.  An entry is created for every new ATM
+         type associated pwIndex in the pwTable.  Unless
+         otherwise specified, all read-write objects in
+
+
+
+         this table MAY be changed when the PW is defined
+         as not active, and all RW objects values must
+         persist after reboot."
+    REFERENCE
+      "See [PWMIB]."
+
+    INDEX { pwIndex }
+    ::= { pwAtmCfgTable 1 }
+
+PwAtmCfgEntry ::= SEQUENCE {
+        pwAtmCfgMaxCellConcatenation       Unsigned32,
+        pwAtmCfgFarEndMaxCellConcatenation Unsigned32,
+        pwAtmCfgTimeoutMode                INTEGER,
+        pwAtmClpQosMapping                 TruthValue
+                }
+
+pwAtmCfgMaxCellConcatenation OBJECT-TYPE
+     SYNTAX        Unsigned32 (1..29)
+     MAX-ACCESS    read-write
+     STATUS        current
+     DESCRIPTION
+         "The maximum number of ATM cells that can be
+          concatenated into one PW packet towards the PSN.
+          In a non-LDP or other signaling protocol environment,
+          this object MAY be changed at anytime, but traffic
+          might be interrupted; otherwise, it may be changed
+          when PW is not active."
+    ::= { pwAtmCfgEntry 1 }
+
+pwAtmCfgFarEndMaxCellConcatenation OBJECT-TYPE
+     SYNTAX        Unsigned32 (1..29)
+     MAX-ACCESS    read-write
+     STATUS        current
+     DESCRIPTION
+         "The maximum number of ATM cells that can be
+          concatenated into one PW packet towards PSN as reported by
+          the far end.  If there is no LDP in use, the object will
+          either return a value of 0 or allow setting it for calculating
+          protocol overhead."
+    ::= { pwAtmCfgEntry 2 }
+
+pwAtmCfgTimeoutMode OBJECT-TYPE
+     SYNTAX        INTEGER
+                        {
+                         notApplicable (1),
+                         disabled      (2),
+                         enabled       (3)
+                        }
+
+
+
+     MAX-ACCESS    read-write
+     STATUS        current
+     DESCRIPTION
+         "This object determines whether or not a packet can be
+          transmitted to the PSN based on timeout expiration
+          for collecting cells.  The actual handling of the
+          timeout is implementation-specific; as such,
+          this object may be changed at any time under proper
+          consideration of the traffic interruption effect."
+    ::= { pwAtmCfgEntry 3 }
+
+pwAtmClpQosMapping OBJECT-TYPE
+    SYNTAX        TruthValue
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+        "This object indicates whether the Cell Loss Priority
+         (CLP) bits should be considered when setting the
+         value in the Quality-of-Service fields of the
+         encapsulating protocol (e.g., EXP fields of the
+         MPLS Label Stack).  Selecting True allows the drop
+         precedence to be preserved across the PSN.  In
+         transparent cell transport, the value of this object
+         MUST be false(2); in other cases, it can be changed
+         at any time."
+    REFERENCE
+      "See section 12 of [ATMENCAP]."
+    ::= { pwAtmCfgEntry 4 }
+
+-- Device capable of implementing N:1, 1:1, and transparent cell
+-- mode assumes to support the N:1 table for all
+-- modes with respective applicable setting.
+-- In such implementation, user can create an entry for either
+-- 1:1 or transparent cell transport modes only
+-- in pwAtmInboundNto1Table. The side effect of such
+-- will be an automatic create of the respective line in the
+-- pwAtmOutboundNto1Table.
+
+-- ATM PW Outbound Table for N to 1 connection
+
+pwAtmOutboundNto1Table OBJECT-TYPE
+    SYNTAX    SEQUENCE OF PwAtmOutboundNto1Entry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "This table specifies the information for an ATM PW to
+        be carried over the PSN in the outbound direction.  Up to
+        N entries can be created in this table for every
+
+
+
+        entry in the pwTable with a pwType equal to:
+        atmCellNto1Vcc(9) or atmCellNto1Vpc(10).
+        An entry can be created only when the VP/VC are known.
+        A single entry will be created in this table for every
+        entry in the pwTable with a pwType equal to
+        one of the following: atmCell1to1Vcc(12),
+        atmCell1to1Vpc(13), atmAal5PduVcc(14),
+        atmAal5SduVcc(2), or atmTransparent(3).
+        "
+    ::= { pwAtmObjects 6 }
+
+pwAtmOutboundNto1Entry OBJECT-TYPE
+    SYNTAX        PwAtmOutboundNto1Entry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "A row in this table represents an ATM PW that needs to be
+         adapted and carried over PSN.  This table is indexed by
+         pwIndex from pwTable and the ATM interface with VPL/VCLs.
+         In atmTransparent(3), Vpi and VCi will be 0xFFFF
+         during set operation.
+         Unless otherwise specified, all read-create objects in this
+         table MUST NOT be changed after row activation
+         and SHOULD remain unchanged after reboot."
+    INDEX { pwIndex, pwAtmOutboundNto1AtmIf ,
+                        pwAtmOutboundNto1Vpi,
+                        pwAtmOutboundNto1Vci  }
+    ::= { pwAtmOutboundNto1Table 1 }
+
+PwAtmOutboundNto1Entry ::= SEQUENCE {
+      pwAtmOutboundNto1AtmIf                    InterfaceIndex,
+      pwAtmOutboundNto1Vpi                      AtmVpIdentifier,
+      pwAtmOutboundNto1Vci                      AtmVcIdentifier,
+      pwAtmOutboundNto1RowStatus                RowStatus,
+      pwAtmOutboundNto1TrafficParamDescr        RowPointer,
+      pwAtmOutboundNto1MappedVpi                AtmVpIdentifier,
+      pwAtmOutboundNto1MappedVci                AtmVcIdentifier
+     }
+
+pwAtmOutboundNto1AtmIf OBJECT-TYPE
+    SYNTAX        InterfaceIndex
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "The ATM Interface that receives cells from the ATM network."
+    ::= { pwAtmOutboundNto1Entry 1 }
+
+pwAtmOutboundNto1Vpi OBJECT-TYPE
+
+
+
+    SYNTAX        AtmVpIdentifier
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "VPI value of this ATM PW.  In atmTransparent(3),
+         Vpi will be the equivalent of 0xFFFF."
+    ::= { pwAtmOutboundNto1Entry 2 }
+
+pwAtmOutboundNto1Vci OBJECT-TYPE
+    SYNTAX        AtmVcIdentifier
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "VCI value of this ATM PW.  In atmTransparent(3), or
+         the VP case, the value will be the equivalent of
+         0xFFFF."
+    ::= { pwAtmOutboundNto1Entry 3 }
+
+pwAtmOutboundNto1RowStatus OBJECT-TYPE
+    SYNTAX        RowStatus
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "This object is used to create, modify or delete a row in
+         this table."
+    ::= { pwAtmOutboundNto1Entry 4 }
+
+pwAtmOutboundNto1TrafficParamDescr OBJECT-TYPE
+    SYNTAX        RowPointer
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "This object represents a pointer to an ATM traffic-parameter-
+         specific row in either private or standard table that will
+         be employed while receiving cells from the ATM network.
+         This table should contain a set
+         of self-consistent ATM traffic parameters including the ATM
+         traffic service category.  A value of 0.0 indicates Best
+         Effort."
+
+    ::= { pwAtmOutboundNto1Entry 5 }
+
+pwAtmOutboundNto1MappedVpi         OBJECT-TYPE
+    SYNTAX        AtmVpIdentifier
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The egress-generated VPI value of this ATM PW.  The
+
+
+
+        entry is valid for PW type of atmCellNto1Vcc(9),
+        atmCellNto1Vpc(10), atmCell1to1Vcc(12), or
+        atmCell1to1Vpc(13).  In other types, the value will be the
+        equivalent of 0xFFFF.  Value MAY be changed when the
+        PW is defined as not active. "
+    ::= { pwAtmOutboundNto1Entry 6 }
+
+pwAtmOutboundNto1MappedVci      OBJECT-TYPE
+    SYNTAX        AtmVcIdentifier
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The egress-generated VCI value of this ATM PW.  The
+        entry is valid for PW type of atmCellNto1Vcc(9),
+        atmCellNto1Vpc(10), atmCell1to1Vcc(12), or
+        atmCell1to1Vpc(13.  In the VP case or other types, the
+        value will be the equivalent of 0xFFFF.
+        Value MAY be changed when the PW is defined
+        as not active."
+    ::= { pwAtmOutboundNto1Entry 7 }
+
+-- ATM PW Inbound Table for N to 1 connection
+
+pwAtmInboundNto1Table OBJECT-TYPE
+    SYNTAX    SEQUENCE OF PwAtmInboundNto1Entry
+    MAX-ACCESS        not-accessible
+    STATUS            current
+    DESCRIPTION
+        "This table specifies the information for an ATM PW to
+        be carried over PSN in the Inbound direction.  Up to
+        N entries can be created in this table for every
+        entry in the pwTable with a pwType equal to:
+        atmCellNto1Vcc(9) or atmCellNto1Vpc(10).
+        An entry can be created only when the VP/VC are known.
+        A single entry will be created in this table for every
+        entry in the pwTable with a pwType equal to
+        one of the following: atmCell1to1Vcc(12),
+        atmCell1to1Vpc(13), atmAal5PduVcc(14),
+        atmAal5SduVcc(2), or atmTransparent(3)."
+    ::= { pwAtmObjects 7 }
+
+pwAtmInboundNto1Entry OBJECT-TYPE
+    SYNTAX        PwAtmInboundNto1Entry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "A row in this table represents an ATM PW that needs to be
+         adapted and carried over PSN.  This table is indexed by
+
+
+
+         pwIndex from pwTable and the ATM interface with VPL/VCLs.
+         In atmTransparent(3), Vpi and VCi will be 0xFFFF
+         during set operation.
+         Unless otherwise specified, all Read-Create objects in this
+         table MUST NOT be changed after row activation
+         and SHOULD remain unchanged after reboot."
+    INDEX { pwIndex, pwAtmInboundNto1AtmIf ,
+                        pwAtmInboundNto1Vpi,
+                        pwAtmInboundNto1Vci
+                        }
+    ::= { pwAtmInboundNto1Table 1 }
+
+PwAtmInboundNto1Entry ::= SEQUENCE {
+      pwAtmInboundNto1AtmIf                InterfaceIndex,
+      pwAtmInboundNto1Vpi                  AtmVpIdentifier,
+      pwAtmInboundNto1Vci                  AtmVcIdentifier,
+      pwAtmInboundNto1RowStatus            RowStatus,
+      pwAtmInboundNto1TrafficParamDescr    RowPointer,
+      pwAtmInboundNto1MappedVpi            AtmVpIdentifier,
+      pwAtmInboundNto1MappedVci            AtmVcIdentifier
+    }
+
+pwAtmInboundNto1AtmIf OBJECT-TYPE
+    SYNTAX        InterfaceIndex
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "The ATM Interface that receives cells from the ATM network."
+    ::= { pwAtmInboundNto1Entry 1 }
+
+pwAtmInboundNto1Vpi OBJECT-TYPE
+    SYNTAX        AtmVpIdentifier
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "VPI value of this ATM PW.  In atmTransparent(3),
+         Vpi will be the equivalent of 0xFFFF."
+    ::= { pwAtmInboundNto1Entry 2 }
+
+pwAtmInboundNto1Vci OBJECT-TYPE
+    SYNTAX        AtmVcIdentifier
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "VCI value of this ATM PW.  In atmTransparent(3), or
+         the VP case, the value will be the equivalent of
+         0xFFFF."
+    ::= { pwAtmInboundNto1Entry 3 }
+
+
+
+pwAtmInboundNto1RowStatus OBJECT-TYPE
+    SYNTAX        RowStatus
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "This object is used to create, modify, or delete a row in
+        this table."
+    ::= { pwAtmInboundNto1Entry 4 }
+
+pwAtmInboundNto1TrafficParamDescr OBJECT-TYPE
+    SYNTAX        RowPointer
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "This object represents a pointer to an ATM traffic-parameter-
+         specific row in either a private or standard table that will
+         be employed while receiving cells from the ATM network.
+         This table should contain a set
+         of self-consistent ATM traffic parameters including the ATM
+         traffic service category.  A value of 0.0 indicates Best
+         Effort."
+
+    ::= { pwAtmInboundNto1Entry 5 }
+
+pwAtmInboundNto1MappedVpi    OBJECT-TYPE
+    SYNTAX        AtmVpIdentifier
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The generated VPI value of this ATM PW.  The
+        entry is valid for PW type of atmCellNto1Vcc(9),
+        atmCellNto1Vpc(10), atmCell1to1Vcc(12), or
+        atmCell1to1Vpc(13).  In other types, the value will be the
+        equivalent of 0xFFFF.  Value MAY be changed when the
+        PW is defined as not active."
+    ::= { pwAtmInboundNto1Entry 6 }
+
+pwAtmInboundNto1MappedVci     OBJECT-TYPE
+    SYNTAX        AtmVcIdentifier
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+        "The generated VCI value of this ATM PW.  The
+        entry is valid for PW type of atmCellNto1Vcc(9),
+        atmCellNto1Vpc(10), atmCell1to1Vcc(12), or
+        atmCell1to1Vpc(13.  In the VP case or other types, the
+        value will be the equivalent of 0xFFFF.
+        Value MAY be changed when the
+
+
+
+        PW is defined as not active."
+    ::= { pwAtmInboundNto1Entry 7 }
+
+-- ATM PW Outbound Perf Table
+
+-- The following supplement the counters presented in the
+-- PW generic MIB
+
+-- ATM PW Performance Current Table.
+
+pwAtmPerfCurrentTable OBJECT-TYPE
+  SYNTAX        SEQUENCE OF PwAtmPerfCurrentEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+      "The current 15-minute interval counts are in
+       this table.
+       This table provides performance information per ATM PW."
+  ::= { pwAtmObjects 8 }
+
+pwAtmPerfCurrentEntry OBJECT-TYPE
+  SYNTAX        PwAtmPerfCurrentEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+      "An entry in this table is created by the agent for every
+       pwAtmCfgTable entry.  After 15 minutes, the contents of this
+       table entry are copied to a new entry in the
+       pwAtmPerfInterval table and the counts in this entry
+       are reset to zero."
+  INDEX  { pwIndex }
+  ::= { pwAtmPerfCurrentTable 1 }
+
+PwAtmPerfCurrentEntry ::= SEQUENCE {
+     pwAtmPerfCurrentMissingPkts    PerfCurrentCount,
+     pwAtmPerfCurrentPktsReOrder    PerfCurrentCount,
+     pwAtmPerfCurrentPktsMisOrder   PerfCurrentCount,
+     pwAtmPerfCurrentPktsTimeout    PerfCurrentCount,
+     pwAtmPerfCurrentCellsXmit      PerfCurrentCount,
+     pwAtmPerfCurrentCellsDropped   PerfCurrentCount,
+     pwAtmPerfCurrentCellsReceived  PerfCurrentCount,
+     pwAtmPerfCurrentUnknownCells   PerfCurrentCount
+  }
+
+pwAtmPerfCurrentMissingPkts OBJECT-TYPE
+  SYNTAX        PerfCurrentCount
+  MAX-ACCESS    read-only
+  STATUS        current
+
+
+
+  DESCRIPTION
+      "Number of missing packets (as detected via control word
+       sequence number gaps)."
+  ::= { pwAtmPerfCurrentEntry 1 }
+
+pwAtmPerfCurrentPktsReOrder OBJECT-TYPE
+  SYNTAX        PerfCurrentCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of packets detected out of sequence (via control
+       word sequence number), but successfully re-ordered.
+       Note: some implementations may not support this feature."
+  ::= { pwAtmPerfCurrentEntry 2 }
+
+pwAtmPerfCurrentPktsMisOrder OBJECT-TYPE
+  SYNTAX        PerfCurrentCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of packets detected out of order (via control word
+       sequence numbers)."
+   ::= { pwAtmPerfCurrentEntry 3 }
+
+pwAtmPerfCurrentPktsTimeout OBJECT-TYPE
+  SYNTAX        PerfCurrentCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of packets transmitted due to timeout expiration
+       while attempting to collect cells."
+   ::= { pwAtmPerfCurrentEntry 4 }
+
+pwAtmPerfCurrentCellsXmit OBJECT-TYPE
+  SYNTAX        PerfCurrentCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of transmitted cells."
+   ::= { pwAtmPerfCurrentEntry 5 }
+
+pwAtmPerfCurrentCellsDropped OBJECT-TYPE
+  SYNTAX        PerfCurrentCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of dropped cells."
+   ::= { pwAtmPerfCurrentEntry 6 }
+
+
+
+pwAtmPerfCurrentCellsReceived OBJECT-TYPE
+  SYNTAX        PerfCurrentCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of received cells."
+   ::= { pwAtmPerfCurrentEntry 7 }
+
+pwAtmPerfCurrentUnknownCells OBJECT-TYPE
+  SYNTAX        PerfCurrentCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of cells received from the PSN with unknown VPI or
+      VCI values.  This object is relevant only in N:1 mode."
+   ::= { pwAtmPerfCurrentEntry 8 }
+
+-- End ATM PW Performance Current Interval Table
+
+-- ATM PW Performance Interval Table.
+
+pwAtmPerfIntervalTable OBJECT-TYPE
+  SYNTAX        SEQUENCE OF PwAtmPerfIntervalEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+      "This table provides performance information per ATM PW
+       similar to the pwAtmPerfCurrentTable above.  However,
+       these counts represent historical 15 minute intervals.
+       Typically, this table will have a maximum of 96 entries
+       for a 24 hour period. "
+  ::= { pwAtmObjects 9 }
+
+pwAtmPerfIntervalEntry OBJECT-TYPE
+  SYNTAX        PwAtmPerfIntervalEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+      "An entry in this table is created by the agent for
+       every pwAtmPerfCurrentEntry that is 15 minutes old.
+       The contents of the Current entry are copied to the new
+       entry here.  The Current entry then resets its counts
+       to zero for the next current 15 minute interval. "
+  INDEX  { pwIndex, pwAtmPerfIntervalNumber }
+  ::= { pwAtmPerfIntervalTable 1 }
+
+PwAtmPerfIntervalEntry ::= SEQUENCE {
+     pwAtmPerfIntervalNumber         Unsigned32,
+
+
+
+     pwAtmPerfIntervalValidData      TruthValue,
+     pwAtmPerfIntervalDuration       Unsigned32,
+     pwAtmPerfIntervalMissingPkts    PerfIntervalCount,
+     pwAtmPerfIntervalPktsReOrder    PerfIntervalCount,
+     pwAtmPerfIntervalPktsMisOrder   PerfIntervalCount,
+     pwAtmPerfIntervalPktsTimeout    PerfIntervalCount,
+     pwAtmPerfIntervalCellsXmit      PerfIntervalCount,
+     pwAtmPerfIntervalCellsDropped   PerfIntervalCount,
+     pwAtmPerfIntervalCellsReceived  PerfIntervalCount,
+     pwAtmPerfIntervalUnknownCells   PerfIntervalCount
+     }
+
+pwAtmPerfIntervalNumber OBJECT-TYPE
+  SYNTAX        Unsigned32 (1..96)
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+      "A number (normally between 1 and 96 to cover a 24 hour
+       period) that identifies the interval for which the set
+       of statistics is available.  The interval identified by 1
+       is the most recently completed 15 minute interval, and
+       the interval identified by N is the interval immediately
+       preceding the one identified by N-1.  The minimum range of
+       N is 1 through 4.  The default range is 1 through 32.  The
+       maximum value of N is 96."
+  ::= { pwAtmPerfIntervalEntry 1 }
+
+pwAtmPerfIntervalValidData OBJECT-TYPE
+  SYNTAX        TruthValue
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "This variable indicates if the data for this interval
+       is valid."
+  ::= { pwAtmPerfIntervalEntry 2 }
+
+pwAtmPerfIntervalDuration OBJECT-TYPE
+   SYNTAX      Unsigned32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION
+     "The duration of a particular interval in seconds.
+      Adjustments in the system's time-of-day clock, may
+      cause the interval to be greater or less than the
+      normal value.  Therefore, this actual interval value
+      is provided."
+   ::= { pwAtmPerfIntervalEntry 3 }
+
+
+
+
+pwAtmPerfIntervalMissingPkts OBJECT-TYPE
+  SYNTAX        PerfIntervalCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of missing packets (as detected via control
+       word sequence number gaps)."
+  ::= { pwAtmPerfIntervalEntry 4 }
+
+pwAtmPerfIntervalPktsReOrder OBJECT-TYPE
+  SYNTAX        PerfIntervalCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of packets detected out of sequence (via control
+       word sequence number), but successfully re-ordered.
+       Note: some implementations may not support this
+       feature."
+  ::= { pwAtmPerfIntervalEntry 5 }
+
+ pwAtmPerfIntervalPktsMisOrder OBJECT-TYPE
+  SYNTAX        PerfIntervalCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of packets detected out of order (via control word
+       sequence numbers)."
+  ::= { pwAtmPerfIntervalEntry 6 }
+
+pwAtmPerfIntervalPktsTimeout OBJECT-TYPE
+  SYNTAX        PerfIntervalCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of packets transmitted due to timeout expiration."
+   ::= { pwAtmPerfIntervalEntry 7 }
+
+pwAtmPerfIntervalCellsXmit OBJECT-TYPE
+  SYNTAX        PerfIntervalCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of transmitted cells."
+   ::= { pwAtmPerfIntervalEntry 8 }
+
+pwAtmPerfIntervalCellsDropped OBJECT-TYPE
+  SYNTAX        PerfIntervalCount
+  MAX-ACCESS    read-only
+
+
+
+  STATUS        current
+  DESCRIPTION
+      "Number of dropped cells."
+   ::= { pwAtmPerfIntervalEntry 9 }
+
+pwAtmPerfIntervalCellsReceived OBJECT-TYPE
+  SYNTAX        PerfIntervalCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of received cells."
+   ::= { pwAtmPerfIntervalEntry 10 }
+
+pwAtmPerfIntervalUnknownCells OBJECT-TYPE
+  SYNTAX        PerfIntervalCount
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of cells received from the PSN with unknown VPI or
+      VCI values.  This object is relevant only in N:1 mode."
+   ::= { pwAtmPerfIntervalEntry 11 }
+
+-- End ATM PW Performance Interval Table
+
+-- ATM PW 1day Performance Table
+
+pwAtmPerf1DayIntervalTable OBJECT-TYPE
+  SYNTAX        SEQUENCE OF PwAtmPerf1DayIntervalEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+      "This table provides performance information per ATM PW
+       similar to the pwAtmPerfIntervalTable above.  However,
+       these counters represent historical one-day intervals up to
+       one full month."
+  ::= { pwAtmObjects 10 }
+
+pwAtmPerf1DayIntervalEntry OBJECT-TYPE
+  SYNTAX        PwAtmPerf1DayIntervalEntry
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+      "An entry is created in this table by the agent
+       for every entry in the pwAtmCfgTable table."
+  INDEX  { pwIndex,pwAtmPerf1DayIntervalNumber }
+     ::= { pwAtmPerf1DayIntervalTable 1 }
+
+PwAtmPerf1DayIntervalEntry ::= SEQUENCE {
+
+
+
+     pwAtmPerf1DayIntervalNumber          Unsigned32,
+     pwAtmPerf1DayIntervalValidData       TruthValue,
+     pwAtmPerf1DayIntervalDuration        Unsigned32,
+     pwAtmPerf1DayIntervalMissingPkts     Counter32,
+     pwAtmPerf1DayIntervalPktsReOrder     Counter32,
+     pwAtmPerf1DayIntervalPktsMisOrder    Counter32,
+     pwAtmPerf1DayIntervalPktsTimeout     Counter32,
+     pwAtmPerf1DayIntervalCellsXmit       Counter32,
+     pwAtmPerf1DayIntervalCellsDropped    Counter32,
+     pwAtmPerf1DayIntervalCellsReceived   Counter32,
+     pwAtmPerf1DayIntervalUnknownCells    Counter32
+     }
+
+pwAtmPerf1DayIntervalNumber OBJECT-TYPE
+  SYNTAX        Unsigned32 (1..365)
+  MAX-ACCESS    not-accessible
+  STATUS        current
+  DESCRIPTION
+      "The number of intervals, where 1 indicates current day
+       measured period and 2 and above indicate previous days,
+       respectively."
+  ::= { pwAtmPerf1DayIntervalEntry 1 }
+
+pwAtmPerf1DayIntervalValidData OBJECT-TYPE
+  SYNTAX        TruthValue
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "This object indicates if the data for this interval
+       is valid."
+  ::= { pwAtmPerf1DayIntervalEntry 2 }
+
+pwAtmPerf1DayIntervalDuration OBJECT-TYPE
+  SYNTAX      Unsigned32
+  MAX-ACCESS  read-only
+  STATUS      current
+  DESCRIPTION
+    "The duration of a particular interval in seconds.
+     Adjustments in the system's time-of-day clock may
+     cause the interval to be greater or less than the
+     normal value.  Therefore, this actual interval value
+     is provided."
+  ::= { pwAtmPerf1DayIntervalEntry 3 }
+
+pwAtmPerf1DayIntervalMissingPkts OBJECT-TYPE
+  SYNTAX        Counter32
+  MAX-ACCESS    read-only
+  STATUS        current
+
+
+
+  DESCRIPTION
+    "Number of missing packets (as detected via control word
+     sequence number gaps)."
+  ::= { pwAtmPerf1DayIntervalEntry 4 }
+
+pwAtmPerf1DayIntervalPktsReOrder OBJECT-TYPE
+  SYNTAX        Counter32
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of packets detected out of sequence (via control
+       word sequence number), but successfully re-ordered.
+       Note: some implementations may not support this
+       feature."
+  ::= { pwAtmPerf1DayIntervalEntry 5 }
+
+pwAtmPerf1DayIntervalPktsMisOrder OBJECT-TYPE
+  SYNTAX        Counter32
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of packets detected out of order (via control word
+       sequence numbers) and that could not be re-ordered."
+  ::= { pwAtmPerf1DayIntervalEntry 6 }
+
+pwAtmPerf1DayIntervalPktsTimeout OBJECT-TYPE
+  SYNTAX        Counter32
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of packets transmitted due to timeout expiration."
+   ::= { pwAtmPerf1DayIntervalEntry 7 }
+
+pwAtmPerf1DayIntervalCellsXmit OBJECT-TYPE
+  SYNTAX        Counter32
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of transmitted cells."
+   ::= { pwAtmPerf1DayIntervalEntry 8 }
+
+pwAtmPerf1DayIntervalCellsDropped OBJECT-TYPE
+  SYNTAX        Counter32
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of dropped cells."
+   ::= { pwAtmPerf1DayIntervalEntry 9 }
+
+
+
+pwAtmPerf1DayIntervalCellsReceived OBJECT-TYPE
+  SYNTAX        Counter32
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of received cells."
+   ::= { pwAtmPerf1DayIntervalEntry 10 }
+
+pwAtmPerf1DayIntervalUnknownCells OBJECT-TYPE
+  SYNTAX        Counter32
+  MAX-ACCESS    read-only
+  STATUS        current
+  DESCRIPTION
+      "Number of cells received from the PSN with unknown VPI
+      or VCI values.  This object is relevant only in N:1 mode."
+   ::= { pwAtmPerf1DayIntervalEntry 11 }
+
+-- End of ATM PW Performance table
+
+    pwAtmCompliances OBJECT IDENTIFIER ::= { pwAtmConformance 1 }
+    pwAtmGroups      OBJECT IDENTIFIER ::= { pwAtmConformance 2 }
+    pwAtmCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for agents that support
+             ATM PW."
+    MODULE  -- this module
+        MANDATORY-GROUPS { pwAtmCfgGroup,
+                           pwAtmPerfGroup
+                         }
+
+       OBJECT pwAtmCfgFarEndMaxCellConcatenation
+       MIN-ACCESS read-only
+       DESCRIPTION
+        "The ability to set this object
+        is not required."
+
+       GROUP        pwAtmOutbound1to1Group
+       DESCRIPTION "This group is mandatory only for implementations
+                    that support the ATM PW 1:1 mode and not using
+                    the Nto1 table."
+
+       GROUP        pwAtmInbound1to1Group
+       DESCRIPTION "This group is mandatory only for implementations
+                    that support the ATM PW 1:1 mode and not using
+                    the Nto1 table."
+
+       GROUP        pwAtmOutboundNto1Group
+
+
+
+       DESCRIPTION "This group is mandatory only for implementations
+                    that support the ATM PW N:1 and transparent mode."
+
+       GROUP        pwAtmInboundNto1Group
+       DESCRIPTION "This group is mandatory only for implementations
+                    that support the ATM PW N:1 and transparent mode."
+
+    ::= { pwAtmCompliances 2 }
+
+-- Units of conformance.
+
+    pwAtmCfgGroup OBJECT-GROUP
+    OBJECTS {pwAtmCfgMaxCellConcatenation,
+             pwAtmCfgFarEndMaxCellConcatenation,
+             pwAtmCfgTimeoutMode,
+             pwAtmClpQosMapping
+                     }
+
+    STATUS  current
+    DESCRIPTION
+              "Collection of objects for basic ATM PW
+               configuration."
+    ::= { pwAtmGroups 5 }
+
+    pwAtmPerfGroup OBJECT-GROUP
+    OBJECTS {pwAtmPerfCurrentMissingPkts,
+             pwAtmPerfCurrentPktsReOrder,
+             pwAtmPerfCurrentPktsMisOrder,
+             pwAtmPerfCurrentPktsTimeout,
+             pwAtmPerfCurrentCellsXmit,
+             pwAtmPerfCurrentCellsDropped,
+             pwAtmPerfCurrentCellsReceived,
+             pwAtmPerfCurrentUnknownCells,
+             pwAtmPerfIntervalValidData,
+             pwAtmPerfIntervalDuration,
+             pwAtmPerfIntervalMissingPkts,
+             pwAtmPerfIntervalPktsReOrder,
+             pwAtmPerfIntervalPktsMisOrder,
+             pwAtmPerfIntervalPktsTimeout,
+             pwAtmPerfIntervalCellsXmit,
+             pwAtmPerfIntervalCellsDropped,
+             pwAtmPerfIntervalCellsReceived,
+             pwAtmPerfIntervalUnknownCells,
+             pwAtmPerf1DayIntervalValidData,
+             pwAtmPerf1DayIntervalDuration,
+             pwAtmPerf1DayIntervalMissingPkts,
+             pwAtmPerf1DayIntervalPktsReOrder,
+             pwAtmPerf1DayIntervalPktsMisOrder,
+
+
+
+             pwAtmPerf1DayIntervalPktsTimeout,
+             pwAtmPerf1DayIntervalCellsXmit,
+             pwAtmPerf1DayIntervalCellsDropped,
+             pwAtmPerf1DayIntervalCellsReceived,
+             pwAtmPerf1DayIntervalUnknownCells
+                         }
+    STATUS current
+    DESCRIPTION
+              "Collection of objects for basic ATM PW Performance."
+    ::= { pwAtmGroups 6 }
+
+    pwAtmOutbound1to1Group OBJECT-GROUP
+    OBJECTS {pwAtmOutboundAtmIf,
+             pwAtmOutboundVpi,
+             pwAtmOutboundVci,
+             pwAtmOutboundTrafficParamDescr,
+             pwAtmOutboundRowStatus
+             }
+    STATUS  current
+    DESCRIPTION
+              "Collection of objects for basic 1:1 ATM PW outbound
+               configuration."
+    ::= { pwAtmGroups 7 }
+
+    pwAtmInbound1to1Group OBJECT-GROUP
+    OBJECTS {pwAtmInboundAtmIf,
+             pwAtmInboundVpi,
+             pwAtmInboundVci,
+             pwAtmInboundTrafficParamDescr,
+             pwAtmInboundRowStatus
+             }
+    STATUS  current
+    DESCRIPTION
+          "Collection of objects for basic 1:1 ATM PW inbound
+           configuration."
+    ::= { pwAtmGroups 8 }
+
+    pwAtmOutboundNto1Group OBJECT-GROUP
+    OBJECTS {pwAtmOutboundNto1RowStatus,
+             pwAtmOutboundNto1TrafficParamDescr,
+             pwAtmOutboundNto1MappedVpi,
+             pwAtmOutboundNto1MappedVci
+                         }
+    STATUS  current
+    DESCRIPTION
+          "Collection of objects for N:1, 1:1, or transparent
+          ATM PW outbound configuration."
+    ::= { pwAtmGroups 9 }
+
+
+
+    pwAtmInboundNto1Group OBJECT-GROUP
+    OBJECTS {pwAtmInboundNto1RowStatus,
+             pwAtmInboundNto1TrafficParamDescr,
+             pwAtmInboundNto1MappedVpi,
+             pwAtmInboundNto1MappedVci
+                 }
+    STATUS current
+    DESCRIPTION
+          "Collection of objects for N:1, 1:1, or transparent
+           ATM PW inbound configuration."
+    ::= { pwAtmGroups 10 }
+
+END

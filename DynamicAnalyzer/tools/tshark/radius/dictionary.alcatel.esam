@@ -1,0 +1,250 @@
+#
+#	Alcatel ESAM's VSAs
+#
+#
+
+#	The vendor specific attribute type is two bytes, where the
+#	first is the project ID and the second is the project specific
+#	attribute ID.  The project ID 7 is assigned to 7302 ISAM
+#	project.
+
+VENDOR		Alcatel-ESAM			637	format=2,1
+
+BEGIN-VENDOR	Alcatel-ESAM
+ATTRIBUTE	A-ESAM-VRF-Name				0x0700	string
+ATTRIBUTE	A-ESAM-Vlan-Id				0x0701	integer
+ATTRIBUTE	A-ESAM-QOS-Profile-Name			0x0702	string
+ATTRIBUTE	A-ESAM-QOS-Params			0x0703	string
+
+ATTRIBUTE	A-ESAM-Termination-Cause		0x0704	integer
+
+#
+#	Integer Translations
+#
+
+#	A-ESAM-Termination-Cause Values
+
+VALUE	A-ESAM-Termination-Cause	Unknown-VRF		1
+VALUE	A-ESAM-Termination-Cause	No-VRF			2
+
+VALUE	A-ESAM-Termination-Cause	Unknown-Vlan		3
+VALUE	A-ESAM-Termination-Cause	No-Vlan			4
+VALUE	A-ESAM-Termination-Cause	Unknown-Pool-Id		5
+VALUE	A-ESAM-Termination-Cause	Pool-Admin-Locked	6
+VALUE	A-ESAM-Termination-Cause	No-Pool-Id		7
+
+VALUE	A-ESAM-Termination-Cause	Pool-VRF-Inconsistent	8
+VALUE	A-ESAM-Termination-Cause	Unknown-QOS-Profile	9
+VALUE	A-ESAM-Termination-Cause	QOS-Params-Syntax-Err	10
+VALUE	A-ESAM-Termination-Cause	IP-Addr-In-Use		11
+
+VALUE	A-ESAM-Termination-Cause	No-IP-Addr-Available	12
+VALUE	A-ESAM-Termination-Cause	No-User-IP-Addr		13
+VALUE	A-ESAM-Termination-Cause	Missing-Attributes	14
+
+#	VSAs for Operator Authentication
+
+ATTRIBUTE	A-AL-Maintenance			0x0600	integer
+ATTRIBUTE	A-AL-Provisioning			0x0601	integer
+ATTRIBUTE	A-AL-TL1-Security			0x0602	integer
+ATTRIBUTE	A-AL-Test				0x0603	integer
+
+ATTRIBUTE	A-AL-AAA				0x0709	integer
+ATTRIBUTE	A-AL-ATM				0x070A	integer
+ATTRIBUTE	A-AL-Alarm				0x070B	integer
+ATTRIBUTE	A-AL-DHCP				0x070C	integer
+
+ATTRIBUTE	A-AL-EQP				0x070D	integer
+ATTRIBUTE	A-AL-IGMP				0x070E	integer
+ATTRIBUTE	A-AL-CPEProxy				0x070F	integer
+ATTRIBUTE	A-AL-IP					0x0710	integer
+
+ATTRIBUTE	A-AL-PPPoE				0x0711	integer
+ATTRIBUTE	A-AL-QoS				0x0712	integer
+ATTRIBUTE	A-AL-SWMgt				0x0713	integer
+ATTRIBUTE	A-AL-Transport				0x0714	integer
+
+ATTRIBUTE	A-AL-VLAN				0x0715	integer
+ATTRIBUTE	A-AL-XDSL				0x0716	integer
+ATTRIBUTE	A-AL-Security				0x0717	integer
+ATTRIBUTE	A-AL-Cluster				0x0718	integer
+
+ATTRIBUTE	A-AL-Prompt				0x0719	string
+ATTRIBUTE	A-AL-Pwd-Timeout			0x071A	integer
+ATTRIBUTE	A-AL-Description			0x071B	string
+ATTRIBUTE	A-AL-SLOT-NUMBERING			0x071C	integer
+
+####FTTU TL1 values###############################################
+ATTRIBUTE	A-AL-MAINTENANCE-BACKWARD		0x0705	integer
+ATTRIBUTE	A-AL-PROVISIONING-BACKWARD		0x0706	integer
+
+ATTRIBUTE	A-AL-TL1-SECURITY-BACKWARD		0x0707	integer
+ATTRIBUTE	A-AL-TEST-BACKWARD			0x0708	integer
+###################################################################
+
+#       A-AL-Maintenance Values
+VALUE	A-AL-Maintenance		Alcatel-No-Maint-Priv-Level 0
+VALUE	A-AL-Maintenance		Alcatel-Maint-Priv-Level-1 1
+VALUE	A-AL-Maintenance		Alcatel-Maint-Priv-Level-2 2
+
+VALUE	A-AL-Maintenance		Alcatel-Maint-Priv-Level-3 3
+VALUE	A-AL-Maintenance		Alcatel-Maint-Priv-Level-4 4
+VALUE	A-AL-Maintenance		Alcatel-Maint-Priv-Level-5 5
+VALUE	A-AL-Maintenance		Alcatel-Maint-Priv-Level-6 6
+
+VALUE	A-AL-Maintenance		Alcatel-Maint-Priv-Level-7 7
+
+#     A-AL-Provisioning Values
+VALUE	A-AL-Provisioning		Alcatel-No-Maint-Priv-Level 0
+VALUE	A-AL-Provisioning		Alcatel-Maint-Priv-Level-1 1
+
+VALUE	A-AL-Provisioning		Alcatel-Maint-Priv-Level-2 2
+VALUE	A-AL-Provisioning		Alcatel-Maint-Priv-Level-3 3
+VALUE	A-AL-Provisioning		Alcatel-Maint-Priv-Level-4 4
+VALUE	A-AL-Provisioning		Alcatel-Maint-Priv-Level-5 5
+
+VALUE	A-AL-Provisioning		Alcatel-Maint-Priv-Level-6 6
+VALUE	A-AL-Provisioning		Alcatel-Maint-Priv-Level-7 7
+
+#     A-AL-Security Values
+VALUE	A-AL-Security			Alcatel-No-Maint-Priv-Level 0
+
+VALUE	A-AL-Security			Alcatel-Maint-Priv-Level-1 1
+VALUE	A-AL-Security			Alcatel-Maint-Priv-Level-2 2
+VALUE	A-AL-Security			Alcatel-Maint-Priv-Level-3 3
+VALUE	A-AL-Security			Alcatel-Maint-Priv-Level-4 4
+
+VALUE	A-AL-Security			Alcatel-Maint-Priv-Level-5 5
+VALUE	A-AL-Security			Alcatel-Maint-Priv-Level-6 6
+VALUE	A-AL-Security			Alcatel-Maint-Priv-Level-7 7
+
+#     A-AL-Test Values
+
+VALUE	A-AL-Test			Alcatel-No-Maint-Priv-Level 0
+VALUE	A-AL-Test			Alcatel-Maint-Priv-Level-1 1
+VALUE	A-AL-Test			Alcatel-Maint-Priv-Level-2 2
+VALUE	A-AL-Test			Alcatel-Maint-Priv-Level-3 3
+
+VALUE	A-AL-Test			Alcatel-Maint-Priv-Level-4 4
+VALUE	A-AL-Test			Alcatel-Maint-Priv-Level-5 5
+VALUE	A-AL-Test			Alcatel-Maint-Priv-Level-6 6
+VALUE	A-AL-Test			Alcatel-Maint-Priv-Level-7 7
+
+#      A-AL-AAA Value
+VALUE	A-AL-AAA			Alcatel-No-Priv		0
+VALUE	A-AL-AAA			Alcatel-Read-Priv	1
+VALUE	A-AL-AAA			Alcatel-Write-Priv	2
+
+VALUE	A-AL-AAA			Alcatel-RW-Priv		3
+
+#      A-AL-ATM Value
+VALUE	A-AL-ATM			Alcatel-No-Priv		0
+VALUE	A-AL-ATM			Alcatel-Read-Priv	1
+
+VALUE	A-AL-ATM			Alcatel-Write-Priv	2
+VALUE	A-AL-ATM			Alcatel-RW-Priv		3
+
+#      A-AL-Alarm Value
+VALUE	A-AL-Alarm			Alcatel-No-Priv		0
+
+VALUE	A-AL-Alarm			Alcatel-Read-Priv	1
+VALUE	A-AL-Alarm			Alcatel-Write-Priv	2
+VALUE	A-AL-Alarm			Alcatel-RW-Priv		3
+
+#      A-AL-DHCP Value
+
+VALUE	A-AL-DHCP			Alcatel-No-Priv		0
+VALUE	A-AL-DHCP			Alcatel-Read-Priv	1
+VALUE	A-AL-DHCP			Alcatel-Write-Priv	2
+VALUE	A-AL-DHCP			Alcatel-RW-Priv		3
+
+#      A-AL-EQP Value
+VALUE	A-AL-EQP			Alcatel-No-Priv		0
+VALUE	A-AL-EQP			Alcatel-Read-Priv	1
+VALUE	A-AL-EQP			Alcatel-Write-Priv	2
+
+VALUE	A-AL-EQP			Alcatel-RW-Priv		3
+
+#      A-AL-IGMP Value
+VALUE	A-AL-IGMP			Alcatel-No-Priv		0
+VALUE	A-AL-IGMP			Alcatel-Read-Priv	1
+
+VALUE	A-AL-IGMP			Alcatel-Write-Priv	2
+VALUE	A-AL-IGMP			Alcatel-RW-Priv		3
+
+#      A-AL-CPEProxy Value
+VALUE	A-AL-CPEProxy			Alcatel-No-Priv		0
+
+VALUE	A-AL-CPEProxy			Alcatel-Read-Priv	1
+VALUE	A-AL-CPEProxy			Alcatel-Write-Priv	2
+VALUE	A-AL-CPEProxy			Alcatel-RW-Priv		3
+
+#      A-AL-IP Value
+
+VALUE	A-AL-IP				Alcatel-No-Priv		0
+VALUE	A-AL-IP				Alcatel-Read-Priv	1
+VALUE	A-AL-IP				Alcatel-Write-Priv	2
+VALUE	A-AL-IP				Alcatel-RW-Priv		3
+
+#      A-AL-PPPoE Value
+VALUE	A-AL-PPPoE			Alcatel-No-Priv		0
+VALUE	A-AL-PPPoE			Alcatel-Read-Priv	1
+VALUE	A-AL-PPPoE			Alcatel-Write-Priv	2
+
+VALUE	A-AL-PPPoE			Alcatel-RW-Priv		3
+
+#      A-AL-QoS Value
+VALUE	A-AL-QoS			Alcatel-No-Priv		0
+VALUE	A-AL-QoS			Alcatel-Read-Priv	1
+
+VALUE	A-AL-QoS			Alcatel-Write-Priv	2
+VALUE	A-AL-QoS			Alcatel-RW-Priv		3
+
+#      A-AL-SWMgt Value
+VALUE	A-AL-SWMgt			Alcatel-No-Priv		0
+
+VALUE	A-AL-SWMgt			Alcatel-Read-Priv	1
+VALUE	A-AL-SWMgt			Alcatel-Write-Priv	2
+VALUE	A-AL-SWMgt			Alcatel-RW-Priv		3
+
+#      A-AL-Transport Value
+
+VALUE	A-AL-Transport			Alcatel-No-Priv		0
+VALUE	A-AL-Transport			Alcatel-Read-Priv	1
+VALUE	A-AL-Transport			Alcatel-Write-Priv	2
+VALUE	A-AL-Transport			Alcatel-RW-Priv		3
+
+#      A-AL-VLAN Value
+VALUE	A-AL-VLAN			Alcatel-No-Priv		0
+VALUE	A-AL-VLAN			Alcatel-Read-Priv	1
+VALUE	A-AL-VLAN			Alcatel-Write-Priv	2
+
+VALUE	A-AL-VLAN			Alcatel-RW-Priv		3
+
+#     A-AL-XDSL Value
+VALUE	A-AL-XDSL			Alcatel-No-Priv		0
+VALUE	A-AL-XDSL			Alcatel-Read-Priv	1
+
+VALUE	A-AL-XDSL			Alcatel-Write-Priv	2
+VALUE	A-AL-XDSL			Alcatel-RW-Priv		3
+
+#     A-AL-Security Value
+VALUE	A-AL-Security			Alcatel-No-Priv		0
+
+VALUE	A-AL-Security			Alcatel-Read-Priv	1
+VALUE	A-AL-Security			Alcatel-Write-Priv	2
+VALUE	A-AL-Security			Alcatel-RW-Priv		3
+
+#      A-AL-Cluster Value
+
+VALUE	A-AL-Cluster			Alcatel-No-Priv		0
+VALUE	A-AL-Cluster			Alcatel-Read-Priv	1
+VALUE	A-AL-Cluster			Alcatel-Write-Priv	2
+VALUE	A-AL-Cluster			Alcatel-RW-Priv		3
+
+#      A-AL-Cluster Value
+VALUE	A-AL-SLOT-NUMBERING		SLOT-NUMBERING-TYPE	1
+VALUE	A-AL-SLOT-NUMBERING		SLOT-NUMBERING-POSITION	2
+VALUE	A-AL-SLOT-NUMBERING		SLOT-NUMBERING-LEGACY	3
+
+END-VENDOR Alcatel-ESAM

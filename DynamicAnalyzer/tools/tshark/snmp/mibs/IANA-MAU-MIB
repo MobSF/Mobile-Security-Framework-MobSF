@@ -1,0 +1,903 @@
+IANA-MAU-MIB DEFINITIONS ::= BEGIN
+
+     IMPORTS
+       MODULE-IDENTITY, OBJECT-IDENTITY, mib-2
+         FROM SNMPv2-SMI
+       TEXTUAL-CONVENTION
+         FROM SNMPv2-TC
+       ;
+
+     ianaMauMIB MODULE-IDENTITY
+       LAST-UPDATED "201002230000Z"  -- February 23, 2010
+       ORGANIZATION "IANA"
+       CONTACT-INFO "        Internet Assigned Numbers Authority
+
+                     Postal: ICANN
+                             4676 Admiralty Way, Suite 330
+                             Marina del Rey, CA 90292
+
+                        Tel: +1-310-823-9358
+                      EMail: iana&iana.org"
+
+       DESCRIPTION
+         "This MIB module defines dot3MauType OBJECT-IDENTITIES and
+         IANAifMauListBits, IANAifMauMediaAvailable,
+         IANAifMauAutoNegCapBits, and IANAifJackType
+
+         TEXTUAL-CONVENTIONs, specifying enumerated values of the
+         ifMauTypeListBits, ifMauMediaAvailable / rpMauMediaAvailable,
+         ifMauAutoNegCapabilityBits / ifMauAutoNegCapAdvertisedBits /
+         ifMauAutoNegCapReceivedBits and ifJackType / rpJackType objects
+         respectively, defined in the MAU-MIB.
+
+         It is intended that each new MAU type, Media Availability
+         state, Auto Negotiation capability and/or Jack type defined by
+         the IEEE 802.3 working group and approved for publication in a
+         revision of IEEE Std 802.3 will be added to this MIB module,
+         provided that it is suitable for being managed by the base
+         objects in the MAU-MIB.  An Expert Review, as defined in
+         RFC 2434 [RFC2434], is REQUIRED for such additions.
+
+         The following reference is used throughout this MIB module:
+
+         [IEEE802.3] refers to:
+            IEEE Std 802.3, 2005 Edition: 'IEEE Standard for
+            Information technology - Telecommunications and information
+            exchange between systems - Local and metropolitan area
+            networks - Specific requirements -
+            Part 3: Carrier sense multiple access with collision
+            detection (CSMA/CD) access method and physical layer
+            specifications'.
+
+         This reference should be updated as appropriate when new
+         MAU types, Media Availability states, Auto Negotiation
+         capabilities, and/or Jack types are added to this MIB module.
+
+         Copyright (C) The IETF Trust (2007).
+         The initial version of this MIB module was published in
+         RFC 4836; for full legal notices see the RFC itself.
+         Supplementary information may be available at:
+         http://www.ietf.org/copyrights/ianamib.html"
+
+       REVISION     "201002230000Z"  -- February 23, 2010
+       DESCRIPTION  "Added assignments that will be included in 
+                     Clause 14 of IEEE P802.3.1."
+                     
+       REVISION     "200704210000Z"  -- April 21, 2007
+       DESCRIPTION  "Initial version of this MIB as published in
+                     RFC 4836."
+                                   
+       ::= { mib-2 154 }
+
+     -- Textual Conventions
+
+     IANAifMauTypeListBits ::= TEXTUAL-CONVENTION
+       STATUS       current
+       DESCRIPTION
+         "This data type is used as the syntax of the ifMauTypeListBits
+         object in the (updated) definition of MAU-MIB's ifMauTable.
+
+         The most recent version of this textual convention is available
+         in the online version of this MIB module on the IANA web site.
+
+         Requests for new values should be made to IANA via email
+         (iana&iana.org).
+
+         Note that changes in this textual convention SHALL be
+         synchronized with relevant changes in the dot3MauType
+         OBJECT-IDENTITIES."
+       REFERENCE
+         "[IEEE802.3], Section 30.5.1.1.2"
+       SYNTAX       BITS {
+              bOther(0),          -- other or unknown
+              bAUI(1),            -- AUI
+              b10base5(2),        -- 10BASE-5
+              bFoirl(3),          -- FOIRL
+
+              b10base2(4),        -- 10BASE-2
+              b10baseT(5),        -- 10BASE-T duplex mode unknown
+              b10baseFP(6),       -- 10BASE-FP
+              b10baseFB(7),       -- 10BASE-FB
+              b10baseFL(8),       -- 10BASE-FL duplex mode unknown
+              b10broad36(9),      -- 10BROAD36
+              b10baseTHD(10),     -- 10BASE-T  half duplex mode
+              b10baseTFD(11),     -- 10BASE-T  full duplex mode
+              b10baseFLHD(12),    -- 10BASE-FL half duplex mode
+              b10baseFLFD(13),    -- 10BASE-FL full duplex mode
+              b100baseT4(14),     -- 100BASE-T4
+              b100baseTXHD(15),   -- 100BASE-TX half duplex mode
+              b100baseTXFD(16),   -- 100BASE-TX full duplex mode
+              b100baseFXHD(17),   -- 100BASE-FX half duplex mode
+              b100baseFXFD(18),   -- 100BASE-FX full duplex mode
+              b100baseT2HD(19),   -- 100BASE-T2 half duplex mode
+              b100baseT2FD(20),   -- 100BASE-T2 full duplex mode
+
+              b1000baseXHD(21),   -- 1000BASE-X half duplex mode
+              b1000baseXFD(22),   -- 1000BASE-X full duplex mode
+              b1000baseLXHD(23),  -- 1000BASE-LX half duplex mode
+              b1000baseLXFD(24),  -- 1000BASE-LX full duplex mode
+              b1000baseSXHD(25),  -- 1000BASE-SX half duplex mode
+              b1000baseSXFD(26),  -- 1000BASE-SX full duplex mode
+              b1000baseCXHD(27),  -- 1000BASE-CX half duplex mode
+              b1000baseCXFD(28),  -- 1000BASE-CX full duplex mode
+              b1000baseTHD(29),   -- 1000BASE-T half duplex mode
+              b1000baseTFD(30),   -- 1000BASE-T full duplex mode
+
+              b10GbaseX(31),      -- 10GBASE-X
+              b10GbaseLX4(32),    -- 10GBASE-LX4
+
+              b10GbaseR(33),      -- 10GBASE-R
+              b10GbaseER(34),     -- 10GBASE-ER
+              b10GbaseLR(35),     -- 10GBASE-LR
+              b10GbaseSR(36),     -- 10GBASE-SR
+              b10GbaseW(37),      -- 10GBASE-W
+              b10GbaseEW(38),     -- 10GBASE-EW
+              b10GbaseLW(39),     -- 10GBASE-LW
+              b10GbaseSW(40),     -- 10GBASE-SW
+              -- new since RFC 3636
+              b10GbaseCX4(41),    -- 10GBASE-CX4
+              b2BaseTL(42),       -- 2BASE-TL
+              b10PassTS(43),      -- 10PASS-TS
+              b100BaseBX10D(44),  -- 100BASE-BX10D
+              b100BaseBX10U(45),  -- 100BASE-BX10U
+              b100BaseLX10(46),   -- 100BASE-LX10
+              b1000BaseBX10D(47), -- 1000BASE-BX10D
+              b1000BaseBX10U(48), -- 1000BASE-BX10U
+              b1000BaseLX10(49),  -- 1000BASE-LX10
+              b1000BasePX10D(50), -- 1000BASE-PX10D
+              b1000BasePX10U(51), -- 1000BASE-PX10U
+              b1000BasePX20D(52), -- 1000BASE-PX20D
+              b1000BasePX20U(53), -- 1000BASE-PX20U
+              b10GbaseT(54),      -- 10GBASE-T
+              b10GbaseLRM(55),    -- 10GBASE-LRM
+              b1000baseKX(56),    -- 1000BASE-KX
+              b10GbaseKX4(57),    -- 10GBASE-KX4
+              b10GbaseKR(58),     -- 10GBASE-KR
+              b10G1GbasePRXD1(59),-- 10/1GBASE-PRX-D1
+              b10G1GbasePRXD2(60),-- 10/1GBASE-PRX-D2
+              b10G1GbasePRXD3(61),-- 10/1GBASE-PRX-D3
+              b10G1GbasePRXU1(62),-- 10/1GBASE-PRX-U1
+              b10G1GbasePRXU2(63),-- 10/1GBASE-PRX-U2
+              b10G1GbasePRXU3(64),-- 10/1GBASE-PRX-U3
+              b10GbasePRD1(65),   -- 10GBASE-PR-D1
+              b10GbasePRD2(66),   -- 10GBASE-PR-D2
+              b10GbasePRD3(67),   -- 10GBASE-PR-D3
+              b10GbasePRU1(68),   -- 10GBASE-PR-U1
+              b10GbasePRU3(69)    -- 10GBASE-PR-U3
+         }
+
+     IANAifMauMediaAvailable ::= TEXTUAL-CONVENTION
+       STATUS       current
+       DESCRIPTION
+         "This data type is used as the syntax of the
+         ifMauMediaAvailable and rpMauMediaAvailable objects in the
+         (updated) definition of MAU-MIB's ifMauTable and rpMauTable
+         respectively.
+
+         Possible values are:
+           other(1)             - undefined (not listed below)
+           unknown(2)           - MAU's true state is unknown; e.g.,
+                                  during initialization
+           available(3)         - link, light, or loopback is normal
+           notAvailable(4)      - link loss, low light, or no loopback
+           remoteFault(5)       - a fault has been detected at the
+                                  remote end of the link.  This value
+                                  applies to 10BASE-FB, 100BASE-T4 Far
+                                  End Fault Indication and non-specified
+                                  remote faults from a system running
+                                  auto-negotiation
+           invalidSignal(6)     - invalid signal has been received from
+                                  the other end of the link, 10BASE-FB
+                                  only
+           remoteJabber(7)      - remote fault, due to jabber
+
+           remoteLinkLoss(8)    - remote fault, due to link loss
+           remoteTest(9)        - remote fault, due to test
+           offline(10)          - offline, Clause 37 Auto-Negotiation
+                                  only
+           autoNegError(11)     - Auto-Negotiation Error, Clause 37
+                                  Auto-Negotiation only
+           pmdLinkFault(12)     - PMA/PMD receive link fault.  In case
+                                  of PAF (2BASE-TL / 10PASS-TS PHYs),
+                                  all PMEs in the aggregation group have
+                                  detected a link fault
+           wisFrameLoss(13)     - WIS loss of frame, 10GBASE-W only
+           wisSignalLoss(14)    - WIS loss of signal, 10GBASE-W only
+           pcsLinkFault(15)     - PCS receive link fault
+           excessiveBER(16)     - PCS Bit Error Ratio monitor
+                                  reporting excessive error ratio
+           dxsLinkFault(17)     - DTE XGXS receive link fault, XAUI only
+           pxsLinkFault(18)     - PHY XGXS receive link fault, XAUI only
+           availableReduced(19) - link normal, reduced bandwidth,
+                                  2BASE-TL / 10PASS-TS only
+           ready(20)            - at least one PME in the aggregation
+                                  group is detecting handshake tones,
+                                  2BASE-TL / 10PASS-TS only
+
+         If the MAU is a 10M b/s link or fiber type (FOIRL, 10BASE-T,
+         10BASE-F), then this is equivalent to the link test fail
+         state/low light function.  For an AUI, 10BASE2, 10BASE5, or
+         10BROAD36 MAU, this indicates whether loopback is detected on
+         the DI circuit.  The value of this attribute persists between
+         packets for MAU types AUI, 10BASE5, 10BASE2, 10BROAD36, and
+         10BASEFP.
+
+         At power-up or following a reset, the Media Available state
+         will be unknown(2) for AUI, 10BASE5, 10BASE2, 10BROAD36, and
+         10BASE-FP MAUs.  For these MAUs loopback will be tested on each
+         transmission during which no collision is detected.
+         If DI is receiving input when DO returns to IDL after a
+         transmission and there has been no collision during the
+         transmission, then loopback will be detected.  The Media
+         Available state will only change during noncollided
+         transmissions for AUI, 10BASE2, 10BASE5, 10BROAD36, and
+         10BASE-FP MAUs.
+
+         For 100BASE-T2, 100BASE-T4, 100BASE-TX, 100BASE-FX,
+         100BASE-LX10, and 100BASE-BX10 PHYs the enumerations match the
+         states within the link integrity state diagram.
+         Any MAU that implements management of [IEEE802.3] Clause
+         28 Auto-Negotiation, will map remote fault indication to
+         remoteFault(5).
+
+         Any MAU that implements management of Clause 37
+         Auto-Negotiation, will map the received RF1 and RF2 bits as
+         follows: Offline maps to offline(10), Link_Failure maps to
+         remoteFault(5), and Auto-Negotiation Error maps to
+         autoNegError(11).
+
+         The value remoteFault(5) applies to 10BASE-FB remote
+         fault indication, the 100BASE-X far-end fault indication, and
+         nonspecified remote faults from a system running Clause 28
+         Auto-Negotiation.
+
+         The value remoteJabber(7), remoteLink loss(8), or remoteTest(9)
+         SHOULD be used instead of remoteFault(5) where the reason for
+         remote fault is identified in the remote signaling protocol.
+         Where a Clause 22 MII or Clause 35 GMII is present, a logic
+         one in the remote fault bit maps to the value remoteFault(5),
+         a logic zero in the link status bit maps to the enumeration
+         notAvailable(4).  The value notAvailable(4) takes precedence
+         over remoteFault(5).
+
+         For 2BASE-TL and 10PASS-TS PHYs, the value unknown(2) maps to
+         the condition where the PHY (PCS with connected PMEs) is
+         initializing, the value ready(20) maps to the condition where
+         the interface is down and at least one PME in the aggregation
+         group is ready for handshake, the value available(3) maps to
+         the condition where all the PMEs in the aggregation group are
+         up, the value notAvailable(4) maps to the condition where all
+         the PMEs in the aggregation group are down and no handshake
+         tones are detected, the value availableReduced(19) maps to the
+         condition where the interface is up, a link fault is detected
+         at the receive direction by one or more PMEs in the
+         aggregation group, but at least one PME is up and the
+         enumeration pmdLinkFault(12) maps to the condition where a link
+         fault is detected at the receive direction by all of the PMEs
+         in the aggregation group.
+
+         For 10 Gb/s the enumerations map to value of the link_fault
+         variable within the Link Fault Signaling state diagram
+         as follows: the value OK maps to the value available(3),
+         the value Local Fault maps to the value notAvailable(4),
+         and the value Remote Fault maps to the value remoteFault(5).
+         The value pmdLinkFault(12), wisFrameLoss(13),
+         wisSignalLoss(14), pcsLinkFault(15), excessiveBER(16), or
+         dxsLinkFault(17) SHOULD be used instead of the value
+         notAvailable(4), where the reason for the Local Fault state can
+         be identified through the use of the Clause 45 MDIO Interface.
+         Where multiple reasons for the Local Fault state can be
+         identified, only the highest precedence error SHOULD be
+
+         reported.  This precedence in descending order is as follows:
+
+           pxsLinkFault
+           pmdLinkFault
+           wisFrameLoss
+           wisSignalLoss
+           pcsLinkFault
+           excessiveBER
+           dxsLinkFault.
+
+         Where a Clause 45 MDIO interface is present a logic zero in
+         the PMA/PMD Receive link status bit ([IEEE802.3]
+         Section 45.2.1.2.2) maps to the value pmdLinkFault(12),
+         logic one in the LOF status bit (Section 45.2.2.10.4) maps
+         to the value wisFrameLoss(13), a logic one in the LOS
+         status bit (Section 45.2.2.10.5) maps to the value
+         wisSignalLoss, a logic zero in the PCS Receive
+         link status bit (Section 45.2.3.2.2) maps to the value
+         pcsLinkFault(15), a logic one in the 10GBASE-R PCS Latched
+         high BER status bit (Section 45.2.3.12.2) maps to the value
+         excessiveBER, a logic zero in the DTE XS receive link status
+         bit (Section 45.2.5.2.2) maps to the value dxsLinkFault(17)
+         and a logic zero in the PHY XS transmit link status bit
+         (Section 45.2.4.2.2) maps to the value pxsLinkFault(18).
+
+         The most recent version of this textual convention is available
+         in the online version of this MIB module on the IANA web site.
+
+         Requests for new values should be made to IANA via email
+         (iana&iana.org)."
+       REFERENCE
+         "[IEEE802.3], Section 30.5.1.1.4"
+       SYNTAX       INTEGER {
+              other(1),
+              unknown(2),
+              available(3),
+              notAvailable(4),
+              remoteFault(5),
+              invalidSignal(6),
+              remoteJabber(7),
+              remoteLinkLoss(8),
+              remoteTest(9),
+              offline(10),
+              autoNegError(11),
+              pmdLinkFault(12),
+              wisFrameLoss(13),
+              wisSignalLoss(14),
+              pcsLinkFault(15),
+
+              excessiveBER(16),
+              dxsLinkFault(17),
+              pxsLinkFault(18),
+              availableReduced(19),
+              ready(20)
+         }
+
+     IANAifMauAutoNegCapBits ::= TEXTUAL-CONVENTION
+       STATUS       current
+       DESCRIPTION
+         "This data type is used as the syntax of the
+         ifMauAutoNegCapabilityBits, ifMauAutoNegCapAdvertisedBits, and
+         ifMauAutoNegCapReceivedBits objects in the (updated) definition
+         of MAU-MIB's ifMauAutoNegTable.
+
+         The most recent version of this textual convention is available
+         in the online version of this MIB module on the IANA web site.
+
+         Requests for new values should be made to IANA via email
+         (iana&iana.org)."
+       REFERENCE
+         "[IEEE802.3], Section 30.6.1.1.5"
+       SYNTAX       BITS {
+              bOther(0),          -- other or unknown
+              b10baseT(1),        -- 10BASE-T  half duplex mode
+              b10baseTFD(2),      -- 10BASE-T  full duplex mode
+              b100baseT4(3),      -- 100BASE-T4
+              b100baseTX(4),      -- 100BASE-TX half duplex mode
+              b100baseTXFD(5),    -- 100BASE-TX full duplex mode
+              b100baseT2(6),      -- 100BASE-T2 half duplex mode
+              b100baseT2FD(7),    -- 100BASE-T2 full duplex mode
+              bFdxPause(8),       -- PAUSE for full-duplex links
+              bFdxAPause(9),      -- Asymmetric PAUSE for full-duplex
+                                  --     links
+              bFdxSPause(10),     -- Symmetric PAUSE for full-duplex
+                                  --     links
+              bFdxBPause(11),     -- Asymmetric and Symmetric PAUSE for
+                                  --     full-duplex links
+              b1000baseX(12),     -- 1000BASE-X, -LX, -SX, -CX half
+                                  --     duplex mode
+              b1000baseXFD(13),   -- 1000BASE-X, -LX, -SX, -CX full
+                                  --     duplex mode
+              b1000baseT(14),     -- 1000BASE-T half duplex mode
+              b1000baseTFD(15),   -- 1000BASE-T full duplex mode
+              b10GbaseT(16),      -- 10GBASE-T
+              b1000baseKX(17),    -- 1000BASE-KX
+              b10GbaseKX4(18),    -- 10GBASE-KX4
+              b10GbaseKR(19)      -- 10GBASE-KR
+         }
+
+     IANAifJackType ::= TEXTUAL-CONVENTION
+       STATUS       current
+
+       DESCRIPTION
+         "Common enumeration values for repeater and interface MAU
+         jack types.  This data type is used as the syntax of the
+         ifJackType and rpJackType objects in the (updated) definition
+         of MAU-MIB's ifJackTable and rpJackTable respectively.
+
+         Possible values are:
+              other(1)          - undefined or unknown
+              rj45(2)           - RJ45
+              rj45S(3)          - RJ45 shielded
+              db9(4)            - DB9
+              bnc(5)            - BNC
+              fAUI(6)           - AUI female
+              mAUI(7)           - AUI male
+              fiberSC(8)        - SC fiber
+              fiberMIC(9)       - MIC fiber
+              fiberST(10)       - ST fiber
+              telco(11)         - Telco
+              mtrj(12)          - MT-RJ fiber
+              hssdc(13)         - fiber channel style-2
+              fiberLC(14)       - LC fiber
+              cx4(15)           - IB4X for 10GBASE-CX4
+
+         The most recent version of this textual convention is available
+         in the online version of this MIB module on the IANA web site.
+
+         Requests for new values should be made to IANA via email
+         (iana&iana.org)."
+       SYNTAX       INTEGER {
+              other(1),
+              rj45(2),
+              rj45S(3),
+              db9(4),
+              bnc(5),
+              fAUI(6),
+              mAUI(7),
+              fiberSC(8),
+              fiberMIC(9),
+              fiberST(10),
+              telco(11),
+              mtrj(12),
+              hssdc(13),
+              fiberLC(14),
+              -- new since RFC 3636
+              cx4(15)
+         }
+
+     -- OBJECT IDENTITIES for MAU types
+
+     --  (see rpMauType and ifMauType of MAU-MIB for usage)
+     -- The following definitions has been moved from RFC 3636 and
+     -- no longer appear in its revision.
+
+     dot3MauType OBJECT IDENTIFIER ::= { mib-2 snmpDot3MauMgt(26) 4 }
+
+     dot3MauTypeAUI OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "no internal MAU, view from AUI"
+       REFERENCE   "[IEEE802.3], Section 7"
+       ::= { dot3MauType 1 }
+
+     dot3MauType10Base5 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "thick coax MAU"
+       REFERENCE   "[IEEE802.3], Section 7"
+       ::= { dot3MauType 2 }
+
+     dot3MauTypeFoirl OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "FOIRL MAU"
+       REFERENCE   "[IEEE802.3], Section 9.9"
+       ::= { dot3MauType 3 }
+
+     dot3MauType10Base2 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "thin coax MAU"
+       REFERENCE   "[IEEE802.3], Section 10"
+       ::= { dot3MauType 4 }
+
+     dot3MauType10BaseT OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "UTP MAU.
+                   Note that it is strongly recommended that
+                   agents return either dot3MauType10BaseTHD or
+                   dot3MauType10BaseTFD if the duplex mode is
+                   known.  However, management applications should
+                   be prepared to receive this MAU type value from
+                   older agent implementations."
+       REFERENCE   "[IEEE802.3], Section 14"
+       ::= { dot3MauType 5 }
+
+     dot3MauType10BaseFP OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "passive fiber MAU"
+       REFERENCE   "[IEEE802.3], Section 16"
+       ::= { dot3MauType 6 }
+
+     dot3MauType10BaseFB OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "sync fiber MAU"
+       REFERENCE   "[IEEE802.3], Section 17"
+       ::= { dot3MauType 7 }
+
+     dot3MauType10BaseFL OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "async fiber MAU.
+                   Note that it is strongly recommended that
+                   agents return either dot3MauType10BaseFLHD or
+                   dot3MauType10BaseFLFD if the duplex mode is
+                   known.  However, management applications should
+                   be prepared to receive this MAU type value from
+                   older agent implementations."
+       REFERENCE   "[IEEE802.3], Section 18"
+       ::= { dot3MauType 8 }
+
+     dot3MauType10Broad36 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "broadband DTE MAU.
+                   Note that 10BROAD36 MAUs can be attached to
+                   interfaces but not to repeaters."
+       REFERENCE   "[IEEE802.3], Section 11"
+       ::= { dot3MauType 9 }
+
+     ------ new since RFC 1515:
+     dot3MauType10BaseTHD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "UTP MAU, half duplex mode"
+       REFERENCE   "[IEEE802.3], Section 14"
+       ::= { dot3MauType 10 }
+
+     dot3MauType10BaseTFD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "UTP MAU, full duplex mode"
+       REFERENCE   "[IEEE802.3], Section 14"
+       ::= { dot3MauType 11 }
+
+     dot3MauType10BaseFLHD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "async fiber MAU, half duplex mode"
+       REFERENCE   "[IEEE802.3], Section 18"
+       ::= { dot3MauType 12 }
+
+     dot3MauType10BaseFLFD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "async fiber MAU, full duplex mode"
+
+       REFERENCE   "[IEEE802.3], Section 18"
+       ::= { dot3MauType 13 }
+
+     dot3MauType100BaseT4 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "4 pair category 3 UTP"
+       REFERENCE   "[IEEE802.3], Section 23"
+       ::= { dot3MauType 14 }
+
+     dot3MauType100BaseTXHD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "2 pair category 5 UTP, half duplex mode"
+       REFERENCE   "[IEEE802.3], Section 25"
+       ::= { dot3MauType 15 }
+
+     dot3MauType100BaseTXFD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "2 pair category 5 UTP, full duplex mode"
+       REFERENCE   "[IEEE802.3], Section 25"
+       ::= { dot3MauType 16 }
+
+     dot3MauType100BaseFXHD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "X fiber over PMT, half duplex mode"
+       REFERENCE   "[IEEE802.3], Section 26"
+       ::= { dot3MauType 17 }
+
+     dot3MauType100BaseFXFD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "X fiber over PMT, full duplex mode"
+       REFERENCE   "[IEEE802.3], Section 26"
+       ::= { dot3MauType 18 }
+
+     dot3MauType100BaseT2HD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "2 pair category 3 UTP, half duplex mode"
+       REFERENCE   "[IEEE802.3], Section 32"
+       ::= { dot3MauType 19 }
+
+     dot3MauType100BaseT2FD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "2 pair category 3 UTP, full duplex mode"
+       REFERENCE   "[IEEE802.3], Section 32"
+       ::= { dot3MauType 20 }
+
+     ------ new since RFC 2239:
+     dot3MauType1000BaseXHD OBJECT-IDENTITY
+       STATUS      current
+
+       DESCRIPTION "PCS/PMA, unknown PMD, half duplex mode"
+       REFERENCE   "[IEEE802.3], Section 36"
+       ::= { dot3MauType 21 }
+
+     dot3MauType1000BaseXFD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "PCS/PMA, unknown PMD, full duplex mode"
+       REFERENCE   "[IEEE802.3], Section 36"
+       ::= { dot3MauType 22 }
+
+     dot3MauType1000BaseLXHD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Fiber over long-wavelength laser, half duplex
+                   mode"
+       REFERENCE   "[IEEE802.3], Section 38"
+       ::= { dot3MauType 23 }
+
+     dot3MauType1000BaseLXFD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Fiber over long-wavelength laser, full duplex
+                   mode"
+       REFERENCE   "[IEEE802.3], Section 38"
+       ::= { dot3MauType 24 }
+
+     dot3MauType1000BaseSXHD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Fiber over short-wavelength laser, half
+                   duplex mode"
+       REFERENCE   "[IEEE802.3], Section 38"
+       ::= { dot3MauType 25 }
+
+     dot3MauType1000BaseSXFD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Fiber over short-wavelength laser, full
+                   duplex mode"
+       REFERENCE   "[IEEE802.3], Section 38"
+       ::= { dot3MauType 26 }
+
+     dot3MauType1000BaseCXHD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Copper over 150-Ohm balanced cable, half
+                   duplex mode"
+       REFERENCE   "[IEEE802.3], Section 39"
+       ::= { dot3MauType 27 }
+
+     dot3MauType1000BaseCXFD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Copper over 150-Ohm balanced cable, full
+
+                   duplex mode"
+       REFERENCE   "[IEEE802.3], Section 39"
+       ::= { dot3MauType 28 }
+
+     dot3MauType1000BaseTHD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Four-pair Category 5 UTP, half duplex mode"
+       REFERENCE   "[IEEE802.3], Section 40"
+       ::= { dot3MauType 29 }
+
+     dot3MauType1000BaseTFD OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Four-pair Category 5 UTP, full duplex mode"
+       REFERENCE   "[IEEE802.3], Section 40"
+       ::= { dot3MauType 30 }
+
+     ------ new since RFC 2668:
+     dot3MauType10GigBaseX OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "X PCS/PMA, unknown PMD."
+       REFERENCE   "[IEEE802.3], Section 48"
+       ::= { dot3MauType 31 }
+
+     dot3MauType10GigBaseLX4 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "X fiber over WWDM optics"
+       REFERENCE   "[IEEE802.3], Section 53"
+       ::= { dot3MauType 32 }
+
+     dot3MauType10GigBaseR OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "R PCS/PMA, unknown PMD."
+       REFERENCE   "[IEEE802.3], Section 49"
+       ::= { dot3MauType 33 }
+
+     dot3MauType10GigBaseER OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "R fiber over 1550 nm optics"
+       REFERENCE   "[IEEE802.3], Section 52"
+       ::= { dot3MauType 34 }
+
+     dot3MauType10GigBaseLR OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "R fiber over 1310 nm optics"
+       REFERENCE   "[IEEE802.3], Section 52"
+       ::= { dot3MauType 35 }
+
+     dot3MauType10GigBaseSR OBJECT-IDENTITY
+
+       STATUS      current
+       DESCRIPTION "R fiber over 850 nm optics"
+       REFERENCE   "[IEEE802.3], Section 52"
+       ::= { dot3MauType 36 }
+
+     dot3MauType10GigBaseW OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "W PCS/PMA, unknown PMD."
+       REFERENCE   "[IEEE802.3], Section 49 and 50"
+       ::= { dot3MauType 37 }
+
+     dot3MauType10GigBaseEW OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "W fiber over 1550 nm optics"
+       REFERENCE   "[IEEE802.3], Section 52"
+       ::= { dot3MauType 38 }
+
+     dot3MauType10GigBaseLW OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "W fiber over 1310 nm optics"
+       REFERENCE   "[IEEE802.3], Section 52"
+       ::= { dot3MauType 39 }
+
+     dot3MauType10GigBaseSW OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "W fiber over 850 nm optics"
+       REFERENCE   "[IEEE802.3], Section 52"
+       ::= { dot3MauType 40 }
+
+     ------ new since RFC 3636:
+     dot3MauType10GigBaseCX4 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "X copper over 8 pair 100-Ohm balanced cable"
+       REFERENCE   "[IEEE802.3], Section 54"
+       ::= { dot3MauType 41 }
+
+     dot3MauType2BaseTL OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Voice grade UTP copper, up to 2700m, optional PAF"
+       REFERENCE   "[IEEE802.3], Sections 61 and 63"
+       ::= { dot3MauType 42 }
+
+     dot3MauType10PassTS OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Voice grade UTP copper, up to 750m, optional PAF"
+       REFERENCE   "[IEEE802.3], Sections 61 and 62"
+       ::= { dot3MauType 43 }
+
+     dot3MauType100BaseBX10D OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber OLT, long wavelength, 10km"
+       REFERENCE   "[IEEE802.3], Section 58"
+       ::= { dot3MauType 44 }
+
+     dot3MauType100BaseBX10U OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber ONU, long wavelength, 10km"
+       REFERENCE   "[IEEE802.3], Section 58"
+       ::= { dot3MauType 45 }
+
+     dot3MauType100BaseLX10 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Two single-mode fibers, long wavelength, 10km"
+       REFERENCE   "[IEEE802.3], Section 58"
+       ::= { dot3MauType 46 }
+
+     dot3MauType1000BaseBX10D OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber OLT, long wavelength, 10km"
+       REFERENCE   "[IEEE802.3], Section 59"
+       ::= { dot3MauType 47 }
+
+     dot3MauType1000BaseBX10U OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber ONU, long wavelength, 10km"
+       REFERENCE   "[IEEE802.3], Section 59"
+       ::= { dot3MauType 48 }
+
+     dot3MauType1000BaseLX10 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Two sigle-mode fiber, long wavelength, 10km"
+       REFERENCE   "[IEEE802.3], Section 59"
+       ::= { dot3MauType 49 }
+
+     dot3MauType1000BasePX10D OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber EPON OLT, 10km"
+       REFERENCE   "[IEEE802.3], Section 60"
+       ::= { dot3MauType 50 }
+
+     dot3MauType1000BasePX10U OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber EPON ONU, 10km"
+       REFERENCE   "[IEEE802.3], Section 60"
+       ::= { dot3MauType 51 }
+
+     dot3MauType1000BasePX20D OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber EPON OLT, 20km"
+       REFERENCE   "[IEEE802.3], Section 60"
+       ::= { dot3MauType 52 }
+
+     dot3MauType1000BasePX20U OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber EPON ONU, 20km"
+       REFERENCE   "[IEEE802.3], Section 60"
+       ::= { dot3MauType 53 }
+
+     dot3MauType10GbaseT OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "Four-pair Category 6A or better, full duplex mode only"
+       REFERENCE   "IEEE Std 802.3, Clause 55"
+       ::= { dot3MauType 54 }
+
+     dot3MauType10GbaseLRM OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "R multimode fiber over 1310 nm optics"
+       REFERENCE   "IEEE Std 802.3, Clause 68"
+       ::= { dot3MauType 55 }
+
+     dot3MauType1000baseKX OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "X backplane, full duplex mode only"
+       REFERENCE   "IEEE Std 802.3, Clause 70"
+       ::= { dot3MauType 56 }
+
+     dot3MauType10GbaseKX4 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "4 lane X backplane, full duplex mode only"
+       REFERENCE   "IEEE Std 802.3, Clause 71"
+       ::= { dot3MauType 57 }
+
+     dot3MauType10GbaseKR OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "R backplane, full duplex mode only"
+       REFERENCE   "IEEE Std 802.3, Clause 72"
+       ::= { dot3MauType 58 }
+
+     dot3MauType10G1GbasePRXD1 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber asymmetric-rate EPON OLT, supporting low
+                    power budget (PRX10)"
+       REFERENCE   "IEEE Std 802.3, Clause 75"
+       ::= { dot3MauType 59 }
+
+     dot3MauType10G1GbasePRXD2 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber asymmetric-rate EPON OLT, supporting
+                   medium power budget (PRX20)"
+       REFERENCE   "IEEE Std 802.3, Clause 75"
+       ::= { dot3MauType 60 }
+
+     dot3MauType10G1GbasePRXD3 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber asymmetric-rate EPON OLT, supporting high
+                   power budget (PRX30)"
+       REFERENCE   "IEEE Std 802.3, Clause 75"
+       ::= { dot3MauType 61 }
+
+     dot3MauType10G1GbasePRXU1 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber asymmetric-rate EPON ONU, supporting low
+                   power budget (PRX10)"
+       REFERENCE   "IEEE Std 802.3, Clause 75"
+       ::= { dot3MauType 62 }
+
+     dot3MauType10G1GbasePRXU2 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber asymmetric-rate EPON ONU, supporting
+                   medium power budget (PRX20)"
+       REFERENCE   "IEEE Std 802.3, Clause 75"
+       ::= { dot3MauType 63 }
+
+     dot3MauType10G1GbasePRXU3 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber asymmetric-rate EPON ONU, supporting high
+                   power budget (PRX30)"
+       REFERENCE   "IEEE Std 802.3, Clause 75"
+       ::= { dot3MauType 64 }
+
+     dot3MauType10GbasePRD1 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber symmetric-rate EPON OLT, supporting low
+                   power budget (PR10)"
+       REFERENCE   "IEEE Std 802.3, Clause 75"
+       ::= { dot3MauType 65 }
+
+     dot3MauType10GbasePRD2 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber symmetric-rate EPON OLT, supporting
+                   medium power budget (PR20)"
+       REFERENCE   "IEEE Std 802.3, Clause 75"
+       ::= { dot3MauType 66 }
+
+     dot3MauType10GbasePRD3 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber symmetric-rate EPON OLT, supporting high
+                   power budget (PR30)"
+       REFERENCE   "IEEE Std 802.3, Clause 75"
+       ::= { dot3MauType 67 }
+
+     dot3MauType10GbasePRU1 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber symmetric-rate EPON ONU, supporting
+                   low and medium power budget (PR10 and PR20)"
+       REFERENCE   "IEEE Std 802.3, Clause 75"
+       ::= { dot3MauType 68 }
+
+     dot3MauType10GbasePRU3 OBJECT-IDENTITY
+       STATUS      current
+       DESCRIPTION "One single-mode fiber symmetric-rate EPON ONU, supporting high
+                   power budget (PR30)"
+       REFERENCE   "IEEE Std 802.3, Clause 75"
+       ::= { dot3MauType 69 }
+
+
+END

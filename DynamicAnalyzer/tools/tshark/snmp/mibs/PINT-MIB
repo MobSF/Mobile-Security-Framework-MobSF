@@ -1,0 +1,593 @@
+PINT-MIB DEFINITIONS ::= BEGIN
+
+         IMPORTS
+          OBJECT-TYPE, Counter32, MODULE-IDENTITY, mib-2
+         FROM   SNMPv2-SMI
+         TEXTUAL-CONVENTION
+         FROM SNMPv2-TC
+         MODULE-COMPLIANCE, OBJECT-GROUP
+         FROM SNMPv2-CONF
+         sysApplInstallPkgEntry
+         FROM SYSAPPL-MIB
+         SnmpAdminString
+         FROM SNMP-FRAMEWORK-MIB;  -- RFC 2571 [2]
+
+         pintMib MODULE-IDENTITY
+         LAST-UPDATED "200102010000Z" -- 1 Feb 2001
+
+ORGANIZATION "IETF PINT Working Group"
+CONTACT-INFO "
+        Chairs:  Steve Bellovin
+                    E-mail: smb@research.att.com
+
+                    Igor Faynberg
+                    E-mail: faynberg@lucent.com
+
+        Authors: Murali Krishnaswamy
+                     Postal: 20 Corporate Place South
+                                Piscataway, NJ 08854
+                                Tel:    +1 (732)465-1000
+
+
+                                E-mail: murali@photuris.com
+
+                                Dan Romascanu
+                                Postal: Atidim Technology Park, Bldg 3
+                                Tel Aviv, Israel
+                                Tel:    +972 3 6458414
+                                E-mail: dromasca@avaya.com
+
+        General Discussion:pint@lists.bell-labs.com
+        To Subscribe: pint-request@lists.bell-labs.com
+        In Body: subscribe your-email-addres
+        Archive: http://www.bell-labs.com/mailing-lists/pint/
+        "
+
+DESCRIPTION
+    "This MIB defines the objects necessary to monitor
+     PINT Services"
+
+-- Revision history
+
+REVISION "200102010000Z" -- 1 Feb 2001
+DESCRIPTION
+    "Initial version, published as RFC 3055."
+::= { mib-2 93 }
+
+PintServiceType ::= TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+            "This TC describes the type of a PINT service."
+        SYNTAX  INTEGER {
+                r2C(1),     -- Request-to-Talk
+                r2F(2),     -- Request-to-Fax
+                r2FB(3),    -- Request-to-Fax-Back
+                r2HC(4)     -- Request-to-Hear-Content
+        }
+
+PintPerfStatPeriod ::= TEXTUAL-CONVENTION
+STATUS      current
+DESCRIPTION
+    "This TC describes the statistics period of time.
+
+    Note that the values of the counters indexed with a value
+    SinceReboot(4) can be potentially affected by a counter rollover.
+    It is the responsibility of the application using this object to
+    take into account that the counter has been zeroed each time it
+    reached a value of (2**32-1)."
+SYNTAX  INTEGER {
+last30sec(1),   -- Performance Statics for the last 30 sec
+
+
+last15min(2),   --    15 min
+last24Hr(3),    --    24 Hour
+sinceReboot(4)  --    Since the time the pint server was
+--      last rebooted
+}
+
+pintServerConfig        OBJECT IDENTIFIER ::= { pintMib 1 }
+pintServerMonitor       OBJECT IDENTIFIER ::= { pintMib 2 }
+pintMibConformance      OBJECT IDENTIFIER ::= { pintMib 3 }
+
+-- pintServerConfig - PINT configuration MIB variables
+
+pintReleaseNumber OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+     "An indication of version of the PINT protocol supported
+     by this agent."
+    ::= { pintServerConfig 1 }
+
+pintSysContact           OBJECT-TYPE
+    SYNTAX        SnmpAdminString
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+     "Contact information related to the administration of the PINT
+     services."
+    ::= { pintServerConfig 2 }
+
+pintApplInstallPkgTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PintApplInstallPkgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "Table describing the PINT applications that are installed."
+    ::= { pintServerConfig 3 }
+
+pintApplInstallPkgEntry OBJECT-TYPE
+    SYNTAX      PintApplInstallPkgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "Entries per PINT Application."
+    AUGMENTS { sysApplInstallPkgEntry }
+    ::= { pintApplInstallPkgTable 1 }
+
+PintApplInstallPkgEntry ::= SEQUENCE {
+
+
+pintApplInstallPkgDescription    SnmpAdminString
+}
+
+pintApplInstallPkgDescription OBJECT-TYPE
+    SYNTAX        SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS        current
+    DESCRIPTION
+     "Textual description of the installed PINT application."
+    ::= { pintApplInstallPkgEntry 1 }
+
+pintRegisteredGatewayTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PintRegisteredGatewayEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "Table describing the registered gateway applications."
+    ::= { pintServerConfig 4 }
+
+pintRegisteredGatewayEntry OBJECT-TYPE
+    SYNTAX      PintRegisteredGatewayEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "Entries per Registered Gateway Application."
+AUGMENTS { sysApplInstallPkgEntry  }
+    ::= { pintRegisteredGatewayTable 1 }
+
+PintRegisteredGatewayEntry ::= SEQUENCE {
+pintRegisteredGatewayName       SnmpAdminString,
+pintRegisteredGatewayDescription SnmpAdminString
+}
+
+pintRegisteredGatewayName OBJECT-TYPE
+    SYNTAX        SnmpAdminString
+    MAX-ACCESS read-only
+    STATUS        current
+    DESCRIPTION
+     "Name of the registered gateway."
+    ::= { pintRegisteredGatewayEntry 1 }
+
+pintRegisteredGatewayDescription OBJECT-TYPE
+    SYNTAX        SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS        current
+    DESCRIPTION
+     "Textual description of the registered gateway."
+    ::= { pintRegisteredGatewayEntry 2 }
+
+
+-- pintServerMonitor - PINT monitoring statistics MIB variables
+
+pintServerGlobalPerf    OBJECT IDENTIFIER ::= {pintServerMonitor 1 }
+pintServerClientPerf    OBJECT IDENTIFIER ::= {pintServerMonitor 2 }
+pintServerUserIdPerf    OBJECT IDENTIFIER ::= {pintServerMonitor 3 }
+pintServerGatewayPerf   OBJECT IDENTIFIER ::= {pintServerMonitor 4 }
+
+pintServerGlobalStatsTable      OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PintServerGlobalStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "Table displaying the monitored global server statistics."
+    ::= { pintServerGlobalPerf 1 }
+
+pintServerGlobalStatsEntry OBJECT-TYPE
+    SYNTAX      PintServerGlobalStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "Entries in the global statistics table.
+     One entry is defined for each monitored service type and
+     performance statistics collection period."
+    INDEX {pintServerServiceTypeIndex, pintServerPerfStatPeriodIndex}
+    ::= { pintServerGlobalStatsTable 1 }
+
+PintServerGlobalStatsEntry      ::=  SEQUENCE {
+pintServerServiceTypeIndex                           PintServiceType,
+pintServerPerfStatPeriodIndex                        PintPerfStatPeriod,
+pintServerGlobalCallsReceived                        Counter32,
+pintServerGlobalSuccessfulCalls                      Counter32,
+pintServerGlobalDisconnectedCalls                    Counter32,
+pintServerGlobalDisCUAutFCalls                       Counter32,
+pintServerGlobalDisServProbCalls                     Counter32,
+pintServerGlobalDisGatProbCalls         Counter32
+}
+
+pintServerServiceTypeIndex OBJECT-TYPE
+    SYNTAX     PintServiceType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+     "The unique identifier of the monitored service."
+    ::= { pintServerGlobalStatsEntry 1 }
+
+pintServerPerfStatPeriodIndex OBJECT-TYPE
+    SYNTAX     PintPerfStatPeriod
+    MAX-ACCESS not-accessible
+
+
+    STATUS     current
+    DESCRIPTION
+     "Time period for which the performance statistics are requested
+     from the pint server."
+    ::= { pintServerGlobalStatsEntry 2 }
+
+pintServerGlobalCallsReceived OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of received global calls."
+    ::= { pintServerGlobalStatsEntry 3 }
+
+pintServerGlobalSuccessfulCalls OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of global successful calls."
+    ::= { pintServerGlobalStatsEntry 4 }
+
+pintServerGlobalDisconnectedCalls OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of global disconnected (failed) calls."
+    ::= { pintServerGlobalStatsEntry 5 }
+
+pintServerGlobalDisCUAutFCalls
+OBJECT-TYPE
+SYNTAX     Counter32
+MAX-ACCESS read-only
+STATUS     current
+DESCRIPTION
+    "Number of global calls that were disconnected because of client
+    or user authorization failure."
+::= { pintServerGlobalStatsEntry 6 }
+
+pintServerGlobalDisServProbCalls OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of global calls that were disconnected because of
+     server problems."
+    ::= { pintServerGlobalStatsEntry 7 }
+
+
+pintServerGlobalDisGatProbCalls OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of global calls that were disconnected because of
+     gateway problems."
+    ::= { pintServerGlobalStatsEntry 8 }
+
+pintServerClientStatsTable      OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PintServerClientStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "Table displaying the monitored server client statistics."
+    ::= { pintServerClientPerf 1 }
+
+pintServerClientStatsEntry OBJECT-TYPE
+    SYNTAX      PintServerClientStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "Entries in the client server statistics table.
+     One entry is defined for each client identified by name,
+     monitored service type and performance statistics collection
+     period."
+    INDEX {pintServerClientAddress, pintServerServiceTypeIndex,
+    pintServerPerfStatPeriodIndex}
+    ::= { pintServerClientStatsTable 1 }
+
+PintServerClientStatsEntry      ::=  SEQUENCE {
+pintServerClientAddress                              SnmpAdminString,
+pintServerClientCallsReceived                           Counter32,
+pintServerClientSuccessfulCalls                         Counter32,
+pintServerClientDisconnectedCalls                       Counter32,
+pintServerClientDisCAutFCalls                           Counter32,
+pintServerClientDisEFProbCalls                          Counter32
+}
+
+pintServerClientAddress OBJECT-TYPE
+    SYNTAX     SnmpAdminString
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+     "The unique identifier of the monitored client
+     identified by its address represented as as a string."
+    ::= { pintServerClientStatsEntry 1 }
+
+
+
+pintServerClientCallsReceived OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of calls received from the specific client."
+    ::= { pintServerClientStatsEntry 2 }
+
+pintServerClientSuccessfulCalls OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of calls from the client successfully completed."
+    ::= { pintServerClientStatsEntry 3 }
+
+pintServerClientDisconnectedCalls OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of calls received from the client, and that were
+     disconnected (failed)."
+    ::= { pintServerClientStatsEntry 4 }
+
+pintServerClientDisCAutFCalls
+OBJECT-TYPE
+SYNTAX     Counter32
+MAX-ACCESS read-only
+STATUS     current
+DESCRIPTION
+    "Number of calls from the client that were disconnected because of
+    client authorization failure."
+::= { pintServerClientStatsEntry 5 }
+
+pintServerClientDisEFProbCalls OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of calls from the client that were disconnected because
+     of egress facility problems."
+    ::= { pintServerClientStatsEntry 6 }
+
+pintServerUserIdStatsTable      OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PintServerUserIdStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+
+
+    DESCRIPTION
+     "Table displaying the monitored Pint service user statistics."
+    ::= { pintServerUserIdPerf 1 }
+
+pintServerUserIdStatsEntry OBJECT-TYPE
+    SYNTAX      PintServerUserIdStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "Entries in the user statistics table.
+     One entry is defined for each user identified by name,
+     each monitored service type and performance statistics collection
+     period.
+
+      It is assumed that the capabilities of the pint server
+      are enough to accommodate the number of entries in this table.
+      It is a local server implementation issue if an aging mechanism
+      Is implemented in order to avoid scalability problems."
+    INDEX {pintServerUserIdName, pintServerServiceTypeIndex,
+    pintServerPerfStatPeriodIndex}
+    ::= { pintServerUserIdStatsTable 1 }
+
+PintServerUserIdStatsEntry      ::=  SEQUENCE {
+pintServerUserIdName                                   SnmpAdminString,
+pintServerUserIdCallsReceived                           Counter32,
+pintServerUserIdSuccessfulCalls                         Counter32,
+pintServerUserIdDisconnectedCalls                       Counter32,
+pintServerUserIdDiscUIdAFailCalls                       Counter32,
+pintServerUserIdEFProbCalls                             Counter32
+}
+
+pintServerUserIdName OBJECT-TYPE
+    SYNTAX     SnmpAdminString (SIZE(0..64))
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+     "The unique identifier of the monitored user
+     identified by its name."
+    ::= { pintServerUserIdStatsEntry 1 }
+
+pintServerUserIdCallsReceived OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of calls received from the specific user."
+    ::= { pintServerUserIdStatsEntry 2 }
+
+
+
+pintServerUserIdSuccessfulCalls OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of calls from the user successfully completed."
+    ::= { pintServerUserIdStatsEntry 3 }
+
+pintServerUserIdDisconnectedCalls OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of calls received from the user that were
+     disconnected (failed)."
+    ::= { pintServerUserIdStatsEntry 4 }
+
+pintServerUserIdDiscUIdAFailCalls
+OBJECT-TYPE
+SYNTAX     Counter32
+MAX-ACCESS read-only
+STATUS     current
+DESCRIPTION
+    "Number of calls from the user that were disconnected because of
+    user authorization failure."
+::= { pintServerUserIdStatsEntry 5 }
+
+pintServerUserIdEFProbCalls OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of calls from the user that were disconnected because of
+     egress facility problems."
+    ::= { pintServerUserIdStatsEntry 6 }
+
+pintServerGatewayStatsTable     OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PintServerGatewayStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+     "Table displaying the monitored gateway statistics."
+    ::= { pintServerGatewayPerf 1 }
+
+pintServerGatewayStatsEntry OBJECT-TYPE
+    SYNTAX      PintServerGatewayStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+
+
+    DESCRIPTION
+     "Entries in the gateway table.
+     One entry is defined for each gateway identified by name,
+     each monitored service type and performance statistics collection
+     period."
+
+    INDEX { pintRegisteredGatewayName, pintServerServiceTypeIndex,
+    pintServerPerfStatPeriodIndex }
+    ::= { pintServerGatewayStatsTable 1 }
+
+PintServerGatewayStatsEntry     ::=  SEQUENCE {
+pintServerGatewayCallsReceived                  Counter32,
+pintServerGatewaySuccessfulCalls                Counter32,
+pintServerGatewayDisconnectedCalls              Counter32
+}
+
+pintServerGatewayCallsReceived OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of calls received at the specified gateway."
+    ::= { pintServerGatewayStatsEntry 1 }
+
+pintServerGatewaySuccessfulCalls OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of calls successfully completed at the specified gateway."
+    ::= { pintServerGatewayStatsEntry 2 }
+
+pintServerGatewayDisconnectedCalls OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+     "Number of calls that were disconnected (failed) at the specified
+     gateway."
+    ::= { pintServerGatewayStatsEntry 3 }
+
+--
+-- Notifications Section
+-- (none defined)
+--
+
+--
+-- Conformance Section
+
+
+--
+
+pintMibCompliances OBJECT IDENTIFIER ::= { pintMibConformance 1 }
+pintMibGroups      OBJECT IDENTIFIER ::= { pintMibConformance 2 }
+
+pintMibCompliance MODULE-COMPLIANCE
+STATUS  current
+DESCRIPTION
+    "Describes the requirements for conformance to the
+    PINT MIB."
+MODULE  -- this module
+MANDATORY-GROUPS { pintMibConfigGroup, pintMibMonitorGroup }
+::= { pintMibCompliances 1 }
+
+pintMibConfigGroup OBJECT-GROUP
+OBJECTS {
+pintReleaseNumber,
+pintSysContact,
+pintApplInstallPkgDescription,
+pintRegisteredGatewayName,
+pintRegisteredGatewayDescription
+}
+STATUS  current
+DESCRIPTION
+    "A collection of objects providing configuration
+    information
+    for a PINT Server."
+::= { pintMibGroups 1 }
+
+pintMibMonitorGroup OBJECT-GROUP
+OBJECTS {
+pintServerGlobalCallsReceived,
+pintServerGlobalSuccessfulCalls,
+pintServerGlobalDisconnectedCalls,
+pintServerGlobalDisCUAutFCalls,
+pintServerGlobalDisServProbCalls,
+pintServerGlobalDisGatProbCalls,
+pintServerClientCallsReceived,
+pintServerClientSuccessfulCalls,
+pintServerClientDisconnectedCalls,
+pintServerClientDisCAutFCalls,
+pintServerClientDisEFProbCalls,
+--pintServerUserIdName,
+pintServerUserIdCallsReceived,
+pintServerUserIdSuccessfulCalls,
+pintServerUserIdDisconnectedCalls,
+pintServerUserIdDiscUIdAFailCalls,
+pintServerUserIdEFProbCalls,
+
+
+pintServerGatewayCallsReceived,
+pintServerGatewaySuccessfulCalls,
+pintServerGatewayDisconnectedCalls
+}
+STATUS  current
+DESCRIPTION
+    "A collection of objects providing monitoring
+    information
+    for a PINT Server."
+::= { pintMibGroups 2 }
+
+END

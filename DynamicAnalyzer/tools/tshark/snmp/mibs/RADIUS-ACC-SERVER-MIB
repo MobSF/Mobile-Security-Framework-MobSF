@@ -1,0 +1,772 @@
+RADIUS-ACC-SERVER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE, OBJECT-IDENTITY,
+       Counter32, Integer32,
+       IpAddress, TimeTicks, mib-2      FROM SNMPv2-SMI
+       SnmpAdminString                  FROM SNMP-FRAMEWORK-MIB
+       InetAddressType, InetAddress     FROM INET-ADDRESS-MIB
+       MODULE-COMPLIANCE, OBJECT-GROUP  FROM SNMPv2-CONF;
+
+radiusAccServMIB MODULE-IDENTITY
+       LAST-UPDATED "200608210000Z"  -- 21 August 2006
+       ORGANIZATION "IETF RADIUS Extensions Working Group."
+       CONTACT-INFO
+              " Bernard Aboba
+                Microsoft
+                One Microsoft Way
+                Redmond, WA  98052
+                US
+
+
+
+                Phone: +1 425 936 6605
+                EMail: bernarda@microsoft.com"
+       DESCRIPTION
+             "The MIB module for entities implementing the server
+              side of the Remote Authentication Dial-In User
+              Service (RADIUS) accounting protocol.  Copyright (C)
+              The Internet Society (2006).  This version of this
+              MIB module is part of RFC 4671; see the RFC itself
+              for full legal notices."
+       REVISION "200608210000Z"  -- 21 August 2006
+       DESCRIPTION
+             "Revised version as published in RFC 4671.  This
+              version obsoletes that of RFC 2621 by deprecating
+              the MIB table containing IPv4-only address formats
+              and defining a new table to add support for version-
+              neutral IP address formats.  The remaining MIB objects
+              from RFC 2621 are carried forward into this version."
+       REVISION "199906110000Z"    -- 11 Jun 1999
+       DESCRIPTION "Initial version as published in RFC 2621."
+       ::= { radiusAccounting 1 }
+
+radiusMIB  OBJECT-IDENTITY
+       STATUS  current
+       DESCRIPTION
+             "The OID assigned to RADIUS MIB work by the IANA."
+       ::= { mib-2 67 }
+
+radiusAccounting  OBJECT IDENTIFIER ::= {radiusMIB 2}
+
+radiusAccServMIBObjects  OBJECT IDENTIFIER
+      ::= { radiusAccServMIB 1 }
+
+radiusAccServ  OBJECT IDENTIFIER
+      ::= { radiusAccServMIBObjects 1 }
+
+radiusAccServIdent OBJECT-TYPE
+       SYNTAX      SnmpAdminString
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+             "The implementation identification string for the
+              RADIUS accounting server software in use on the
+              system, for example, 'FNS-2.1'."
+       ::= {radiusAccServ 1}
+
+radiusAccServUpTime OBJECT-TYPE
+       SYNTAX      TimeTicks
+       MAX-ACCESS  read-only
+
+
+
+       STATUS      current
+       DESCRIPTION
+             "If the server has a persistent state (e.g., a
+              process), this value will be the time elapsed (in
+              hundredths of a second) since the server process was
+              started.  For software without persistent state, this
+              value will be zero."
+       ::= {radiusAccServ 2}
+
+radiusAccServResetTime OBJECT-TYPE
+       SYNTAX      TimeTicks
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+             "If the server has a persistent state (e.g., a process)
+              and supports a 'reset' operation (e.g., can be told to
+              re-read configuration files), this value will be the
+              time elapsed (in hundredths of a second) since the
+              server was 'reset.'  For software that does not
+              have persistence or does not support a 'reset'
+              operation, this value will be zero."
+       ::= {radiusAccServ 3}
+
+radiusAccServConfigReset OBJECT-TYPE
+       SYNTAX INTEGER { other(1),
+                        reset(2),
+                        initializing(3),
+                        running(4)}
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION
+              "Status/action object to reinitialize any persistent
+               server state.  When set to reset(2), any persistent
+               server state (such as a process) is reinitialized as
+               if the server had just been started.  This value will
+               never be returned by a read operation.  When read,
+               one of the following values will be returned:
+                   other(1) - server in some unknown state;
+                   initializing(3) - server (re)initializing;
+                   running(4) - server currently running."
+       ::= {radiusAccServ 4}
+
+radiusAccServTotalRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+
+
+
+             "The number of packets received on the
+              accounting port."
+       REFERENCE "RFC 2866 section 4.1"
+       ::= { radiusAccServ 5 }
+
+radiusAccServTotalInvalidRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of RADIUS Accounting-Request packets
+              received from unknown addresses."
+       REFERENCE "RFC 2866 sections 2, 4.1"
+       ::= { radiusAccServ 6 }
+
+radiusAccServTotalDupRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of duplicate RADIUS Accounting-Request
+              packets received."
+       REFERENCE "RFC 2866 section 4.1"
+       ::= { radiusAccServ 7 }
+
+radiusAccServTotalResponses OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of RADIUS Accounting-Response packets
+              sent."
+       REFERENCE "RFC 2866 section 4.2"
+       ::= { radiusAccServ 8 }
+
+radiusAccServTotalMalformedRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of malformed RADIUS Accounting-Request
+              packets received.  Bad authenticators or unknown
+              types are not included as malformed Access-Requests."
+       REFERENCE "RFC 2866 section 3"
+
+
+
+       ::= { radiusAccServ 9 }
+
+radiusAccServTotalBadAuthenticators OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+            "The number of RADIUS Accounting-Request packets
+             that contained an invalid authenticator."
+      REFERENCE "RFC 2866 section 3"
+      ::= { radiusAccServ 10 }
+
+radiusAccServTotalPacketsDropped OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+            "The number of incoming packets silently discarded
+             for a reason other than malformed, bad authenticators,
+             or unknown types."
+      REFERENCE "RFC 2866 section 3"
+      ::= { radiusAccServ 11 }
+
+radiusAccServTotalNoRecords OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of RADIUS Accounting-Request packets
+              that were received and responded to but not
+              recorded."
+       ::= { radiusAccServ 12 }
+
+radiusAccServTotalUnknownTypes OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+            "The number of RADIUS packets of unknown type that
+             were received."
+      REFERENCE "RFC 2866 section 4"
+      ::= { radiusAccServ 13 }
+
+radiusAccClientTable OBJECT-TYPE
+
+
+
+       SYNTAX     SEQUENCE OF RadiusAccClientEntry
+       MAX-ACCESS not-accessible
+       STATUS     deprecated
+       DESCRIPTION
+             "The (conceptual) table listing the RADIUS accounting
+              clients with which the server shares a secret."
+       ::= { radiusAccServ 14 }
+
+radiusAccClientEntry OBJECT-TYPE
+       SYNTAX     RadiusAccClientEntry
+       MAX-ACCESS not-accessible
+       STATUS     deprecated
+       DESCRIPTION
+             "An entry (conceptual row) representing a RADIUS
+              accounting client with which the server shares a
+              secret."
+       INDEX      { radiusAccClientIndex }
+       ::= { radiusAccClientTable 1 }
+
+RadiusAccClientEntry ::= SEQUENCE {
+       radiusAccClientIndex                           Integer32,
+       radiusAccClientAddress                         IpAddress,
+       radiusAccClientID                        SnmpAdminString,
+       radiusAccServPacketsDropped                    Counter32,
+       radiusAccServRequests                          Counter32,
+       radiusAccServDupRequests                       Counter32,
+       radiusAccServResponses                         Counter32,
+       radiusAccServBadAuthenticators                 Counter32,
+       radiusAccServMalformedRequests                 Counter32,
+       radiusAccServNoRecords                         Counter32,
+       radiusAccServUnknownTypes                      Counter32
+}
+
+radiusAccClientIndex OBJECT-TYPE
+       SYNTAX     Integer32 (1..2147483647)
+       MAX-ACCESS not-accessible
+       STATUS     deprecated
+       DESCRIPTION
+             "A number uniquely identifying each RADIUS accounting
+              client with which this server communicates."
+       ::= { radiusAccClientEntry 1 }
+
+radiusAccClientAddress OBJECT-TYPE
+       SYNTAX     IpAddress
+       MAX-ACCESS read-only
+       STATUS     deprecated
+       DESCRIPTION
+             "The NAS-IP-Address of the RADIUS accounting client
+
+
+
+              referred to in this table entry."
+       ::= { radiusAccClientEntry 2 }
+
+radiusAccClientID OBJECT-TYPE
+       SYNTAX     SnmpAdminString
+       MAX-ACCESS read-only
+       STATUS     deprecated
+       DESCRIPTION
+             "The NAS-Identifier of the RADIUS accounting client
+              referred to in this table entry.  This is not
+              necessarily the same as sysName in MIB II."
+       REFERENCE "RFC 2865 section 5.32"
+       ::= { radiusAccClientEntry 3 }
+
+-- Server Counters
+--
+-- Requests - DupRequests - BadAuthenticators - MalformedRequests -
+-- UnknownTypes -  PacketsDropped - Responses = Pending
+--
+-- Requests - DupRequests - BadAuthenticators - MalformedRequests -
+-- UnknownTypes - PacketsDropped - NoRecords = entries logged
+
+radiusAccServPacketsDropped OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS deprecated
+      DESCRIPTION
+           "The number of incoming packets received
+            from this client and silently discarded
+            for a reason other than malformed, bad
+            authenticators, or unknown types."
+     REFERENCE "RFC 2866 section 3"
+     ::= { radiusAccClientEntry  4 }
+
+radiusAccServRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of packets received from this
+              client on the accounting port."
+       REFERENCE "RFC 2866 section 4.1"
+       ::= { radiusAccClientEntry  5 }
+
+radiusAccServDupRequests OBJECT-TYPE
+       SYNTAX Counter32
+
+
+
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of duplicate RADIUS Accounting-Request
+              packets received from this client."
+       REFERENCE "RFC 2866 section 4.1"
+       ::= { radiusAccClientEntry 6 }
+
+radiusAccServResponses OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of RADIUS Accounting-Response packets
+              sent to this client."
+       REFERENCE "RFC 2866 section 4.2"
+       ::= { radiusAccClientEntry  7 }
+
+radiusAccServBadAuthenticators OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of RADIUS Accounting-Request packets
+              that contained invalid authenticators received
+              from this client."
+       REFERENCE "RFC 2866 section 3"
+       ::= { radiusAccClientEntry  8 }
+
+radiusAccServMalformedRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of malformed RADIUS Accounting-Request
+              packets that were received from this client.
+              Bad authenticators and unknown types
+              are not included as malformed Accounting-Requests."
+       REFERENCE "RFC 2866 section 3"
+       ::= { radiusAccClientEntry  9 }
+
+radiusAccServNoRecords OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+
+
+
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of RADIUS Accounting-Request packets
+              that were received and responded to but not
+              recorded."
+       ::= { radiusAccClientEntry  10 }
+
+radiusAccServUnknownTypes OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS deprecated
+       DESCRIPTION
+             "The number of RADIUS packets of unknown type that
+              were received from this client."
+       REFERENCE "RFC 2866 section 4"
+       ::= { radiusAccClientEntry  11 }
+
+
+-- New MIB objects added in this revision
+
+radiusAccClientExtTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF RadiusAccClientExtEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "The (conceptual) table listing the RADIUS accounting
+              clients with which the server shares a secret."
+       ::= { radiusAccServ 15 }
+
+radiusAccClientExtEntry OBJECT-TYPE
+       SYNTAX     RadiusAccClientExtEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "An entry (conceptual row) representing a RADIUS
+              accounting client with which the server shares a
+              secret."
+       INDEX      { radiusAccClientExtIndex }
+       ::= { radiusAccClientExtTable 1 }
+
+RadiusAccClientExtEntry ::= SEQUENCE {
+       radiusAccClientExtIndex               Integer32,
+       radiusAccClientInetAddressType        InetAddressType,
+       radiusAccClientInetAddress            InetAddress,
+       radiusAccClientExtID                  SnmpAdminString,
+       radiusAccServExtPacketsDropped        Counter32,
+
+
+
+       radiusAccServExtRequests              Counter32,
+       radiusAccServExtDupRequests           Counter32,
+       radiusAccServExtResponses             Counter32,
+       radiusAccServExtBadAuthenticators     Counter32,
+       radiusAccServExtMalformedRequests     Counter32,
+       radiusAccServExtNoRecords             Counter32,
+       radiusAccServExtUnknownTypes          Counter32,
+       radiusAccServerCounterDiscontinuity   TimeTicks
+}
+
+radiusAccClientExtIndex OBJECT-TYPE
+       SYNTAX     Integer32 (1..2147483647)
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "A number uniquely identifying each RADIUS accounting
+              client with which this server communicates."
+       ::= { radiusAccClientExtEntry 1 }
+
+       radiusAccClientInetAddressType OBJECT-TYPE
+         SYNTAX     InetAddressType
+         MAX-ACCESS read-only
+         STATUS     current
+         DESCRIPTION
+               "The type of address format used for the
+                radiusAccClientInetAddress object."
+         ::= { radiusAccClientExtEntry 2 }
+
+   radiusAccClientInetAddress OBJECT-TYPE
+         SYNTAX     InetAddress
+         MAX-ACCESS read-only
+         STATUS     current
+         DESCRIPTION
+               "The IP address of the RADIUS accounting
+                client referred to in this table entry, using
+                the IPv6 address format."
+         ::= { radiusAccClientExtEntry 3 }
+
+radiusAccClientExtID OBJECT-TYPE
+       SYNTAX     SnmpAdminString
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The NAS-Identifier of the RADIUS accounting client
+              referred to in this table entry.  This is not
+              necessarily the same as sysName in MIB II."
+       REFERENCE "RFC 2865 section 5.32"
+       ::= { radiusAccClientExtEntry 4 }
+
+
+
+-- Server Counters
+--
+-- Requests - DupRequests - BadAuthenticators - MalformedRequests -
+-- UnknownTypes -  PacketsDropped - Responses = Pending
+--
+-- Requests - DupRequests - BadAuthenticators - MalformedRequests -
+-- UnknownTypes - PacketsDropped - NoRecords = entries logged
+
+radiusAccServExtPacketsDropped OBJECT-TYPE
+      SYNTAX Counter32
+      UNITS "packets"
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+           "The number of incoming packets received from this
+            client and silently discarded for a reason other
+            than malformed, bad authenticators, or unknown types.
+            This counter may experience a discontinuity when the
+            RADIUS Accounting Server module within the managed
+            entity is reinitialized, as indicated by the current
+            value of radiusAccServerCounterDiscontinuity."
+     REFERENCE "RFC 2866 section 3"
+     ::= { radiusAccClientExtEntry  5 }
+
+radiusAccServExtRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of packets received from this
+              client on the accounting port.  This counter
+              may experience a discontinuity when the
+              RADIUS Accounting Server module within the
+              managed entity is reinitialized, as indicated by
+              the current value of
+              radiusAccServerCounterDiscontinuity."
+       REFERENCE "RFC 2866 section 4.1"
+       ::= { radiusAccClientExtEntry  6 }
+
+radiusAccServExtDupRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of duplicate RADIUS Accounting-Request
+              packets received from this client.  This counter
+
+
+
+              may experience a discontinuity when the RADIUS
+              Accounting Server module within the managed
+              entity is reinitialized, as indicated by the
+              current value of
+              radiusAccServerCounterDiscontinuity."
+       REFERENCE "RFC 2866 section 4.1"
+       ::= { radiusAccClientExtEntry 7 }
+
+radiusAccServExtResponses OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of RADIUS Accounting-Response packets
+              sent to this client.  This counter may experience
+              a discontinuity when the RADIUS Accounting Server
+              module within the managed entity is reinitialized,
+              as indicated by the current value of
+              radiusAccServerCounterDiscontinuity."
+       REFERENCE "RFC 2866 section 4.2"
+       ::= { radiusAccClientExtEntry  8 }
+
+radiusAccServExtBadAuthenticators OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of RADIUS Accounting-Request packets
+              that contained invalid authenticators received
+              from this client.  This counter may experience a
+              discontinuity when the RADIUS Accounting Server
+              module within the managed entity is reinitialized,
+              as indicated by the current value of
+              radiusAccServerCounterDiscontinuity."
+       REFERENCE "RFC 2866 section 3"
+       ::= { radiusAccClientExtEntry  9 }
+
+radiusAccServExtMalformedRequests OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of malformed RADIUS Accounting-Request
+              packets that were received from this client.
+              Bad authenticators and unknown types are not
+
+
+
+              included as malformed Accounting-Requests.  This
+              counter may experience a discontinuity when the
+              RADIUS Accounting Server module within the managed
+              entity is reinitialized, as indicated by the current
+              value of radiusAccServerCounterDiscontinuity."
+       REFERENCE "RFC 2866 section 3"
+       ::= { radiusAccClientExtEntry  10 }
+
+radiusAccServExtNoRecords OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of RADIUS Accounting-Request packets
+              that were received and responded to but not
+              recorded.  This counter may experience a
+              discontinuity when the RADIUS Accounting Server
+              module within the managed entity is reinitialized,
+              as indicated by the current value of
+              radiusAccServerCounterDiscontinuity."
+       ::= { radiusAccClientExtEntry  11 }
+
+radiusAccServExtUnknownTypes OBJECT-TYPE
+       SYNTAX Counter32
+       UNITS "packets"
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "The number of RADIUS packets of unknown type that
+              were received from this client.  This counter may
+              experience a discontinuity when the RADIUS Accounting
+              Server module within the managed entity is
+              reinitialized, as indicated by the current value of
+              radiusAccServerCounterDiscontinuity."
+       REFERENCE "RFC 2866 section 4"
+       ::= { radiusAccClientExtEntry  12 }
+
+radiusAccServerCounterDiscontinuity OBJECT-TYPE
+         SYNTAX TimeTicks
+         UNITS "centiseconds"
+         MAX-ACCESS read-only
+         STATUS current
+         DESCRIPTION
+               "The number of centiseconds since the last
+                discontinuity in the RADIUS Accounting Server
+                counters.  A discontinuity may be the result of
+                a reinitialization of the RADIUS Accounting Server
+
+
+
+                module within the managed entity."
+         ::= { radiusAccClientExtEntry 13 }
+
+
+-- conformance information
+
+radiusAccServMIBConformance  OBJECT IDENTIFIER
+       ::= { radiusAccServMIB 2 }
+
+radiusAccServMIBCompliances  OBJECT IDENTIFIER
+       ::= { radiusAccServMIBConformance 1 }
+
+radiusAccServMIBGroups  OBJECT IDENTIFIER
+       ::= { radiusAccServMIBConformance 2 }
+
+
+-- compliance statements
+
+radiusAccServMIBCompliance MODULE-COMPLIANCE
+       STATUS  deprecated
+       DESCRIPTION
+            "The compliance statement for accounting servers
+            implementing the RADIUS Accounting Server MIB.
+            Implementation of this module is for IPv4-only
+            entities, or for backwards compatibility use with
+            entities that support both IPv4 and IPv6."
+       MODULE  -- this module
+       MANDATORY-GROUPS { radiusAccServMIBGroup }
+
+       OBJECT        radiusAccServConfigReset
+       WRITE-SYNTAX  INTEGER { reset(2) }
+       DESCRIPTION  "The only SETable value is 'reset' (2)."
+
+       ::= { radiusAccServMIBCompliances 1 }
+
+radiusAccServExtMIBCompliance MODULE-COMPLIANCE
+       STATUS  current
+       DESCRIPTION
+            "The compliance statement for accounting
+            servers implementing the RADIUS Accounting
+            Server IPv6 Extensions MIB.  Implementation of
+            this module is for entities that support IPv6,
+            or support IPv4 and IPv6."
+       MODULE  -- this module
+       MANDATORY-GROUPS { radiusAccServExtMIBGroup }
+
+       OBJECT        radiusAccServConfigReset
+       WRITE-SYNTAX  INTEGER { reset(2) }
+
+
+
+       DESCRIPTION  "The only SETable value is 'reset' (2)."
+
+       OBJECT radiusAccClientInetAddressType
+        SYNTAX InetAddressType { ipv4(1), ipv6(2) }
+        DESCRIPTION
+              "An implementation is only required to support
+               IPv4 and globally unique IPv6 addresses."
+
+        OBJECT radiusAccClientInetAddress
+        SYNTAX InetAddress ( SIZE (4|16) )
+        DESCRIPTION
+              "An implementation is only required to support
+               IPv4 and globally unique IPv6 addresses."
+
+       ::= { radiusAccServMIBCompliances 2 }
+
+
+-- units of conformance
+
+radiusAccServMIBGroup OBJECT-GROUP
+      OBJECTS {radiusAccServIdent,
+               radiusAccServUpTime,
+               radiusAccServResetTime,
+               radiusAccServConfigReset,
+               radiusAccServTotalRequests,
+               radiusAccServTotalInvalidRequests,
+               radiusAccServTotalDupRequests,
+               radiusAccServTotalResponses,
+               radiusAccServTotalMalformedRequests,
+               radiusAccServTotalBadAuthenticators,
+               radiusAccServTotalPacketsDropped,
+               radiusAccServTotalNoRecords,
+               radiusAccServTotalUnknownTypes,
+               radiusAccClientAddress,
+               radiusAccClientID,
+               radiusAccServPacketsDropped,
+               radiusAccServRequests,
+               radiusAccServDupRequests,
+               radiusAccServResponses,
+               radiusAccServBadAuthenticators,
+               radiusAccServMalformedRequests,
+               radiusAccServNoRecords,
+               radiusAccServUnknownTypes
+              }
+      STATUS  deprecated
+      DESCRIPTION
+            "The collection of objects providing management of
+             a RADIUS Accounting Server."
+
+
+
+      ::= { radiusAccServMIBGroups 1 }
+
+radiusAccServExtMIBGroup OBJECT-GROUP
+      OBJECTS {radiusAccServIdent,
+               radiusAccServUpTime,
+               radiusAccServResetTime,
+               radiusAccServConfigReset,
+               radiusAccServTotalRequests,
+               radiusAccServTotalInvalidRequests,
+               radiusAccServTotalDupRequests,
+               radiusAccServTotalResponses,
+               radiusAccServTotalMalformedRequests,
+               radiusAccServTotalBadAuthenticators,
+               radiusAccServTotalPacketsDropped,
+               radiusAccServTotalNoRecords,
+               radiusAccServTotalUnknownTypes,
+               radiusAccClientInetAddressType,
+               radiusAccClientInetAddress,
+               radiusAccClientExtID,
+               radiusAccServExtPacketsDropped,
+               radiusAccServExtRequests,
+               radiusAccServExtDupRequests,
+               radiusAccServExtResponses,
+               radiusAccServExtBadAuthenticators,
+               radiusAccServExtMalformedRequests,
+               radiusAccServExtNoRecords,
+               radiusAccServExtUnknownTypes,
+               radiusAccServerCounterDiscontinuity
+              }
+      STATUS  current
+      DESCRIPTION
+            "The collection of objects providing management of
+             a RADIUS Accounting Server."
+      ::= { radiusAccServMIBGroups 2 }
+
+END

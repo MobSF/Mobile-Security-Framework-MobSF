@@ -1,0 +1,1179 @@
+   RSVP-PCC-PIB PIB-DEFINITIONS ::= BEGIN  
+     
+   IMPORTS  
+        ibrpib
+                FROM TUBS-SMI
+        Unsigned32, Unsigned64, Integer32, MODULE-IDENTITY, OBJECT-TYPE
+                FROM COPS-PR-SPPI  
+        InstanceId, ReferenceId, Prid, TagId  
+                FROM COPS-PR-SPPI-TC  
+        InetAddress, InetAddressType  
+                FROM INET-ADDRESS-MIB
+        Role, RoleCombination  
+                FROM POLICY-DEVICE-AUX-MIB  
+        OBJECT-GROUP  
+                FROM SNMPv2-CONF
+        ExtUTCTime
+                FROM SNMPv2-SMI
+        SnmpAdminString
+                FROM SNMP-FRAMEWORK-MIB
+        MessageSize, BitRate, BurstSize  
+                FROM INTEGRATED-SERVICES-MIB  
+        frwkIpFilterTable, frwkIpFilterEntry
+                FROM FRAMEWORK-PIB;  
+    
+rsvpPccPib  MODULE-IDENTITY
+        SUBJECT-CATEGORIES { all } -- war: RSVP-PCC(tbd)
+        LAST-UPDATED "200011131600Z"  
+        ORGANIZATION "IETF-RAP-WG"  
+        CONTACT-INFO "  
+                    Diana Rawlins                
+                     901 International Parkway  
+                     Richardson, TX 75081  
+                     Email: Diana.Rawlins@wcom.com  
+                     Phone +1 972 729 1044  
+     
+                     Lei Yao  
+                     22001 Loudoun County Parkway  
+                     Ashburn, VA 20147  
+                     Email: Lei.yao@wcom.com  
+                     Phone: +1 703 886 1830  
+     
+                     Richard McClain  
+                     901 International Parkway  
+                     Richardson, TX 75081  
+                     Email: Richard.McClain@wcom.com  
+                     Phone: +1 972 729 1094  
+     
+                     Amol Kulkarni   
+                     JF3-206            
+                     2111 NE 25th Ave   
+                     Hillsboro, Oregon 97124   
+                     Email: amol.kulkarni@intel.com   
+                  Phone: +1 503 712 1168 "  
+                            
+        DESCRIPTION  
+                "A PIB module containing the policy control  
+                classes that are required for support of   
+                pushing policy control from the PDP to PEPs."  
+     
+        ::= { ibrpib 12 }  
+     
+   --  
+   -- The root OID for PRCs in the RSVP Policy Control Criteria PIB  
+   --  
+     
+   rsvpPccBaseClasses  
+                OBJECT IDENTIFIER ::= { rsvpPccPib 1 }  
+        
+   --  
+   -- Textual Conventions  
+   --  
+        
+   --  
+   -- Policy Control Capabilities Table  
+   --  
+     
+   policyControlCapsTable OBJECT-TYPE  
+        SYNTAX  SEQUENCE OF PolicyControlCapsEntry  
+        PIB-ACCESS      notify
+        STATUS          current  
+        DESCRIPTION  
+                " The policy control capability in terms of the policy 
+                  control mode supported by the device."   
+     
+        ::= { rsvpPccBaseClasses 1 }  
+     
+   policyControlCapsEntry OBJECT-TYPE  
+        SYNTAX  PolicyControlCapsEntry  
+        STATUS  current  
+        DESCRIPTION  
+                " The instance defining the policy control mode."   
+     
+        PIB-INDEX { policyControlCapsPccId }  
+     
+        ::= { policyControlCapsTable 1 }  
+     
+     
+   PolicyControlCapsEntry ::= SEQUENCE {  
+        policyControlCapsPccId          InstanceId,  
+        policyControlCapsMode           BITS  
+   }  
+     
+   policyControlCapsPccId OBJECT-TYPE  
+        SYNTAX  InstanceId  
+        STATUS  current  
+        DESCRIPTION  
+                "An arbitrary integer index that uniquely identifies   
+                an instance of the PolicyControlCaps class."  
+          
+        ::= { policyControlCapsEntry 1 }  
+     
+   policyControlCapsMode OBJECT-TYPE  
+        SYNTAX  BITS {  
+                        confirmAll(0),  
+                        localIfAvailable(1),  
+                        localOnly(2)  
+                }  
+        STATUS  current  
+        DESCRIPTION  
+                "The policy control criteria mode of the device. The 
+                 device may support any combination of modes.  
+                 The valid bit values are:  
+                 (0)Local Decision Policy which makes decision and  
+                  then outsources confirmation to the PDP   
+                 (1)local control and if no policy control criteria         
+                  is available locally, then outsource decision to PDP  
+                 (2)local policy control only."  
+                        
+        ::= { policyControlCapsEntry 2}  
+    
+   -- 
+   -- Policy Control Criteria Mode Table 
+   -- 
+    
+      pccModeTable OBJECT-TYPE  
+       
+           SYNTAX  SEQUENCE OF PccModeEntry  
+           PIB-ACCESS      notify
+           STATUS  current  
+           DESCRIPTION  
+                   " The policy control mode designated by the PDP."    
+                        
+        
+           ::= { rsvpPccBaseClasses 2 }  
+        
+      pccModeEntry OBJECT-TYPE  
+           SYNTAX  PccModeEntry  
+           STATUS  current  
+           DESCRIPTION  
+                   "  The instance defining the PDP designated mode of 
+                     policy control."   
+        
+           PIB-INDEX { pccModeId }  
+        
+           ::= { pccModeTable 1 }  
+        
+        
+      PccModeEntry ::= SEQUENCE {  
+           pccModeId          InstanceId,  
+           pccModeMode        INTEGER  
+      }  
+        
+      pccModeId OBJECT-TYPE  
+           SYNTAX  InstanceId  
+           STATUS  current  
+           DESCRIPTION  
+                   "An arbitrary integer index that uniquely identifies 
+                    an instance of the pccModeTable class."  
+             
+           ::= { pccModeEntry 1 }  
+        
+      pccModeMode OBJECT-TYPE  
+           SYNTAX  INTEGER {  
+                           confirmAll(1),  
+                           localIfAvailable(2),  
+                           localOnly(3)  
+                   }  
+           STATUS  current  
+           DESCRIPTION  
+                   "The policy criteria control mode to be used by the 
+                    device.   
+                    The valid enumeration values are:  
+                    (1)Local Decision Policy which makes decision and  
+                    then outsources confirmation to the PDP   
+                    (2)local control and if no policy control criteria         
+                   is available locally, then outsource decision to PDP  
+                    (3)local policy control only."  
+                           
+           ::= { pccModeEntry 2}  
+  
+   --  
+   -- Policy Control Criteria Linkage Table  
+   --  
+     
+   pccLinkTable OBJECT-TYPE  
+        SYNTAX  SEQUENCE OF PccLinkEntry  
+        PIB-ACCESS      install-notify
+        STATUS  current  
+        DESCRIPTION  
+                " This table defines the association between   
+                  the filter, frwkIpFilterTable instance and  
+                  the authorization policy instance"  
+          
+        ::= { rsvpPccBaseClasses 3 }  
+     
+   pccLinkEntry OBJECT-TYPE  
+        SYNTAX  PccLinkEntry  
+        STATUS  current  
+        DESCRIPTION  
+                " An entry links the filter and the authorization 
+                  policy."   
+     
+        PIB-INDEX { pccLinkPccId }   
+        UNIQUENESS {   
+                     pccLinkFilterRefId,  
+                     pccLinkPolicyPrid }  
+     
+        ::= { pccLinkTable 1 }  
+     
+     
+   PccLinkEntry::= SEQUENCE {  
+        pccLinkPccId                            InstanceId,  
+        pccLinkFilterRefId                      ReferenceId,  
+        pccLinkPolicyPrid                       Prid  
+        }  
+     
+   pccLinkPccId OBJECT-TYPE  
+        SYNTAX  InstanceId  
+        STATUS  current  
+        DESCRIPTION  
+                " An arbitrary integer index that uniquely   
+                  identifies an instance of the PccLink class. "  
+        
+     ::= { pccLinkEntry 1 }  
+     
+     
+   pccLinkFilterRefId OBJECT-TYPE  
+        SYNTAX  ReferenceId  
+        PIB-REFERENCES { frwkIpFilterEntry }
+        STATUS  current  
+        DESCRIPTION  
+                " References an instance of frwkIPFilterTable. "  
+     ::= { pccLinkEntry 2 }  
+     
+     
+   pccLinkPolicyPrid OBJECT-TYPE  
+        SYNTAX  Prid  
+        STATUS  current  
+        DESCRIPTION  
+                " Specifies the specific Prid of the PRC and instance of 
+                 authorization policy associated with this filter."  
+        
+      ::= { pccLinkEntry 3 }  
+     
+   --  
+   -- Traffic Specifier Policies Table  
+   --  
+     
+   trafficSpecifierPolicyTable OBJECT-TYPE  
+        SYNTAX  SEQUENCE OF TrafficSpecifierPolicyEntry  
+        PIB-ACCESS      install-notify
+        STATUS          current  
+        DESCRIPTION  
+                "This table defines the Traffic specifier policy control 
+                characteristics that can be used to determine 
+                SENDER_TSPEC, Controlled-Load or Guaranteed Services 
+                policies."  
+     
+        ::= { rsvpPccBaseClasses 4 }  
+     
+   trafficSpecifierPolicyEntry OBJECT-TYPE  
+        SYNTAX  TrafficSpecifierPolicyEntry  
+        STATUS  current  
+        DESCRIPTION  
+                " An entry describes a specific limits for a T-SPEC 
+                  policy. "   
+     
+        PIB-INDEX { trafficSpecifierPolicyId }  
+        UNIQUENESS {trafficSpecifierPolicyIntService,  
+                    trafficSpecifierPolicyBucketRate,   
+                    trafficSpecifierPolicyBucketSize,  
+                    trafficSpecifierPolicyPeakRate,  
+                    trafficSpecifierPolicyMinPolicedUnit,  
+                    trafficSpecifierPolicyMaxPacketSize }  
+        
+        ::= { trafficSpecifierPolicyTable 1 }  
+     
+     
+   TrafficSpecifierPolicyEntry ::= SEQUENCE {  
+        trafficSpecifierPolicyId                        InstanceId,  
+        trafficSpecifierPolicyIntService                Integer32, 
+        trafficSpecifierPolicyBucketRate                BitRate,  
+        trafficSpecifierPolicyBucketSize                Unsigned32,  
+        trafficSpecifierPolicyPeakRate                  BurstSize,  
+        trafficSpecifierPolicyMinPolicedUnit            MessageSize,  
+        trafficSpecifierPolicyMaxPacketSize             MessageSize   
+   
+   }  
+     
+     
+     
+   trafficSpecifierPolicyId OBJECT-TYPE  
+        SYNTAX  InstanceId  
+        STATUS  current  
+        DESCRIPTION  
+                "An arbitrary integer index that uniquely identifies an 
+                instance of the TrafficSpecifierPolicy class."  
+          
+        ::= { trafficSpecifierPolicyEntry 1 }  
+        
+     
+   trafficSpecifierPolicyIntService OBJECT-TYPE  
+        SYNTAX  Integer32  
+        STATUS  current  
+        DESCRIPTION  
+                " The traffic specifier policy is applied 
+                  to the flow of this Integrated Service type."
+   ::= { trafficSpecifierPolicyEntry 2 } 
+         
+   trafficSpecifierPolicyBucketRate OBJECT-TYPE  
+        SYNTAX  BitRate  
+        STATUS  current  
+        DESCRIPTION  
+                " 'r' bytes per second, the token bucket rate. "  
+          
+        ::= { trafficSpecifierPolicyEntry 3 }  
+     
+     
+   trafficSpecifierPolicyBucketSize OBJECT-TYPE  
+        SYNTAX  Unsigned32  
+        STATUS  current  
+        DESCRIPTION  
+                " 'b' bucket depth in bytes, the token bucket size. "  
+          
+        ::= { trafficSpecifierPolicyEntry 4 }  
+        
+        
+   trafficSpecifierPolicyPeakRate OBJECT-TYPE  
+        SYNTAX  BurstSize  
+        STATUS  current  
+        DESCRIPTION  
+                " 'p' peak traffic data rate in bytes. "  
+          
+        ::= { trafficSpecifierPolicyEntry 5 }  
+     
+     
+   trafficSpecifierPolicyMinPolicedUnit OBJECT-TYPE  
+        SYNTAX  MessageSize  
+        STATUS  current  
+        DESCRIPTION  
+                " 'm' minimum policed unit: size in bytes   
+                of application data and all IP and greater   
+                level (UDP, RTP, TCP, etc.) headers. "  
+          
+        ::= { trafficSpecifierPolicyEntry 6 }  
+        
+        
+   trafficSpecifierPolicyMaxPacketSize OBJECT-TYPE  
+        SYNTAX  MessageSize  
+        STATUS  current  
+        DESCRIPTION  
+                " 'M' maximum packet size: biggest packet   
+                that conforms to traffic specification. "  
+          
+        ::= { trafficSpecifierPolicyEntry 7 }  
+     
+   --  
+   -- RSPEC Limits Table  
+   --  
+     
+   rspecLimitsTable OBJECT-TYPE  
+        SYNTAX  SEQUENCE OF RspecLimitsEntry  
+        PIB-ACCESS      install-notify
+        STATUS  current  
+        DESCRIPTION  
+                "This table defines the RSPEC policy control  
+                characteristics that are applied  to Integrated   
+                Services Guaranteed Service."  
+     
+        ::= { rsvpPccBaseClasses 5 }  
+        
+   rspecLimitsEntry OBJECT-TYPE  
+        SYNTAX  RspecLimitsEntry  
+        STATUS  current  
+        DESCRIPTION  
+                " An entry that defines specific Rate and Slack  
+                  limits for a Guaranteed Service resource request "  
+     
+        EXTENDS { trafficSpecifierPolicyEntry }  
+        UNIQUENESS { rspecLimitsRate,  
+                     rspecLimitsSlackTerm }   
+     
+        ::= { rspecLimitsTable 1 }  
+     
+     
+   RspecLimitsEntry ::= SEQUENCE {  
+        rspecLimitsId                   InstanceId, 
+        rspecLimitsRate                 BitRate,  
+        rspecLimitsSlackTerm            Unsigned32  
+   }  
+     
+ 
+   rspecLimitsId OBJECT-TYPE  
+        SYNTAX  InstanceId  
+        STATUS  current  
+        DESCRIPTION  
+                "An arbitrary integer index that uniquely identifies an 
+                instance of the rspecLimits class."  
+          
+        ::= { rspecLimitsEntry 1 }  
+     
+   rspecLimitsRate OBJECT-TYPE  
+        SYNTAX  BitRate  
+        STATUS  current  
+        DESCRIPTION  
+                " 'R' - Rate. Must be greater than or equal to 'r', rate 
+                  for the flow "  
+          
+        ::= { rspecLimitsEntry 2 }  
+     
+   rspecLimitsSlackTerm OBJECT-TYPE  
+        SYNTAX  Unsigned32  
+        STATUS  current  
+        DESCRIPTION  
+                " 'S' - Slack Term. Defines in microseconds the 
+                  difference between desired delay and the delay 
+                  attained with the reservation level of R"  
+          
+        ::= { rspecLimitsEntry 3 }  
+     
+   --  
+   -- Authentication Data Policy Element Table  
+   --  
+     
+   authDataPolicyElementTable OBJECT-TYPE  
+        SYNTAX  SEQUENCE OF AuthDataPolicyElementEntry  
+        PIB-ACCESS      install-notify
+        STATUS          current  
+        DESCRIPTION  
+                "This table specifies policy control to identify and 
+                authenticate the owner making resource request."  
+     
+        ::= { rsvpPccBaseClasses 6 }  
+     
+   authDataPolicyElementEntry OBJECT-TYPE  
+        SYNTAX  AuthDataPolicyElementEntry  
+        STATUS  current  
+        DESCRIPTION  
+                "  An entry defines the specific authentication  
+                   identify used to grant permission for the  
+                   reservation request."  
+     
+        PIB-INDEX { authDataPolicyElementPccId }  
+        UNIQUENESS {   
+                     authDataPolicyElementPolicySetId,  
+                     authDataPolicyElementPolicyIdentity,  
+                     authDataPolicyElementPolicyAuthAttrType,  
+                     authDataPolicyElementPolicyAuthAttrSubType  
+       }  
+     
+        ::= { authDataPolicyElementTable 1 }  
+        
+        
+   AuthDataPolicyElementEntry::= SEQUENCE {  
+        authDataPolicyElementPccId                      InstanceId,  
+        authDataPolicyElementPolicySetId                TagId,  
+        authDataPolicyElementPolicyIdentity             INTEGER,  
+        authDataPolicyElementPolicyAuthAttrType         INTEGER,  
+        authDataPolicyElementPolicyAuthAttrSubType      INTEGER  
+        }  
+     
+   authDataPolicyElementPccId OBJECT-TYPE  
+        SYNTAX  InstanceId  
+        STATUS  current  
+        DESCRIPTION  
+                "An arbitrary integer index that uniquely identifies  
+                 an instance of the AuthDataPolicyElement class."  
+          
+        ::= { authDataPolicyElementEntry 1 }  
+     
+     
+   authDataPolicyElementPolicySetId OBJECT-TYPE  
+        SYNTAX  TagId  
+        STATUS  current  
+        DESCRIPTION  
+                " This associates a set of authentication attributes."  
+             
+        ::= { authDataPolicyElementEntry 2 }  
+     
+     
+     
+   authDataPolicyElementPolicyIdentity OBJECT-TYPE  
+        SYNTAX  INTEGER{  
+                        authUser(1),  
+                        authApp(2)  
+                }  
+        STATUS  current  
+        DESCRIPTION  
+                " Identifies the Policy Set Element via enumeration   
+                  values:  
+                        (2) AUTH_USER  
+                        (3) AUTH_APP  "  
+          
+        ::= { authDataPolicyElementEntry 3 }  
+     
+     
+   authDataPolicyElementPolicyAuthAttrType OBJECT-TYPE  
+        SYNTAX  INTEGER {  
+                        policyLocaltor(1),  
+                        credential(2),  
+                        digitalSignature(3),  
+                        policyErrorObject(4)  
+                }  
+        STATUS  current  
+        DESCRIPTION  
+                " Enumeration values:  
+                  (1) POLICY_LOCATOR (valid for both AUTH_USER  and 
+                      AUTH_APP)  
+                  (2) CREDENTIAL (valid for both AUTH_USER and  
+                      AUTH_APP)   
+                  (3) DIGITAL_SIGNATURE   
+                  (4) POLICY_ERROR_OBJECT  "  
+          
+        ::= { authDataPolicyElementEntry 4 }  
+     
+   authDataPolicyElementPolicyAuthAttrSubType OBJECT-TYPE  
+        SYNTAX  INTEGER {
+                        noType(0),  
+                        asciiDN(1),  
+                        unicodeDN(2),  
+                        asciiDNEncrypt(3),  
+                        unicodeDNEncrypt(4),  
+                        asciiID(5),  
+                        unicodeID(6),  
+                        kerberorTKT(7),  
+                        x509Cert(8),  
+                        pgpCert(9),  
+                        noMoreInfo(10),  
+                        unsupportedCredType(11),  
+                        insufficientPrivs(12),  
+                        expiredCredential(13),  
+                        identityChanged(14)  
+                }  
+        STATUS  current  
+        DESCRIPTION  
+                " For POLICY_LOCATOR valid enumeration values are:  
+                       (1)  ASCII_DN (valid for both AUTH_USER and    
+                            AUTH_APP)  
+                       (2)  UNICODE_DN (valid for both AUTH_USER and   
+                            AUTH_APP)   
+                        (3) ASCII_DN_ENCRYPT  
+                        (4) UNICODE_DN_ENCRYPT   
+          
+                 For CREDENTIAL valid enumeration values are:  
+                       (5)  ASCII_ID (valid for both AUTH_USER and    
+                            AUTH_APP)  
+                       (6)  UNICODE_ID (valid for both AUTH_USER and    
+                            AUTH_APP)   
+                        (7) KERBEROS_TKT  
+                        (8) X509_V3_CERT   
+                        (9) PGP_CERT   
+          
+                 For DIGITAL_SIGNATURE:  
+                        Sub-Type set to 0  
+          
+                 For POLICY_ERROR_OBJECT valid enumeration values are:  
+                        (10) ERROR_NO_MORE_INFO  
+                        (11) UNSUPPORTED_CREDENTIAL_TYPE  
+                        (12) INSUFFICIENT_PRIVILEGES  
+                        (13) EXPIRED_CREDENTIAL  
+                        (14) IDENTITY_CHANGED "  
+          
+        ::= { authDataPolicyElementEntry 5 }  
+     
+     
+   --  
+   -- Priority Preemption Policy Element Table  
+   --  
+        
+   priorityPreemptionPolicyElementTable OBJECT-TYPE  
+        SYNTAX  SEQUENCE OF PriorityPreemptionPolicyElementEntry  
+        PIB-ACCESS      install-notify
+        STATUS          current  
+        DESCRIPTION  
+                "This table defines policy control for priority   
+                 preemption."   
+     
+        ::= { rsvpPccBaseClasses 7 }  
+     
+     
+   priorityPreemptionPolicyElementEntry OBJECT-TYPE  
+        SYNTAX  PriorityPreemptionPolicyElementEntry  
+        STATUS  current  
+        DESCRIPTION  
+                " An entry defines the specific preemption priority to 
+                  admit the flow and the defending priority. "  
+     
+        PIB-INDEX {  priorityPreemptionPolicyElementPccId }   
+        UNIQUENESS {  
+                     priorityPreemptionPolicyElementMergeStrategy,  
+                     priorityPreemptionPolicyElementPreemptionPriority,  
+                     priorityPreemptionPolicyElementDefendingPriority 
+          }   
+     
+        ::= { priorityPreemptionPolicyElementTable 1 }  
+     
+        
+   PriorityPreemptionPolicyElementEntry ::= SEQUENCE {  
+        priorityPreemptionPolicyElementPccId            InstanceId,  
+        priorityPreemptionPolicyElementMergeStrategy       INTEGER,  
+        priorityPreemptionPolicyElementPreemptionPriority  INTEGER,  
+        priorityPreemptionPolicyElementDefendingPriority   INTEGER  
+   }  
+     
+   priorityPreemptionPolicyElementPccId OBJECT-TYPE  
+        SYNTAX  InstanceId  
+        STATUS  current  
+        DESCRIPTION  
+                "An arbitrary integer index that uniquely identifies   
+                 an instance of the PriorityPreemptionPolicyElement   
+                 class."  
+     
+        ::= { priorityPreemptionPolicyElementEntry 1 }  
+     
+     
+   priorityPreemptionPolicyElementMergeStrategy OBJECT-TYPE  
+        SYNTAX  INTEGER {  
+                        highestQOS(1),  
+                        highestPriority(2),  
+                        errorOnMerge(3)  
+                }  
+        STATUS  current  
+        DESCRIPTION  
+                " Defines the merging strategy for the flow. The   
+                  Enum values are:  
+                  (1)  take priority of highest QoS  
+                  (2)  take highest priority  
+                  (3)  force an error on heterogeneous merge"  
+     
+        ::= { priorityPreemptionPolicyElementEntry 2 }  
+     
+     
+   priorityPreemptionPolicyElementPreemptionPriority OBJECT-TYPE  
+        SYNTAX  INTEGER  
+        STATUS  current  
+        DESCRIPTION  
+                " Defines the value of the new reservation that is 
+                  compared against the defending priorities of existing 
+                  flows. A higher value represents a higher priority."  
+     
+        ::= { priorityPreemptionPolicyElementEntry 3 }  
+     
+     
+   priorityPreemptionPolicyElementDefendingPriority OBJECT-TYPE  
+        SYNTAX  INTEGER  
+        STATUS  current  
+        DESCRIPTION  
+                " The value defined for an existing flow to defend its 
+                  priority against a new reservation seeking admission. 
+                  The higher value represents higher priority."   
+        
+        ::= { priorityPreemptionPolicyElementEntry 4 } 
+ 
+   -- 
+   --Intsrv to Diffserv Interworking Function Table 
+   -- 
+    
+   pccIwfTable OBJECT-TYPE 
+        SYNTAX SEQUENCE OF PccIwfEntry 
+        PIB-ACCESS      install 
+        STATUS          current 
+        DESCRIPTION 
+                  "This table defines the attributes used for the  
+                   interworking between the RSVP process in the  
+                   control plane and Differentiated Services in the  
+                   data plane."
+    
+        ::= {rsvpPccBaseClasses  8} 
+    
+   pccIwfEntry OBJECT-TYPE 
+        SYNTAX          PccIwfEntry 
+        STATUS          current 
+        DESCRIPTION 
+                   "Defines the attributes for Intsrv and Diffserv 
+                    interworking."
+        PIB-INDEX {pccIwfId} 
+    
+        ::= {pccIwfTable 1} 
+ 
+   PccIwfEntry  ::= SEQUENCE { 
+        pccIwfId           InstanceId, 
+        pccIwfIntSrvClass  Integer32, 
+        pccIwfDSCP         Integer32, 
+        pccIwfOutOfProfile Integer32, 
+        pccIwfRemarkvalue  Integer32, 
+        pccIwfScheduler    Integer32 
+        } 
+ 
+   pccIwfId OBJECT-TYPE 
+         SYNTAX  InstanceId 
+         STATUS  current 
+         DESCRIPTION 
+                  "This is the unique identifier of the iwfTable  
+                   entry."
+        ::= { pccIwfEntry 1} 
+ 
+   pccIwfIntSrvClass OBJECT-TYPE 
+         SYNTAX  Integer32 
+         STATUS  current 
+         DESCRIPTION 
+                  "The value of the Intsrv Class associated with 
+                   the attributes of this specific interworking function  
+                   entry. It must have a corresponding bit set in  
+                   pccACPoolISClass."
+         ::= { pccIwfEntry 2} 
+ 
+   pccIwfDSCP  OBJECT-TYPE 
+         SYNTAX Integer32 
+         STATUS current 
+         DESCRIPTION 
+                  "The Value of the DSCP to assign the data stream 
+                   for the session with the IntSrv class type  
+                   matching the value of the pccIwfIntSrvClass. 
+                   Value range is 0 .. 63."
+         ::= { pccIwfEntry 3} 
+ 
+   pccIwfOutOfProfile OBJECT-TYPE
+         SYNTAX Integer32 
+         STATUS current 
+         DESCRIPTION 
+                  "This indicates the behavior when the data stream 
+                   is out of profile. This value overrides any other 
+                   configured profile such as that defined in the                     
+                   MeterTableEntry. The value of 0 indicates that  
+                   this attribute is ignored for this entry. A value  
+                   of 1 indications the out of profile packet is  
+                   dropped. A value of 2 indicates the out of profile          
+                   packet DSCP is remarked with the value  
+                   pccIwfRemarkValue."
+         ::= {pccIwfEntry 4} 
+         
+   pccIwfRemarkvalue OBJECT-TYPE
+         SYNTAX Integer32 
+         STATUS current 
+         DESCRIPTION 
+                  "This is the value of the DSCP to remark an out of  
+                   profile packet. This value is only used if the  
+                   pccIwfOutOfProfile has a value of 2."
+           ::= {pccIwfEntry 5} 
+           
+    pccIwfScheduler OBJECT-TYPE
+         SYNTAX Integer32
+         STATUS current 
+         DESCRIPTION  
+                  "This is the value that identifies the scheduler  
+                   to be used  by the data streams of sessions with an  
+                   IntSrv class matching the value of the attribute  
+                  pccIwfIntSrClass."
+          ::= {pccIwfEntry 6} 
+ 
+ 
+   -- 
+   --Admission Control Virtual Pool Table 
+   -- 
+    
+   pccACVirPoolTable OBJECT-TYPE 
+        SYNTAX SEQUENCE OF PccACVirPoolEntry 
+        PIB-ACCESS      install 
+        STATUS          current 
+        DESCRIPTION 
+                  "This table defines the virtual pool used by the RSVP 
+   process during admission contro."
+    
+        ::= {rsvpPccBaseClasses  9} 
+    
+   pccACVirPoolEntry OBJECT-TYPE 
+        SYNTAX          PccACVirPoolEntry 
+        STATUS          current 
+        DESCRIPTION 
+                   "Defines the attributes for the Intsrv virtual pool."
+        PIB-INDEX {pccACVirPoolId} 
+    
+        ::= {pccACVirPoolTable 1} 
+ 
+   PccACVirPoolEntry  ::= SEQUENCE { 
+        pccACVirPoolId           InstanceId, 
+        pccACVirPoolInterface    SnmpAdminString, 
+        pccACVirPoolDirection     Integer32, 
+        pccACVirPoolIntSrvClass   BITS, 
+        pccACVirPoolMaxAbsRate    Unsigned32, 
+        pccACVirPoolAcceptResv    Integer32 
+        } 
+ 
+   pccACVirPoolId OBJECT-TYPE 
+         SYNTAX  InstanceId 
+         STATUS  current 
+         DESCRIPTION 
+                  "This is the unique identifier of the pccACVirPool   
+                   entry."
+        ::= { pccACVirPoolEntry 1} 
+ 
+   pccACVirPoolInterface OBJECT-TYPE 
+         SYNTAX  SnmpAdminString 
+         STATUS  current 
+         DESCRIPTION 
+                  "The SNMP string identifies the logical interface 
+                   associated with the Admission Control Virtual  
+                   Pool entry."
+         ::= { pccACVirPoolEntry 2} 
+ 
+   pccACVirPoolDirection  OBJECT-TYPE 
+         SYNTAX Integer32 
+         STATUS current 
+         DESCRIPTION 
+                   "This attribute indicates the relationship of the 
+                    traffic stream to the interface. The traffic  
+                    stream is either inbound (1) or outbound (2). An 
+                    upstream virtual pool has an inbound Direction  
+                    and a downstream virtual pool has a Direction of 
+                    outbound."
+         ::= { pccACVirPoolEntry 3} 
+ 
+   pccACVirPoolIntSrvClass  OBJECT-TYPE 
+         SYNTAX BITS -- which ones !?
+         { dummy(0) }
+         STATUS current 
+         DESCRIPTION 
+                  "The bit string indicates the IntSrv class or  
+                   classes that have resources allocated from this  
+                   virtual pool by admission control. 
+                   Value range is 0 .. 63."
+         ::= { pccACVirPoolEntry 4} 
+ 
+   pccACVirPoolMaxAbsRate OBJECT-TYPE
+         SYNTAX Unsigned32 
+         STATUS current 
+         DESCRIPTION 
+                  "This is the maximum absolute rate in kilobits  
+                   that this pool may allocate to the IntSrv  
+                   sessions defined by the  
+                   pccACVirtPoolIntSrvClass."
+         ::= {pccACVirPoolEntry 5} 
+ 
+   pccACVirPoolAcceptResv OBJECT-TYPE
+         SYNTAX Integer32 
+         STATUS current 
+         DESCRIPTION 
+                  "This value indicates whether the RSVP admission 
+                   control is to accept RSVP RESV request for the  
+                   IntSrv flows belonging to the IntSrv classes  
+                   defined by pccACVirPoolIntSrvClass." 
+           ::= {pccACVirPoolEntry 6} 
+     
+ 
+   -- 
+   --Edge Point Identification Table 
+   -- 
+    
+   pccEdgeTable OBJECT-TYPE 
+        SYNTAX SEQUENCE OF PccEdgeEntry 
+        PIB-ACCESS      install 
+        STATUS          current 
+        DESCRIPTION 
+                  "This table defines the attributes used to identify 
+                   the receiver domain. Admission control performs the  
+                   upstream resource check when the RSVP Session Object  
+                   matches one of the entries in this table." 
+    
+        ::= {rsvpPccBaseClasses  10} 
+    
+   pccEdgeEntry OBJECT-TYPE 
+        SYNTAX          PccEdgeEntry 
+        STATUS          current 
+        DESCRIPTION 
+                   "Defines the attributes for identifying the  
+                    receiver domain edge that invokes upstream  
+                    Admission control in addition to downstream 
+                    Admission control." 
+        PIB-INDEX {pccEdgeId} 
+    
+        ::= {pccEdgeTable 1} 
+ 
+   PccEdgeEntry  ::= SEQUENCE { 
+        pccEdgeId           InstanceId, 
+        pccEdgeAddrType     InetAddressType, 
+        pccEdgeAddr         InetAddress, 
+        pccEdgeAddrMask     Unsigned32
+        } 
+ 
+   pccEdgeId OBJECT-TYPE 
+         SYNTAX  InstanceId 
+         STATUS  current 
+         DESCRIPTION 
+                  "This is the unique identifier of the pccEdgeTable  
+                   entry." 
+        ::= { pccEdgeEntry 1} 
+ 
+   pccEdgeAddrType OBJECT-TYPE 
+         SYNTAX    InetAddressType 
+         STATUS    current 
+         DESCRIPTION 
+                  "This is the enumerated value specifying the type 
+                   of address (IPv4 or Ipv6) as defined in RFC 2851." 
+        ::= { pccEdgeEntry 2} 
+ 
+   pccEdgeAddr OBJECT-TYPE 
+         SYNTAX  InetAddress 
+         STATUS  current 
+         DESCRIPTION 
+                  "When the value of this address matches the RSVP  
+                   Session Object Destination Address, it indicates  
+                   a that the session receiver is downstream and that  
+                   the upstream admission control should be performed." 
+        ::= { pccEdgeEntry 3} 
+ 
+   pccEdgeAddrMask OBJECT-TYPE 
+         SYNTAX  Unsigned32 
+         STATUS  current 
+         DESCRIPTION 
+                  "The length of the mask for matching th eaddress." 
+        ::= { pccEdgeEntry 4} 
+ 
+ 
+   --   
+   -- The Policy Control Criteria Session Statistics usage   
+   --   
+     
+   pccSessionStatsUsageTable OBJECT-TYPE   
+        SYNTAX          SEQUENCE OF PccSessionStatsUsageEntry   
+        PIB-ACCESS      notify
+        STATUS          current   
+        DESCRIPTION   
+                 "This class defines the session statistics. It contains 
+                 the Prid of the linkage instance associating the 
+                 selection criteria instance with the usage instance."  
+     
+        ::= {rsvpPccBaseClasses  11}   
+     
+   pccSessionStatsUsageEntry OBJECT-TYPE   
+        SYNTAX          PccSessionStatsUsageEntry   
+        STATUS          current   
+        DESCRIPTION   
+                 "Defines the attributes the PEP is to monitor,  
+                  record and report."  
+        PIB-INDEX {pccSessionStatsUsageId}  
+ 
+        
+        ::= {pccSessionStatsUsageTable 1}   
+     
+   PccSessionStatsUsageEntry ::= SEQUENCE {  
+         pccSessionStatsUsageId          InstanceId,  
+         pccSessionStatsUsageStart       ExtUTCTime, 
+         pccSessionStatsUsageEnd         ExtUTCTime          
+     } 
+      
+   pccSessionStatsUsageId          OBJECT-TYPE  
+        SYNTAX  InstanceId  
+        STATUS  current  
+        DESCRIPTION  
+                "An arbitrary integer index that uniquely identifies an 
+                 instance of the pccSessionStatsUsage class."  
+          
+        ::= { pccSessionStatsUsageEntry 1 }  
+ 
+   pccSessionStatsUsageStart OBJECT-TYPE    
+        SYNTAX   ExtUTCTime    
+        STATUS       current    
+        DESCRIPTION    
+                   "The timestamp when the reservation was successfully 
+                    allocated."    
+             
+        ::= { pccSessionStatsUsageEntry 2}    
+ 
+   pccSessionStatsUsageEnd OBJECT-TYPE    
+        SYNTAX   ExtUTCTime    
+        STATUS       current    
+        DESCRIPTION    
+                   "The timestamp when the reservation was ended. This 
+                    could be due to reservation tear down, an error or 
+                    time out condition"    
+             
+        ::= { pccSessionStatsUsageEntry 3}    
+    
+     
+   -- The Policy Control Criteria Allocated Usage Table   
+   --   
+     
+   pccAllocatedUsageTable OBJECT-TYPE   
+        SYNTAX          SEQUENCE OF PccAllocatedUsageEntry   
+        PIB-ACCESS      notify
+        STATUS          current   
+        DESCRIPTION   
+                 "This class records the traffic specification allocated 
+                 to a session. It contains the Prid of the linkage 
+                 instance associating the selection criteria instance 
+                 with the usage instance."  
+     
+        ::= {rsvpPccBaseClasses  12}   
+     
+   pccAllocatedUsageEntry OBJECT-TYPE   
+        SYNTAX          PccAllocatedUsageEntry   
+        STATUS          current   
+        DESCRIPTION   
+                 "Defines the attributes the PEP is to monitor, record 
+                  and report."  
+        PIB-INDEX {pccAllocatedUsageId}  
+ 
+        ::= { pccAllocatedUsageTable 1}   
+     
+   PccAllocatedUsageEntry  ::= SEQUENCE {  
+        pccAllocatedUsageId                        InstanceId, 
+        pccAllocatedIntsrvClass                    Integer32, 
+        pccAllocatedUsageBucketRate                BitRate,  
+        pccAllocatedUsageBucketSize                Unsigned32,  
+        pccAllocatedUsagePeakRate                  BurstSize,  
+        pccAllocatedUsageMinPolicedUnit            MessageSize,  
+        pccAllocatedUsageMaxPacketSize             MessageSize,
+        pccAllocatedUsageLimitsRate                BitRate,  
+        pccAllocatedUsageSlackTerm                 Unsigned32  
+   }  
+            
+        
+   pccAllocatedUsageId OBJECT-TYPE  
+        SYNTAX  InstanceId  
+        STATUS  current  
+        DESCRIPTION  
+                "An arbitrary integer index that uniquely identifies an 
+                 instance of the PpcAllocatedUsage class."  
+          
+        ::= { pccAllocatedUsageEntry 1 }  
+     
+   pccAllocatedIntsrvClass OBJECT-TYPE 
+         SYNTAX Integer32 
+         STATUS current 
+         DESCRIPTION 
+                  "The Intsrv Class associated with the session." 
+         ::= { pccAllocatedUsageEntry 2 } 
+  
+   pccAllocatedUsageBucketRate OBJECT-TYPE  
+        SYNTAX  BitRate  
+        STATUS  current  
+        DESCRIPTION  
+                " 'r' bytes per second, the token bucket rate. "  
+          
+        ::= { pccAllocatedUsageEntry 3 }  
+        
+        
+   pccAllocatedUsageBucketSize OBJECT-TYPE  
+        SYNTAX  Unsigned32  
+        STATUS  current  
+        DESCRIPTION  
+                " 'b' bucket depth in bytes, the token bucket size. "  
+          
+        ::= { pccAllocatedUsageEntry 4 }  
+     
+     
+   pccAllocatedUsagePeakRate OBJECT-TYPE  
+        SYNTAX  BurstSize  
+        STATUS  current  
+        DESCRIPTION  
+                " 'p' peak traffic data rate in bytes. "  
+          
+        ::= { pccAllocatedUsageEntry 5 }  
+     
+     
+   pccAllocatedUsageMinPolicedUnit OBJECT-TYPE  
+        SYNTAX  MessageSize  
+        STATUS  current  
+        DESCRIPTION  
+                " 'm' minimum policed unit - size in bytes of 
+                  application data and all IP and greater level (UDP, 
+                  RTP, TCP, etc.) headers. "  
+          
+        ::= { pccAllocatedUsageEntry 6 }  
+     
+     
+   pccAllocatedUsageMaxPacketSize OBJECT-TYPE  
+        SYNTAX  MessageSize  
+        STATUS  current  
+        DESCRIPTION  
+                " 'M' maximum packet size - biggest packet that conforms 
+                  to traffic specification. "  
+        ::= { pccAllocatedUsageEntry 7 }  
+ 
+     
+     
+   pccAllocatedUsageLimitsRate OBJECT-TYPE  
+        SYNTAX  BitRate  
+        STATUS  current  
+        DESCRIPTION  
+                " Limit Rate. Must be greater than or equal to rate for 
+                  the flow "  
+          
+        ::= { pccAllocatedUsageEntry 8 }  
+     
+     
+    
+   pccAllocatedUsageSlackTerm OBJECT-TYPE  
+        SYNTAX  Unsigned32  
+        STATUS  current  
+        DESCRIPTION  
+                " 'S' - Slack Term. Defines in microseconds the  
+                  difference between desired delay and the delay   
+                  attained with the reservation level of R"  
+          
+    
+          
+        ::= { pccAllocatedUsageEntry 9 }  
+     
+   -- 
+   --Virtual Pool Usage Table 
+   -- 
+    
+   pccPoolUsageTable OBJECT-TYPE 
+        SYNTAX SEQUENCE OF PccPoolUsageEntry 
+        PIB-ACCESS      install 
+        STATUS          current 
+        DESCRIPTION 
+                  "This table tracks and reports the current total 
+                   of resources consumed by Intsrv flows for a  
+                   specific virtual pool." 
+    
+        ::= {rsvpPccBaseClasses  13} 
+    
+   pccPoolUsageEntry OBJECT-TYPE 
+        SYNTAX          PccPoolUsageEntry 
+        STATUS          current 
+        DESCRIPTION 
+                   "Defines the attributes for tracking the current  
+                    total of resources used by Intsrv flows for a  
+                    virtual pool." 
+        PIB-INDEX {pccPoolUsageId} 
+    
+        ::= {pccPoolUsageTable 1} 
+ 
+   PccPoolUsageEntry  ::= SEQUENCE { 
+        pccPoolUsageId                    InstanceId, 
+        pccPoolUsagePoolId                Prid, 
+        pccPoolUsageAbsRateInUse          Unsigned32,
+        pccPoolUsageAbsRateInUseThreshold Unsigned32 
+        } 
+ 
+   pccPoolUsageId OBJECT-TYPE 
+         SYNTAX  InstanceId 
+         STATUS  current 
+         DESCRIPTION 
+                  "This is the unique identifier of the  
+                   pccPoolUsage Table entry." 
+        ::= { pccPoolUsageEntry 1} 
+ 
+   pccPoolUsagePoolId OBJECT-TYPE 
+         SYNTAX  Prid 
+         STATUS  current 
+         DESCRIPTION 
+                  "This is the prid of the pccACVirPoolTable entry  
+                   that is being tracked." 
+        ::= { pccPoolUsageEntry 2} 
+ 
+   pccPoolUsageAbsRateInUse OBJECT-TYPE 
+         SYNTAX    Unsigned32 
+         STATUS    current 
+         DESCRIPTION 
+                  "This is the current total of resources used 
+                   by Intsrv flows for the virtual pool identified 
+                   by the pccPoolUsagePoolId." 
+        ::= { pccPoolUsageEntry 3} 
+ 
+   pccPoolUsageAbsRateInUseThreshold OBJECT-TYPE 
+         SYNTAX    Unsigned32 
+         STATUS    current 
+         DESCRIPTION 
+                  " This value is associated with the 
+                    pccPoolUsageAbsRateInUse and defines the feedback 
+                    threshold for this usage that results in the 
+                    instance being reported to the PDP. This value is  
+                    only used if the linkage entry is set to threshold" 
+         ::= { pccPoolUsageEntry 4 }    
+ 
+   END  

@@ -1,0 +1,475 @@
+T11-FC-ROUTE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Unsigned32, mib-2                   FROM SNMPv2-SMI  -- [RFC2578]
+    MODULE-COMPLIANCE, OBJECT-GROUP     FROM SNMPv2-CONF -- [RFC2580]
+    RowStatus, TimeStamp,
+    StorageType                         FROM SNMPv2-TC   -- [RFC2579]
+    InterfaceIndex, InterfaceIndexOrZero  FROM IF-MIB    -- [RFC2863]
+    fcmInstanceIndex, fcmSwitchIndex,
+    FcAddressIdOrZero, FcDomainIdOrZero FROM FC-MGMT-MIB -- [FC-MGMT]
+    T11FabricIndex                      FROM T11-TC-MIB; -- [RFC4439]
+
+t11FcRouteMIB MODULE-IDENTITY
+    LAST-UPDATED "200608140000Z"
+    ORGANIZATION "T11"
+    CONTACT-INFO
+              "     Claudio DeSanti
+                    Cisco Systems, Inc.
+                    170 West Tasman Drive
+                    San Jose, CA 95134 USA
+                    EMail: cds@cisco.com
+
+
+                    Keith McCloghrie
+                    Cisco Systems, Inc.
+                    170 West Tasman Drive
+                    San Jose, CA USA 95134
+                    Email: kzm@cisco.com"
+    DESCRIPTION
+           "The MIB module for configuring and displaying Fibre
+           Channel Route Information.
+
+           Copyright (C) The Internet Society (2006).  This version
+           of this MIB module is part of RFC 4625;  see the RFC
+           itself for full legal notices."
+    REVISION     "200608140000Z"
+
+
+
+    DESCRIPTION
+           "Initial version of this MIB module, published as RFC4625."
+
+    ::= {mib-2 144 }
+
+t11FcRouteNotifications OBJECT IDENTIFIER ::= { t11FcRouteMIB 0 }
+t11FcRouteObjects       OBJECT IDENTIFIER ::= { t11FcRouteMIB 1 }
+t11FcRouteConformance   OBJECT IDENTIFIER ::= { t11FcRouteMIB 2 }
+
+--
+-- Per-Fabric routing information
+--
+t11FcRouteFabricTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF T11FcRouteFabricEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "The table containing Fibre Channel Routing information
+           that is specific to a Fabric."
+    ::= { t11FcRouteObjects 1 }
+
+t11FcRouteFabricEntry OBJECT-TYPE
+    SYNTAX      T11FcRouteFabricEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Each entry contains routing information specific to a
+           particular Fabric on a particular switch (identified by
+           values of fcmInstanceIndex and fcmSwitchIndex)."
+    INDEX      { fcmInstanceIndex, fcmSwitchIndex,
+                 t11FcRouteFabricIndex }
+    ::= { t11FcRouteFabricTable 1 }
+
+T11FcRouteFabricEntry ::=
+    SEQUENCE {
+        t11FcRouteFabricIndex      T11FabricIndex,
+        t11FcRouteFabricLastChange TimeStamp
+    }
+
+t11FcRouteFabricIndex OBJECT-TYPE
+    SYNTAX      T11FabricIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "A unique index value that uniquely identifies a
+           particular Fabric.
+
+           In a Fabric conformant to FC-SW-3, only a single Fabric
+
+
+
+           can operate within a physical infrastructure, and thus
+           the value of this Fabric Index will always be 1.
+
+           In a Fabric conformant to FC-SW-4, multiple Virtual Fabrics
+           can operate within one (or more) physical infrastructures.
+           In such a case, index value is used to uniquely identify a
+           particular Fabric within a physical infrastructure."
+    ::= { t11FcRouteFabricEntry 1 }
+
+t11FcRouteFabricLastChange OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The value of sysUpTime at the most recent time when any
+           corresponding row in the t11FcRouteTable was created,
+           modified, or deleted.  A corresponding row in the
+           t11FcRouteTable is for the same management instance,
+           the same switch, and same Fabric as the row in this table.
+
+           If no change has occurred since the last restart of the
+           management system, then the value of this object is 0."
+    ::= { t11FcRouteFabricEntry 2 }
+
+--
+-- Fibre Channel Routing table
+--
+t11FcRouteTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF T11FcRouteEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "The Fibre Channel Routing tables for the
+           locally managed switches.  This table lists all the
+           routes that are configured in and/or computed by any
+           local switch for any Fabric.
+
+           Such routes are used by a switch to forward frames (of user
+           data) on a Fabric.  The conceptual process is based on
+           extracting the Destination Fibre Channel Address Identifier
+           (D_ID) out of a received frame (of user data) and comparing
+           it to each entry of this table that is applicable to the
+           given switch and Fabric.  Such comparison consists of first
+           performing a logical-AND of the extracted D_ID with a mask
+           (the value of t11FcRouteDestMask) and second comparing the
+           result of that 'AND' operation to the value of
+           t11FcRouteDestAddrId.  A similar comparison is made of the
+           Source Fibre Channel Address Identifier (S_ID) of a frame
+
+
+
+           against the t11FcRouteSrcAddrId and t11FcRouteSrcMask values
+           of an entry.  If an entry's value of t11FcRouteInInterface
+           is non-zero, then a further comparison determines if the
+           frame was received on the appropriate interface.  If all of
+           these comparisons for a particular entry are successful,
+           then that entry represents a potential route for forwarding
+           the received frame.
+
+           For entries configured by a user, t11FcRouteProto has
+           the value 'netmgmt'; only entries of this type can be
+           deleted by the user."
+    ::= { t11FcRouteObjects 2 }
+
+t11FcRouteEntry OBJECT-TYPE
+    SYNTAX      T11FcRouteEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Each entry contains a route to a particular destination,
+           possibly from a particular subset of source addresses,
+           on a particular Fabric via a particular output interface
+           and learned in a particular manner."
+    INDEX       { fcmInstanceIndex, fcmSwitchIndex,
+                  t11FcRouteFabricIndex,
+                  t11FcRouteDestAddrId, t11FcRouteDestMask,
+                  t11FcRouteSrcAddrId, t11FcRouteSrcMask,
+                  t11FcRouteInInterface, t11FcRouteProto,
+                  t11FcRouteOutInterface }
+    ::= { t11FcRouteTable 1 }
+T11FcRouteEntry ::=
+    SEQUENCE {
+        t11FcRouteDestAddrId   FcAddressIdOrZero,
+        t11FcRouteDestMask     FcAddressIdOrZero,
+        t11FcRouteSrcAddrId    FcAddressIdOrZero,
+        t11FcRouteSrcMask      FcAddressIdOrZero,
+        t11FcRouteInInterface  InterfaceIndexOrZero,
+        t11FcRouteProto        INTEGER,
+        t11FcRouteOutInterface InterfaceIndex,
+        t11FcRouteDomainId     FcDomainIdOrZero,
+        t11FcRouteMetric       Unsigned32,
+        t11FcRouteType         INTEGER,
+        t11FcRouteIfDown       INTEGER,
+        t11FcRouteStorageType  StorageType,
+        t11FcRouteRowStatus    RowStatus
+    }
+
+t11FcRouteDestAddrId OBJECT-TYPE
+    SYNTAX      FcAddressIdOrZero (SIZE (3))
+
+
+
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "The destination Fibre Channel Address Identifier of
+           this route.  A zero-length string for this field is
+           not allowed."
+    ::= { t11FcRouteEntry 1 }
+
+t11FcRouteDestMask OBJECT-TYPE
+    SYNTAX      FcAddressIdOrZero
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "The mask to be logical-ANDed with a destination
+           Fibre Channel Address Identifier before it is compared
+           to the value in the t11FcRouteDestAddrId field.
+           Allowed values are 255.255.255, 255.255.0, or 255.0.0.
+           FSPF's definition generates routes to a Domain_ID,
+           so the mask for all FSPF-generated routes is 255.0.0.
+           The zero-length value has the same meaning as 0.0.0."
+    ::= { t11FcRouteEntry 2 }
+
+t11FcRouteSrcAddrId OBJECT-TYPE
+    SYNTAX      FcAddressIdOrZero
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "The source Fibre Channel Address Identifier of this
+           route.  Note that if this object and the corresponding
+           instance of t11FcRouteSrcMask both have a value of 0.0.0,
+           then this route matches all source addresses.  The
+           zero-length value has the same meaning as 0.0.0."
+    ::= { t11FcRouteEntry 3 }
+
+t11FcRouteSrcMask OBJECT-TYPE
+    SYNTAX      FcAddressIdOrZero
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "The mask to be logical-ANDed with a source
+           Fibre Channel Address Identifier before it is compared
+           to the value in the t11FcRouteSrcAddrId field.  Allowed
+           values are 255.255.255, 255.255.0, 255.0.0, or 0.0.0.
+           The zero-length value has the same meaning as 0.0.0."
+    ::= { t11FcRouteEntry 4 }
+
+t11FcRouteInInterface OBJECT-TYPE
+    SYNTAX      InterfaceIndexOrZero
+
+
+
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "If the value of this object is non-zero, it is the
+           value of ifIndex that identifies the local
+           Fibre Channel interface through which a frame
+           must have been received in order to match with
+           this entry.  If the value of this object is zero,
+           the matching does not require that the frame be
+           received on any specific interface."
+    ::= { t11FcRouteEntry 5 }
+
+t11FcRouteProto OBJECT-TYPE
+    SYNTAX   INTEGER {
+                 other(1),
+                 local(2),
+                 netmgmt(3),
+                 fspf(4)
+              }
+    MAX-ACCESS not-accessible
+    STATUS   current
+    DESCRIPTION
+           "The mechanism via which this route was learned:
+                other(1)  - not specified
+                local(2)  - local interface
+                netmgmt(3)- static route
+                fspf(4)   - Fibre Shortest Path First
+           "
+    ::= { t11FcRouteEntry 6 }
+
+t11FcRouteOutInterface OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "The value of ifIndex that identifies the local
+           Fibre Channel interface through which the next hop
+           of this route is to be reached."
+    ::= { t11FcRouteEntry 7 }
+
+t11FcRouteDomainId OBJECT-TYPE
+    SYNTAX      FcDomainIdOrZero
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The domain_ID of next hop switch.
+
+           This object can have a value of zero if the value
+
+
+
+           of t11FcRouteProto is 'local'."
+    ::= { t11FcRouteEntry 8 }
+
+t11FcRouteMetric OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..65536)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The routing metric for this route.
+
+           The use of this object is dependent on t11FcRouteProto."
+    ::= { t11FcRouteEntry 9 }
+
+t11FcRouteType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    local(1),
+                    remote(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The type of route.
+
+           local(1)  - a route for which the next Fibre Channel
+                       port is the final destination;
+           remote(2) - a route for which the next Fibre Channel
+                      port is not the final destination."
+    DEFVAL {local}
+    ::= { t11FcRouteEntry 10 }
+
+t11FcRouteIfDown OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    remove(1),
+                    retain(2)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The value of this object indicates what happens to
+           this route when the output interface (given by the
+           corresponding value of t11FcRouteOutInterface) is
+           operationally 'down'.  If this object's value is 'retain',
+           the route is to be retained in this table.  If this
+           object's value is 'remove', the route is to be removed
+           from this table."
+    DEFVAL  { retain }
+    ::= { t11FcRouteEntry 11 }
+
+
+
+
+t11FcRouteStorageType OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The storage type for this conceptual row.
+           Conceptual rows having the value 'permanent' need not
+           allow write-access to any columnar objects in the row."
+       DEFVAL { nonVolatile }
+    ::= { t11FcRouteEntry 12 }
+
+t11FcRouteRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The status of this conceptual row.
+           The only rows that can be deleted by setting this object to
+           'destroy' are those for which t11FcRouteProto has the value
+           'netmgmt'."
+    ::= { t11FcRouteEntry 13 }
+
+--
+-- Conformance
+--
+t11FcRouteCompliances OBJECT IDENTIFIER
+                         ::= { t11FcRouteConformance 1 }
+t11FcRouteGroups      OBJECT IDENTIFIER
+                         ::= { t11FcRouteConformance 2 }
+
+
+t11FcRouteCompliance  MODULE-COMPLIANCE
+    STATUS    current
+    DESCRIPTION
+           "The compliance statement for entities that
+           implement the T11-FC-ROUTE-MIB.
+--
+-- Note: The next four OBJECT clauses are for auxiliary objects, and the
+-- SMIv2 does not permit inclusion of objects that are not accessible
+-- in an OBJECT clause (see Sections 3.1 & 5.4.3 in STD 58, RFC 2580).
+-- Thus, these four clauses cannot be included below in the normal
+-- location for OBJECT clauses.
+--
+--      OBJECT     t11FcRouteSrcAddrId
+--      SYNTAX     FcAddressIdOrZero (SIZE (0))
+--      DESCRIPTION
+--             'Support is not required for routes that
+--             match only a subset of possible source
+
+
+
+--             addresses.'
+--
+--      OBJECT     t11FcRouteSrcMask
+--      SYNTAX     FcAddressIdOrZero (SIZE (0))
+--      DESCRIPTION
+--             'Support is not required for routes that
+--             match only a subset of possible source
+--             addresses.'
+--
+--      OBJECT     t11FcRouteDestMask
+--      DESCRIPTION
+--             'Support is mandatory only for FSPF-generated
+--             routes.  Since FSPF's definition generates
+--             routes to a Domain_ID, the mask for all
+--             FSPF-generated routes is 255.0.0.  Thus,
+--             support is only required for 255.0.0.'
+--
+--      OBJECT     t11FcRouteInInterface
+--      SYNTAX     InterfaceIndexOrZero (0)
+--      DESCRIPTION
+--             'Support for routes specific to particular
+--             source interfaces is not required.'
+          "
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { t11FcRouteGroup }
+
+        OBJECT     t11FcRouteIfDown
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FcRouteDomainId
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FcRouteMetric
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FcRouteType
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FcRouteStorageType
+
+
+
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+        OBJECT     t11FcRouteRowStatus
+        SYNTAX     INTEGER { active(1) }
+        MIN-ACCESS read-only
+        DESCRIPTION
+               "Write access is not required."
+
+    ::= { t11FcRouteCompliances 1 }
+t11FcRouteGroup  OBJECT-GROUP
+    OBJECTS  { t11FcRouteFabricLastChange,
+               t11FcRouteDomainId,
+               t11FcRouteMetric,
+               t11FcRouteType,
+               t11FcRouteIfDown,
+               t11FcRouteStorageType,
+               t11FcRouteRowStatus
+             }
+    STATUS   current
+    DESCRIPTION
+           "A collection of objects for displaying and configuring
+           routes."
+    ::= { t11FcRouteGroups 1 }
+
+END

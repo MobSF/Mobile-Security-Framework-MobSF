@@ -1,0 +1,27 @@
+#
+#	$Id$
+#
+VENDOR		Manzara				19382
+
+BEGIN-VENDOR	Manzara
+
+ATTRIBUTE	Manzara-User-UID			1	integer
+ATTRIBUTE	Manzara-User-GID			2	integer
+ATTRIBUTE	Manzara-User-Home			3	string
+ATTRIBUTE	Manzara-User-Shell			4	string
+ATTRIBUTE	Manzara-PPP-Addr-String			5	string
+ATTRIBUTE	Manzara-Full-Login-String		6	string
+ATTRIBUTE	Manzara-Tariff-Units			7	integer
+ATTRIBUTE	Manzara-Tariff-Type			8	integer
+ATTRIBUTE	Manzara-ECP-Session-Key			9	octets
+
+VALUE	Manzara-Tariff-Type		MMS-Picture		1
+VALUE	Manzara-Tariff-Type		Unused			2
+VALUE	Manzara-Tariff-Type		Internet		3
+
+#
+#  Poaching on the standard space is wrong.
+#
+VALUE	Acct-Status-Type		One-Time		17
+
+END-VENDOR Manzara

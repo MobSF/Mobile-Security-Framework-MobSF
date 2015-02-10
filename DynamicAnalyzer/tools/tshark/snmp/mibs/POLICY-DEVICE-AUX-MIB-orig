@@ -1,0 +1,233 @@
+POLICY-DEVICE-AUX-MIB DEFINITIONS ::= BEGIN
+
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, experimental
+                                             FROM SNMPv2-SMI
+        MODULE-COMPLIANCE, OBJECT-GROUP      FROM SNMPv2-CONF
+        TEXTUAL-CONVENTION, RowStatus, StorageType
+                                             FROM SNMPv2-TC
+        SnmpAdminString                      FROM SNMP-FRAMEWORK-MIB
+        InterfaceIndex                       FROM IF-MIB;
+
+
+policyDeviceAuxMib MODULE-IDENTITY
+        LAST-UPDATED    "200007121800Z" -- 12 July 2000
+        ORGANIZATION    "IETF RAP WG"
+        CONTACT-INFO
+                 "Kwok Ho Chan
+                  Nortel Networks, Inc.
+                  600 Technology Park Drive
+                  Billerica, MA 01821 USA
+                  Phone: +1 978 288 8175
+                  Email: khchan@nortelnetworks.com
+
+                  John Seligson
+                  Nortel Networks, Inc.
+                  4401 Great America Parkway
+                  Santa Clara, CA USA 95054
+                  Phone: +1 408 495-2992
+                  Email: jseligso@nortelnetworks.com
+
+                  Keith McCloghrie
+                  Cisco Systems, Inc.
+                  170 West Tasman Drive,
+                  San Jose, CA 95134-1706 USA
+                  Phone: +1 408 526 5260
+                  Email: kzm@cisco.com"
+        DESCRIPTION
+            "This module defines an infrastructure used
+            for support of policy-based provisioning of
+            a network device."
+        ::= { experimental 999 }
+
+
+
+policyDeviceAuxObjects     OBJECT IDENTIFIER ::= { policyDeviceAuxMib 1 }
+policyDeviceAuxConformance OBJECT IDENTIFIER ::= { policyDeviceAuxMib 2 }
+
+
+policyDeviceConfig    OBJECT IDENTIFIER ::= { policyDeviceAuxObjects 1 }
+
+Role ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "A role represents a functionality characteristic or
+        capability of a resource to which policies are applied.
+        Examples of roles include Backbone interface, Frame Relay
+        interface, BGP-capable router, web server, firewall, etc.
+
+        Valid characters are a-z, A-Z, 0-9, period, hyphen and
+        underscore.  A role must not start with an underscore."
+    REFERENCE
+        "Policy Core Information Model,
+        draft-ietf-policy-core-info-model-06.txt"
+    SYNTAX SnmpAdminString  (SIZE (1..31))
+
+RoleCombination ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "A Display string consisting of a set of roles concatenated
+        with a '+' character where the roles are in lexicographic
+        order from minimum to maximum.
+
+        For example, a+b and b+a are NOT different role-combinations;
+        rather, they are different formating of the same (one) role-
+        combination.
+
+        Notice the roles within a role-combination are in lexicographic
+        order from minimum to maximum, hence, we declare:
+          a+b is the valid formating of the role-combination,
+          b+a is an invalid formating of the role-combination.
+
+        Notice the need of zero-length role-combination as the role-
+        combination of interfaces to which no roles have been assigned.
+        This role-combination is also known as the null role-combination.
+        (Note the deliberate use of lower case leters to avoid confusion
+        with the ASCII NULL character which has a value of zero but length
+        of one.)"
+    SYNTAX SnmpAdminString  (SIZE (0..255))
+
+-- The Policy Interface Table supports
+-- associating an interface with a specific role combination.
+
+-- This table satisfy the need to monitor the configuration of
+-- roles on a per interface basis, and is no less scalable as
+-- other required per interface parameters.
+-- This does not preclude roles being associated with some less
+-- granular entities, and should be addressed when such need arise.
+
+policyInterfaceTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PolicyInterfaceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Policy information about a device's interfaces."
+    ::= { policyDeviceConfig 1 }
+
+
+policyInterfaceEntry OBJECT-TYPE
+    SYNTAX      PolicyInterfaceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A conceptual row in the policyInterfaceTable.
+            Each row identifies policy infromation about a
+            particular interface."
+    INDEX { policyInterfaceIfIndex }
+    ::= { policyInterfaceTable 1 }
+
+
+PolicyInterfaceEntry ::= SEQUENCE {
+    policyInterfaceIfIndex    InterfaceIndex,
+    policyInterfaceRoleCombo  RoleCombination,
+    policyInterfaceStorage    StorageType,
+    policyInterfaceStatus     RowStatus
+}
+
+
+policyInterfaceIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The ifIndex value for which this conceptual row provides
+            policy information."
+
+    ::= { policyInterfaceEntry 1 }
+
+
+policyInterfaceRoleCombo OBJECT-TYPE
+    SYNTAX      RoleCombination
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The role combination that is associated with this interface
+            for the purpose of assigning policies to this interface."
+    ::= { policyInterfaceEntry 2 }
+
+
+policyInterfaceStorage OBJECT-TYPE
+    SYNTAX      StorageType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The storage type for this conceptual row.
+
+
+            Conceptual rows having the value permanent(4) need not
+            allow write-access to any columnar objects in the row.
+
+
+            This object may not be modified if the associated
+            policyInterfaceStatus object is equal to active(1)."
+    DEFVAL  { volatile }
+    ::= { policyInterfaceEntry 3 }
+
+
+policyInterfaceStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "The status of this row.
+
+
+            An entry may not exist in the active state unless all
+            objects in the entry have an appropriate value. Row
+            creation using only default values is supported."
+    ::= { policyInterfaceEntry 4 }
+
+--
+-- Conformance Section
+--
+
+
+policyDeviceCompliances
+                   OBJECT IDENTIFIER ::= { policyDeviceAuxConformance 1 }
+policyDeviceGroups OBJECT IDENTIFIER ::= { policyDeviceAuxConformance 2 }
+
+
+policyDeviceCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "Describes the requirements for conformance to the
+            Policy  Auxiliary MIB."
+
+
+    MODULE  -- this module
+        MANDATORY-GROUPS { policyInterfaceGroup }
+
+
+        OBJECT        policyInterfaceRoleCombo
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+
+        OBJECT        policyInterfaceStorage
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required, nor is
+                      support for the nonVolatile(2) enumeration."
+
+
+        OBJECT        policyInterfaceStatus
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+    ::= { policyDeviceCompliances 1 }
+
+
+policyInterfaceGroup OBJECT-GROUP
+    OBJECTS {
+             policyInterfaceRoleCombo,
+             policyInterfaceStorage,
+             policyInterfaceStatus
+    }
+    STATUS  current
+
+    DESCRIPTION
+            "Objects used to define interface to role combination
+             mappings."
+    ::= { policyDeviceGroups 1 }
+
+
+END

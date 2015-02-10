@@ -1,0 +1,36 @@
+# -*- text -*-
+#
+# dictionary.wispr
+#
+#	VSAs originally by
+#	"James Underwood" <underwood@comcast.net>
+#
+# Version:    $Id$
+#
+#	For documentation on WISPr RADIUS attributes, see:
+#
+#	Wi-Fi Alliance - Wireless ISP Roaming - Best Current Practices v1,
+#	Feb 2003, p 14
+#
+#	http://www.weca.net/OpenSection/downloads/WISPr_V1.0.pdf
+
+VENDOR		WISPr				14122
+
+#
+#    Standard attribute
+#
+BEGIN-VENDOR	WISPr
+
+ATTRIBUTE	WISPr-Location-ID			1	string
+ATTRIBUTE	WISPr-Location-Name			2	string
+ATTRIBUTE	WISPr-Logoff-URL			3	string
+ATTRIBUTE	WISPr-Redirection-URL			4	string
+ATTRIBUTE	WISPr-Bandwidth-Min-Up			5	integer
+ATTRIBUTE	WISPr-Bandwidth-Min-Down		6	integer
+ATTRIBUTE	WISPr-Bandwidth-Max-Up			7	integer
+ATTRIBUTE	WISPr-Bandwidth-Max-Down		8	integer
+ATTRIBUTE	WISPr-Session-Terminate-Time		9	string
+ATTRIBUTE	WISPr-Session-Terminate-End-Of-Day	10	string
+ATTRIBUTE	WISPr-Billing-Class-Of-Service		11	string
+
+END-VENDOR	WISPr

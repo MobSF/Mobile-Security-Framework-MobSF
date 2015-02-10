@@ -1,0 +1,40 @@
+# -*- text -*-
+##############################################################################
+#
+#	OpenSER dictionary.
+#
+#	This dictionary is NOT included by default, because it conflicts
+#	with attributes defined in the RADIUS standard.  Vendors SHOULD
+#	be using a VSA space to assign attributes.
+#
+#	Be aware that if you DO include this dictionary in the main
+#	dictionary file, other parts of your configuration may break!
+#
+#	http://www.openser.org/docs/openser-radius-1.0.x.html
+#
+#	$Id$
+#
+##############################################################################
+
+ATTRIBUTE	Sip-Method				101	integer
+ATTRIBUTE	Sip-Response-Code			102	integer
+ATTRIBUTE	Sip-Cseq				103	string
+ATTRIBUTE	Sip-To-Tag				104	string
+ATTRIBUTE	Sip-From-Tag				105	string
+ATTRIBUTE	Sip-Translated-Request-URI		107	string
+ATTRIBUTE	Sip-Src-IP				108	string
+ATTRIBUTE	Sip-Src-Port				109	string
+ATTRIBUTE	Sip-Uri-User				208	string
+ATTRIBUTE	Sip-Group				211	string
+ATTRIBUTE	Sip-Rpid				213	string
+ATTRIBUTE	SIP-AVP					225	string
+
+VALUE	Service-Type			Group-Check		12
+VALUE	Service-Type			Sip-Session		15
+VALUE	Service-Type			SIP-Caller-AVPs		30
+VALUE	Service-Type			SIP-Callee-AVPs		31
+
+VALUE	Sip-Method			INVITE			1
+VALUE	Sip-Method			CANCEL			2
+VALUE	Sip-Method			ACK			4
+VALUE	Sip-Method			BYE			8

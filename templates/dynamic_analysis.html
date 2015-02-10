@@ -1,0 +1,90 @@
+{% extends "skelton_base.html" %}
+   {% block content %}
+     <link href="/static/css/dashboard.css" rel="stylesheet">
+     <script src="/static/js/jquery.min.js"></script>
+	<script src="/static/js/html2canvas.js"></script>
+  <script src="/static/js/canvas-toBlob.js"></script>
+    <script src="/static/js/FileSaver.js"></script>
+		<script type="text/javascript" src="/static/js/shCore.js"></script>
+	<script type="text/javascript" src="/static/js/shBrushJava.js"></script>
+	<link type="text/css" rel="stylesheet" href="/static/css/shCoreDefault.css"/>
+	<script type="text/javascript">SyntaxHighlighter.all();</script>
+<h1 class="page-header">Dynamic Analysis</h1>
+
+       
+		 
+		 <div class="col-lg-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> SCREENSHOT</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+									<img alt="Screenshot" src="../static/downloads/{{ md5 }}-screenshot.png" height="800" width="500">
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+					 <div class="col-lg-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> DOWNLOADS</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+									<a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-Weblog.txt">HTTP(S) Traffic</a>
+									<a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-logcat.txt">Logcat Logs</a>
+									<a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-dump.txt">Dumpsys Logs</a> </br>
+									<a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-pcap.cap">Packet Capture</a>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+					<div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> URL</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+									{% for f in urls %}
+										{{ f}} <br>
+										{% endfor %}
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                  <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> EMAIL</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+										{% for f in emails %}
+										{{ f}} <br>
+										{% endfor %}
+								</div>
+                                
+                            </div>
+                        </div>
+                    </div>
+				<div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> HTTPS(S) Traffic</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+								  <pre class="brush: java;" >
+								{{ http }}
+								</pre>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+   {% endblock %}

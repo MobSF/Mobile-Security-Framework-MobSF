@@ -1,0 +1,180 @@
+# -*- text -*-
+#
+# dictionary.cisco
+#
+#		Accounting VSAs originally by
+#		"Marcelo M. Sosa Lugones" <marcelo@sosa.com.ar>
+#
+# Version:	$Id$
+#
+#  For documentation on Cisco RADIUS attributes, see:
+#
+# http://www.cisco.com/en/US/docs/ios/sec_user_services/configuration/guide/sec_vsa_rad_discnct_ps11280_TSD_Products_Configuration_Guide_Chapter.html
+#
+#  For general documentation on Cisco RADIUS configuration, see:
+#
+# http://www.cisco.com/en/US/partner/tech/tk583/tk547/tsd_technology_support_sub-protocol_home.html
+#
+
+VENDOR		Cisco				9
+
+#
+#	Standard attribute
+#
+BEGIN-VENDOR	Cisco
+
+ATTRIBUTE	Cisco-AVPair				1	string
+ATTRIBUTE	Cisco-NAS-Port				2	string
+
+#
+#  T.37 Store-and-Forward attributes.
+#
+ATTRIBUTE	Cisco-Fax-Account-Id-Origin		3	string
+ATTRIBUTE	Cisco-Fax-Msg-Id			4	string
+ATTRIBUTE	Cisco-Fax-Pages				5	string
+ATTRIBUTE	Cisco-Fax-Coverpage-Flag		6	string
+ATTRIBUTE	Cisco-Fax-Modem-Time			7	string
+ATTRIBUTE	Cisco-Fax-Connect-Speed			8	string
+ATTRIBUTE	Cisco-Fax-Recipient-Count		9	string
+ATTRIBUTE	Cisco-Fax-Process-Abort-Flag		10	string
+ATTRIBUTE	Cisco-Fax-Dsn-Address			11	string
+ATTRIBUTE	Cisco-Fax-Dsn-Flag			12	string
+ATTRIBUTE	Cisco-Fax-Mdn-Address			13	string
+ATTRIBUTE	Cisco-Fax-Mdn-Flag			14	string
+ATTRIBUTE	Cisco-Fax-Auth-Status			15	string
+ATTRIBUTE	Cisco-Email-Server-Address		16	string
+ATTRIBUTE	Cisco-Email-Server-Ack-Flag		17	string
+ATTRIBUTE	Cisco-Gateway-Id			18	string
+ATTRIBUTE	Cisco-Call-Type				19	string
+ATTRIBUTE	Cisco-Port-Used				20	string
+ATTRIBUTE	Cisco-Abort-Cause			21	string
+
+#
+#  Voice over IP attributes.
+#
+ATTRIBUTE	h323-remote-address			23	string
+ATTRIBUTE	h323-conf-id				24	string
+ATTRIBUTE	h323-setup-time				25	string
+ATTRIBUTE	h323-call-origin			26	string
+ATTRIBUTE	h323-call-type				27	string
+ATTRIBUTE	h323-connect-time			28	string
+ATTRIBUTE	h323-disconnect-time			29	string
+ATTRIBUTE	h323-disconnect-cause			30	string
+ATTRIBUTE	h323-voice-quality			31	string
+ATTRIBUTE	h323-gw-id				33	string
+ATTRIBUTE	h323-incoming-conf-id			35	string
+
+ATTRIBUTE	Cisco-Policy-Up				37	string
+ATTRIBUTE	Cisco-Policy-Down			38	string
+
+ATTRIBUTE	sip-conf-id				100	string
+ATTRIBUTE	h323-credit-amount			101	string
+ATTRIBUTE	h323-credit-time			102	string
+ATTRIBUTE	h323-return-code			103	string
+ATTRIBUTE	h323-prompt-id				104	string
+ATTRIBUTE	h323-time-and-day			105	string
+ATTRIBUTE	h323-redirect-number			106	string
+ATTRIBUTE	h323-preferred-lang			107	string
+ATTRIBUTE	h323-redirect-ip-address		108	string
+ATTRIBUTE	h323-billing-model			109	string
+ATTRIBUTE	h323-currency				110	string
+ATTRIBUTE	subscriber				111	string
+ATTRIBUTE	gw-rxd-cdn				112	string
+ATTRIBUTE	gw-final-xlated-cdn			113	string
+ATTRIBUTE	remote-media-address			114	string
+ATTRIBUTE	release-source				115	string
+ATTRIBUTE	gw-rxd-cgn				116	string
+ATTRIBUTE	gw-final-xlated-cgn			117	string
+
+# SIP Attributes
+ATTRIBUTE	call-id					141	string
+ATTRIBUTE	session-protocol			142	string
+ATTRIBUTE	method					143	string
+ATTRIBUTE	prev-hop-via				144	string
+ATTRIBUTE	prev-hop-ip				145	string
+ATTRIBUTE	incoming-req-uri			146	string
+ATTRIBUTE	outgoing-req-uri			147	string
+ATTRIBUTE	next-hop-ip				148	string
+ATTRIBUTE	next-hop-dn				149	string
+ATTRIBUTE	sip-hdr					150	string
+
+#
+#	Extra attributes sent by the Cisco, if you configure
+#	"radius-server vsa accounting" (requires IOS11.2+).
+#
+#	According to
+#
+#		http://www.cisco.com/en/US/products/hw/iad/ps4349/products_installation_guide_chapter09186a008007e511.html
+#
+#	the first byte Command-Code value is a binary command code
+#	and the other bytes after it are an string argument to the
+#	command:
+#
+#		Command code	Command			Argument
+#
+#		\001		Account Logon		Account name
+#		\002		Account Logoff		Account name
+#		\004		Account PING		Service name
+#		\013		Service Logon		Service name
+#		\014		Service Logoff		Service name
+#		\016		Service Access Order	DNS server search order
+#							separated by semicolons
+#		\017		Service Message		Message text
+#
+ATTRIBUTE	Cisco-Multilink-ID			187	integer
+ATTRIBUTE	Cisco-Num-In-Multilink			188	integer
+ATTRIBUTE	Cisco-Pre-Input-Octets			190	integer
+ATTRIBUTE	Cisco-Pre-Output-Octets			191	integer
+ATTRIBUTE	Cisco-Pre-Input-Packets			192	integer
+ATTRIBUTE	Cisco-Pre-Output-Packets		193	integer
+ATTRIBUTE	Cisco-Maximum-Time			194	integer
+ATTRIBUTE	Cisco-Disconnect-Cause			195	integer
+ATTRIBUTE	Cisco-Data-Rate				197	integer
+ATTRIBUTE	Cisco-PreSession-Time			198	integer
+ATTRIBUTE	Cisco-PW-Lifetime			208	integer
+ATTRIBUTE	Cisco-IP-Direct				209	integer
+ATTRIBUTE	Cisco-PPP-VJ-Slot-Comp			210	integer
+ATTRIBUTE	Cisco-PPP-Async-Map			212	integer
+ATTRIBUTE	Cisco-IP-Pool-Definition		217	string
+ATTRIBUTE	Cisco-Assign-IP-Pool			218	integer
+ATTRIBUTE	Cisco-Route-IP				228	integer
+ATTRIBUTE	Cisco-Link-Compression			233	integer
+ATTRIBUTE	Cisco-Target-Util			234	integer
+ATTRIBUTE	Cisco-Maximum-Channels			235	integer
+ATTRIBUTE	Cisco-Data-Filter			242	integer
+ATTRIBUTE	Cisco-Call-Filter			243	integer
+ATTRIBUTE	Cisco-Idle-Limit			244	integer
+ATTRIBUTE	Cisco-Subscriber-Password		249	string
+ATTRIBUTE	Cisco-Account-Info			250	string
+ATTRIBUTE	Cisco-Service-Info			251	string
+ATTRIBUTE	Cisco-Command-Code			252	string
+ATTRIBUTE	Cisco-Control-Info			253	string
+ATTRIBUTE	Cisco-Xmit-Rate				255	integer
+
+VALUE	Cisco-Disconnect-Cause		Unknown			2
+VALUE	Cisco-Disconnect-Cause		CLID-Authentication-Failure 4
+VALUE	Cisco-Disconnect-Cause		No-Carrier		10
+VALUE	Cisco-Disconnect-Cause		Lost-Carrier		11
+VALUE	Cisco-Disconnect-Cause		No-Detected-Result-Codes 12
+VALUE	Cisco-Disconnect-Cause		User-Ends-Session	20
+VALUE	Cisco-Disconnect-Cause		Idle-Timeout		21
+VALUE	Cisco-Disconnect-Cause		Exit-Telnet-Session	22
+VALUE	Cisco-Disconnect-Cause		No-Remote-IP-Addr	23
+VALUE	Cisco-Disconnect-Cause		Exit-Raw-TCP		24
+VALUE	Cisco-Disconnect-Cause		Password-Fail		25
+VALUE	Cisco-Disconnect-Cause		Raw-TCP-Disabled	26
+VALUE	Cisco-Disconnect-Cause		Control-C-Detected	27
+VALUE	Cisco-Disconnect-Cause		EXEC-Program-Destroyed	28
+VALUE	Cisco-Disconnect-Cause		Timeout-PPP-LCP		40
+VALUE	Cisco-Disconnect-Cause		Failed-PPP-LCP-Negotiation 41
+VALUE	Cisco-Disconnect-Cause		Failed-PPP-PAP-Auth-Fail 42
+VALUE	Cisco-Disconnect-Cause		Failed-PPP-CHAP-Auth	43
+VALUE	Cisco-Disconnect-Cause		Failed-PPP-Remote-Auth	44
+VALUE	Cisco-Disconnect-Cause		PPP-Remote-Terminate	45
+VALUE	Cisco-Disconnect-Cause		PPP-Closed-Event	46
+VALUE	Cisco-Disconnect-Cause		Session-Timeout		100
+VALUE	Cisco-Disconnect-Cause		Session-Failed-Security	101
+VALUE	Cisco-Disconnect-Cause		Session-End-Callback	102
+VALUE	Cisco-Disconnect-Cause		Invalid-Protocol	120
+
+END-VENDOR	Cisco

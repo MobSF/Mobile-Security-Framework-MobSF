@@ -1,0 +1,25 @@
+# -*- text -*-
+##############################################################################
+#
+#       Telkom SA - RADIUS dictionary
+#       Used to convey Telkom Specific Information in proxied requests
+#       EDS 20031007 eddie@saix.net
+#
+#	$Id$
+#
+##############################################################################
+
+VENDOR		Telkom				1431
+
+BEGIN-VENDOR	Telkom
+
+#       Access-Type is used to describe the Access Medium used eg
+#       Dial/ADSL/VSAT etc.  Used in both Access-Requests and Accounting
+ATTRIBUTE	Telkom-Access-Type			1	string
+
+#
+#       Service-Type is used to indicate the Service used main in conjunction
+#       with the SSG.  Used in both Access-Requests and Accounting
+ATTRIBUTE	Telkom-Service-Type			2	string
+
+END-VENDOR      Telkom

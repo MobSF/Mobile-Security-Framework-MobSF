@@ -1,0 +1,390 @@
+CAPWAP-DOT11-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   RowStatus, TEXTUAL-CONVENTION
+       FROM SNMPv2-TC
+   OBJECT-GROUP, MODULE-COMPLIANCE
+       FROM SNMPv2-CONF
+   MODULE-IDENTITY, OBJECT-TYPE, mib-2, Unsigned32
+       FROM SNMPv2-SMI
+   ifIndex, InterfaceIndex
+       FROM IF-MIB
+   CapwapBaseMacTypeTC, CapwapBaseTunnelModeTC
+       FROM CAPWAP-BASE-MIB;
+
+capwapDot11MIB MODULE-IDENTITY
+    LAST-UPDATED "201004300000Z"        -- 30 April 2010
+    ORGANIZATION "IETF Control And Provisioning of Wireless Access
+                  Points (CAPWAP) Working Group
+                  http://www.ietf.org/html.charters/capwap-charter.html"
+    CONTACT-INFO
+        "General Discussion: capwap@frascone.com
+         To Subscribe: http://lists.frascone.com/mailman/listinfo/capwap
+
+         Yang Shi (editor)
+         Hangzhou H3C Tech. Co., Ltd.
+         Beijing R&D Center of H3C, Digital Technology Plaza
+         NO. 9 Shangdi 9th Street, Haidian District
+         Beijing  100085
+         China
+         Phone: +86 010 82775276
+         Email: rishyang@gmail.com
+
+         David T. Perkins (editor)
+         228 Bayview Dr.
+         San Carlos, CA  94070
+         USA
+         Phone: +1 408 394-8702
+         Email:  dperkins@dsperkins.com
+
+         Chris Elliott (editor)
+         1516 Kent St.
+         Durham, NC  27707
+         USA
+         Phone: +1 919-308-1216
+         Email: chelliot@pobox.com
+
+
+
+
+         Yong Zhang (editor)
+         Fortinet, Inc.
+         1090 Kifer Road
+         Sunnyvale, CA  94086
+         USA
+         Email: yzhang@fortinet.com"
+
+   DESCRIPTION
+       "Copyright (c) 2010 IETF Trust and the persons identified as
+        authors of the code.  All rights reserved.
+
+        Redistribution and use in source and binary forms, with or
+        without modification, is permitted pursuant to, and subject
+        to the license terms contained in, the Simplified BSD License
+        set forth in Section 4.c of the IETF Trust's Legal Provisions
+        Relating to IETF Documents
+        (http://trustee.ietf.org/license-info).
+
+        This version of this MIB module is part of RFC 5834;
+        see the RFC itself for full legal notices.
+
+        This MIB module contains managed object definitions for
+        CAPWAP Protocol binding for IEEE 802.11."
+   REVISION    "201004300000Z"
+   DESCRIPTION
+       "Initial version, published as RFC 5834"
+        ::= { mib-2 195 }
+
+-- Textual conventions
+
+CapwapDot11WlanIdTC ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS      current
+    DESCRIPTION
+        "Represents the unique identifier of a Wireless Local Area
+         Network (WLAN)."
+    SYNTAX      Unsigned32 (1..16)
+
+CapwapDot11WlanIdProfileTC ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS      current
+    DESCRIPTION
+        "Represents the unique identifier of a WLAN profile."
+    SYNTAX      Unsigned32 (1..512)
+
+-- Top level components of this MIB module
+
+-- Tables, Scalars
+
+
+
+capwapDot11Objects OBJECT IDENTIFIER
+    ::= { capwapDot11MIB 1 }
+-- Conformance
+capwapDot11Conformance OBJECT IDENTIFIER
+    ::= { capwapDot11MIB 2 }
+
+-- capwapDot11WlanTable Table
+
+capwapDot11WlanTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CapwapDot11WlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that allows the operator to display and configure
+         WLAN profiles, such as specifying the MAC type and tunnel mode
+         for a WLAN.  Also, it helps the AC to configure a WLAN through
+         the IEEE 802.11 MIB module.
+         Values of all objects in this table are persistent at
+         restart/reboot."
+    ::= { capwapDot11Objects 1 }
+
+capwapDot11WlanEntry  OBJECT-TYPE
+    SYNTAX      CapwapDot11WlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A set of objects that stores the settings of a WLAN profile."
+    INDEX { capwapDot11WlanProfileId }
+    ::= { capwapDot11WlanTable 1 }
+
+CapwapDot11WlanEntry ::=
+    SEQUENCE {
+      capwapDot11WlanProfileId          CapwapDot11WlanIdProfileTC,
+      capwapDot11WlanProfileIfIndex     InterfaceIndex,
+      capwapDot11WlanMacType            CapwapBaseMacTypeTC,
+      capwapDot11WlanTunnelMode         CapwapBaseTunnelModeTC,
+      capwapDot11WlanRowStatus          RowStatus
+    }
+
+capwapDot11WlanProfileId OBJECT-TYPE
+    SYNTAX      CapwapDot11WlanIdProfileTC
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the identifier of a WLAN profile that has a
+         corresponding capwapDot11WlanProfileIfIndex."
+    ::= { capwapDot11WlanEntry 1 }
+
+
+
+
+capwapDot11WlanProfileIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the index value that uniquely identifies a
+         WLAN Profile Interface.  The interface identified by a
+         particular value of this index is the same interface as
+         identified by the same value of the ifIndex.
+         The creation of a row object in the capwapDot11WlanTable
+         triggers the AC to automatically create an WLAN Profile
+         Interface identified by an ifIndex without manual
+         intervention.
+         Most MIB tables in the IEEE 802.11 MIB module
+         [IEEE.802-11.2007] use an ifIndex to identify an interface
+         to facilitate the configuration and maintenance, for example,
+         dot11AuthenticationAlgorithmsTable.
+         Using the ifIndex of a WLAN Profile Interface, the Operator
+         could configure a WLAN through the IEEE 802.11 MIB module."
+    ::= { capwapDot11WlanEntry 2 }
+
+capwapDot11WlanMacType OBJECT-TYPE
+    SYNTAX      CapwapBaseMacTypeTC
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents whether the WTP SHOULD support the WLAN in
+         Local or Split MAC modes."
+    REFERENCE
+        "Section 6.1 of CAPWAP Protocol Binding for IEEE 802.11,
+         RFC 5416."
+    ::= { capwapDot11WlanEntry 3 }
+
+capwapDot11WlanTunnelMode OBJECT-TYPE
+    SYNTAX      CapwapBaseTunnelModeTC
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Represents the frame tunneling mode to be used for IEEE 802.11
+         data frames from all stations associated with the WLAN.
+         Bits are exclusive with each other for a specific WLAN profile,
+         and only one tunnel mode could be configured.
+         If the operator set more than one bit, the value of the
+         Response-PDU's error-status field is set to 'wrongValue',
+         and the value of its error-index field is set to the index of
+         the failed variable binding."
+    REFERENCE
+        "Section 6.1 of CAPWAP Protocol Binding for IEEE 802.11,
+
+
+
+         RFC 5416."
+    ::= { capwapDot11WlanEntry 4 }
+
+capwapDot11WlanRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This variable is used to create, modify, and/or delete a row
+         in this table.
+         All the objects in a row can be modified only when the value
+         of this object in the corresponding conceptual row is not
+         'active'.  Thus, to modify one or more of the objects in
+         this conceptual row:
+              a. change the row status to 'notInService',
+              b. change the values of the row
+              c. change the row status to 'active'
+         The capwapDot11WlanRowStatus may be changed to 'active'
+         if all the managed objects in the conceptual row with
+         MAX-ACCESS read-create have been assigned valid values.
+
+         When the operator deletes a WLAN profile, the AC SHOULD
+         check whether the WLAN profile is bound with a radio.
+         If yes, the value of the Response-PDU's error-status field
+         is set to 'inconsistentValue', and the value of its
+         error-index field is set to the index of the failed variable
+         binding.  If not, the row object could be deleted."
+    ::= { capwapDot11WlanEntry 5 }
+
+-- End of capwapDot11WlanTable Table
+
+
+-- capwapDot11WlanBindTable Table
+
+capwapDot11WlanBindTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CapwapDot11WlanBindEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table that stores bindings between WLAN profiles
+         (identified by capwapDot11WlanProfileId) and WTP Virtual Radio
+         Interfaces.  The WTP Virtual Radio Interfaces on the AC
+         correspond to physical layer (PHY) radios on the WTPs.
+         It also stores the mappings between WLAN IDs and WLAN
+         Basic Service Set (BSS) Interfaces.
+         Values of all objects in this table are persistent at
+         restart/reboot."
+    REFERENCE
+
+
+
+        "Section 6.1 of CAPWAP Protocol Binding for IEEE 802.11,
+         RFC 5416."
+    ::= { capwapDot11Objects 2 }
+
+capwapDot11WlanBindEntry OBJECT-TYPE
+    SYNTAX      CapwapDot11WlanBindEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A set of objects that stores the binding of a WLAN profile
+         to a WTP Virtual Radio Interface.  It also stores the mapping
+         between WLAN ID and WLAN BSS Interface.
+         The INDEX object ifIndex is the ifIndex of a WTP Virtual
+         Radio Interface."
+    INDEX { ifIndex, capwapDot11WlanProfileId }
+    ::= { capwapDot11WlanBindTable 1 }
+
+CapwapDot11WlanBindEntry ::=
+    SEQUENCE {
+      capwapDot11WlanBindWlanId        CapwapDot11WlanIdTC,
+      capwapDot11WlanBindBssIfIndex    InterfaceIndex,
+      capwapDot11WlanBindRowStatus     RowStatus
+    }
+
+capwapDot11WlanBindWlanId OBJECT-TYPE
+    SYNTAX      CapwapDot11WlanIdTC
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the WLAN ID of a WLAN.
+         During a binding operation, the AC MUST select an unused
+         WLAN ID from between 1 and 16 [RFC5416].  For example, to bind
+         another WLAN profile to a radio that has been bound with
+         a WLAN profile, WLAN ID 2 should be assigned."
+    REFERENCE
+        "Section 6.1 of CAPWAP Protocol Binding for IEEE 802.11,
+         RFC 5416."
+    ::= { capwapDot11WlanBindEntry 1 }
+
+capwapDot11WlanBindBssIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Represents the index value that uniquely identifies a
+         WLAN BSS Interface.  The interface identified by a
+         particular value of this index is the same interface as
+         identified by the same value of the ifIndex.
+
+
+
+         The ifIndex here is for a WLAN BSS Interface.
+         The creation of a row object in the capwapDot11WlanBindTable
+         triggers the AC to automatically create a WLAN BSS Interface
+         identified by an ifIndex without manual intervention.
+         The PHY address of the capwapDot11WlanBindBssIfIndex is the
+         BSSID.  While manufacturers are free to assign BSSIDs by using
+         any arbitrary mechanism, it is advised that where possible the
+         BSSIDs are assigned as a contiguous block.
+         When assigned as a block, implementations can still assign
+         any of the available BSSIDs to any WLAN.  One possible method
+         is for the WTP to assign the address using the following
+         algorithm: base BSSID address + WLAN ID."
+    REFERENCE
+        "Section 2.4 of CAPWAP Protocol Binding for IEEE 802.11,
+         RFC 5416."
+    ::= { capwapDot11WlanBindEntry 2 }
+
+capwapDot11WlanBindRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This variable is used to create, modify, and/or delete a row
+         in this table.
+         All the objects in a row can be modified only when the value
+         of this object in the corresponding conceptual row is not
+         'active'.  Thus, to modify one or more of the objects in
+         this conceptual row:
+              a. change the row status to 'notInService',
+              b. change the values of the row
+              c. change the row status to 'active'"
+    ::= { capwapDot11WlanBindEntry 3 }
+
+-- End of capwapDot11WlanBindTable Table
+
+
+-- Module compliance
+
+capwapDot11Groups OBJECT IDENTIFIER
+    ::= { capwapDot11Conformance 1 }
+
+capwapDot11Compliances OBJECT IDENTIFIER
+    ::= { capwapDot11Conformance 2 }
+
+capwapDot11Compliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+        "Describes the requirements for conformance to the
+
+
+
+         CAPWAP-DOT11-MIB module."
+
+    MODULE -- this module
+      MANDATORY-GROUPS {
+        capwapDot11WlanGroup,
+        capwapDot11WlanBindGroup
+      }
+    ::= { capwapDot11Compliances 1 }
+
+capwapDot11WlanGroup    OBJECT-GROUP
+    OBJECTS {
+      capwapDot11WlanProfileIfIndex,
+      capwapDot11WlanMacType,
+      capwapDot11WlanTunnelMode,
+      capwapDot11WlanRowStatus
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of objects that is used to configure
+         the properties of a WLAN profile."
+    ::= { capwapDot11Groups 1 }
+
+capwapDot11WlanBindGroup    OBJECT-GROUP
+    OBJECTS {
+      capwapDot11WlanBindWlanId,
+      capwapDot11WlanBindBssIfIndex,
+      capwapDot11WlanBindRowStatus
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of objects that is used to bind the
+         WLAN profiles with a radio."
+    ::= { capwapDot11Groups 2 }
+
+END

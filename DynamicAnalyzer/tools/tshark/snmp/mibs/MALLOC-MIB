@@ -1,0 +1,1452 @@
+MALLOC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, OBJECT-IDENTITY, mib-2,
+    Unsigned32, Gauge32, Counter32         FROM SNMPv2-SMI
+
+    RowStatus, TruthValue, StorageType     FROM SNMPv2-TC
+
+    MODULE-COMPLIANCE, OBJECT-GROUP        FROM SNMPv2-CONF
+
+    InetAddress, InetAddressType           FROM INET-ADDRESS-MIB
+
+    LanguageTag                            FROM IPMROUTE-STD-MIB
+
+    SnmpAdminString                        FROM SNMP-FRAMEWORK-MIB
+
+    IANAscopeSource, IANAmallocRangeSource FROM IANA-MALLOC-MIB;
+
+mallocMIB MODULE-IDENTITY
+    LAST-UPDATED "200306090000Z" -- June 9, 2003
+    ORGANIZATION "IETF MALLOC Working Group"
+    CONTACT-INFO
+            " WG-EMail:   malloc@catarina.usc.edu
+              Subscribe:  malloc-request@catarina.usc.edu
+              Archive:    catarina.usc.edu/pub/multicast/malloc/
+
+              Co-chair/editor:
+              Dave Thaler
+              Microsoft Corporation
+              One Microsoft Way
+              Redmond, WA 98052
+              EMail: dthaler@microsoft.com
+
+              Co-chair:
+              Steve Hanna
+              Sun Microsystems, Inc.
+              One Network Drive
+              Burlington, MA 01803
+              EMail: steve.hanna@sun.com"
+    DESCRIPTION
+            "The MIB module for management of multicast address
+            allocation.
+
+            Copyright (C) The Internet Society (2003).  This version of
+            this MIB module is part of RFC 3559; see the RFC itself for
+            full legal notices."
+
+
+
+    -- revision log
+
+    REVISION     "200306090000Z" -- June 9, 2003
+    DESCRIPTION
+            "Initial version, published as RFC 3559."
+    ::= { mib-2 101 }
+
+mallocMIBObjects OBJECT IDENTIFIER ::= { mallocMIB 1 }
+
+malloc      OBJECT IDENTIFIER ::= { mallocMIBObjects 1 }
+
+madcap      OBJECT IDENTIFIER ::= { mallocMIBObjects 2 }
+
+--
+-- scalars
+--
+
+mallocCapabilities OBJECT-TYPE
+    SYNTAX     BITS {
+                   startTime(0),
+                   serverMobility(1),
+                   retryAfter(2)
+               }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "This object describes the capabilities which a client or
+            server supports.  The startTime bit indicates that
+            allocations with a future start time are supported.  The
+            serverMobility bit indicates that allocations can be renewed
+            or released from a server other than the one granting the
+            original allocation.  The retryAfter bit indicates support
+            for a waiting state where the client may check back at a
+            later time to get the status of its request."
+    ::= { malloc 1 }
+
+--
+-- the Scope Table
+--
+
+mallocScopeTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF MallocScopeEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table containing information on multicast
+            scopes from which addresses may be allocated.  Entries in
+            this table may be dynamically discovered via some other
+
+
+
+            protocol, such as MZAP, or may be statically configured,
+            such as in an isolated network environment.  Each scope is
+            associated with a range of multicast addresses, and ranges
+            for different rows must be disjoint."
+    ::= { malloc 2 }
+
+mallocScopeEntry OBJECT-TYPE
+    SYNTAX     MallocScopeEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) containing the information on a
+            particular multicast scope."
+    INDEX      { mallocScopeAddressType, mallocScopeFirstAddress }
+    ::= { mallocScopeTable 1 }
+
+MallocScopeEntry ::= SEQUENCE {
+    mallocScopeAddressType          InetAddressType,
+    mallocScopeFirstAddress         InetAddress,
+    mallocScopeLastAddress          InetAddress,
+    mallocScopeHopLimit             Unsigned32,
+    mallocScopeStatus               RowStatus,
+    mallocScopeSource               IANAscopeSource,
+    mallocScopeDivisible            TruthValue,
+    mallocScopeServerAddressType    InetAddressType,
+    mallocScopeServerAddress        InetAddress,
+    mallocScopeSSM                  TruthValue,
+    mallocScopeStorage              StorageType
+}
+
+mallocScopeAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The type of the addresses in the multicast scope range.
+            Legal values correspond to the subset of address families
+            for which multicast address allocation is supported."
+    ::= { mallocScopeEntry 1 }
+
+mallocScopeFirstAddress OBJECT-TYPE
+    SYNTAX     InetAddress (SIZE(0..20))
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The first address in the multicast scope range.  The type
+            of this address is determined by the value of the
+            mallocScopeAddressType object."
+
+
+
+    ::= { mallocScopeEntry 2 }
+
+mallocScopeLastAddress OBJECT-TYPE
+    SYNTAX     InetAddress (SIZE(0..20))
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The last address in the multicast scope range.  The type of
+            this address is determined by the value of the
+            mallocScopeAddressType object."
+    ::= { mallocScopeEntry 3 }
+
+mallocScopeHopLimit OBJECT-TYPE
+    SYNTAX     Unsigned32 (0..255)
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The default IPv4 TTL or IPv6 hop limit which applications
+            should use for groups within the scope."
+    DEFVAL     { 255 }
+    ::= { mallocScopeEntry 4 }
+
+mallocScopeStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table.  If write
+            access is supported, the other writable objects in this
+            table may be modified even while the status is `active'."
+    ::= { mallocScopeEntry 5 }
+
+mallocScopeSource OBJECT-TYPE
+    SYNTAX     IANAscopeSource
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The method by which this entry was learned."
+    ::= { mallocScopeEntry 6 }
+
+mallocScopeDivisible OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "If false, the server may allocate addresses out of the
+            entire range.  If true, the server must not allocate
+
+
+
+            addresses out of the entire range, but may only allocate
+            addresses out of a subrange learned via another method.
+            Creating or deleting a scope which is not divisible has the
+            side effect of creating or deleting the corresponding entry
+            in the mallocAllocRangeTable.  Deleting a scope which is
+            divisible has the side effect of deleting any corresponding
+            entries in the mallocAllocRangeTable, and the
+            mallocRequestTable."
+    DEFVAL     { false }
+    ::= { mallocScopeEntry 7 }
+
+mallocScopeServerAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The type of the address of a multicast address allocation
+            server to which a request may be sent."
+    DEFVAL { unknown }
+    ::= { mallocScopeEntry 8 }
+
+mallocScopeServerAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The address of a multicast address allocation server to
+            which a request may be sent.  The default value is an zero-
+            length address, indicating that no server is known.  The
+            type of this address is determined by the value of the
+            mallocScopeServerAddressType object."
+    DEFVAL { ''h } -- the empty string
+    ::= { mallocScopeEntry 9 }
+
+mallocScopeSSM OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "Indicates whether the scope is a Source-Specific Multicast
+            (SSM) range."
+    DEFVAL     { false }
+    ::= { mallocScopeEntry 10 }
+
+mallocScopeStorage OBJECT-TYPE
+    SYNTAX     StorageType
+    MAX-ACCESS read-create
+    STATUS     current
+
+
+
+    DESCRIPTION
+            "The storage type for this conceptual row.  Conceptual rows
+            having the value 'permanent' need not allow write-access to
+            any columnar objects in the row."
+    DEFVAL     { nonVolatile }
+    ::= { mallocScopeEntry 11 }
+
+--
+-- the Scope Name Table
+--
+
+mallocScopeNameTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF MallocScopeNameEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table containing information on multicast
+            scope names.  Entries in this table may be dynamically
+            discovered via some other protocol, such as MZAP, or may be
+            statically configured, such as in an isolated network
+            environment."
+    ::= { malloc 3 }
+
+mallocScopeNameEntry OBJECT-TYPE
+    SYNTAX     MallocScopeNameEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) containing the information on a
+            particular multicast scope name."
+    INDEX      { mallocScopeAddressType, mallocScopeFirstAddress,
+                 IMPLIED mallocScopeNameLangName }
+    ::= { mallocScopeNameTable 1 }
+
+MallocScopeNameEntry ::= SEQUENCE {
+    mallocScopeNameLangName         LanguageTag,
+    mallocScopeNameScopeName        SnmpAdminString,
+    mallocScopeNameDefault          TruthValue,
+    mallocScopeNameStatus           RowStatus,
+    mallocScopeNameStorage          StorageType
+}
+
+mallocScopeNameLangName OBJECT-TYPE
+    SYNTAX     LanguageTag (SIZE(1..94))
+    MAX-ACCESS not-accessible
+    STATUS     current
+
+
+
+
+
+    DESCRIPTION
+            "The RFC 3066 language tag for the language of the scope
+            name."
+    ::= { mallocScopeNameEntry 1 }
+
+mallocScopeNameScopeName OBJECT-TYPE
+    SYNTAX     SnmpAdminString
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The textual name associated with the multicast scope.  The
+            value of this object should be suitable for displaying to
+            end-users, such as when allocating a multicast address in
+            this scope.  If the scope is an IPv4 scope, and no name is
+            specified, the default value of this object should be the
+            string 239.x.x.x/y with x and y replaced appropriately to
+            describe the address and mask length associated with the
+            scope.  If the scope is an IPv6 scope, and no name is
+            specified, the default value of this object should
+            generically describe the scope level (e.g., site)."
+    ::= { mallocScopeNameEntry 2 }
+
+mallocScopeNameDefault OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "If true, indicates a preference that the name in the
+            associated language should be used by applications if no
+            name is available in a desired language."
+    DEFVAL     { false }
+    ::= { mallocScopeNameEntry 3 }
+
+mallocScopeNameStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table.  If write
+            access is supported, the other writable objects in this
+            table may be modified even while the status is `active'."
+    ::= { mallocScopeNameEntry 4 }
+
+mallocScopeNameStorage OBJECT-TYPE
+    SYNTAX     StorageType
+    MAX-ACCESS read-create
+    STATUS     current
+
+
+
+    DESCRIPTION
+            "The storage type for this conceptual row.  Conceptual rows
+            having the value 'permanent' need not allow write-access to
+            any columnar objects in the row."
+    DEFVAL     { nonVolatile }
+    ::= { mallocScopeNameEntry 5 }
+
+--
+-- the Allocation Range Table
+--
+mallocAllocRangeTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF MallocAllocRangeEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table containing information on subranges
+            of addresses from which the device may allocate addresses,
+            if it is a MAAS.  If the device is a Prefix Coordinator, any
+            ranges which the device is advertising to MAAS's will be in
+            this table.  Note that the device may be both a MAAS and a
+            Prefix Coordinator.
+
+            Address ranges for different rows must be disjoint, and must
+            be contained with the address range of the corresponding row
+            of the mallocScopeTable.
+
+            Deleting an allocation range has the side effect of deleting
+            any entries within that range from the mallocAddressTable."
+    ::= { malloc 4 }
+
+mallocAllocRangeEntry OBJECT-TYPE
+    SYNTAX     MallocAllocRangeEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) containing the information on a
+            particular allocation range."
+    INDEX      { mallocScopeAddressType, mallocScopeFirstAddress,
+                 mallocAllocRangeFirstAddress }
+    ::= { mallocAllocRangeTable 1 }
+
+MallocAllocRangeEntry ::= SEQUENCE {
+    mallocAllocRangeFirstAddress        InetAddress,
+    mallocAllocRangeLastAddress         InetAddress,
+    mallocAllocRangeStatus              RowStatus,
+    mallocAllocRangeSource              IANAmallocRangeSource,
+    mallocAllocRangeLifetime            Unsigned32,
+    mallocAllocRangeMaxLeaseAddrs       Unsigned32,
+
+
+
+    mallocAllocRangeMaxLeaseTime        Unsigned32,
+    mallocAllocRangeNumAllocatedAddrs   Gauge32,
+    mallocAllocRangeNumOfferedAddrs     Gauge32,
+    mallocAllocRangeNumWaitingAddrs     Gauge32,
+    mallocAllocRangeNumTryingAddrs      Gauge32,
+    mallocAllocRangeAdvertisable        TruthValue,
+    mallocAllocRangeTotalAllocatedAddrs Gauge32,
+    mallocAllocRangeTotalRequestedAddrs Gauge32,
+    mallocAllocRangeStorage             StorageType
+}
+
+mallocAllocRangeFirstAddress OBJECT-TYPE
+    SYNTAX     InetAddress (SIZE(0..20))
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The first address in the allocation range.  The type of
+            this address is determined by the value of the
+            mallocScopeAddressType object."
+    ::= { mallocAllocRangeEntry 1 }
+
+mallocAllocRangeLastAddress OBJECT-TYPE
+    SYNTAX     InetAddress (SIZE(0..20))
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The last address in the allocation range.  The type of this
+            address is determined by the value of the
+            mallocScopeAddressType object."
+    ::= { mallocAllocRangeEntry 2 }
+
+mallocAllocRangeStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table.  If write
+            access is supported, the other writable objects in this
+            table may be modified even while the status is `active'."
+    ::= { mallocAllocRangeEntry 3 }
+
+mallocAllocRangeSource OBJECT-TYPE
+    SYNTAX     IANAmallocRangeSource
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The means by which this entry was learned."
+
+
+
+    ::= { mallocAllocRangeEntry 4 }
+
+mallocAllocRangeLifetime OBJECT-TYPE
+    SYNTAX     Unsigned32
+    UNITS      "seconds"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The number of seconds remaining in the lifetime of the
+            (sub)range out of which addresses are being allocated.  A
+            value of 0 indicates that the range is not subject to
+            aging."
+    DEFVAL     { 0 }
+    ::= { mallocAllocRangeEntry 5 }
+
+mallocAllocRangeMaxLeaseAddrs OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The maximum number of addresses which the server is willing
+            to grant for each future request in this range.  A value of
+            0 means that no specific limit is enforced, as long as the
+            server has valid addresses to allocate."
+    DEFVAL { 0 }
+    ::= { mallocAllocRangeEntry 6 }
+
+mallocAllocRangeMaxLeaseTime OBJECT-TYPE
+    SYNTAX     Unsigned32
+    UNITS      "seconds"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The maximum lifetime which the server will grant for future
+            requests in this range.  A value of 0 means that no
+            additional limit is enforced beyond that of
+            mallocAllocRangeLifetime."
+    DEFVAL { 0 }
+    ::= { mallocAllocRangeEntry 7 }
+
+mallocAllocRangeNumAllocatedAddrs OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of addresses in the range which have been
+            allocated.  This value can be used to determine the current
+            address space utilization within the scoped range.  This
+
+
+
+            should match the total number of addresses for this scope
+            covered by entries in the mallocAddressTable."
+    ::= { mallocAllocRangeEntry 8 }
+
+mallocAllocRangeNumOfferedAddrs OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of addresses in the range which have been
+            offered.  This number should match the sum of
+            mallocRequestNumAddrs for all entries in the
+            mallocRequestTable in the offered state.  Together with
+            mallocAllocRangeNumAllocatedAddrs and
+            mallocAllocRangeNumTryingAddrs, this can be used to
+            determine the address space utilization within the scoped
+            range in the immediate future."
+    ::= { mallocAllocRangeEntry 9 }
+
+mallocAllocRangeNumWaitingAddrs OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of addresses in the range which have been
+            requested, but whose state is waiting, while the server
+            attempts to acquire more address space."
+    ::= { mallocAllocRangeEntry 10 }
+
+mallocAllocRangeNumTryingAddrs OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of addresses in the scope covered by entries in
+            the mallocRequestTable in the trying state."
+    ::= { mallocAllocRangeEntry 11 }
+
+mallocAllocRangeAdvertisable OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The value of this object is true if the range is eligible
+            to be advertised to other MAASs.  When the row is first
+            created, the default value of this object is true if the
+            scope is divisible, and is false otherwise."
+    ::= { mallocAllocRangeEntry 12 }
+
+
+
+mallocAllocRangeTotalAllocatedAddrs OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The approximate number of addresses in the range which have
+            been allocated by any MAAS, as determined by a Prefix
+            Coordinator.  This object need only be present if
+            mallocAllocRangeAdvertisable is true.  If the number is
+            unknown, a value of 0 may be reported."
+    ::= { mallocAllocRangeEntry 13 }
+
+mallocAllocRangeTotalRequestedAddrs OBJECT-TYPE
+    SYNTAX     Gauge32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The approximate number of addresses in the range for which
+            there is potential demand among MAASs, as determined by a
+            Prefix Coordinator.  This object need only be present if
+            mallocAllocRangeAdvertisable is true.  If the number is
+            unknown, a value of 0 may be reported."
+    ::= { mallocAllocRangeEntry 14 }
+
+mallocAllocRangeStorage OBJECT-TYPE
+    SYNTAX     StorageType
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+            "The storage type for this conceptual row.  Conceptual rows
+            having the value 'permanent' need not allow write-access to
+            any columnar objects in the row."
+    DEFVAL     { nonVolatile }
+    ::= { mallocAllocRangeEntry 15 }
+
+--
+-- the Request Table
+--
+
+mallocRequestTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF MallocRequestEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table containing information on allocation
+            requests, whether allocated or in progress.  This table may
+            also be used to determine which clients are responsible for
+            high address space utilization within a given scope.
+
+
+
+            Entries in this table reflect requests dynamically received
+            by an address allocation protocol."
+    ::= { malloc 5 }
+
+mallocRequestEntry OBJECT-TYPE
+    SYNTAX     MallocRequestEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) containing the information on a
+            particular allocation request."
+    INDEX      { mallocRequestId }
+    ::= { mallocRequestTable 1 }
+
+MallocRequestEntry ::= SEQUENCE {
+    mallocRequestId                      Unsigned32,
+    mallocRequestScopeAddressType        InetAddressType,
+    mallocRequestScopeFirstAddress       InetAddress,
+    mallocRequestStartTime               Unsigned32,
+    mallocRequestEndTime                 Unsigned32,
+    mallocRequestNumAddrs                Unsigned32,
+    mallocRequestState                   INTEGER,
+    mallocRequestClientAddressType       InetAddressType,
+    mallocRequestClientAddress           InetAddress,
+    mallocRequestServerAddressType       InetAddressType,
+    mallocRequestServerAddress           InetAddress,
+    mallocRequestLeaseIdentifier         OCTET STRING
+}
+
+mallocRequestId OBJECT-TYPE
+    SYNTAX     Unsigned32 (1..4294967295)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An arbitrary value identifying this row."
+    ::= { mallocRequestEntry 1 }
+
+mallocRequestScopeAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The type of the first address of the scope to which the
+            request applies.  Legal values correspond to the subset of
+            address families for which multicast address allocation is
+            supported."
+    ::= { mallocRequestEntry 2 }
+
+
+
+
+mallocRequestScopeFirstAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The first address of the scope to which the request
+            applies.  This must match mallocScopeFirstAddress for some
+            row in the mallocScopeTable.  The type of this address is
+            determined by the value of the mallocRequestScopeAddressType
+            object."
+    ::= { mallocRequestEntry 3 }
+
+mallocRequestStartTime OBJECT-TYPE
+    SYNTAX     Unsigned32
+    UNITS      "seconds"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of seconds remaining before the start time of
+            the request.  A value of 0 means that the allocation is
+            currently in effect."
+    ::= { mallocRequestEntry 4 }
+
+mallocRequestEndTime OBJECT-TYPE
+    SYNTAX     Unsigned32
+    UNITS      "seconds"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of seconds remaining before the end time of the
+            request."
+    ::= { mallocRequestEntry 5 }
+
+mallocRequestNumAddrs OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of addresses requested.  If the addresses have
+            been allocated, this number should match the total number of
+            addresses for this request covered by entries in the
+            mallocAddressTable."
+    ::= { mallocRequestEntry 6 }
+
+mallocRequestState OBJECT-TYPE
+    SYNTAX     INTEGER {
+                   allocated(1),
+                   offered(2),   -- tentatively allocated
+
+
+
+                   waiting(3),   -- waiting for more space
+                   trying(4)     -- working on allocating
+               }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The state of the request.  A value of allocated(1)
+            indicates that one or more entries for this request are
+            present in the mallocAddressTable.  A value of offered(2)
+            indicates that addresses have been offered to the client
+            (e.g. via a MADCAP OFFER message), but the allocation has
+            not been committed.  A value of waiting(3) indicates that
+            the allocation is blocked while the server attempts to
+            acquire more space from which it can allocate addresses.  A
+            value of trying(4) means that no addresses have been offered
+            to the client, but that an attempt to allocate is in
+            progress."
+    ::= { mallocRequestEntry 7 }
+
+mallocRequestClientAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The type of the address of the client that (last) requested
+            this allocation."
+    ::= { mallocRequestEntry 8 }
+
+mallocRequestClientAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The address of the client that (last) requested this
+            allocation.  The type of this address is determined by the
+            value of the mallocRequestClientAddressType object."
+    ::= { mallocRequestEntry 9 }
+
+mallocRequestServerAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The type of the address of the server to which the request
+            was (last) sent."
+    ::= { mallocRequestEntry 10 }
+
+
+
+
+
+mallocRequestServerAddress OBJECT-TYPE
+    SYNTAX     InetAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The address of the server to which the request was (last)
+            sent.  The type of this address is determined by the value
+            of the mallocRequestServerAddressType object."
+    ::= { mallocRequestEntry 11 }
+
+mallocRequestLeaseIdentifier OBJECT-TYPE
+    SYNTAX     OCTET STRING (SIZE (0..255))
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The Lease Identifier of this request.  If the allocation
+            mechanism in use does not use Lease Identifiers, then the
+            value is a 0-length string."
+    ::= { mallocRequestEntry 12 }
+
+--
+-- the Address Table
+--
+
+mallocAddressTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF MallocAddressEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table containing information on blocks of
+            allocated addresses.  This table may be used to map a given
+            multicast group address to the associated request."
+    ::= { malloc 6 }
+
+mallocAddressEntry OBJECT-TYPE
+    SYNTAX     MallocAddressEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) containing the information on a
+            particular block of allocated addresses.  The block of
+            addresses covered by each entry in this table must fall
+            within a range corresponding to an entry in the
+            mallocAllocRangeTable."
+    INDEX      { mallocAddressAddressType, mallocAddressFirstAddress }
+    ::= { mallocAddressTable 1 }
+
+
+
+
+
+MallocAddressEntry ::= SEQUENCE {
+    mallocAddressAddressType             InetAddressType,
+    mallocAddressFirstAddress            InetAddress,
+    mallocAddressNumAddrs                Unsigned32,
+    mallocAddressRequestId               Unsigned32
+}
+
+mallocAddressAddressType OBJECT-TYPE
+    SYNTAX     InetAddressType
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The type of the first address in the allocated block.
+            Legal values correspond to the subset of address families
+            for which multicast address allocation is supported."
+    ::= { mallocAddressEntry 1 }
+
+mallocAddressFirstAddress OBJECT-TYPE
+    SYNTAX     InetAddress (SIZE(0..20))
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The first address in the allocated block.  The type of this
+            address is determined by the value of the
+            mallocAddressAddressType object."
+    ::= { mallocAddressEntry 2 }
+
+mallocAddressNumAddrs OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of addresses in the allocated block."
+    ::= { mallocAddressEntry 3 }
+
+mallocAddressRequestId OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The index of the request which caused this block of
+            addresses to be allocated.  This value must match the value
+            of mallocRequestId for some entry in the
+            mallocRequestTable."
+    ::= { mallocAddressEntry 4 }
+
+--
+-- MADCAP-specific objects
+
+
+
+--
+
+madcapConfig OBJECT-IDENTITY
+    STATUS     current
+    DESCRIPTION
+            "Group of objects that count various MADCAP events."
+    ::= { madcap 1 }
+
+madcapConfigExtraAllocationTime OBJECT-TYPE
+    SYNTAX     Unsigned32
+    UNITS      "seconds"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "The amount of extra time on either side of a lease which
+            the MADCAP server allocates to allow for clock skew among
+            clients."
+    ::= { madcapConfig 1 }
+
+madcapConfigNoResponseDelay OBJECT-TYPE
+    SYNTAX     Unsigned32
+    UNITS      "seconds"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "The amount of time the MADCAP client allows for receiving a
+            response from a MADCAP server."
+    ::= { madcapConfig 2 }
+
+madcapConfigOfferHold OBJECT-TYPE
+    SYNTAX     Unsigned32
+    UNITS      "seconds"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "The amount of time the MADCAP server will reserve an
+            address for after sending an OFFER message in anticipation
+            of receiving a REQUEST message."
+    ::= { madcapConfig 3 }
+
+madcapConfigResponseCacheInterval OBJECT-TYPE
+    SYNTAX     Unsigned32 (0..300)
+    UNITS      "seconds"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "The amount of time the MADCAP server uses to detect
+            duplicate messages."
+
+
+
+    ::= { madcapConfig 4 }
+
+madcapConfigClockSkewAllowance OBJECT-TYPE
+    SYNTAX     Unsigned32
+    UNITS      "seconds"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "The clock skew threshold used by the MADCAP server to
+            generate Excessive Clock Skew errors."
+    ::= { madcapConfig 5 }
+
+madcapCounters OBJECT-IDENTITY
+    STATUS     current
+    DESCRIPTION
+            "A group of objects that count various MADCAP events."
+    ::= { madcap 2 }
+
+madcapTotalErrors OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of transactions for which the MADCAP
+            server has detected an error of any type, regardless of
+            whether the server ignored the request or generated a NAK."
+    ::= { madcapCounters 1 }
+
+madcapRequestsDenied OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of valid requests for which the MADCAP server
+            could not complete an allocation, regardless of whether NAKs
+            were sent.  This corresponds to the Valid Request Could Not
+            Be Completed error code in MADCAP."
+    ::= { madcapCounters 2 }
+
+madcapInvalidRequests OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of invalid requests received by the MADCAP
+            server, regardless of whether NAKs were sent.  This
+            corresponds to the Invalid Request error code in MADCAP."
+    ::= { madcapCounters 3 }
+
+
+
+madcapExcessiveClockSkews OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of requests received by the MADCAP server with
+            an excessive clock skew, regardless of whether NAKs were
+            sent.  This corresponds to the Excessive Clock Skew error
+            code in MADCAP."
+    ::= { madcapCounters 4 }
+
+madcapBadLeaseIds OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of requests received by the MADCAP server with
+            an unrecognized Lease Identifier, regardless of whether NAKs
+            were sent.  This corresponds to the Lease Identifier Not
+            Recognized error code in MADCAP."
+    ::= { madcapCounters 5 }
+
+madcapDiscovers OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of DISCOVER messages received by the MADCAP
+            server."
+    ::= { madcapCounters 6 }
+
+madcapInforms OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of INFORM messages received by the MADCAP
+            server."
+    ::= { madcapCounters 7 }
+
+madcapRequests OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of REQUEST messages received by the MADCAP
+            server."
+    ::= { madcapCounters 8 }
+
+
+
+madcapRenews OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of RENEW messages received by the MADCAP
+            server."
+    ::= { madcapCounters 9 }
+
+madcapReleases OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of RELEASE messages received by the MADCAP
+            server."
+    ::= { madcapCounters 10 }
+
+
+-- conformance information
+
+mallocConformance  OBJECT IDENTIFIER ::= { mallocMIB 2 }
+mallocCompliances  OBJECT IDENTIFIER ::= { mallocConformance 1 }
+mallocGroups       OBJECT IDENTIFIER ::= { mallocConformance 2 }
+
+-- compliance statements
+
+mallocServerReadOnlyCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for multicast address allocation
+            servers implementing the MALLOC MIB without support for
+            read-create (i.e., in read-only mode).  Such a server can
+            then be monitored but can not be configured with this MIB."
+    MODULE  -- this module
+    MANDATORY-GROUPS { mallocBasicGroup,
+                       mallocServerGroup }
+
+        OBJECT      mallocScopeLastAddress
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeHopLimit
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+
+
+
+        OBJECT      mallocScopeStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeDivisible
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeSSM
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeStorage
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeNameScopeName
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeNameDefault
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeNameStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeNameStorage
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocAllocRangeLastAddress
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+
+
+
+
+
+
+        OBJECT      mallocAllocRangeStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocAllocRangeLifetime
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocAllocRangeMaxLeaseAddrs
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocAllocRangeMaxLeaseTime
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocAllocRangeStorage
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+    GROUP  madcapServerGroup
+    DESCRIPTION
+            "This group is mandatory for servers which implement the
+            MADCAP client-server protocol."
+
+        OBJECT      madcapConfigExtraAllocationTime
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      madcapConfigOfferHold
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      madcapConfigResponseCacheInterval
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+
+
+
+
+
+
+        OBJECT      madcapConfigClockSkewAllowance
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+   ::= { mallocCompliances 1 }
+
+mallocClientReadOnlyCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for clients implementing the
+            MALLOC MIB without support for read-create (i.e., in read-
+            only mode).  Such clients can then be monitored but can not
+            be configured with this MIB."
+    MODULE  -- this module
+    MANDATORY-GROUPS { mallocBasicGroup,
+                       mallocClientGroup }
+
+    GROUP  mallocClientScopeGroup
+    DESCRIPTION
+            "This group is mandatory for clients which maintain a list
+            of multicast scopes."
+
+        OBJECT      mallocScopeLastAddress
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeHopLimit
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeServerAddressType
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeServerAddress
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+
+
+
+
+        OBJECT      mallocScopeSSM
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeStorage
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+    GROUP  madcapClientGroup
+    DESCRIPTION
+            "This group is mandatory for clients which implement the
+            MADCAP client-server protocol."
+
+        OBJECT      madcapConfigNoResponseDelay
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+   ::= { mallocCompliances 2 }
+
+mallocPrefixCoordinatorReadOnlyCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for prefix coordinators
+            implementing the MALLOC MIB without support for read-create
+            (i.e., in read-only mode).  Such devices can then be
+            monitored but can not be configured with this MIB."
+    MODULE  -- this module
+    MANDATORY-GROUPS { mallocBasicGroup,
+                       mallocPrefixCoordinatorGroup }
+
+        OBJECT      mallocScopeLastAddress
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocScopeDivisible
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocAllocRangeLastAddress
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+
+
+
+
+        OBJECT      mallocAllocRangeStatus
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocAllocRangeLifetime
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocAllocRangeAdvertisable
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+
+        OBJECT      mallocAllocRangeStorage
+        MIN-ACCESS  read-only
+        DESCRIPTION
+            "Write access is not required."
+   ::= { mallocCompliances 3 }
+
+mallocServerFullCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for multicast address allocation
+            servers implementing the MALLOC MIB with support for read-
+            create.  Such servers can then be both monitored and
+            configured with this MIB."
+    MODULE  -- this module
+    MANDATORY-GROUPS { mallocBasicGroup,
+                       mallocServerGroup }
+
+    GROUP  madcapServerGroup
+    DESCRIPTION
+            "This group is mandatory for servers which implement the
+            MADCAP client-server protocol."
+   ::= { mallocCompliances 4 }
+
+mallocClientFullCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for hosts implementing the MALLOC
+            MIB with support for read-create.  Such clients can then be
+            both monitored and configured with this MIB."
+    MODULE  -- this module
+    MANDATORY-GROUPS { mallocBasicGroup,
+                       mallocClientGroup }
+
+
+
+
+    GROUP  mallocClientScopeGroup
+    DESCRIPTION
+            "This group is mandatory for clients which maintain a list
+            of multicast scopes."
+
+    GROUP  madcapClientGroup
+    DESCRIPTION
+            "This group is mandatory for clients which implement the
+            MADCAP client-server protocol."
+   ::= { mallocCompliances 5 }
+
+mallocPrefixCoordinatorFullCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for prefix coordinators
+            implementing the MALLOC MIB with support for read-create.
+            Such devices can then be both monitored and configured with
+            this MIB."
+    MODULE  -- this module
+    MANDATORY-GROUPS { mallocBasicGroup,
+                       mallocPrefixCoordinatorGroup }
+   ::= { mallocCompliances 6 }
+
+-- units of conformance
+
+mallocBasicGroup OBJECT-GROUP
+        OBJECTS { mallocCapabilities, mallocRequestScopeAddressType,
+                  mallocRequestScopeFirstAddress,
+                  mallocRequestStartTime,
+                  mallocRequestEndTime, mallocRequestNumAddrs,
+                  mallocRequestState,
+                  mallocAddressNumAddrs, mallocAddressRequestId
+                }
+        STATUS  current
+        DESCRIPTION
+            "The basic collection of objects providing management of IP
+            multicast address allocation."
+   ::= { mallocGroups 1 }
+
+mallocServerGroup OBJECT-GROUP
+        OBJECTS { mallocScopeLastAddress, mallocScopeHopLimit,
+                  mallocScopeSSM, mallocScopeStatus, mallocScopeStorage,
+                  mallocAllocRangeLastAddress, mallocAllocRangeLifetime,
+                  mallocAllocRangeNumAllocatedAddrs,
+                  mallocAllocRangeNumOfferedAddrs,
+                  mallocAllocRangeNumWaitingAddrs,
+                  mallocAllocRangeNumTryingAddrs,
+                  mallocAllocRangeMaxLeaseAddrs,
+
+
+
+                  mallocAllocRangeMaxLeaseTime, mallocAllocRangeSource,
+                  mallocAllocRangeStatus, mallocAllocRangeStorage,
+                  mallocScopeDivisible, mallocScopeSource,
+                  mallocScopeNameScopeName, mallocScopeNameDefault,
+                  mallocScopeNameStatus, mallocScopeNameStorage,
+                  mallocRequestClientAddressType,
+                  mallocRequestClientAddress
+                }
+        STATUS  current
+        DESCRIPTION
+            "A collection of objects providing management of multicast
+            address allocation in servers."
+   ::= { mallocGroups 2 }
+
+mallocClientGroup OBJECT-GROUP
+        OBJECTS { mallocRequestServerAddressType,
+                  mallocRequestServerAddress }
+        STATUS  current
+        DESCRIPTION
+            "A collection of objects providing management of multicast
+            address allocation in clients."
+   ::= { mallocGroups 3 }
+
+madcapServerGroup OBJECT-GROUP
+        OBJECTS { madcapConfigClockSkewAllowance,
+           madcapConfigExtraAllocationTime, madcapConfigOfferHold,
+           madcapConfigResponseCacheInterval,
+           madcapTotalErrors, madcapRequestsDenied,
+           madcapInvalidRequests, madcapBadLeaseIds,
+           madcapExcessiveClockSkews, madcapDiscovers,
+           madcapInforms, madcapRequests,
+           madcapRenews, madcapReleases }
+        STATUS  current
+        DESCRIPTION
+            "A collection of objects providing management of MADCAP
+            servers."
+   ::= { mallocGroups 4 }
+
+madcapClientGroup OBJECT-GROUP
+    OBJECTS { mallocRequestLeaseIdentifier,
+              madcapConfigNoResponseDelay }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing management of MADCAP
+            clients."
+   ::= { mallocGroups 5 }
+
+
+
+
+
+mallocClientScopeGroup OBJECT-GROUP
+    OBJECTS { mallocScopeLastAddress, mallocScopeHopLimit,
+              mallocScopeStatus, mallocScopeStorage, mallocScopeSource,
+              mallocScopeServerAddressType, mallocScopeServerAddress,
+              mallocScopeSSM, mallocScopeNameScopeName,
+              mallocScopeNameDefault, mallocScopeNameStatus,
+              mallocScopeNameStorage }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing management of multicast
+            scope information in clients."
+   ::= { mallocGroups 6 }
+
+mallocPrefixCoordinatorGroup OBJECT-GROUP
+    OBJECTS { mallocAllocRangeLastAddress, mallocAllocRangeLifetime,
+              mallocAllocRangeStatus, mallocAllocRangeStorage,
+              mallocAllocRangeSource,
+              mallocAllocRangeTotalAllocatedAddrs,
+              mallocAllocRangeTotalRequestedAddrs,
+              mallocAllocRangeAdvertisable, mallocScopeLastAddress,
+              mallocScopeDivisible, mallocScopeSource }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects for managing Prefix Coordinators."
+    ::= { mallocGroups 7 }
+END

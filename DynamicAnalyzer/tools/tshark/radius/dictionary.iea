@@ -1,0 +1,33 @@
+# -*- text -*-
+# IEA Software, Inc.
+# RADIUS VSA Dictionary
+# http://www.iea-software.com
+#
+# $Id$
+#
+
+VENDOR IEA-Software 24023
+BEGIN-VENDOR IEA-Software
+
+
+# AirMarshal Attributes [1-30]
+ATTRIBUTE AM-Interrupt-HTMLFile			1	string
+ATTRIBUTE AM-Interrupt-Interval			2	integer
+ATTRIBUTE AM-Interrupt-Timeout			3	integer
+ATTRIBUTE AM-Status-HTMLFile			4	string
+ATTRIBUTE AM-HTTP-Proxy-Port			5	integer
+ATTRIBUTE AM-ACK-HTMLFile				6	string
+ATTRIBUTE AM-NAK-HTMLFile				7	string
+ATTRIBUTE AM-Bandwidth-Pool				8	string
+ATTRIBUTE AM-Bandwidth-Pool-Max-Up		9	integer
+ATTRIBUTE AM-Bandwidth-Pool-Max-Down	10	integer
+ATTRIBUTE AM-Mirroring					11	integer
+ATTRIBUTE AM-Disconnect-Access			12	integer
+
+VALUE	AM-Mirroring	Disabled				0
+VALUE	AM-Mirroring	Full-Packet-Local-PCAP	1
+
+VALUE	AM-Disconnect-Access	Allow-All		0
+VALUE	AM-Disconnect-Access	Deny-RADIUS		1
+
+END-VENDOR IEA-Software
