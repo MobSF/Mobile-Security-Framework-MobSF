@@ -48,9 +48,12 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
 )
-
+'''
+Not the right way of doing it. Quick Fix
+'django.middleware.security.SecurityMiddleware',
+)
+'''
 ROOT_URLCONF = 'YodleeMobSec.urls'
 
 WSGI_APPLICATION = 'YodleeMobSec.wsgi.application'
