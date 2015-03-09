@@ -96,7 +96,7 @@ STATICFILES_DIRS = (
 
 STATIC_URL = '/static/'
 #CUSTOM SETTINGS
-JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/'
+JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/' # remember about the /  ( not \)
 #VM SPECIFIC
 VBOX='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
 UUID='a4a3b417-c8f1-41ba-9d00-9d6ab88d15d3'

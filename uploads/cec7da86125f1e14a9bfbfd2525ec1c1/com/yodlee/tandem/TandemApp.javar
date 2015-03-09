@@ -1,0 +1,276 @@
+/**
+ * Copyright (c) 2014 Yodlee, Inc. - All Rights Reserved.
+ */
+
+package com.yodlee.tandem;
+
+import java.io.File;
+import java.util.Hashtable;
+
+import android.app.Application;
+import android.os.Environment;
+import android.provider.Settings.Secure;
+import android.telephony.TelephonyManager;
+import android.text.TextUtils;
+
+import com.yodlee.analytics.constants.AnalyticsConstants;
+import com.yodlee.error.TandemErrorCode;
+import com.yodlee.framework.SessionHandler;
+import com.yodlee.framework.exception.ErrorCode;
+import com.yodlee.framework.exception.YodErrorCode;
+import com.yodlee.framework.exception.YodException;
+import com.yodlee.framework.logger.YLog;
+import com.yodlee.framework.utils.DataStore;
+import com.yodlee.framework.utils.FileUtils;
+import com.yodlee.gcm.GcmHelper;
+import com.yodlee.network.NetworkManager;
+import com.yodlee.network.RequestManager;
+import com.yodlee.network.YodNetworkStateListener;
+import com.yodlee.network.YodNetworkStatusReceiver;
+import com.yodlee.security.TokenManager;
+import com.yodlee.utils.PhoneUtils;
+//import com.newrelic.agent.android.NewRelic;
+
+/**
+ * @author DKushal
+ */
+
+public class TandemApp extends Application {
+	
+	public static final String HOST_NAME = ".YODLEE.COM";
+	
+    public static final String LOG_TAG = TandemApp.class.getSimpleName();
+    // DEV - URL
+    // final String FL_CONSUMER_KEY = "b7e68b5ed970422cab296b7d77892ff5";
+    // final String FL_CONSUMER_SECRET = "fbf2024764fa4d9ba4c3806f3d5b2391";
+
+    // QE/Alpha/Prod - URL
+    private final static String FL_CONSUMER_KEY = "cef99b82edc04c6e80715ecc22f3e1e1";
+    private final static String FL_CONSUMER_SECRET = "62b62d02073642fb87d059dace23a408";
+
+    private final static String TOUR_VIDEO_URL = "http://www.androidbegin.com/tutorial/AndroidCommercial.3gp";
+        private final static String NEW_RELIC_APP_KEY = "AA7b327698b00678e245f7af5b2f5b5decd48719b3";
+        private final static String FLURRY_KEY = "HPJ6XZTRRWW4C65QVMNK";
+    private final String CONSUMER_KEY = "edc04c6e42fb87d05289f0b8c642fb87" "289f0b8cbcda48189e30ff39e9a93db6";
+    private final String CONSUMER_SECRET = "6c6e567480944bbdbfbf9709ea63b209";
+    private final static String COBRAND_ID = "10013156"; // QA-10013156 Dev-"10012752"
+    private final static String SENDER_ID = "392576337587";
+
+    private final static String IMAGES_FOLDER = Environment.getExternalStorageDirectory().toString() + "/Tandem";
+
+    // Venmo specific constants
+    private static final String VENMO_APP_ID = "1793";
+    private static final String VENMO_APP_SECRET = "wqp32VqmXD5mvFK5P9ShwdTkLycezr4f";
+    private static final String VENMO_APP_NAME = "Tandem";
+    private static final String VENMO_TRANSACTION = "pay";
+
+    private static String mUniqueId = "";
+    private static String phoneNumPrefix = "+91";
+    private static DataStore mDataStoreInstance;
+    private static boolean mNetworkStatus;
+    private StringManager mStringManager;
+    private static String mAppVesrion = "";
+    private static String mCopyrightMsg = "";
+
+    private static NetworkManager mNetworkManager = null;
+    private static RequestManager mRequestManager = null;
+
+    private static Hashtable<String, String> mFlurryParams = new Hashtable<String, String>();
+
+    public static final String FEED_ID = "5406e7f4e4b08d7f09c5efb0";
+    public static final String ACTIVITY_TYPE = "card";
+
+    YodNetworkStateListener networkStateListener = new YodNetworkStateListener() {
+        @Override
+        public void onNetworkStateChanged(boolean networkStatus) {
+            TandemApp.mNetworkStatus = networkStatus;
+        }
+    };
+
+    public TandemApp() {
+        super();
+    }
+
+    @Override
+    public void onCreate() {
+
+        super.onCreate();
+
+        //NewRelic.withApplicationToken(NEW_RELIC_APP_KEY).start(this);
+
+        mStringManager = StringManager.getInstance(getApplicationContext());
+        mNetworkManager = NetworkManager.getInstance(getApplicationContext());
+        mRequestManager = mNetworkManager.getRequestManager();
+
+        YLog.init(getApplicationContext());
+        TokenManager.getInstance().setConsumerKey(CONSUMER_KEY);
+        TokenManager.getInstance().setConsumerSecret(CONSUMER_SECRET);
+
+        initUdid();
+		SessionHandler.createInstance(getApplicationContext());
+        initPhoneNumberPrefix();
+
+        String temp = getPackageName();
+        mDataStoreInstance = new DataStore(getApplicationContext(), "com.yodlee.tandem", CONSUMER_SECRET);
+
+        GcmHelper helper = new GcmHelper();
+        helper.registerWithGooglePlay(getApplicationContext(), getSenderid());
+
+        YodNetworkStatusReceiver.getInstance(getApplicationContext()).registerNetworkBroadcast(networkStateListener);
+
+        FileUtils.createFolder(new File(TandemApp.getImagesFolder()));
+
+        mAppVesrion = PhoneUtils.getApplicationVersion(this);
+        if (TextUtils.isEmpty(mAppVesrion)) {
+            mCopyrightMsg = getString(R.string.copyright_info);
+        } else {
+            mCopyrightMsg = getString(R.string.version_info, mAppVesrion);
+        }
+
+        // Setup Flurry params.
+        mFlurryParams.put(AnalyticsConstants.ANALYTICS_KEY, TandemApp.getFlurryKey());
+    }
+
+    private void initPhoneNumberPrefix() {
+        TelephonyManager TelephonyMgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        String countryId = TelephonyMgr.getNetworkCountryIso();
+
+        if (("us").equalsIgnoreCase(countryId)) {
+            phoneNumPrefix = "+1";
+        }
+
+    }
+
+    private void initUdid() {
+        mUniqueId = Secure.getString(getApplicationContext().getContentResolver(), Secure.ANDROID_ID);
+        if (mUniqueId == null) {
+            YLog.e(LOG_TAG, "UDID Error.");
+        }
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        YLog.e(LOG_TAG, "onTrimMemory : " + level);
+        super.onTrimMemory(level);
+    }
+
+    @Override
+    public void onLowMemory() {
+        YLog.e(LOG_TAG, "onLowMemory");
+        super.onLowMemory();
+    }
+
+    public static String getFlurryKey() {
+        return FLURRY_KEY;
+    }
+
+    public static String getCobrandId() {
+        return COBRAND_ID;
+    }
+
+    public static String getUdid() {
+
+        return mUniqueId;
+    }
+
+    public static String getSenderid() {
+        return SENDER_ID;
+    }
+
+    public static String getPhoneNumPrefix() {
+        return phoneNumPrefix;
+    }
+
+    public static DataStore getDataStore() {
+        return mDataStoreInstance;
+    }
+
+    public static boolean isNetworkAvailable() {
+        return mNetworkStatus;
+    }
+
+    public static String getNewRelicAppKey() {
+        return NEW_RELIC_APP_KEY;
+    }
+
+    public static RequestManager getRequestManager() {
+
+        try {
+            YodException ye = new YodException(TandemErrorCode.TAN_REQUEST_MANAGER_NOT_AVAILABLE, "Request Manager is Null.", null);
+
+            ErrorCode ec = TandemErrorCode.TAN_REQUEST_MANAGER_NOT_AVAILABLE;
+
+            throw ye;
+        } catch (YodException yex) {
+            if (yex.getErrorCode() == TandemErrorCode.TAN_REQUEST_MANAGER_NOT_AVAILABLE) {
+
+            }
+        }
+
+        try {
+            YodException yeYod = new YodException(YodErrorCode.YOD_NO_NETWORK, "Network not available.", null);
+            ErrorCode ecYod = YodErrorCode.YOD_FEED_ERROR_OAUTH;
+
+            throw yeYod;
+        } catch (YodException yex) {
+            if (yex.getErrorCode() == YodErrorCode.YOD_NO_NETWORK) {
+
+            }
+        }
+
+        return mRequestManager;
+    }
+
+    public static String getTourVideoUrl() {
+        return TOUR_VIDEO_URL;
+    }
+
+    public static String getImagesFolder() {
+        return IMAGES_FOLDER;
+    }
+
+    public static String getFastlinkConsumerKey() {
+        return FL_CONSUMER_KEY;
+    }
+
+    public static String getFastlinkConsumerSecret() {
+        return FL_CONSUMER_SECRET;
+    }
+
+    public static String getAppVersion() {
+        return mAppVesrion;
+    }
+
+    public static String getCopyrightMsg() {
+        return mCopyrightMsg;
+    }
+
+    public static void clearSession() {
+        TokenManager.getInstance().clearAuthToken();
+        try {
+            SessionManager.getInstance().cleanUp();
+        } catch (YodException e) {
+            YLog.e(LOG_TAG, e.toString());
+        }
+    }
+
+    public static Hashtable<String, String> getFlurryParams() {
+        return mFlurryParams;
+    }
+
+    public static String getVenmoAppId() {
+        return VENMO_APP_ID;
+    }
+
+    public static String getVenmoAppSecret() {
+        return VENMO_APP_SECRET;
+    }
+
+    public static String getVenmoAppName() {
+        return VENMO_APP_NAME;
+    }
+
+    public static String getVenmoTransaction() {
+        return VENMO_TRANSACTION;
+    }
+}
