@@ -116,7 +116,7 @@ def StaticAnalyzer(request):
         SUSPCONN = c['suspconn']
         PIMLEAK= c['pimleak']
         CODEEXEC = c['codeexec']
-        CERT_INFO=''#CertInfo(APP_DIR,TOOLS_DIR).replace('\n', '</br>')
+        CERT_INFO=CertInfo(APP_DIR,TOOLS_DIR).replace('\n', '</br>')
         Dex2Jar(APP_DIR,TOOLS_DIR)
         Dex2Smali(APP_DIR,TOOLS_DIR)
         Jar2Java(APP_DIR,TOOLS_DIR)
