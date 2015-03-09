@@ -23,7 +23,7 @@ Go to YodleeMobSec/settings.py and provide the correct Path to your Java Install
 
 3. To Run
 
-python manage.py runserver
+```python manage.py runserver```
 
 * For Dynamic Analyzer
 
