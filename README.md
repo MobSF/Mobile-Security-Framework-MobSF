@@ -21,6 +21,10 @@ Tested on Windows 7, 8, 8.1
 
 Go to YodleeMobSec/settings.py and provide the correct Path to your Java Installation in the line that contains JAVA_PATH=
 
+3. To Run
+
+python manage.py runserver
+
 * For Dynamic Analyzer
 
  Pending....
