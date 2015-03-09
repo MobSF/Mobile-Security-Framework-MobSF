@@ -13,15 +13,15 @@ Sample Report: http://opensecurity.in/research/security-analysis-of-android-brow
 
 Tested on Windows 7, 8, 8.1
 
-1. Install Django version 1.8a1
+ Install Django version 1.8a1
 
 ``` pip install Django==1.8a1```
 
-2. Specify Java PATH
+ Specify Java PATH
 
 Go to YodleeMobSec/settings.py and provide the correct Path to your Java Installation in the line that contains JAVA_PATH=
 
-3. To Run
+ To Run
 
 ```python manage.py runserver```
 
