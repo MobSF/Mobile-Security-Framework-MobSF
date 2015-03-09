@@ -20,4 +20,4 @@ REM
 set CLASSPATH=
 FOR %%i IN ("%~dp0lib\*.jar") DO CALL "%~dp0setclasspath.bat" "%%i"
 
-java.exe -Xms512m -Xmx1024m -cp %CLASSPATH% "com.googlecode.dex2jar.tools.Dex2jarCmd" %*
+java -Xms512m -Xmx1024m -cp %CLASSPATH% "com.googlecode.dex2jar.tools.Dex2jarCmd" %*
