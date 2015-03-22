@@ -95,16 +95,24 @@ STATICFILES_DIRS = (
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
+
 #CUSTOM SETTINGS
-JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/' # remember about the /  ( not \)
+#Static Analysis
+#===============
+
+#JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/' # remember about the /  ( not \)
+JAVA_PATH='/usr/bin/'
+#Dynamic Analysis
+#================
 #VM SPECIFIC
 VBOX='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
 UUID='a4a3b417-c8f1-41ba-9d00-9d6ab88d15d3'
 SUUID='ccf03f94-afd9-4e0b-85d6-77f8524a1216'
 #VM IP
-HOST_IP='192.168.1.38' #VM IP
-PROXY_IP='192.168.1.35' #Host IP
-PORT='8787'
+HOST_IP='192.168.1.38' #VM/Device IP
+PROXY_IP='192.168.1.35' #Host/Server/Proxy IP
+PORT='8787' #Proxy Port
+UPSERVER='192.168.1.35:80' #Local Server IP:PORT
 
 
 

@@ -1,0 +1,17 @@
+{% extends "skelton_base.html" %}
+   {% block content %}
+	<script type="text/javascript" src="/static/js/shCore.js"></script>
+	<script type="text/javascript" src="/static/js/shBrushPlain.js"></script>
+  <script type="text/javascript" src="/static/js/shBrushXml.js"></script>
+	<link type="text/css" rel="stylesheet" href="/static/css/shCoreDefault.css"/>
+	<script type="text/javascript">SyntaxHighlighter.all();</script>
+</head>
+   <br>  
+	 <div class="page-header">
+      <p class="lead">{{file}}</p>  
+      </div>
+      <pre class="brush: {{ type }};" >
+      {{ dat }}
+     </pre>
+
+   {% endblock %}

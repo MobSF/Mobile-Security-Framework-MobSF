@@ -132,6 +132,12 @@
 								highlight: "#5AD3D1",
 								label: "Providers"
 							},
+								{
+								value: {{ bro_count }},
+								color: "#66BFBD",
+								highlight: "#7AD4D1",
+								label: "Receivers"
+							},
 							{
 								value: {{ serv_count }},
 								color: "#FDB45C",
@@ -174,7 +180,7 @@
                             </div>
                             <div class="panel-body">
                   
-						<a href="../Java/?md5={{ md5 }}" class="btn btn-info btn-lg" role="button">View Java</a>
+						<a href="../Java/?md5={{ md5 }}{{ zipped }}" class="btn btn-info btn-lg" role="button">View Java</a>
 						<a href="../static/downloads/{{ md5 }}-java.zip" class="btn btn-warning btn-lg" role="button">Download Java</a>
 					
 					    </br></br>

@@ -49,7 +49,23 @@ if sys.hexversion < 0x2070000 :
         ZIPMODULE = 1
 else :
     ZIPMODULE = 1 
-
+def get_details_permissions2(PER) :
+    """
+        Return permissions with details
+        :rtype: list of string
+    """
+    l = {}
+    for i in PER :
+        perm = i
+        pos = i.rfind(".")
+        if pos != -1 :
+            perm = i[pos+1:]
+        
+        try :
+            l[ i ] = DVM_PERMISSIONS["MANIFEST_PERMISSION"][ perm ]
+        except KeyError :
+            l[ i ] = [ "dangerous", "Unknown permission from android reference", "Unknown permission from android reference" ]
+    return l
 ################################################### CHILKAT ZIP FORMAT #####################################################
 class ChilkatZip :
     def __init__(self, raw) :
