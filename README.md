@@ -19,11 +19,11 @@ Tested on Windows 7, 8, 8.1
 
  Specify Java PATH
 
-Go to YodleeMobSec/settings.py and provide the correct Path to your Java Installation in the line that contains JAVA_PATH=
+Go to YSOMobSec/settings.py and provide the correct Path to your Java Installation in the line that contains JAVA_PATH=
 
  To Run
 
-```python manage.py runserver```
+```python manage.py runserver IP:PORT```
 
 * For Dynamic Analyzer
 
