@@ -100,19 +100,17 @@ STATIC_URL = '/static/'
 #Static Analysis
 #===============
 
-#JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/' # remember about the /  ( not \)
-JAVA_PATH='/usr/bin/'
+
+JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/' # remember about the /  ( not \)
+#JAVA_PATH='/usr/bin/'
 #Dynamic Analysis
 #================
 #VM SPECIFIC
 VBOX='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
+#c:\Program Files\Oracle\VirtualBox>VBoxManage.exe showhdinfo "d:\YSOMobSec\DynamicAnalyzer\tools\VM\sdcard.vdi"
 UUID='a4a3b417-c8f1-41ba-9d00-9d6ab88d15d3'
-SUUID='ccf03f94-afd9-4e0b-85d6-77f8524a1216'
+SUUID='6be5be25-931e-4b22-a119-739a4a39630b' #This Can Change 
 #VM IP
-HOST_IP='192.168.1.38' #VM/Device IP
-PROXY_IP='192.168.1.35' #Host/Server/Proxy IP
-PORT='8787' #Proxy Port
-UPSERVER='192.168.1.35:80' #Local Server IP:PORT
-
-
-
+VM_IP='192.168.0.25' #VM/Device IP
+PROXY_IP='192.168.0.8' #Host/Server/Proxy IP
+PORT='1337' #Proxy Port

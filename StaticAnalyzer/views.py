@@ -14,7 +14,7 @@ def Java(request):
         m=re.match('[0-9a-f]{32}',request.GET['md5'])
         typ=request.GET['type']
         if m:
-            MD5=request.GET['md5']  
+            MD5=request.GET['md5']
             if typ=='eclipse':
                 SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/src/')
                 t=typ
@@ -77,7 +77,7 @@ def ViewSource(request):
                     return HttpResponseRedirect('/error/')
             elif fil.endswith('.smali'):
                 SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/smali_source/')
-            sfile=SRC+fil
+            sfile=os.path.join(SRC,fil)
             dat=''
             with open(sfile,'r') as f:
                 dat=f.read()
@@ -89,8 +89,8 @@ def ViewSource(request):
         return render(request,template,context)
     except:
         return HttpResponseRedirect('/error/')
-                
-        
+
+
 def StaticAnalyzer(request):
     #try:
     #Input validation
@@ -159,7 +159,7 @@ def StaticAnalyzer(request):
             SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
             Unzip(APP_PATH,APP_DIR)               #EXTRACT APK
             #Check if Valid File
-            pro_type,Valid=ValidAndroidZip(APP_DIR) 
+            pro_type,Valid=ValidAndroidZip(APP_DIR)
             if Valid:
                 MF=GetManifest(APP_DIR,pro_type)
                 MANIFEST_ANAL=ManifestAnalysis(minidom.parseString(MF))
@@ -169,7 +169,7 @@ def StaticAnalyzer(request):
                 CNT_PRO =len(PROVIDERS)
                 CNT_SER =len(SERVICES)
                 CNT_BRO = len(RECEIVERS)
-                
+
                 NATIVE='No Analysis Done'
                 DYNAMIC='No Analysis Done'
                 REFLECTION='No Analysis Done'
@@ -183,7 +183,7 @@ def StaticAnalyzer(request):
                 SUSPCONN = ''#c['suspconn']
                 PIMLEAK= ''#c['pimleak']
                 CODEEXEC = ''#c['codeexec']
-                
+
                 CERT_INFO='No Certificate Analysis Done.'
                 API,DANG,URLS,EMAILS,CRYPTO,OBFUS=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,pro_type)
                 #GenDownloads(APP_DIR,MD5) #Only Report
@@ -194,7 +194,7 @@ def StaticAnalyzer(request):
                 shutil.rmtree(APP_DIR)
                 return HttpResponseRedirect('/Android_ZIP_FORMAT/')
 
-        
+
     else:
          return HttpResponseRedirect('/error/')
     context = {
@@ -346,7 +346,7 @@ def CodeBehaviour(apk):
     vm = dvm.DalvikVMFormat( apk.get_dex() )
     vmx = analysis.uVMAnalysis( vm )
     x = analysis.VMAnalysis( vm )
-    
+
     cod = {'native': analysis.is_native_code(vmx), 'dynamic': analysis.is_native_code(vmx), 'reflection': analysis.is_reflection_code(vmx) }
     try:
         pimleak=gather_PIM_data_leakage(x)
@@ -388,9 +388,9 @@ def CodeBehaviour(apk):
         codeexec=gather_code_execution(x)
     except:
         codeexec =['Analysis Failed']
-        
-        
-    
+
+
+
     beh = {'pimleak': pimleak,'teleleak': teleleak,'settingsleak':settingsleak,
            'loc': loc,'inter':inter,'teleabuse': teleabuse,
            'videvo': videvo,'suspconn': suspconn,'codeexec': codeexec}
@@ -417,7 +417,7 @@ def Dex2Smali(APP_DIR,TOOLS_DIR):
     OUTPUT=os.path.join(APP_DIR,'smali_source/')
     args=[settings.JAVA_PATH+'java','-jar',BS_PATH,DEX_PATH,'-o',OUTPUT]
     subprocess.call(args)
-    
+
 def Jar2Java(APP_DIR,TOOLS_DIR):
     JAR_PATH=APP_DIR + 'classes.jar'
     JD_PATH=TOOLS_DIR + 'jd-core.jar'
@@ -470,11 +470,11 @@ def ManifestData(mfxml):
         androidversionname=node.getAttribute("android:versionName")
     x = set()
     y = set()
-    for activity in activities:  
+    for activity in activities:
         act = activity.getAttribute("android:name")
         if act.startswith('.'):
             act=(package+act).replace('..','.')
-        ACT.append(act)  
+        ACT.append(act)
         for sitem in activity.getElementsByTagName( "action" ):
             val = sitem.getAttribute( "android:name" )
             if val == "android.intent.action.MAIN" :
@@ -488,34 +488,32 @@ def ManifestData(mfxml):
             mainact=z.pop()
         if mainact.startswith('.'):
             mainact=(package+mainact).replace('..','.')
-    for service in services: 
+    for service in services:
         sn = service.getAttribute("android:name")
         if sn.startswith('.'):
             sn=(package+sn).replace('..','.')
         SVC.append(sn)
-    
+
     for provider in providers:
         pn = provider.getAttribute("android:name")
         if pn.startswith('.'):
             pn=(package+pn).replace('..','.')
         CNP.append(pn)
-    
+
     for receiver in receivers:
         re = receiver.getAttribute("android:name")
         if re.startswith('.'):
             re=(package+re).replace('..','.')
         BRD.append(re)
 
-    for lib in libs:    
+    for lib in libs:
         l = lib.getAttribute("android:name")
         LIB.append(l)
 
-    for permission in permissions:    
+    for permission in permissions:
         perm= permission.getAttribute("android:name")
         PERM.append(perm)
     DP=apk.get_details_permissions2(PERM)
-    print "package ",package,minsdk,maxsdk,targetsdk,androidversioncode,androidversionname
-
     return SVC,ACT,BRD,CNP,LIB,DP,package,mainact,minsdk,maxsdk,targetsdk,androidversioncode,androidversionname
 
 def ManifestAnalysis(mfxml):
@@ -531,11 +529,11 @@ def ManifestAnalysis(mfxml):
     for node in manifest:
         package = node.getAttribute("package")
     RET=''
-    ##SERVICES  
+    ##SERVICES
     ##search for services without permissions set
     #if a service is exporeted and has no permission
     #nor an intent filter, flag it
-    for service in services:    
+    for service in services:
         if service.getAttribute("android:exported") == 'true':
             perm = ''
             if service.getAttribute("android:permission"):
@@ -548,10 +546,10 @@ def ManifestAnalysis(mfxml):
 
     ##APPLICATIONS
     for application in applications:
-        
+
         if application.getAttribute("android:debuggable") == "true":
-            RET=RET+ '<tr><td>Debug Enabled For App <br>[android:debuggable=true]</td><td><span class="label label-danger">high</span></td><td>Debugging was enabled on the app which makes it easier for reverse engineers to hook a debugger to it. This allows dumping a stack trace and accessing debugging helper classes.</td></tr>' 
-        
+            RET=RET+ '<tr><td>Debug Enabled For App <br>[android:debuggable=true]</td><td><span class="label label-danger">high</span></td><td>Debugging was enabled on the app which makes it easier for reverse engineers to hook a debugger to it. This allows dumping a stack trace and accessing debugging helper classes.</td></tr>'
+
         if application.getAttribute("android:allowBackup") =="true":
             RET=RET+ '<tr><td>Application Data can be Backed up<br>[android:allowBackup=true]</td><td><span class="label label-warning">medium</span></td><td>This flag allows anyone to backup your application data via adb. It allows users who have enabled USB debugging to copy application data off of the device.</td></tr>'
         elif application.getAttribute("android:allowBackup") =="false":
@@ -578,9 +576,9 @@ def ManifestAnalysis(mfxml):
                     perm = ' (permission '+node.getAttribute("android:permission")+' exists.) '
                 item=node.getAttribute("android:name")
                 if item.startswith('.'):
-                    item=(package+item).replace('..','.')                                                         
+                    item=(package+item).replace('..','.')
                 RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device without an intent filter or a permission requirement therefore leaving it accessible to any other application on the device.</td></tr>'
-    ##GRANT-URI-PERMISSIONS    
+    ##GRANT-URI-PERMISSIONS
     title = 'Improper Content Provider Permissions'
     desc = ('A content provider permission was set to allows access from any other app on the ' +
             'device. Content providers may contain sensitive information about an app and therefore should not be shared.')
@@ -590,14 +588,14 @@ def ManifestAnalysis(mfxml):
         elif granturi.getAttribute("android:path") == '/':
             RET=RET+ '<tr><td>' + title + '<br> [path=/] </td>' + '<td><span class="label label-danger">high</span></td><td>'+ desc+'</td></tr>'
         elif granturi.getAttribute("android:pathPattern") == '*':
-            RET=RET+ '<tr><td>' + title + '<br> [path=*]</td>' + '<td><span class="label label-danger">high</span></td><td>'+ desc +'</td></tr>'        
-    
+            RET=RET+ '<tr><td>' + title + '<br> [path=*]</td>' + '<td><span class="label label-danger">high</span></td><td>'+ desc +'</td></tr>'
+
     ##DATA
-    
+
     for data in datas:
         if data.getAttribute("android:scheme") == "android_secret_code":
             xmlhost = data.getAttribute("android:host")
-            desc = ("A secret code was found in the manifest. These codes, when entered into the dialer " + 
+            desc = ("A secret code was found in the manifest. These codes, when entered into the dialer " +
                 "grant access to hidden content that may contain sensitive information.")
             RET=RET+  '<tr><td>Dailer Code: '+ xmlhost + 'Found <br>[android:scheme="android_secret_code"]</td><td><span class="label label-danger">high</span></td><td>'+ desc + '</td></tr>'
         elif data.getAttribute("android:port"):
@@ -609,7 +607,7 @@ def ManifestAnalysis(mfxml):
     ##INTENTS
 
     for intent in intents:
-        if intent.getAttribute("android:priority").isdigit(): 
+        if intent.getAttribute("android:priority").isdigit():
             value = intent.getAttribute("android:priority")
             if int(value) > 100:
                 RET=RET+ '<tr><td>High Intent Priority ('+ value +')<br>[android:priority]</td><td><span class="label label-warning">medium</span></td><td>By setting an intent priority higher than another intent, the app effectively overrides other requests.</td></tr>'
@@ -660,7 +658,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                 if (('.setWebContentsDebuggingEnabled(true)') in dat and ('WebView') in dat ):
                     c['d_webviewdebug'].append(jfile_path.replace(JS,''))
                 if (('onReceivedSslError(WebView') in dat and ('.proceed();') in dat ):
-                    c['d_webviewdisablessl'].append(jfile_path.replace(JS,''))  
+                    c['d_webviewdisablessl'].append(jfile_path.replace(JS,''))
                 if ((('rawQuery(') in dat or ('query(') in dat or ('SQLiteDatabase') in dat) and (('android.database.sqlite.') in dat)):
                     c['d_sqlite'].append(jfile_path.replace(JS,''))
                 if ((('javax.net.ssl') in dat) and (('TrustAllSSLSocket-Factory') in dat or ('AllTrustSSLSocketFactory') in dat or ('NonValidatingSSLSocketFactory')  in dat or
@@ -668,7 +666,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     c['d_ssl'].append(jfile_path.replace(JS,''))
                 if (('password = "') in dat.lower() or ('secret = "') in dat.lower() or ('username = "') in dat.lower()):
                     c['d_sensitive'].append(jfile_path.replace(JS,''))
-                
+
                 #API Check
                 if (('javax.crypto') in dat or ('kalium.crypto') in dat or ('bouncycastle.crypto') in dat):
                     crypto=True
@@ -752,7 +750,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         URLS.append(mgroups[0])
                         uflag=1
                 if uflag==1:
-                    URLnFile+="<tr><td>" + "<br>".join(URLS) + "</td><td><a href='../ViewSource/?file=" + escape(fl)+"&md5="+MD5+"'>"+escape(base_fl)+"</a></td></tr>"
+                    URLnFile+="<tr><td>" + "<br>".join(URLS) + "</td><td><a href='../ViewSource/?file=" + escape(fl)+"&md5="+MD5+"&type="+TYP+"'>"+escape(base_fl)+"</a></td></tr>"
                 #Email Etraction Regex
                 regex = re.compile(("([a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`"
                                     "{|}~-]+)*(@|\sat\s)(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(\.|"
@@ -763,7 +761,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         EMAILS.append(email[0])
                         eflag=1
                 if eflag==1:
-                    EmailnFile+="<tr><td>" + "<br>".join(EMAILS) + "</td><td><a href='../ViewSource/?file=" + escape(fl)+"&md5="+MD5+"'>"+escape(base_fl)+"</a></td></tr>"
+                    EmailnFile+="<tr><td>" + "<br>".join(EMAILS) + "</td><td><a href='../ViewSource/?file=" + escape(fl)+"&md5="+MD5+"&type="+TYP+"'>"+escape(base_fl)+"</a></td></tr>"
     dc ={'gps':'GPS Location','crypto':'Crypto ','exec': 'Execute System Command ','server_socket':'TCP Server Socket ' ,'socket': 'TCP Socket ','datagramp': 'UDP Datagram Packet ','datagrams': 'UDP Datagram Socket ','ipc': 'Inter Process Communication ','msg': 'Send SMS ','webview_addjs':'WebView JavaScript Interface ','webview': 'WebView Load HTML/JavaScript ','webviewget': 'WebView GET Request ','webviewpost': 'WebView POST Request ','httpcon': 'HTTP Connection ','urlcon':'URL Connection to file/http/https/ftp/jar ','jurl':'JAR URL Connection ','httpsurl':'HTTPS Connection ','nurl':'URL Connection supports file,http,https,ftp and jar ','httpclient':'HTTP Requests, Connections and Sessions ','notify': 'Android Notifications ','cellinfo':'Get Cell Information ','cellloc':'Get Cell Location ','subid':'Get Subscriber ID ','devid':'Get Device ID, IMEI,MEID/ESN etc. ','softver':'Get Software Version, IMEI/SV etc. ','simserial': 'Get SIM Serial Number ','simop': 'Get SIM Provider Details ','opname':'Get SIM Operator Name ','contentq':'Query Database of SMS, Contacts etc. ','refmethod':'Java Reflection Method Invocation ','obf': 'Obfuscation ','gs':'Get System Service ','bencode':'Base64 Encode ','bdecode':'Base64 Decode ','dex':'Load and Manipulate Dex Files ','mdigest': 'Message Digest '}
     html=''
     for ky in dc:
@@ -771,7 +769,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
             link=''
             hd="<tr><td>"+dc[ky]+"</td><td>"
             for l in c[ky]:
-                link+="<a href='../ViewSource/?file="+ escape(l) +"&md5="+MD5+"'>"+escape(ntpath.basename(l))+"</a> "
+                link+="<a href='../ViewSource/?file="+ escape(l) +"&md5="+MD5+"&type="+TYP+"'>"+escape(ntpath.basename(l))+"</a> "
             html+=hd+link+"</td></tr>"
     dg={'d_sensitive' : "Files may contain hardcoded sensitive informations like usernames, passwords, keys etc.",
         'd_ssl': 'Insecure Implementation of SSL. Trusting all the certificates or accepting self signed certificates is a critical Security Hole.',
@@ -793,12 +791,10 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                 hd='<tr><td>'+dg[k]+'</td><td>'+spn_info+'</td><td>'
             else:
                 hd='<tr><td>'+dg[k]+'</td><td>'+spn_dang+'</td><td>'
-                
+
             for ll in c[k]:
-                link+="<a href='../ViewSource/?file="+ escape(ll) +"&md5="+MD5+"'>"+escape(ntpath.basename(ll))+"</a> "
+                link+="<a href='../ViewSource/?file="+ escape(ll) +"&md5="+MD5+"&type="+TYP+"'>"+escape(ntpath.basename(ll))+"</a> "
 
             dang+=hd+link+"</td></tr>"
-   
-    return html,dang,URLnFile,EmailnFile,crypto,obfus                            
-    
-    
+
+    return html,dang,URLnFile,EmailnFile,crypto,obfus

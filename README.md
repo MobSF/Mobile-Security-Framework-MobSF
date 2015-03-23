@@ -11,7 +11,7 @@ Sample Report: http://opensecurity.in/research/security-analysis-of-android-brow
 ##How to Use
 * For Using Static Analyzer
 
-Tested on Windows 7, 8, 8.1, OSX Mavericks
+Tested on Windows 7, 8, 8.1
 
  Install Django version 1.8a1
 

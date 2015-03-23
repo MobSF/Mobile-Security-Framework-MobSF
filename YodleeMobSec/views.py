@@ -28,10 +28,11 @@ def Upload(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             file_type =request.FILES['file'].content_type
+            print file_type
             if file_type=="application/octet-stream" and request.FILES['file'].name.endswith('.apk'):     #APK
                 md5=handle_uploaded_file(request.FILES['file'],'.apk')
                 return HttpResponseRedirect('/StaticAnalyzer/?name='+request.FILES['file'].name+'&type=apk&checksum='+md5)  
-            elif file_type=="application/zip" and request.FILES['file'].name.endswith('.zip'):   #Android Zipped Source
+            elif (file_type=="application/zip" or file_type=="application/octet-stream") and request.FILES['file'].name.endswith('.zip'):   #Android Zipped Source
                 md5=handle_uploaded_file(request.FILES['file'],'.zip')
                 return HttpResponseRedirect('/StaticAnalyzer/?name='+request.FILES['file'].name+'&type=zip&checksum='+md5)
             else:
