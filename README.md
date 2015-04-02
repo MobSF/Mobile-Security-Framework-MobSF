@@ -8,6 +8,11 @@ The static analyzer is able to perform automated code review, detect insecure pe
 
 Sample Report: http://opensecurity.in/research/security-analysis-of-android-browsers.html
 
+##Requirements
+
+* Python 2.7
+* JDK
+
 ##How to Use
 * For Using Static Analyzer
 
