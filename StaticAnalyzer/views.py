@@ -623,7 +623,7 @@ def ManifestAnalysis(mfxml):
 
 
 def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
-    c = {key: [] for key in ('d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
+    c = {key: [] for key in ('dex_cert','dex_tamper','d_root','d_ssl_pin','dex_root','dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
     crypto=False
     obfus=False
     EmailnFile=''
@@ -644,7 +644,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                 #Initialize
                 URLS=[]
                 EMAILS=[]
-                #Insecure Coding
+                #Code Analysis
                 if (('MODE_WORLD_READABLE') in dat or ('Context.MODE_WORLD_READABLE') in dat):
                     c['d_con_world_readable'].append(jfile_path.replace(JS,''))
                 if (('MODE_WORLD_WRITABLE') in dat or ('Context.MODE_WORLD_WRITABLE') in dat):
@@ -666,7 +666,28 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     c['d_ssl'].append(jfile_path.replace(JS,''))
                 if (('password = "') in dat.lower() or ('secret = "') in dat.lower() or ('username = "') in dat.lower()):
                     c['d_sensitive'].append(jfile_path.replace(JS,''))
+                if (('import dexguard.util') in dat and ('DebugDetector.isDebuggable') in dat):
+                    c['dex_debug'].append(jfile_path.replace(JS,''))
+                if (('import dexguard.util') in dat and ('DebugDetector.isDebuggerConnected') in dat):
+                    c['dex_debug_con'].append(jfile_path.replace(JS,''))
+                if (('import dexguard.util') in dat and ('EmulatorDetector.isRunningInEmulator') in dat):
+                    c['dex_emulator'].append(jfile_path.replace(JS,''))
+                if (('import dexguard.util') in dat and ('DebugDetector.isSignedWithDebugKey') in dat):
+                    c['dex_debug_key'].append(jfile_path.replace(JS,''))
+                if (('import dexguard.util') in dat and ('RootDetector.isDeviceRooted') in dat):
+                    c['dex_root'].append(jfile_path.replace(JS,''))
+                if (('import dexguard.util') in dat and ('TamperDetector.checkApk') in dat):
+                    c['dex_tamper'].append(jfile_path.replace(JS,''))
+                if (('import dexguard.util') in dat and ('CertificateChecker.checkCertificate') in dat):
+                    c['dex_cert'].append(jfile_path.replace(JS,''))
+                if (('org.thoughtcrime.ssl.pinning') in dat and (('PinningHelper.getPinnedHttpsURLConnection') in dat or ('PinningHelper.getPinnedHttpClient') in dat or ('PinningSSLSocketFactory(') in dat)):
+                    c['d_ssl_pin'].append(jfile_path.replace(JS,''))
+                if (('com.noshufou.android.su') in dat or ('com.thirdparty.superuser') in dat or ('eu.chainfire.supersu') in dat or ('com.koushikdutta.superuser') in dat or ('eu.chainfire.') in dat):
+                    c['d_root'].append(jfile_path.replace(JS,''))
 
+                    
+ 
+                #Inorder to Add rule to Code Analysis, add identifier to c, add rule here and define identifier description and severity the bottom of this function.
                 #API Check
                 if (('javax.crypto') in dat or ('kalium.crypto') in dat or ('bouncycastle.crypto') in dat):
                     crypto=True
@@ -780,15 +801,31 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
         'd_extstorage': 'App can read/write to External Storage. Any App can read data written to External Storage.',
         'd_jsenabled':'Insecure WebView Implementation. Execution of user controlled code in WebView is a critical Security Hole.',
         'd_webviewdisablessl':'Insecure WebView Implementation. WebView ignores SSL Certificate Errors.',
-        'd_webviewdebug':'Remote WebView debugging is enabled.'}
+        'd_webviewdebug':'Remote WebView debugging is enabled.',
+        'dex_debug': 'DexGuard Debug Detection code to detect wheather an App is debuggable or not is identified.',
+        'dex_debug_con':'DexGuard Debugger Detection code is identified.',
+        'dex_debug_key':'DecGuard code to detect wheather the App is signed with a debug key or not is identified.',
+        'dex_emulator':'DexGuard Emulator Detection code is identified.',
+        'dex_root':'DexGuard Root Detection code is identified.',
+        'dex_tamper' : 'DexGuard App Tamper Detection code is identified.',
+        'dex_cert' : 'DexGuard Signer Certificate Tamper Detection code is identified.',
+        'd_ssl_pin':' This App uses an SSL Pinning Library (org.thoughtcrime.ssl.pinning) to prevent MITM attacks in secure communication channel.',
+        'd_root' : 'This App may request root (Super User) privileges.',
+        }
+
+                
+
     dang=''
     spn_dang='<span class="label label-danger">high</span>'
     spn_info='<span class="label label-info">info</span>'
+    spn_sec='<span class="label label-success">secure</span>'
     for k in dg:
         if c[k]:
             link=''
             if (k == 'd_sqlite' or k == 'd_con_private'):
                 hd='<tr><td>'+dg[k]+'</td><td>'+spn_info+'</td><td>'
+            elif (k=='dex_cert' or k=='dex_tamper' or k=='dex_debug' or k=='dex_debug_con' or k=='dex_debug_key' or k=='dex_emulator' or k=='dex_root' or k=='d_ssl_pin'):
+                hd='<tr><td>'+dg[k]+'</td><td>'+spn_sec+'</td><td>'
             else:
                 hd='<tr><td>'+dg[k]+'</td><td>'+spn_dang+'</td><td>'
 

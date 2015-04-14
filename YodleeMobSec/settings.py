@@ -101,8 +101,8 @@ STATIC_URL = '/static/'
 #===============
 
 
-JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/' # remember about the /  ( not \)
-#JAVA_PATH='/usr/bin/'
+#JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/' # remember about the /  ( not \)
+JAVA_PATH='/usr/bin/'
 #Dynamic Analysis
 #================
 #VM SPECIFIC
