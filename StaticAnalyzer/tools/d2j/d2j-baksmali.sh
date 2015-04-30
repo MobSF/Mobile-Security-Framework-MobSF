@@ -2,7 +2,7 @@
 
 #
 # dex2jar - Tools to work with android .dex and java .class files
-# Copyright (c) 2009-2012 Panxiaobo
+# Copyright (c) 2009-2013 Panxiaobo
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,9 +32,5 @@ done
 PRGDIR=`dirname "$PRG"`
 #
 
-_classpath="."
-for k in "$PRGDIR"/lib/*.jar
-do
- _classpath="${_classpath}:${k}"
-done
-java -Xms512m -Xmx1024m -classpath "${_classpath}" "com.googlecode.dex2jar.v3.Main" "$@"
+# call d2j_invoke.sh to setup java environment
+"$PRGDIR/d2j_invoke.sh" "com.googlecode.d2j.smali.BaksmaliCmd" "$@"

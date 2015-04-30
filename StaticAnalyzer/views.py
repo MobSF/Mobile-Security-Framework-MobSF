@@ -447,10 +447,19 @@ def CodeBehaviour(apk):
       if not i.tags.empty() :
         print i.method.get_class_name(), i.method.get_name(), i.tags
 '''
+def WinFixJava(TOOLS_DIR):
+    DMY=os.path.join(TOOLS_DIR,'d2j/d2j_invoke.tmp')
+    ORG=os.path.join(TOOLS_DIR,'d2j/d2j_invoke.bat')
+    dat=''
+    with open(DMY,'r') as f:
+        dat=f.read().replace("[xxx]",settings.JAVA_PATH+"java")
+    with open(ORG,'w') as f:
+        f.write(dat)
 
 
 def Dex2Jar(APP_DIR,TOOLS_DIR):
     if platform.system()=="Windows":
+        WinFixJava(TOOLS_DIR)
         D2J=os.path.join(TOOLS_DIR,'d2j/') +'d2j-dex2jar.bat'
     else:
         D2J=os.path.join(TOOLS_DIR,'d2j/') +'d2j-dex2jar.sh'

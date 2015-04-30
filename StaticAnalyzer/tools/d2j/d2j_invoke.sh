@@ -2,7 +2,7 @@
 
 #
 # dex2jar - Tools to work with android .dex and java .class files
-# Copyright (c) 2009-2012 Panxiaobo
+# Copyright (c) 2009-2013 Panxiaobo
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,8 +33,16 @@ PRGDIR=`dirname "$PRG"`
 #
 
 _classpath="."
-for k in "$PRGDIR"/lib/*.jar
-do
- _classpath="${_classpath}:${k}"
-done
-java -Xms512m -Xmx1024m -classpath "${_classpath}" "com.googlecode.dex2jar.util.ASMifierFileV" "$@"
+if [ `uname -a | grep -i -c cygwin` -ne 0 ]; then # Cygwin, translate the path
+    for k in "$PRGDIR"/lib/*.jar
+    do
+        _classpath="${_classpath};`cygpath -w ${k}`"
+    done
+else
+    for k in "$PRGDIR"/lib/*.jar
+    do
+        _classpath="${_classpath}:${k}"
+    done
+fi
+
+java -Xms512m -Xmx1024m -classpath "${_classpath}" "$@"

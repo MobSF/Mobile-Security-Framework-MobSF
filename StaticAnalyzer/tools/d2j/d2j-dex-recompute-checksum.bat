@@ -18,4 +18,4 @@ REM limitations under the License.
 REM
 
 REM call d2j_invoke.bat to setup java environment
-@"%~dp0d2j_invoke.bat" com.googlecode.dex2jar.tools.Dex2jarCmd %*
+@"%~dp0d2j_invoke.bat" com.googlecode.dex2jar.tools.DexRecomputeChecksum %*
