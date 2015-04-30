@@ -1,7 +1,7 @@
 # Mobile-Security-Framework
 Version: v0.8beta
 
-Mobile Security Framework is an intelligent, all-in-one open source mobile application (Android/iOS) automated pen-testing framework capable of performing static and dynamic analysis. We've been depending on multiple tools to carry out reversing, decoding, debugging, code review, and pen-test and this process requires a lot of effort and time. Mobile Security Framework can be used for effective and fast security analysis of Android and iOS Applications. It supports binaries (APK&IPA) and zipped source code.
+Mobile Security Framework is an intelligent, all-in-one open source mobile application (Android/iOS) automated pen-testing framework capable of performing static and dynamic analysis. We've been depending on multiple tools to carry out reversing, decoding, debugging, code review, and pen-test and this process requires a lot of effort and time. Mobile Security Framework can be used for effective and fast security analysis of Android and iOS Applications. It supports binaries (APK & IPA) and zipped source code.
 
 The static analyzer is able to perform automated code review, detect insecure permissions and configurations, and detect insecure code like ssl overriding, ssl bypass, weak crypto, obfuscated codes, improper permissions, hardcoded secrets, improper usage of dangerous APIs, leakage of sensitive/PII information, and insecure file storage. 
 The dynamic analyzer runs the application in a VM or on a configured device and detects the issues at run time. Further analysis is done on the captured network packets, decrypted HTTPS traffic, application dumps, logs, error or crash reports, debug information, stack trace, and on the application assets like setting files, preferences, and databases. This framework is highly scalable that you can add your custom rules with ease. A quick and clean report can be generated at the end of the tests. We will be extending this framework to support other mobile platforms like Tizen, WindowsPhone etc. in future. 
@@ -17,7 +17,8 @@ Sample Report: http://opensecurity.in/research/security-analysis-of-android-brow
 
 * Python 2.7
 * JDK
-* iOS IPA Analysis requires MAC.
+
+NOTE: iOS IPA Binary Analysis requires MAC.
 
 ##How to Use
 * For Using Static Analyzer
@@ -48,6 +49,17 @@ Open your browser and navigate to http://127.0.0.1:8000
 
  Pending....
  
+ ##v0.8 Changelog
+ 
+ Additions added to YSO
+
+View AndroidManifest.xml & Info.plist
+Supports iOS Binary (IPA)
+Bug Fix for Linux (Ubuntu), missing MIME Type Detection
+Check for Hardcoded Certificates
+Added Code to prevent from Directory Traversal
+
+
  ##Credits
  
  Anto Joseph (@antojosep007) - For the help with SuperSU
