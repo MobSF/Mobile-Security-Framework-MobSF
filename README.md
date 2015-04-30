@@ -47,21 +47,23 @@ Open your browser and navigate to http://127.0.0.1:8000
 
 * For Dynamic Analyzer
 
- Pending....
+Pending....
  
  ##v0.8 Changelog
  
- Additions added to YSO
+*View AndroidManifest.xml & Info.plist
 
-View AndroidManifest.xml & Info.plist
-Supports iOS Binary (IPA)
-Bug Fix for Linux (Ubuntu), missing MIME Type Detection
-Check for Hardcoded Certificates
-Added Code to prevent from Directory Traversal
+*Supports iOS Binary (IPA)
+
+*Bug Fix for Linux (Ubuntu), missing MIME Type Detection
+
+*Check for Hardcoded Certificates
+
+*Added Code to prevent from Directory Traversal
 
 
- ##Credits
+##Credits
  
- Anto Joseph (@antojosep007) - For the help with SuperSU
+Anto Joseph (@antojosep007) - For the help with SuperSU
  
  Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset
