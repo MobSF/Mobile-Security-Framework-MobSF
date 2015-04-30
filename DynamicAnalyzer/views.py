@@ -146,13 +146,13 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
     traffic=''
     wb=''
     try:
-        with io.open(Web,mode='r',encoding="utf8") as f:
+        with io.open(Web,mode='r',encoding="utf8",errors="ignore") as f:
             wb=f.read()
         wb=wb.replace("See http://www.iana.org/assignments/tls-parameters/", "")
     except:
         pass
 
-    with io.open(Logcat,mode='r',encoding="utf8") as f:
+    with io.open(Logcat,mode='r',encoding="utf8",errors="ignore") as f:
         traffic=f.read()
     traffic+=wb
     #URLs John Gruber's regex to find URLs
@@ -201,7 +201,7 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
                     typ='xml'
                     xmlfiles+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a><td><tr>"
                 else:
-                    with io.open(file_path, mode='r',encoding="utf8") as f:
+                    with io.open(file_path, mode='r',encoding="utf8",errors="ignore") as f:
                         b=f.read(6)
                     if b=="SQLite":
                         typ='db'
@@ -230,7 +230,7 @@ def View(request):
             if (("../" in fil) or ("%2e%2e" in fil) or (".." in fil) or ("%252e" in fil)):
                 return HttpResponseRedirect('/error/')
             else:
-                with io.open(sfile,mode='r',encoding="utf8") as f:
+                with io.open(sfile,mode='r',encoding="utf8",errors="ignore") as f:
                     dat=str(f.read())
                 if ((fil.endswith('.xml')) and (typ=='xml')):  
                     rtyp='xml'
