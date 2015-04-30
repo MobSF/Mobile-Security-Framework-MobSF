@@ -104,175 +104,174 @@ def ViewSource(request):
 
      
 def StaticAnalyzer(request):
-    #try:
+    try:
     #Input validation
-    TYP=request.GET['type']
-    m=re.match('[0-9a-f]{32}',request.GET['checksum'])
-    if ((m) and (request.GET['name'].endswith('.apk') or request.GET['name'].endswith('.zip')) and ((TYP=='zip') or (TYP=='apk'))):
-        DIR=settings.BASE_DIR        #BASE DIR
-        APP_NAME=request.GET['name'] #APP ORGINAL NAME
-        MD5=request.GET['checksum']  #MD5
-        APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
-        if TYP=='apk':
-            APP_FILE=MD5 + '.apk'        #NEW FILENAME
-            APP_PATH=APP_DIR+APP_FILE    #APP PATH
-            TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
-            #ANALYSIS BEGINS
-            SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
-            SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
-            Unzip(APP_PATH,APP_DIR)               #EXTRACT APK
-            a=ApkInfo(APP_PATH)   #GET APK INFOS
-            MANI= a.get_android_manifest_xml().toprettyxml() #Manifest XML
-            PACKAGENAME=a.get_package()           #GET PACKAGE NAME
-            MAINACTIVITY =a.get_main_activity()   #GET MAIN ACTIVITY NAME
-            TARGET_SDK =a.get_target_sdk_version()
-            MAX_SDK=a.get_max_sdk_version()
-            MIN_SDK=a.get_min_sdk_version()
-            ANDROVERNAME=a.get_androidversion_name()
-            ANDROVER= a.get_androidversion_code()
-            PERMISSIONS =FormatPermissions(a.get_details_permissions())
-            FILES = a.get_files()
-            CERTZ = GetHardcodedCert(a.get_files())
-            MANIFEST_ANAL=ManifestAnalysis(a.get_AndroidManifest())
-            ACTIVITIES =a.get_activities()
-            PROVIDERS =a.get_providers()
-            RECEIVERS =a.get_receivers()
-            SERVICES =a.get_services()
-            LIBRARIES= a.get_libraries()
-            CNT_ACT =len(ACTIVITIES)
-            CNT_PRO =len(PROVIDERS)
-            CNT_SER =len(SERVICES)
-            CNT_BRO = len(RECEIVERS)
-            b,c=CodeBehaviour(a)
-            NATIVE=b['native']
-            DYNAMIC=b['dynamic']
-            REFLECTION=b['reflection']
-            TELELEAK=c['teleleak']
-            SETTINGSHARV =c['settingsleak']
-            LOCLOOK = c['loc']
-            INTERFACE = c['inter']
-            TELEABUSE= c['teleabuse']
-            AVEVAS = c['videvo']
-            SUSPCONN = c['suspconn']
-            PIMLEAK= c['pimleak']
-            CODEEXEC = c['codeexec']
-            CERT_INFO=CertInfo(APP_DIR,TOOLS_DIR)
-            Dex2Jar(APP_DIR,TOOLS_DIR)
-            Dex2Smali(APP_DIR,TOOLS_DIR)
-            Jar2Java(APP_DIR,TOOLS_DIR)
-            API,DANG,URLS,EMAILS,CRYPTO,OBFUS=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,"apk")
-            GenDownloads(APP_DIR,MD5)
-            STRINGS=Strings(APP_FILE,APP_DIR,TOOLS_DIR)
-            ZIPPED='&type=apk'
-        elif TYP=='zip':
-            APP_FILE=MD5 + '.zip'        #NEW FILENAME
-            APP_PATH=APP_DIR+APP_FILE    #APP PATH
-            TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
-            #ANALYSIS BEGINS
-            SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
-            SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
-            Unzip(APP_PATH,APP_DIR)               #EXTRACT APK
-            try:
-                os.remove(APP_PATH)                #Delete ZIP
-            except:
-                pass
-            #Check if Valid File
-            pro_type,Valid=ValidAndroidZip(APP_DIR)
-            if Valid:
-                MANI= GetManifest(APP_DIR,pro_type) #Manifest XML
-                MANIFEST_ANAL=ManifestAnalysis(minidom.parseString(MANI))
-                SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(minidom.parseString(MANI))
-                PERMISSIONS=FormatPermissions(PERM)
+        TYP=request.GET['type']
+        m=re.match('[0-9a-f]{32}',request.GET['checksum'])
+        if ((m) and (request.GET['name'].endswith('.apk') or request.GET['name'].endswith('.zip')) and ((TYP=='zip') or (TYP=='apk'))):
+            DIR=settings.BASE_DIR        #BASE DIR
+            APP_NAME=request.GET['name'] #APP ORGINAL NAME
+            MD5=request.GET['checksum']  #MD5
+            APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
+            if TYP=='apk':
+                APP_FILE=MD5 + '.apk'        #NEW FILENAME
+                APP_PATH=APP_DIR+APP_FILE    #APP PATH
+                TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
+                #ANALYSIS BEGINS
+                SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
+                SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
+                Unzip(APP_PATH,APP_DIR)               #EXTRACT APK
+                a=ApkInfo(APP_PATH)   #GET APK INFOS
+                MANI= a.get_android_manifest_xml().toprettyxml() #Manifest XML
+                PACKAGENAME=a.get_package()           #GET PACKAGE NAME
+                MAINACTIVITY =a.get_main_activity()   #GET MAIN ACTIVITY NAME
+                TARGET_SDK =a.get_target_sdk_version()
+                MAX_SDK=a.get_max_sdk_version()
+                MIN_SDK=a.get_min_sdk_version()
+                ANDROVERNAME=a.get_androidversion_name()
+                ANDROVER= a.get_androidversion_code()
+                PERMISSIONS =FormatPermissions(a.get_details_permissions())
+                FILES = a.get_files()
+                CERTZ = GetHardcodedCert(a.get_files())
+                MANIFEST_ANAL=ManifestAnalysis(a.get_AndroidManifest())
+                ACTIVITIES =a.get_activities()
+                PROVIDERS =a.get_providers()
+                RECEIVERS =a.get_receivers()
+                SERVICES =a.get_services()
+                LIBRARIES= a.get_libraries()
                 CNT_ACT =len(ACTIVITIES)
                 CNT_PRO =len(PROVIDERS)
                 CNT_SER =len(SERVICES)
                 CNT_BRO = len(RECEIVERS)
-
-                FILES = GetFilesFromZip(APP_DIR)
-                CERTZ = GetHardcodedCert(FILES)
-
-                NATIVE='No Analysis Done'
-                DYNAMIC='No Analysis Done'
-                REFLECTION='No Analysis Done'
-
-                TELELEAK=''#c['teleleak']
-                SETTINGSHARV =''#c['settingsleak']
-                LOCLOOK = ''#c['loc']
-                INTERFACE = ''#c['inter']
-                TELEABUSE= ''#c['teleabuse']
-                AVEVAS = ''#c['videvo']
-                SUSPCONN = ''#c['suspconn']
-                PIMLEAK= ''#c['pimleak']
-                CODEEXEC = ''#c['codeexec']
-
-                CERT_INFO='No Certificate Analysis Done.'
-                API,DANG,URLS,EMAILS,CRYPTO,OBFUS=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,pro_type)
-                #GenDownloads(APP_DIR,MD5) #Only Report
-
-                
-                
-                STRINGS =''
-                ZIPPED='&type='+pro_type
-            else:
-                shutil.rmtree(APP_DIR)
-                return HttpResponseRedirect('/Android_ZIP_FORMAT/')
-
-
-    else:
-         return HttpResponseRedirect('/error/')
-    context = {
-        'title' : 'Static Analysis',
-        'name' : APP_NAME,
-        'size' : SIZE,
-        'md5': MD5,
-        'sha1' : SHA1,
-        'sha256' : SHA256,
-        'packagename' : PACKAGENAME,
-        'mainactivity' : MAINACTIVITY,
-        'targetsdk' : TARGET_SDK,
-        'maxsdk' : MAX_SDK,
-        'minsdk' : MIN_SDK,
-        'androvername' : ANDROVERNAME,
-        'androver': ANDROVER,
-        'manifest': MANIFEST_ANAL,
-        'permissions' : PERMISSIONS,
-        'files' : FILES,
-        'certz' : CERTZ,
-        'activities' : ACTIVITIES,
-        'receivers' : RECEIVERS,
-        'providers' : PROVIDERS,
-        'services' : SERVICES,
-        'libraries' : LIBRARIES,
-        'act_count' : CNT_ACT,
-        'prov_count' : CNT_PRO,
-        'serv_count' : CNT_SER,
-        'bro_count' : CNT_BRO,
-        'certinfo': CERT_INFO,
-        'native' : NATIVE,
-        'dynamic' : DYNAMIC,
-        'reflection' : REFLECTION,
-        'crypto': CRYPTO,
-        'obfus': OBFUS,
-        'teleleak' : TELELEAK,
-        'settingsleak' : SETTINGSHARV,
-        'loc' : LOCLOOK,
-        'inter' : INTERFACE,
-        'teleabuse' : TELEABUSE,
-        'videvo' : AVEVAS,
-        'suspconn' : SUSPCONN,
-        'pimleak' : PIMLEAK,
-        'codeexec' : CODEEXEC,
-        'api': API,
-        'dang': DANG,
-        'urls': URLS,
-        'emails': EMAILS,
-        'strings': STRINGS,
-        'zipped' : ZIPPED,
-        'mani' : MANI,
-        }
-    template="static_analysis.html"
-    return render(request,template,context)
-'''
+                b,c=CodeBehaviour(a)
+                NATIVE=b['native']
+                DYNAMIC=b['dynamic']
+                REFLECTION=b['reflection']
+                TELELEAK=c['teleleak']
+                SETTINGSHARV =c['settingsleak']
+                LOCLOOK = c['loc']
+                INTERFACE = c['inter']
+                TELEABUSE= c['teleabuse']
+                AVEVAS = c['videvo']
+                SUSPCONN = c['suspconn']
+                PIMLEAK= c['pimleak']
+                CODEEXEC = c['codeexec']
+                CERT_INFO=CertInfo(APP_DIR,TOOLS_DIR)
+                Dex2Jar(APP_DIR,TOOLS_DIR)
+                Dex2Smali(APP_DIR,TOOLS_DIR)
+                Jar2Java(APP_DIR,TOOLS_DIR)
+                API,DANG,URLS,EMAILS,CRYPTO,OBFUS=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,"apk")
+                GenDownloads(APP_DIR,MD5)
+                STRINGS=Strings(APP_FILE,APP_DIR,TOOLS_DIR)
+                ZIPPED='&type=apk'
+            elif TYP=='zip':
+                APP_FILE=MD5 + '.zip'        #NEW FILENAME
+                APP_PATH=APP_DIR+APP_FILE    #APP PATH
+                TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
+                #ANALYSIS BEGINS
+                SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
+                SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
+                Unzip(APP_PATH,APP_DIR)               #EXTRACT APK
+                try:
+                    os.remove(APP_PATH)                #Delete ZIP
+                except:
+                    pass
+                #Check if Valid File
+                pro_type,Valid=ValidAndroidZip(APP_DIR)
+                if Valid:
+                    MANI= GetManifest(APP_DIR,pro_type) #Manifest XML
+                    MANIFEST_ANAL=ManifestAnalysis(minidom.parseString(MANI))
+                    SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(minidom.parseString(MANI))
+                    PERMISSIONS=FormatPermissions(PERM)
+                    CNT_ACT =len(ACTIVITIES)
+                    CNT_PRO =len(PROVIDERS)
+                    CNT_SER =len(SERVICES)
+                    CNT_BRO = len(RECEIVERS)
+    
+                    FILES = GetFilesFromZip(APP_DIR)
+                    CERTZ = GetHardcodedCert(FILES)
+    
+                    NATIVE='No Analysis Done'
+                    DYNAMIC='No Analysis Done'
+                    REFLECTION='No Analysis Done'
+    
+                    TELELEAK=''#c['teleleak']
+                    SETTINGSHARV =''#c['settingsleak']
+                    LOCLOOK = ''#c['loc']
+                    INTERFACE = ''#c['inter']
+                    TELEABUSE= ''#c['teleabuse']
+                    AVEVAS = ''#c['videvo']
+                    SUSPCONN = ''#c['suspconn']
+                    PIMLEAK= ''#c['pimleak']
+                    CODEEXEC = ''#c['codeexec']
+    
+                    CERT_INFO='No Certificate Analysis Done.'
+                    API,DANG,URLS,EMAILS,CRYPTO,OBFUS=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,pro_type)
+                    #GenDownloads(APP_DIR,MD5) #Only Report
+    
+                    
+                    
+                    STRINGS =''
+                    ZIPPED='&type='+pro_type
+                else:
+                    shutil.rmtree(APP_DIR)
+                    return HttpResponseRedirect('/Android_ZIP_FORMAT/')
+    
+    
+        else:
+             return HttpResponseRedirect('/error/')
+        context = {
+            'title' : 'Static Analysis',
+            'name' : APP_NAME,
+            'size' : SIZE,
+            'md5': MD5,
+            'sha1' : SHA1,
+            'sha256' : SHA256,
+            'packagename' : PACKAGENAME,
+            'mainactivity' : MAINACTIVITY,
+            'targetsdk' : TARGET_SDK,
+            'maxsdk' : MAX_SDK,
+            'minsdk' : MIN_SDK,
+            'androvername' : ANDROVERNAME,
+            'androver': ANDROVER,
+            'manifest': MANIFEST_ANAL,
+            'permissions' : PERMISSIONS,
+            'files' : FILES,
+            'certz' : CERTZ,
+            'activities' : ACTIVITIES,
+            'receivers' : RECEIVERS,
+            'providers' : PROVIDERS,
+            'services' : SERVICES,
+            'libraries' : LIBRARIES,
+            'act_count' : CNT_ACT,
+            'prov_count' : CNT_PRO,
+            'serv_count' : CNT_SER,
+            'bro_count' : CNT_BRO,
+            'certinfo': CERT_INFO,
+            'native' : NATIVE,
+            'dynamic' : DYNAMIC,
+            'reflection' : REFLECTION,
+            'crypto': CRYPTO,
+            'obfus': OBFUS,
+            'teleleak' : TELELEAK,
+            'settingsleak' : SETTINGSHARV,
+            'loc' : LOCLOOK,
+            'inter' : INTERFACE,
+            'teleabuse' : TELEABUSE,
+            'videvo' : AVEVAS,
+            'suspconn' : SUSPCONN,
+            'pimleak' : PIMLEAK,
+            'codeexec' : CODEEXEC,
+            'api': API,
+            'dang': DANG,
+            'urls': URLS,
+            'emails': EMAILS,
+            'strings': STRINGS,
+            'zipped' : ZIPPED,
+            'mani' : MANI,
+            }
+        template="static_analysis.html"
+        return render(request,template,context)
     except Exception as e:
         context = {
         'title' : 'Error',
@@ -281,7 +280,6 @@ def StaticAnalyzer(request):
         }
         template="error.html"
         return render(request,template,context)
-'''
 def GetFilesFromZip(SRC):
     filez=[]
     certz=''
@@ -944,7 +942,7 @@ def StaticAnalyzer_iOS(request):
             return render(request,template,context)
     '''
 def ViewFile(request):
-        #try:
+    try:
         fil=request.GET['file']
         typ=request.GET['type']
         MD5=request.GET['md5']
@@ -979,8 +977,8 @@ def ViewFile(request):
                    'dat' : dat}
         template="view.html"
         return render(request,template,context)
-        #except:
-        #return HttpResponseRedirect('/error/')
+    except:
+        return HttpResponseRedirect('/error/')
 def readBinXML(FILE):
     args=['plutil','-convert','xml1',FILE]
     dat=subprocess.check_output(args)
@@ -1081,8 +1079,6 @@ def BinaryAnalysis(SRC,TOOLS_DIR,MD5):
 
     BIN_PATH=os.path.join(BIN_DIR,BIN)  #Full Dir/Payload/x.app/x
     print "[INFO] iOS Binary : " + BIN
-    #ENCRYPTED
-    #otool -l
 
     #Libs Used
     LIBS=''
@@ -1171,6 +1167,7 @@ def BinaryAnalysis(SRC,TOOLS_DIR,MD5):
     try:
         APP_DIR=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/')
         CLASSDUMPZ_BIN=os.path.join(TOOLS_DIR,'class-dump-z')
+        os.system("chmod 777 "+CLASSDUMPZ_BIN)
         args=[CLASSDUMPZ_BIN,BIN_PATH]
         dat=subprocess.check_output(args)
         CDUMP=dat
