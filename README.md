@@ -48,8 +48,8 @@ Open your browser and navigate to http://127.0.0.1:8000
 * For Dynamic Analyzer
 
 Pending....
- 
- ##v0.8 Changelog
+
+##v0.8 Changelog
  
 *View AndroidManifest.xml & Info.plist
 
