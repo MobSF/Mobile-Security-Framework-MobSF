@@ -23,7 +23,7 @@ NOTE: iOS IPA Binary Analysis requires MAC.
 
 #How to Use
 
-###Configuring For Using Static Analyzer
+###Configuring Static Analyzer
 
 Tested on Windows 7, 8, 8.1, Ubuntu, OSX Marvicks
 
