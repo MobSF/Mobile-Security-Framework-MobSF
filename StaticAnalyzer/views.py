@@ -448,13 +448,23 @@ def CodeBehaviour(apk):
         print i.method.get_class_name(), i.method.get_name(), i.tags
 '''
 
-
+def WinFixJava(TOOLS_DIR):
+    DMY=os.path.join(TOOLS_DIR,'d2j2/d2j_invoke.tmp')
+    ORG=os.path.join(TOOLS_DIR,'d2j2/d2j_invoke.bat')
+    dat=''
+    with open(DMY,'r') as f:
+        dat=f.read().replace("[xxx]",settings.JAVA_PATH+"java")
+    with open(ORG,'w') as f:
+        f.write(dat)
 def Dex2Jar(APP_DIR,TOOLS_DIR):
     if platform.system()=="Windows":
-        D2J=os.path.join(TOOLS_DIR,'d2j/') +'d2j-dex2jar.bat'
+        WinFixJava(TOOLS_DIR)
+        D2J=os.path.join(TOOLS_DIR,'d2j2/') +'d2j-dex2jar.bat'
     else:
-        D2J=os.path.join(TOOLS_DIR,'d2j/') +'d2j-dex2jar.sh'
+        INV=os.path.join(TOOLS_DIR,'d2j2/') +'d2j_invoke.sh'
+        D2J=os.path.join(TOOLS_DIR,'d2j2/') +'d2j-dex2jar.sh'
         os.system("chmod 777 "+D2J)
+        os.system("chmod 777 "+INV)
     args=[D2J,APP_DIR+'classes.dex','-o',APP_DIR +'classes.jar']
     subprocess.call(args)
 def Dex2Smali(APP_DIR,TOOLS_DIR):
