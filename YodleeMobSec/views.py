@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from .forms import UploadFileForm
 from django.conf import settings
-import os, hashlib
+import os, hashlib, platform
 # Create your views here.
 
 def index(request):
@@ -28,13 +28,19 @@ def Upload(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             file_type =request.FILES['file'].content_type
-            print file_type
+            print "[INFO] MIME Type: " + file_type + " FILE: " + str(request.FILES['file'].name)
             if file_type=="application/octet-stream" and request.FILES['file'].name.endswith('.apk'):     #APK
                 md5=handle_uploaded_file(request.FILES['file'],'.apk')
                 return HttpResponseRedirect('/StaticAnalyzer/?name='+request.FILES['file'].name+'&type=apk&checksum='+md5)  
             elif (file_type=="application/zip" or file_type=="application/octet-stream") and request.FILES['file'].name.endswith('.zip'):   #Android Zipped Source
                 md5=handle_uploaded_file(request.FILES['file'],'.zip')
                 return HttpResponseRedirect('/StaticAnalyzer/?name='+request.FILES['file'].name+'&type=zip&checksum='+md5)
+            elif (file_type=="application/octet-stream") and request.FILES['file'].name.endswith('.ipa'):   #iOS Binary
+                if platform.system()=="Darwin":
+                    md5=handle_uploaded_file(request.FILES['file'],'.ipa')
+                    return HttpResponseRedirect('/StaticAnalyzer_iOS/?name='+request.FILES['file'].name+'&type=ipa&checksum='+md5)
+                else:
+                    return HttpResponseRedirect('/MAC_ONLY/')
             else:
                  return HttpResponseRedirect('/')
         else:
@@ -57,4 +63,8 @@ def error(request):
 def Android_ZIP_FORMAT(request):
     context = {'title':'Android ZIP Source Instruction'}
     template ="androidzip.html"
+    return render(request,template,context)
+def MAC_ONLY(request):
+    context = {'title':'Supports OSX Only'}
+    template ="ios.html"
     return render(request,template,context)

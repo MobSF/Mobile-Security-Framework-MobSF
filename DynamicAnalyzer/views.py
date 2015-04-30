@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-import subprocess,os,re,shutil,tarfile,ntpath
+import subprocess,os,re,shutil,tarfile,ntpath,platform,io
 from django.http import HttpResponseRedirect
 from django.utils.html import escape
 import sqlite3 as sq
@@ -58,18 +58,29 @@ def RefreshVM(uuid,snapshot_uuid,vbox_exe):
     subprocess.call(args)
     print "\nVM Started"
 def WebProxy(TOOLSDIR,APKDIR,ip,port,exectime):
-    print "\nWeb Proxy Running for "+str(exectime)+" sec at " + str(ip) + ":" + str(port)+"\n"
-    log=os.path.join(APKDIR,'Weblog.txt')
-    exe=os.path.join(TOOLSDIR,'WebProxy/WebProxy.exe')
-    args=[exe,ip,port,log,exectime]
-    subprocess.Popen(args)
+    if platform.system()=="Windows":
+        print "\nWeb Proxy Running for "+str(exectime)+" sec at " + str(ip) + ":" + str(port)+"\n"
+        log=os.path.join(APKDIR,'Weblog.txt')
+        exe=os.path.join(TOOLSDIR,'WebProxy/WebProxy.exe')
+        args=[exe,ip,port,log,exectime]
+        subprocess.Popen(args)
+    
 def ConnectInstallRun(TOOLSDIR,APKDIR,IP,APKPATH,PACKAGE,LAUNCH,isACT,MD5):
     #-------check strace under monkeyrunner 
-    adb=os.path.join(TOOLSDIR , 'adb/adb.exe')
+    if platform.system()=="Darwin":
+        adb_dir=os.path.join(TOOLSDIR , 'adb/mac/')
+        os.system("chmod 777 "+adb_dir)
+        adb=os.path.join(TOOLSDIR , 'adb/mac/adb')
+    elif platform.system()=="Windows":
+        adb=os.path.join(TOOLSDIR , 'adb/adb.exe')
     os.system(adb+" kill-server")
     os.system(adb+" start-server")
     print "\nADB Started"
-    os.system("ping -n 3 127.0.0.1 > NULL")
+   
+    if platform.system()=="Windows":
+        os.system("ping -n 3 127.0.0.1 > NULL")
+    else:
+         os.system("ping -c 3 127.0.0.1 > NULL")
     print "\nConnecting to VM"
     os.system(adb+" connect "+IP)
     #Specific for the ROM
@@ -84,7 +95,10 @@ def ConnectInstallRun(TOOLSDIR,APKDIR,IP,APKPATH,PACKAGE,LAUNCH,isACT,MD5):
         os.system(adb+" shell am start -n "+runApp)
     else:
         pass
-    os.system("ping -n 11 127.0.0.1 > NULL")
+    if platform.system()=="Windows":
+        os.system("ping -n 11 127.0.0.1 > NULL")
+    else:
+         os.system("ping -c 11 127.0.0.1 > NULL")
     os.system(adb+" shell screencap -p /system/screen.png")
     os.system(adb+' pull /system/screen.png "'+APKDIR + 'screenshot.png"')
     print "\nScreenshot Taken"
@@ -94,7 +108,10 @@ def ConnectInstallRun(TOOLSDIR,APKDIR,IP,APKPATH,PACKAGE,LAUNCH,isACT,MD5):
     print "\nDownloading Dumpsys logs"
     os.system(adb+" shell am force-stop "+PACKAGE)
     os.system(adb+' shell am startservice -a '+PACKAGE+' opensecurity.ajin.datapusher/.GetPackageLocation')
-    os.system("ping -n 7 127.0.0.1 > NULL")
+    if platform.system()=="Windows":
+        os.system("ping -n 7 127.0.0.1 > NULL")
+    else:
+         os.system("ping -c 7 127.0.0.1 > NULL")
     os.system(adb+' pull /sdcard/'+PACKAGE+'.tar "'+APKDIR+PACKAGE+'.tar"')
     os.system(adb+" kill-server")
     print "\nStopping ADB"
@@ -128,10 +145,14 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
     Logcat=os.path.join(APKDIR,'logcat.txt')
     traffic=''
     wb=''
-    with open(Web,'r') as f:
-        wb=f.read()
-    wb=wb.replace("See http://www.iana.org/assignments/tls-parameters/", "")
-    with open(Logcat,'r') as f:
+    try:
+        with io.open(Web,mode='r',encoding="utf8") as f:
+            wb=f.read()
+        wb=wb.replace("See http://www.iana.org/assignments/tls-parameters/", "")
+    except:
+        pass
+
+    with io.open(Logcat,mode='r',encoding="utf8") as f:
         traffic=f.read()
     traffic+=wb
     #URLs John Gruber's regex to find URLs
@@ -167,24 +188,29 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
     UNTAR_DIR = os.path.join(APKDIR,'DYNAMIC_DeviceData/')
     if not os.path.exists(UNTAR_DIR):
         os.makedirs(UNTAR_DIR)
-    for dirName, subDir, files in os.walk(UNTAR_DIR):
-        for jfile in files:
-            file_path=os.path.join(UNTAR_DIR,dirName,jfile)
-            fileparam=file_path.replace(UNTAR_DIR,'')
-            if jfile.endswith('.xml'):
-                typ='xml'
-                xmlfiles+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a><td><tr>"
-            else:
-                f=open(file_path)
-                with f:
-                    b=f.read(6)
-                if b=="SQLite":
-                    typ='db'
-                    SQLiteDB+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a><td><tr>" 
+    try:
+        for dirName, subDir, files in os.walk(UNTAR_DIR):
+            for jfile in files:
+                file_path=os.path.join(UNTAR_DIR,dirName,jfile)
+                if "+" in file_path:
+                    shutil.move(file_path,file_path.replace("+","x"))
+                    file_path=file_path.replace("+","x")
+                fileparam=file_path.replace(UNTAR_DIR,'')
+
+                if jfile.endswith('.xml'):
+                    typ='xml'
+                    xmlfiles+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a><td><tr>"
                 else:
-                    typ='others'
-                    OtherFiles+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a><td><tr>"
-                    
+                    with io.open(file_path, mode='r',encoding="utf8") as f:
+                        b=f.read(6)
+                    if b=="SQLite":
+                        typ='db'
+                        SQLiteDB+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a><td><tr>" 
+                    elif not jfile.endswith('.DS_Store'):
+                        typ='others'
+                        OtherFiles+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a><td><tr>"
+    except:
+        pass              
     return URLS,EMAILS,wb,xmlfiles,SQLiteDB,OtherFiles
 
 def View(request):
@@ -204,7 +230,7 @@ def View(request):
             if (("../" in fil) or ("%2e%2e" in fil) or (".." in fil) or ("%252e" in fil)):
                 return HttpResponseRedirect('/error/')
             else:
-                with open(sfile,'r') as f:
+                with io.open(sfile,mode='r',encoding="utf8") as f:
                     dat=str(f.read())
                 if ((fil.endswith('.xml')) and (typ=='xml')):  
                     rtyp='xml'
@@ -226,23 +252,27 @@ def View(request):
         return HttpResponseRedirect('/error/')
                 
 def Download(MD5,DWDDIR,APKDIR,PKG):
-    Web=os.path.join(APKDIR,'Weblog.txt')
+    
     Logcat=os.path.join(APKDIR,'logcat.txt')
     Dumpsys=os.path.join(APKDIR,'dump.txt')
     Sshot=os.path.join(APKDIR,'screenshot.png')
 
-    DWeb=os.path.join(DWDDIR,MD5+'-Weblog.txt')
+    
     DLogcat=os.path.join(DWDDIR,MD5+'-logcat.txt')
     DDumpsys=os.path.join(DWDDIR,MD5+'-dump.txt')
     DSshot=os.path.join(DWDDIR,MD5+'-screenshot.png')
     
   
-    shutil.copyfile(Web,DWeb)
+   
     shutil.copyfile(Logcat,DLogcat)
     shutil.copyfile(Dumpsys,DDumpsys)
     shutil.copyfile(Sshot,DSshot)
 
+
     try:
+        Web=os.path.join(APKDIR,'Weblog.txt')
+        DWeb=os.path.join(DWDDIR,MD5+'-Weblog.txt')
+        shutil.copyfile(Web,DWeb)
         Star=os.path.join(APKDIR, PKG+'.tar')
         DStar=os.path.join(DWDDIR,MD5+'-AppData.tar')
         shutil.copyfile(Star,DStar)

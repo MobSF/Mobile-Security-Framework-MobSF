@@ -58,7 +58,7 @@
             <input id="uploadFile" placeholder="Choose File" disabled="disabled" />
            <span class="glyphicon glyphicon-cloud-upload"></span>
           Upload & Analyze
-            <input id="uploadBtn" type="file" accept=".apk,.zip" class="upload" name="file" />
+            <input id="uploadBtn" type="file" accept=".apk,.zip,.ipa" class="upload" name="file" />
         </div>
              </form>
 			    <div class="file_res" id="file_res">
@@ -82,13 +82,13 @@
 
         $('input[type=file]').change(function () {
             var val = $(this).val().toLowerCase();
-            var regex = new RegExp("(.*?)\.(apk|zip)$");
+            var regex = new RegExp("(.*?)\.(ipa|apk|zip)$");
             val = val.replace(/^.*[\\\/]/, '')
 
             try {
                 if (!(regex.test(val))) {
                     $(this).val('');
-                    document.getElementById('file_res').innerHTML = "<div class='btn btn-danger btn-lg'>Please upload APK/ZIP only!</div>";
+                    document.getElementById('file_res').innerHTML = "<div class='btn btn-danger btn-lg'>Please upload APK/IPA/ZIP only!</div>";
                    }
                 else {
                     _file = document.getElementById('uploadBtn'),
@@ -96,7 +96,7 @@
                     if (_file.files.length === 0) {
                         return;
                     }
-					$('#file_res').prepend('<img src="/static/img/loader.gif" />')
+					$('#file_res').prepend('<center><img src="/static/img/loader.gif" /></center>')
 					$("#upform").submit();
                 }
 
@@ -106,9 +106,6 @@
             }
         });
     });
-
-
-
 
         </script>
     <!-- Bootstrap core JavaScript

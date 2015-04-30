@@ -1,0 +1,195 @@
+{% extends "skelton_base.html" %}
+   {% block content %}
+   <link href="/static/css/dashboard.css" rel="stylesheet">
+     <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/html2canvas.js"></script>
+  <script src="/static/js/canvas-toBlob.js"></script>
+    <script src="/static/js/FileSaver.js"></script>
+<h1 class="page-header">Static Analysis</h1>
+<script>
+    function download()
+          {
+          html2canvas(document.body, { onrendered: function(canvas) 
+          { 
+            canvas.toBlob(function(blob) { saveAs(blob, "Report_iOS.png");}, "image/png");
+          } }); 
+           };
+          
+          
+        </script>
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Info.plist</h4>
+      </div>
+      <div class="modal-body">
+        <code>
+        {{ plist }}
+    </code>
+      </div>
+      <div class="modal-footer">
+     
+      </div>
+    </div>
+  </div>
+</div>
+
+                  <div class="col-lg-7">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> FILE INFORMATION</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <p>                                       
+                                       <span class="label label-primary">File Name</span>
+                                    {{ name }}
+                                    </p>
+                                    <p>
+                                       <span class="label label-primary">Size</span>
+                                    {{ size }}
+                                   </p><p>
+                                       <span class="label label-primary">MD5</span>
+                                    {{ md5 }}
+                                    
+                                   </p><p>
+                                     <span class="label label-primary">SHA1</span>
+                                    {{ sha1 }}
+                                  
+                                     </p><p>
+                                     <span class="label label-primary">SHA256</span>
+                                    {{ sha256 }}
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+    
+                <div class="col-lg-5">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span> APP INFORMATION</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <p>                                       
+                                    <span class="label label-primary">App Name</span>
+                                    {{ bin_name }}
+                                    </p>
+                                     <p>                                       
+                                    <span class="label label-primary">Identifier</span>
+                                    {{ id }}
+                                    <span class="label label-primary">Version</span>
+                                    {{ ver }}
+
+                                    </p>
+                                      <p>                                       
+                                    <span class="label label-primary">SDK Name</span>
+                                    {{ sdk }}
+                                    <span class="label label-primary">Platform Version</span>
+                                    {{ pltfm }}
+                                   <span class="label label-primary">Min OS Version</span>
+                                    {{ min }}
+                    
+                                    </p>
+                                      
+                         <p>
+                          <a data-target="#myModal" role="button" class="btn btn-info" data-toggle="modal">View Info.plist</a>
+                           <a target="_blank" href="../ViewFile/?file=classdump.txt&type=txt&md5={{ md5 }}" class="btn btn-warning" role="button">View Class Dump</a>
+                          <a href="javascript:download();" class="btn btn-primary" role="button">Download Report</a>
+
+                         </p>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+       
+             <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-warning-sign"></span> BINARY ANALYSIS</h3>
+                            </div>
+                            <div class="panel-body">
+                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ISSUE</th>
+                                                <th>STATUS</th>
+                                                <th>DESCRIPTION</th>
+                                                
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                    {{ bin_anal | safe}}
+                    </tbody>
+                    </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+          </div>  
+
+  <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-lock"></span> FILE ANALYSIS</h3>
+                            </div>
+                            <div class="panel-body">
+                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ISSUE</th>
+                                                <th>FILES</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                    {{ file_analysis | safe}}
+                    </tbody>
+                    </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+          </div> 
+                <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-chevron-down"></span> LIBRARIES</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                  <p>  
+                  {{ libs|safe }}
+                  </p>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+              <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> FILES</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                  <p>  
+                {% for file in files %}
+                  {{ file}} <br>
+                {% endfor %}                  
+                  
+                  </p>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+  
+      
+   {% endblock %}

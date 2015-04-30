@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
+import os,platform
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -97,20 +97,21 @@ STATICFILES_DIRS = (
 STATIC_URL = '/static/'
 
 #CUSTOM SETTINGS
-#Static Analysis
-#===============
-
 
 #JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/' # remember about the /  ( not \)
-JAVA_PATH='/usr/bin/'
-#Dynamic Analysis
-#================
+
+if platform.system()=="Windows":
+    JAVA_PATH=''
+    VBOX='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe' #Path to VBoxManage.exe
+else:
+    JAVA_PATH='/usr/bin/' #For OSX and Linux
+    VBOX='/usr/bin/VBoxManage' #For OSX and Linux
+
 #VM SPECIFIC
-VBOX='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
-#c:\Program Files\Oracle\VirtualBox>VBoxManage.exe showhdinfo "d:\YSOMobSec\DynamicAnalyzer\tools\VM\sdcard.vdi"
+#VBoxManage showhdinfo "d:\YSOMobSec\DynamicAnalyzer\tools\VM\sdcard.vdi"
 UUID='a4a3b417-c8f1-41ba-9d00-9d6ab88d15d3'
-SUUID='6be5be25-931e-4b22-a119-739a4a39630b' #This Can Change 
+SUUID='f6ccdff8-10df-460b-bba2-efa93e5a330b' #This Can Change 
 #VM IP
-VM_IP='192.168.0.25' #VM/Device IP
-PROXY_IP='192.168.0.8' #Host/Server/Proxy IP
+VM_IP='192.168.56.101' #VM/Device IP
+PROXY_IP='192.168.62.252' #Host/Server/Proxy IP
 PORT='1337' #Proxy Port

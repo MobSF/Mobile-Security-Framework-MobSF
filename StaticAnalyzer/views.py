@@ -7,8 +7,10 @@ from tools.apkinfo import apk, dvm, analysis
 from tools.apkinfo.behaviour import *
 from django.utils.html import escape
 from ast import literal_eval
-import re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform
-
+import sqlite3 as sq
+import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform
+if platform.system()=="Darwin":
+    import plistlib
 def Java(request):
     try:
         m=re.match('[0-9a-f]{32}',request.GET['md5'])
@@ -31,6 +33,9 @@ def Java(request):
                 for jfile in files:
                     if jfile.endswith(".java"):
                         file_path=os.path.join(SRC,dirName,jfile)
+                        if "+" in file_path:
+                            shutil.move(file_path,file_path.replace("+","x"))
+                            file_path=file_path.replace("+","x")
                         fileparam=file_path.replace(SRC,'')
                         html+="<tr><td><a href='../ViewSource/?file="+escape(fileparam)+"&md5="+MD5+"&type="+t+"'>"+escape(fileparam)+"</a></td></tr>"
         context = {'title': 'Java Source',
@@ -50,6 +55,9 @@ def Smali(request):
                 for jfile in files:
                     if jfile.endswith(".smali"):
                         file_path=os.path.join(SRC,dirName,jfile)
+                        if "+" in file_path:
+                            shutil.move(file_path,file_path.replace("+","x"))
+                            file_path=file_path.replace("+","x")
                         fileparam=file_path.replace(SRC,'')
                         html+="<tr><td><a href='../ViewSource/?file="+escape(fileparam)+"&md5="+MD5+"'>"+escape(fileparam)+"</a><td><tr>"
         context = {'title': 'Smali Source',
@@ -65,23 +73,27 @@ def ViewSource(request):
         if m and (request.GET['file'].endswith('.java') or request.GET['file'].endswith('.smali')):
             fil=request.GET['file']
             MD5=request.GET['md5']
-            if fil.endswith('.java'):
-                typ=request.GET['type']
-                if typ=='eclipse':
-                    SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/src/')
-                elif typ=='studio':
-                    SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/app/src/main/java/')
-                elif typ=='apk':
-                    SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/java_source/')
-                else:
-                    return HttpResponseRedirect('/error/')
-            elif fil.endswith('.smali'):
-                SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/smali_source/')
-            sfile=os.path.join(SRC,fil)
-            dat=''
-            with open(sfile,'r') as f:
-                dat=f.read()
-        dat=dat.decode("windows-1252").encode("utf8")
+            if (("../" in fil) or ("%2e%2e" in fil) or (".." in fil) or ("%252e" in fil)):
+                return HttpResponseRedirect('/error/')
+            else:
+                if fil.endswith('.java'):
+                    typ=request.GET['type']
+                    if typ=='eclipse':
+                        SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/src/')
+                    elif typ=='studio':
+                        SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/app/src/main/java/')
+                    elif typ=='apk':
+                        SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/java_source/')
+                    else:
+                        return HttpResponseRedirect('/error/')
+                elif fil.endswith('.smali'):
+                    SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/smali_source/')
+                sfile=os.path.join(SRC,fil)
+                dat=''
+                with io.open(sfile, mode='r',encoding="utf8") as f:
+                    dat=f.read()
+        else:
+            return HttpResponseRedirect('/error/')
         context = {'title': escape(ntpath.basename(fil)),
                    'file': escape(ntpath.basename(fil)),
                    'dat': dat}
@@ -90,7 +102,7 @@ def ViewSource(request):
     except:
         return HttpResponseRedirect('/error/')
 
-
+     
 def StaticAnalyzer(request):
     #try:
     #Input validation
@@ -109,7 +121,8 @@ def StaticAnalyzer(request):
             SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
             SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
             Unzip(APP_PATH,APP_DIR)               #EXTRACT APK
-            a=ApkInfo(APP_PATH)                   #GET APK INFOS
+            a=ApkInfo(APP_PATH)   #GET APK INFOS
+            MANI= a.get_android_manifest_xml().toprettyxml() #Manifest XML
             PACKAGENAME=a.get_package()           #GET PACKAGE NAME
             MAINACTIVITY =a.get_main_activity()   #GET MAIN ACTIVITY NAME
             TARGET_SDK =a.get_target_sdk_version()
@@ -119,6 +132,7 @@ def StaticAnalyzer(request):
             ANDROVER= a.get_androidversion_code()
             PERMISSIONS =FormatPermissions(a.get_details_permissions())
             FILES = a.get_files()
+            CERTZ = GetHardcodedCert(a.get_files())
             MANIFEST_ANAL=ManifestAnalysis(a.get_AndroidManifest())
             ACTIVITIES =a.get_activities()
             PROVIDERS =a.get_providers()
@@ -142,7 +156,7 @@ def StaticAnalyzer(request):
             SUSPCONN = c['suspconn']
             PIMLEAK= c['pimleak']
             CODEEXEC = c['codeexec']
-            CERT_INFO=CertInfo(APP_DIR,TOOLS_DIR).replace('\n', '</br>')
+            CERT_INFO=CertInfo(APP_DIR,TOOLS_DIR)
             Dex2Jar(APP_DIR,TOOLS_DIR)
             Dex2Smali(APP_DIR,TOOLS_DIR)
             Jar2Java(APP_DIR,TOOLS_DIR)
@@ -158,17 +172,24 @@ def StaticAnalyzer(request):
             SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
             SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
             Unzip(APP_PATH,APP_DIR)               #EXTRACT APK
+            try:
+                os.remove(APP_PATH)                #Delete ZIP
+            except:
+                pass
             #Check if Valid File
             pro_type,Valid=ValidAndroidZip(APP_DIR)
             if Valid:
-                MF=GetManifest(APP_DIR,pro_type)
-                MANIFEST_ANAL=ManifestAnalysis(minidom.parseString(MF))
-                SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(minidom.parseString(MF))
+                MANI= GetManifest(APP_DIR,pro_type) #Manifest XML
+                MANIFEST_ANAL=ManifestAnalysis(minidom.parseString(MANI))
+                SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(minidom.parseString(MANI))
                 PERMISSIONS=FormatPermissions(PERM)
                 CNT_ACT =len(ACTIVITIES)
                 CNT_PRO =len(PROVIDERS)
                 CNT_SER =len(SERVICES)
                 CNT_BRO = len(RECEIVERS)
+
+                FILES = GetFilesFromZip(APP_DIR)
+                CERTZ = GetHardcodedCert(FILES)
 
                 NATIVE='No Analysis Done'
                 DYNAMIC='No Analysis Done'
@@ -187,8 +208,10 @@ def StaticAnalyzer(request):
                 CERT_INFO='No Certificate Analysis Done.'
                 API,DANG,URLS,EMAILS,CRYPTO,OBFUS=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,pro_type)
                 #GenDownloads(APP_DIR,MD5) #Only Report
-                FILES = ''
-                STRINGS=''
+
+                
+                
+                STRINGS =''
                 ZIPPED='&type='+pro_type
             else:
                 shutil.rmtree(APP_DIR)
@@ -214,6 +237,7 @@ def StaticAnalyzer(request):
         'manifest': MANIFEST_ANAL,
         'permissions' : PERMISSIONS,
         'files' : FILES,
+        'certz' : CERTZ,
         'activities' : ACTIVITIES,
         'receivers' : RECEIVERS,
         'providers' : PROVIDERS,
@@ -244,6 +268,7 @@ def StaticAnalyzer(request):
         'emails': EMAILS,
         'strings': STRINGS,
         'zipped' : ZIPPED,
+        'mani' : MANI,
         }
     template="static_analysis.html"
     return render(request,template,context)
@@ -257,14 +282,35 @@ def StaticAnalyzer(request):
         template="error.html"
         return render(request,template,context)
 '''
+def GetFilesFromZip(SRC):
+    filez=[]
+    certz=''
+    for dirName, subDir, files in os.walk(SRC):
+        for jfile in files:
+            if not jfile.endswith(".DS_Store"):
+                file_path=os.path.join(SRC,dirName,jfile)
+                if "+" in file_path:
+                    shutil.move(file_path,file_path.replace("+","x"))
+                    file_path=file_path.replace("+","x")
+                filez.append(file_path.replace(SRC,''))     
+    return filez
+
+def GetHardcodedCert(files):
+    certz=''
+    for f in files:
+        ext=f.split('.')[-1]
+        if re.search("cer|pem|cert|crt|pub|key|pfx|p12", ext):
+            certz+=escape(f) + "</br>"
+    if len(certz)>1:
+        certz="<tr><td>Certificate/Key Files Hardcoded inside the App.</td><td>"+certz+"</td><tr>"
+    return certz
 def GetManifest(APP_DIR,TYP):
     if TYP=="eclipse":
         manifest=os.path.join(APP_DIR,"AndroidManifest.xml")
     elif TYP=="studio":
         manifest=os.path.join(APP_DIR,"app/src/main/AndroidManifest.xml")
-    with open(manifest,'r') as f:
+    with io.open(manifest,mode='r',encoding="utf8") as f:
         dat=f.read()
-    dat=dat.decode("windows-1252").encode("utf8")
     return dat
 def ValidAndroidZip(APP_DIR):
     man=os.path.isfile(os.path.join(APP_DIR,"AndroidManifest.xml"))
@@ -284,7 +330,7 @@ def HashGen(APP_PATH):
     sha1 = hashlib.sha1()
     sha256 = hashlib.sha256()
     BLOCKSIZE = 65536
-    with open(APP_PATH, 'rb') as afile:
+    with io.open(APP_PATH, mode='rb') as afile:
         buf = afile.read(BLOCKSIZE)
         while len(buf) > 0:
             sha1.update(buf)
@@ -341,7 +387,9 @@ def CertInfo(APP_DIR,TOOLS_DIR):
                 certfile=os.path.join(cert,f)
 
     args=[settings.JAVA_PATH+'java','-jar', CP_PATH, certfile]
-    return subprocess.check_output(args)
+    dat=''
+    dat=escape(subprocess.check_output(args)).replace('\n', '</br>')
+    return dat
 def CodeBehaviour(apk):
     vm = dvm.DalvikVMFormat( apk.get_dex() )
     vmx = analysis.uVMAnalysis( vm )
@@ -430,7 +478,7 @@ def Strings(APP_FILE,APP_DIR,TOOLS_DIR):
     subprocess.call(args)
     dat=''
     try:
-        with open(APP_DIR+'strings.json','r') as f:
+        with io.open(APP_DIR+'strings.json', mode='r', encoding="utf8") as f:
             dat=f.read()
     except:
         pass
@@ -637,9 +685,13 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
     for dirName, subDir, files in os.walk(JS):
         for jfile in files:
             jfile_path=os.path.join(JS,dirName,jfile)
+            if "+" in jfile_path:
+                shutil.move(jfile_path,jfile_path.replace("+","x"))
+                jfile_path=jfile_path.replace("+","x")
             repath=dirName.replace(JS,'')
             if jfile.endswith('.java') and not (repath.startswith('android\\') or repath.startswith('com\\google\\')) :
-                with open(jfile_path,'r') as f:
+                dat=''
+                with io.open(jfile_path,mode='r',encoding="utf8") as f:
                     dat=f.read()
                 #Initialize
                 URLS=[]
@@ -835,3 +887,304 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
             dang+=hd+link+"</td></tr>"
 
     return html,dang,URLnFile,EmailnFile,crypto,obfus
+#iOS Support Functions
+def StaticAnalyzer_iOS(request):
+    #try:
+    #Input validation
+    TYP=request.GET['type']
+    m=re.match('[0-9a-f]{32}',request.GET['checksum'])
+    if ((m) and (request.GET['name'].endswith('.ipa') or request.GET['name'].endswith('.zip')) and ((TYP=='ipa') or (TYP=='ios'))):
+        DIR=settings.BASE_DIR        #BASE DIR
+        APP_NAME=request.GET['name'] #APP ORGINAL NAME
+        MD5=request.GET['checksum']  #MD5
+        APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
+        if TYP=='ipa':
+
+            APP_FILE=MD5 + '.ipa'        #NEW FILENAME
+            APP_PATH=APP_DIR+APP_FILE    #APP PATH
+            BIN_DIR=os.path.join(APP_DIR,"Payload/")
+            TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/mac/')  #TOOLS DIR
+            #ANALYSIS BEGINS
+            SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
+            SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
+            Unzip(APP_PATH,APP_DIR)               #EXTRACT IPA
+            FILES,CERTS=iOS_ListFiles(BIN_DIR)    #Get Files,Certs, convert + to x, and convert binary plist -> xml
+            PLISTnDB_FILES,INFO_PLIST,BIN_NAME,ID,VER,SDK,PLTFM,MIN,LIBS,BIN_ANAL=BinaryAnalysis(BIN_DIR,TOOLS_DIR,MD5)
+        context = {
+            'title' : 'Static Analysis',
+            'name' : APP_NAME,
+            'size' : SIZE,
+            'md5': MD5,
+            'sha1' : SHA1,
+            'sha256' : SHA256,
+            'plist' : INFO_PLIST,
+            'bin_name' : BIN_NAME,
+            'id' : ID,
+            'ver' : VER,
+            'sdk' : SDK,
+            'pltfm' : PLTFM,
+            'min' : MIN,
+            'bin_anal' : BIN_ANAL,
+            'libs' : LIBS,
+            'files' : FILES,
+            'file_analysis' : CERTS+PLISTnDB_FILES,
+            }
+        template="ios_static_analysis.html"
+        return render(request,template,context)
+    else:
+        return HttpResponseRedirect('/error/')
+    '''
+        except Exception as e:
+            context = {
+            'title' : 'Error',
+            'exp' : e.message,
+            'doc' : e.__doc__
+            }
+            template="error.html"
+            return render(request,template,context)
+    '''
+def ViewFile(request):
+        #try:
+        fil=request.GET['file']
+        typ=request.GET['type']
+        MD5=request.GET['md5']
+        m=re.match('[0-9a-f]{32}',MD5)
+        ext=fil.split('.')[-1]
+        f=re.search("plist|db|sqlitedb|sqlite|txt",ext)
+        if m and f and (typ=='xml' or typ=='db' or typ=='txt'):
+            if (("../" in fil) or ("%2e%2e" in fil) or (".." in fil) or ("%252e" in fil)):
+                return HttpResponseRedirect('/error/')
+            else:
+                SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/Payload/')
+                sfile=os.path.join(SRC,fil)
+                dat=''
+                if typ=='xml':
+                    format='xml'
+                    with io.open(sfile,mode='r',encoding="utf8") as f:
+                        dat=f.read()
+                elif typ=='db':
+                    format='plain'
+                    dat=HandleSqlite(sfile)
+                elif typ=='txt':
+                    format='plain'
+                    APP_DIR=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/')
+                    FILE=os.path.join(APP_DIR,"classdump.txt")
+                    with io.open(FILE,mode='r',encoding="utf8") as f:
+                        dat=f.read()
+        else:
+            return HttpResponseRedirect('/error/')
+        context = {'title': escape(ntpath.basename(fil)),
+                   'file': escape(ntpath.basename(fil)),
+                   'type': format,
+                   'dat' : dat}
+        template="view.html"
+        return render(request,template,context)
+        #except:
+        #return HttpResponseRedirect('/error/')
+def readBinXML(FILE):
+    args=['plutil','-convert','xml1',FILE]
+    dat=subprocess.check_output(args)
+    with io.open(FILE,mode='r',encoding="utf8") as f:
+        dat=f.read() 
+    return dat
+def HandleSqlite(SFile):   
+    try:
+        data=''
+        con = sq.connect(SFile)
+        cur = con.cursor()
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables=cur.fetchall()
+        for table in tables:
+            data+= "\nTABLE: "+str(table[0]).decode('utf8', 'ignore')+" \n=====================================================\n"
+            cur.execute("PRAGMA table_info('%s')" % table)
+            rows=cur.fetchall()
+            head=''
+            for r in rows:
+                head+=str(r[1]).decode('utf8', 'ignore') + " | "
+            data+=head + " \n=====================================================================\n"
+            cur.execute("SELECT * FROM '%s'" % table)
+            rows=cur.fetchall()
+            for r in rows:
+                dat=''
+                for x in r:
+                    dat+=str(x).decode('utf8', 'ignore') + " | "
+                data+=dat+"\n"
+        return data
+    except:
+        pass
+def iOS_ListFiles(SRC):
+    #Multi function, Get Files, Cert Files, Convert binary plist to xml, normalize + to x
+    filez=[]
+    certz=''
+    for dirName, subDir, files in os.walk(SRC):
+        for jfile in files:
+            if not jfile.endswith(".DS_Store"):
+                file_path=os.path.join(SRC,dirName,jfile)
+                if "+" in file_path:
+                    shutil.move(file_path,file_path.replace("+","x"))
+                    file_path=file_path.replace("+","x")
+                filez.append(file_path.replace(SRC,''))
+                ext=jfile.split('.')[-1]
+                if re.search("cer|pem|cert|crt|pub|key|pfx|p12", ext):
+                    certz+=escape(file_path.replace(SRC,'')) + "</br>"
+
+
+    if len(certz)>1:
+        certz="<tr><td>Certificate/Key Files Hardcoded inside the App.</td><td>"+certz+"</td><tr>"
+    return filez,certz
+
+def BinaryAnalysis(SRC,TOOLS_DIR,MD5):
+    dirs = os.listdir(SRC)
+    for d in dirs:
+        if d.endswith(".app"):
+                break
+    BIN_DIR=os.path.join(SRC,d)         #Full Dir/Payload/x.app
+    XML_FILE=os.path.join(BIN_DIR,"Info.plist")
+    BIN=d.replace(".app","") 
+    BIN_NAME=BIN
+    ID=""
+    VER=""
+    SDK=""
+    PLTFM=""
+    MIN=""
+    XML=""
+    plist=""
+    db=""
+    for dirName, subDir, files in os.walk(SRC):
+        for jfile in files:
+            file_path=os.path.join(SRC,dirName,jfile)
+            fileparam=file_path.replace(SRC,'')
+            if jfile.endswith(".plist"):
+                readBinXML(file_path)
+                plist+="<a href='../ViewFile/?file="+escape(fileparam)+"&type=xml&md5="+MD5+"''> "+escape(fileparam)+" </a></br>"
+            ext=jfile.split('.')[-1]
+            if re.search("db|sqlitedb|sqlite", ext):
+                db+="<a href='../ViewFile/?file="+escape(fileparam)+"&type=db&md5="+MD5+"''> "+escape(fileparam)+" </a></br>"
+    if len(db)>1:
+        db="<tr><td>SQLite Files</td><td>"+db+"</td></tr>"   
+    plist="<tr><td>Plist Files</td><td>"+plist+"</td></tr>"   
+    FLZ=db+plist
+    try:
+        XML=readBinXML(XML_FILE)
+        p=plistlib.readPlistFromString(XML)
+        BIN_NAME=p["CFBundleDisplayName"]
+        BIN=p["CFBundleExecutable"]
+        ID=p["CFBundleIdentifier"]
+        VER=p["CFBundleVersion"]
+        SDK=p["DTSDKName"]
+        PLTFM=p["DTPlatformVersion"]
+        MIN=p["MinimumOSVersion"]
+        
+    except Exception as e:
+        print "Error - while reading from Info.plist: " + str(e)
+        pass
+
+    BIN_PATH=os.path.join(BIN_DIR,BIN)  #Full Dir/Payload/x.app/x
+    print "[INFO] iOS Binary : " + BIN
+    #ENCRYPTED
+    #otool -l
+
+    #Libs Used
+    LIBS=''
+    args=['otool','-L',BIN_PATH]
+    dat=subprocess.check_output(args)
+    dat=escape(dat.replace(BIN_DIR + "/",""))
+    LIBS=dat.replace("\n","</br>")
+    #PIE
+    args=['otool','-hv',BIN_PATH]
+    dat=subprocess.check_output(args)
+    if "PIE" in dat:
+        PIE= "<tr><td><strong>fPIE -pie</strong> flag is Found</td><td><span class='label label-success'>Secure</span></td><td>App is compiled with Position Independent Executable (PIE) flag. This enables Address Space Layout Randomization (ASLR), a memory protection mechanism for exploit mitigation.</td></tr>"
+    else:
+        PIE="<tr><td><strong>fPIE -pie</strong> flag is not Found</td><td><span class='label label-danger'>Insecure</span></td><td>App is not compiled with Position Independent Executable (PIE) flag. So Address Space Layout Randomization (ASLR) is missing. ASLR is a memory protection mechanism for exploit mitigation.</td></tr>"
+    #Stack Smashing Protection & ARC
+    args=['otool','-Iv',BIN_PATH]
+    dat=subprocess.check_output(args)
+    if "stack_chk_guard" in dat:
+        SSMASH="<tr><td><strong>fstack-protector-all</strong> flag is Found</td><td><span class='label label-success'>Secure</span></td><td>App is compiled with Stack Smashing Protector (SSP) flag and is having protection against Stack Overflows/Stack Smashing Attacks.</td></tr>"
+    else:
+        SSMASH= "<tr><td><strong>fstack-protector-all</strong> flag is not Found</td><td><span class='label label-danger'>Insecure</span></td><td>App is not compiled with Stack Smashing Protector (SSP) flag. It is vulnerable to Stack Overflows/Stack Smashing Attacks.</td></tr>"
+    #ARC
+    if "_objc_release" in dat:
+        ARC="<tr><td><strong>fobjc-arc</strong> flag is Found</td><td><span class='label label-success'>Secure</span></td><td>App is compiled with Automatic Reference Counting (ARC) flag. ARC is a compiler feature that provides automatic memory management of Objective-C objects and is an exploit mitigation mechanism against memory corruption vulnerabilities.</td></tr>"
+    else:
+        ARC="<tr><td><strong>fobjc-arc</strong> flag is not Found</td><td><span class='label label-danger'>Insecure</span></td><td>App is not compiled with Automatic Reference Counting (ARC) flag. ARC is a compiler feature that provides automatic memory management of Objective-C objects and protects from memory corruption vulnerabilities.</td></tr>"
+    ##########
+    BANNED_API=''
+    x=re.findall("alloca|gets|memcpy|scanf|sprintf|sscanf|strcat|StrCat|strcpy|StrCpy|strlen|StrLen|strncat|StrNCat|strncpy|StrNCpy|strtok|swprintf|vsnprintf|vsprintf|vswprintf|wcscat|wcscpy|wcslen|wcsncat|wcsncpy|wcstok|wmemcpy",dat)
+    x=list(set(x))
+    x=', '.join(x)
+    if len(x)>1:
+        BANNED_API="<tr><td>Binary make use of banned API(s)</td><td><span class='label label-danger'>Insecure</span></td><td>The binary may contain the following banned API(s) </br><strong>" + str(x) + "</strong>.</td></tr>"
+    WEAK_CRYPTO=''
+    x=re.findall("kCCAlgorithmDES|kCCAlgorithm3DES||kCCAlgorithmRC2|kCCAlgorithmRC4|kCCOptionECBMode|kCCOptionCBCMode",dat)
+    x=list(set(x))
+    x=', '.join(x)
+    if len(x)>1:
+        WEAK_CRYPTO="<tr><td>Binary make use of some Weak Crypto API(s)</td><td><span class='label label-danger'>Insecure</span></td><td>The binary may use the following weak crypto API(s)</br><strong>" + str(x) + "</strong>.</td></tr>"
+    CRYPTO=''
+    x=re.findall("CCKeyDerivationPBKDF|CCCryptorCreate|CCCryptorCreateFromData|CCCryptorRelease|CCCryptorUpdate|CCCryptorFinal|CCCryptorGetOutputLength|CCCryptorReset|CCCryptorRef|kCCEncrypt|kCCDecrypt|kCCAlgorithmAES128|kCCKeySizeAES128|kCCKeySizeAES192|kCCKeySizeAES256|kCCAlgorithmCAST|SecCertificateGetTypeID|SecIdentityGetTypeID|SecKeyGetTypeID|SecPolicyGetTypeID|SecTrustGetTypeID|SecCertificateCreateWithData|SecCertificateCreateFromData|SecCertificateCopyData|SecCertificateAddToKeychain|SecCertificateGetData|SecCertificateCopySubjectSummary|SecIdentityCopyCertificate|SecIdentityCopyPrivateKey|SecPKCS12Import|SecKeyGeneratePair|SecKeyEncrypt|SecKeyDecrypt|SecKeyRawSign|SecKeyRawVerify|SecKeyGetBlockSize|SecPolicyCopyProperties|SecPolicyCreateBasicX509|SecPolicyCreateSSL|SecTrustCopyCustomAnchorCertificates|SecTrustCopyExceptions|SecTrustCopyProperties|SecTrustCopyPolicies|SecTrustCopyPublicKey|SecTrustCreateWithCertificates|SecTrustEvaluate|SecTrustEvaluateAsync|SecTrustGetCertificateCount|SecTrustGetCertificateAtIndex|SecTrustGetTrustResult|SecTrustGetVerifyTime|SecTrustSetAnchorCertificates|SecTrustSetAnchorCertificatesOnly|SecTrustSetExceptions|SecTrustSetPolicies|SecTrustSetVerifyDate|SecCertificateRef|SecIdentityRef|SecKeyRef|SecPolicyRef|SecTrustRef",dat)
+    x=list(set(x))
+    x=', '.join(x)
+    if len(x)>1:
+        CRYPTO="<tr><td>Binary make use of the following Crypto API(s)</td><td><span class='label label-info'>Info</span></td><td>The binary may use the following crypto API(s)</br><strong>" + str(x) + "</strong>.</td></tr>"
+    WEAK_HASH=''
+    x=re.findall("CC_MD2_Init|CC_MD2_Update|CC_MD2_Final|CC_MD2|MD2_Init|MD2_Update|MD2_Final|CC_MD4_Init|CC_MD4_Update|CC_MD4_Final|CC_MD4|MD4_Init|MD4_Update|MD4_Final|CC_MD5_Init|CC_MD5_Update|CC_MD5_Final|CC_MD5|MD5_Init|MD5_Update|MD5_Final|MD5Init|MD5Update|MD5Final|CC_SHA1_Init|CC_SHA1_Update|CC_SHA1_Final|CC_SHA1|SHA1_Init|SHA1_Update|SHA1_Final",dat)
+    x=list(set(x))
+    x=', '.join(x)
+    if len(x)>1:
+        WEAK_HASH="<tr><td>Binary make use of the following Weak HASH API(s)</td><td><span class='label label-danger'>Insecure</span></td><td>The binary may use the following weak hash API(s)</br><strong>" + str(x) + "</strong>.</td></tr>"
+    HASH=''
+    x=re.findall("CC_SHA224_Init|CC_SHA224_Update|CC_SHA224_Final|CC_SHA224|SHA224_Init|SHA224_Update|SHA224_Final|CC_SHA256_Init|CC_SHA256_Update|CC_SHA256_Final|CC_SHA256|SHA256_Init|SHA256_Update|SHA256_Final|CC_SHA384_Init|CC_SHA384_Update|CC_SHA384_Final|CC_SHA384|SHA384_Init|SHA384_Update|SHA384_Final|CC_SHA512_Init|CC_SHA512_Update|CC_SHA512_Final|CC_SHA512|SHA512_Init|SHA512_Update|SHA512_Final",dat)
+    x=list(set(x))
+    x=', '.join(x)
+    if len(x)>1:
+        HASH="<tr><td>Binary make use of the following HASH API(s)</td><td><span class='label label-info'>Info</span></td><td>The binary may use the following hash API(s)</br><strong>" + str(x) + "</strong>.</td></tr>"
+    RAND=''
+    x=re.findall("srand|random",dat)
+    x=list(set(x))
+    x=', '.join(x)
+    if len(x)>1:
+        RAND="<tr><td>Binary make use of the insecure Random Function(s)</td><td><span class='label label-danger'>Insecure</span></td><td>The binary may use the following insecure Random Function(s)</br><strong>" + str(x) + "</strong>.</td></tr>"
+    LOG=''
+    x=re.findall("NSLog",dat)
+    x=list(set(x))
+    x=', '.join(x)
+    if len(x)>1:
+        LOG="<tr><td>Binary make use of Logging Function</td><td><span class='label label-info'>Info</span></td><td>The binary may use <strong>NSLog</strong> function for logging.</td></tr>"
+    MALL=''
+    x=re.findall("malloc",dat)
+    x=list(set(x))
+    x=', '.join(x)
+    if len(x)>1:
+        MALL="<tr><td>Binary make use of <strong>malloc</strong> Function</td><td><span class='label label-danger'>Insecure</span></td><td>The binary may use <strong>malloc</strong> function instead of <strong>calloc</strong>.</td></tr>"
+    DBG=''
+    x=re.findall("ptrace",dat)
+    x=list(set(x))
+    x=', '.join(x)
+    if len(x)>1:
+        DBG="<tr><td>Binary calls <strong>ptrace</strong> Function for anti-debugging.</td><td><span class='label label-success'>Secure</span></td><td>The binary may use <strong>ptrace</strong> function. It is used to detect and prevent debuggers.</td></tr>"
+    else:
+        DBG="<tr><td>Binary does not call <strong>ptrace</strong> Function for anti-debugging.</td><td><span class='label label-warning'>Warning</span></td><td>The binary does not use <strong>ptrace</strong> function. It is used to detect and prevent debuggers.</td></tr>"
+    CDUMP=''
+    WVIEW=''
+    try:
+        APP_DIR=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/')
+        CLASSDUMPZ_BIN=os.path.join(TOOLS_DIR,'class-dump-z')
+        args=[CLASSDUMPZ_BIN,BIN_PATH]
+        dat=subprocess.check_output(args)
+        CDUMP=dat
+        FILE=os.path.join(APP_DIR,"classdump.txt")
+        with open(FILE,"w") as f:
+            f.write(CDUMP)
+        if "UIWebView" in CDUMP:
+            WVIEW="<tr><td>Binary uses WebView Component.</td><td><span class='label label-info'>Info</span></td><td>The binary may use WebView Component.</td></tr>"
+   
+    except Exception as e:
+        print "Error - Cannot perform class dump: "+ str(e)
+        pass
+
+    BIN_RES=PIE+SSMASH+ARC+BANNED_API+WEAK_CRYPTO+CRYPTO+WEAK_HASH+HASH+RAND+LOG+MALL+DBG+WVIEW
+    #classdump
+    return FLZ,XML,BIN_NAME,ID,VER,SDK,PLTFM,MIN,LIBS,BIN_RES
+

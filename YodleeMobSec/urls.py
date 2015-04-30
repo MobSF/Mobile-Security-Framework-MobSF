@@ -9,8 +9,11 @@ urlpatterns = [
     url(r'^error/$', 'YodleeMobSec.views.error', name='error'),
     url(r'^features/$', 'YodleeMobSec.views.features', name='features'),
     url(r'^Android_ZIP_FORMAT/$', 'YodleeMobSec.views.Android_ZIP_FORMAT', name='Android_ZIP_FORMAT'),
+    url(r'^MAC_ONLY/$', 'YodleeMobSec.views.MAC_ONLY', name='MAC_ONLY'),
     url(r'^StaticAnalyzer/$', 'StaticAnalyzer.views.StaticAnalyzer', name='StaticAnalyzer'),
+    url(r'^StaticAnalyzer_iOS/$', 'StaticAnalyzer.views.StaticAnalyzer_iOS', name='StaticAnalyzer_iOS'),
     url(r'^ViewSource/$', 'StaticAnalyzer.views.ViewSource', name='ViewSource'),
+    url(r'^ViewFile/$', 'StaticAnalyzer.views.ViewFile', name='ViewFile'),
     url(r'^Smali/$', 'StaticAnalyzer.views.Smali', name='Smali'),
     url(r'^Java/$', 'StaticAnalyzer.views.Java', name='Java'),
     url(r'^DynamicAnalyzer/$', 'DynamicAnalyzer.views.DynamicAnalyzer', name='DynamicAnalyzer'),
@@ -18,3 +21,6 @@ urlpatterns = [
     url(r'^View/$', 'DynamicAnalyzer.views.View', name='View'),
     url(r'^admin/', include(admin.site.urls)),
 ]
+
+
+
