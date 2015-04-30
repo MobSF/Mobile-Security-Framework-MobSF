@@ -51,19 +51,15 @@ Pending....
 
 ##v0.8 Changelog
  
-*View AndroidManifest.xml & Info.plist
-
-*Supports iOS Binary (IPA)
-
-*Bug Fix for Linux (Ubuntu), missing MIME Type Detection
-
-*Check for Hardcoded Certificates
-
-*Added Code to prevent from Directory Traversal
+* View AndroidManifest.xml & Info.plist
+* Supports iOS Binary (IPA)
+* Bug Fix for Linux (Ubuntu), missing MIME Type Detection
+* Check for Hardcoded Certificates
+* Added Code to prevent from Directory Traversal
 
 
 ##Credits
  
-Anto Joseph (@antojosep007) - For the help with SuperSU
- 
- Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset
+* Anto Joseph (@antojosep007) - For the help with SuperSU.
+* Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset.
+* Abhinav Sejpal (@Abhinav_Sejpal) - For the poking me with bugs and feature requests.
