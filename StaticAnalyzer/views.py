@@ -90,7 +90,7 @@ def ViewSource(request):
                     SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/smali_source/')
                 sfile=os.path.join(SRC,fil)
                 dat=''
-                with io.open(sfile, mode='r',encoding="utf8") as f:
+                with io.open(sfile, mode='r',encoding="utf8",errors="ignore") as f:
                     dat=f.read()
         else:
             return HttpResponseRedirect('/error/')
@@ -307,7 +307,7 @@ def GetManifest(APP_DIR,TYP):
         manifest=os.path.join(APP_DIR,"AndroidManifest.xml")
     elif TYP=="studio":
         manifest=os.path.join(APP_DIR,"app/src/main/AndroidManifest.xml")
-    with io.open(manifest,mode='r',encoding="utf8") as f:
+    with io.open(manifest,mode='r',encoding="utf8",errors="ignore") as f:
         dat=f.read()
     return dat
 def ValidAndroidZip(APP_DIR):
@@ -486,7 +486,7 @@ def Strings(APP_FILE,APP_DIR,TOOLS_DIR):
     subprocess.call(args)
     dat=''
     try:
-        with io.open(APP_DIR+'strings.json', mode='r', encoding="utf8") as f:
+        with io.open(APP_DIR+'strings.json', mode='r', encoding="utf8",errors="ignore") as f:
             dat=f.read()
     except:
         pass
@@ -699,7 +699,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
             repath=dirName.replace(JS,'')
             if jfile.endswith('.java') and not (repath.startswith('android\\') or repath.startswith('com\\google\\')) :
                 dat=''
-                with io.open(jfile_path,mode='r',encoding="utf8") as f:
+                with io.open(jfile_path,mode='r',encoding="utf8",errors="ignore") as f:
                     dat=f.read()
                 #Initialize
                 URLS=[]
@@ -968,7 +968,7 @@ def ViewFile(request):
                 dat=''
                 if typ=='xml':
                     format='xml'
-                    with io.open(sfile,mode='r',encoding="utf8") as f:
+                    with io.open(sfile,mode='r',encoding="utf8",errors="ignore") as f:
                         dat=f.read()
                 elif typ=='db':
                     format='plain'
@@ -977,7 +977,7 @@ def ViewFile(request):
                     format='plain'
                     APP_DIR=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/')
                     FILE=os.path.join(APP_DIR,"classdump.txt")
-                    with io.open(FILE,mode='r',encoding="utf8") as f:
+                    with io.open(FILE,mode='r',encoding="utf8",errors="ignore") as f:
                         dat=f.read()
         else:
             return HttpResponseRedirect('/error/')
@@ -992,7 +992,7 @@ def ViewFile(request):
 def readBinXML(FILE):
     args=['plutil','-convert','xml1',FILE]
     dat=subprocess.check_output(args)
-    with io.open(FILE,mode='r',encoding="utf8") as f:
+    with io.open(FILE,mode='r',encoding="utf8",errors="ignore") as f:
         dat=f.read() 
     return dat
 def HandleSqlite(SFile):   
