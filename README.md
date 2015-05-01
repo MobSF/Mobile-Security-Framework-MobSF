@@ -27,9 +27,9 @@ NOTE: iOS IPA Binary Analysis requires MAC.
 
 Tested on Windows 7, 8, 8.1, Ubuntu, OSX Marvicks
 
- Install Django version 1.8a1
+ Install Django version 1.8
 
-``` pip install Django==1.8a1```
+``` pip install Django==1.8```
 
  Specify Java PATH
 
