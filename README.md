@@ -47,14 +47,16 @@ else:
 
 Open your browser and navigate to http://127.0.0.1:8000
 
+### Configuring Dynamic Analyzer
+
+Pending....
+
 #Queries
 
 * Features and Updates : [@ajinabraham](http://twitter.com/ajinabraham) or [@OpenSecurity_IN](http://twitter.com/OpenSecurity_IN). 
 * Open Bugs Here - https://github.com/ajinabraham/YSO-Mobile-Security-Framework/issues
 
-### Configuring Dynamic Analyzer
 
-Pending....
 
 #v0.8 Changelog
  
