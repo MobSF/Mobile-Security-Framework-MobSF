@@ -47,6 +47,8 @@ else:
 
 Open your browser and navigate to http://127.0.0.1:8000
 
+You can upload your APK/Zipped Android Source Code/IPA/Zipped iOS Source Code to perform Security Analysis.
+
 ### Configuring Dynamic Analyzer
 
 Pending....
