@@ -36,7 +36,7 @@
 
           <div class="masthead clearfix">
             <div class="inner">
-              <h3 class="masthead-brand"><img src="/static/img/logo.ico" width="50" height="50">Mobile Security Framework</h3>
+              <h3 class="masthead-brand"><img src="/static/img/logo-head.png" >Mobile Security Framework</h3>
               <ul class="nav masthead-nav">
                 <li class="active"><a href="#">Home</a></li>
                 <li><a href="features">Features</a></li>
@@ -50,64 +50,182 @@
             </div>
           </div>
 
-          <div class="inner cover">
-             <p class="lead">
-			 <form id="upform" action="../Upload/" method="post" enctype="multipart/form-data">
-		   <div class="fileUpload btn btn-default btn-lg">
-		 {% csrf_token %}
-            <input id="uploadFile" placeholder="Choose File" disabled="disabled" />
-           <span class="glyphicon glyphicon-cloud-upload"></span>
-          Upload & Analyze
-            <input id="uploadBtn" type="file" accept=".apk,.zip,.ipa" class="upload" name="file" />
-        </div>
-             </form>
-			    <div class="file_res" id="file_res">
-				</div>
-            
-          </div>
+
+<style>
+
+
+progress {
+  width: 400px;
+
+  margin: 25px auto;
+  display: block;
+  -webkit-appearance: none;
+
+   border: 0;
+    height: 18px;
+    border-radius: 9px;
+}
+
+progress::-webkit-progress-bar {
+  background: black;
+  border-radius: 50px;
+  padding: 2px;
+  box-shadow: 0 1px 0px 0 rgba(255, 255, 255, 0.2);
+}
+
+progress::-webkit-progress-value {
+  border-radius: 50px;
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.4);
+  background:
+    -webkit-linear-gradient(45deg, transparent, transparent 33%, rgba(0, 0, 0, 0.1) 33%, rgba(0, 0, 0, 0.1) 66%, transparent 66%),
+    -webkit-linear-gradient(top, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.2)),
+    -webkit-linear-gradient(left, #ba7448, #c4672d);
+
+  background-size: 25px 14px, 100% 100%, 100% 100%;
+  -webkit-animation: move 5s linear 0 infinite;
+}
+
+@-webkit-keyframes move {
+  0% {background-position: 0px 0px, 0 0, 0 0}
+  100% {background-position: -100px 0px, 0 0, 0 0}
+}
+
+
+</style>
+<div class="inner cover">
+ <form id="upload_form" enctype="multipart/form-data" method="post">
+  {% csrf_token %}
+  <div class="fileUpload btn btn-default btn-lg" id="but">
+  <input type="file" name="file" id="uploadFile" placeholder="Choose File">
+  <span class="glyphicon glyphicon-cloud-upload"></span>
+   Upload &amp; Analyze
+  </div></br>
+  <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
+
+  <h4 id="status"></h4>
+</form>
+</div>
+
 
           <div class="mastfoot">
             <div class="inner">
              <p>&copy; Mobile Security Framework 2015. All Rights Reserved</p>
             </div>
           </div>
-
         </div>
-
       </div>
-
     </div>
-			 <script>
-    $(document).ready(function () {
 
-        $('input[type=file]').change(function () {
-            var val = $(this).val().toLowerCase();
-            var regex = new RegExp("(.*?)\.(ipa|apk|zip)$");
-            val = val.replace(/^.*[\\\/]/, '')
+    <script>
+    function getCookie(name) {
+             var cookieValue = null;
+             if (document.cookie && document.cookie != '') {
+                 var cookies = document.cookie.split(';');
+                 for (var i = 0; i < cookies.length; i++) {
+                     var cookie = jQuery.trim(cookies[i]);
+                 if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                     break;
+                 }
+             }
+         }
+         return cookieValue;
+         }
 
-            try {
-                if (!(regex.test(val))) {
-                    $(this).val('');
-                    document.getElementById('file_res').innerHTML = "<div class='btn btn-danger btn-lg'>Please upload APK/IPA/ZIP only!</div>";
-                   }
-                else {
-                    _file = document.getElementById('uploadBtn'),
-                    document.getElementById('file_res').innerHTML = "";
-                    if (_file.files.length === 0) {
-                        return;
-                    }
-					$('#file_res').prepend('<center><img src="/static/img/loader.gif" /></center>')
-					$("#upform").submit();
+function _(el){
+  return document.getElementById(el);
+}
+
+
+$(document).ready(function () 
+{
+$('input[type=file]').change(function () 
+{
+  var val = $(this).val().toLowerCase();
+  var regex = new RegExp("(.*?)\.(ipa|apk|zip)$");
+  val = val.replace(/^.*[\\\/]/, '');
+   try {
+        if (!(regex.test(val))) 
+          {
+            $(this).val('');
+            _('status').innerHTML = "Please upload APK/IPA/ZIP only!";
+          }
+          else 
+          {
+                _('status').innerHTML = "";
+                if (_("uploadFile").files.length === 0) 
+                {
+                  return;
                 }
+                _("uploadFile").style.display= "none";
+                 _("but").style.display = "none";
+                var file = _("uploadFile").files[0];
+                _("progressBar").style.visibility = "visible";
+               
+                
+                var formdata = new FormData();
+                formdata.append("file", file);
+                var ajax = new XMLHttpRequest();
+              
+                ajax.upload.addEventListener("progress", progressHandler, false);
+                ajax.addEventListener("load", completeHandler, false);
+                ajax.addEventListener("error", errorHandler, false);
+                ajax.addEventListener("abort", abortHandler, false);
+                ajax.open("POST", "../Upload/");
+                ajax.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                ajax.send(formdata);
+          }
 
-            }
-            catch (e) {
-                alert("Error:" + e);
-            }
-        });
-    });
+      }
+      catch (e) 
+      {
+          alert("Error:" + e);
+      }
+  });
+});
+function progressHandler(event){
+  var percent = (event.loaded / event.total) * 100;
+  console.log("Uploaded..."+Math.round(percent));
+  _("progressBar").value = Math.round(percent);
+  _("status").innerHTML = Math.round(percent)+"% Uploaded...";
+}
+function completeHandler(event)
+{
+  
+  var json= JSON.parse(event.target.responseText);
+  if (json.status==='error')
+  {
+    _("status").innerHTML = json.description;
+  }
+  else if (json.status==='success')
+  {
 
-        </script>
+    i=1;
+    setInterval(function () {
+      dot='';
+      for (x=1;x<=i;x++)
+       {
+        dot+='.';
+       }
+       _("status").innerHTML = "Analyzing" +dot;
+       i+=1;
+       if(i==5)
+       {
+        i=1;
+       }
+    }, 2000);
+   
+    window.location.href=window.location.href+json.url;
+    _("progressBar").value = 100;
+  }
+}
+function errorHandler(event){
+  _("status").innerHTML = "Upload Failed!";
+}
+function abortHandler(event){
+  _("status").innerHTML = "Upload Aborted!";
+}
+</script>
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

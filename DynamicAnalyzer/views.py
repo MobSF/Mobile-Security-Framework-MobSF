@@ -162,13 +162,11 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
         if mgroups[0] not in URLS:
             URLS.append(mgroups[0])
     #Email Etraction Regex
-    regex = re.compile(("([a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`"
-                        "{|}~-]+)*(@|\sat\s)(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(\.|"
-                        "\sdot\s))+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)"))
     EMAILS=[]
+    regex = re.compile(("[\w.-]+@[\w-]+\.[\w.]+"))
     for email in regex.findall(traffic.lower()):
-        if ((email[0] not in EMAILS) and (not email[0].startswith('//'))):
-            EMAILS.append(email[0])
+        if ((email not in EMAILS) and (not email.startswith('//'))):
+            EMAILS.append(email)
     #Extract Device Data
     try:
         TARLOC=os.path.join(APKDIR,PACKAGE+'.tar')

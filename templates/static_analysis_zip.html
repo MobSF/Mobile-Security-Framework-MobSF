@@ -91,6 +91,7 @@
 									<span class="label label-primary">Android Version Code</span>
                                     {{ androver }}
 									</p>
+								
                                 </div>
                                 
                             </div>
@@ -196,36 +197,14 @@
 				  <div class="col-lg-6">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-th-large"></span> DECOMPILE & DISASSEMBLE</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-th-large"></span> REPORT</h3>
                             </div>
                             <div class="panel-body">
-                  
-						<a href="../Java/?md5={{ md5 }}{{ zipped }}" class="btn btn-info btn-lg" role="button">View Java</a>
-						<a href="../static/downloads/{{ md5 }}-java.zip" class="btn btn-warning btn-lg" role="button">Download Java</a>
-					
-					    </br></br>
-						<a href="../Smali/?md5={{ md5 }}" class="btn btn-info btn-lg" role="button">View Smali</a>
-						<a href="../static/downloads/{{ md5 }}-smali.zip" class="btn btn-warning btn-lg">Download Smali</a>
-						
-					</br></br>
 					<a href="javascript:download();" class="btn btn-primary btn-lg" role="button">Download Report</a>
-					<a href="javascript:document.getElementById('dynform').submit();" class="btn btn-primary btn-lg" role="button">Start Dynamic Analysis</a>
-				
 					</div>
                             </div>
                         </div>
-                  		  <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-eye-close"></span> CERTIFICATE</h3>
-                            </div>
-                            <div class="panel-body">
-                            <pre>
-                              {{ certinfo | safe}}
-                            </pre>
-                            </div>
-                        </div>
-                    </div> 
+
 					<div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
@@ -394,28 +373,7 @@
                         </div>
                     </div>
 					</div>
-  			<div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span> STRINGS</h3>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-									<p>  
-								  
-										{% for val in strings %}
-									    
-										 {{ val }}<br>
-										
-										{% endfor %}									
-																
-									
-									</p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
+  			
 			  <div class="col-lg-7">
                         <div class="panel panel-default">
                             <div class="panel-heading">
