@@ -107,7 +107,7 @@ def ViewSource(request):
 
      
 def StaticAnalyzer(request):
-    #try:
+    try:
     #Input validation
         TYP=request.GET['type']
         m=re.match('[0-9a-f]{32}',request.GET['checksum'])
@@ -262,14 +262,14 @@ def StaticAnalyzer(request):
         else:
              return HttpResponseRedirect('/error/')
      
-    #except Exception as e:
-        #context = {
-        #'title' : 'Error',
-        #'exp' : e.message,
-        #'doc' : e.__doc__
-        #}
-        #template="error.html"
-        #return render(request,template,context)
+    except Exception as e:
+        context = {
+        'title' : 'Error',
+        'exp' : e.message,
+        'doc' : e.__doc__
+        }
+        template="error.html"
+        return render(request,template,context)
 
 
 def GetHardcodedCert(files):
