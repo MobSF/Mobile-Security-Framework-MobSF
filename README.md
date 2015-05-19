@@ -19,7 +19,7 @@ Sample Report: http://opensecurity.in/research/security-analysis-of-android-brow
 * Python 2.7
 * JDK 1.7 or above
 
-NOTE: iOS IPA Binary Analysis requires MAC.
+NOTE: iOS IPA Binary Analysis requires MAC and you need to install XCode
 
 #How to Use
 
