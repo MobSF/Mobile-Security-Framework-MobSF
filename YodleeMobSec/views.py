@@ -42,7 +42,7 @@ def Upload(request):
                 md5=handle_uploaded_file(request.FILES['file'],'.zip')
                 response_data['url'] = 'StaticAnalyzer/?name='+request.FILES['file'].name+'&type=zip&checksum='+md5
                 response_data['status'] = 'success'
-            elif (file_type=="application/octet-stream") and request.FILES['file'].name.endswith('.ipa'):   #iOS Binary
+            elif ((file_type=="application/octet-stream" or file_type=="application/x-itunes-ipa") and request.FILES['file'].name.endswith('.ipa')):   #iOS Binary
                 if platform.system()=="Darwin":
                     md5=handle_uploaded_file(request.FILES['file'],'.ipa')
                     response_data['url'] = 'StaticAnalyzer_iOS/?name='+request.FILES['file'].name+'&type=ipa&checksum='+md5
