@@ -60,7 +60,7 @@ Pending....
 
 #v0.8.5 Changelog
 
-* Bug Fix to support IPA MIME Type: 
+* Bug Fix to support IPA MIME Type: application/x-itunes-ipa
 
 #v0.8.4 Changelog
 
