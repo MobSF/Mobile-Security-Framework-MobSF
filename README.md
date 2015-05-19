@@ -58,6 +58,9 @@ Pending....
 * Features and Updates : [@ajinabraham](http://twitter.com/ajinabraham) or [@OpenSecurity_IN](http://twitter.com/OpenSecurity_IN). 
 * Open Bugs Here - https://github.com/ajinabraham/YSO-Mobile-Security-Framework/issues
 
+#v0.8.5 Changelog
+
+* Bug Fix to support IPA MIME Type: 
 
 #v0.8.4 Changelog
 
