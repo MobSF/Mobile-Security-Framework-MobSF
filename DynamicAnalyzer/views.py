@@ -155,12 +155,14 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
     with io.open(Logcat,mode='r',encoding="utf8",errors="ignore") as f:
         traffic=f.read()
     traffic+=wb
-    #URLs John Gruber's regex to find URLs
-    PAT = re.compile(ur'(?i)\b((?:(https?|ftp|file)://|www\d{0,3}[.]|data:|javascript:)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?\xab\xbb\u201c\u201d\u2018\u2019]))')
     URLS=[]
-    for mgroups in PAT.findall(traffic.lower()):
-        if mgroups[0] not in URLS:
-            URLS.append(mgroups[0])
+    #URLs My Custom regex
+    p = re.compile(ur'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE) 
+    urllist=re.findall(p, dat.lower())
+    for url in urllist:
+        if url not in URLS:
+            URLS.append(url)
+                        
     #Email Etraction Regex
     EMAILS=[]
     regex = re.compile(("[\w.-]+@[\w-]+\.[\w.]+"))
