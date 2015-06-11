@@ -97,6 +97,12 @@ STATICFILES_DIRS = (
 STATIC_URL = '/static/'
 
 #CUSTOM SETTINGS
+DECOMPILER = "cfr" 
+
+
+#Two Decompilers are available 
+#1. jd-core
+#2. cfr
 
  
 if platform.system()=="Windows":

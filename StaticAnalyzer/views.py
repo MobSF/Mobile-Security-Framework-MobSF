@@ -428,9 +428,13 @@ def Dex2Smali(APP_DIR,TOOLS_DIR):
 def Jar2Java(APP_DIR,TOOLS_DIR):
     print "[INFO] JAR -> JAVA"
     JAR_PATH=APP_DIR + 'classes.jar'
-    JD_PATH=TOOLS_DIR + 'jd-core.jar'
     OUTPUT=os.path.join(APP_DIR, 'java_source/')
-    args=[settings.JAVA_PATH+'java','-jar', JD_PATH, JAR_PATH,OUTPUT]
+    if settings.DECOMPILER=='jd-core':
+        JD_PATH=TOOLS_DIR + 'jd-core.jar'
+        args=[settings.JAVA_PATH+'java','-jar', JD_PATH, JAR_PATH,OUTPUT]
+    elif settings.DECOMPILER=='cfr':
+        JD_PATH=TOOLS_DIR + 'cfr_0_101.jar'
+        args=[settings.JAVA_PATH+'java','-jar', JD_PATH,JAR_PATH,'--outputdir',OUTPUT]
     subprocess.call(args)
 def Strings(APP_FILE,APP_DIR,TOOLS_DIR):
     print "[INFO] Extracting Strings from APK"
@@ -796,19 +800,23 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     c['mdigest'].append(jfile_path.replace(JS,''))
                 if((('android.location') in dat )and (('getLastKnownLocation(') in dat or ('requestLocationUpdates(') in dat or ('getLatitude(') in dat or ('getLongitude(') in dat)):
                     c['gps'].append(jfile_path.replace(JS,''))
-                #URLs John Gruber's regex to find URLs
-                PAT = re.compile(ur'(?i)\b((?:(https?|ftp|file)://|www\d{0,3}[.]|data:|javascript:)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?\xab\xbb\u201c\u201d\u2018\u2019]))')
                 fl=jfile_path.replace(JS,'')
                 base_fl=ntpath.basename(fl)
+                
+                #URLs My Custom regex
+                p = re.compile(ur'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE) 
+                urllist=re.findall(p, dat.lower())
                 uflag=0
-                for mgroups in PAT.findall(dat.lower()):
-                    if mgroups[0] not in URLS:
-                        URLS.append(mgroups[0])
+                for url in urllist:
+                    if url not in URLS:
+                        URLS.append(url)
                         uflag=1
                 if uflag==1:
                     URLnFile+="<tr><td>" + "<br>".join(URLS) + "</td><td><a href='../ViewSource/?file=" + escape(fl)+"&md5="+MD5+"&type="+TYP+"'>"+escape(base_fl)+"</a></td></tr>"
+                
                 #Email Etraction Regex
-                regex = re.compile(("[\w.-]+@[\w-]+\.[\w.]+"))
+                
+                regex = re.compile("[\w.-]+@[\w-]+\.[\w.]+")
                 eflag=0
                 for email in regex.findall(dat.lower()):
                     if ((email not in EMAILS) and (not email.startswith('//'))):
@@ -816,6 +824,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         eflag=1
                 if eflag==1:
                     EmailnFile+="<tr><td>" + "<br>".join(EMAILS) + "</td><td><a href='../ViewSource/?file=" + escape(fl)+"&md5="+MD5+"&type="+TYP+"'>"+escape(base_fl)+"</a></td></tr>"
+                
     print "[INFO] Finished Code Analysis, Email and URL Extraction"
     dc ={'gps':'GPS Location','crypto':'Crypto ','exec': 'Execute System Command ','server_socket':'TCP Server Socket ' ,'socket': 'TCP Socket ','datagramp': 'UDP Datagram Packet ','datagrams': 'UDP Datagram Socket ','ipc': 'Inter Process Communication ','msg': 'Send SMS ','webview_addjs':'WebView JavaScript Interface ','webview': 'WebView Load HTML/JavaScript ','webviewget': 'WebView GET Request ','webviewpost': 'WebView POST Request ','httpcon': 'HTTP Connection ','urlcon':'URL Connection to file/http/https/ftp/jar ','jurl':'JAR URL Connection ','httpsurl':'HTTPS Connection ','nurl':'URL Connection supports file,http,https,ftp and jar ','httpclient':'HTTP Requests, Connections and Sessions ','notify': 'Android Notifications ','cellinfo':'Get Cell Information ','cellloc':'Get Cell Location ','subid':'Get Subscriber ID ','devid':'Get Device ID, IMEI,MEID/ESN etc. ','softver':'Get Software Version, IMEI/SV etc. ','simserial': 'Get SIM Serial Number ','simop': 'Get SIM Provider Details ','opname':'Get SIM Operator Name ','contentq':'Query Database of SMS, Contacts etc. ','refmethod':'Java Reflection Method Invocation ','obf': 'Obfuscation ','gs':'Get System Service ','bencode':'Base64 Encode ','bdecode':'Base64 Decode ','dex':'Load and Manipulate Dex Files ','mdigest': 'Message Digest '}
     html=''
