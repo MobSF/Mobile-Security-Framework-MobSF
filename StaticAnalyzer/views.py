@@ -593,7 +593,10 @@ def ManifestAnalysis(mfxml):
                 itmname = 'Broadcast Receiver'
             else:
                 itmname = 'NIL'
+            item=''
+            isExp=False
             if ('NIL' != itmname) and (node.getAttribute("android:exported") == 'true'):
+                isExp=True
                 perm=''
                 if node.getAttribute("android:permission"):
                     #permission exists
@@ -601,7 +604,23 @@ def ManifestAnalysis(mfxml):
                 item=node.getAttribute("android:name")
                 if item.startswith('.'):
                     item=(package+item).replace('..','.')
-                RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device without an intent filter or a permission requirement therefore leaving it accessible to any other application on the device.</td></tr>'
+                RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device.</td></tr>'
+            else:
+                isExp=False
+            if not isExp:
+                isInf=False
+                #Logic to support intent-filter
+                intentfilters = node.childNodes
+                for i in intentfilters:
+                    inf=i.nodeName
+                    if inf=="intent-filter":
+                        isInf=True
+                if isInf:
+                    item=node.getAttribute("android:name")
+                    if item.startswith('.'):
+                        item=(package+item).replace('..','.')
+                    RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.<br>An intent-filter exists.</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device. The presence of intent-filter indicates that the '+itmname+' is explicitly exported.</td></tr>'
+
     ##GRANT-URI-PERMISSIONS
     title = 'Improper Content Provider Permissions'
     desc = ('A content provider permission was set to allows access from any other app on the ' +

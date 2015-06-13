@@ -59,6 +59,12 @@ Pending....
 * Features and Updates : [@ajinabraham](http://twitter.com/ajinabraham) or [@OpenSecurity_IN](http://twitter.com/OpenSecurity_IN). 
 * Open Bugs Here - https://github.com/ajinabraham/YSO-Mobile-Security-Framework/issues
 
+#0.8.6 Changelog
+
+* Supports explicit component exposing detection
+* Added CFR decompiler support 
+* Fixed Regex DoS on URL Regex
+
 #v0.8.5 Changelog
 
 * Bug Fix to support IPA MIME Type: application/x-itunes-ipa
