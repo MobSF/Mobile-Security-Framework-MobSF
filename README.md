@@ -61,7 +61,7 @@ Pending....
 
 #0.8.6 Changelog
 
-* Supports explicit component exposing detection
+* Detects implicitly exported component from manifest.
 * Added CFR decompiler support 
 * Fixed Regex DoS on URL Regex
 
