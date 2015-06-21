@@ -63,7 +63,7 @@ Pending....
 * Features and Updates : [@ajinabraham](http://twitter.com/ajinabraham) or [@OpenSecurity_IN](http://twitter.com/OpenSecurity_IN). 
 * Open Bugs Here - https://github.com/ajinabraham/YSO-Mobile-Security-Framework/issues
 
-#0.8.6 Changelog
+#v0.8.6 Changelog
 
 * Detects implicitly exported component from manifest.
 * Added CFR decompiler support 
