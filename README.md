@@ -17,9 +17,13 @@ Sample Report: http://opensecurity.in/research/security-analysis-of-android-brow
 #Requirements
 
 * Python 2.7
-* JDK 1.7 or above
+* Django 1.8
+* Oracle Java 1.7 or above
 
-NOTE: iOS IPA Binary Analysis requires MAC OSX and you need to install Commandline tools for MAC OSX
+NOTE: 
+
+* On Linux and Mac, install Oracle Java and make it the default one.
+* iOS IPA Binary Analysis requires MAC OSX and you need to install Commandline tools for MAC OSX
 http://osxdaily.com/2014/02/12/install-command-line-tools-mac-os-x/
 
 #How to Use
