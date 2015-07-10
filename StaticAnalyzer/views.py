@@ -38,7 +38,10 @@ def Java(request):
                         fileparam=file_path.replace(SRC,'')
                         html+="<tr><td><a href='../ViewSource/?file="+escape(fileparam)+"&md5="+MD5+"&type="+t+"'>"+escape(fileparam)+"</a></td></tr>"
         context = {'title': 'Java Source',
-                    'files': html,}
+                    'files': html,
+                    'md5': MD5,
+                    'type': typ,
+                    }
         template="java.html"
         return render(request,template,context)
     except Exception as e:
@@ -60,14 +63,56 @@ def Smali(request):
                             shutil.move(file_path,fp2)
                             file_path=fp2
                         fileparam=file_path.replace(SRC,'')
-                        html+="<tr><td><a href='../ViewSource/?file="+escape(fileparam)+"&md5="+MD5+"'>"+escape(fileparam)+"</a><td><tr>"
+                        html+="<tr><td><a href='../ViewSource/?file="+escape(fileparam)+"&md5="+MD5+"'>"+escape(fileparam)+"</a></td></tr>"
         context = {'title': 'Smali Source',
-                    'files': html,}
+                    'files': html,
+                    'md5': MD5,
+                    }
         template="smali.html"
         return render(request,template,context)
     except Exception as e:
         print "[ERROR] Getting Smali Files - " + str(e)
         return HttpResponseRedirect('/error/')
+def Search(request):
+    try:
+        m=re.match('[0-9a-f]{32}',request.POST['md5'])
+        if m:
+            MD5=request.POST['md5']
+            q=request.POST['q']
+            code=request.POST['code']
+            matches=[]
+            if code=='java':
+                SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/java_source/')
+                ext='.java'
+            elif code=='smali':
+                SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/smali_source/')
+                ext='.smali'
+            else:
+                return HttpResponseRedirect('/error/')
+            for dirName, subDir, files in os.walk(SRC):
+                for jfile in files:
+                    if jfile.endswith(ext):
+                        file_path=os.path.join(SRC,dirName,jfile)
+                        if "+" in jfile:
+                            fp2=os.path.join(SRC,dirName,jfile.replace("+","x"))
+                            shutil.move(file_path,fp2)
+                            file_path=fp2
+                        fileparam=file_path.replace(SRC,'')
+                        with io.open(file_path,mode='r',encoding="utf8",errors="ignore") as f:
+                            dat=f.read()
+                        if q in dat:
+                            matches.append("<a href='../ViewSource/?file="+escape(fileparam)+"&md5="+MD5+"&type=apk'>"+escape(fileparam)+"</a>")
+        flz=len(matches)   
+        context = {'title': 'Search Results',
+        'matches': matches,
+        'term': q,
+        'found' : str(flz),
+        }
+        template="search.html"
+        return render(request,template,context)
+    except Exception as e:
+        print "[ERROR] Searching Failed - " + str(e)
+        return HttpResponseRedirect('/error/')     
 def ViewSource(request):
     try:
         fil=''
@@ -104,50 +149,141 @@ def ViewSource(request):
     except Exception as e:
         print "[ERROR] Viewing Source - " + str(e)
         return HttpResponseRedirect('/error/')
-
-     
-def StaticAnalyzer(request):
+def ManifestView(request):
     try:
-    #Input validation
-        TYP=request.GET['type']
-        m=re.match('[0-9a-f]{32}',request.GET['checksum'])
-        if ((m) and (request.GET['name'].endswith('.apk') or request.GET['name'].endswith('.zip')) and ((TYP=='zip') or (TYP=='apk'))):
-            DIR=settings.BASE_DIR        #BASE DIR
-            APP_NAME=request.GET['name'] #APP ORGINAL NAME
-            MD5=request.GET['checksum']  #MD5
+
+        DIR=settings.BASE_DIR   #BASE DIR
+        MD5=request.GET['md5']  #MD5
+        TYP=request.GET['type'] #APK or SOURCE
+        BIN=request.GET['bin']
+        m=re.match('[0-9a-f]{32}',MD5)
+        if m and (TYP=='eclipse' or TYP=='studio' or TYP=='apk') and (BIN=='1' or BIN=='0'):
             APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
             TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
-            print "[INFO] Starting Analysis on : "+APP_NAME
-            if TYP=='apk':
-                APP_FILE=MD5 + '.apk'        #NEW FILENAME
-                APP_PATH=APP_DIR+APP_FILE    #APP PATH
+            if BIN=='1':
+                x=True
+            elif BIN=='0':
+                x=False
+            MANI=ReadManifest(APP_DIR,TOOLS_DIR,TYP,x)
+            context = {'title': 'AndroidManifest.xml',
+                        'file': 'AndroidManifest.xml',
+                        'dat': MANI}
+            template="view_mani.html"
+            return render(request,template,context)
+    except Exception as e:
+        print "[ERROR] Viewing AndroidManifest.xml - " + str(e)
+        return HttpResponseRedirect('/error/')
+
+def StaticAnalyzer(request):
+    #try:
+    #Input validation
+    TYP=request.GET['type']
+    m=re.match('[0-9a-f]{32}',request.GET['checksum'])
+    if ((m) and (request.GET['name'].endswith('.apk') or request.GET['name'].endswith('.zip')) and ((TYP=='zip') or (TYP=='apk'))):
+        DIR=settings.BASE_DIR        #BASE DIR
+        APP_NAME=request.GET['name'] #APP ORGINAL NAME
+        MD5=request.GET['checksum']  #MD5
+        APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
+        TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
+        print "[INFO] Starting Analysis on : "+APP_NAME
+        if TYP=='apk':
+            APP_FILE=MD5 + '.apk'        #NEW FILENAME
+            APP_PATH=APP_DIR+APP_FILE    #APP PATH
+            #ANALYSIS BEGINS
+            SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
+            SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
+
+            FILES=Unzip(APP_PATH,APP_DIR)
+            CERTZ = GetHardcodedCert(FILES)
+            print "[INFO] APK Extracted"
+            PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,'',True) #Manifest XML
+            MANI='../ManifestView/?md5='+MD5+'&type=apk&bin=1'
+            SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(PARSEDXML)
+            MANIFEST_ANAL=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
+            PERMISSIONS=FormatPermissions(PERM)
+            CNT_ACT =len(ACTIVITIES)
+            CNT_PRO =len(PROVIDERS)
+            CNT_SER =len(SERVICES)
+            CNT_BRO = len(RECEIVERS)
+
+            CERT_INFO=CertInfo(APP_DIR,TOOLS_DIR)
+            Dex2Jar(APP_DIR,TOOLS_DIR)
+            Dex2Smali(APP_DIR,TOOLS_DIR)
+            Jar2Java(APP_DIR,TOOLS_DIR)
+
+            API,DANG,URLS,EMAILS,CRYPTO,OBFUS,REFLECT,DYNAMIC,NATIVE=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,"apk")
+            print "[INFO] Generating Java and Smali Downloads"
+            GenDownloads(APP_DIR,MD5)
+            STRINGS=Strings(APP_FILE,APP_DIR,TOOLS_DIR)
+            ZIPPED='&type=apk'
+
+            context = {
+            'title' : 'Static Analysis',
+            'name' : APP_NAME,
+            'size' : SIZE,
+            'md5': MD5,
+            'sha1' : SHA1,
+            'sha256' : SHA256,
+            'packagename' : PACKAGENAME,
+            'mainactivity' : MAINACTIVITY,
+            'targetsdk' : TARGET_SDK,
+            'maxsdk' : MAX_SDK,
+            'minsdk' : MIN_SDK,
+            'androvername' : ANDROVERNAME,
+            'androver': ANDROVER,
+            'manifest': MANIFEST_ANAL,
+            'permissions' : PERMISSIONS,
+            'files' : FILES,
+            'certz' : CERTZ,
+            'activities' : ACTIVITIES,
+            'receivers' : RECEIVERS,
+            'providers' : PROVIDERS,
+            'services' : SERVICES,
+            'libraries' : LIBRARIES,
+            'act_count' : CNT_ACT,
+            'prov_count' : CNT_PRO,
+            'serv_count' : CNT_SER,
+            'bro_count' : CNT_BRO,
+            'certinfo': CERT_INFO,
+            'native' : NATIVE,
+            'dynamic' : DYNAMIC,
+            'reflection' : REFLECT,
+            'crypto': CRYPTO,
+            'obfus': OBFUS,
+            'api': API,
+            'dang': DANG,
+            'urls': URLS,
+            'emails': EMAILS,
+            'strings': STRINGS,
+            'zipped' : ZIPPED,
+            'mani': MANI
+            }
+            template="static_analysis.html"
+            return render(request,template,context)
+        elif TYP=='zip':
+            APP_FILE=MD5 + '.zip'        #NEW FILENAME
+            APP_PATH=APP_DIR+APP_FILE    #APP PATH
+            print "[INFO] Extracting ZIP"
+            FILES = Unzip(APP_PATH,APP_DIR)
+            CERTZ = GetHardcodedCert(FILES)
+            #Check if Valid Directory Structure and get ZIP Type
+            pro_type,Valid=ValidAndroidZip(APP_DIR)
+            print "[INFO] ZIP Type - " + pro_type
+            if Valid and (pro_type=='eclipse' or pro_type=='studio'):
+                
                 #ANALYSIS BEGINS
                 SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
-                SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
-
-                FILES=Unzip(APP_PATH,APP_DIR)
-                CERTZ = GetHardcodedCert(FILES)
-                print "[INFO] APK Extracted"
-                MANI,PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,'',True) #Manifest XML
-                MANIFEST_ANAL=ManifestAnalysis(PARSEDXML)
+                SHA1,SHA256= HashGen(APP_PATH)        #SHA1 & SHA256 HASHES
+                PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,pro_type,False)   #Manifest XML
+                MANI='../ManifestView/?md5='+MD5+'&type='+pro_type+'&bin=0'
                 SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(PARSEDXML)
+                MANIFEST_ANAL=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
                 PERMISSIONS=FormatPermissions(PERM)
                 CNT_ACT =len(ACTIVITIES)
                 CNT_PRO =len(PROVIDERS)
                 CNT_SER =len(SERVICES)
                 CNT_BRO = len(RECEIVERS)
-
-                CERT_INFO=CertInfo(APP_DIR,TOOLS_DIR)
-                Dex2Jar(APP_DIR,TOOLS_DIR)
-                Dex2Smali(APP_DIR,TOOLS_DIR)
-                Jar2Java(APP_DIR,TOOLS_DIR)
-
-                API,DANG,URLS,EMAILS,CRYPTO,OBFUS,REFLECT,DYNAMIC,NATIVE=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,"apk")
-                print "[INFO] Generating Java and Smali Downloads"
-                GenDownloads(APP_DIR,MD5)
-                STRINGS=Strings(APP_FILE,APP_DIR,TOOLS_DIR)
-                ZIPPED='&type=apk'
-
+                API,DANG,URLS,EMAILS,CRYPTO,OBFUS,REFLECT,DYNAMIC,NATIVE=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,pro_type)
                 context = {
                 'title' : 'Static Analysis',
                 'name' : APP_NAME,
@@ -175,7 +311,6 @@ def StaticAnalyzer(request):
                 'prov_count' : CNT_PRO,
                 'serv_count' : CNT_SER,
                 'bro_count' : CNT_BRO,
-                'certinfo': CERT_INFO,
                 'native' : NATIVE,
                 'dynamic' : DYNAMIC,
                 'reflection' : REFLECT,
@@ -185,83 +320,18 @@ def StaticAnalyzer(request):
                 'dang': DANG,
                 'urls': URLS,
                 'emails': EMAILS,
-                'strings': STRINGS,
-                'zipped' : ZIPPED,
-                'mani' : MANI,
+                'mani': MANI,
                 }
-                template="static_analysis.html"
+                template="static_analysis_zip.html"
                 return render(request,template,context)
-            elif TYP=='zip':
-                APP_FILE=MD5 + '.zip'        #NEW FILENAME
-                APP_PATH=APP_DIR+APP_FILE    #APP PATH
-                print "[INFO] Extracting ZIP"
-                FILES = Unzip(APP_PATH,APP_DIR)
-                CERTZ = GetHardcodedCert(FILES)
-                #Check if Valid Directory Structure and get ZIP Type
-                pro_type,Valid=ValidAndroidZip(APP_DIR)
-                print "[INFO] ZIP Type - " + pro_type
-                if Valid and (pro_type=='eclipse' or pro_type=='studio'):
-                    
-                    #ANALYSIS BEGINS
-                    SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
-                    SHA1,SHA256= HashGen(APP_PATH)        #SHA1 & SHA256 HASHES
-                    MANI,PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,pro_type,False)   #Manifest XML
-                    MANIFEST_ANAL=ManifestAnalysis(PARSEDXML)
-                    SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(PARSEDXML)
-                    PERMISSIONS=FormatPermissions(PERM)
-                    CNT_ACT =len(ACTIVITIES)
-                    CNT_PRO =len(PROVIDERS)
-                    CNT_SER =len(SERVICES)
-                    CNT_BRO = len(RECEIVERS)
-                    API,DANG,URLS,EMAILS,CRYPTO,OBFUS,REFLECT,DYNAMIC,NATIVE=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,pro_type)
-                    context = {
-                    'title' : 'Static Analysis',
-                    'name' : APP_NAME,
-                    'size' : SIZE,
-                    'md5': MD5,
-                    'sha1' : SHA1,
-                    'sha256' : SHA256,
-                    'packagename' : PACKAGENAME,
-                    'mainactivity' : MAINACTIVITY,
-                    'targetsdk' : TARGET_SDK,
-                    'maxsdk' : MAX_SDK,
-                    'minsdk' : MIN_SDK,
-                    'androvername' : ANDROVERNAME,
-                    'androver': ANDROVER,
-                    'manifest': MANIFEST_ANAL,
-                    'permissions' : PERMISSIONS,
-                    'files' : FILES,
-                    'certz' : CERTZ,
-                    'activities' : ACTIVITIES,
-                    'receivers' : RECEIVERS,
-                    'providers' : PROVIDERS,
-                    'services' : SERVICES,
-                    'libraries' : LIBRARIES,
-                    'act_count' : CNT_ACT,
-                    'prov_count' : CNT_PRO,
-                    'serv_count' : CNT_SER,
-                    'bro_count' : CNT_BRO,
-                    'native' : NATIVE,
-                    'dynamic' : DYNAMIC,
-                    'reflection' : REFLECT,
-                    'crypto': CRYPTO,
-                    'obfus': OBFUS,
-                    'api': API,
-                    'dang': DANG,
-                    'urls': URLS,
-                    'emails': EMAILS,
-                    'mani' : MANI,
-                    }
-                    template="static_analysis_zip.html"
-                    return render(request,template,context)
-                elif Valid and pro_type=='ios':
-                    print "[INFO] Redirecting to iOS Source Code Analyzer"
-                    return HttpResponseRedirect('/StaticAnalyzer_iOS/?name='+APP_NAME+'&type=ios&checksum='+MD5)
-                else:
-                    return HttpResponseRedirect('/ZIP_FORMAT/')
-        else:
-             return HttpResponseRedirect('/error/')
-     
+            elif Valid and pro_type=='ios':
+                print "[INFO] Redirecting to iOS Source Code Analyzer"
+                return HttpResponseRedirect('/StaticAnalyzer_iOS/?name='+APP_NAME+'&type=ios&checksum='+MD5)
+            else:
+                return HttpResponseRedirect('/ZIP_FORMAT/')
+    else:
+         return HttpResponseRedirect('/error/')
+    '''
     except Exception as e:
         context = {
         'title' : 'Error',
@@ -270,8 +340,7 @@ def StaticAnalyzer(request):
         }
         template="error.html"
         return render(request,template,context)
-
-
+    '''
 def GetHardcodedCert(files):
     print "[INFO] Getting Hardcoded Certificates"
     certz=''
@@ -283,16 +352,17 @@ def GetHardcodedCert(files):
         certz="<tr><td>Certificate/Key Files Hardcoded inside the App.</td><td>"+certz+"</td><tr>"
     return certz
     return re.sub(RE_XML_ILLEGAL, "?", dat)
-def GetManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
+
+def ReadManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
     dat=''
-    mfest=''
+
     if BIN==True:
         print "[INFO] Getting Manifest from Binary"
         print "[INFO] AXML -> XML"
         manifest=os.path.join(APP_DIR,"AndroidManifest.xml")
         CP_PATH=TOOLS_DIR + 'AXMLPrinter2.jar'
         args=[settings.JAVA_PATH+'java','-jar', CP_PATH, manifest]
-        dat=subprocess.check_output(args).replace("\n","")
+        dat=subprocess.check_output(args)
     else:
         print "[INFO] Getting Manifest from Source"
         if TYP=="eclipse":
@@ -301,6 +371,13 @@ def GetManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
             manifest=os.path.join(APP_DIR,"app/src/main/AndroidManifest.xml")
         with io.open(manifest,mode='r',encoding="utf8",errors="ignore") as f:
             dat=f.read()
+    return dat
+
+
+def GetManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
+    dat=''
+    mfest=''
+    dat=ReadManifest(APP_DIR,TOOLS_DIR,TYP,BIN).replace("\n","")
     try:
         print "[INFO] Parsing AndroidManifest.xml"
         mfest=minidom.parseString(dat)
@@ -308,7 +385,7 @@ def GetManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
         print "[ERROR] Pasrsing AndroidManifest.xml - " + str(e)
         mfest=minidom.parseString(r'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="Failed"  android:versionName="Failed" package="Failed"  platformBuildVersionCode="Failed" platformBuildVersionName="Failed XML Parsing" ></manifest>')      
         print "[WARNING] Using Fake XML to continue the Analysis"
-    return dat,mfest
+    return mfest
 def ValidAndroidZip(APP_DIR):
     print "[INFO] Checking for ZIP Validity and Mode"
     #Eclipse
@@ -395,7 +472,6 @@ def CertInfo(APP_DIR,TOOLS_DIR):
     dat=''
     dat=escape(subprocess.check_output(args)).replace('\n', '</br>')
     return dat
-
 def WinFixJava(TOOLS_DIR):
     print "[INFO] Running JAVA Path fix in Windows"
     DMY=os.path.join(TOOLS_DIR,'d2j2/d2j_invoke.tmp')
@@ -424,7 +500,6 @@ def Dex2Smali(APP_DIR,TOOLS_DIR):
     OUTPUT=os.path.join(APP_DIR,'smali_source/')
     args=[settings.JAVA_PATH+'java','-jar',BS_PATH,DEX_PATH,'-o',OUTPUT]
     subprocess.call(args)
-
 def Jar2Java(APP_DIR,TOOLS_DIR):
     print "[INFO] JAR -> JAVA"
     JAR_PATH=APP_DIR + 'classes.jar'
@@ -538,8 +613,7 @@ def ManifestData(mfxml):
         except KeyError :
             DP[ i ] = [ "dangerous", "Unknown permission from android reference", "Unknown permission from android reference" ]
     return SVC,ACT,BRD,CNP,LIB,DP,package,mainact,minsdk,maxsdk,targetsdk,androidversioncode,androidversionname
-
-def ManifestAnalysis(mfxml):
+def ManifestAnalysis(mfxml,mainact):
     print "[INFO] Manifest Analysis Started"
     manifest = mfxml.getElementsByTagName("manifest")
     services = mfxml.getElementsByTagName("service")
@@ -607,7 +681,12 @@ def ManifestAnalysis(mfxml):
                 RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device.</td></tr>'
             else:
                 isExp=False
-            if not isExp:
+            impE=False
+            if ('NIL' != itmname) and (node.getAttribute("android:exported") == 'false'):
+                impE=True
+            else:
+                impE=False
+            if (isExp==False and impE==False):
                 isInf=False
                 #Logic to support intent-filter
                 intentfilters = node.childNodes
@@ -617,9 +696,10 @@ def ManifestAnalysis(mfxml):
                         isInf=True
                 if isInf:
                     item=node.getAttribute("android:name")
-                    if item.startswith('.'):
-                        item=(package+item).replace('..','.')
-                    RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.<br>An intent-filter exists.</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device. The presence of intent-filter indicates that the '+itmname+' is explicitly exported.</td></tr>'
+                    if item!=mainact:
+                        if item.startswith('.'):
+                            item=(package+item).replace('..','.')
+                        RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.<br>An intent-filter exists.</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device. The presence of intent-filter indicates that the '+itmname+' is explicitly exported.</td></tr>'
 
     ##GRANT-URI-PERMISSIONS
     title = 'Improper Content Provider Permissions'
@@ -664,10 +744,9 @@ def ManifestAnalysis(mfxml):
         RET='<tr><td>None</td><td>None</td><td>None</td><tr>'
     return RET
 
-
 def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
     print "[INFO] Static Android Code Analysis Started"
-    c = {key: [] for key in ('dex_cert','dex_tamper','d_root','d_ssl_pin','dex_root','dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
+    c = {key: [] for key in ('inf_act','inf_ser','inf_bro','log','fileio','rand','dex_cert','dex_tamper','d_root','d_ssl_pin','dex_root','dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
     crypto=False
     obfus=False
     reflect=False
@@ -699,11 +778,12 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                 EMAILS=[]
                 #Code Analysis
                 #print "[INFO] Doing Code Analysis on - " + jfile_path
-                if (('MODE_WORLD_READABLE') in dat or ('Context.MODE_WORLD_READABLE') in dat):
+
+                if (re.findall('MODE_WORLD_READABLE|Context.MODE_WORLD_READABLE',dat)):
                     c['d_con_world_readable'].append(jfile_path.replace(JS,''))
-                if (('MODE_WORLD_WRITABLE') in dat or ('Context.MODE_WORLD_WRITABLE') in dat):
+                if (re.findall('MODE_WORLD_WRITABLE|Context.MODE_WORLD_WRITABLE',dat)):
                     c['d_con_world_writable'].append(jfile_path.replace(JS,''))
-                if (('MODE_PRIVATE') in dat or ('Context.MODE_PRIVATE') in dat):
+                if (re.findall('MODE_PRIVATE|Context.MODE_PRIVATE',dat)):
                     c['d_con_private'].append(jfile_path.replace(JS,''))
                 if ((('WRITE_EXTERNAL_STORAGE') in PERMS) and (('.getExternalStorage') in dat or ('.getExternalFilesDir(') in dat)):
                     c['d_extstorage'].append(jfile_path.replace(JS,''))
@@ -713,12 +793,13 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     c['d_webviewdebug'].append(jfile_path.replace(JS,''))
                 if (('onReceivedSslError(WebView') in dat and ('.proceed();') in dat ):
                     c['d_webviewdisablessl'].append(jfile_path.replace(JS,''))
-                if ((('rawQuery(') in dat or ('query(') in dat or ('SQLiteDatabase') in dat) and (('android.database.sqlite') in dat)):
+                if ((('rawQuery(') in dat or ('query(') in dat or ('SQLiteDatabase') in dat or ('execSQL(') in dat) and (('android.database.sqlite') in dat)):
                     c['d_sqlite'].append(jfile_path.replace(JS,''))
-                if ((('javax.net.ssl') in dat) and (('TrustAllSSLSocket-Factory') in dat or ('AllTrustSSLSocketFactory') in dat or ('NonValidatingSSLSocketFactory')  in dat or
-                    ('ALLOW_ALL_HOSTNAME_VERIFIER') in dat or ('.setDefaultHostnameVerifier(') in dat or ('NullHostnameVerifier(') in dat)):
+                if ((('javax.net.ssl') in dat) and (('TrustAllSSLSocket-Factory') in dat or ('AllTrustSSLSocketFactory') in dat or ('NonValidatingSSLSocketFactory')  in dat or('ALLOW_ALL_HOSTNAME_VERIFIER') in dat or ('.setDefaultHostnameVerifier(') in dat or ('NullHostnameVerifier(') in dat)):
                     c['d_ssl'].append(jfile_path.replace(JS,''))
-                if (('password = "') in dat.lower() or ('secret = "') in dat.lower() or ('username = "') in dat.lower()):
+                #Add Scahin's Code Here and Add support for detecting insecure ssl algoo's 
+
+                if (('password = "') in dat.lower() or ('secret = "') in dat.lower() or ('username = "') in dat.lower() or ('key = "') in dat.lower()):
                     c['d_sensitive'].append(jfile_path.replace(JS,''))
                 if (('import dexguard.util') in dat and ('DebugDetector.isDebuggable') in dat):
                     c['dex_debug'].append(jfile_path.replace(JS,''))
@@ -738,16 +819,20 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     c['d_ssl_pin'].append(jfile_path.replace(JS,''))
                 if (('com.noshufou.android.su') in dat or ('com.thirdparty.superuser') in dat or ('eu.chainfire.supersu') in dat or ('com.koushikdutta.superuser') in dat or ('eu.chainfire.') in dat):
                     c['d_root'].append(jfile_path.replace(JS,''))
+                if (re.findall('java.util.Random',dat)):
+                    c['rand'].append(jfile_path.replace(JS,''))
+                if(re.findall('Log.|System.out.print',dat)):
+                    c['log'].append(jfile_path.replace(JS,''))
                 
                 #Inorder to Add rule to Code Analysis, add identifier to c, add rule here and define identifier description and severity the bottom of this function.
                 #API Check
                 if ((('java.lang.System') in dat or ('java.lang.Runtime') in dat ) and ('.load(') in dat):
                     native=True
-                if(('dalvik.system.DexClassLoader') in dat or ('java.security.ClassLoader') in dat or ('java.net.URLClassLoader') in dat or ('java.security.SecureClassLoader') in dat):
+                if(re.findall('dalvik.system.DexClassLoader|java.security.ClassLoader|java.net.URLClassLoader|java.security.SecureClassLoader',dat)):
                     dynamic=True
-                if(('java.lang.reflect.Method') in dat or ('java.lang.reflect.Field') in dat or ('Class.forName') in dat):
+                if(re.findall('java.lang.reflect.Method|java.lang.reflect.Field|Class.forName',dat)):
                     reflect=True
-                if (('javax.crypto') in dat or ('kalium.crypto') in dat or ('bouncycastle.crypto') in dat):
+                if (re.findall('javax.crypto|kalium.crypto|bouncycastle.crypto',dat)):
                     crypto=True
                     c['crypto'].append(jfile_path.replace(JS,''))
                 if (('utils.AESObfuscator') in dat and ('getObfuscator') in dat):
@@ -763,7 +848,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     c['datagramp'].append(jfile_path.replace(JS,''))
                 if (('DatagramSocket') in dat and ('net.DatagramSocket') in dat):
                     c['datagrams'].append(jfile_path.replace(JS,''))
-                if (('IRemoteService') in dat or ('IRemoteService.Stub') in dat or ('IBinder') in dat):
+                if (re.findall('IRemoteService|IRemoteService.Stub|IBinder|Intent',dat)):
                     c['ipc'].append(jfile_path.replace(JS,''))
                 if ((('sendMultipartTextMessage') in dat or  ('sendTextMessage') in dat or ('vnd.android-dir/mms-sms') in dat) and (('telephony.SmsManager') in dat)):
                     c['msg'].append(jfile_path.replace(JS,''))
@@ -783,7 +868,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     c['httpsurl'].append(jfile_path.replace(JS,''))
                 if (('net.URL') and ('openConnection' or 'openStream')) in dat:
                     c['nurl'].append(jfile_path.replace(JS,''))
-                if (('http.client.HttpClient') in dat or ('net.http.AndroidHttpClient') in dat or ('http.impl.client.AbstractHttpClient') in dat):
+                if (re.findall('http.client.HttpClient|net.http.AndroidHttpClient|http.impl.client.AbstractHttpClient',dat)):
                     c['httpclient'].append(jfile_path.replace(JS,''))
                 if (('app.NotificationManager') in dat and ('notify') in dat):
                     c['notify'].append(jfile_path.replace(JS,''))
@@ -817,8 +902,19 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     c['dex'].append(jfile_path.replace(JS,''))
                 if ((('java.security.MessageDigest') in dat) and (('MessageDigestSpi') in dat or ('MessageDigest') in dat)):
                     c['mdigest'].append(jfile_path.replace(JS,''))
-                if((('android.location') in dat )and (('getLastKnownLocation(') in dat or ('requestLocationUpdates(') in dat or ('getLatitude(') in dat or ('getLongitude(') in dat)):
+                if ((('android.location') in dat )and (('getLastKnownLocation(') in dat or ('requestLocationUpdates(') in dat or ('getLatitude(') in dat or ('getLongitude(') in dat)):
                     c['gps'].append(jfile_path.replace(JS,''))
+                if(re.findall('OpenFileOutput|getSharedPreferences|SharedPreferences.Editor|getCacheDir|getExternalStorageState|openOrCreateDatabase',dat)):
+                    c['fileio'].append(jfile_path.replace(JS,''))
+                if (re.findall('startActivity\(|startActivityForResult\(',dat)):
+                    c['inf_act'].append(jfile_path.replace(JS,''))
+                if (re.findall('startService\(|bindService\(',dat)):
+                    c['inf_ser'].append(jfile_path.replace(JS,''))
+                if (re.findall('sendBroadcast\(|sendOrderedBroadcast\(|sendStickyBroadcast\(',dat)):
+                    c['inf_bro'].append(jfile_path.replace(JS,''))
+                
+               
+
                 fl=jfile_path.replace(JS,'')
                 base_fl=ntpath.basename(fl)
                 
@@ -845,7 +941,47 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     EmailnFile+="<tr><td>" + "<br>".join(EMAILS) + "</td><td><a href='../ViewSource/?file=" + escape(fl)+"&md5="+MD5+"&type="+TYP+"'>"+escape(base_fl)+"</a></td></tr>"
                 
     print "[INFO] Finished Code Analysis, Email and URL Extraction"
-    dc ={'gps':'GPS Location','crypto':'Crypto ','exec': 'Execute System Command ','server_socket':'TCP Server Socket ' ,'socket': 'TCP Socket ','datagramp': 'UDP Datagram Packet ','datagrams': 'UDP Datagram Socket ','ipc': 'Inter Process Communication ','msg': 'Send SMS ','webview_addjs':'WebView JavaScript Interface ','webview': 'WebView Load HTML/JavaScript ','webviewget': 'WebView GET Request ','webviewpost': 'WebView POST Request ','httpcon': 'HTTP Connection ','urlcon':'URL Connection to file/http/https/ftp/jar ','jurl':'JAR URL Connection ','httpsurl':'HTTPS Connection ','nurl':'URL Connection supports file,http,https,ftp and jar ','httpclient':'HTTP Requests, Connections and Sessions ','notify': 'Android Notifications ','cellinfo':'Get Cell Information ','cellloc':'Get Cell Location ','subid':'Get Subscriber ID ','devid':'Get Device ID, IMEI,MEID/ESN etc. ','softver':'Get Software Version, IMEI/SV etc. ','simserial': 'Get SIM Serial Number ','simop': 'Get SIM Provider Details ','opname':'Get SIM Operator Name ','contentq':'Query Database of SMS, Contacts etc. ','refmethod':'Java Reflection Method Invocation ','obf': 'Obfuscation ','gs':'Get System Service ','bencode':'Base64 Encode ','bdecode':'Base64 Decode ','dex':'Load and Manipulate Dex Files ','mdigest': 'Message Digest '}
+    dc ={'gps':'GPS Location',
+        'crypto':'Crypto ',
+        'exec': 'Execute System Command ',
+        'server_socket':'TCP Server Socket ' ,
+        'socket': 'TCP Socket ',
+        'datagramp': 'UDP Datagram Packet ',
+        'datagrams': 'UDP Datagram Socket ',
+        'ipc': 'Inter Process Communication ',
+        'msg': 'Send SMS ',
+        'webview_addjs':'WebView JavaScript Interface ',
+        'webview': 'WebView Load HTML/JavaScript ',
+        'webviewget': 'WebView GET Request ',
+        'webviewpost': 'WebView POST Request ',
+        'httpcon': 'HTTP Connection ',
+        'urlcon':'URL Connection to file/http/https/ftp/jar ',
+        'jurl':'JAR URL Connection ',
+        'httpsurl':'HTTPS Connection ',
+        'nurl':'URL Connection supports file,http,https,ftp and jar ',
+        'httpclient':'HTTP Requests, Connections and Sessions ',
+        'notify': 'Android Notifications ',
+        'cellinfo':'Get Cell Information ',
+        'cellloc':'Get Cell Location ',
+        'subid':'Get Subscriber ID ',
+        'devid':'Get Device ID, IMEI,MEID/ESN etc. ',
+        'softver':'Get Software Version, IMEI/SV etc. ',
+        'simserial': 'Get SIM Serial Number ',
+        'simop': 'Get SIM Provider Details ',
+        'opname':'Get SIM Operator Name ',
+        'contentq':'Query Database of SMS, Contacts etc. ',
+        'refmethod':'Java Reflection Method Invocation ',
+        'obf': 'Obfuscation ',
+        'gs':'Get System Service ',
+        'bencode':'Base64 Encode ',
+        'bdecode':'Base64 Decode ',
+        'dex':'Load and Manipulate Dex Files ',
+        'mdigest': 'Message Digest ',
+        'fileio': 'Local File I/O Operations',
+        'inf_act': 'Starting Activity',
+        'inf_ser': 'Starting Service',
+        'inf_bro': 'Sending Broadcast'
+        }
     html=''
     for ky in dc:
         if c[ky]:
@@ -873,6 +1009,8 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
         'dex_cert' : 'DexGuard Signer Certificate Tamper Detection code is identified.',
         'd_ssl_pin':' This App uses an SSL Pinning Library (org.thoughtcrime.ssl.pinning) to prevent MITM attacks in secure communication channel.',
         'd_root' : 'This App may request root (Super User) privileges.',
+        'rand' : 'The App uses an insecure Random Number Generator.',
+        'log' : 'The App logs information. Sensitive information should never be logged.',
         }
 
                 
@@ -884,9 +1022,9 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
     for k in dg:
         if c[k]:
             link=''
-            if (k == 'd_sqlite' or k == 'd_con_private'):
+            if (re.findall('d_sqlite|d_con_private|log',k)):
                 hd='<tr><td>'+dg[k]+'</td><td>'+spn_info+'</td><td>'
-            elif (k=='dex_cert' or k=='dex_tamper' or k=='dex_debug' or k=='dex_debug_con' or k=='dex_debug_key' or k=='dex_emulator' or k=='dex_root' or k=='d_ssl_pin'):
+            elif (re.findall('dex_cert|dex_tamper|dex_debug|dex_debug_con|dex_debug_key|dex_emulator|dex_root|d_ssl_pin',k)):
                 hd='<tr><td>'+dg[k]+'</td><td>'+spn_sec+'</td><td>'
             else:
                 hd='<tr><td>'+dg[k]+'</td><td>'+spn_dang+'</td><td>'
@@ -897,6 +1035,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
             dang+=hd+link+"</td></tr>"
 
     return html,dang,URLnFile,EmailnFile,crypto,obfus,reflect,dynamic,native
+
 #iOS Support Functions
 def StaticAnalyzer_iOS(request):
 
@@ -953,7 +1092,7 @@ def StaticAnalyzer_iOS(request):
             SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
             SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
             FILES,SFILES=iOS_ListFiles(APP_DIR,MD5,False,'ios')
-            INFO_PLIST,BIN_NAME,ID,VER,SDK,PLTFM,MIN=iOS_Source_Analysis(APP_DIR)
+            html,dang,URLnFile,EmailnFile,INFO_PLIST,BIN_NAME,ID,VER,SDK,PLTFM,MIN=iOS_Source_Analysis(APP_DIR,MD5)
             LIBS,BIN_ANAL='',''
             context = {
             'title' : 'Static Analysis',
@@ -973,6 +1112,11 @@ def StaticAnalyzer_iOS(request):
             'libs' : LIBS,
             'files' : FILES,
             'file_analysis' : SFILES,
+            'api' : html,
+            'insecure' : dang,
+            'urls' : URLnFile,
+            'emails' : EmailnFile,
+
             }
             template="ios_source_analysis.html"
             return render(request,template,context)
@@ -999,8 +1143,8 @@ def ViewFile(request):
         mode=request.GET['mode']
         m=re.match('[0-9a-f]{32}',MD5)
         ext=fil.split('.')[-1]
-        f=re.search("plist|db|sqlitedb|sqlite|txt",ext)
-        if m and f and (typ=='xml' or typ=='db' or typ=='txt') and (mode=='ios' or mode=='ipa'):
+        f=re.search("plist|db|sqlitedb|sqlite|txt|m",ext)
+        if m and f and re.findall('xml|db|txt|m',typ) and re.findall('ios|ipa',mode):
             if (("../" in fil) or ("%2e%2e" in fil) or (".." in fil) or ("%252e" in fil)):
                 return HttpResponseRedirect('/error/')
             else:
@@ -1010,7 +1154,11 @@ def ViewFile(request):
                     SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/')
                 sfile=os.path.join(SRC,fil)
                 dat=''
-                if typ=='xml':
+                if typ=='m':
+                    format='cpp'
+                    with io.open(sfile,mode='r',encoding="utf8",errors="ignore") as f:
+                        dat=f.read()
+                elif typ=='xml':
                     format='xml'
                     with io.open(sfile,mode='r',encoding="utf8",errors="ignore") as f:
                         dat=f.read()
@@ -1104,9 +1252,6 @@ def iOS_ListFiles(SRC,MD5,BIN,MODE):
         certz="<tr><td>Certificate/Key Files Hardcoded inside the App.</td><td>"+certz+"</td><tr>"
         sfiles+=certz
     return filez,sfiles
-
-
-
 def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
     print "[INFO] Starting Binary Analysis"
     dirs = os.listdir(SRC)
@@ -1247,7 +1392,7 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
     BIN_RES=PIE+SSMASH+ARC+BANNED_API+WEAK_CRYPTO+CRYPTO+WEAK_HASH+HASH+RAND+LOG+MALL+DBG+WVIEW
     #classdump
     return XML,BIN_NAME,ID,VER,SDK,PLTFM,MIN,LIBS,BIN_RES
-def iOS_Source_Analysis(SRC):
+def iOS_Source_Analysis(SRC,MD5):
     print "[INFO] Starting iOS Source Code and PLIST Analysis"
     APP=''
     InfoP=''
@@ -1278,11 +1423,99 @@ def iOS_Source_Analysis(SRC):
     SDK=''#p["DTSDKName"]
     PLTFM=''#p["DTPlatformVersion"]
     MIN=''#p["MinimumOSVersion"]
-    return XML,BIN_NAME,ID,VER,SDK,PLTFM,MIN
 
+    #Code Analysis
+    EmailnFile=''
+    URLnFile=''
+    c = {key: [] for key in ('i_buf','webv','i_log','net','i_sqlite','fileio')}
+    for dirName, subDir, files in os.walk(SRC):
+        for jfile in files:
+            if jfile.endswith(".m"):
 
+                jfile_path=os.path.join(SRC,dirName,jfile)
+                if "+" in jfile:
+                    p2=os.path.join(SRC,dirName,jfile.replace("+","x"))
+                    shutil.move(jfile_path,p2)
+                    jfile_path=p2
+                repath=dirName.replace(SRC,'')
+                dat=''
+                with io.open(jfile_path,mode='r',encoding="utf8",errors="ignore") as f:
+                    dat=f.read()
+                
+                URLS=[]
+                EMAILS=[]
 
+                #API
+                if (re.findall("NSURL|CFStream|NSStream",dat)):
+                    c['net'].append(jfile_path.replace(SRC,''))
+                if (re.findall("Keychain|kSecAttrAccessibleWhenUnlocked|kSecAttrAccessibleAfterFirstUnlock|SecItemAdd|SecItemUpdate|NSDataWritingFileProtectionComplete", dat)):
+                    c['fileio'].append(jfile_path.replace(SRC,''))
+                if (re.findall("WebView|UIWebView",dat)):
+                    c['webv'].append(jfile_path.replace(SRC,''))
+                #CODE-ISSUES
+                if (re.findall("strcpy|memcpy|strcat|strncat|strncpy|sprintf|vsprintf|gets",dat)):
+                    c['i_buf'].append(jfile_path.replace(SRC,''))
+                if (re.findall("NSLog",dat)):
+                    c['i_log'].append(jfile_path.replace(SRC,''))
+                if (re.findall("sqlite3_exec",dat)):
+                    c['i_sqlite'].append(jfile_path.replace(SRC,''))
+    
+                fl=jfile_path.replace(SRC,'')
+                base_fl=ntpath.basename(fl)
+                #URLs My Custom regex
+                p = re.compile(ur'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE) 
+                urllist=re.findall(p, dat.lower())
+                uflag=0
+                for url in urllist:
+                    if url not in URLS:
+                        URLS.append(url)
+                        uflag=1
+                if uflag==1:
+                    URLnFile+="<tr><td>" + "<br>".join(URLS) + "</td><td><a href='../ViewFile/?file=" + escape(fl)+"&type=m&mode=ios&md5="+MD5+"'>"+escape(base_fl)+"</a></td></tr>"
+                
+                #Email Etraction Regex
+                
+                regex = re.compile("[\w.-]+@[\w-]+\.[\w.]+")
+                eflag=0
+                for email in regex.findall(dat.lower()):
+                    if ((email not in EMAILS) and (not email.startswith('//'))):
+                        EMAILS.append(email)
+                        eflag=1
+                if eflag==1:
+                    EmailnFile+="<tr><td>" + "<br>".join(EMAILS) + "</td><td><a href='../ViewFile/?file=" + escape(fl)+"&type=m&mode=ios&md5="+MD5+"'>"+escape(base_fl)+"</a></td></tr>"
+    print "[INFO] Finished Code Analysis, Email and URL Extraction"
+    dc={'webv' : 'WebView Component',
+        'net' : 'Network Calls',
+        'fileio' : 'Local File I/O Operations.',
+        }
+    html=''
+    for ky in dc:
+        if c[ky]:
+            link=''
+            hd="<tr><td>"+dc[ky]+"</td><td>"
+            for l in c[ky]:
+                link+="<a href='../ViewFile/?file="+ escape(l) +"&type=m&mode=ios&md5="+MD5+"'>"+escape(ntpath.basename(l))+"</a> "
+            html+=hd+link+"</td></tr>"
+    dg={'i_buf' : 'The App may contain banned API(s). These API(s) are insecure and must not be used.',
+        'i_log' : 'The App logs information. Sensitive information should never be logged.',
+        'i_sqlite' : 'App uses SQLite Database. Sensitive Information should be encrypted.',
+        }
+    dang=''
+    spn_dang='<span class="label label-danger">high</span>'
+    spn_info='<span class="label label-info">info</span>'
+    spn_sec='<span class="label label-success">secure</span>'
+    for k in dg:
+        if c[k]:
+            link=''
+            if (re.findall('i_sqlite',k)):
+                hd='<tr><td>'+dg[k]+'</td><td>'+spn_info+'</td><td>'
+            else:
+                hd='<tr><td>'+dg[k]+'</td><td>'+spn_dang+'</td><td>'
 
+            for ll in c[k]:
+                link+="<a href='../ViewFile/?file="+ escape(ll) +"&type=m&mode=ios&md5="+MD5+"'>"+escape(ntpath.basename(ll))+"</a> "
 
+            dang+=hd+link+"</td></tr>"
 
+    return html,dang,URLnFile,EmailnFile,XML,BIN_NAME,ID,VER,SDK,PLTFM,MIN
 

@@ -6,7 +6,7 @@ import os, hashlib, platform, json
 # Create your views here.
 
 def index(request):
-    print "[INFO] Mobile Security Framework v0.8.6beta"
+    print "[INFO] Mobile Security Framework v0.8.7beta"
     context = {}
     template="index.html"
     return render(request,template,context)
