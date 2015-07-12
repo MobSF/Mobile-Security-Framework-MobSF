@@ -34,7 +34,7 @@ def Upload(request):
         if form.is_valid():
             file_type =request.FILES['file'].content_type
             print "[INFO] MIME Type: " + file_type + " FILE: " + str(request.FILES['file'].name)
-            if (file_type=="application/octet-stream" or file_type=="application/vnd.android.package-archive") and request.FILES['file'].name.endswith('.apk'):     #APK
+            if (file_type=="application/octet-stream" or file_type=="application/vnd.android.package-archive" or file_type=="application/x-zip-compressed") and request.FILES['file'].name.endswith('.apk'):     #APK
                 md5=handle_uploaded_file(request.FILES['file'],'.apk')
                 response_data['url'] = 'StaticAnalyzer/?name='+request.FILES['file'].name+'&type=apk&checksum='+md5
                 response_data['status'] = 'success'
