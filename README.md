@@ -18,7 +18,8 @@ Sample Report: http://opensecurity.in/research/security-analysis-of-android-brow
 
 * Python 2.7
 * Django 1.8
-* Oracle Java 1.7 or above
+* Oracle JDK 1.7 or above 
+http://www.oracle.com/technetwork/java/javase/downloads/
 
 NOTE: 
 
