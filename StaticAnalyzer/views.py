@@ -1,14 +1,152 @@
+# -*- coding: utf_8 -*-
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
+from django.http import HttpResponse
+from django.template.loader import get_template
+from StaticAnalyzer.models import StaticAnalyzerAndroid,StaticAnalyzerIPA,StaticAnalyzerIOSZIP
 from django.conf import settings
 from django.utils.html import escape
 from xml.dom import minidom
 from .dvm_permissions import DVM_PERMISSIONS
-from ast import literal_eval
 import sqlite3 as sq
-import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform
+import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,ast,sys
 if platform.system()=="Darwin":
     import plistlib
+try:
+    import xhtml2pdf.pisa as pisa
+except:
+    print "\n[ERROR] xhtml2pdf is not installed. Cannot generate PDF reports"
+try:
+    import StringIO
+    StringIO = StringIO.StringIO
+except Exception:
+    from io import StringIO
+
+def PDF(request):
+    try:
+        MD5=request.GET['md5']
+        TYP=request.GET['type']
+        m=re.match('[0-9a-f]{32}',MD5)
+        if m:
+            if (TYP=='APK' or TYP=='ANDZIP'):
+                DB=StaticAnalyzerAndroid.objects.filter(MD5=MD5)
+                if DB.exists():
+                    print "\n[INFO] Fetching data from DB for PDF Report Generation (Android)"
+                    context = {
+                    'title' : DB[0].TITLE,
+                    'name' : DB[0].APP_NAME,
+                    'size' : DB[0].SIZE,
+                    'md5': DB[0].MD5,
+                    'sha1' : DB[0].SHA1,
+                    'sha256' : DB[0].SHA256,
+                    'packagename' : DB[0].PACKAGENAME,
+                    'mainactivity' : DB[0].MAINACTIVITY,
+                    'targetsdk' : DB[0].TARGET_SDK,
+                    'maxsdk' : DB[0].MAX_SDK,
+                    'minsdk' : DB[0].MIN_SDK,
+                    'androvername' : DB[0].ANDROVERNAME,
+                    'androver': DB[0].ANDROVER,
+                    'manifest': DB[0].MANIFEST_ANAL,
+                    'permissions' : DB[0].PERMISSIONS,
+                    'files' : python_list(DB[0].FILES),
+                    'certz' : DB[0].CERTZ,
+                    'activities' : python_list(DB[0].ACTIVITIES),
+                    'receivers' : python_list(DB[0].RECEIVERS),
+                    'providers' : python_list(DB[0].PROVIDERS),
+                    'services' : python_list(DB[0].SERVICES),
+                    'libraries' : python_list(DB[0].LIBRARIES),
+                    'act_count' : DB[0].CNT_ACT,
+                    'prov_count' : DB[0].CNT_PRO,
+                    'serv_count' : DB[0].CNT_SER,
+                    'bro_count' : DB[0].CNT_BRO,
+                    'certinfo': DB[0].CERT_INFO,
+                    'native' : DB[0].NATIVE,
+                    'dynamic' : DB[0].DYNAMIC,
+                    'reflection' : DB[0].REFLECT,
+                    'crypto': DB[0].CRYPTO,
+                    'obfus': DB[0].OBFUS,
+                    'api': DB[0].API,
+                    'dang': DB[0].DANG,
+                    'urls': DB[0].URLS,
+                    'emails': DB[0].EMAILS,
+                    'strings': python_list(DB[0].STRINGS),
+                    'zipped' : DB[0].ZIPPED,
+                    'mani': DB[0].MANI
+                    }
+                    if TYP=='APK':
+                        template= get_template("static_analysis_pdf.html")
+                    else:
+                        template= get_template("static_analysis_zip_pdf.html")
+            elif re.findall('IPA|IOSZIP',TYP):
+                if TYP=='IPA':
+                    DB=StaticAnalyzerIPA.objects.filter(MD5=MD5)
+                    if DB.exists():
+                        print "\n[INFO] Fetching data from DB for PDF Report Generation (IOS IPA)"
+                        context = {
+                        'title' : DB[0].TITLE,
+                        'name' : DB[0].APPNAMEX,
+                        'size' : DB[0].SIZE,
+                        'md5': DB[0].MD5,
+                        'sha1' : DB[0].SHA1,
+                        'sha256' : DB[0].SHA256,
+                        'plist' : DB[0].INFOPLIST,
+                        'bin_name' : DB[0].BINNAME,
+                        'id' : DB[0].IDF,
+                        'ver' : DB[0].VERSION,
+                        'sdk' : DB[0].SDK,
+                        'pltfm' : DB[0].PLTFM,
+                        'min' : DB[0].MINX,
+                        'bin_anal' : DB[0].BIN_ANAL,
+                        'libs' : DB[0].LIBS,
+                        'files' : python_list(DB[0].FILES),
+                        'file_analysis' : DB[0].SFILESX,
+                        }
+                        template= get_template("ios_binary_analysis_pdf.html")
+                elif TYP=='IOSZIP':
+                    DB=StaticAnalyzerIOSZIP.objects.filter(MD5=MD5)
+                    if DB.exists():
+                        print "\n[INFO] Fetching data from DB for PDF Report Generation (IOS ZIP)"
+                        context = {
+                        'title' : DB[0].TITLE,
+                        'name' : DB[0].APPNAMEX,
+                        'size' : DB[0].SIZE,
+                        'md5': DB[0].MD5,
+                        'sha1' : DB[0].SHA1,
+                        'sha256' : DB[0].SHA256,
+                        'plist' : DB[0].INFOPLIST,
+                        'bin_name' : DB[0].BINNAME,
+                        'id' : DB[0].IDF,
+                        'ver' : DB[0].VERSION,
+                        'sdk' : DB[0].SDK,
+                        'pltfm' : DB[0].PLTFM,
+                        'min' : DB[0].MINX,
+                        'bin_anal' : DB[0].BIN_ANAL,
+                        'libs' : DB[0].LIBS,
+                        'files' : python_list(DB[0].FILES),
+                        'file_analysis' : DB[0].SFILESX,
+                        'api' : DB[0].HTML,
+                        'insecure' : DB[0].CODEANAL,
+                        'urls' : DB[0].URLnFile,
+                        'emails' : DB[0].EmailnFile
+                        }
+                        template= get_template("ios_source_analysis_pdf.html")
+            else:
+                return HttpResponseRedirect('/error/') 
+            html  = template.render(context)
+            result = StringIO()
+            pdf = pisa.pisaDocument(StringIO( "{0}".format(html.encode('utf-8'))), result)
+            if not pdf.err:
+                return HttpResponse(result.getvalue(), content_type='application/pdf')
+            else:
+                return HttpResponseRedirect('/error/') 
+        else:
+            return HttpResponseRedirect('/error/') 
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        print "\n[ERROR] PDF Report Generation Error - "+str(e) + " Line: "+str(exc_tb.tb_lineno)
+        return HttpResponseRedirect('/error/') 
+        pass
+
 def Java(request):
     try:
         m=re.match('[0-9a-f]{32}',request.GET['md5'])
@@ -173,165 +311,443 @@ def ManifestView(request):
     except Exception as e:
         print "[ERROR] Viewing AndroidManifest.xml - " + str(e)
         return HttpResponseRedirect('/error/')
-
+def python_list(value):
+    if not value:
+        value = []
+    if isinstance(value, list):
+        return value
+    return ast.literal_eval(value)
 def StaticAnalyzer(request):
-    #try:
-    #Input validation
-    TYP=request.GET['type']
-    m=re.match('[0-9a-f]{32}',request.GET['checksum'])
-    if ((m) and (request.GET['name'].endswith('.apk') or request.GET['name'].endswith('.zip')) and ((TYP=='zip') or (TYP=='apk'))):
-        DIR=settings.BASE_DIR        #BASE DIR
-        APP_NAME=request.GET['name'] #APP ORGINAL NAME
-        MD5=request.GET['checksum']  #MD5
-        APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
-        TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
-        print "[INFO] Starting Analysis on : "+APP_NAME
-        if TYP=='apk':
-            APP_FILE=MD5 + '.apk'        #NEW FILENAME
-            APP_PATH=APP_DIR+APP_FILE    #APP PATH
-            #ANALYSIS BEGINS
-            SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
-            SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
-
-            FILES=Unzip(APP_PATH,APP_DIR)
-            CERTZ = GetHardcodedCert(FILES)
-            print "[INFO] APK Extracted"
-            PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,'',True) #Manifest XML
-            MANI='../ManifestView/?md5='+MD5+'&type=apk&bin=1'
-            SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(PARSEDXML)
-            MANIFEST_ANAL=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
-            PERMISSIONS=FormatPermissions(PERM)
-            CNT_ACT =len(ACTIVITIES)
-            CNT_PRO =len(PROVIDERS)
-            CNT_SER =len(SERVICES)
-            CNT_BRO = len(RECEIVERS)
-
-            CERT_INFO=CertInfo(APP_DIR,TOOLS_DIR)
-            Dex2Jar(APP_DIR,TOOLS_DIR)
-            Dex2Smali(APP_DIR,TOOLS_DIR)
-            Jar2Java(APP_DIR,TOOLS_DIR)
-
-            API,DANG,URLS,EMAILS,CRYPTO,OBFUS,REFLECT,DYNAMIC,NATIVE=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,"apk")
-            print "[INFO] Generating Java and Smali Downloads"
-            GenDownloads(APP_DIR,MD5)
-            STRINGS=Strings(APP_FILE,APP_DIR,TOOLS_DIR)
-            ZIPPED='&type=apk'
-
-            context = {
-            'title' : 'Static Analysis',
-            'name' : APP_NAME,
-            'size' : SIZE,
-            'md5': MD5,
-            'sha1' : SHA1,
-            'sha256' : SHA256,
-            'packagename' : PACKAGENAME,
-            'mainactivity' : MAINACTIVITY,
-            'targetsdk' : TARGET_SDK,
-            'maxsdk' : MAX_SDK,
-            'minsdk' : MIN_SDK,
-            'androvername' : ANDROVERNAME,
-            'androver': ANDROVER,
-            'manifest': MANIFEST_ANAL,
-            'permissions' : PERMISSIONS,
-            'files' : FILES,
-            'certz' : CERTZ,
-            'activities' : ACTIVITIES,
-            'receivers' : RECEIVERS,
-            'providers' : PROVIDERS,
-            'services' : SERVICES,
-            'libraries' : LIBRARIES,
-            'act_count' : CNT_ACT,
-            'prov_count' : CNT_PRO,
-            'serv_count' : CNT_SER,
-            'bro_count' : CNT_BRO,
-            'certinfo': CERT_INFO,
-            'native' : NATIVE,
-            'dynamic' : DYNAMIC,
-            'reflection' : REFLECT,
-            'crypto': CRYPTO,
-            'obfus': OBFUS,
-            'api': API,
-            'dang': DANG,
-            'urls': URLS,
-            'emails': EMAILS,
-            'strings': STRINGS,
-            'zipped' : ZIPPED,
-            'mani': MANI
-            }
-            template="static_analysis.html"
-            return render(request,template,context)
-        elif TYP=='zip':
-            APP_FILE=MD5 + '.zip'        #NEW FILENAME
-            APP_PATH=APP_DIR+APP_FILE    #APP PATH
-            print "[INFO] Extracting ZIP"
-            FILES = Unzip(APP_PATH,APP_DIR)
-            CERTZ = GetHardcodedCert(FILES)
-            #Check if Valid Directory Structure and get ZIP Type
-            pro_type,Valid=ValidAndroidZip(APP_DIR)
-            print "[INFO] ZIP Type - " + pro_type
-            if Valid and (pro_type=='eclipse' or pro_type=='studio'):
-                
-                #ANALYSIS BEGINS
-                SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
-                SHA1,SHA256= HashGen(APP_PATH)        #SHA1 & SHA256 HASHES
-                PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,pro_type,False)   #Manifest XML
-                MANI='../ManifestView/?md5='+MD5+'&type='+pro_type+'&bin=0'
-                SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(PARSEDXML)
-                MANIFEST_ANAL=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
-                PERMISSIONS=FormatPermissions(PERM)
-                CNT_ACT =len(ACTIVITIES)
-                CNT_PRO =len(PROVIDERS)
-                CNT_SER =len(SERVICES)
-                CNT_BRO = len(RECEIVERS)
-                API,DANG,URLS,EMAILS,CRYPTO,OBFUS,REFLECT,DYNAMIC,NATIVE=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,pro_type)
-                context = {
-                'title' : 'Static Analysis',
-                'name' : APP_NAME,
-                'size' : SIZE,
-                'md5': MD5,
-                'sha1' : SHA1,
-                'sha256' : SHA256,
-                'packagename' : PACKAGENAME,
-                'mainactivity' : MAINACTIVITY,
-                'targetsdk' : TARGET_SDK,
-                'maxsdk' : MAX_SDK,
-                'minsdk' : MIN_SDK,
-                'androvername' : ANDROVERNAME,
-                'androver': ANDROVER,
-                'manifest': MANIFEST_ANAL,
-                'permissions' : PERMISSIONS,
-                'files' : FILES,
-                'certz' : CERTZ,
-                'activities' : ACTIVITIES,
-                'receivers' : RECEIVERS,
-                'providers' : PROVIDERS,
-                'services' : SERVICES,
-                'libraries' : LIBRARIES,
-                'act_count' : CNT_ACT,
-                'prov_count' : CNT_PRO,
-                'serv_count' : CNT_SER,
-                'bro_count' : CNT_BRO,
-                'native' : NATIVE,
-                'dynamic' : DYNAMIC,
-                'reflection' : REFLECT,
-                'crypto': CRYPTO,
-                'obfus': OBFUS,
-                'api': API,
-                'dang': DANG,
-                'urls': URLS,
-                'emails': EMAILS,
-                'mani': MANI,
-                }
+    try:
+        #Input validation
+        TYP=request.GET['type']
+        m=re.match('[0-9a-f]{32}',request.GET['checksum'])
+        if ((m) and (request.GET['name'].endswith('.apk') or request.GET['name'].endswith('.zip')) and ((TYP=='zip') or (TYP=='apk'))):
+            DIR=settings.BASE_DIR        #BASE DIR
+            APP_NAME=request.GET['name'] #APP ORGINAL NAME
+            MD5=request.GET['checksum']  #MD5
+            APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
+            TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
+            print "[INFO] Starting Analysis on : "+APP_NAME
+            RESCAN= str(request.GET.get('rescan', 0))
+            if TYP=='apk':
+                #Check if in DB
+                DB=StaticAnalyzerAndroid.objects.filter(MD5=MD5)
+                if DB.exists() and RESCAN=='0':
+                    print "\n[INFO] Analysis is already Done. Fetching data from the DB..."
+                    context = {
+                    'title' : DB[0].TITLE,
+                    'name' : DB[0].APP_NAME,
+                    'size' : DB[0].SIZE,
+                    'md5': DB[0].MD5,
+                    'sha1' : DB[0].SHA1,
+                    'sha256' : DB[0].SHA256,
+                    'packagename' : DB[0].PACKAGENAME,
+                    'mainactivity' : DB[0].MAINACTIVITY,
+                    'targetsdk' : DB[0].TARGET_SDK,
+                    'maxsdk' : DB[0].MAX_SDK,
+                    'minsdk' : DB[0].MIN_SDK,
+                    'androvername' : DB[0].ANDROVERNAME,
+                    'androver': DB[0].ANDROVER,
+                    'manifest': DB[0].MANIFEST_ANAL,
+                    'permissions' : DB[0].PERMISSIONS,
+                    'files' : python_list(DB[0].FILES),
+                    'certz' : DB[0].CERTZ,
+                    'activities' : python_list(DB[0].ACTIVITIES),
+                    'receivers' : python_list(DB[0].RECEIVERS),
+                    'providers' : python_list(DB[0].PROVIDERS),
+                    'services' : python_list(DB[0].SERVICES),
+                    'libraries' : python_list(DB[0].LIBRARIES),
+                    'act_count' : DB[0].CNT_ACT,
+                    'prov_count' : DB[0].CNT_PRO,
+                    'serv_count' : DB[0].CNT_SER,
+                    'bro_count' : DB[0].CNT_BRO,
+                    'certinfo': DB[0].CERT_INFO,
+                    'native' : DB[0].NATIVE,
+                    'dynamic' : DB[0].DYNAMIC,
+                    'reflection' : DB[0].REFLECT,
+                    'crypto': DB[0].CRYPTO,
+                    'obfus': DB[0].OBFUS,
+                    'api': DB[0].API,
+                    'dang': DB[0].DANG,
+                    'urls': DB[0].URLS,
+                    'emails': DB[0].EMAILS,
+                    'strings': python_list(DB[0].STRINGS),
+                    'zipped' : DB[0].ZIPPED,
+                    'mani': DB[0].MANI
+                    }
+                else:
+                    APP_FILE=MD5 + '.apk'        #NEW FILENAME
+                    APP_PATH=APP_DIR+APP_FILE    #APP PATH
+                    #ANALYSIS BEGINS
+                    SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
+                    SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
+        
+                    FILES=Unzip(APP_PATH,APP_DIR)
+                    CERTZ = GetHardcodedCert(FILES)
+                    print "[INFO] APK Extracted"
+                    PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,'',True) #Manifest XML
+                    MANI='../ManifestView/?md5='+MD5+'&type=apk&bin=1'
+                    SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(PARSEDXML,APP_DIR)
+                    MANIFEST_ANAL,EXPORTED_ACT=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
+                    PERMISSIONS=FormatPermissions(PERM)
+                    CNT_ACT =len(ACTIVITIES)
+                    CNT_PRO =len(PROVIDERS)
+                    CNT_SER =len(SERVICES)
+                    CNT_BRO = len(RECEIVERS)
+        
+                    CERT_INFO=CertInfo(APP_DIR,TOOLS_DIR)
+                    Dex2Jar(APP_DIR,TOOLS_DIR)
+                    Dex2Smali(APP_DIR,TOOLS_DIR)
+                    Jar2Java(APP_DIR,TOOLS_DIR)
+        
+                    API,DANG,URLS,EMAILS,CRYPTO,OBFUS,REFLECT,DYNAMIC,NATIVE=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,"apk")
+                    print "\n[INFO] Generating Java and Smali Downloads"
+                    GenDownloads(APP_DIR,MD5)
+                    STRINGS=Strings(APP_FILE,APP_DIR,TOOLS_DIR)
+                    ZIPPED='&type=apk'
+    
+                    print "\n[INFO] Connecting to Database"
+                    try:
+                        #SAVE TO DB
+                        if RESCAN=='1':
+                            print "\n[INFO] Updating Database..."
+                            StaticAnalyzerAndroid.objects.filter(MD5=MD5).update(TITLE = 'Static Analysis',
+                            APP_NAME = APP_NAME,
+                            SIZE = SIZE,
+                            MD5= MD5,
+                            SHA1 = SHA1,
+                            SHA256 = SHA256,
+                            PACKAGENAME = PACKAGENAME,
+                            MAINACTIVITY= MAINACTIVITY,
+                            TARGET_SDK = TARGET_SDK,
+                            MAX_SDK = MAX_SDK,
+                            MIN_SDK = MIN_SDK,
+                            ANDROVERNAME = ANDROVERNAME,
+                            ANDROVER= ANDROVER,
+                            MANIFEST_ANAL= MANIFEST_ANAL,
+                            PERMISSIONS = PERMISSIONS,
+                            FILES = FILES,
+                            CERTZ = CERTZ,
+                            ACTIVITIES = ACTIVITIES,
+                            RECEIVERS = RECEIVERS,
+                            PROVIDERS = PROVIDERS,
+                            SERVICES = SERVICES,
+                            LIBRARIES = LIBRARIES,
+                            CNT_ACT = CNT_ACT,
+                            CNT_PRO = CNT_PRO,
+                            CNT_SER = CNT_SER,
+                            CNT_BRO = CNT_BRO,
+                            CERT_INFO= CERT_INFO,
+                            NATIVE = NATIVE,
+                            DYNAMIC = DYNAMIC,
+                            REFLECT = REFLECT,
+                            CRYPTO= CRYPTO,
+                            OBFUS= OBFUS,
+                            API= API,
+                            DANG= DANG,
+                            URLS= URLS,
+                            EMAILS= EMAILS,
+                            STRINGS= STRINGS,
+                            ZIPPED= ZIPPED,
+                            MANI= MANI,
+                            EXPORTED_ACT=EXPORTED_ACT)
+                        elif RESCAN=='0':
+                            print "\n[INFO] Saving to Database"
+                            STATIC_DB=StaticAnalyzerAndroid(TITLE = 'Static Analysis',
+                            APP_NAME = APP_NAME,
+                            SIZE = SIZE,
+                            MD5= MD5,
+                            SHA1 = SHA1,
+                            SHA256 = SHA256,
+                            PACKAGENAME = PACKAGENAME,
+                            MAINACTIVITY= MAINACTIVITY,
+                            TARGET_SDK = TARGET_SDK,
+                            MAX_SDK = MAX_SDK,
+                            MIN_SDK = MIN_SDK,
+                            ANDROVERNAME = ANDROVERNAME,
+                            ANDROVER= ANDROVER,
+                            MANIFEST_ANAL= MANIFEST_ANAL,
+                            PERMISSIONS = PERMISSIONS,
+                            FILES = FILES,
+                            CERTZ = CERTZ,
+                            ACTIVITIES = ACTIVITIES,
+                            RECEIVERS = RECEIVERS,
+                            PROVIDERS = PROVIDERS,
+                            SERVICES = SERVICES,
+                            LIBRARIES = LIBRARIES,
+                            CNT_ACT = CNT_ACT,
+                            CNT_PRO = CNT_PRO,
+                            CNT_SER = CNT_SER,
+                            CNT_BRO = CNT_BRO,
+                            CERT_INFO= CERT_INFO,
+                            NATIVE = NATIVE,
+                            DYNAMIC = DYNAMIC,
+                            REFLECT = REFLECT,
+                            CRYPTO= CRYPTO,
+                            OBFUS= OBFUS,
+                            API= API,
+                            DANG= DANG,
+                            URLS= URLS,
+                            EMAILS= EMAILS,
+                            STRINGS= STRINGS,
+                            ZIPPED= ZIPPED,
+                            MANI= MANI,
+                            EXPORTED_ACT=EXPORTED_ACT)
+                            STATIC_DB.save()
+                    except Exception as e:
+                        print "\n[ERROR] Saving to Database Failed - "+str(e)
+                        pass
+                    context = {
+                    'title' : 'Static Analysis',
+                    'name' : APP_NAME,
+                    'size' : SIZE,
+                    'md5': MD5,
+                    'sha1' : SHA1,
+                    'sha256' : SHA256,
+                    'packagename' : PACKAGENAME,
+                    'mainactivity' : MAINACTIVITY,
+                    'targetsdk' : TARGET_SDK,
+                    'maxsdk' : MAX_SDK,
+                    'minsdk' : MIN_SDK,
+                    'androvername' : ANDROVERNAME,
+                    'androver': ANDROVER,
+                    'manifest': MANIFEST_ANAL,
+                    'permissions' : PERMISSIONS,
+                    'files' : FILES,
+                    'certz' : CERTZ,
+                    'activities' : ACTIVITIES,
+                    'receivers' : RECEIVERS,
+                    'providers' : PROVIDERS,
+                    'services' : SERVICES,
+                    'libraries' : LIBRARIES,
+                    'act_count' : CNT_ACT,
+                    'prov_count' : CNT_PRO,
+                    'serv_count' : CNT_SER,
+                    'bro_count' : CNT_BRO,
+                    'certinfo': CERT_INFO,
+                    'native' : NATIVE,
+                    'dynamic' : DYNAMIC,
+                    'reflection' : REFLECT,
+                    'crypto': CRYPTO,
+                    'obfus': OBFUS,
+                    'api': API,
+                    'dang': DANG,
+                    'urls': URLS,
+                    'emails': EMAILS,
+                    'strings': STRINGS,
+                    'zipped' : ZIPPED,
+                    'mani': MANI
+                    }
+                template="static_analysis.html"
+                return render(request,template,context)
+            elif TYP=='zip':
+                #Check if in DB
+                DB=StaticAnalyzerAndroid.objects.filter(MD5=MD5)
+                if DB.exists() and RESCAN=='0':
+                    print "\n[INFO] Analysis is already Done. Fetching data from the DB..."
+                    context = {
+                    'title' : DB[0].TITLE,
+                    'name' : DB[0].APP_NAME,
+                    'size' : DB[0].SIZE,
+                    'md5': DB[0].MD5,
+                    'sha1' : DB[0].SHA1,
+                    'sha256' : DB[0].SHA256,
+                    'packagename' : DB[0].PACKAGENAME,
+                    'mainactivity' : DB[0].MAINACTIVITY,
+                    'targetsdk' : DB[0].TARGET_SDK,
+                    'maxsdk' : DB[0].MAX_SDK,
+                    'minsdk' : DB[0].MIN_SDK,
+                    'androvername' : DB[0].ANDROVERNAME,
+                    'androver': DB[0].ANDROVER,
+                    'manifest': DB[0].MANIFEST_ANAL,
+                    'permissions' : DB[0].PERMISSIONS,
+                    'files' : python_list(DB[0].FILES),
+                    'certz' : DB[0].CERTZ,
+                    'activities' : python_list(DB[0].ACTIVITIES),
+                    'receivers' : python_list(DB[0].RECEIVERS),
+                    'providers' : python_list(DB[0].PROVIDERS),
+                    'services' : python_list(DB[0].SERVICES),
+                    'libraries' : python_list(DB[0].LIBRARIES),
+                    'act_count' : DB[0].CNT_ACT,
+                    'prov_count' : DB[0].CNT_PRO,
+                    'serv_count' : DB[0].CNT_SER,
+                    'bro_count' : DB[0].CNT_BRO,
+                    'native' : DB[0].NATIVE,
+                    'dynamic' : DB[0].DYNAMIC,
+                    'reflection' : DB[0].REFLECT,
+                    'crypto': DB[0].CRYPTO,
+                    'obfus': DB[0].OBFUS,
+                    'api': DB[0].API,
+                    'dang': DB[0].DANG,
+                    'urls': DB[0].URLS,
+                    'emails': DB[0].EMAILS,
+                    'mani': DB[0].MANI
+                    }
+                else:
+                    APP_FILE=MD5 + '.zip'        #NEW FILENAME
+                    APP_PATH=APP_DIR+APP_FILE    #APP PATH
+                    print "[INFO] Extracting ZIP"
+                    FILES = Unzip(APP_PATH,APP_DIR)
+                    CERTZ = GetHardcodedCert(FILES)
+                    #Check if Valid Directory Structure and get ZIP Type
+                    pro_type,Valid=ValidAndroidZip(APP_DIR)
+                    print "[INFO] ZIP Type - " + pro_type
+                    if Valid and (pro_type=='eclipse' or pro_type=='studio'):
+                        #ANALYSIS BEGINS
+                        SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
+                        SHA1,SHA256= HashGen(APP_PATH)        #SHA1 & SHA256 HASHES
+                        PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,pro_type,False)   #Manifest XML
+                        MANI='../ManifestView/?md5='+MD5+'&type='+pro_type+'&bin=0'
+                        SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(PARSEDXML,APP_DIR)
+                        MANIFEST_ANAL,EXPORTED_ACT=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
+                        PERMISSIONS=FormatPermissions(PERM)
+                        CNT_ACT =len(ACTIVITIES)
+                        CNT_PRO =len(PROVIDERS)
+                        CNT_SER =len(SERVICES)
+                        CNT_BRO = len(RECEIVERS)
+                        API,DANG,URLS,EMAILS,CRYPTO,OBFUS,REFLECT,DYNAMIC,NATIVE=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,pro_type)
+                        print "\n[INFO] Connecting to Database"
+                        try:
+                            #SAVE TO DB
+                            if RESCAN=='1':
+                                print "\n[INFO] Updating Database..."
+                                StaticAnalyzerAndroid.objects.filter(MD5=MD5).update(TITLE = 'Static Analysis',
+                                APP_NAME = APP_NAME,
+                                SIZE = SIZE,
+                                MD5= MD5,
+                                SHA1 = SHA1,
+                                SHA256 = SHA256,
+                                PACKAGENAME = PACKAGENAME,
+                                MAINACTIVITY= MAINACTIVITY,
+                                TARGET_SDK = TARGET_SDK,
+                                MAX_SDK = MAX_SDK,
+                                MIN_SDK = MIN_SDK,
+                                ANDROVERNAME = ANDROVERNAME,
+                                ANDROVER= ANDROVER,
+                                MANIFEST_ANAL= MANIFEST_ANAL,
+                                PERMISSIONS = PERMISSIONS,
+                                FILES = FILES,
+                                CERTZ = CERTZ,
+                                ACTIVITIES = ACTIVITIES,
+                                RECEIVERS = RECEIVERS,
+                                PROVIDERS = PROVIDERS,
+                                SERVICES = SERVICES,
+                                LIBRARIES = LIBRARIES,
+                                CNT_ACT = CNT_ACT,
+                                CNT_PRO = CNT_PRO,
+                                CNT_SER = CNT_SER,
+                                CNT_BRO = CNT_BRO,
+                                CERT_INFO= "",
+                                NATIVE = NATIVE,
+                                DYNAMIC = DYNAMIC,
+                                REFLECT = REFLECT,
+                                CRYPTO= CRYPTO,
+                                OBFUS= OBFUS,
+                                API= API,
+                                DANG= DANG,
+                                URLS= URLS,
+                                EMAILS= EMAILS,
+                                STRINGS= "",
+                                ZIPPED= "",
+                                MANI= MANI,
+                                EXPORTED_ACT=EXPORTED_ACT)
+                            elif RESCAN=='0':
+                                print "\n[INFO] Saving to Database"
+                                STATIC_DB=StaticAnalyzerAndroid(TITLE = 'Static Analysis',
+                                APP_NAME = APP_NAME,
+                                SIZE = SIZE,
+                                MD5= MD5,
+                                SHA1 = SHA1,
+                                SHA256 = SHA256,
+                                PACKAGENAME = PACKAGENAME,
+                                MAINACTIVITY= MAINACTIVITY,
+                                TARGET_SDK = TARGET_SDK,
+                                MAX_SDK = MAX_SDK,
+                                MIN_SDK = MIN_SDK,
+                                ANDROVERNAME = ANDROVERNAME,
+                                ANDROVER= ANDROVER,
+                                MANIFEST_ANAL= MANIFEST_ANAL,
+                                PERMISSIONS = PERMISSIONS,
+                                FILES = FILES,
+                                CERTZ = CERTZ,
+                                ACTIVITIES = ACTIVITIES,
+                                RECEIVERS = RECEIVERS,
+                                PROVIDERS = PROVIDERS,
+                                SERVICES = SERVICES,
+                                LIBRARIES = LIBRARIES,
+                                CNT_ACT = CNT_ACT,
+                                CNT_PRO = CNT_PRO,
+                                CNT_SER = CNT_SER,
+                                CNT_BRO = CNT_BRO,
+                                CERT_INFO= "",
+                                NATIVE = NATIVE,
+                                DYNAMIC = DYNAMIC,
+                                REFLECT = REFLECT,
+                                CRYPTO= CRYPTO,
+                                OBFUS= OBFUS,
+                                API= API,
+                                DANG= DANG,
+                                URLS= URLS,
+                                EMAILS= EMAILS,
+                                STRINGS= "",
+                                ZIPPED= "",
+                                MANI= MANI,
+                                EXPORTED_ACT=EXPORTED_ACT)
+                                STATIC_DB.save()
+                        except Exception as e:
+                            print "\n[ERROR] Saving to Database Failed - "+str(e)
+                            pass
+                        context = {
+                        'title' : 'Static Analysis',
+                        'name' : APP_NAME,
+                        'size' : SIZE,
+                        'md5': MD5,
+                        'sha1' : SHA1,
+                        'sha256' : SHA256,
+                        'packagename' : PACKAGENAME,
+                        'mainactivity' : MAINACTIVITY,
+                        'targetsdk' : TARGET_SDK,
+                        'maxsdk' : MAX_SDK,
+                        'minsdk' : MIN_SDK,
+                        'androvername' : ANDROVERNAME,
+                        'androver': ANDROVER,
+                        'manifest': MANIFEST_ANAL,
+                        'permissions' : PERMISSIONS,
+                        'files' : FILES,
+                        'certz' : CERTZ,
+                        'activities' : ACTIVITIES,
+                        'receivers' : RECEIVERS,
+                        'providers' : PROVIDERS,
+                        'services' : SERVICES,
+                        'libraries' : LIBRARIES,
+                        'act_count' : CNT_ACT,
+                        'prov_count' : CNT_PRO,
+                        'serv_count' : CNT_SER,
+                        'bro_count' : CNT_BRO,
+                        'native' : NATIVE,
+                        'dynamic' : DYNAMIC,
+                        'reflection' : REFLECT,
+                        'crypto': CRYPTO,
+                        'obfus': OBFUS,
+                        'api': API,
+                        'dang': DANG,
+                        'urls': URLS,
+                        'emails': EMAILS,
+                        'mani': MANI,
+                        }
+                    elif Valid and pro_type=='ios':
+                        print "[INFO] Redirecting to iOS Source Code Analyzer"
+                        return HttpResponseRedirect('/StaticAnalyzer_iOS/?name='+APP_NAME+'&type=ios&checksum='+MD5)
+                    else:
+                        return HttpResponseRedirect('/ZIP_FORMAT/')
                 template="static_analysis_zip.html"
                 return render(request,template,context)
-            elif Valid and pro_type=='ios':
-                print "[INFO] Redirecting to iOS Source Code Analyzer"
-                return HttpResponseRedirect('/StaticAnalyzer_iOS/?name='+APP_NAME+'&type=ios&checksum='+MD5)
             else:
-                return HttpResponseRedirect('/ZIP_FORMAT/')
-    else:
-         return HttpResponseRedirect('/error/')
-    '''
+                print "\n[ERROR] Only APK,IPA and Zipped Android/iOS Source code supported now!"  
+        else:
+            return HttpResponseRedirect('/error/')
+
     except Exception as e:
         context = {
         'title' : 'Error',
@@ -340,7 +756,6 @@ def StaticAnalyzer(request):
         }
         template="error.html"
         return render(request,template,context)
-    '''
 def GetHardcodedCert(files):
     print "[INFO] Getting Hardcoded Certificates"
     certz=''
@@ -439,11 +854,27 @@ def zipdir(path, zip):
             zip.write(os.path.join(root, file))
 def Unzip(APP_PATH, EXT_PATH):
     print "[INFO] Unzipping"
-    files=''
-    with zipfile.ZipFile(APP_PATH, "r") as z:
-            z.extractall(EXT_PATH)
-            files=z.namelist()
-    return files
+    try:
+        files=[]
+        with zipfile.ZipFile(APP_PATH, "r") as z:
+                z.extractall(EXT_PATH)
+                files=z.namelist()
+        return files
+    except Exception as e:
+        print "\n[ERROR] Unzipping Error - "+str(e)
+        if platform.system()=="Windows":
+            print "\n[INFO] Not yet Implemented."
+        else:
+            print "\n[INFO] Using the Default OS Unzip Utility."
+            try:
+                subprocess.call(['unzip', '-o', '-q', APP_PATH, '-d', EXT_PATH])
+                dat=subprocess.check_output(['unzip','-qq','-l',APP_PATH])
+                dat=dat.split('\n')
+                x=['Length   Date   Time   Name']
+                x=x+dat
+                return x
+            except Exception as e1:
+                print "\n[ERROR] Unzipping Error - "+str(e1)
 def FormatPermissions(PERMISSIONS):
     print "[INFO] Formatting Permissions"
     DESC=''
@@ -489,8 +920,8 @@ def Dex2Jar(APP_DIR,TOOLS_DIR):
     else:
         INV=os.path.join(TOOLS_DIR,'d2j2/') +'d2j_invoke.sh'
         D2J=os.path.join(TOOLS_DIR,'d2j2/') +'d2j-dex2jar.sh'
-        os.system("chmod 777 "+D2J)
-        os.system("chmod 777 "+INV)
+        subprocess.call(["chmod", "777", D2J])
+        subprocess.call(["chmod", "777", INV])
     args=[D2J,APP_DIR+'classes.dex','-o',APP_DIR +'classes.jar']
     subprocess.call(args)
 def Dex2Smali(APP_DIR,TOOLS_DIR):
@@ -524,9 +955,8 @@ def Strings(APP_FILE,APP_DIR,TOOLS_DIR):
         pass
     dat=dat[1:-1].split(",")
     return dat
-def ManifestData(mfxml):
+def ManifestData(mfxml,app_dir):
     print "[INFO] Extracting Manifest Data"
-    package=''
     SVC=[]
     ACT=[]
     BRD=[]
@@ -557,42 +987,30 @@ def ManifestData(mfxml):
         package = node.getAttribute("package")
         androidversioncode=node.getAttribute("android:versionCode")
         androidversionname=node.getAttribute("android:versionName")
-    x = set()
-    y = set()
     for activity in activities:
         act = activity.getAttribute("android:name")
-        if act.startswith('.'):
-            act=(package+act).replace('..','.')
         ACT.append(act)
-        for sitem in activity.getElementsByTagName( "action" ):
-            val = sitem.getAttribute( "android:name" )
-            if val == "android.intent.action.MAIN" :
-                x.add(activity.getAttribute( "android:name" ))
-        for sitem in activity.getElementsByTagName( "category" ) :
-            val = sitem.getAttribute( "android:name" )
-            if val == "android.intent.category.LAUNCHER" :
-                y.add( activity.getAttribute( "android:name" ) )
-        z = x.intersection(y)
-        if len(z) > 0 :
-            mainact=z.pop()
-        if mainact.startswith('.'):
-            mainact=(package+mainact).replace('..','.')
+        if len(mainact)<1:
+            # ^ Fix for Shitty Manifest with more than one MAIN
+            for sitem in activity.getElementsByTagName("action"):
+                val = sitem.getAttribute("android:name")
+                if val == "android.intent.action.MAIN" :
+                    mainact=activity.getAttribute("android:name")
+            if mainact=='':
+                for sitem in activity.getElementsByTagName("category") :
+                    val = sitem.getAttribute( "android:name" )
+                    if val == "android.intent.category.LAUNCHER" :
+                        mainact=activity.getAttribute("android:name")
     for service in services:
         sn = service.getAttribute("android:name")
-        if sn.startswith('.'):
-            sn=(package+sn).replace('..','.')
         SVC.append(sn)
 
     for provider in providers:
         pn = provider.getAttribute("android:name")
-        if pn.startswith('.'):
-            pn=(package+pn).replace('..','.')
         CNP.append(pn)
 
     for receiver in receivers:
         re = receiver.getAttribute("android:name")
-        if re.startswith('.'):
-            re=(package+re).replace('..','.')
         BRD.append(re)
 
     for lib in libs:
@@ -612,6 +1030,8 @@ def ManifestData(mfxml):
             DP[ i ] = DVM_PERMISSIONS["MANIFEST_PERMISSION"][ prm ]
         except KeyError :
             DP[ i ] = [ "dangerous", "Unknown permission from android reference", "Unknown permission from android reference" ]
+    else:
+        pass
     return SVC,ACT,BRD,CNP,LIB,DP,package,mainact,minsdk,maxsdk,targetsdk,androidversioncode,androidversionname
 def ManifestAnalysis(mfxml,mainact):
     print "[INFO] Manifest Analysis Started"
@@ -627,10 +1047,12 @@ def ManifestAnalysis(mfxml,mainact):
     for node in manifest:
         package = node.getAttribute("package")
     RET=''
+    EXPORTED=[]
     ##SERVICES
     ##search for services without permissions set
     #if a service is exporeted and has no permission
     #nor an intent filter, flag it
+    #I doubt if this part gets executed evver
     for service in services:
         if service.getAttribute("android:exported") == 'true':
             perm = ''
@@ -638,8 +1060,6 @@ def ManifestAnalysis(mfxml,mainact):
                 #service permission exists
                 perm =' (permission '+service.getAttribute("android:permission")+' exists.) '
             servicename = service.getAttribute("android:name")
-            if servicename.startswith('.'):
-                servicename=(package+servicename).replace('..','.')
             RET=RET +'<tr><td>Service (' + servicename + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A service was found to be shared with other apps on the device without an intent filter or a permission requirement therefore leaving it accessible to any other application on the device.</td></tr>'
 
     ##APPLICATIONS
@@ -647,10 +1067,9 @@ def ManifestAnalysis(mfxml,mainact):
 
         if application.getAttribute("android:debuggable") == "true":
             RET=RET+ '<tr><td>Debug Enabled For App <br>[android:debuggable=true]</td><td><span class="label label-danger">high</span></td><td>Debugging was enabled on the app which makes it easier for reverse engineers to hook a debugger to it. This allows dumping a stack trace and accessing debugging helper classes.</td></tr>'
-
-        if application.getAttribute("android:allowBackup") =="true":
+        if application.getAttribute("android:allowBackup") == "true":
             RET=RET+ '<tr><td>Application Data can be Backed up<br>[android:allowBackup=true]</td><td><span class="label label-warning">medium</span></td><td>This flag allows anyone to backup your application data via adb. It allows users who have enabled USB debugging to copy application data off of the device.</td></tr>'
-        elif application.getAttribute("android:allowBackup") =="false":
+        elif application.getAttribute("android:allowBackup") == "false":
             pass
         else:
             RET=RET+ '<tr><td>Application Data can be Backed up<br>[android:allowBackup] flag is missing.</td><td><span class="label label-warning">medium</span></td><td>The flag [android:allowBackup] should be set to false. By default it is set to true and allows anyone to backup your application data via adb. It allows users who have enabled USB debugging to copy application data off of the device.</td></tr>'
@@ -661,24 +1080,40 @@ def ManifestAnalysis(mfxml,mainact):
             if node.nodeName == 'activity':
                 itmname= 'Activity'
                 ad='n'
+            elif node.nodeName == 'activity-alias':
+                itmname ='Activity-Alias'
+                ad='n'
             elif node.nodeName == 'provider':
                 itmname = 'Content Provider'
             elif node.nodeName == 'receiver':
                 itmname = 'Broadcast Receiver'
+            elif node.nodeName == 'service':
+                itmname = 'Service'
             else:
                 itmname = 'NIL'
+            item=''
+            #Task Affinity
+            if ((itmname =='Activity' or itmname=='Activity-Alias') and (node.getAttribute("android:taskAffinity"))):
+                item=node.getAttribute("android:name")
+                RET=RET+ '<tr><td>TaskAffinity is set for Activity </br>('+item + ')</td><td><span class="label label-danger">high</span></td><td>If taskAffinity is set, then other application could read the Intents sent to Activities belonging to another task. Always use the default setting keeping the affinity as the package name in order to prevent sensitive information inside sent or received Intents from being read by another application.</td></tr>'
+            #LaunchMode
+            if ((itmname =='Activity' or itmname=='Activity-Alias') and ((node.getAttribute("android:launchMode")=='singleInstance') or (node.getAttribute("android:launchMode")=='singleTask'))):
+                item=node.getAttribute("android:name")
+                RET=RET+ '<tr><td>Launch Mode of Activity ('+item + ') is not standard.</td><td><span class="label label-danger">high</span></td><td>An Activity should not be having the launch mode attribute set to "singleTask/singleInstance" as it becomes root Activity and it is possible for other applications to read the contents of the calling Intent. So it is required to use the "standard" launch mode attribute when sensitive information is included in an Intent.</td></tr>'
+            #Exported Check
             item=''
             isExp=False
             if ('NIL' != itmname) and (node.getAttribute("android:exported") == 'true'):
                 isExp=True
                 perm=''
+                item=node.getAttribute("android:name")
                 if node.getAttribute("android:permission"):
                     #permission exists
                     perm = ' (permission '+node.getAttribute("android:permission")+' exists.) '
-                item=node.getAttribute("android:name")
-                if item.startswith('.'):
-                    item=(package+item).replace('..','.')
-                RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device.</td></tr>'
+                if item!=mainact:
+                    if (itmname =='Activity' or itmname=='Activity-Alias'):
+                        EXPORTED.append(item)
+                    RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device.</td></tr>'
             else:
                 isExp=False
             impE=False
@@ -697,8 +1132,8 @@ def ManifestAnalysis(mfxml,mainact):
                 if isInf:
                     item=node.getAttribute("android:name")
                     if item!=mainact:
-                        if item.startswith('.'):
-                            item=(package+item).replace('..','.')
+                        if (itmname =='Activity' or itmname=='Activity-Alias'):
+                            EXPORTED.append(item)
                         RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.<br>An intent-filter exists.</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device. The presence of intent-filter indicates that the '+itmname+' is explicitly exported.</td></tr>'
 
     ##GRANT-URI-PERMISSIONS
@@ -714,7 +1149,6 @@ def ManifestAnalysis(mfxml,mainact):
             RET=RET+ '<tr><td>' + title + '<br> [path=*]</td>' + '<td><span class="label label-danger">high</span></td><td>'+ desc +'</td></tr>'
 
     ##DATA
-
     for data in datas:
         if data.getAttribute("android:scheme") == "android_secret_code":
             xmlhost = data.getAttribute("android:host")
@@ -742,11 +1176,11 @@ def ManifestAnalysis(mfxml,mainact):
                 RET=RET + '<tr><td>High Action Priority (' + value+')<br>[android:priority]</td><td><span class="label label-warning">medium</span></td><td>By setting an action priority higher than another action, the app effectively overrides other requests.</td></tr>'
     if len(RET)< 2:
         RET='<tr><td>None</td><td>None</td><td>None</td><tr>'
-    return RET
+    return RET,EXPORTED
 
 def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
     print "[INFO] Static Android Code Analysis Started"
-    c = {key: [] for key in ('inf_act','inf_ser','inf_bro','log','fileio','rand','dex_cert','dex_tamper','d_root','d_ssl_pin','dex_root','dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
+    c = {key: [] for key in ('inf_act','inf_ser','inf_bro','log','fileio','rand','dex_cert','dex_tamper','d_rootcheck','d_root','d_ssl_pin','dex_root','dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
     crypto=False
     obfus=False
     reflect=False
@@ -797,7 +1231,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     c['d_sqlite'].append(jfile_path.replace(JS,''))
                 if ((('javax.net.ssl') in dat) and (('TrustAllSSLSocket-Factory') in dat or ('AllTrustSSLSocketFactory') in dat or ('NonValidatingSSLSocketFactory')  in dat or('ALLOW_ALL_HOSTNAME_VERIFIER') in dat or ('.setDefaultHostnameVerifier(') in dat or ('NullHostnameVerifier(') in dat)):
                     c['d_ssl'].append(jfile_path.replace(JS,''))
-                #Add Scahin's Code Here and Add support for detecting insecure ssl algoo's 
+                #Add Sachin's Code Here and Add support for detecting insecure ssl algoo's 
 
                 if (('password = "') in dat.lower() or ('secret = "') in dat.lower() or ('username = "') in dat.lower() or ('key = "') in dat.lower()):
                     c['d_sensitive'].append(jfile_path.replace(JS,''))
@@ -819,6 +1253,8 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     c['d_ssl_pin'].append(jfile_path.replace(JS,''))
                 if (('com.noshufou.android.su') in dat or ('com.thirdparty.superuser') in dat or ('eu.chainfire.supersu') in dat or ('com.koushikdutta.superuser') in dat or ('eu.chainfire.') in dat):
                     c['d_root'].append(jfile_path.replace(JS,''))
+                if (('.contains("test-keys")') in dat or ('/system/app/Superuser.apk') in dat or ('isDeviceRooted()') in dat or ('/system/bin/failsafe/su') in dat or ('/system/sd/xbin/su') in dat or ('"/system/xbin/which", "su"') in dat or ('RootTools.isAccessGiven()') in dat):
+                    c['d_rootcheck'].append(jfile_path.replace(JS,''))
                 if (re.findall('java.util.Random',dat)):
                     c['rand'].append(jfile_path.replace(JS,''))
                 if(re.findall('Log.|System.out.print',dat)):
@@ -941,6 +1377,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     EmailnFile+="<tr><td>" + "<br>".join(EMAILS) + "</td><td><a href='../ViewSource/?file=" + escape(fl)+"&md5="+MD5+"&type="+TYP+"'>"+escape(base_fl)+"</a></td></tr>"
                 
     print "[INFO] Finished Code Analysis, Email and URL Extraction"
+    #API Description
     dc ={'gps':'GPS Location',
         'crypto':'Crypto ',
         'exec': 'Execute System Command ',
@@ -990,6 +1427,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
             for l in c[ky]:
                 link+="<a href='../ViewSource/?file="+ escape(l) +"&md5="+MD5+"&type="+TYP+"'>"+escape(ntpath.basename(l))+"</a> "
             html+=hd+link+"</td></tr>"
+    #Code Review Description
     dg={'d_sensitive' : "Files may contain hardcoded sensitive informations like usernames, passwords, keys etc.",
         'd_ssl': 'Insecure Implementation of SSL. Trusting all the certificates or accepting self signed certificates is a critical Security Hole.',
         'd_sqlite': 'App uses SQLite Database. Sensitive Information should be encrypted.',
@@ -1009,6 +1447,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
         'dex_cert' : 'DexGuard Signer Certificate Tamper Detection code is identified.',
         'd_ssl_pin':' This App uses an SSL Pinning Library (org.thoughtcrime.ssl.pinning) to prevent MITM attacks in secure communication channel.',
         'd_root' : 'This App may request root (Super User) privileges.',
+        'd_rootcheck' : 'This App may have root detection capabilities.',
         'rand' : 'The App uses an insecure Random Number Generator.',
         'log' : 'The App logs information. Sensitive information should never be logged.',
         }
@@ -1024,7 +1463,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
             link=''
             if (re.findall('d_sqlite|d_con_private|log',k)):
                 hd='<tr><td>'+dg[k]+'</td><td>'+spn_info+'</td><td>'
-            elif (re.findall('dex_cert|dex_tamper|dex_debug|dex_debug_con|dex_debug_key|dex_emulator|dex_root|d_ssl_pin',k)):
+            elif (re.findall('d_rootcheck|dex_cert|dex_tamper|dex_debug|dex_debug_con|dex_debug_key|dex_emulator|dex_root|d_ssl_pin',k)):
                 hd='<tr><td>'+dg[k]+'</td><td>'+spn_sec+'</td><td>'
             else:
                 hd='<tr><td>'+dg[k]+'</td><td>'+spn_dang+'</td><td>'
@@ -1038,11 +1477,13 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
 
 #iOS Support Functions
 def StaticAnalyzer_iOS(request):
-
-    #try:
+    '''
+    try:
+    '''
     #Input validation
     print "[INFO] iOS Static Analysis Started"
     TYP=request.GET['type']
+    RESCAN= str(request.GET.get('rescan', 0))
     m=re.match('[0-9a-f]{32}',request.GET['checksum'])
     if ((m) and (request.GET['name'].endswith('.ipa') or request.GET['name'].endswith('.zip')) and ((TYP=='ipa') or (TYP=='ios'))):
         DIR=settings.BASE_DIR        #BASE DIR
@@ -1051,73 +1492,181 @@ def StaticAnalyzer_iOS(request):
         APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
         TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/mac/')  #TOOLS DIR
         if TYP=='ipa':
-            print "[INFO] iOS Binary (IPA) Analysis Started"
-            APP_FILE=MD5 + '.ipa'        #NEW FILENAME
-            APP_PATH=APP_DIR+APP_FILE    #APP PATH
-            BIN_DIR=os.path.join(APP_DIR,"Payload/")
-            #ANALYSIS BEGINS
-            SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
-            SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
-            print "[INFO] Extracting IPA"
-            Unzip(APP_PATH,APP_DIR)               #EXTRACT IPA
-            FILES,SFILES=iOS_ListFiles(BIN_DIR,MD5,True,'ipa')   #Get Files, normalize + to x, and convert binary plist -> xml
-            INFO_PLIST,BIN_NAME,ID,VER,SDK,PLTFM,MIN,LIBS,BIN_ANAL=BinaryAnalysis(BIN_DIR,TOOLS_DIR,APP_DIR)
-            context = {
-            'title' : 'Static Analysis',
-            'name' : APP_NAME,
-            'size' : SIZE,
-            'md5': MD5,
-            'sha1' : SHA1,
-            'sha256' : SHA256,
-            'plist' : INFO_PLIST,
-            'bin_name' : BIN_NAME,
-            'id' : ID,
-            'ver' : VER,
-            'sdk' : SDK,
-            'pltfm' : PLTFM,
-            'min' : MIN,
-            'bin_anal' : BIN_ANAL,
-            'libs' : LIBS,
-            'files' : FILES,
-            'file_analysis' : SFILES,
-            }
+            #DB
+            DB=StaticAnalyzerIPA.objects.filter(MD5=MD5)
+            if DB.exists() and RESCAN=='0':
+                print "\n[INFO] Analysis is already Done. Fetching data from the DB..."
+                context = {
+                'title' : DB[0].TITLE,
+                'name' : DB[0].APPNAMEX,
+                'size' : DB[0].SIZE,
+                'md5': DB[0].MD5,
+                'sha1' : DB[0].SHA1,
+                'sha256' : DB[0].SHA256,
+                'plist' : DB[0].INFOPLIST,
+                'bin_name' : DB[0].BINNAME,
+                'id' : DB[0].IDF,
+                'ver' : DB[0].VERSION,
+                'sdk' : DB[0].SDK,
+                'pltfm' : DB[0].PLTFM,
+                'min' : DB[0].MINX,
+                'bin_anal' : DB[0].BIN_ANAL,
+                'libs' : DB[0].LIBS,
+                'files' : python_list(DB[0].FILES),
+                'file_analysis' : DB[0].SFILESX,
+                }
+            else:
+                print "[INFO] iOS Binary (IPA) Analysis Started"
+                APP_FILE=MD5 + '.ipa'        #NEW FILENAME
+                APP_PATH=APP_DIR+APP_FILE    #APP PATH
+                BIN_DIR=os.path.join(APP_DIR,"Payload/")
+                #ANALYSIS BEGINS
+                SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
+                SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
+                print "[INFO] Extracting IPA"
+                Unzip(APP_PATH,APP_DIR)               #EXTRACT IPA
+                FILES,SFILES=iOS_ListFiles(BIN_DIR,MD5,True,'ipa')   #Get Files, normalize + to x, and convert binary plist -> xml
+                INFO_PLIST,BIN_NAME,ID,VER,SDK,PLTFM,MIN,LIBS,BIN_ANAL=BinaryAnalysis(BIN_DIR,TOOLS_DIR,APP_DIR)
+                #Saving to DB
+                print "\n[INFO] Connecting to DB"
+                if RESCAN=='1':
+                    print "\n[INFO] Updating Database..."
+                    StaticAnalyzerIPA.objects.filter(MD5=MD5).update(TITLE='Static Analysis',APPNAMEX=APP_NAME,SIZE=SIZE,MD5=MD5,SHA1=SHA1,SHA256=SHA256,INFOPLIST=INFO_PLIST,BINNAME=BIN_NAME,IDF=ID,VERSION=VER,SDK=SDK,PLTFM=PLTFM,MINX=MIN,BIN_ANAL=BIN_ANAL,LIBS=LIBS,FILES=FILES,SFILESX=SFILES)
+                elif RESCAN=='0':
+                    print "\n[INFO] Saving to Database"
+                    STATIC_DB=StaticAnalyzerIPA(TITLE='Static Analysis',APPNAMEX=APP_NAME,SIZE=SIZE,MD5=MD5,SHA1=SHA1,SHA256=SHA256,INFOPLIST=INFO_PLIST,BINNAME=BIN_NAME,IDF=ID,VERSION=VER,SDK=SDK,PLTFM=PLTFM,MINX=MIN,BIN_ANAL=BIN_ANAL,LIBS=LIBS,FILES=FILES,SFILESX=SFILES)
+                    STATIC_DB.save()
+                context = {
+                'title' : 'Static Analysis',
+                'name' : APP_NAME,
+                'size' : SIZE,
+                'md5': MD5,
+                'sha1' : SHA1,
+                'sha256' : SHA256,
+                'plist' : INFO_PLIST,
+                'bin_name' : BIN_NAME,
+                'id' : ID,
+                'ver' : VER,
+                'sdk' : SDK,
+                'pltfm' : PLTFM,
+                'min' : MIN,
+                'bin_anal' : BIN_ANAL,
+                'libs' : LIBS,
+                'files' : FILES,
+                'file_analysis' : SFILES,
+                }
             template="ios_binary_analysis.html"
             return render(request,template,context)
         elif TYP=='ios':
-            print "[INFO] iOS Source Code Analysis Started"
-            APP_FILE=MD5 + '.zip'        #NEW FILENAME
-            APP_PATH=APP_DIR+APP_FILE    #APP PATH
-            #ANALYSIS BEGINS - Already Unzipped
-            print "[INFO] ZIP Already Extracted"
-            SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
-            SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
-            FILES,SFILES=iOS_ListFiles(APP_DIR,MD5,False,'ios')
-            html,dang,URLnFile,EmailnFile,INFO_PLIST,BIN_NAME,ID,VER,SDK,PLTFM,MIN=iOS_Source_Analysis(APP_DIR,MD5)
-            LIBS,BIN_ANAL='',''
-            context = {
-            'title' : 'Static Analysis',
-            'name' : APP_NAME,
-            'size' : SIZE,
-            'md5': MD5,
-            'sha1' : SHA1,
-            'sha256' : SHA256,
-            'plist' : INFO_PLIST,
-            'bin_name' : BIN_NAME,
-            'id' : ID,
-            'ver' : VER,
-            'sdk' : SDK,
-            'pltfm' : PLTFM,
-            'min' : MIN,
-            'bin_anal' : BIN_ANAL,
-            'libs' : LIBS,
-            'files' : FILES,
-            'file_analysis' : SFILES,
-            'api' : html,
-            'insecure' : dang,
-            'urls' : URLnFile,
-            'emails' : EmailnFile,
-
-            }
+            DB=StaticAnalyzerIOSZIP.objects.filter(MD5=MD5)
+            if DB.exists() and RESCAN=='0':
+                print "\n[INFO] Analysis is already Done. Fetching data from the DB..."
+                context = {
+                'title' : DB[0].TITLE,
+                'name' : DB[0].APPNAMEX,
+                'size' : DB[0].SIZE,
+                'md5': DB[0].MD5,
+                'sha1' : DB[0].SHA1,
+                'sha256' : DB[0].SHA256,
+                'plist' : DB[0].INFOPLIST,
+                'bin_name' : DB[0].BINNAME,
+                'id' : DB[0].IDF,
+                'ver' : DB[0].VERSION,
+                'sdk' : DB[0].SDK,
+                'pltfm' : DB[0].PLTFM,
+                'min' : DB[0].MINX,
+                'bin_anal' : DB[0].BIN_ANAL,
+                'libs' : DB[0].LIBS,
+                'files' : python_list(DB[0].FILES),
+                'file_analysis' : DB[0].SFILESX,
+                'api' : DB[0].HTML,
+                'insecure' : DB[0].CODEANAL,
+                'urls' : DB[0].URLnFile,
+                'emails' : DB[0].EmailnFile
+                }
+            else:
+                print "[INFO] iOS Source Code Analysis Started"
+                APP_FILE=MD5 + '.zip'        #NEW FILENAME
+                APP_PATH=APP_DIR+APP_FILE    #APP PATH
+                #ANALYSIS BEGINS - Already Unzipped
+                print "[INFO] ZIP Already Extracted"
+                SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
+                SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
+                FILES,SFILES=iOS_ListFiles(APP_DIR,MD5,False,'ios')
+                HTML,CODEANAL,URLnFile,EmailnFile,INFO_PLIST,BIN_NAME,ID,VER,SDK,PLTFM,MIN=iOS_Source_Analysis(APP_DIR,MD5)
+                LIBS,BIN_ANAL='',''
+                #Saving to DB
+                print "\n[INFO] Connecting to DB"
+                if RESCAN=='1':
+                    print "\n[INFO] Updating Database..."
+                    StaticAnalyzerIOSZIP.objects.filter(MD5=MD5).update(TITLE = 'Static Analysis',
+                    APPNAMEX=APP_NAME,
+                    SIZE=SIZE,
+                    MD5=MD5,
+                    SHA1=SHA1,
+                    SHA256=SHA256,
+                    INFOPLIST=INFO_PLIST,
+                    BINNAME=BIN_NAME,
+                    IDF=ID,
+                    VERSION=VER,
+                    SDK=SDK,
+                    PLTFM=PLTFM,
+                    MINX=MIN,
+                    BIN_ANAL=BIN_ANAL,
+                    LIBS=LIBS,
+                    FILES=FILES,
+                    SFILESX=SFILES,
+                    HTML=HTML,
+                    CODEANAL=CODEANAL,
+                    URLnFile=URLnFile,
+                    EmailnFile=EmailnFile)
+                elif RESCAN=='0':
+                    print "\n[INFO] Saving to Database"
+                    STATIC_DB=StaticAnalyzerIOSZIP(TITLE = 'Static Analysis',
+                    APPNAMEX=APP_NAME,
+                    SIZE=SIZE,
+                    MD5=MD5,
+                    SHA1=SHA1,
+                    SHA256=SHA256,
+                    INFOPLIST=INFO_PLIST,
+                    BINNAME=BIN_NAME,
+                    IDF=ID,
+                    VERSION=VER,
+                    SDK=SDK,
+                    PLTFM=PLTFM,
+                    MINX=MIN,
+                    BIN_ANAL=BIN_ANAL,
+                    LIBS=LIBS,
+                    FILES=FILES,
+                    SFILESX=SFILES,
+                    HTML=HTML,
+                    CODEANAL=CODEANAL,
+                    URLnFile=URLnFile,
+                    EmailnFile=EmailnFile)
+                    STATIC_DB.save()
+                context = {
+                'title' : 'Static Analysis',
+                'name' : APP_NAME,
+                'size' : SIZE,
+                'md5': MD5,
+                'sha1' : SHA1,
+                'sha256' : SHA256,
+                'plist' : INFO_PLIST,
+                'bin_name' : BIN_NAME,
+                'id' : ID,
+                'ver' : VER,
+                'sdk' : SDK,
+                'pltfm' : PLTFM,
+                'min' : MIN,
+                'bin_anal' : BIN_ANAL,
+                'libs' : LIBS,
+                'files' : FILES,
+                'file_analysis' : SFILES,
+                'api' : HTML,
+                'insecure' : CODEANAL,
+                'urls' : URLnFile,
+                'emails' : EmailnFile
+                }
             template="ios_source_analysis.html"
             return render(request,template,context)
         else:
@@ -1125,14 +1674,14 @@ def StaticAnalyzer_iOS(request):
     else:
         return HttpResponseRedirect('/error/')
     '''
-        except Exception as e:
-            context = {
-            'title' : 'Error',
-            'exp' : e.message,
-            'doc' : e.__doc__
-            }
-            template="error.html"
-            return render(request,template,context)
+    except Exception as e:
+        context = {
+        'title' : 'Error',
+        'exp' : e.message,
+        'doc' : e.__doc__
+        }
+        template="error.html"
+        return render(request,template,context)
     '''
 def ViewFile(request):
     try:
@@ -1375,9 +1924,8 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
     try:
         print "[INFO] Running class-dump-z against the Binary"
         CLASSDUMPZ_BIN=os.path.join(TOOLS_DIR,'class-dump-z')
-        os.system("chmod 777 "+CLASSDUMPZ_BIN)
-        args=[CLASSDUMPZ_BIN,BIN_PATH]
-        dat=subprocess.check_output(args)
+        subprocess.call(["chmod", "777", CLASSDUMPZ_BIN])
+        dat=subprocess.check_output([CLASSDUMPZ_BIN,BIN_PATH])
         CDUMP=dat
         FILE=os.path.join(APP_DIR,"classdump.txt")
         with open(FILE,"w") as f:

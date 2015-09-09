@@ -1,5 +1,5 @@
 # Mobile-Security-Framework
-Version: v0.8.7beta
+Version: v0.8.8beta
 ![mobsecfav](https://cloud.githubusercontent.com/assets/4301109/7418958/68ec3d44-ef8f-11e4-97e2-b26a3d723814.png)
 
 Mobile Security Framework is an intelligent, all-in-one open source mobile application (Android/iOS) automated pen-testing framework capable of performing static and dynamic analysis. We've been depending on multiple tools to carry out reversing, decoding, debugging, code review, and pen-test and this process requires a lot of effort and time. Mobile Security Framework can be used for effective and fast security analysis of Android and iOS Applications. It supports binaries (APK & IPA) and zipped source code.
@@ -14,73 +14,57 @@ The dynamic analyzer runs the application in a VM or on a configured device and 
 
 Sample Report: http://opensecurity.in/research/security-analysis-of-android-browsers.html
 
-#Requirements
+###Dynamic Analysis - Android APK
+![android-dynamic](https://cloud.githubusercontent.com/assets/4301109/9771195/1374d99a-5752-11e5-9b33-70ac6347164a.png)
 
-* Python 2.7
-* Django 1.8
-* Oracle JDK 1.7 or above 
-http://www.oracle.com/technetwork/java/javase/downloads/
+## Documentation
+* https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/wiki/Documentation
 
-NOTE: 
-
-* On Linux and Mac, install Oracle Java and make it the default one.
-* iOS IPA Binary Analysis requires MAC OSX and you need to install Commandline tools for MAC OSX
-http://osxdaily.com/2014/02/12/install-command-line-tools-mac-os-x/
-
-#How to Use
-
-###Configuring Static Analyzer
-
-Tested on Windows 7, 8, 8.1, Ubuntu, OSX Marvicks
-
- Install Django version 1.8
-
-``` pip install Django==1.8```
-
- Specify Java PATH
-
-Go to YodleeMobSec/settings.py and provide the correct Path to your Java Installation in the line that contains JAVA_PATH=
-```
-if platform.system()=="Windows":
-    JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/'  # Use "/" instead of "\" while setting the path.
-else:
-    JAVA_PATH='/usr/bin/' #For OSX and Linux
-```
-
- To Run
-
-```python manage.py runserver 127.0.0.1:8000```
-
-Open your browser and navigate to http://127.0.0.1:8000
-
-You can upload your APK/Zipped Android Source Code/IPA/Zipped iOS Source Code to perform Security Analysis.
-
-### Configuring Dynamic Analyzer
-
-Pending....
-
-#Queries
+##Queries
 
 * Features and Updates : [@ajinabraham](http://twitter.com/ajinabraham) or [@OpenSecurity_IN](http://twitter.com/OpenSecurity_IN). 
 * Open Bugs Here - https://github.com/ajinabraham/YSO-Mobile-Security-Framework/issues
 
-#v0.8.7 Changelog
+###v0.8.8 Changelog
+
+* New name: Mobile Security Framework (MobSF)
+* Added Dynamic Analysis
+* VM Available for Download
+* Fixed RCE
+* Fixed Broken Manifest File Parsing Logic
+* Sqlite DB Support
+* Fixed Reporting with new PDF report
+* Rescan Option
+* Detect Root Detection
+* Added Requiremnts.txt
+* Automated Java Path Detection
+* Improved Manifest and Code Analysis
+* Fixed Unzipping error for Unix.
+* Activity Tester Module
+* Exported Activity Tester Module
+* Device API Hooker with DroidMon
+* SSL Certificate Pinning Bypass with JustTrustMe
+* RootCloak to prevent root Detection
+* Data Pusher to Dump Application Data
+* pyWebproxy to decrypt SSL Traffic
+
+###v0.8.7 Changelog
 
 * Improved Static Analysis Rules
 * Better AndroidManifest View
 * Search in Files
 
-#v0.8.6 Changelog
+###v0.8.6 Changelog
 
 * Detects implicitly exported component from manifest.
 * Added CFR decompiler support 
 * Fixed Regex DoS on URL Regex
 
-#v0.8.5 Changelog
+###v0.8.5 Changelog
 
 * Bug Fix to support IPA MIME Type: application/x-itunes-ipa
 
-#v0.8.4 Changelog
+###v0.8.4 Changelog
 
 * Improved Android Static Code Analysis speed (2X performance)
 * Static Code analysis on Dexguard protected APK.
@@ -90,7 +74,7 @@ Pending....
 * MIME Type Bug fix to Support IE.
 * Fixed Progress Bar.
 
-#v0.8.3 Changelog
+###v0.8.3 Changelog
  
 * View AndroidManifest.xml & Info.plist
 * Supports iOS Binary (IPA)
@@ -98,9 +82,12 @@ Pending....
 * Check for Hardcoded Certificates
 * Added Code to prevent from Directory Traversal
 
-#Credits
+##Credits
 
+* Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
 * Thomas Abraham - For JS Hacks on UI.
 * Anto Joseph (@antojosep007) - For the help with SuperSU.
 * Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset.
 * Abhinav Sejpal (@Abhinav_Sejpal) - For poking me with bugs and feature requests.
+* Anant Srivastava (@anantshri) - For Activity Tester Idea
+

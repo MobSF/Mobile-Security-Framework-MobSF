@@ -1,16 +1,16 @@
-{% extends "skelton_base.html" %}
+
    {% block content %}
    <link href="/static/css/dashboard.css" rel="stylesheet">
      <script src="/static/js/jquery.min.js"></script>
-	<script src="/static/js/Chart.js"></script>
-<h1 class="page-header">Static Analysis  <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=apk&amp;rescan=1" class="btn btn-info" role="button">Rescan</a></h1>
-
+<h1 align="center" class="page-header">Static Analysis - {{name}} </h1>
+<hr>
 
                   <div class="col-lg-7">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> FILE INFORMATION</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> FILE INFORMATION</h3><hr>
                             </div>
+
                             <div class="panel-body">
                                 <div class="list-group">
 									<p>                                       
@@ -36,11 +36,11 @@
                             </div>
                         </div>
                     </div>
-
+<hr>
                   <div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span> APP INFORMATION</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span> APP INFORMATION</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -73,10 +73,11 @@
                             </div>
                         </div>
                     </div>
+                    <hr>
 					  <div class="col-lg-3">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-eye-close"></span> CODE NATURE</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-eye-close"></span> CODE NATURE</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -106,92 +107,14 @@
                             </div>
                         </div>
                     </div>
-					<form id="dynform" action="../DynamicAnalyzer/" method="POST">
-					 {% csrf_token %} 
-					<input type="hidden" name="md5" value="{{ md5 }}">
-					<input type="hidden" name="pkg" value="{{ packagename }}">
-					<input type="hidden" name="lng" value="{{ mainactivity }}">
-					</form>
-
-					<script>
-
-
-					$(document).ready(function () {
-					
-							var data = [
-							{
-								value: {{ act_count }},
-								color:"#F7464A",
-								highlight: "#FF5A5E",
-								label: "Activities"
-							},
-							{
-								value: {{ prov_count }},
-								color: "#009933",
-								highlight: "#33CC33",
-								label: "Providers"
-							},
-							{
-								value: {{ bro_count }},
-								color: "#2FBCC3",
-								highlight: "#7AD3A2",
-								label: "Receivers"
-							},
-							{
-								value: {{ serv_count }},
-								color: "#FDB45C",
-								highlight: "#FFC870",
-								label: "Services"
-							}
-						]
-						
-					var ctx = document.getElementById("appdet").getContext("2d");
-					var myDoughnutChart = new Chart(ctx).Doughnut(data);
-					
-
-					});
-						
 				
-					
-					
-				</script>
-					<div class="col-lg-3">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-th-large"></span> DISTRIBUTION</h3>
-                            </div>
-                            <div class="panel-body">
-                               		<canvas id="appdet" width="150" height="158"></canvas>	
-                                
-                            </div>
-                        </div>
-                    </div>
-				  <div class="col-lg-6">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-th-large"></span> DECOMPILE & DISASSEMBLE</h3>
-                            </div>
-                            <div class="panel-body">
-        
-
-						<a href="../Java/?md5={{ md5 }}{{ zipped }}" class="btn btn-info btn-lg" role="button">View Java</a>
-						<a href="../static/downloads/{{ md5 }}-java.zip" class="btn btn-warning btn-lg" role="button">Download Java</a>
-					
-					    </br></br>
-						<a href="../Smali/?md5={{ md5 }}" class="btn btn-info btn-lg" role="button">View Smali</a>
-						<a href="../static/downloads/{{ md5 }}-smali.zip" class="btn btn-warning btn-lg">Download Smali</a>
-						
-					</br></br>
-					  <a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APK" class="btn btn-success" role="button">Download PDF Report</a>
-					<a href="javascript:document.getElementById('dynform').submit();" class="btn btn-primary" role="button">Start Dynamic Analysis</a>
-				
-					</div>
-                            </div>
+			
+<hr>
                         </div>
                   		  <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-eye-close"></span> CERTIFICATE</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-eye-close"></span> CERTIFICATE</h3><hr>
                             </div>
                             <div class="panel-body">
                             <pre>
@@ -200,10 +123,11 @@
                             </div>
                         </div>
                     </div> 
+                    <hr>
 					<div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-ok"></span> PERMISSIONS</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-ok"></span> PERMISSIONS</h3><hr>
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
@@ -226,12 +150,11 @@
                         </div>
                     </div>
 					</div>
+                    <hr>
 			<div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-search"></span> MANIFEST ANALYSIS   -   <a target="_blank" href="{{mani}}" role="button" class="btn btn-success">View AndroidManifest.xml</a></h3>
-
-
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-search"></span> MANIFEST ANALYSIS</h3><hr>
 
                             </div>
                             <div class="panel-body">
@@ -254,11 +177,11 @@
                         </div>
                     </div>
 					</div>
-
+<hr>
 						<div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-warning-sign"></span> CODE ANALYSIS</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-warning-sign"></span> CODE ANALYSIS</h3><hr>
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
@@ -280,10 +203,11 @@
                         </div>
                     </div>
 					</div>		
+                    <hr>
 	<div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-tasks"></span> ANDROID API</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-tasks"></span> ANDROID API</h3><hr>
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
@@ -305,11 +229,11 @@
                         </div>
                     </div>
 					</div>
-	
+	<hr>
 					    <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> URLS</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> URLS</h3><hr>
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
@@ -325,10 +249,11 @@
                         </div>
                     </div>
 					</div>
+                    <hr>
 							    <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-envelope"></span> EMAILS</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-envelope"></span> EMAILS</h3><hr>
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
@@ -344,10 +269,10 @@
                         </div>
                     </div>
 					</div>
-									    <div class="col-lg-12">
+							<hr>		    <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-lock"></span> FILE ANALYSIS</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-lock"></span> FILE ANALYSIS</h3><hr>
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
@@ -368,10 +293,10 @@
                         </div>
                     </div>
 					</div>
-  			<div class="col-lg-12">
+  			<hr><div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span> STRINGS</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span> STRINGS</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -390,28 +315,11 @@
                             </div>
                         </div>
                     </div>
-			  <div class="col-lg-7">
+			
+					<hr>     <div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> FILES</h3>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-									<p>  
-								{% for file in files %}
-									{{ file}} <br>
-								{% endfor %}									
-									
-									</p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-					     <div class="col-lg-5">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-credit-card"></span> ACTIVITIES</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-credit-card"></span> ACTIVITIES</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -426,10 +334,10 @@
                             </div>
                         </div>
                     </div>
-          <div class="col-lg-5">
+          <hr><div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-hdd"></span> PROVIDERS</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-hdd"></span> PROVIDERS</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -444,10 +352,10 @@
                             </div>
                         </div>
                     </div>
-					<div class="col-lg-5">
+			<hr>		<div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-attributes-alt"></span> RECEIVERS</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-attributes-alt"></span> RECEIVERS</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -462,10 +370,10 @@
                             </div>
                         </div>
                     </div>
-					<div class="col-lg-5">
+			<hr>		<div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-refresh"></span> SERVICES</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-refresh"></span> SERVICES</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -480,10 +388,10 @@
                             </div>
                         </div>
                     </div>
-						<div class="col-lg-5">
+			<hr>			<div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-chevron-down"></span> LIBRARIES</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-chevron-down"></span> LIBRARIES</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -497,9 +405,27 @@
                                 
                             </div>
                         </div>
+                    </div><hr>  <div class="col-lg-7">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> FILES</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <p>  
+                                {% for file in files %}
+                                    {{ file}} <br>
+                                {% endfor %}                                    
+                                    
+                                    </p>
+                                </div>
+                                
+                            </div>
+                        </div>
                     </div>
 
-	
+	<hr><hr>
+    <h3 align="center"> Report Generated by - MobSF | http://opensecurity.in</h3>
 		   
 		   
        

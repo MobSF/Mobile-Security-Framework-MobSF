@@ -2,31 +2,14 @@
    {% block content %}
      <link href="/static/css/dashboard.css" rel="stylesheet">
      <script src="/static/js/jquery.min.js"></script>
-	<script src="/static/js/html2canvas.js"></script>
-  <script src="/static/js/canvas-toBlob.js"></script>
-    <script src="/static/js/FileSaver.js"></script>
+
 		<script type="text/javascript" src="/static/js/shCore.js"></script>
 	<script type="text/javascript" src="/static/js/shBrushJava.js"></script>
 	<link type="text/css" rel="stylesheet" href="/static/css/shCoreDefault.css"/>
 	<script type="text/javascript">SyntaxHighlighter.all();</script>
 <h1 class="page-header">Dynamic Analysis</h1>
 
-       
-		 
-		 <div class="col-lg-6">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> SCREENSHOT</h3>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-									<img alt="Screenshot" src="../static/downloads/{{ md5 }}-screenshot.png" height="800" width="500">
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-					 <div class="col-lg-6">
+         <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> DOWNLOADS</h3>
@@ -34,17 +17,145 @@
                             <div class="panel-body">
                                 <div class="list-group">
 
-									<a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-Weblog.txt">HTTP(S) Traffic</a>
-									<a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-logcat.txt">Logcat Logs</a>
-									<a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-dump.txt">Dumpsys Logs</a> </br>
-                                    <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-AppData.tar">Application Data</a>
-									<a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-pcap.cap">Packet Capture</a>
+            <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-Weblog.txt">HTTP(S) Traffic</a>
+            <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-logcat.txt">Logcat Logs</a>
+            <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
+            <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
+            <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-AppData.tar">Application Data</a>
+            <!--<a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-pcap.cap">Packet Capture</a>-->
 
                                 </div>
                                 
                             </div>
                         </div>
                     </div>
+		 
+
+
+    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span> API MONITER</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    
+
+<div class="alert alert-info" role="alert"><h3>File I/O</h3></br>
+     {% for i in fileio %} {{i | safe}}</br> {% endfor %}</div>
+<div class="alert alert-success" role="alert"><h3>Network Calls</h3></br>
+     {% for i in net %} {{i | safe}}</br> {% endfor %}</div>
+<div class="alert alert-warning" role="alert"><h3>Binder Calls</h3></br>
+    {% for i in binder %} {{i | safe}}</br> {% endfor %}</div>
+<div class="alert alert-danger" role="alert"><h3>Crypto</h3></br>
+    {% for i in crypto %} {{i | safe}}</br> {% endfor %}</div>
+<div class="alert alert-info" role="alert"><h3>Device Info</h3></br>
+    {% for i in divinfo %} {{i | safe}}</br> {% endfor %}</div>
+<div class="alert alert-success" role="alert"><h3>Base64</h3></br>
+     {% for i in base64 %} {{i | safe}}</br> {% endfor %}</div>
+<div class="alert alert-warning" role="alert"><h3>Content</h3></br>
+     {% for i in cntval %} {{i | safe}}</br> {% endfor %}</div>
+<div class="alert alert-danger" role="alert"><h3>SMS</h3></br>
+     {% for i in sms %} {{i | safe}}</br> {% endfor %}</div>
+<div class="alert alert-success" role="alert"><h3>Device Data</h3></br>
+     {% for i in sysprop %} {{i | safe}}</br> {% endfor %}</div>
+<div class="alert alert-warning" role="alert"><h3>Dex Class Loader</h3></br>
+    {% for i in dexload %} {{i | safe}}</br> {% endfor %}</div>
+<div class="alert alert-info" role="alert"><h3>Reflection</h3></br>
+     {% for i in reflect %} {{i | safe}}</br> {% endfor %}</div>
+<div class="alert alert-danger" role="alert"><h3>System Manager</h3></br>
+     {% for i in sysman %} {{i | safe}}</br> {% endfor %}</div>
+<div class="alert alert-success" role="alert"><h3>Process</h3></br>
+     {% for i in process %} {{i | safe}}</br> {% endfor %}</div>
+
+
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+
+
+<div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-search"></span> EXPORTED ACTIVITY TESTER</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <table class="table table-bordered table-hover table-striped">
+
+                                    {% for img, desc in expacttest.items %}
+                                        <tr>
+                                         <td><img alt="{{desc}}" src="../static/downloads/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                                        <td>{{ desc }}</td>
+                                        </tr>
+                                    {% endfor %}
+
+                                       
+                                        
+                                    </table>
+                                        
+                                        
+                            
+                                   
+
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+
+ <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-search"></span> ACTIVITY TESTER</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <table class="table table-bordered table-hover table-striped">
+
+                                    {% for img, desc in acttest.items %}
+                                        <tr>
+                                         <td><img alt="{{desc}}" src="../static/downloads/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                                        <td>{{ desc }}</td>
+                                        </tr>
+                                    {% endfor %}
+
+                                       
+                                        
+                                    </table>
+                                        
+                                        
+                            
+                                   
+
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+
+
+		 <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-camera"></span> SCREENSHOT</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+				
+                                        {% for i in imgs %}
+                                         <img alt="Screenshot" src="../static/downloads/{{ md5 }}-screenshots-apk/{{ i}}" class="img-thumbnail" height="600" width="350">
+                                        {% endfor %}
+                                   
+
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+				
 					<div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">

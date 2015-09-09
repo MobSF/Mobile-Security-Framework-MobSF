@@ -1,33 +1,15 @@
-{% extends "skelton_base.html" %}
+
    {% block content %}
    <link href="/static/css/dashboard.css" rel="stylesheet">
      <script src="/static/js/jquery.min.js"></script>
-<h1 class="page-header">Static Analysis <a href="../StaticAnalyzer_iOS/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=ios&amp;rescan=1" class="btn btn-info" role="button">Rescan</a></h1>
-
-<!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Info.plist</h4>
-      </div>
-      <div class="modal-body">
-        <code>
-        {{ plist }}
-    </code>
-      </div>
-      <div class="modal-footer">
-     
-      </div>
-    </div>
-  </div>
-</div>
+<h1 align="center" class="page-header">Static Analysis - {{name}} </h1>
+<hr>
 
                   <div class="col-lg-7">
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> FILE INFORMATION</h3>
+                                <hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -54,11 +36,12 @@
                             </div>
                         </div>
                     </div>
-    
+    <hr>
                 <div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span> APP INFORMATION</h3>
+                                <hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -83,21 +66,17 @@
                     
                                     </p>
                                       
-                         <p>
-                          <a data-target="#myModal" role="button" class="btn btn-info" data-toggle="modal">View Info.plist</a>
-         <a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=IOSZIP" class="btn btn-success" role="button">Download PDF Report</a>
-                         </p>
-                         </p>
                                 </div>
                                 
                             </div>
                         </div>
                     </div>
-       
+       <hr>
              <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-warning-sign"></span> CODE ANALYSIS</h3>
+                                <hr>
                             </div>
                             <div class="panel-body">
                   <div class="table-responsive">
@@ -119,10 +98,12 @@
                         </div>
                     </div>
           </div>  
+          <hr>
   <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-tasks"></span> iOS API</h3>
+                                <hr>
                             </div>
                             <div class="panel-body">
                   <div class="table-responsive">
@@ -144,11 +125,11 @@
                         </div>
                     </div>
           </div>
-
+<hr>
               <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> URLS</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> URLS</h3><hr>
                             </div>
                             <div class="panel-body">
                   <div class="table-responsive">
@@ -163,11 +144,11 @@
                             </div>
                         </div>
                     </div>
-          </div>
+          </div><hr>
                   <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-envelope"></span> EMAILS</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-envelope"></span> EMAILS</h3><hr>
                             </div>
                             <div class="panel-body">
                   <div class="table-responsive">
@@ -182,11 +163,11 @@
                             </div>
                         </div>
                     </div>
-          </div>
+          </div><hr>
   <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-lock"></span> FILE ANALYSIS</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-lock"></span> FILE ANALYSIS</h3><hr>
                             </div>
                             <div class="panel-body">
                   <div class="table-responsive">
@@ -205,11 +186,11 @@
                             </div>
                         </div>
                     </div>
-          </div> 
+          </div> <hr>
                 <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-chevron-down"></span> LIBRARIES</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-chevron-down"></span> LIBRARIES</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -221,11 +202,11 @@
                             </div>
                         </div>
                     </div>
-
+<hr>
               <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> FILES</h3>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> FILES</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -240,6 +221,10 @@
                             </div>
                         </div>
                     </div>
+                    <hr><hr>
+                     <h3 align="center"> Report Generated by - MobSF | http://opensecurity.in</h3>
+       
+  
   
       
    {% endblock %}
