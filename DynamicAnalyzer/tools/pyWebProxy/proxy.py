@@ -56,7 +56,7 @@ def Logz(request,response,log):
     rdat=''
     dat=response.request.body if response.request.body else ''
     TRAFFIC+= "\n\nREQUEST: " + str(response.request.method)+ " " + str(response.request.url) + '\n'
-    for header, value in list(response.headers.items()):
+    for header, value in list(request.headers.items()):
         TRAFFIC+= header + ": " + value +"\n"
     TRAFFIC+= "\n\n" + str(dat) + "\n"
     TRAFFIC+= "\n\nRESPONSE: " +str(response.code) + " " + str(response.reason) + "\n"
