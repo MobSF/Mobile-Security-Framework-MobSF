@@ -82,8 +82,8 @@ def TakeScreenShot(request):
             SCRDIR=os.path.join(DIR,'uploads/'+MD5+'/screenshots-apk/')#make sure that list only png from this directory
             TOOLSDIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
             adb=getADB(TOOLSDIR)
-            subprocess.call([adb, "shell", "screencap", "-p", "/system/screen.png"])
-            subprocess.call([adb, "pull", "/system/screen.png", SCRDIR + "screenshot-"+str(r)+".png"])
+            subprocess.call([adb, "shell", "screencap", "-p", "/system/screen.png"], shell=True)
+            subprocess.call([adb, "pull", "/system/screen.png", SCRDIR + "screenshot-"+str(r)+".png"], shell=True)
             print "\n[INFO] Screenshot Taken"
             data = {'screenshot': 'yes'}
             return HttpResponse(json.dumps(data), content_type='application/json') 
@@ -139,7 +139,7 @@ def FinalTest(request):
             os.system(adb+' shell dumpsys > "'+APKDIR + 'dump.txt"');
             print "\n[INFO] Downloading Dumpsys logs"
 
-            subprocess.call([adb, "shell", "am", "force-stop", PACKAGE])
+            subprocess.call([adb, "shell", "am", "force-stop", PACKAGE], shell=True)
             print "\n[INFO] Stopping Application"
             data = {'final': 'yes'}
             return HttpResponse(json.dumps(data), content_type='application/json') 
@@ -165,23 +165,23 @@ def DumpData(request):
             adb=getADB(TOOLSDIR)
 
             print "\n[INFO] Deleting Dump Status File"
-            subprocess.call([adb, "shell", "rm", "-rf","/sdcard/mobsec_status"])
+            subprocess.call([adb, "shell", "rm", "-rf","/sdcard/mobsec_status"], shell=True)
             print "\n[INFO] Creating TAR of Application Files."
-            subprocess.call([adb, "shell", "am", "startservice", "-a", PACKAGE, "opensecurity.ajin.datapusher/.GetPackageLocation"])
+            subprocess.call([adb, "shell", "am", "startservice", "-a", PACKAGE, "opensecurity.ajin.datapusher/.GetPackageLocation"], shell=True)
             print "\n[INFO] Waiting for TAR dump to complete..."
             timeout=100
             start_time=time.time()
             while True:
                 current_time=time.time()
-                if "MOBSEC-TAR-CREATED" in subprocess.check_output([adb, "shell", "cat", "/sdcard/mobsec_status"]):
+                if "MOBSEC-TAR-CREATED" in subprocess.check_output([adb, "shell", "cat", "/sdcard/mobsec_status"], shell=True):
                     break
                 if (current_time-start_time) > timeout:
                     print "\n[ERROR] TAR Generation Failed...."
                     break
             print "\n[INFO] Dumping Application Files from Device/VM"
-            subprocess.call([adb, "pull", "/sdcard/"+PACKAGE+".tar", APKDIR+PACKAGE+".tar"])
+            subprocess.call([adb, "pull", "/sdcard/"+PACKAGE+".tar", APKDIR+PACKAGE+".tar"], shell=True)
             print "\n[INFO] Stopping ADB"
-            subprocess.call([adb,"kill-server"])
+            subprocess.call([adb,"kill-server"], shell=True)
             try:
                 if proxy_process!=0:
                     print "\n[INFO] Stopping WebProxy with PID: " +str(proxy_process)
@@ -229,13 +229,13 @@ def ExportedActivityTester(request):
                         try:
                             n+=1
                             print "\n[INFO] Launching Exported Activity - "+ str(n)+ ". "+line
-                            subprocess.call([adb,"shell", "am","start", "-n", PKG+"/"+line])
+                            subprocess.call([adb,"shell", "am","start", "-n", PKG+"/"+line], shell=True)
                             Wait(4)
-                            subprocess.call([adb, "shell", "screencap", "-p", "/system/screen.png"])
+                            subprocess.call([adb, "shell", "screencap", "-p", "/system/screen.png"], shell=True)
                             #? get appended from Air :-() if activity names are used
-                            subprocess.call([adb, "pull", "/system/screen.png", SCRDIR + "expact-"+str(n)+".png"])
+                            subprocess.call([adb, "pull", "/system/screen.png", SCRDIR + "expact-"+str(n)+".png"], shell=True)
                             print "\n[INFO] Activity Screenshot Taken"
-                            subprocess.call([adb, "shell", "am", "force-stop", PKG])
+                            subprocess.call([adb, "shell", "am", "force-stop", PKG], shell=True)
                             print "\n[INFO] Stopping App"
                         except subprocess.CalledProcessError as e:
                             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
@@ -280,13 +280,13 @@ def ActivityTester(request):
                         try:
                             n+=1
                             print "\n[INFO] Launching Activity - "+ str(n)+ ". "+line
-                            subprocess.call([adb,"shell", "am","start", "-n", PKG+"/"+line])
+                            subprocess.call([adb,"shell", "am","start", "-n", PKG+"/"+line], shell=True)
                             Wait(4)
-                            subprocess.call([adb, "shell", "screencap", "-p", "/system/screen.png"])
+                            subprocess.call([adb, "shell", "screencap", "-p", "/system/screen.png"], shell=True)
                             #? get appended from Air :-() if activity names are used
-                            subprocess.call([adb, "pull", "/system/screen.png", SCRDIR + "act-"+str(n)+".png"])
+                            subprocess.call([adb, "pull", "/system/screen.png", SCRDIR + "act-"+str(n)+".png"], shell=True)
                             print "\n[INFO] Activity Screenshot Taken"
-                            subprocess.call([adb, "shell", "am", "force-stop", PKG])
+                            subprocess.call([adb, "shell", "am", "force-stop", PKG], shell=True)
                             print "\n[INFO] Stopping App"
                         except subprocess.CalledProcessError as e:
                             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
@@ -420,11 +420,11 @@ def getADB(TOOLSDIR):
     adb=''
     if platform.system()=="Darwin":
         adb_dir=os.path.join(TOOLSDIR, 'adb/mac/')
-        subprocess.call(["chmod", "777", adb_dir])
+        subprocess.call(["chmod", "777", adb_dir], shell=True)
         adb=os.path.join(TOOLSDIR , 'adb/mac/adb')
     elif platform.system()=="Linux":
         adb_dir=os.path.join(TOOLSDIR, 'adb/linux/')
-        subprocess.call(["chmod", "777", adb_dir])
+        subprocess.call(["chmod", "777", adb_dir], shell=True)
         adb=os.path.join(TOOLSDIR , 'adb/linux/adb')
     elif platform.system()=="Windows":
         adb=os.path.join(TOOLSDIR , 'adb/windows/adb.exe')
@@ -433,21 +433,21 @@ def getADB(TOOLSDIR):
 def ConnectInstallRun(TOOLSDIR,IP,APKPATH,PACKAGE,LAUNCH,isACT):
     #-------check strace under monkeyrunner 
     adb=getADB(TOOLSDIR)
-    subprocess.call([adb, "kill-server"])
-    subprocess.call([adb, "start-server"])
+    subprocess.call([adb, "kill-server"], shell=True)
+    subprocess.call([adb, "start-server"], shell=True)
     print "\n[INFO] ADB Started"
     Wait(7) 
     print "\n[INFO] Connecting to VM"
-    subprocess.call([adb, "connect", IP])
-    subprocess.call([adb, "wait-for-device"])
+    subprocess.call([adb, "connect", IP], shell=True)
+    subprocess.call([adb, "wait-for-device"], shell=True)
     print "\n[INFO] Mounting"
-    subprocess.call([adb, "shell", "mount", "-o", "rw,remount", "-t", "rfs", "/dev/block/sda6", "/system"])
+    subprocess.call([adb, "shell", "mount", "-o", "rw,remount", "-t", "rfs", "/dev/block/sda6", "/system"], shell=True)
     print "\n[INFO] Installing APK"
-    subprocess.call([adb, "install", APKPATH])
+    subprocess.call([adb, "install", APKPATH], shell=True)
     if isACT:
         runApp = PACKAGE + "/" + LAUNCH
         print "\n[INFO] Launching APK Main Activity"
-        subprocess.call([adb, "shell", "am", "start", "-n", runApp])
+        subprocess.call([adb, "shell", "am", "start", "-n", runApp], shell=True)
     else:
         #Handle Service or Give Choice to Select in Future.
         pass
