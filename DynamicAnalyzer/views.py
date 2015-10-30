@@ -389,15 +389,15 @@ def Report(request):
 def RefreshVM(uuid,snapshot_uuid,vbox_exe):
     #Close VM
     args=[vbox_exe,'controlvm',uuid,'poweroff']
-    subprocess.call(args)
+    subprocess.call(args, shell=True)
     print "\n[INFO] VM Closed"
     #Restore Snapshot
     args=[vbox_exe,'snapshot',uuid,'restore',snapshot_uuid]
-    subprocess.call(args)
+    subprocess.call(args, shell=True)
     print "\n[INFO] VM Restore Snapshot"
     #Start Fresh VM
     args=[vbox_exe,'startvm',uuid]
-    subprocess.call(args)
+    subprocess.call(args, shell=True)
     print "\n[INFO] VM Starting"
 
 def WebProxy(TOOLSDIR,APKDIR,ip,port,exectime):
