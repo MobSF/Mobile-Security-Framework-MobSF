@@ -9,9 +9,7 @@ from django.utils.html import escape
 from xml.dom import minidom
 from .dvm_permissions import DVM_PERMISSIONS
 import sqlite3 as sq
-import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,ast,sys
-if platform.system()=="Darwin":
-    import plistlib
+import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,ast,sys,plistlib
 try:
     import xhtml2pdf.pisa as pisa
 except:
