@@ -10,6 +10,9 @@ The dynamic analyzer runs the application in a VM or on a configured device and 
 ## Documentation
 * https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/wiki/Documentation
 
+## Video Course
+* Automated Mobile Application Security Assessment with MobSF: https://www.udemy.com/automated-mobile-application-security-assessment-with-mobsf/
+
 ## Queries
 
 * Features Requests: [@ajinabraham](http://twitter.com/ajinabraham) or [@OpenSecurity_IN](http://twitter.com/OpenSecurity_IN). 
@@ -19,6 +22,7 @@ The dynamic analyzer runs the application in a VM or on a configured device and 
 ###Static Analysis - Android APK 
 ![android-1](https://cloud.githubusercontent.com/assets/4301109/7418316/a200f318-ef8a-11e4-9828-8d696e386847.png)
 ![android-2](https://cloud.githubusercontent.com/assets/4301109/7418317/a28dac4a-ef8a-11e4-8716-09fa42532ee8.png)
+
 ###Static Analysis - iOS IPA
 ![ios](https://cloud.githubusercontent.com/assets/4301109/7418318/a29b1f88-ef8a-11e4-8d76-9883b7664501.png)
 
