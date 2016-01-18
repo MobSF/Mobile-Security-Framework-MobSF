@@ -11,7 +11,7 @@ The dynamic analyzer runs the application in a VM or on a configured device and 
 * https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/wiki/Documentation
 
 ## Video Course
-* Automated Mobile Application Security Assessment with MobSF: https://opsecx.com/index.php/course/automated-mobile-application-security-assessment-with-mobsf/
+* Automated Mobile Application Security Assessment with MobSF: https://opsecx.com/index.php/course/automated-mobile-application-security-assessment-with-mobsf/?p=github
 
 ## Queries
 
