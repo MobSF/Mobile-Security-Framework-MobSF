@@ -12,7 +12,7 @@ if os.path.exists(CERTSDIR):
     os.makedirs(CERTSDIR)
 
 def index(request):
-    print "[INFO] Mobile Security Framework v0.8.8beta"
+    print "[INFO] Mobile Security Framework v0.8.9_dev_beta"
     context = {}
     template="index.html"
     return render(request,template,context)
