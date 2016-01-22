@@ -1,21 +1,27 @@
-{% extends "skelton_base.html" %}
+
+  {% extends "base_top_only.html" %}
    {% block content %}
-<br>  
-	 <div class="page-header">
-        <h1>Zipped Source Code Instruction</h1>
+    
+
+<div class="box box-default">
+     
+          <div class="box-body">
+
+ <h1>Zipped Source Code Instruction</h1>
           <p class="lead">Mobile Security Framework supports iOS and Android (eclipse and Android Studio) project files.</p>  
-      </div>
+
 
       <p>
-      	<strong>Eclipse Project:</strong> The file AndroidManifest.xml and the directory 'src' must exist in the root directory of ZIPPED Source files for eclipse projects.
+        <strong>Eclipse Project:</strong> The file AndroidManifest.xml and the directory 'src' must exist in the root directory of ZIPPED Source files for eclipse projects.
       </p>
       <p>
-      	<strong> Android Studio Project:</strong> AndroidManifest.xml must be located at 'app/src/main/AndroidManifest.xml' and the directory 'app/src/main/java/' must exist for Android Studio projects. 
+        <strong> Android Studio Project:</strong> AndroidManifest.xml must be located at 'app/src/main/AndroidManifest.xml' and the directory 'app/src/main/java/' must exist for Android Studio projects. 
       </p>
       <p>
-      	<strong>iOS Project:</strong> For iOS projects, the .xcodeproj file must exist in the root directory of the ZIPPED Source files.
+        <strong>iOS Project:</strong> For iOS projects, the .xcodeproj file must exist in the root directory of the ZIPPED Source files.
       </p>
  
-
-
-   {% endblock %}
+          </div>
+          <!-- /.box-body -->
+        </div>
+{% endblock %}

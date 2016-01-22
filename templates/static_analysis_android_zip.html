@@ -11,7 +11,6 @@
             <li class="header">Static Analysis</li>
             <li class="active"><a href="#information"><i class="glyphicon glyphicon-info-sign"></i> Information</a></li>
             <li><a href="#nature"><i class="glyphicon glyphicon-tasks"></i> Code Nature</a></li>
-            <li><a href="#certificate"><i class="fa fa-certificate"></i> Signer Certificate</a></li>
             <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissions</a></li>
             <li><a href="#android-api"><i class="fa fa-dot-circle-o"></i> Android API</a></li>
 
@@ -29,7 +28,6 @@
               <ul class="nav treeview-menu">
                 <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
                 <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
-                <li><a href="#string"><i class="glyphicon glyphicon-sort-by-alphabet-alt"></i> Strings</a></li>
               </ul>
             </li>
 
@@ -247,17 +245,13 @@
           <span class="label label-danger pull-right"><i class="fa fa-flash"></i></span>
         </div><!-- /.box-header -->
         <div class="box-body">
-          <a href="../Java/?md5={{ md5 }}{{ zipped }}" class="btn btn-info btn-lg" role="button"><i class="fa fa-code"></i> View Java</a>
-            <a href="../static/downloads/{{ md5 }}-java.zip" class="btn btn-warning btn-lg" role="button"> <i class="glyphicon glyphicon-download"></i> Download Java Code</a>
-              </br></br>
-            <a href="../Smali/?md5={{ md5 }}" class="btn btn-info btn-lg" role="button"><i class="fa fa-code"></i> View Smali</a>
-            <a href="../static/downloads/{{ md5 }}-smali.zip" class="btn btn-warning btn-lg"> <i class="glyphicon glyphicon-download"></i> Download Smali Code</a>
-            
-          </br></br>
-             <a target="_blank" href="{{mani}}" role="button" class="btn btn-info"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
-            <a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APK" class="btn btn-success" role="button"><i class="glyphicon glyphicon-list-alt"></i> Download PDF Report</a>
-             <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=apk&amp;rescan=1" class="btn btn-info" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a>
-          <a href="javascript:document.getElementById('dynform').submit();" class="btn btn-primary" role="button"><i class="glyphicon glyphicon-play-circle"></i> Start Dynamic Analysis</a>
+          
+            <a target="_blank" href="{{mani}}" role="button" class="btn btn-info"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
+           <a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=ANDZIP" class="btn btn-success" role="button"><i class="glyphicon glyphicon-list-alt"></i> Download PDF Report</a>
+           <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=zip&amp;rescan=1" class="btn btn-info" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a>
+
+
+
                </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->
@@ -265,19 +259,6 @@
  
 </section>
 
-
-<!-- ============================================================= -->
-
-<section id="certificate">
-  <h2 class="page-header"></h2>
-   <div class="box-header">
-             <!-- /.box-header -->
-              <h3 class="box-title"><i class="fa fa-certificate"></i> Signer Certificate</h3>
-            </div>
- <pre class="hierarchy bring-up"><code class="language-bash" data-lang="bash">
-{{ certinfo | safe}}
-</code></pre>
-</section>
 
 
 <!-- ============================================================= -->
@@ -508,37 +489,6 @@
                     </table>
                                 
                             </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
-
-
-<!-- ============================================================= -->
-
-<section id="string">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-sort-by-alphabet-alt"></i> Strings</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-          <div class="list-group">
-                  <p>  
-                  
-                    {% for val in strings %}
-                      
-                     {{ val }}<br>
-                    
-                    {% endfor %}                  
-                                
-                  
-                  </p>
-                                </div>
             </div>
             <!-- /.box-body -->
           </div>

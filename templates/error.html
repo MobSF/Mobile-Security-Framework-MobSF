@@ -1,12 +1,17 @@
-{% extends "skelton_base.html" %}
+
+  {% extends "base_top_only.html" %}
    {% block content %}
-<br>  
-	 <div class="page-header">
-        <h1>Don't Play Around. An Error just popped in!</h1>
-      </div>
+    
+
+<div class="box box-default">     
+          <div class="box-body">
+
+ 
+      <h2>Don't Play Around. An Error just popped in!</h2>
       <p class="lead">{{ exp }}</p>
       <p>{{ doc }}</p>
- 
-
-
-   {% endblock %}
+      
+          </div>
+          <!-- /.box-body -->
+        </div>
+{% endblock %}

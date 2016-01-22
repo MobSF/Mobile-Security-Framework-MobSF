@@ -144,7 +144,6 @@ def PDF(request):
         print "\n[ERROR] PDF Report Generation Error - "+str(e) + " Line: "+str(exc_tb.tb_lineno)
         return HttpResponseRedirect('/error/') 
         pass
-
 def Java(request):
     try:
         m=re.match('[0-9a-f]{32}',request.GET['md5'])
@@ -315,6 +314,7 @@ def python_list(value):
     if isinstance(value, list):
         return value
     return ast.literal_eval(value)
+
 def StaticAnalyzer(request):
     try:
         #Input validation
@@ -739,7 +739,7 @@ def StaticAnalyzer(request):
                         return HttpResponseRedirect('/StaticAnalyzer_iOS/?name='+APP_NAME+'&type=ios&checksum='+MD5)
                     else:
                         return HttpResponseRedirect('/ZIP_FORMAT/')
-                template="static_analysis_zip.html"
+                template="static_analysis_android_zip.html"
                 return render(request,template,context)
             else:
                 print "\n[ERROR] Only APK,IPA and Zipped Android/iOS Source code supported now!"  

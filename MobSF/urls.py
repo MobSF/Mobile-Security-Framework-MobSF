@@ -3,11 +3,13 @@ from django.contrib import admin
 
 urlpatterns = [
     # Examples:
-    url(r'^$', 'MobSF.views.index', name='index'),
+    url(r'^$','MobSF.views.index', name='index'),
     url(r'^Upload/$', 'MobSF.views.Upload', name='Upload'),
     url(r'^about/$', 'MobSF.views.about', name='about'),
+    url(r'^RecentScans/$', 'MobSF.views.RecentScans', name='RecentScans'),
+    url(r'^Search/$', 'MobSF.views.Search', name='Search'),
     url(r'^error/$', 'MobSF.views.error', name='error'),
-    url(r'^features/$', 'MobSF.views.features', name='features'),
+    url(r'^NotFound/$', 'MobSF.views.NotFound', name='NotFound'),
     url(r'^ZIP_FORMAT/$', 'MobSF.views.ZIP_FORMAT', name='ZIP_FORMAT'),
     url(r'^MAC_ONLY/$', 'MobSF.views.MAC_ONLY', name='MAC_ONLY'),
     url(r'^StaticAnalyzer/$', 'StaticAnalyzer.views.StaticAnalyzer', name='StaticAnalyzer'),

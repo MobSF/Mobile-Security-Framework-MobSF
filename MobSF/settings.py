@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'StaticAnalyzer',
     'DynamicAnalyzer',
+    'MobSF',
 )
 
 MIDDLEWARE_CLASSES = (

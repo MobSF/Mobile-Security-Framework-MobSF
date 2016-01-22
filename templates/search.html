@@ -1,15 +1,17 @@
-{% extends "skelton_base.html" %}
+
+  {% extends "base_top_only.html" %}
    {% block content %}
-</br>  
-	 <div class="page-header">
-      </div> 
-    <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-list-alt"></span> You 've searched for: <strong>{{ term }}</strong>. Found in {{ found }} files.</h3>
-                            </div>
-                            <div class="panel-body">
-							<table>
+    
+
+<div class="box box-default">
+          <div class="box-header with-border">
+            <h3 class="box-title"><i class="fa fa-search"></i> You 've searched for: <strong>{{ term }}</strong>. Found in {{ found }} files.</h3>
+          </div>
+          <div class="box-body">
+          
+              <div class="table-responsive">
+                  <table class="table table-bordered table-hover table-striped">
+            
             
                 {% for m in matches %}
                       
@@ -17,8 +19,12 @@
                     
                     {% endfor %}  
 
-</table>
-                        </div>
-                    </div>
-					</div>
-   {% endblock %}
+              </table>
+               </div>
+
+          </div>
+          <!-- /.box-body -->
+        </div>
+{% endblock %}
+
+
