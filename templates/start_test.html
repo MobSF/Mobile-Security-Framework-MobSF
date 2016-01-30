@@ -1,11 +1,15 @@
-{% extends "skelton_base.html" %}
+
+  {% extends "base_top_only.html" %}
    {% block content %}
-   <script src="/static/js/jquery.min.js"></script>
+    
+    <script src="/static/js/jquery.min.js"></script>
+    <link rel='stylesheet' href='/static/css/devices.min.css' type='text/css'>
+
    <style>
    textarea {
  
-  width: 800px;
-  height: 300px;
+  width: 100%;
+  height: 500px;
   -moz-border-bottom-colors: none;
   -moz-border-left-colors: none;
   -moz-border-right-colors: none;
@@ -32,15 +36,109 @@ textarea:focus {
 }
 </style>
 <br>  
-	 <div class="page-header">
-        <h1>Dynamic Analyzer</h1>
+<script>
+    function loading(){
+        $('#my').attr('src','/static/screen/loading.jpg');
+        }
+</script>
+
+<h2 class="page-header">Dynamic Analyzer</h2>
+<div class="row">
+    <p id="but">
+      <a id="start" class="btn btn-primary" role="button">Create Environment</a>
+      <a id="screen" class="btn btn-primary" role="button" style="visibility: hidden" >Show Screen</a>
+      <a id="expactt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Exported Activity Tester</a>
+      <a id="actt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Activity Tester</a>
+      <a id="ss" class="btn btn-primary" role="button" style="visibility: hidden" >Take a Screenshot</a>
+      <a id="stop" class="btn btn-primary" role="button" style="visibility: hidden" >Finish</a>
+
+    </p>
+  </div>
+
+      <div class="row">
+        <div class="col-md-5">
+          <!-- Custom Tabs -->
+        
+        <div class='marvel-device htc-one'>
+        <div class='top-bar'></div>
+        <div class='camera'></div>
+        <div class='sensor'></div>
+        <div class='speaker'></div>
+        <div class='screen' id='container'>
+        <img width='320' height='580' src='/static/screen/screen.png' id='my' onerror='loading()' style='background-color:black;'>
+        </div>
+        </div>
+          <!-- nav-tabs-custom -->
+        </div>
+        <!-- /.col -->
+
+        <div class="col-md-7">
+          <!-- Custom Tabs (Pulled to the right) -->
+      <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#tab_1" data-toggle="tab">VM Status</a></li>
+              <li><a href="#tab_2" data-toggle="tab">Errors</a></li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane active" id="tab_1">
+              <textarea id="stat">VM Snapshot loaded</textarea>
+
+          <div id="adb" style="visibility: hidden">
+            <h3>Execute adb Commands</h3> <input width="250" id="cmd" class="form-control" type="text" placeholder="shell am startservice -n com.mypackage/.service.MyService"> </br><a id="exec" class="btn btn-primary btn-lg" role="button" >Execute</a>
+          </div>
+              </div>
+              <!-- /.tab-pane -->
+              <div class="tab-pane" id="tab_2"> 
+              <iframe sandbox frameborder="0" width="100%" height="650px" id="er"></iframe>
+              </div>
+            </div>
+            <!-- /.tab-content -->
+          </div>
+          <!-- nav-tabs-custom -->
+        </div>
+        <!-- /.col -->
       </div>
+      <!-- /.row -->
+<!--Fooo-->
+
+
 
       <script>
    $(document).ready(function() { 
+     var touch = "off";
+     var refresh = false;
+        $('#my').click(function(e) {
 
-
-   	$('#stat').attr('readonly','readonly');
+          if (touch === "on")
+          {
+        var offset = $(this).offset();
+        var x = e.pageX - offset.left;
+        var y = e.pageY - offset.top;
+        x = x * (800/320); 
+        y = y * (1280/580);
+        console.log('X Axis: '+ x + " Y Axis: "+ y);
+        $.ajax({
+                    url : '../Touch/', 
+                    type : 'POST',
+                    dataType: 'json', 
+                    data : {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            x: x,
+                            y: y,
+                            },
+                        success : function(json) {
+                            if (json.status==='success'){
+                            console.log('Clicked!');
+                            }
+                        },
+                        error : function(xhr,errmsg,err) {
+                            document.getElementById("er").srcdoc = xhr.responseText;
+                        }   
+          });
+      }
+        });
+   
+   	     $('#stat').attr('readonly','readonly');
                    
                     $("#start").one( "click", function() {
                     	$('#stat').append("\nTrying to setup the environment");
@@ -57,6 +155,8 @@ textarea:focus {
                                     success : function(json) {
                                     	if (json.ready==="yes"){
                                     	ready=json.ready;
+                                      //show screen
+                                      $('#screen').css("visibility","visible");
                                           //show screenshot
                                       $('#ss').css("visibility","visible");
                                       //show finish
@@ -88,7 +188,58 @@ textarea:focus {
                       });
                     return false;  
                 }); 
+      //Scren
 
+      $("#screen").click(function() {
+                  
+                       var stext = $("#screen").text();
+
+                       if (stext === "Show Screen")
+                       {
+                        $("#screen").text("Stop Screen");
+                        mode = "on";
+                       }
+                       else
+                       {
+                        $("#screen").text("Show Screen");
+                        mode = "off";
+                       }
+              
+
+                        $.ajax({
+                                url : "../ScreenCast/", 
+                                type : "POST",
+                                dataType: "json", 
+                                data : {
+                                    mode: mode,
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    },
+                                    success : function(json) {
+                                      if (json.status==="on"){
+                                        touch = "on";
+                                        refresh = true;
+                                      $('#stat').append("\nScreen sharing started");
+                                       screenfunc = setInterval(function(){
+                                        if (refresh === true)
+                                        $('#my').attr('src', '/static/screen/screen.png?'+new Date().getTime());
+                                      },300);
+                                    }
+                                    else if (json.status==="off"){
+                                      touch = "off;"
+                                      refresh = false;
+                                      $('#stat').append("\nScreen sharing stopped");
+                                      $('#my').attr('src', '/static/screen/loading.jpg');
+
+                                    }
+                                      $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                      
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                        document.getElementById("er").srcdoc = xhr.responseText;
+                                    }   
+                      });
+                    return false;  
+                }); 
 //Screenshot
  			$("#ss").click(function() {
                     	$('#stat').append("\nTaking a Scrennshot....");
@@ -302,24 +453,5 @@ function DOMXSSSafeHTML(data)
 		}
       </script>
   
-		<p id="but">
-			<a id="start" class="btn btn-primary" role="button">Create Environment</a>
-      <a id="expactt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Exported Activity Tester</a>
-      <a id="actt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Activity Tester</a>
-			<a id="ss" class="btn btn-primary" role="button" style="visibility: hidden" >Take a Screenshot</a>
-			<a id="stop" class="btn btn-primary" role="button" style="visibility: hidden" >Finish</a>
-			
-			
-		</p>
-  
- 
-		<textarea id="stat">VM Snapshot loaded</textarea>
-     
-    <div id="adb" style="visibility: hidden">
-      <h3>Execute adb Commands</h3> <input width="250" id="cmd" class="form-control" type="text" placeholder="shell am startservice -n com.mypackage/.service.MyService"> </br><a id="exec" class="btn btn-primary btn-lg" role="button" >Execute</a>
-    </div>
-
-	</br>
-		<p class="lead">Errors</p>
-		<iframe sandbox frameborder="1" width="800" height="250" id="er"></iframe>
+		
    {% endblock %}

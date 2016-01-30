@@ -8,13 +8,12 @@ from django.utils import timezone
 import os, hashlib, platform, json,shutil,re
 
 from MobSF.models import RecentScansDB
-# Create your views here.
+#Clean up work
 DIR = settings.BASE_DIR
 CERTSDIR= os.path.join(DIR,'logs/')
 if os.path.exists(CERTSDIR):
     shutil.rmtree(CERTSDIR)
     os.makedirs(CERTSDIR)
-
 def PushtoRecent(NAME,MD5,URL):
     try:
         DB=RecentScansDB.objects.filter(MD5=MD5)

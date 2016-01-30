@@ -54,6 +54,13 @@
       <div class="content-wrapper">
         <!-- Content Header (Page header) -->
      
+          <form id="dynform" action="../DynamicAnalyzer/" method="POST">
+           {% csrf_token %} 
+          <input type="hidden" name="md5" value="{{ md5 }}">
+          <input type="hidden" name="pkg" value="{{ packagename }}">
+          <input type="hidden" name="lng" value="{{ mainactivity }}">
+          </form>
+
 
         <!-- Main content -->
         <div class="content body">

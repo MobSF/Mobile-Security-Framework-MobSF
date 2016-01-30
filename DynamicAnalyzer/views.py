@@ -2,17 +2,12 @@
 from django.shortcuts import render
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-import subprocess,os,re,shutil,tarfile,ntpath,platform,io,signal,json,random,time,ast,sys,psutil
+import subprocess,os,re,shutil,tarfile,ntpath,platform,io,signal,json,random,time,ast,sys,psutil,unicodedata
 from django.http import HttpResponseRedirect, HttpResponse
 from django.utils.html import escape
 import sqlite3 as sq
+from MobSF.forms import UploadFileForm
 from StaticAnalyzer.models import StaticAnalyzerAndroid
-def python_list(value):
-    if not value:
-        value = []
-    if isinstance(value, list):
-        return value
-    return ast.literal_eval(value)
 #Dynamic Analyzer Calls begins here!
 proxy_process=0 # Store PID of Proxy
 def DynamicAnalyzer(request):
@@ -25,6 +20,11 @@ def DynamicAnalyzer(request):
             return HttpResponseRedirect('/error/') 
         m=re.match('[0-9a-f]{32}',MD5)
         if m:
+            # Delete ScreenCast Cache
+            SCREEN_FILE=os.path.join(settings.BASE_DIR,'static/screen/screen.png')
+            if os.path.exists(SCREEN_FILE):
+                os.remove(SCREEN_FILE)
+
             VBOXEXE=settings.VBOX
             UUID=settings.UUID
             SUUID=settings.SUUID
@@ -91,6 +91,81 @@ def TakeScreenShot(request):
             return HttpResponseRedirect('/error/')
     else:
         return HttpResponseRedirect('/error/')
+#We protect with Auth Header
+@csrf_exempt
+def ScreenUpload(request):
+    try:
+        response_data = {}
+        response_data['status'] = ''
+        if request.method == 'POST':
+            form = UploadFileForm(request.POST, request.FILES)
+            if form.is_valid():
+                if (request.FILES['file'].name.endswith('.png') and (request.META.get('HTTP_AUTH') == "MobSF-Screen-Service") and (request.FILES['file'].content_type=="application/octet-stream")):
+                    SCREEN_DIR=os.path.join(settings.BASE_DIR,'static/screen/')
+                    if not os.path.exists(SCREEN_DIR):
+                        os.makedirs(SCREEN_DIR)
+                    with open(SCREEN_DIR+"screen.png", 'wb+') as destination:
+                        for chunk in request.FILES['file'].chunks():
+                            destination.write(chunk)
+                    response_data['status'] = 'success'
+                else:
+                    print "[ERROR] Screen Service Bad Request"
+                    response_data['status'] = '[Error] Not a valid PNG'
+            else:
+                response_data['status'] = '[Error] Invalid Form Data!'
+        else:
+            response_data['status'] = '[Error] Method not Supported!'
+            form = UploadFileForm()
+        r= HttpResponse(json.dumps(response_data),content_type="application/json")
+        return r
+    except Exception as e:
+        print "\n[ERROR] Uploading File:  " + str(e)
+#AJAX
+def ScreenCast(request):
+    #not gonna work ...fucking proxy is there
+    data = {} 
+    if (request.method == 'POST'):
+        mode=request.POST['mode']
+        TOOLSDIR=os.path.join(settings.BASE_DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
+        adb=getADB(TOOLSDIR)
+        IP = settings.SCREEN_IP
+        PORT = settings.SCREEN_PORT
+        if mode == "on":
+            args=[adb,"shell","am","startservice","-a",IP+":"+PORT, "opensecurity.screencast/.StartScreenCast"]
+            data = {'status': 'on'}
+        elif mode == "off":
+            args=[adb, "shell", "am", "force-stop", "opensecurity.screencast"]
+            data = {'status': 'off'}
+        if (mode == "on") or (mode == "off"):
+            try:
+                subprocess.call(args)
+            except Exception as e:
+                print "[ERROR] Casting Screen - "+ str(e)
+                data = {'status': 'error'}
+                return HttpResponse(json.dumps(data), content_type='application/json')
+        else:
+            data = {'status': 'failed'}
+    else:
+        data = {'status': 'failed'}
+    return HttpResponse(json.dumps(data), content_type='application/json')
+#AJAX
+def Touch(request):
+    data = {}
+    if (request.method == 'POST') and (is_number(request.POST['x'])) and (is_number(request.POST['y'])):
+        x_axis=request.POST['x']
+        y_axis=request.POST['y']
+        TOOLSDIR=os.path.join(settings.BASE_DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
+        adb=getADB(TOOLSDIR)
+        args=[adb,"shell","input","tap",x_axis,y_axis]
+        data = {'status': 'success'}
+        try:
+            subprocess.call(args)
+        except Exception as e:
+            data = {'status': 'error'}
+            print "[ERROR] Performing Touch Action - "+ str(e)
+    else:
+        data = {'status': 'failed'}
+    return HttpResponse(json.dumps(data), content_type='application/json')
 #AJAX
 def ExecuteADB(request):
     if request.method == 'POST':
@@ -128,7 +203,6 @@ def FinalTest(request):
             APKDIR=os.path.join(DIR,'uploads/'+MD5+'/')
             TOOLSDIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
             adb=getADB(TOOLSDIR)
-            
             #Change to check output of subprocess when analysis is done
             #Can't RCE
             os.system(adb+' logcat -d dalvikvm:W ActivityManager:I > "'+APKDIR + 'logcat.txt"')
@@ -141,6 +215,10 @@ def FinalTest(request):
 
             subprocess.call([adb, "shell", "am", "force-stop", PACKAGE])
             print "\n[INFO] Stopping Application"
+
+            subprocess.call([adb, "shell", "am", "force-stop", "opensecurity.screencast"])
+            print "\n[INFO] Stopping ScreenCast Service"
+
             data = {'final': 'yes'}
             return HttpResponse(json.dumps(data), content_type='application/json') 
         else:
@@ -713,9 +791,27 @@ def View(request):
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         print "\n[ERROR] Viewing File - "+str(e) + " Line: "+str(exc_tb.tb_lineno)
-        return HttpResponseRedirect('/error/')    
-    
+        return HttpResponseRedirect('/error/')
 
+#Helper Functions
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+    try:
+        unicodedata.numeric(s)
+        return True
+    except (TypeError, ValueError):
+        pass
+    return False
+def python_list(value):
+    if not value:
+        value = []
+    if isinstance(value, list):
+        return value
+    return ast.literal_eval(value)
 
 
 

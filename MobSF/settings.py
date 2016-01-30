@@ -121,12 +121,15 @@ else:
 #VBoxManage showhdinfo "MobSF_VM_0.1-disk3.vdi"
 
 #VM UUID
-UUID='621937f5-90c4-49c3-9a08-249dcdd53f3b'
+UUID='d2736249-7394-4dc6-8d6e-154aa99460b0'
 #Snapshot UUID
-SUUID='d919f470-10e6-4dc5-8012-9aff30dd704d'
+SUUID='c6ba7c2e-2ad1-44a5-ad6e-f85c91139e10'
 #VM/Device IP
 VM_IP='192.168.56.101'
 
 #PROXY SETTINGS
 PROXY_IP='192.168.56.1' #Host/Server/Proxy IP
 PORT='1337' #Proxy Port
+
+SCREEN_IP = PROXY_IP #ScreenCast IP
+SCREEN_PORT = '8000' #ScreenCast Port
