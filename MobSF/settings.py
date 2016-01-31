@@ -123,7 +123,7 @@ else:
 #VM UUID
 UUID='d2736249-7394-4dc6-8d6e-154aa99460b0'
 #Snapshot UUID
-SUUID='c6ba7c2e-2ad1-44a5-ad6e-f85c91139e10'
+SUUID='4c77ffc4-4d4c-4314-b335-2932ed41a3b9'
 #VM/Device IP
 VM_IP='192.168.56.101'
 
@@ -132,4 +132,4 @@ PROXY_IP='192.168.56.1' #Host/Server/Proxy IP
 PORT='1337' #Proxy Port
 
 SCREEN_IP = PROXY_IP #ScreenCast IP
-SCREEN_PORT = '8000' #ScreenCast Port
+SCREEN_PORT = '9339' #ScreenCast Port

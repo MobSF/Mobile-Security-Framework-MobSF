@@ -454,7 +454,8 @@ def Report(request):
                    'dexload': API_DEXLOADER,
                    'reflect': API_RELECT,
                    'sysman': API_ACNTMNGER,
-                   'process': API_CMD}
+                   'process': API_CMD,
+                   'title': 'Dynamic Analysis'}
             template="dynamic_analysis.html"
             return render(request,template,context)
         else:
@@ -739,16 +740,16 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
                 else:
                     if jfile.endswith('.xml'):
                         typ='xml'
-                        xmlfiles+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a><td><tr>"
+                        xmlfiles+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a></td><tr>"
                     else:
                         with io.open(file_path, mode='r',encoding="utf8",errors="ignore") as f:
                             b=f.read(6)
                         if b=="SQLite":
                             typ='db'
-                            SQLiteDB+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a><td><tr>" 
+                            SQLiteDB+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a></td><tr>" 
                         elif not jfile.endswith('.DS_Store'):
                             typ='others'
-                            OtherFiles+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a><td><tr>"
+                            OtherFiles+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a></td><tr>"
     except:
         pass              
     return URLS,EMAILS,wb,xmlfiles,SQLiteDB,OtherFiles
