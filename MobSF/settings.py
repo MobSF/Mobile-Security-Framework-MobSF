@@ -73,40 +73,34 @@ DATABASES = {
 # https://docs.djangoproject.com/en/dev/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
-
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
-
 MEDIA_URL = '/uploads/'
-
-
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR,'templates'),
     )
-
 STATICFILES_DIRS = (
   os.path.join(BASE_DIR, 'static/'),
 )
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
-
 STATIC_URL = '/static/'
 
-#CUSTOM SETTINGS - DO NOT EDIT ANYTHING ABOVE THIS
-#=================================================
+# DO NOT EDIT ANYTHING ABOVE THIS
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+#==========DECOMPILER SETTINGS===============
 DECOMPILER = "jd-core" 
 
 #Two Decompilers are available 
 #1. jd-core
 #2. cfr
- 
+#============================================
+
+#============JAVA SETTINGS=================== 
 if platform.system()=="Windows":
     JAVA_PATH=java.FindJava()
     #JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/'  # Use "/" instead of "\" for the path and the path should end with a "/".
@@ -116,20 +110,22 @@ else:
     #JAVA_PATH='/usr/bin/'
     JAVA_PATH=java.FindJava()
     VBOX='/usr/bin/VBoxManage'
+#==============================================
 
-#VM SETTINGS
+#================VM SETTINGS ==================
 #VBoxManage showhdinfo "MobSF_VM_0.1-disk3.vdi"
-
 #VM UUID
 UUID='d2736249-7394-4dc6-8d6e-154aa99460b0'
 #Snapshot UUID
-SUUID='4c77ffc4-4d4c-4314-b335-2932ed41a3b9'
+SUUID='957de995-41c6-4f50-b260-73c530165ab6'
 #VM/Device IP
 VM_IP='192.168.56.101'
+#=============================================
 
-#PROXY SETTINGS
+#================HOST/PROXY SETTINGS ===========
 PROXY_IP='192.168.56.1' #Host/Server/Proxy IP
-PORT='1337' #Proxy Port
+PORT=1337 #Proxy Port
 
 SCREEN_IP = PROXY_IP #ScreenCast IP
-SCREEN_PORT = '9339' #ScreenCast Port
+SCREEN_PORT = 9339 #ScreenCast Port
+#===============================================

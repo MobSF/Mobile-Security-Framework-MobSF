@@ -58,32 +58,40 @@ def Upload(request):
                     response_data['url'] = 'StaticAnalyzer/?name='+request.FILES['file'].name+'&type=apk&checksum='+md5
                     response_data['status'] = 'success'
                     PushtoRecent(request.FILES['file'].name,md5,response_data['url'])
+                    print "\n[INFO] Performing Static Analysis of Android APK"
                 elif (file_type=="application/zip" or file_type=="application/octet-stream" or file_type=="application/x-zip-compressed") and request.FILES['file'].name.endswith('.zip'):   #Android /iOS Zipped Source
                     md5=handle_uploaded_file(request.FILES['file'],'.zip')
                     response_data['url'] = 'StaticAnalyzer/?name='+request.FILES['file'].name+'&type=zip&checksum='+md5
                     response_data['status'] = 'success'
                     PushtoRecent(request.FILES['file'].name,md5,response_data['url'])
+                    print "\n[INFO] Performing Static Analysis of Android/iOS Source Code"
                 elif ((file_type=="application/octet-stream" or file_type=="application/x-itunes-ipa" or file_type=="application/x-zip-compressed") and request.FILES['file'].name.endswith('.ipa')):   #iOS Binary
                     if platform.system()=="Darwin":
                         md5=handle_uploaded_file(request.FILES['file'],'.ipa')
                         response_data['url'] = 'StaticAnalyzer_iOS/?name='+request.FILES['file'].name+'&type=ipa&checksum='+md5
                         response_data['status'] = 'success'
                         PushtoRecent(request.FILES['file'].name,md5,response_data['url'])
+                        print "\n[INFO] Performing Static Analysis of iOS IPA"
                     else:
                         response_data['url'] = 'MAC_ONLY/'
                         response_data['status'] = 'success'
+                        print "\n[ERROR] Static Analysis of iOS IPA requires OSX"
                 else:
                     response_data['url'] = ''
                     response_data['description'] = 'File format not Supported!'
                     response_data['status'] = 'error'
+                    print "\n[ERROR] File format not Supported!"
+
             else:
                 response_data['url'] = ''
                 response_data['description'] = 'Invalid Form Data!'
                 response_data['status'] = 'error'
+                print "\n[ERROR] Invalid Form Data!"
         else:
             response_data['url'] = ''
             response_data['description'] = 'Method not Supported!'
             response_data['status'] = 'error'
+            print "\n[ERROR] Method not Supported!"
             form = UploadFileForm()
         r= HttpResponse(json.dumps(response_data),content_type="application/json")
         r['Access-Control-Allow-Origin']='*'

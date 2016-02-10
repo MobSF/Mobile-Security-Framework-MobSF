@@ -33,7 +33,6 @@ urlpatterns = [
     url(r'^View/$', 'DynamicAnalyzer.views.View', name='View'),
     url(r'^ScreenCast/$', 'DynamicAnalyzer.views.ScreenCast', name='ScreenCast'),
     url(r'^Touch/$', 'DynamicAnalyzer.views.Touch', name='Touch'),
-    url(r'^ScreenUpload/$', 'DynamicAnalyzer.views.ScreenUpload', name='ScreenUpload'),
     #url(r'^admin/', include(admin.site.urls)),
 ]
 
