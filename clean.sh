@@ -15,14 +15,16 @@ then
 	rm -rf static/downloads/*
 	echo "Deleting Screen Cache"
 	rm -rf static/screen/screen.png
-	echo "Deleting all logs"
+	echo "Deleting temp and log files"
 	rm -rf logs/*
 	echo "Deleting DB"
-	rm -rf "db.sqlite3"
+	rm -rf db.sqlite3
 	echo "Migrating DB changes"
 	python manage.py migrate
+	echo "Creating certs directory"
+	mkdir logs/certs
 	echo "Creating Placeholders"
+	echo > logs/certs/PLACEHOLDER
 	echo > uploads/PLACEHOLDER
 	echo > static/downloads/PLACEHOLDER
-	echo > logs/PLACEHOLDER
 fi

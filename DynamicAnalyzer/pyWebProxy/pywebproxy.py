@@ -46,13 +46,53 @@ import ssl
 import os
 import datetime
 import uuid
-import re,sys
+import re,sys,threading
 from multiprocessing import Process, Value, Lock
 from socket_wrapper import wrap_socket
-LOG=''
- #This function create logs
-def Logz(request,response,log):
-    TRAFFIC=''
+
+kill = False #Global Variable that shows the state of Tornado Proxy
+log =""
+
+TRAFFIC = ""
+REQUEST_DICT = {}
+URLS = []
+
+#API Tester
+def APITester(request,response):
+    '''
+    API Tester perform security testing on all API calls passed via the proxy.
+    requestdb: File contains request and response dict
+    urls: file contains all the URLs passed via Proxy
+    '''
+    print "not yet implemented"
+
+#Save things on Exit
+def SaveOnExit():
+    #Append Data
+    print "\n[INFO] Saving Captured Web Traffic, Request-Response pairs and URLs"
+    try:
+        global REQUEST_DICT,URLS,TRAFFIC,log
+
+        with open(os.path.join(log,"requestdb"),'w') as f1:
+            f1.write(str(REQUEST_DICT))
+
+        with open(os.path.join(log,"urls"),'w') as f2:
+            URLS=list(set(URLS))
+            f2.write(str(URLS))
+
+        with open(os.path.join(log,"WebTraffic.txt"),'w') as f3:
+            f3.write(TRAFFIC)
+    except Exception as e:
+        print "[ERROR] Saving Captured Web Data - " + str(e)
+    REQUEST_DICT = {}
+    URLS = []
+    TRAFFIC = ""
+#Save Data in Memory
+def Capture(request,response):
+    global REQUEST_DICT,URLS,TRAFFIC
+    REQUEST_DICT[request]=response
+    URLS.append(str(response.request.url))
+
     rdat=''
     dat=response.request.body if response.request.body else ''
     TRAFFIC+= "\n\nREQUEST: " + str(response.request.method)+ " " + str(response.request.url) + '\n'
@@ -68,11 +108,7 @@ def Logz(request,response,log):
         else:
             rdat=''
     TRAFFIC+= "\n\n" +str(rdat) + "\n"
-    #print TRAFFIC
-    with open(log,'a') as f:
-        f.write(TRAFFIC)
-
-
+    #String is not memory efficient!
 
 class ProxyHandler(tornado.web.RequestHandler):
     """
@@ -111,7 +147,7 @@ class ProxyHandler(tornado.web.RequestHandler):
                 self._reason = tornado.escape.native_str("Server Not Found")
     # This function writes a new response & caches it
     def finish_response(self, response):
-        Logz(self.request,response,LOG)
+        Capture(self.request,response)
         self.set_status(response.code)
         for header, value in list(response.headers.items()):
             if header == "Set-Cookie":
@@ -227,7 +263,7 @@ class ProxyHandler(tornado.web.RequestHandler):
                             ca_crt,
                             ca_key,
                             "mobsec-yso",
-                            "logs",
+                            "logs/certs",
                             success=ssl_success
                            )
             except tornado.iostream.StreamClosedError:
@@ -421,22 +457,42 @@ restricted_response_headers = rresh
 global restricted_request_headers
 rreqh=["Connection","Pragma","Cache-Control","If-Modified-Since"]
 restricted_request_headers = rreqh
+def try_exit(): 
+    global kill
+    if kill:
+        # clean up here
+        try:
+            tornado.ioloop.IOLoop.instance().stop()
+            SaveOnExit()
+            print "\n[INFO] Stopped WebProxy and Data Saved"
+        except:
+            pass
 
-
-# "0" equals the number of cores present in a machine
-if len(sys.argv)==4:
-    LOG=sys.argv[3]
+def startTornado(IP,PORT,log):
     try:
-        server.bind(sys.argv[2], address=sys.argv[1])
+        server.bind(int(PORT), address=IP)
         # Useful for using custom loggers because of relative paths in secure requests
         # http://www.joet3ch.com/blog/2011/09/08/alternative-tornado-logging/
-        #ornado.options.parse_command_line(args=["dummy_arg","--log_file_prefix="+application.Core.DB.Config.Get("PROXY_LOG"),"--logging=info"])
-        tornado.options.parse_command_line(args=["dummy_arg","--log_file_prefix=logs/proxy.log","--logging=info"])
-        # To run any number of instances
         server.start(int(1))
-        tornado.ioloop.IOLoop.instance().start()
-    except Exception as e:
-        print "[WebProxy Error] "+str(e)
-else:
-    print "proxy.py <IP> <PORT> <LOGFILE>"
+    except:
+        print "\n[INFO] WebProxy Socket is already in use"
+        pass
+    #Clean Up
+    rmfiles = [os.path.join(log,"requestdb"),os.path.join(log,"urls"),os.path.join(log,"WebTraffic.txt")]
+    for fil in rmfiles:
+        if os.path.exists(fil):
+            os.remove(fil)
+    tornado.options.parse_command_line(args=["dummy_arg","--log_file_prefix=logs/proxy.log","--logging=info"])
+    tornado.ioloop.PeriodicCallback(try_exit, 100).start()
+    tornado.ioloop.IOLoop.instance().start()
 
+def Proxy(IP,PORT,LOG,STAT):
+    global kill,log
+    if STAT == "on":
+        log = LOG
+        kill = False
+        print "\n[INFO] Started Web Proxy at "+ IP+":"+PORT
+        threading.Thread(target=startTornado,kwargs=dict(IP=IP,PORT=PORT,log=log)).start()
+    else:
+        print "\n[INFO] Stopping any running instance of WebProxy"
+        kill = True

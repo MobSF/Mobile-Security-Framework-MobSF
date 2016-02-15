@@ -2,12 +2,14 @@
 from django.shortcuts import render
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-import subprocess,os,re,shutil,tarfile,ntpath,platform,io,signal,json,random,time,ast,sys,psutil,unicodedata,socket,threading
+import subprocess,os,re,shutil,tarfile,ntpath,platform,io,signal
+import json,random,time,ast,sys,psutil,unicodedata,socket,threading
 from django.http import HttpResponseRedirect, HttpResponse
 from django.utils.html import escape
 import sqlite3 as sq
 from MobSF.forms import UploadFileForm
 from StaticAnalyzer.models import StaticAnalyzerAndroid
+from pyWebProxy.pywebproxy import *
 #===================================
 #Dynamic Analyzer Calls begins here!
 #===================================
@@ -17,8 +19,9 @@ Unauthorized TCP Connection Prevention logic etc..
 I hate globals but as long as things work, it's fine and this is not the place for Python Skills show off!
 '''
 tcp_server_mode = "off" #ScreenCast TCP Service Status
-proxy_process=0 # Store PID of Proxy
+
 def DynamicAnalyzer(request):
+    
     print "\n[INFO] Dynamic Analysis Started"
     try:
         if request.method == 'POST':
@@ -39,6 +42,7 @@ def DynamicAnalyzer(request):
                 UUID=settings.UUID
                 SUUID=settings.SUUID
                 #Start DM
+                Proxy("","","","")
                 RefreshVM(UUID,SUUID,VBOXEXE)
                 context = {'md5' : MD5,
                        'pkg' : PKG,
@@ -56,9 +60,9 @@ def DynamicAnalyzer(request):
 
 #AJAX
 def GetEnv(request):
+
     print "\n[INFO] Setting up Dynamic Analysis Environment"
     try:
-        global proxy_process
         if request.method == 'POST':
             data = {}
             MD5=request.POST['md5']
@@ -78,7 +82,7 @@ def GetEnv(request):
                 VM_IP=settings.VM_IP #VM IP
                 PROXY_IP=settings.PROXY_IP #Proxy IP
                 PORT=str(settings.PORT) #Proxy Port
-                proxy_process=WebProxy(TOOLS_DIR,APP_DIR,PROXY_IP,PORT,'10')
+                WebProxy(APP_DIR,PROXY_IP,PORT)
                 ConnectInstallRun(TOOLS_DIR,VM_IP,APP_PATH,PKG,LNCH,True) #Change True to support non-activity components
                 data = {'ready': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json') 
@@ -207,6 +211,7 @@ def ExecuteADB(request):
         return HttpResponseRedirect('/error/')
 #AJAX
 def FinalTest(request):
+    #Closing Services in VM/Device
     global tcp_server_mode
     print "\n[INFO] Collecting Data and Cleaning Up"
     try:
@@ -252,9 +257,9 @@ def FinalTest(request):
         return HttpResponseRedirect('/error/')
 #AJAX
 def DumpData(request):
+    #Closing External Services and Dumping data
     print "\n[INFO] Device Data Dump"
     try:
-        global proxy_process
         if request.method == 'POST':
             data = {}
             PACKAGE=request.POST['pkg']
@@ -268,7 +273,7 @@ def DumpData(request):
                 APKDIR=os.path.join(DIR,'uploads/'+MD5+'/')
                 TOOLSDIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
                 adb=getADB(TOOLSDIR)
-
+                Proxy("","","","") #Let's try to close Proxy a bit early as we don't have much control on the order of thread execution
                 print "\n[INFO] Deleting Dump Status File"
                 subprocess.call([adb, "shell", "rm", "-rf","/sdcard/mobsec_status"])
                 print "\n[INFO] Creating TAR of Application Files."
@@ -287,18 +292,6 @@ def DumpData(request):
                 subprocess.call([adb, "pull", "/sdcard/"+PACKAGE+".tar", APKDIR+PACKAGE+".tar"])
                 print "\n[INFO] Stopping ADB"
                 subprocess.call([adb,"kill-server"])
-                try:
-                    if proxy_process!=0:
-                        print "\n[INFO] Stopping WebProxy with PID: " +str(proxy_process)
-                        p = psutil.Process(proxy_process)
-                        p.terminate()
-                        #os.kill(proxy_process,signal.SIGKILL)
-                        proxy_process=0
-                    else:
-                        print "\n[WARNING] WebProxy still running. Kill it manually!"
-                except Exception as e:
-                    print "\n[ERROR] WebProxy Error - " + str(e)
-                    pass
                 data = {'dump': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json') 
             else:
@@ -529,27 +522,13 @@ def RefreshVM(uuid,snapshot_uuid,vbox_exe):
         print "\n[ERROR] Refreshing MobSF VM - " + str(e)
 
 
-def WebProxy(TOOLSDIR,APKDIR,ip,port,exectime):
+def WebProxy(APKDIR,ip,port):
     print "\n[INFO] Starting Web Proxy"
     try:
-        global proxy_process
-        #see if we can call it from python directely
-        #Remove the old occurance of the files too.
-        #Check if this works in windows without setting the path
-        log=os.path.join(APKDIR,'Weblog.txt')
-        if os.path.exists(log):
-            os.remove(log)
-        pyexe=os.path.join(TOOLSDIR,'pyWebProxy/proxy.py')
-        args=['python',pyexe,ip,port,log]
-        if proxy_process==0:
-            x=subprocess.Popen(args)
-            print "\n[INFO] HTTPS Proxy (PID: "+str(x.pid)+") Running on "+ str(ip)+ ":"+str(port)
-            return x.pid
-        else:
-            return 0
+        Proxy(ip,port,APKDIR,"on")
     except Exception as e:
         print "\n[ERROR] Starting Web Proxy - " + str(e)
-        return 0
+
 
 def getADB(TOOLSDIR):
     print "\n[INFO] Getting ADB Location"
@@ -717,7 +696,7 @@ def Download(MD5,DWDDIR,APKDIR,PKG):
         xLogcat=os.path.join(APKDIR,'x_logcat.txt')
         Dumpsys=os.path.join(APKDIR,'dump.txt')
         Sshot=os.path.join(APKDIR,'screenshots-apk/')
-        Web=os.path.join(APKDIR,'Weblog.txt')
+        Web=os.path.join(APKDIR,'WebTraffic.txt')
         Star=os.path.join(APKDIR, PKG+'.tar')
 
         
@@ -725,7 +704,7 @@ def Download(MD5,DWDDIR,APKDIR,PKG):
         DxLogcat=os.path.join(DWDDIR,MD5+'-x_logcat.txt')
         DDumpsys=os.path.join(DWDDIR,MD5+'-dump.txt')
         DSshot=os.path.join(DWDDIR,MD5+'-screenshots-apk/')
-        DWeb=os.path.join(DWDDIR,MD5+'-Weblog.txt')
+        DWeb=os.path.join(DWDDIR,MD5+'-WebTraffic.txt')
         DStar=os.path.join(DWDDIR,MD5+'-AppData.tar')
        
         shutil.copyfile(Logcat,DLogcat)
@@ -747,7 +726,7 @@ def Download(MD5,DWDDIR,APKDIR,PKG):
         print "\n[ERROR] Generating Downloads - " + str(e)
 def RunAnalysis(APKDIR,MD5,PACKAGE):
     print "\n[INFO] Dynamic File Analysis"
-    Web=os.path.join(APKDIR,'Weblog.txt')
+    Web=os.path.join(APKDIR,'WebTraffic.txt')
     Logcat=os.path.join(APKDIR,'logcat.txt')
     xLogcat=os.path.join(APKDIR,'x_logcat.txt')
     traffic=''
@@ -869,26 +848,6 @@ def View(request):
         print "\n[ERROR] Viewing File - "+str(e) + " Line: "+str(exc_tb.tb_lineno)
         return HttpResponseRedirect('/error/')
 
-#Helper Functions
-def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        pass
-    try:
-        unicodedata.numeric(s)
-        return True
-    except (TypeError, ValueError):
-        pass
-    return False
-def python_list(value):
-    if not value:
-        value = []
-    if isinstance(value, list):
-        return value
-    return ast.literal_eval(value)
-
 def ScreenCastService():
     print "\n[INFO] Starting ScreenCast Service Server"
     global tcp_server_mode
@@ -926,3 +885,25 @@ def ScreenCastService():
         s.close()
         print "\n[ERROR] TCP Socket Connection - "+str(e)
         pass
+
+#Helper Functions
+
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+    try:
+        unicodedata.numeric(s)
+        return True
+    except (TypeError, ValueError):
+        pass
+    return False
+
+def python_list(value):
+    if not value:
+        value = []
+    if isinstance(value, list):
+        return value
+    return ast.literal_eval(value)

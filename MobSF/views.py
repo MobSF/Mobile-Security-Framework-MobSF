@@ -8,12 +8,7 @@ from django.utils import timezone
 import os, hashlib, platform, json,shutil,re
 
 from MobSF.models import RecentScansDB
-#Clean up work
-DIR = settings.BASE_DIR
-CERTSDIR= os.path.join(DIR,'logs/')
-if os.path.exists(CERTSDIR):
-    shutil.rmtree(CERTSDIR)
-    os.makedirs(CERTSDIR)
+
 def PushtoRecent(NAME,MD5,URL):
     try:
         DB=RecentScansDB.objects.filter(MD5=MD5)
@@ -28,6 +23,7 @@ def index(request):
     context = {}
     template="index.html"
     return render(request,template,context)
+
 def handle_uploaded_file(f,typ):
     DIR = settings.BASE_DIR
     md5 = hashlib.md5() #modify if crash for large 
@@ -98,30 +94,38 @@ def Upload(request):
         return r
     except Exception as e:
         print "\n[ERROR] Uploading File:  " + str(e)
+
 def about(request):
     context = {'title': 'About'}
     template="about.html"
     return render(request,template,context)
+
 def error(request):
     context = {'title':'Error'}
     template ="error.html"
     return render(request,template,context)
+
 def ZIP_FORMAT(request):
     context = {'title':'Zipped Source Instruction'}
     template ="zip.html"
     return render(request,template,context)
+
 def MAC_ONLY(request):
     context = {'title':'Supports OSX Only'}
     template ="ios.html"
+    return render(request,template,context)
+
 def NotFound(request):
     context = {'title':'Not Found'}
     template ="not_found.html"
     return render(request,template,context)
+
 def RecentScans(request):
     DB=RecentScansDB.objects.all().order_by('-TS')
     context = {'title': 'Recent Scans','entries': DB }
     template="recent.html"
     return render(request,template,context)
+
 def Search(request):
     MD5=request.GET['md5']
     if re.match('[0-9a-f]{32}',MD5):
@@ -130,6 +134,5 @@ def Search(request):
             return HttpResponseRedirect('/'+DB[0].URL)
         else:
             return HttpResponseRedirect('/NotFound')
-    else:
-        return HttpResponseRedirect('/error/') 
+    return HttpResponseRedirect('/error/') 
 
