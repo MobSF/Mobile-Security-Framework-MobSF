@@ -1553,7 +1553,7 @@ def StaticAnalyzer_iOS(request):
             DIR=settings.BASE_DIR        #BASE DIR
             APP_NAME=request.GET['name'] #APP ORGINAL NAME
             MD5=request.GET['checksum']  #MD5
-            APP_DIR=os.path.join(UPLD_DIR, MD5+'/') #APP DIRECTORY
+            APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
             TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/mac/')  #TOOLS DIR
             if TYP=='ipa':
                 #DB
@@ -1761,9 +1761,9 @@ def ViewFile(request):
                 return HttpResponseRedirect('/error/')
             else:
                 if mode=='ipa':
-                    SRC=os.path.join(UPLD_DIR, MD5+'/Payload/')
+                    SRC=os.path.join(settings.UPLD_DIR, MD5+'/Payload/')
                 elif mode=='ios':
-                    SRC=os.path.join(UPLD_DIR, MD5+'/')
+                    SRC=os.path.join(settings.UPLD_DIR, MD5+'/')
                 sfile=os.path.join(SRC,fil)
                 dat=''
                 if typ=='m':
@@ -1779,7 +1779,7 @@ def ViewFile(request):
                     dat=HandleSqlite(sfile)
                 elif typ=='txt':
                     format='plain'
-                    APP_DIR=os.path.join(UPLD_DIR, MD5+'/')
+                    APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/')
                     FILE=os.path.join(APP_DIR,"classdump.txt")
                     with io.open(FILE,mode='r',encoding="utf8",errors="ignore") as f:
                         dat=f.read()
