@@ -60,16 +60,6 @@ ROOT_URLCONF = 'MobSF.urls'
 WSGI_APPLICATION = 'MobSF.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/dev/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
 
@@ -100,9 +90,20 @@ STATIC_DIR=os.path.join(BASE_DIR,'static/')
 DWD_DIR=os.path.join(STATIC_DIR, 'downloads/')
 #Upload Directory
 UPLD_DIR=os.path.join(BASE_DIR,'uploads/')
+#Database Directory
+DB_DIR = os.path.join(BASE_DIR, 'db.sqlite3')
+
+# Database
+# https://docs.djangoproject.com/en/dev/ref/settings/#databases
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': DB_DIR,
+    }
+}
 
 #==========DECOMPILER SETTINGS===============
-DECOMPILER = "cfr" 
+DECOMPILER = "jd-core" 
 
 #Two Decompilers are available 
 #1. jd-core
