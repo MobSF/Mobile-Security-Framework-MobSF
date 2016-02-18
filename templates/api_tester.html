@@ -1,0 +1,65 @@
+
+  {% extends "base_top_only.html" %}
+   {% block content %}
+    
+    <script src="/static/js/jquery.min.js"></script>
+   
+<br>  
+<style>
+select { width: 100%; height:100%; }
+</style>
+
+<h2 class="page-header">API Tester</h2>
+<form action="../APITester/" method="POST">
+<div class="row">
+  <div class="col-md-6">
+          <div class="box box-solid">
+            <div class="box-header with-border">
+              <h3 class="box-title">Select URLs under Scope</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+
+        
+            {% csrf_token %} 
+            <input type="hidden" name="md5" value="{{md5}}">
+            <select name="scope" multiple>
+              {% for no, url in urls.items %}
+              <option value="{{no}}">{{url}}</option> 
+              {% endfor %}
+            </select>
+                    
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+
+          <div class="col-md-6">
+          <div class="box box-solid">
+            <div class="box-header with-border">
+              <h3 class="box-title">Select the Tests</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <select name="tests" multiple>
+            {% for no, test in tests.items %}
+              <option value="{{no}}">{{test}}</option> 
+              {% endfor %}
+
+              </select>
+           
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+  </div>
+    <input type="submit">
+      </form>
+
+
+
+		
+   {% endblock %}

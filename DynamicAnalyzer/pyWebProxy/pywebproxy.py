@@ -46,51 +46,57 @@ import ssl
 import os
 import datetime
 import uuid
-import re,sys,threading
+import re,sys,threading,json,codecs
 from multiprocessing import Process, Value, Lock
 from socket_wrapper import wrap_socket
+from MobSF.exception_printer import PrintException
+from django.conf import settings
 
 kill = False #Global Variable that shows the state of Tornado Proxy
 log =""
 
 TRAFFIC = ""
-REQUEST_DICT = {}
+REQUEST_LIST= []
 URLS = []
 
 #API Tester
 def APITester(request,response):
     '''
     API Tester perform security testing on all API calls passed via the proxy.
-    requestdb: File contains request and response dict
+    requestdb: File contains list of request dict
     urls: file contains all the URLs passed via Proxy
     '''
     print "not yet implemented"
 
 #Save things on Exit
 def SaveOnExit():
-    #Append Data
-    print "\n[INFO] Saving Captured Web Traffic, Request-Response pairs and URLs"
+    print "\n[INFO] Saving Captured Web Proxy Data"
     try:
-        global REQUEST_DICT,URLS,TRAFFIC,log
-
-        with open(os.path.join(log,"requestdb"),'w') as f1:
-            f1.write(str(REQUEST_DICT))
-
-        with open(os.path.join(log,"urls"),'w') as f2:
+        global REQUEST_LIST,URLS,TRAFFIC,log
+        print "\n[INFO] Saving URLS"
+        with open(os.path.join(log,"urls"), "w") as f2:
             URLS=list(set(URLS))
-            f2.write(str(URLS))
+            URLS='\n'.join(URLS)
+            f2.write(URLS)
 
-        with open(os.path.join(log,"WebTraffic.txt"),'w') as f3:
+        print "\n[INFO] Saving WebTraffic"
+        with open(os.path.join(log,"WebTraffic.txt"), "w") as f3:
             f3.write(TRAFFIC)
-    except Exception as e:
-        print "[ERROR] Saving Captured Web Data - " + str(e)
-    REQUEST_DICT = {}
+
+        print "\n[INFO] Saving Request Objects"
+        with codecs.open(os.path.join(log,"requestdb"), "w", "utf-8") as f:
+            json.dump(REQUEST_LIST,f)
+
+    except:
+        PrintException("[ERROR] Saving Captured Web Proxy Data")
+    REQUEST_LIST = []
     URLS = []
     TRAFFIC = ""
 #Save Data in Memory
-def Capture(request,response):
-    global REQUEST_DICT,URLS,TRAFFIC
-    REQUEST_DICT[request]=response
+def Capture(request,response,request_object):
+    global REQUEST_LIST,URLS,TRAFFIC
+
+    REQUEST_LIST.append(request_object)
     URLS.append(str(response.request.url))
 
     rdat=''
@@ -147,7 +153,7 @@ class ProxyHandler(tornado.web.RequestHandler):
                 self._reason = tornado.escape.native_str("Server Not Found")
     # This function writes a new response & caches it
     def finish_response(self, response):
-        Capture(self.request,response)
+        Capture(self.request,response,self.request_object)
         self.set_status(response.code)
         for header, value in list(response.headers.items()):
             if header == "Set-Cookie":
@@ -193,21 +199,38 @@ class ProxyHandler(tornado.web.RequestHandler):
                 continue
 
         #  httprequest object is created and then passed to async client with a callback
-        request = tornado.httpclient.HTTPRequest(
-                url=self.request.url,
-                method=self.request.method,
-                body=self.request.body if self.request.body else None,
-                headers=self.request.headers,
-                follow_redirects=False,
-                use_gzip=True,
-                streaming_callback=self.handle_data_chunk,
-                header_callback=None,
-                proxy_host=self.application.outbound_ip,
-                proxy_port=self.application.outbound_port,
-                proxy_username=self.application.outbound_username,
-                proxy_password=self.application.outbound_password,
-                allow_nonstandard_methods=True,
-                validate_cert=False)
+        self.request_kwargs = {
+            "url" : self.request.url,
+            "method" : self.request.method,
+            "body" : self.request.body if self.request.body else None,
+            "headers" :self.request.headers,
+            "follow_redirects" : False,
+            "use_gzip" : True,
+            "streaming_callback" : self.handle_data_chunk,
+            "header_callback" : None,
+            "proxy_host" : self.application.outbound_ip,
+            "proxy_port" : self.application.outbound_port,
+            "proxy_username" : self.application.outbound_username,
+            "proxy_password" : self.application.outbound_password,
+            "allow_nonstandard_methods" : True,
+            "validate_cert" : False
+        }
+        self.request_object = {
+            "url" : self.request.url,
+            "method" : self.request.method,
+            "body" : self.request.body if self.request.body else None,
+            "headers" :self.request.headers,
+            "follow_redirects" : False,
+            "use_gzip" : True,
+            "proxy_host" : self.application.outbound_ip,
+            "proxy_port" : self.application.outbound_port,
+            "proxy_username" : self.application.outbound_username,
+            "proxy_password" : self.application.outbound_password,
+            "allow_nonstandard_methods" : True,
+            "validate_cert" : False
+        }
+        request = tornado.httpclient.HTTPRequest(**self.request_kwargs)
+
         response = yield tornado.gen.Task(self.application.async_client.fetch, request)
         self.finish_response(response)
 
@@ -253,6 +276,7 @@ class ProxyHandler(tornado.web.RequestHandler):
         host, port = self.request.uri.split(':')
         def start_tunnel():
             try:
+                certs = os.path.join(settings.LOG_DIR,'certs')
                 base=os.path.dirname(os.path.realpath(__file__))
                 ca_crt=os.path.join(base,"ca.crt")
                 ca_key=os.path.join(base,"ca.key")
@@ -263,7 +287,7 @@ class ProxyHandler(tornado.web.RequestHandler):
                             ca_crt,
                             ca_key,
                             "mobsec-yso",
-                            "logs/certs",
+                            certs,
                             success=ssl_success
                            )
             except tornado.iostream.StreamClosedError:
@@ -482,7 +506,8 @@ def startTornado(IP,PORT,log):
     for fil in rmfiles:
         if os.path.exists(fil):
             os.remove(fil)
-    tornado.options.parse_command_line(args=["dummy_arg","--log_file_prefix=logs/proxy.log","--logging=info"])
+    logp = os.path.join(settings.LOG_DIR, 'webproxy.log')
+    tornado.options.parse_command_line(args=["dummy_arg","--log_file_prefix="+logp,"--logging=info"])
     tornado.ioloop.PeriodicCallback(try_exit, 100).start()
     tornado.ioloop.IOLoop.instance().start()
 

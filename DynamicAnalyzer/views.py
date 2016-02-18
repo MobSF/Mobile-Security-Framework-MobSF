@@ -1,15 +1,14 @@
 # -*- coding: utf_8 -*-
 from django.shortcuts import render
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
 import subprocess,os,re,shutil,tarfile,ntpath,platform,io,signal
 import json,random,time,ast,sys,psutil,unicodedata,socket,threading
 from django.http import HttpResponseRedirect, HttpResponse
 from django.utils.html import escape
 import sqlite3 as sq
-from MobSF.forms import UploadFileForm
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from pyWebProxy.pywebproxy import *
+from MobSF.exception_printer import PrintException
 #===================================
 #Dynamic Analyzer Calls begins here!
 #===================================
@@ -34,7 +33,7 @@ def DynamicAnalyzer(request):
             m=re.match('[0-9a-f]{32}',MD5)
             if m:
                 # Delete ScreenCast Cache
-                SCREEN_FILE=os.path.join(settings.BASE_DIR,'static/screen/screen.png')
+                SCREEN_FILE=os.path.join(settings.STATIC_DIR, 'screen/screen.png')
                 if os.path.exists(SCREEN_FILE):
                     os.remove(SCREEN_FILE)
 
@@ -54,8 +53,8 @@ def DynamicAnalyzer(request):
                 return HttpResponseRedirect('/error/')
         else:
             return HttpResponseRedirect('/error/')
-    except Exception as e:
-        print "\n[ERROR] DynamicAnalyzer - " + str(e)
+    except:
+        PrintException("ERROR] DynamicAnalyzer")
         return HttpResponseRedirect('/error/')
 
 #AJAX
@@ -74,11 +73,11 @@ def GetEnv(request):
             m=re.match('[0-9a-f]{32}',MD5)
             if m:
                 DIR=settings.BASE_DIR
-                APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
+                APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
                 APP_FILE=MD5 + '.apk'        #NEW FILENAME
                 APP_PATH=APP_DIR+APP_FILE    #APP PATH
                 TOOLS_DIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
-                DWD_DIR=os.path.join(DIR,'static/downloads/')
+                DWD_DIR=settings.DWD_DIR
                 VM_IP=settings.VM_IP #VM IP
                 PROXY_IP=settings.PROXY_IP #Proxy IP
                 PORT=str(settings.PORT) #Proxy Port
@@ -90,8 +89,8 @@ def GetEnv(request):
                 return HttpResponseRedirect('/error/')
         else:
             return HttpResponseRedirect('/error/')
-    except Exception as e:
-        print "\n[ERROR] Setting up Dynamic Analysis Environment - " + str(e)
+    except:
+        PrintException("[ERROR] Setting up Dynamic Analysis Environment")
         return HttpResponseRedirect('/error/')
 #AJAX
 def TakeScreenShot(request):
@@ -104,7 +103,7 @@ def TakeScreenShot(request):
                 data = {}
                 r=random.randint(1, 1000000)
                 DIR=settings.BASE_DIR
-                SCRDIR=os.path.join(DIR,'uploads/'+MD5+'/screenshots-apk/')#make sure that list only png from this directory
+                SCRDIR=os.path.join(settings.UPLD_DIR, MD5+'/screenshots-apk/')#make sure that list only png from this directory
                 TOOLSDIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
                 adb=getADB(TOOLSDIR)
                 subprocess.call([adb, "shell", "screencap", "-p", "/system/screen.png"])
@@ -116,8 +115,8 @@ def TakeScreenShot(request):
                 return HttpResponseRedirect('/error/')
         else:
             return HttpResponseRedirect('/error/')
-    except Exception as e:
-        print "\n[ERROR] Taking Screenshot - " + str(e)
+    except:
+        PrintException("[ERROR] Taking Screenshot")
         return HttpResponseRedirect('/error/')
 
 #AJAX
@@ -146,8 +145,8 @@ def ScreenCast(request):
                     t = threading.Thread(target=ScreenCastService)
                     t.setDaemon(True)
                     t.start()
-                except Exception as e:
-                    print "\n[ERROR] Casting Screen - "+ str(e)
+                except:
+                    PrintException("[ERROR] Casting Screen")
                     data = {'status': 'error'}
                     return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -155,8 +154,8 @@ def ScreenCast(request):
         else:
             data = {'status': 'failed'}
         return HttpResponse(json.dumps(data), content_type='application/json')
-    except Exception as e:
-        print "\n[ERROR] Casting Screen - " + str(e)
+    except:
+        PrintException("[ERROR] Casting Screen")
         return HttpResponseRedirect('/error/')
 
 #AJAX
@@ -173,14 +172,14 @@ def Touch(request):
             data = {'status': 'success'}
             try:
                 subprocess.call(args)
-            except Exception as e:
+            except:
                 data = {'status': 'error'}
-                print "[ERROR] Performing Touch Action - "+ str(e)
+                PrintException("[ERROR] Performing Touch Action")
         else:
             data = {'status': 'failed'}
         return HttpResponse(json.dumps(data), content_type='application/json')
-    except Exception as e:
-        print "\n[ERROR] Sending Touch Events - " + str(e)
+    except:
+        PrintException("[ERROR] Sending Touch Events")
         return HttpResponseRedirect('/error/')
 #AJAX
 def ExecuteADB(request):
@@ -200,14 +199,14 @@ def ExecuteADB(request):
             args=[adb] + CMD.split(' ')
             try:
                 resp=subprocess.check_output(args)
-            except subprocess.CalledProcessError as e:
-                 raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+            except:
+                 PrintException("[ERROR] Execute ADB Commands")
             data = {'cmd': 'yes','resp': resp}
             return HttpResponse(json.dumps(data), content_type='application/json')
         else:
             return HttpResponseRedirect('/error/')
-    except Exception as e:
-        print "\n[ERROR] Executing ADB Commands - " + str(e)
+    except:
+        PrintException("[ERROR] Executing ADB Commands")
         return HttpResponseRedirect('/error/')
 #AJAX
 def FinalTest(request):
@@ -227,7 +226,7 @@ def FinalTest(request):
                 #Stop ScreenCast Client if it is running
                 tcp_server_mode = "off"
                 DIR=settings.BASE_DIR
-                APKDIR=os.path.join(DIR,'uploads/'+MD5+'/')
+                APKDIR=os.path.join(settings.UPLD_DIR, MD5+'/')
                 TOOLSDIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
                 adb=getADB(TOOLSDIR)
                 #Change to check output of subprocess when analysis is done
@@ -252,8 +251,8 @@ def FinalTest(request):
                 return HttpResponseRedirect('/error/')
         else:
             return HttpResponseRedirect('/error/')
-    except Exception as e:
-        print "\n[ERROR] Clean Up - " + str(e)
+    except:
+        PrintException("[ERROR] Clean Up")
         return HttpResponseRedirect('/error/')
 #AJAX
 def DumpData(request):
@@ -270,7 +269,7 @@ def DumpData(request):
                     print "[ATTACK] Possible RCE"
                     return HttpResponseRedirect('/error/')
                 DIR=settings.BASE_DIR
-                APKDIR=os.path.join(DIR,'uploads/'+MD5+'/')
+                APKDIR=os.path.join(settings.UPLD_DIR, MD5+'/')
                 TOOLSDIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
                 adb=getADB(TOOLSDIR)
                 Proxy("","","","") #Let's try to close Proxy a bit early as we don't have much control on the order of thread execution
@@ -298,8 +297,8 @@ def DumpData(request):
                 return HttpResponseRedirect('/error/')
         else:
             return HttpResponseRedirect('/error/')
-    except Exception as e:
-        print "\n[ERROR] Device Data Dump - " + str(e)
+    except:
+        PrintException("[ERROR] Device Data Dump")
         return HttpResponseRedirect('/error/')
 #AJAX
 def ExportedActivityTester(request):
@@ -314,7 +313,7 @@ def ExportedActivityTester(request):
                 return HttpResponseRedirect('/error/')
             if request.method == 'POST':
                 DIR=settings.BASE_DIR
-                APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/')
+                APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/')
                 TOOLS_DIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
                 SCRDIR=os.path.join(APP_DIR,'screenshots-apk/')
                 data = {}
@@ -340,8 +339,8 @@ def ExportedActivityTester(request):
                                 print "\n[INFO] Activity Screenshot Taken"
                                 subprocess.call([adb, "shell", "am", "force-stop", PKG])
                                 print "\n[INFO] Stopping App"
-                            except subprocess.CalledProcessError as e:
-                                raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+                            except:
+                                PrintException("[ERROR] Exported Activity Tester")
                         data = {'expacttest': 'done'}
                     else:
                         print "\n[INFO] Exported Activity Tester - No Activity Found!"
@@ -354,8 +353,8 @@ def ExportedActivityTester(request):
                 return HttpResponseRedirect('/error/')
         else:
             return HttpResponseRedirect('/error/')
-    except Exception as e:
-        print "\n[ERROR] Exported Activity Tester - " + str(e)
+    except:
+        PrintException("ERROR] Exported Activity Tester")
         return HttpResponseRedirect('/error/')
 
 #AJAX
@@ -371,7 +370,7 @@ def ActivityTester(request):
                 return HttpResponseRedirect('/error/')
             if request.method == 'POST':
                 DIR=settings.BASE_DIR
-                APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/')
+                APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/')
                 TOOLS_DIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
                 SCRDIR=os.path.join(APP_DIR,'screenshots-apk/')
                 data = {}
@@ -396,8 +395,8 @@ def ActivityTester(request):
                                 print "\n[INFO] Activity Screenshot Taken"
                                 subprocess.call([adb, "shell", "am", "force-stop", PKG])
                                 print "\n[INFO] Stopping App"
-                            except subprocess.CalledProcessError as e:
-                                raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+                            except:
+                                PrintException("Activity Tester")
                         data = {'acttest': 'done'}
                     else:
                         print "\n[INFO] Activity Tester - No Activity Found!"
@@ -410,8 +409,8 @@ def ActivityTester(request):
                 return HttpResponseRedirect('/error/')
         else:
             return HttpResponseRedirect('/error/')
-    except Exception as e:
-        print "\n[ERROR] Activity Tester - " + str(e)
+    except:
+        PrintException("[ERROR] Activity Tester")
         return HttpResponseRedirect('/error/')
 
 def Wait(sec):
@@ -430,8 +429,8 @@ def Report(request):
             m=re.match('[0-9a-f]{32}',MD5)
             if m:
                 DIR=settings.BASE_DIR
-                APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
-                DWD_DIR=os.path.join(DIR,'static/downloads/')
+                APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
+                DWD_DIR=settings.DWD_DIR
                 DRDMONAPISLOC=os.path.join(APP_DIR,'x_logcat.txt') #Use check_outputs instead later.
                 API_NET,API_BASE64, API_FILEIO, API_BINDER, API_CRYPTO, API_DEVICEINFO, API_CNTVL,API_SMS,API_SYSPROP,API_DEXLOADER,API_RELECT,API_ACNTMNGER,API_CMD=APIAnalysis(PKG,DRDMONAPISLOC)
                 URL,EMAIL,HTTP,XML,SQLiteDB,OtherFiles=RunAnalysis(APP_DIR,MD5,PKG)
@@ -442,30 +441,31 @@ def Report(request):
                 ACT={}
                 EXPACTIMGS=[]
                 EXPACT={}
-                try:
-                    for img in os.listdir(os.path.join(DWD_DIR,MD5+"-screenshots-apk/")):
-                        if img.endswith(".png"):
-                            if img.startswith("act"):
-                                ACTIMGS.append(img)
-                            elif img.startswith("expact"):
-                                EXPACTIMGS.append(img)
-                            else:
-                                IMGS.append(img)
-                    DB=StaticAnalyzerAndroid.objects.filter(MD5=MD5)
-                    if DB.exists():
-                        print "\n[INFO] Fetching Exported Activity & Activity List from DB"
-                        EXPORTED_ACT=python_list(DB[0].EXPORTED_ACT)
-                        ACTDESC=python_list(DB[0].ACTIVITIES)
-                        if len(ACTIMGS)>0:
-                            if len(ACTIMGS)==len(ACTDESC):
-                                ACT = dict(zip(ACTIMGS, ACTDESC))
-                        if len(EXPACTIMGS)>0:
-                            if len(EXPACTIMGS)==len(EXPORTED_ACT):
-                                EXPACT = dict(zip(EXPACTIMGS, EXPORTED_ACT))
-                    else:
-                        print "\n[WARNING] Entry does not exists in the DB."
-                except Exception as e:
-                    print "\n[ERROR] Screenshot Sorting : "+str(e)
+                if os.path.exists(os.path.join(DWD_DIR,MD5+"-screenshots-apk/")):
+                    try:
+                        for img in os.listdir(os.path.join(DWD_DIR,MD5+"-screenshots-apk/")):
+                            if img.endswith(".png"):
+                                if img.startswith("act"):
+                                    ACTIMGS.append(img)
+                                elif img.startswith("expact"):
+                                    EXPACTIMGS.append(img)
+                                else:
+                                    IMGS.append(img)
+                        DB=StaticAnalyzerAndroid.objects.filter(MD5=MD5)
+                        if DB.exists():
+                            print "\n[INFO] Fetching Exported Activity & Activity List from DB"
+                            EXPORTED_ACT=python_list(DB[0].EXPORTED_ACT)
+                            ACTDESC=python_list(DB[0].ACTIVITIES)
+                            if len(ACTIMGS)>0:
+                                if len(ACTIMGS)==len(ACTDESC):
+                                    ACT = dict(zip(ACTIMGS, ACTDESC))
+                            if len(EXPACTIMGS)>0:
+                                if len(EXPACTIMGS)==len(EXPORTED_ACT):
+                                    EXPACT = dict(zip(EXPACTIMGS, EXPORTED_ACT))
+                        else:
+                            print "\n[WARNING] Entry does not exists in the DB."
+                    except:
+                        PrintException("[ERROR] Screenshot Sorting")
 
                 context = {'emails' : EMAIL,
                        'urls' : URL,
@@ -497,8 +497,8 @@ def Report(request):
                 return HttpResponseRedirect('/error/')
         else:
             return HttpResponseRedirect('/error/')
-    except Exception as e:
-        print "\n[ERROR] Dynamic Analysis Report Generation - " + str(e)
+    except:
+        PrintException("[ERROR] Dynamic Analysis Report Generation")
         return HttpResponseRedirect('/error/')
 
 
@@ -518,16 +518,16 @@ def RefreshVM(uuid,snapshot_uuid,vbox_exe):
         args=[vbox_exe,'startvm',uuid]
         subprocess.call(args)
         print "\n[INFO] VM Starting"
-    except Exception as e:
-        print "\n[ERROR] Refreshing MobSF VM - " + str(e)
+    except:
+        PrintException("[ERROR] Refreshing MobSF VM")
 
 
 def WebProxy(APKDIR,ip,port):
     print "\n[INFO] Starting Web Proxy"
     try:
         Proxy(ip,port,APKDIR,"on")
-    except Exception as e:
-        print "\n[ERROR] Starting Web Proxy - " + str(e)
+    except:
+        PrintException("[ERROR] Starting Web Proxy")
 
 
 def getADB(TOOLSDIR):
@@ -545,8 +545,8 @@ def getADB(TOOLSDIR):
         elif platform.system()=="Windows":
             adb=os.path.join(TOOLSDIR , 'adb/windows/adb.exe')
         return adb
-    except Exception as e:
-        print "\n[ERROR] Getting ADB Location - " + str(e)
+    except:
+        PrintException("[ERROR] Getting ADB Location")
         return "adb"
 
 def ConnectInstallRun(TOOLSDIR,IP,APKPATH,PACKAGE,LAUNCH,isACT):
@@ -574,9 +574,8 @@ def ConnectInstallRun(TOOLSDIR,IP,APKPATH,PACKAGE,LAUNCH,isACT):
             #Handle Service or Give Choice to Select in Future.
             pass
         print "[INFO] Testing Environment is Ready!"
-    except Exception as e:
-        print "\n[ERROR]  Starting App for Dynamic Analysis - " + str(e)
-
+    except:
+        PrintException("[ERROR]  Starting App for Dynamic Analysis")
 
 def HandleSqlite(SFile):
     print "\n[INFO] SQLite DB Extraction"
@@ -602,8 +601,8 @@ def HandleSqlite(SFile):
                     dat+=str(x).decode('utf8', 'ignore') + " | "
                 data+=dat+"\n"
         return data
-    except Exception as e:
-        print "\n[ERROR] SQLite DB Extraction - " + str(e)
+    except:
+        PrintException("[ERROR] SQLite DB Extraction")
         pass
 def APIAnalysis(PKG,LOCATION):
     print "\n[INFO] Dynamic API Analysis"
@@ -684,9 +683,9 @@ def APIAnalysis(PKG,LOCATION):
                     if re.findall('java.net.URL|org.apache.http.impl.client.AbstractHttpClient',CLS):
                         API_NET.append(D)
                 except:
-                    print "\n[ERROR] Parsing JSON Failed for: \n" + value
-    except Exception as e:
-        print "\n[ERROR] Dynamic API Analysis - " + str(e)
+                    PrintException("[ERROR] Parsing JSON Failed for: " + value)
+    except:
+        PrintException("[ERROR] Dynamic API Analysis")
         pass
     return list(set(API_NET)),list(set(API_BASE64)), list(set(API_FILEIO)), list(set(API_BINDER)), list(set(API_CRYPTO)), list(set(API_DEVICEINFO)), list(set(API_CNTVAL)), list(set(API_SMS)), list(set(API_SYSPROP)),list(set(API_DEXLOADER)),list(set(API_RELECT)),list(set(API_ACNTMNGER)),list(set(API_CMD)) 
 def Download(MD5,DWDDIR,APKDIR,PKG):
@@ -722,8 +721,9 @@ def Download(MD5,DWDDIR,APKDIR,PKG):
             shutil.copyfile(Star,DStar)
         except:
             pass
-    except Exception as e:
-        print "\n[ERROR] Generating Downloads - " + str(e)
+    except:
+        PrintException("[ERROR] Generating Downloads")
+
 def RunAnalysis(APKDIR,MD5,PACKAGE):
     print "\n[INFO] Dynamic File Analysis"
     Web=os.path.join(APKDIR,'WebTraffic.txt')
@@ -770,7 +770,7 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
         tar.extractall(UNTAR_DIR)
         tar.close()
     except:
-        print "\n[ERROR] TAR EXTRACTION FAILED"
+        PrintException("[ERROR] TAR EXTRACTION FAILED")
     #Do Static Analysis on Data from Device
     xmlfiles=''
     SQLiteDB=''
@@ -802,8 +802,8 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
                         elif not jfile.endswith('.DS_Store'):
                             typ='others'
                             OtherFiles+="<tr><td><a href='../View/?file="+escape(fileparam)+"&md5="+MD5+"&type="+typ+"'>"+escape(fileparam)+"</a></td><tr>"
-    except Exception as e:
-        print "\n[ERROR] Dynamic File Analysis - " + str(e)
+    except:
+        PrintException("[ERROR] Dynamic File Analysis")
         pass              
     return URLS,EMAILS,wb,xmlfiles,SQLiteDB,OtherFiles
 
@@ -819,7 +819,7 @@ def View(request):
             fil=request.GET['file']
             MD5=request.GET['md5']
             typ=request.GET['type']
-            SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/DYNAMIC_DeviceData/')
+            SRC=os.path.join(settings.UPLD_DIR, MD5+'/DYNAMIC_DeviceData/')
             sfile=os.path.join(SRC,fil)
             #Prevent Directory Traversal Attacks
             if (("../" in fil) or ("%2e%2e" in fil) or (".." in fil) or ("%252e" in fil)):
@@ -843,9 +843,8 @@ def View(request):
 
         else:
             return HttpResponseRedirect('/error/')
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        print "\n[ERROR] Viewing File - "+str(e) + " Line: "+str(exc_tb.tb_lineno)
+    except:
+        PrintException("[ERROR] Viewing File")
         return HttpResponseRedirect('/error/')
 
 def ScreenCastService():
@@ -853,7 +852,7 @@ def ScreenCastService():
     global tcp_server_mode
     print "\n[INFO] ScreenCast Service Status: " + tcp_server_mode
     try:
-        SCREEN_DIR=os.path.join(settings.BASE_DIR,'static/screen/')
+        SCREEN_DIR=os.path.join(settings.STATIC_DIR, 'screen/')
         if not os.path.exists(SCREEN_DIR):
             os.makedirs(SCREEN_DIR)
 
@@ -881,9 +880,9 @@ def ScreenCastService():
                     print "\n[ATTACK] An unknown client :" + address[0] + " is trying to make a connection with MobSF ScreenCast Service!"
         elif tcp_server_mode =="off":
             s.close()
-    except Exception as e:
+    except:
         s.close()
-        print "\n[ERROR] TCP Socket Connection - "+str(e)
+        PrintException("[ERROR] TCP Socket Connection")
         pass
 
 #Helper Functions

@@ -6,7 +6,7 @@ from .forms import UploadFileForm
 from django.conf import settings
 from django.utils import timezone
 import os, hashlib, platform, json,shutil,re
-
+from MobSF.exception_printer import PrintException
 from MobSF.models import RecentScansDB
 
 def PushtoRecent(NAME,MD5,URL):
@@ -15,8 +15,8 @@ def PushtoRecent(NAME,MD5,URL):
         if not DB.exists():
             NDB=RecentScansDB(NAME=NAME,MD5=MD5,URL=URL,TS=timezone.now())
             NDB.save()
-    except Exception as e:
-        print "\n[ERROR] Adding Scan URL to Database: " + str(e)
+    except:
+        PrintException("[ERROR] Adding Scan URL to Database")
 
 def index(request):
     print "[INFO] Mobile Security Framework v0.8.9_dev_beta"
@@ -25,12 +25,11 @@ def index(request):
     return render(request,template,context)
 
 def handle_uploaded_file(f,typ):
-    DIR = settings.BASE_DIR
     md5 = hashlib.md5() #modify if crash for large 
     for chunk in f.chunks():
         md5.update(chunk)
     md5sum = md5.hexdigest()
-    ANAL_DIR=os.path.join(DIR,'uploads/'+md5sum+'/')
+    ANAL_DIR=os.path.join(settings.UPLD_DIR, md5sum+'/')
     if not os.path.exists(ANAL_DIR):
         os.makedirs(ANAL_DIR)
     with open(ANAL_DIR+ md5sum+typ, 'wb+') as destination:
@@ -92,8 +91,8 @@ def Upload(request):
         r= HttpResponse(json.dumps(response_data),content_type="application/json")
         r['Access-Control-Allow-Origin']='*'
         return r
-    except Exception as e:
-        print "\n[ERROR] Uploading File:  " + str(e)
+    except:
+        PrintException("[ERROR] Uploading File:")
 
 def about(request):
     context = {'title': 'About'}

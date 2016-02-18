@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'StaticAnalyzer',
     'DynamicAnalyzer',
     'MobSF',
+    'APITester',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -91,9 +92,17 @@ STATIC_URL = '/static/'
 
 # DO NOT EDIT ANYTHING ABOVE THIS
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#Logs Directory
+LOG_DIR=os.path.join(BASE_DIR,'logs/')
+#Static Directory
+STATIC_DIR=os.path.join(BASE_DIR,'static/')
+#Download Directory
+DWD_DIR=os.path.join(STATIC_DIR, 'downloads/')
+#Upload Directory
+UPLD_DIR=os.path.join(BASE_DIR,'uploads/')
 
 #==========DECOMPILER SETTINGS===============
-DECOMPILER = "jd-core" 
+DECOMPILER = "cfr" 
 
 #Two Decompilers are available 
 #1. jd-core
