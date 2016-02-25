@@ -139,3 +139,25 @@ PORT=1337 #Proxy Port
 SCREEN_IP = PROXY_IP #ScreenCast IP
 SCREEN_PORT = 9339 #ScreenCast Port
 #===============================================
+
+#===============MobSF Cloud Settings============
+
+CLOUD_SERVER = 'http://opensecurity.in:8080'
+#This server validates SSRF and XXE during Web API Testing
+#See the source code of the cloud server from APITester/cloud/cloud_server.py
+#You can also host the cloud server. Host it on a public IP and point CLOUD_SERVER to that IP.
+
+#===============================================
+
+#===============UPSTREAM PROXY==================
+#If you are behind any Proxy
+UPSTREAM_PROXY_IP = None
+UPSTREAM_PROXY_PORT =None
+UPSTREAM_PROXY_USERNAME = None
+UPSTREAM_PROXY_PASSWORD = None
+#===============================================
+
+#=========Path Traversal - API Testing==========
+CHECK_FILE = "/etc/passwd"
+RESPONSE_REGEX = "root:|nobody:"
+#===============================================

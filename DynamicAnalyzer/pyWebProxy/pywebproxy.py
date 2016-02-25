@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 '''
 owtf is an OWASP+PTES-focused try to unite great tools & facilitate pentesting
 Copyright (c) 2013, Abraham Aranguren <name.surname@gmail.com>  http://7-a.org
@@ -92,6 +93,7 @@ def SaveOnExit():
     REQUEST_LIST = []
     URLS = []
     TRAFFIC = ""
+
 #Save Data in Memory
 def Capture(request,response,request_object):
     global REQUEST_LIST,URLS,TRAFFIC
@@ -104,7 +106,7 @@ def Capture(request,response,request_object):
     TRAFFIC+= "\n\nREQUEST: " + str(response.request.method)+ " " + str(response.request.url) + '\n'
     for header, value in list(response.request.headers.items()):
         TRAFFIC+= header + ": " + value +"\n"
-    TRAFFIC+= "\n\n" + str(dat) + "\n"
+    TRAFFIC+= "\n\n" + dat + "\n"
     TRAFFIC+= "\n\nRESPONSE: " +str(response.code) + " " + str(response.reason) + "\n"
     for header, value in list(response.headers.items()):
         TRAFFIC+= header + ": " + value + "\n"
@@ -113,7 +115,7 @@ def Capture(request,response,request_object):
                 rdat=request.response_buffer
         else:
             rdat=''
-    TRAFFIC+= "\n\n" +str(rdat) + "\n"
+    TRAFFIC+= "\n\n" +rdat + "\n"
     #String is not memory efficient!
 
 class ProxyHandler(tornado.web.RequestHandler):
@@ -218,9 +220,9 @@ class ProxyHandler(tornado.web.RequestHandler):
         self.request_object = {
             "url" : self.request.url,
             "method" : self.request.method,
-            "body" : self.request.body if self.request.body else None,
+            "body" : (self.request.body).decode('utf-8', 'ignore') if self.request.body else None,
             "headers" :self.request.headers,
-            "follow_redirects" : False,
+            "follow_redirects" : True,
             "use_gzip" : True,
             "proxy_host" : self.application.outbound_ip,
             "proxy_port" : self.application.outbound_port,
@@ -452,12 +454,11 @@ instances = "1"
 # SSL MiTM
 # SSL certs, keys and other settings (os.path.expanduser because they are stored in users home directory ~/.owtf/proxy )
 
-
-application.outbound_ip = None
-application.outbound_port = None
-application.outbound_username = None
-application.outbound_password = None
-application.inbound_ip="0.0.0.0"
+application.outbound_ip = settings.UPSTREAM_PROXY_IP
+application.outbound_port = settings.UPSTREAM_PROXY_PORT
+application.outbound_username = settings.UPSTREAM_PROXY_USERNAME
+application.outbound_password = settings.UPSTREAM_PROXY_PASSWORD
+application.inbound_ip = settings.PROXY_IP
 
 #try: # Ensure CA.crt and Key exist
 #assert os.path.exists(application.ca_cert)

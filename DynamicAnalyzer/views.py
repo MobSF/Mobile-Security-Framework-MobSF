@@ -626,6 +626,7 @@ def APIAnalysis(PKG,LOCATION):
             dat=f.readlines()
         ID="Droidmon-apimonitor-" + PKG +":"
         for line in dat:
+            line = line.decode('utf8', 'ignore')
             if (ID) in line:
                 #print "LINE: " + line
                 param, value = line.split(ID,1)

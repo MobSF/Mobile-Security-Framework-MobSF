@@ -209,7 +209,7 @@ def Smali(request):
     except:
         PrintException("[ERROR] Getting Smali Files")
         return HttpResponseRedirect('/error/')
-def Search(request):
+def Find(request):
     try:
         m=re.match('[0-9a-f]{32}',request.POST['md5'])
         if m:
@@ -373,7 +373,11 @@ def StaticAnalyzer(request):
                     'emails': DB[0].EMAILS,
                     'strings': python_list(DB[0].STRINGS),
                     'zipped' : DB[0].ZIPPED,
-                    'mani': DB[0].MANI
+                    'mani': DB[0].MANI,
+                    'e_act': DB[0].E_ACT,
+                    'e_ser': DB[0].E_SER,
+                    'e_bro': DB[0].E_BRO,
+                    'e_cnt': DB[0].E_CNT,
                     }
                 else:
                     APP_FILE=MD5 + '.apk'        #NEW FILENAME
@@ -388,7 +392,7 @@ def StaticAnalyzer(request):
                     PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,'',True) #Manifest XML
                     MANI='../ManifestView/?md5='+MD5+'&type=apk&bin=1'
                     SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(PARSEDXML,APP_DIR)
-                    MANIFEST_ANAL,EXPORTED_ACT=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
+                    MANIFEST_ANAL,EXPORTED_ACT,EXPORTED_CNT=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
                     PERMISSIONS=FormatPermissions(PERM)
                     CNT_ACT =len(ACTIVITIES)
                     CNT_PRO =len(PROVIDERS)
@@ -450,7 +454,11 @@ def StaticAnalyzer(request):
                             STRINGS= STRINGS,
                             ZIPPED= ZIPPED,
                             MANI= MANI,
-                            EXPORTED_ACT=EXPORTED_ACT)
+                            EXPORTED_ACT=EXPORTED_ACT,
+                            E_ACT=EXPORTED_CNT["act"],
+                            E_SER=EXPORTED_CNT["ser"],
+                            E_BRO=EXPORTED_CNT["bro"],
+                            E_CNT=EXPORTED_CNT["cnt"])
                         elif RESCAN=='0':
                             print "\n[INFO] Saving to Database"
                             STATIC_DB=StaticAnalyzerAndroid(TITLE = 'Static Analysis',
@@ -492,7 +500,11 @@ def StaticAnalyzer(request):
                             STRINGS= STRINGS,
                             ZIPPED= ZIPPED,
                             MANI= MANI,
-                            EXPORTED_ACT=EXPORTED_ACT)
+                            EXPORTED_ACT=EXPORTED_ACT,
+                            E_ACT=EXPORTED_CNT["act"],
+                            E_SER=EXPORTED_CNT["ser"],
+                            E_BRO=EXPORTED_CNT["bro"],
+                            E_CNT=EXPORTED_CNT["cnt"])
                             STATIC_DB.save()
                     except:
                         PrintException("[ERROR] Saving to Database Failed")
@@ -536,7 +548,11 @@ def StaticAnalyzer(request):
                     'emails': EMAILS,
                     'strings': STRINGS,
                     'zipped' : ZIPPED,
-                    'mani': MANI
+                    'mani': MANI,
+                    'e_act': EXPORTED_CNT["act"],
+                    'e_ser': EXPORTED_CNT["ser"],
+                    'e_bro': EXPORTED_CNT["bro"],
+                    'e_cnt': EXPORTED_CNT["cnt"], 
                     }
                 template="static_analysis.html"
                 return render(request,template,context)
@@ -581,7 +597,11 @@ def StaticAnalyzer(request):
                     'dang': DB[0].DANG,
                     'urls': DB[0].URLS,
                     'emails': DB[0].EMAILS,
-                    'mani': DB[0].MANI
+                    'mani': DB[0].MANI,
+                    'e_act': DB[0].E_ACT,
+                    'e_ser': DB[0].E_SER,
+                    'e_bro': DB[0].E_BRO,
+                    'e_cnt': DB[0].E_CNT,
                     }
                 else:
                     APP_FILE=MD5 + '.zip'        #NEW FILENAME
@@ -599,7 +619,7 @@ def StaticAnalyzer(request):
                         PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,pro_type,False)   #Manifest XML
                         MANI='../ManifestView/?md5='+MD5+'&type='+pro_type+'&bin=0'
                         SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(PARSEDXML,APP_DIR)
-                        MANIFEST_ANAL,EXPORTED_ACT=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
+                        MANIFEST_ANAL,EXPORTED_ACT,EXPORTED_CNT=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
                         PERMISSIONS=FormatPermissions(PERM)
                         CNT_ACT =len(ACTIVITIES)
                         CNT_PRO =len(PROVIDERS)
@@ -650,7 +670,11 @@ def StaticAnalyzer(request):
                                 STRINGS= "",
                                 ZIPPED= "",
                                 MANI= MANI,
-                                EXPORTED_ACT=EXPORTED_ACT)
+                                EXPORTED_ACT=EXPORTED_ACT,
+                                E_ACT=EXPORTED_CNT["act"],
+                                E_SER=EXPORTED_CNT["ser"],
+                                E_BRO=EXPORTED_CNT["bro"],
+                                E_CNT=EXPORTED_CNT["cnt"])
                             elif RESCAN=='0':
                                 print "\n[INFO] Saving to Database"
                                 STATIC_DB=StaticAnalyzerAndroid(TITLE = 'Static Analysis',
@@ -692,7 +716,11 @@ def StaticAnalyzer(request):
                                 STRINGS= "",
                                 ZIPPED= "",
                                 MANI= MANI,
-                                EXPORTED_ACT=EXPORTED_ACT)
+                                EXPORTED_ACT=EXPORTED_ACT,
+                                E_ACT=EXPORTED_CNT["act"],
+                                E_SER=EXPORTED_CNT["ser"],
+                                E_BRO=EXPORTED_CNT["bro"],
+                                E_CNT=EXPORTED_CNT["cnt"])
                                 STATIC_DB.save()
                         except:
                             PrintException("[ERROR] Saving to Database Failed")
@@ -734,6 +762,10 @@ def StaticAnalyzer(request):
                         'urls': URLS,
                         'emails': EMAILS,
                         'mani': MANI,
+                        'e_act': EXPORTED_CNT["act"],
+                        'e_ser': EXPORTED_CNT["ser"],
+                        'e_bro': EXPORTED_CNT["bro"],
+                        'e_cnt': EXPORTED_CNT["cnt"],                        
                         }
                     elif Valid and pro_type=='ios':
                         print "[INFO] Redirecting to iOS Source Code Analyzer"
@@ -1093,6 +1125,7 @@ def ManifestData(mfxml,app_dir):
 def ManifestAnalysis(mfxml,mainact):
     try:
         print "[INFO] Manifest Analysis Started"
+        exp_count = dict.fromkeys(["act", "ser", "bro", "cnt"], 0)
         manifest = mfxml.getElementsByTagName("manifest")
         services = mfxml.getElementsByTagName("service")
         providers = mfxml.getElementsByTagName("provider")
@@ -1119,7 +1152,7 @@ def ManifestAnalysis(mfxml,mainact):
                     perm =' (permission '+service.getAttribute("android:permission")+' exists.) '
                 servicename = service.getAttribute("android:name")
                 RET=RET +'<tr><td>Service (' + servicename + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A service was found to be shared with other apps on the device without an intent filter or a permission requirement therefore leaving it accessible to any other application on the device.</td></tr>'
-
+                exp_count["ser"] = exp_count["ser"] + 1
         ##APPLICATIONS
         for application in applications:
 
@@ -1137,16 +1170,21 @@ def ManifestAnalysis(mfxml,mainact):
                 ad=''
                 if node.nodeName == 'activity':
                     itmname= 'Activity'
+                    cnt_id= "act"
                     ad='n'
                 elif node.nodeName == 'activity-alias':
                     itmname ='Activity-Alias'
+                    cnt_id= "act"
                     ad='n'
                 elif node.nodeName == 'provider':
                     itmname = 'Content Provider'
+                    cnt_id= "cnt"
                 elif node.nodeName == 'receiver':
                     itmname = 'Broadcast Receiver'
+                    cnt_id= "bro"
                 elif node.nodeName == 'service':
                     itmname = 'Service'
+                    cnt_id= "ser"
                 else:
                     itmname = 'NIL'
                 item=''
@@ -1172,6 +1210,7 @@ def ManifestAnalysis(mfxml,mainact):
                         if (itmname =='Activity' or itmname=='Activity-Alias'):
                             EXPORTED.append(item)
                         RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device.</td></tr>'
+                        exp_count[cnt_id] = exp_count[cnt_id] + 1
                 else:
                     isExp=False
                 impE=False
@@ -1193,6 +1232,7 @@ def ManifestAnalysis(mfxml,mainact):
                             if (itmname =='Activity' or itmname=='Activity-Alias'):
                                 EXPORTED.append(item)
                             RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.<br>An intent-filter exists.</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device. The presence of intent-filter indicates that the '+itmname+' is explicitly exported.</td></tr>'
+                            exp_count[cnt_id] = exp_count[cnt_id] + 1
 
         ##GRANT-URI-PERMISSIONS
         title = 'Improper Content Provider Permissions'
@@ -1234,7 +1274,7 @@ def ManifestAnalysis(mfxml,mainact):
                     RET=RET + '<tr><td>High Action Priority (' + value+')<br>[android:priority]</td><td><span class="label label-warning">medium</span></td><td>By setting an action priority higher than another action, the app effectively overrides other requests.</td></tr>'
         if len(RET)< 2:
             RET='<tr><td>None</td><td>None</td><td>None</td><tr>'
-        return RET,EXPORTED
+        return RET,EXPORTED,exp_count
     except:
         PrintException("[ERROR] Performing Manifest Analysis")
 
@@ -1323,7 +1363,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     
                     #Inorder to Add rule to Code Analysis, add identifier to c, add rule here and define identifier description and severity the bottom of this function.
                     #API Check
-                    if ((('java.lang.System') in dat or ('java.lang.Runtime') in dat ) and ('.load(') in dat):
+                    if (re.findall("System.loadLibrary\(|System.load\(", dat)):
                         native=True
                     if(re.findall('dalvik.system.DexClassLoader|java.security.ClassLoader|java.net.URLClassLoader|java.security.SecureClassLoader',dat)):
                         dynamic=True
@@ -1519,6 +1559,8 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
         spn_dang='<span class="label label-danger">high</span>'
         spn_info='<span class="label label-info">info</span>'
         spn_sec='<span class="label label-success">secure</span>'
+        spn_warn='<span class="label label-warning">warning</span>'
+
         for k in dg:
             if c[k]:
                 link=''
@@ -1526,6 +1568,8 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_info+'</td><td>'
                 elif (re.findall('d_rootcheck|dex_cert|dex_tamper|dex_debug|dex_debug_con|dex_debug_key|dex_emulator|dex_root|d_ssl_pin',k)):
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_sec+'</td><td>'
+                elif (re.findall('d_jsenabled',k)):
+                    hd='<tr><td>'+dg[k]+'</td><td>'+spn_warn+'</td><td>'
                 else:
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_dang+'</td><td>'
 

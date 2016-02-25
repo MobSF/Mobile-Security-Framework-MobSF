@@ -41,6 +41,10 @@ class StaticAnalyzerAndroid(models.Model):
 	ZIPPED=models.TextField()
 	MANI=models.TextField()
 	EXPORTED_ACT=models.TextField()
+	E_ACT=models.CharField(max_length=50)
+	E_SER=models.CharField(max_length=50)
+	E_BRO=models.CharField(max_length=50)
+	E_CNT=models.CharField(max_length=50)
 class StaticAnalyzerIPA(models.Model):
 	TITLE=models.TextField()
 	APPNAMEX=models.TextField()

@@ -19,7 +19,7 @@ urlpatterns = [
     url(r'^ViewFile/$', 'StaticAnalyzer.views.ViewFile', name='ViewFile'),
     url(r'^Smali/$', 'StaticAnalyzer.views.Smali', name='Smali'),
     url(r'^Java/$', 'StaticAnalyzer.views.Java', name='Java'),
-    url(r'^Search/$', 'StaticAnalyzer.views.Search', name='Search'),
+    url(r'^Find/$', 'StaticAnalyzer.views.Find', name='Find'),
     url(r'^ManifestView/$', 'StaticAnalyzer.views.ManifestView', name='ManifestView'),
     url(r'^DynamicAnalyzer/$', 'DynamicAnalyzer.views.DynamicAnalyzer', name='DynamicAnalyzer'),
     url(r'^GetEnv/$', 'DynamicAnalyzer.views.GetEnv', name='GetEnv'),
@@ -34,6 +34,7 @@ urlpatterns = [
     url(r'^ScreenCast/$', 'DynamicAnalyzer.views.ScreenCast', name='ScreenCast'),
     url(r'^Touch/$', 'DynamicAnalyzer.views.Touch', name='Touch'),
     url(r'^APITester/$', 'APITester.views.APITester', name='APITester'),
+    url(r'^StartScan/$', 'APITester.views.StartScan', name='StartScan'),
     #url(r'^admin/', include(admin.site.urls)),
 ]
 
