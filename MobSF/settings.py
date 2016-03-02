@@ -161,3 +161,7 @@ UPSTREAM_PROXY_PASSWORD = None
 CHECK_FILE = "/etc/passwd"
 RESPONSE_REGEX = "root:|nobody:"
 #===============================================
+#=========Rate Limit Check - API Testing========
+RATE_REGISTER = 20
+RATE_LOGIN = 10
+#===============================================

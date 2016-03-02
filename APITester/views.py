@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.conf import settings
-from random import randint
+from random import randint,shuffle,choice
 from urlparse import urlparse
 from cgi import parse_qs
 from APITester.models import ScopeURLSandTests
@@ -13,7 +13,7 @@ from django.template.defaultfilters import stringfilter
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 import tornado.httpclient
-import os,re,json,io,hashlib,datetime,socket
+import os,re,json,io,hashlib,datetime,socket,string
 from lxml import etree
 
 @register.filter
@@ -145,18 +145,30 @@ def StartScan(request):
 
                 SCAN_REQUESTS, LOGOUT_REQUESTS = getScanRequests(MD5,SCOPE_URLS,URLS_CONF) #List of Request Dict that we need to scan
                 if 'Information Gathering' in SELECTED_TESTS:
-                    RESULT['Information Gathering'] = api_info_gathering(SCOPE_URLS)
+                    res = api_info_gathering(SCOPE_URLS)
+                    if res:
+                        RESULT['Information Gathering'] = res
                     #Format : [{techinfo:foo, url:foo, proof:foo, request:foo, response:foo},..]
                 if 'Security Headers' in SELECTED_TESTS:
-                    RESULT['Security Headers'] = api_security_headers(SCOPE_URLS)
+                    res = api_security_headers(SCOPE_URLS)
+                    if res:
+                        RESULT['Security Headers'] = res
                 if 'SSRF' in SELECTED_TESTS:
-                    RESULT['SSRF'] = api_ssrf(SCAN_REQUESTS)
+                    res = api_ssrf(SCAN_REQUESTS)
+                    if res:
+                        RESULT['SSRF'] = res
                 if 'XXE' in SELECTED_TESTS:
-                    RESULT['XXE'] = api_xxe(SCAN_REQUESTS)
+                    res = api_xxe(SCAN_REQUESTS)
+                    if res:
+                        RESULT['XXE'] = res
                 if 'Path Traversal' in SELECTED_TESTS:
-                    RESULT['Path Traversal'] = api_pathtraversal(SCAN_REQUESTS, SCAN_MODE)
+                    res = api_pathtraversal(SCAN_REQUESTS, SCAN_MODE)
+                    if res:
+                        RESULT['Path Traversal'] = res
                 if 'Rate Limit Check' in SELECTED_TESTS:
-                    RESULT['Rate Limit Check'] = api_check_ratelimit(SCAN_REQUESTS,URLS_CONF)
+                    res = api_check_ratelimit(SCAN_REQUESTS,URLS_CONF)
+                    if res:
+                        RESULT['Rate Limit Check'] = res
                 
                 #Format : RESULT {"Information Gathering":[{}, {}, {}, {}], "blaa": [{}, {}, {}, {}]}
                 context = {'result': RESULT,
@@ -496,16 +508,26 @@ def api_pathtraversal(SCAN_REQUESTS,SCAN_MODE):
                         scan_val.append(val)
                     if (is_number(val) == False) and (re.findall("^[\w]+[\W]*[\w]*[.][\w]{1,4}$",val)):
                         #not a number and matches a filename with extension
-                        scan_val.append(val)
+                        if re.findall("%40|@",val):
+                            #we don't want to test email fields
+                            pass
+                        else:
+                            scan_val.append(val)
             for val in scan_val:
                 for payload in path_traversal_payloads(SCAN_MODE):
                     payload = payload.replace("{FILE}",settings.CHECK_FILE)
+                    #print "\n\nURI"
+                    #print "value is :", val
+                    #print "replacing with ", payload
+                    #print "new qs ", qs.replace(val,payload)
+                    #print "old request uri", request_uri["url"]
                     request_uri["url"] = prev_url + qs.replace(val,payload)
+                    #print "new request uri", request_uri["url"]
                     pt_res = HTTP_Request(request_uri)
                     if pt_res:
                         if (re.findall(settings.RESPONSE_REGEX,pt_res.body)):
                             #Path Traversal Detected
-                            result.append(genFindingsDict(STATUS["INSECURE"]+"Path Traversal Vulnerability found on Request URI", url, "Check the Response Below", pt_res))
+                            result.append(genFindingsDict(STATUS["INSECURE"]+" Path Traversal Vulnerability found on Request URI", url, "Check the Response Below", pt_res))
 
             #Scan in Request Body
             if request["body"]:
@@ -527,29 +549,29 @@ def api_pathtraversal(SCAN_REQUESTS,SCAN_MODE):
                                     scan_val.append(val)
                                 if (is_number(val) == False) and (re.findall("^[\w]+[\W]*[\w]*[.][\w]{1,4}$",val)):
                                     #not a number and matches a filename with extension
-                                    scan_val.append(val)
+                                    if re.findall("%40|@",val):
+                                        #we don't want to test email fields
+                                        pass
+                                    else:
+                                        scan_val.append(val)
                         for val in scan_val:
                             for payload in path_traversal_payloads(SCAN_MODE):
                                 payload = payload.replace("{FILE}",settings.CHECK_FILE)
                                 request_bd["body"] = body.replace(val,payload)
+                                print "BODY", request_bd
                                 bdpt_res = HTTP_Request(request_bd)
                                 if bdpt_res:
                                     if (re.findall(settings.RESPONSE_REGEX,bdpt_res.body)):
                                         #Path Traversal Detected
-                                        result.append(genFindingsDict(STATUS["INSECURE"]+"Path Traversal Vulnerability found on Request Body", url, "Check the Response Below", bdpt_res))
+                                        result.append(genFindingsDict(STATUS["INSECURE"]+" Path Traversal Vulnerability found on Request Body", url, "Check the Response Below", bdpt_res))
 
     except:
         PrintException("[ERROR] Path Traversal Tester")
     return result
 
-#Session Related
-def api_check_ratelimit(SCAN_REQUESTS,URLS_CONF):
-    '''
-    {u'https://m.ultracash.in/': {u'login': u'https://m.ultracash.in/userver/customer/remote_log', 
-    u'register': u'none', u'logout': u'none', u'pin': u'https://m.ultracash.in/userver/customer/remote_log'}, 
-    u'https://www.googleapis.com/': {u'login': u'none', u'register': u'none', u'logout': u'none', u'pin': u'none'}}
-    '''
+#API Rate Limiting
 
+def api_check_ratelimit(SCAN_REQUESTS,URLS_CONF):
     '''
     Detection Based on Response Code and Response Body Length
     '''
@@ -568,21 +590,100 @@ def api_check_ratelimit(SCAN_REQUESTS,URLS_CONF):
             if val["register"]!="none":
                 REGISTER_API.append(val["register"])
 
+        LOGIN_API = list(set(LOGIN_API))
+        PIN_API = list(set(PIN_API))
+        REGISTER_API = list(set(REGISTER_API))
+
         for request in SCAN_REQUESTS:
-            if register in LOGIN_API:
-                #Login Call.
+            if request["url"] in REGISTER_API:
+                
+                #Register API Call Rate Limit Check
+                '''
+                We try to create random users to see if rate is limited.
+                '''
+                #URI 
+                url = request["url"]
+                qs = urlparse(url).query
+                prev_url = url.replace(qs,"")
+                dict_qs = parse_qs(qs)
+                #BODY
                 body_type=findBodyType(request)
-                #DEBUG ================>>>>>>
-                print body_type
+                # We mutate body first and then URI, and not together.
+                if body_type!="none":
+                    print "\n[INFO] Register API Rate Limit Check - Checking in HTTP Request Body"
+                    #Register Params in Body
+                    stat, res = APIRateLimitCheck(request, body_type, "register", settings.RATE_REGISTER, False)
+                    if stat == False:
+                        result.append(genFindingsDict(STATUS["INSECURE"]+" Register API is not rate limited", url, "API Tester created "+ str(settings.RATE_REGISTER) + " users by mutating HTTP body.", res))
 
+                if dict_qs:
+                    print "\n[INFO] Register API Rate Limit Check - Checking in HTTP Request URI"
+                    #Register Parms in QS
+                    stat, res = APIRateLimitCheck(request, "form", "register", settings.RATE_REGISTER, True)
+                    if stat == False:
+                        result.append(genFindingsDict(STATUS["INSECURE"]+" Register API is not rate limited", url, "API Tester created "+ str(settings.RATE_REGISTER) + " users by mutating HTTP Query String.", res))
             
-
+            elif request["url"] in LOGIN_API:
+                
+                #Login BruteForce
+                '''
+                We try to BruteForce with a wrong password to see if rate is limited
+                '''
+                #URI 
+                url = request["url"]
+                qs = urlparse(url).query
+                prev_url = url.replace(qs,"")
+                dict_qs = parse_qs(qs)
+                #BODY
+                body_type=findBodyType(request)
+                # We mutate body first and then URI, and not together.
+                if body_type!="none":
+                    print "\n[INFO] Login API Rate Limit Check - Checking in HTTP Request Body"
+                    #Login Params in Body
+                    stat, res = APIRateLimitCheck(request, body_type, "login", settings.RATE_LOGIN, False)
+                    if stat == False:
+                        result.append(genFindingsDict(STATUS["INSECURE"]+" Login API is not protected from bruteforce.", url, "API Tester bruteforced Login API "+ str(settings.RATE_LOGIN) + " times by modifying HTTP body without getting blocked.", res))
+                if dict_qs:
+                    print "\n[INFO] Login API Rate Limit Check - Checking in HTTP Request URI"
+                    #Login Parms in QS
+                    stat, res = APIRateLimitCheck(request, "form","login", settings.RATE_LOGIN, True)
+                    if stat == False:
+                        result.append(genFindingsDict(STATUS["INSECURE"]+" Login API is not protected from bruteforce", url, "API Tester bruteforced Login API "+ str(settings.RATE_LOGIN) + " times by modifying HTTP Query String without getting blocked.", res))
+            
+            elif request["url"] in PIN_API:
+                
+                #Login by PIN BruteForce
+                '''
+                We try to BruteForce with a wrong pin to see if rate is limited
+                '''
+                #URI 
+                url = request["url"]
+                qs = urlparse(url).query
+                prev_url = url.replace(qs,"")
+                dict_qs = parse_qs(qs)
+                #BODY
+                body_type=findBodyType(request)
+                # We mutate body first and then URI, and not together.
+                if body_type!="none":
+                    print "\n[INFO] Pin API Rate Limit Check - Checking in HTTP Request Body"
+                    #Pin Param in Body
+                    stat, res = APIRateLimitCheck(request, body_type, "pin", settings.RATE_LOGIN, False)
+                    if stat == False:
+                        result.append(genFindingsDict(STATUS["INSECURE"]+" Pin API is not protected from bruteforce.", url, "API Tester bruteforced Pin API "+ str(settings.RATE_LOGIN) + " times by modifying HTTP body without getting blocked.", res))
+                if dict_qs:
+                    print "\n[INFO] Pin API Rate Limit Check - Checking in HTTP Request URI"
+                    #Pin Parm in QS
+                    stat, res = APIRateLimitCheck(request, "form", "pin", settings.RATE_LOGIN, True)
+                    if stat == False:
+                        result.append(genFindingsDict(STATUS["INSECURE"]+" Pin API is not protected from bruteforce", url, "API Tester bruteforced Pin API "+ str(settings.RATE_LOGIN) + " times by modifying HTTP Query String without getting blocked.", res))
     except:
         PrintException("[ERROR] API Rate Limit Tester")
+    return result
 
 
 # Helper Function
 def HTTP_Request(req):
+    print "\n[INFO] Making HTTP Requst to: " +  req["url"]
     response = None
     http_client = tornado.httpclient.HTTPClient()
     try:
@@ -629,6 +730,7 @@ def getLogoutAPI(URLS_CONF):
     try:
         for key,val in URLS_CONF.items():
             LOGOUT_API.append(val["logout"])
+        LOGOUT_API = list(set(LOGOUT_API))
     except:
         PrintException("[ERROR] Getting List of Logout APIs")
     return LOGOUT_API
@@ -646,9 +748,11 @@ def getScanRequests(MD5,SCOPE_URLS,URLS_CONF):
         for request in data:
             if getProtocolDomain(request["url"]) in SCOPE_URLS:
                 if request["url"] in LOGOUT_API:
-                    LOGOUT_REQUESTS.append(request)
+                    if request not in LOGOUT_REQUESTS:
+                        LOGOUT_REQUESTS.append(request)
                 else:
-                    SCAN_REQUESTS.append(request)
+                    if request not in SCAN_REQUESTS:
+                        SCAN_REQUESTS.append(request)
         return SCAN_REQUESTS, LOGOUT_REQUESTS
     except:
         PrintException("[ERROR] Getting Scan Request Objects")
@@ -741,6 +845,14 @@ def getIPList(url):
         PrintException("[ERROR] Getting IP(s) from URL")
     return ips
 
+def findBetween(s, first, last):
+    try :
+        start = s.index(first) + len(first)
+        end = s.index(last,start)
+        return s[start:end]
+    except ValueError:
+        return ""
+
 def is_number(s):
     try:
         float(s)
@@ -751,6 +863,8 @@ def is_number(s):
 def getMD5(data):
     return hashlib.md5(data).hexdigest()
 
+#SSRF and XXE
+ 
 def deleteByIP(ip):
     try:
         res = HTTP_GET_Request(settings.CLOUD_SERVER +"/delete/"+ ip)
@@ -807,6 +921,8 @@ def xxe_paylods():
         PrintException("[ERROR] Reading XXE Payloads")
     return XXE
 
+# Path Traversal
+
 def path_traversal_payloads(SCAN_MODE):
     PT =[]
     N=15 #First 15 payloads
@@ -824,9 +940,11 @@ def path_traversal_payloads(SCAN_MODE):
         PrintException("[ERROR] Reading Path Traversal Payloads")
     return PT
 
+# Rate Limit
+
 def findBodyType(request):
+    bd_typ ="none"
     try:
-        bd_type ="none"
         if request["body"]:
             try:
                 json.loads(request["body"])
@@ -846,3 +964,345 @@ def findBodyType(request):
         return bd_typ
     except:
         PrintException("[ERROR] Finding Request Body type")
+
+def QSMutate(qs,typ):
+    try:
+        m_qs = qs
+        if typ == "register":
+            dict_qs = parse_qs(qs)
+            for key in dict_qs:
+                for val in dict_qs[key]:
+                    if re.findall("%40|@",val):
+                        #Do careful mutation for emails
+                        m_email = choice(string.ascii_letters) + choice(string.ascii_letters) + choice(string.ascii_letters) + val[1:]
+                        m_qs = m_qs.replace(val,m_email)
+                    elif (len(val)> 1) and (val.lower()!= "true") and (val.lower()!="false"):
+                        #Rest all thing like username, pin, password, mobile, just mutate characters
+                        #String of length 1 is never mutated
+                        listify = list (val)
+                        shuffle(listify)
+                        m_val = ''.join(listify)
+                        m_qs = m_qs.replace(val,m_val)
+        elif typ == "login":
+            #Simple Logic - for timesake
+            dict_qs = parse_qs(qs)
+            for key in dict_qs:
+                for val in dict_qs[key]:
+                    if re.findall("pass|password|ps|userpass|pass-word",key,re.I):
+                        listify = list (val)
+                        shuffle(listify)
+                        m_val = ''.join(listify)
+                        m_qs = m_qs.replace(val,m_val)
+        elif typ == "pin":
+            #Simple Logic - for timesake
+            dict_qs = parse_qs(qs)
+            for key in dict_qs:
+                for val in dict_qs[key]:
+                    if re.findall("pin|passcode|cvv|code|passlock|lockcode",key,re.I):
+                        listify = list (val)
+                        shuffle(listify)
+                        m_val = ''.join(listify)
+                        m_qs = m_qs.replace(val,m_val)
+        return m_qs
+    except:
+        PrintException("[ERROR] Mutating Query String")
+
+def JSONMutate(json,typ):
+    try:
+        #Mutate only strings in 1st level, 2nd level and 3rd level nested dict 
+        dic=json.loads(json)
+        if typ == "register":
+            for k in dic:
+                if type(dic[k]) == str:
+                    if re.findall("%40|@",dic[k]):
+                        #Do careful mutation for emails
+                        m_email = choice(string.ascii_letters) + choice(string.ascii_letters) + choice(string.ascii_letters) + dic[k][1:]
+                        dic[k] = m_email
+                    elif (len(dic[k])> 1) and (dic[k].lower()!= "true") and (dic[k].lower()!="false"):
+                        listify = list (dic[k])
+                        shuffle(listify)
+                        dic[k] = ''.join(listify)
+                elif type(dic[k]) == dict:
+                    for kk in dic[k]:
+                        if type(dic[k][kk]) == str:
+                            if re.findall("%40|@",dic[k][kk]):
+                                #Do careful mutation for emails
+                                m_email = choice(string.ascii_letters) + choice(string.ascii_letters) + choice(string.ascii_letters) + dic[k][kk][1:]
+                                dic[k][kk] = m_email
+                            elif (len(dic[k][kk])> 1) and (dic[k][kk].lower()!= "true") and (dic[k][kk].lower()!="false"):
+                                listify = list (dic[k][kk])
+                                shuffle(listify)
+                                dic[k][kk] = ''.join(listify)
+                        elif type(dic[k][kk]) == dict:
+                            for kkk in dic[k][kk]:
+                                if type(dic[k][kk][kkk]) == str:
+                                    if re.findall("%40|@",dic[k][kk][kkk]):
+                                        #Do careful mutation for emails
+                                        m_email = choice(string.ascii_letters) + choice(string.ascii_letters) + choice(string.ascii_letters) + dic[k][kk][kkk][1:]
+                                        dic[k][kk][kkk] = m_email
+                                    elif (len(dic[k][kk][kkk])> 1) and (dic[k][kk][kkk].lower()!= "true") and (dic[k][kk][kkk].lower()!="false"):
+                                        listify = list (dic[k][kk][kkk])
+                                        shuffle(listify)
+                                        dic[k][kk][kkk] = ''.join(listify)
+        elif typ == "login":
+            #Simple Logic - for timesake
+            #Only 1st Level is checked
+            for k in dic:
+                if type(k) == str:
+                    if re.findall("pass|password|ps|userpass|pass-word",k,re.I):
+                        if (type(dic[k]) == str):
+                            listify = list (dic[k])
+                            shuffle(listify)
+                            dic[k] = ''.join(listify)
+        elif typ == "pin":
+            #Simple Logic - for timesake
+            #Only 1st Level is checked
+            for k in dic:
+                if type(k) == str:
+                    if re.findall("pin|passcode|cvv|code|passlock|lockcode",k,re.I):
+                        if (type(dic[k]) == str):
+                            listify = list (dic[k])
+                            shuffle(listify)
+                            dic[k] = ''.join(listify)
+        return json.dumps(dic)
+    except:
+        PrintException("[ERROR] Mutating JSON data")
+
+def XMLMutate(xml, typ):
+    try:
+        #IMPORTANT!!! Not Implemented Completely - Hack for the timesake
+        creds = []
+        if typ == "register":
+            creds.append(findBetween(xml,"<user>","</user>"))
+            creds.append(findBetween(xml,"<us>","</us>"))
+            creds.append(findBetween(xml,"<user-name>","</user-name>"))
+            creds.append(findBetween(xml,"<id>","</id>"))
+            creds.append(findBetween(xml,"<username>","</username>"))
+            creds.append(findBetween(xml,"<password>","</password>"))
+            creds.append(findBetween(xml,"<pass>","</pass>"))
+            creds.append(findBetween(xml,"<pas>","</pas>"))
+            creds.append(findBetween(xml,"<ps>","</ps>"))
+            creds.append(findBetween(xml,"<pin>","</pin>"))
+            creds.append(findBetween(xml,"<passcode>","</passcode>"))
+            creds.append(findBetween(xml,"<email>","</email>"))
+            creds.append(findBetween(xml,"<e-mail>","</e-mail>"))
+            creds.append(findBetween(xml,"<mobile>","</mobile>"))
+            creds.append(findBetween(xml,"<mob>","</mob>"))
+            creds.append(findBetween(xml,"<userid>","</userid>"))
+            creds = list(set(creds))
+            for x in creds:
+                if re.findall("%40|@",x):
+                    #Do careful mutation for emails
+                    m_email = choice(string.ascii_letters) + choice(string.ascii_letters) + choice(string.ascii_letters) + x[1:]
+                    xml = xml.replace(x,m_email)
+                elif (len(x) > 1) and (x.lower()!="true") and (x.lower()!="false"):
+                    listify = list (x)
+                    shuffle(listify)
+                    m_val = ''.join(listify)
+                    xml = xml.replace(x,m_val)
+        elif typ == "login":
+            creds.append(findBetween(xml,"<password>","</password>"))
+            creds.append(findBetween(xml,"<pass>","</pass>"))
+            creds.append(findBetween(xml,"<pas>","</pas>"))
+            creds.append(findBetween(xml,"<ps>","</ps>"))
+            creds.append(findBetween(xml,"<PASSWORD>","</PASSWORD>"))
+            creds.append(findBetween(xml,"<PASS>","</PASS>"))
+            creds.append(findBetween(xml,"<PS>","</PS>"))
+
+            creds = list(set(creds))
+            for x in creds:
+                if (len(x) > 1) and (x.lower()!="true") and (x.lower()!="false"):
+                    listify = list (x)
+                    shuffle(listify)
+                    m_val = ''.join(listify)
+                    xml = xml.replace(x,m_val)
+        elif typ == "pin":
+            creds.append(findBetween(xml,"<passcode>","</passcode>"))
+            creds.append(findBetween(xml,"<pin>","</pin>"))
+            creds.append(findBetween(xml,"<code>","</code>"))
+            creds.append(findBetween(xml,"<passlock>","</passlock>"))
+            creds.append(findBetween(xml,"<lockcode>","</lockcode>"))
+            creds.append(findBetween(xml,"<cvv>","</cvv>"))
+            creds = list(set(creds))
+            for x in creds:
+                if (len(x) > 1) and (x.lower()!="true") and (x.lower()!="false"):
+                    listify = list (x)
+                    shuffle(listify)
+                    m_val = ''.join(listify)
+                    xml = xml.replace(x,m_val)
+        return xml
+    except:
+        PrintException("[ERROR] Mutating JSON data")
+
+def APIRateLimitCheck(request, body_type, action, limit, isQS = False):
+    print "\n[INFO] Checking "+action+" API Rate Limiting"
+    res = {}
+    try:
+        if body_type == "form":
+            frm_request = request
+            dict_qs = {}
+            if isQS:
+                #HTTP Request URI
+                url = request["url"]
+                qs = urlparse(url).query
+                prev_url = url.replace(qs,"")
+                frm_request["url"] = prev_url + QSMutate(qs,action)
+                #Make first mutated request and collect response code and body
+                res=HTTP_Request(frm_request)
+                if res:
+                    if res.code:
+                        res_code = str(res.code)
+                        if (res_code[0] == "4") or (res_code[0] == "5"):
+                            # If response code is 4XX or 5XX
+                            return True, res
+                else:
+                    return True, res
+                if res.error:
+                    #If Initial Request is failing, no point of checking again
+                    print "URI - Response Error"
+                    return True, res
+                else:
+                    initial_res = res
+                    for x in range(limit):
+                        frm_request["url"] = prev_url + QSMutate(qs,action)
+                        res = HTTP_Request(frm_request)
+                    if res.error:
+                        print "URI - Response Error"
+                        return True, res
+                    else:
+                        if res.code == initial_res.code:
+                            bd = False
+                            if res.body and initial_res.body:
+                                bd = True
+                            if bd:
+                                if len(res.body) == len(initial_res.body):
+                                    return False, res #W00t no Rate Limit Check/Captcha in place
+                                else:
+                                    return True, res
+                            else:
+                                return False, res  #W00t no Rate Limit Check/Captcha in place
+                        else:
+                            return True, res
+                return True,res
+            else:
+                #HTTP Request Body
+                
+                frm_request["body"] = QSMutate(request["body"],action)
+                #Make first mutated request and collect response code and body
+
+                res=HTTP_Request(frm_request)
+                if res:
+                    if res.code:
+                        res_code = str(res.code)
+                        if (res_code[0] == "4") or (res_code[0] == "5"):
+                            # If response code is 4XX,5XX
+                            return True, res
+                else:
+                    return True, res
+                if res.error:
+                    #If Initial Request is failing, no point of checking again
+                    print "Form Body - Response Error"
+                    return True, res
+                else:
+                    initial_res = res
+                    for x in range(limit):
+                        frm_request["body"] = QSMutate(request["body"],action)
+                        res = HTTP_Request(frm_request)
+                    if res.error:
+                        print "Form Body - Response Error"
+                        return True, res
+                    else:
+                        if res.code == initial_res.code:
+                            bd = False
+                            if res.body and initial_res.body:
+                                bd = True
+                            if bd:
+                                if len(res.body) == len(initial_res.body):
+                                    return False, res #W00t no Rate Limit Check/Captcha in place
+                                else:
+                                    return True, res
+                            else:
+                                return False, res  #W00t no Rate Limit Check/Captcha in place
+                        else:
+                            return True, res
+            return True, res
+        elif body_type == "json":
+            json_request = request
+            json_request["body"] = JSONMutate(request["body"],action)
+            res = HTTP_Request(json_request)
+            if res:
+                if res.code:
+                    res_code = str(res.code)
+                    if (res_code[0] == "4") or (res_code[0] == "5"):
+                        # If response code is 4XX, 5XX
+                        return True, res
+            else:
+                return True, res
+            if res.error:
+                #If Initial Request is failing, no point of checking again
+                print "JSON Body - Response Error"
+                return True, res
+            else:
+                initial_res = res
+                for x in range(limit):
+                    json_request["body"] = JSONMutate(request["body"],action)
+                    res = HTTP_Request(json_request)
+                if res.error:
+                    print "JSON Body - Response Error"
+                    return True, res
+                else:
+                    if res.code == initial_res.code:
+                        bd = False
+                        if res.body and initial_res.body:
+                            bd = True
+                        if bd:
+                            if len(res.body) == len(initial_res.body):
+                                return False, res #W00t no Rate Limit Check/Captcha in place
+                            else:
+                                return True, res
+                        else:
+                            return False, res  #W00t no Rate Limit Check/Captcha in place
+                    else:
+                        return True, res
+        elif body_type == "xml":
+            xml_request = request
+            xml_request["body"] = XMLMutate(request["body"],action)
+            res = HTTP_Request(xml_request)
+            if res:
+                if res.code:
+                    res_code = str(res.code)
+                    if (res_code[0] == "4") or (res_code[0] == "5"):
+                        # If response code is 4XX, 5XX
+                        return True, res
+            else:
+                return True, res
+            if res.error:
+                #If Initial Request is failing, no point of checking again
+                print "XML Body - Response Error"
+                return True, res
+            else:
+                initial_res = res
+                for x in range(limit):
+                    xml_request["body"] = XMLMutate(request["body"],action)
+                    res = HTTP_Request(xml_request)
+                if res.error:
+                    print "XML Body - Response Error"
+                    return True, res
+                else:
+                    if res.code == initial_res.code:
+                        bd = False
+                        if res.body and initial_res.body:
+                            bd = True
+                        if bd:
+                            if len(res.body) == len(initial_res.body):
+                                return False, res #W00t no Rate Limit Check/Captcha in place
+                            else:
+                                return True, res
+                        else:
+                            return False, res  #W00t no Rate Limit Check/Captcha in place
+                    else:
+                        return True, res
+        return True, res # Means RateLimitCheck exists or We just failed.
+    except:
+        PrintException("[ERROR] Checking "+action+" API Rate Limiting")
+

