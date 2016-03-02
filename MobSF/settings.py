@@ -10,7 +10,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os,platform
-import java
+import java, vbox
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -114,7 +114,7 @@ else:
     #For OSX and Linux
     #JAVA_PATH='/usr/bin/'
     JAVA_PATH=java.FindJava()
-    VBOX='/usr/bin/VBoxManage'
+    VBOX=vbox.FindVbox() #Path to VBoxManage in Linux/OSX
 
 #VM SETTINGS
 #VBoxManage showhdinfo "MobSF_VM_0.1-disk3.vdi"
