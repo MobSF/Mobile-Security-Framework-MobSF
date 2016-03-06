@@ -121,13 +121,18 @@ else:
     JAVA_PATH=java.FindJava()
     VBOX=vbox.FindVbox() #Path to VBoxManage in Linux/OSX
 
+#===============DEVICE Settings=================
+REAL_DEVICE = False
+DEVICE_IP = '192.168.0.104'
+#===============================================
+
 #================VM SETTINGS ==================
 #VBoxManage showhdinfo "MobSF_VM_0.1-disk3.vdi"
 #VM UUID
 UUID='d2736249-7394-4dc6-8d6e-154aa99460b0'
 #Snapshot UUID
 SUUID='957de995-41c6-4f50-b260-73c530165ab6'
-#VM/Device IP
+#IP of the MobSF VM
 VM_IP='192.168.56.101'
 #=============================================
 
@@ -139,6 +144,14 @@ SCREEN_IP = PROXY_IP #ScreenCast IP
 SCREEN_PORT = 9339 #ScreenCast Port
 #===============================================
 
+#===============UPSTREAM PROXY==================
+#If you are behind a Proxy
+UPSTREAM_PROXY_IP = None
+UPSTREAM_PROXY_PORT = None
+UPSTREAM_PROXY_USERNAME = None
+UPSTREAM_PROXY_PASSWORD = None
+#===============================================
+
 #===============MobSF Cloud Settings============
 
 CLOUD_SERVER = 'http://opensecurity.in:8080'
@@ -148,19 +161,13 @@ CLOUD_SERVER = 'http://opensecurity.in:8080'
 
 #===============================================
 
-#===============UPSTREAM PROXY==================
-#If you are behind any Proxy
-UPSTREAM_PROXY_IP = None
-UPSTREAM_PROXY_PORT =None
-UPSTREAM_PROXY_USERNAME = None
-UPSTREAM_PROXY_PASSWORD = None
-#===============================================
-
 #=========Path Traversal - API Testing==========
 CHECK_FILE = "/etc/passwd"
 RESPONSE_REGEX = "root:|nobody:"
 #===============================================
+
 #=========Rate Limit Check - API Testing========
 RATE_REGISTER = 20
 RATE_LOGIN = 10
 #===============================================
+

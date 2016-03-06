@@ -30,11 +30,11 @@ def spacify(value, autoescape=None):
 spacify.needs_autoescape = True
 
 
-TESTS = ['Information Gathering','Security Headers','Insecure Direct Object Reference','Session Handling','SSRF','XXE','Path Traversal','Rate Limit Check']
+TESTS = ['Information Gathering','Security Headers','IDOR','Session Handling','SSRF','XXE','Path Traversal','Rate Limit Check']
 STATUS = { "INFO": "<span class='label label-info'>Info</span>", "SECURE": "<span class='label label-success'>Secure</span>", "INSECURE": "<span class='label label-danger'>Insecure</span>", "WARNING": "<span class='label label-warning'>Warning</span>"}
+ACCEPTED_CONTENT_TYPE = ["application/json","text/html","application/xml","text/xml"]
 
-def APITester(request):
-    #Bug show login, logout, register etc if session is selected
+def APIFuzzer(request):
     global TESTS
     print "\n[INFO] API Testing Started"
     try:
@@ -50,7 +50,7 @@ def APITester(request):
                     'tstmsg': 'Select Tests',
                     'tests': TESTS,
                     'btntxt': 'Next',
-                    'formloc': '../APITester/',
+                    'formloc': '../APIFuzzer/',
                     'd':'',
                     'v':'display: none;',
                     'dict_urls': {},
@@ -91,7 +91,7 @@ def APITester(request):
                             DICT_URLS[getProtocolDomain(url)].append(url)
                         else:
                             DICT_URLS[getProtocolDomain(url)] = [url]
-                context = {'title' : 'API Tester',
+                context = {'title' : 'API Fuzzer',
                     'urlmsg': 'Selected URLs',
                     'md5' : MD5,
                     'urls' : SCOPE_URLS,
@@ -154,22 +154,30 @@ def StartScan(request):
                     if res:
                         RESULT['Security Headers'] = res
                 if 'SSRF' in SELECTED_TESTS:
-                    res = api_ssrf(SCAN_REQUESTS)
+                    res = api_ssrf(SCAN_REQUESTS,URLS_CONF)
                     if res:
                         RESULT['SSRF'] = res
                 if 'XXE' in SELECTED_TESTS:
-                    res = api_xxe(SCAN_REQUESTS)
+                    res = api_xxe(SCAN_REQUESTS,URLS_CONF)
                     if res:
                         RESULT['XXE'] = res
                 if 'Path Traversal' in SELECTED_TESTS:
-                    res = api_pathtraversal(SCAN_REQUESTS, SCAN_MODE)
+                    res = api_pathtraversal(SCAN_REQUESTS, URLS_CONF, SCAN_MODE)
                     if res:
                         RESULT['Path Traversal'] = res
+                if 'IDOR' in SELECTED_TESTS:
+                    res = api_idor(SCAN_REQUESTS,URLS_CONF)
+                    if res:
+                        RESULT['IDOR'] = res
+                if 'Session Handling' in SELECTED_TESTS:
+                    res = api_session_check(SCAN_REQUESTS,LOGOUT_REQUESTS,URLS_CONF)
+                    if res:
+                        RESULT['Session Handling'] = res
                 if 'Rate Limit Check' in SELECTED_TESTS:
                     res = api_check_ratelimit(SCAN_REQUESTS,URLS_CONF)
                     if res:
                         RESULT['Rate Limit Check'] = res
-                
+
                 #Format : RESULT {"Information Gathering":[{}, {}, {}, {}], "blaa": [{}, {}, {}, {}]}
                 context = {'result': RESULT,
                 'title':'Web API Scan Results'}
@@ -207,13 +215,6 @@ def api_info_gathering(SCOPE_URLS):
                     elif header.lower() == "x-aspnet-version":
                         result.append(genFindingsDict(STATUS["INFO"]+" ASP.NET Version Disclosure",url,header + ": " +value,response))
 
-        '''
-        do on all request objects captured if it's not found on parent domain
-        really needed?
-        when execptions triggers, some times server info is discliosed
-        for req in SCAN_REQUESTS:
-            response=HTTP_Request(req)
-        '''
     except:
         PrintException("[ERROR] Information Gathering Module")
     return result
@@ -299,7 +300,7 @@ def api_security_headers(SCOPE_URLS):
 
 #SSRF
 
-def api_ssrf(SCAN_REQUESTS):
+def api_ssrf(SCAN_REQUESTS,URLS_CONF):
     '''
     This module scans for SSRF in request uri and body and confirms the vulnerability using MobSF Cloud Server.
     '''
@@ -310,9 +311,25 @@ def api_ssrf(SCAN_REQUESTS):
 
     print "\n[INFO] Starting SSRF Tester"
     try:
+        url_n_cookie_pair,url_n_header_pair = getAuthTokens(SCAN_REQUESTS, URLS_CONF)
         for request in SCAN_REQUESTS:
-
             url = request["url"]
+            if (url_n_cookie_pair):
+                if getProtocolDomain(url) in url_n_cookie_pair:
+                    cookie = "nil"
+                    if "Cookie" in request["headers"]:
+                        cookie = "Cookie"
+                    elif "cookie" in request["headers"]:
+                        cookie = "cookie"
+                    if cookie != "nil":
+                        auth_cookie = url_n_cookie_pair[getProtocolDomain(url)]
+                        request["headers"][cookie] = auth_cookie
+            if (url_n_header_pair):
+                if getProtocolDomain(url) in url_n_header_pair:
+                    for k in request["headers"]:
+                        if re.findall("Authorization|Authentication|auth",k,re.I):
+                            request["headers"][k] = url_n_header_pair[getProtocolDomain(url)][k]
+
             domain = getProtocolDomain(url)
             path_n_querystring = url.replace(domain,"")
 
@@ -434,14 +451,30 @@ def api_ssrf(SCAN_REQUESTS):
 
 #XXE
 
-def api_xxe(SCAN_REQUESTS):
+def api_xxe(SCAN_REQUESTS,URLS_CONF):
     global STATUS
     result = []
     print "\n[INFO] Starting XXE Tester"
     try:
+        url_n_cookie_pair,url_n_header_pair = getAuthTokens(SCAN_REQUESTS, URLS_CONF)
         for request in SCAN_REQUESTS:
             if request["body"]:
                 url = request["url"]
+                if (url_n_cookie_pair):
+                    if getProtocolDomain(url) in url_n_cookie_pair:
+                        cookie = "nil"
+                        if "Cookie" in request["headers"]:
+                            cookie = "Cookie"
+                        elif "cookie" in request["headers"]:
+                            cookie = "cookie"
+                        if cookie != "nil":
+                            auth_cookie = url_n_cookie_pair[getProtocolDomain(url)]
+                            request["headers"][cookie] = auth_cookie
+                if (url_n_header_pair):
+                    if getProtocolDomain(url) in url_n_header_pair:
+                        for k in request["headers"]:
+                            if re.findall("Authorization|Authentication|auth",k,re.I):
+                                request["headers"][k] = url_n_header_pair[getProtocolDomain(url)][k]
                 xml = False
                 try:
                     config = etree.XMLParser(remove_blank_text=True, resolve_entities=False)
@@ -483,7 +516,7 @@ def api_xxe(SCAN_REQUESTS):
 
 #Path Traversal
 
-def api_pathtraversal(SCAN_REQUESTS,SCAN_MODE):
+def api_pathtraversal(SCAN_REQUESTS,URLS_CONF,SCAN_MODE):
     global STATUS
     result = []
     print "\n[INFO] Starting Path Traversal Tester"
@@ -492,8 +525,24 @@ def api_pathtraversal(SCAN_REQUESTS,SCAN_MODE):
     In URI only if it contains a parameter value a foooo.bar (filename.extl) or foo/bar/ddd ("/")
     '''
     try:
+        url_n_cookie_pair,url_n_header_pair = getAuthTokens(SCAN_REQUESTS, URLS_CONF)
         for request in SCAN_REQUESTS:
             url = request["url"]
+            if (url_n_cookie_pair):
+                if getProtocolDomain(url) in url_n_cookie_pair:
+                    cookie = "nil"
+                    if "Cookie" in request["headers"]:
+                        cookie = "Cookie"
+                    elif "cookie" in request["headers"]:
+                        cookie = "cookie"
+                    if cookie != "nil":
+                        auth_cookie = url_n_cookie_pair[getProtocolDomain(url)]
+                        request["headers"][cookie] = auth_cookie
+            if (url_n_header_pair):
+                if getProtocolDomain(url) in url_n_header_pair:
+                    for k in request["headers"]:
+                        if re.findall("Authorization|Authentication|auth",k,re.I):
+                            request["headers"][k] = url_n_header_pair[getProtocolDomain(url)][k]
 
             #Scan in Request URI
             scan_val = []
@@ -569,6 +618,201 @@ def api_pathtraversal(SCAN_REQUESTS,SCAN_MODE):
         PrintException("[ERROR] Path Traversal Tester")
     return result
 
+'''
+Session Related Checks
+'''
+
+#IDOR
+
+def api_idor(SCAN_REQUESTS,URLS_CONF):
+    '''
+    1. Without Cookie and Auth headers
+    2. With a Valid Cookie and Auth header of another user
+    TO-DO:
+    Add feature to allow user to select session parameter 
+    '''
+    global STATUS,ACCEPTED_CONTENT_TYPE
+    print "\n[INFO] Performing API IDOR Checks"
+    result = []
+    try:
+        LOGIN_API, PIN_API, REGISTER_API,LOGOUT_API = getAPI(URLS_CONF)
+        LOGIN_API_COMBINED = LOGIN_API + PIN_API
+        LOGIN_API_COMBINED = list(set(LOGIN_API_COMBINED))
+        url_n_cookie_pair,url_n_header_pair = getAuthTokensTwoUser(SCAN_REQUESTS, URLS_CONF)
+        ''''
+        IDOR Checks starts now.
+        '''
+        #IDOR Check Remove Cookie and Auth Header
+        for request in SCAN_REQUESTS:
+            #URI 
+            url = request["url"]
+            if (url not in LOGIN_API_COMBINED) and (url not in REGISTER_API):
+                req1 = req_cookie = req_authheader = request
+                res1 = HTTP_Request(req1)
+                if res1:
+                    if res1.headers:
+                        y = "nil"
+                        if "Content-Type" in res1.headers:
+                            y = "Content-Type"
+                        elif "content-type" in res1.headers:
+                            y = "content-type"
+                        if y !="nil":
+                            content_typ = res1.headers[y]
+                            if ";" in content_typ:
+                                #Trick to avoid extras in content-type like charset
+                                content_typ = content_typ.split(";")[0]
+                            if content_typ in ACCEPTED_CONTENT_TYPE:
+                                #Check IDOR Only for Few Common Content Types
+
+                                #METHOD ONE - CHANGE COOKIE AND AUTH HEADER
+                                #Change Cookie
+                                if getProtocolDomain(url) in url_n_cookie_pair:
+                                    cookie = "nil"
+                                    if "Cookie" in req_cookie["headers"]:
+                                        cookie = "Cookie"
+                                    elif "cookie" in req_cookie["headers"]:
+                                        cookie = "cookie"
+                                    if cookie != "nil":
+                                        cookies_pair = url_n_cookie_pair[getProtocolDomain(url)]
+                                        for cookie1,cookie2 in cookies_pair.items():
+                                            print "\n[INFO] Changing Cookie and Checking for IDOR"
+                                            req_cookie["headers"][cookie] = cookie1
+                                            res_cookie1 = HTTP_Request(req_cookie)
+                                            req_cookie["headers"][cookie] = cookie2
+                                            res_cookie2 = HTTP_Request(req_cookie)
+                                            if res_cookie1 and res_cookie2:
+                                                if res_cookie1.code == res_cookie2.code:
+                                                    res_code = str(res_cookie1.code)
+                                                    if (res_code[0] != "4") and (res_code[0] != "5"):
+                                                        # If response code is not 4XX and 5XX
+                                                        if res_cookie1.body and res_cookie2.body:
+                                                            if res_cookie1.body == res_cookie2.body:            
+                                                                result.append(genFindingsDict(STATUS["INSECURE"]+" Insecure Direct Object Reference (IDOR) in API", url, "Response Body remains the same even after setting the cookie of a different user.", res_cookie2))
+                                #Change Auth Header
+                                if getProtocolDomain(url) in url_n_header_pair:
+                                    for k in req_authheader["headers"]:
+                                        if re.findall("Authorization|Authentication|auth",k,re.I):
+                                            print "\n[INFO] Changing Auth Header and Checking for IDOR"
+                                            auth_header_pairs = url_n_header_pair[getProtocolDomain(url)]
+                                            #{{"auth":"foo","authee":"foooee"}:{"auth":"foo1","authee":"foooee1"}}
+                                            for auth1, auth2 in auth_header_pairs.items():
+                                                req_authheader = request
+                                                req_authheader["headers"][k] = auth1[k]
+                                                res_authheader1 = HTTP_Request(req_authheader)
+                                                req_authheader["headers"][k] = auth2[k]
+                                                res_authheader2 = HTTP_Request(req_authheader)
+                                                if res_authheader1 and res_authheader2:
+                                                    if res_authheader1.code == res_authheader2.code:
+                                                        res_code = str(res_authheader1.code)
+                                                        if (res_code[0] != "4") and (res_code[0] != "5"):
+                                                            # If response code is not 4XX and 5XX
+                                                            if res_authheader1.body and res_authheader2.body:
+                                                                if res_authheader1.body == res_authheader2.body:
+                                                                    result.append(genFindingsDict(STATUS["INSECURE"]+" Insecure Direct Object Reference (IDOR) in API", url, "Response Body remains the same even after setting the Auth Header of a different user.", res_authheader2))
+                                #METOD TWO - REMOVE COOKIE OR AUTH HEADER
+                                #Remove Cookie Method
+                                x=0
+                                if "Cookie" in req_cookie["headers"]:
+                                    req_cookie["headers"]["Cookie"] = "foo=bar"
+                                    x=1
+                                elif "cookie" in req_cookie["headers"]:
+                                    req_cookie["headers"]["cookie"] = "foo=bar"
+                                    x=1
+                                if x==1:
+                                    #Cookie Exists
+                                    print "\n[INFO] Removing Cookie and Checking for IDOR"
+                                    res2 = HTTP_Request(req_cookie)
+                                    if res2:
+                                        if res1.code == res2.code:
+                                            res_code = str(res1.code)
+                                            if (res_code[0] != "4") and (res_code[0] != "5"):
+                                                # If response code is not 4XX and 5XX
+                                                if res1.body and res2.body:
+                                                    if res1.body == res2.body:            
+                                                        result.append(genFindingsDict(STATUS["INSECURE"]+" Insecure Direct Object Reference (IDOR) in API", url, "Response Body remains the same even after removing Cookie(s).", res2))
+                                
+                                #Remove Auth Header Method
+                                req3 = req_authheader
+                                for k in req3["headers"]:
+                                    if re.findall("Authorization|Authentication|auth",k,re.I):
+                                        req3 = req_authheader
+                                        print "\n[INFO] Removing Auth Header and Checking for IDOR"
+                                        req3["headers"][k] = "foo bar"
+                                        res3 = HTTP_Request(req3)
+                                        if res3:
+                                            if res1.code == res3.code:
+                                                res_code = str(res1.code)
+                                                if (res_code[0] != "4") and (res_code[0] != "5"):
+                                                    # If response code is not 4XX and 5XX
+                                                    if res1.body and res3.body:
+                                                        if res1.body == res3.body:
+                                                            result.append(genFindingsDict(STATUS["INSECURE"]+" Insecure Direct Object Reference (IDOR) in API", url, "Response Body remains the same even after removing Auth Header(s).", res3))
+    except:
+        PrintException("[ERROR] Performing API IDOR Checks")
+    return result
+
+
+def api_session_check(SCAN_REQUESTS,LOGOUT_REQUESTS,URLS_CONF):
+    global STATUS, ACCEPTED_CONTENT_TYPE
+    print "\n[INFO] Performing Session Handling related Checks"
+    result = []
+    try:
+        LOGIN_API, PIN_API, REGISTER_API,LOGOUT_API = getAPI(URLS_CONF)
+        url_n_cookie_pair,url_n_header_pair = getAuthTokens(SCAN_REQUESTS, URLS_CONF)
+        for request in SCAN_REQUESTS:
+            url = request["url"]
+            if (url not in LOGIN_API) and (url not in PIN_API) and (url not in REGISTER_API):
+                if (url_n_cookie_pair):
+                    if getProtocolDomain(url) in url_n_cookie_pair:
+                        cookie = "nil"
+                        if "Cookie" in request["headers"]:
+                            cookie = "Cookie"
+                        elif "cookie" in request["headers"]:
+                            cookie = "cookie"
+                        if cookie != "nil":
+                            auth_cookie = url_n_cookie_pair[getProtocolDomain(url)]
+                            request["headers"][cookie] = auth_cookie
+                if (url_n_header_pair):
+                    if getProtocolDomain(url) in url_n_header_pair:
+                        for k in request["headers"]:
+                            if re.findall("Authorization|Authentication|auth",k,re.I):
+                                request["headers"][k] = url_n_header_pair[getProtocolDomain(url)][k]
+                res = HTTP_Request(request)
+                if res:
+                    if res.code:
+                        res_code = str(res.code)
+                        if (res_code[0] == "2"):
+                            if res.headers:
+                                y = "nil"
+                                if "Content-Type" in res.headers:
+                                    y = "Content-Type"
+                                elif "content-type" in res.headers:
+                                    y = "content-type"
+                                if y !="nil":
+                                    content_typ = res.headers[y]
+                                    if ";" in content_typ:
+                                        #Trick to avoid extras in content-type like charset
+                                        content_typ = content_typ.split(";")[0]
+                                    if content_typ in ACCEPTED_CONTENT_TYPE:
+                                        for lreq in LOGOUT_REQUESTS:
+                                            logout_url = lreq['url']
+                                            if getProtocolDomain(logout_url) == getProtocolDomain(url):
+                                                r = HTTP_Request(lreq)
+                                                res_check_agn = HTTP_Request(request)
+                                                if res_check_agn:
+                                                    if res_check_agn.code:
+                                                        res_code = str(res_check_agn.code)
+                                                        if (res_code[0] == "2"):
+                                                            if res.code == res_check_agn.code:
+                                                                if res_check_agn.body and res.body:
+                                                                    if res_check_agn.body == res.body:
+                                                                        result.append(genFindingsDict(STATUS["INSECURE"]+" Session is not handled properly", url, "Response body remains the same even after perfroming a logout.", res))
+                                                                else:
+                                                                    result.append(genFindingsDict(STATUS["INSECURE"]+" Session is not handled properly", url, "Response code remains the same even after perfroming a logout.", res))
+    except:
+        PrintException("[ERROR] Performing Session Handling related Checks")
+    return result
+
 #API Rate Limiting
 
 def api_check_ratelimit(SCAN_REQUESTS,URLS_CONF):
@@ -579,21 +823,7 @@ def api_check_ratelimit(SCAN_REQUESTS,URLS_CONF):
     print "\n[INFO] Performing API Rate Limit Check"
     result = []
     try:
-        LOGIN_API =[]
-        PIN_API = []
-        REGISTER_API = []
-        for key,val in URLS_CONF.items():
-            if val["login"]!="none":
-                LOGIN_API.append(val["login"])
-            if val["pin"]!="none":
-                PIN_API.append(val["pin"])
-            if val["register"]!="none":
-                REGISTER_API.append(val["register"])
-
-        LOGIN_API = list(set(LOGIN_API))
-        PIN_API = list(set(PIN_API))
-        REGISTER_API = list(set(REGISTER_API))
-
+        LOGIN_API, PIN_API, REGISTER_API,LOGOUT_API = getAPI(URLS_CONF)
         for request in SCAN_REQUESTS:
             if request["url"] in REGISTER_API:
                 
@@ -681,7 +911,7 @@ def api_check_ratelimit(SCAN_REQUESTS,URLS_CONF):
     return result
 
 
-# Helper Function
+# Helper Functions
 def HTTP_Request(req):
     print "\n[INFO] Making HTTP Requst to: " +  req["url"]
     response = None
@@ -725,15 +955,28 @@ def getListOfURLS(MD5,ALL):
     except:
         PrintException("[ERROR] Getting List of URLS")
 
-def getLogoutAPI(URLS_CONF):
+def getAPI(URLS_CONF):
+    LOGIN_API =[]
+    PIN_API = []
+    REGISTER_API = []
     LOGOUT_API = []
     try:
         for key,val in URLS_CONF.items():
-            LOGOUT_API.append(val["logout"])
+            if val["login"]!="none":
+                LOGIN_API.append(val["login"])
+            if val["pin"]!="none":
+                PIN_API.append(val["pin"])
+            if val["register"]!="none":
+                REGISTER_API.append(val["register"])
+            if val["logout"]!="none":
+                LOGOUT_API.append(val["logout"])
+        LOGIN_API = list(set(LOGIN_API))
+        PIN_API = list(set(PIN_API))
+        REGISTER_API = list(set(REGISTER_API))
         LOGOUT_API = list(set(LOGOUT_API))
     except:
-        PrintException("[ERROR] Getting List of Logout APIs")
-    return LOGOUT_API
+        PrintException("[ERROR] Getting List of APIs")
+    return LOGIN_API, PIN_API, REGISTER_API,LOGOUT_API
 
 def getScanRequests(MD5,SCOPE_URLS,URLS_CONF):
     try:
@@ -741,7 +984,7 @@ def getScanRequests(MD5,SCOPE_URLS,URLS_CONF):
         SCAN_REQUESTS=[]
         LOGOUT_REQUESTS=[]
         data = []
-        LOGOUT_API = getLogoutAPI(URLS_CONF)
+        LOGIN_API, PIN_API, REGISTER_API,LOGOUT_API = getAPI(URLS_CONF)
         APKDIR=os.path.join(settings.UPLD_DIR, MD5+'/')
         with io.open(os.path.join(APKDIR,"requestdb"), mode='r',encoding="utf8",errors="ignore") as fp:
             data = json.load(fp) #List of Request Dict
@@ -823,7 +1066,6 @@ def getProtocolDomain(url):
         PrintException("[ERROR] Parsing Protocol and Domain")
 
 def getIPList(url):
-    #url = http://fooo.com:899/
     ips=[]
     HOSTNAME =''
     PORT ='80'
@@ -1306,3 +1548,147 @@ def APIRateLimitCheck(request, body_type, action, limit, isQS = False):
     except:
         PrintException("[ERROR] Checking "+action+" API Rate Limiting")
 
+#Create New Session
+
+def getAuthTokens(SCAN_REQUESTS, URLS_CONF):
+    url_n_cookie_pair = {}
+    url_n_header_pair = {}
+    try:
+        print "\n[INFO] Extracting Auth Tokens"
+        LOGIN_API, PIN_API, REGISTER_API,LOGOUT_API = getAPI(URLS_CONF)
+        LOGIN_API_COMBINED = LOGIN_API + PIN_API
+        LOGIN_API_COMBINED = list(set(LOGIN_API_COMBINED))
+        login_reqs = []
+        for request in SCAN_REQUESTS:
+            url = request["url"]
+            if url in LOGIN_API_COMBINED:
+                login_reqs.append(request)
+
+        for request in login_reqs:
+            auth_request = request
+            url = request["url"]
+            res1 = HTTP_Request(request)
+            if res1:
+                if res1.headers:
+                    #Cookie Based Method
+                    w=0
+                    cookie_user1 = ""
+                    if "Set-Cookie" in res1.headers:
+                        cookie_user1 = res1.headers["Set-Cookie"].split(",")
+                        w = 1
+                    elif "set-cookie" in res1.headers:
+                        cookie_user1 = res1.headers["set-cookie"].split(",")
+                        w = 1
+                    if w == 1:
+                        cookie1 = []
+                        for cookie in cookie_user1:
+                            cookie1.append(cookie.split(";")[0])
+                        cookie_user1 = ""
+                        for c in cookie1:
+                            if "=" in c:
+                                cookie_user1 = cookie_user1 + c + ";"
+                        if (len(cookie_user1) > 2) and ("=" in cookie_user1):
+                            url_n_cookie_pair[getProtocolDomain(url)]=cookie_user1
+                            #{"url":cookie}
+            #Auth Header Method
+            '''
+            TO-DO: Currently supports only auth header in request. We need to support auth header present in response JSON or XML body
+            '''
+            auth_user1 = {}
+            for k in auth_request["headers"]:
+                if re.findall("Authorization|Authentication|auth",k,re.I):
+                    auth_user1[k] = auth_request["headers"][k]
+            if auth_user1:
+                url_n_header_pair[getProtocolDomain(url)] = auth_user1
+                #{"url":{"auth":"foo","authee":"foooee"}}
+    except:
+        PrintException("[ERROR] Extracting Auth Tokens")
+    return url_n_cookie_pair,url_n_header_pair
+
+def getAuthTokensTwoUser(SCAN_REQUESTS, URLS_CONF):
+    url_n_cookie_pair = {}
+    url_n_header_pair = {}
+    try:
+        print "\n[INFO] Extracting Auth Tokens for two different users"
+        LOGIN_API, PIN_API, REGISTER_API,LOGOUT_API = getAPI(URLS_CONF)
+        LOGIN_API_COMBINED = LOGIN_API + PIN_API
+        LOGIN_API_COMBINED = list(set(LOGIN_API_COMBINED))
+        reqs_multiple_users = {}
+        for request in SCAN_REQUESTS:
+            reqs = []
+            url = request["url"]
+            if url in LOGIN_API_COMBINED:
+                reqs.append(request)
+                if url in reqs_multiple_users:
+                    reqs_multiple_users[url] = reqs_multiple_users[url] + reqs
+                else:
+                    reqs_multiple_users[url] = reqs
+
+        #reqs_multiple_users = {url:[req1,req2]}
+        #we only need those requests whose count is more than 1
+        #Multi user IDOR check needs 2 login calls
+
+        for url, lists in reqs_multiple_users.items():
+            #TO-DO - Better logic to exactly select login calls
+            if len(lists)  < 2:
+                del reqs_multiple_users[url]
+        #We now have 2 login request for different users
+        #Now apply cookie and auth header method
+        for url, lists in reqs_multiple_users.items():
+            auth_req1 = req1 = lists[0]
+            auth_req2 = req2 = lists[1]
+            res1 = HTTP_Request(req1)
+            res2 = HTTP_Request(req2)
+            if res1 and res2:
+                if res1.headers and res2.headers:
+                    #Cookie Based Method
+                    w=0
+                    cookie_user1 = cookie_user2 = ""
+                    if "Set-Cookie" in res1.headers and "Set-Cookie" in res2.headers:
+                        cookie_user1 = res1.headers["Set-Cookie"].split(",")
+                        cookie_user2 = res2.headers["Set-Cookie"].split(",")
+                        w = 1
+                    elif "set-cookie" in res1.headers and "set-cookie" in res2.headers:
+                        cookie_user1 = res1.headers["set-cookie"].split(",")
+                        cookie_user2 = res2.headers["set-cookie"].split(",")
+                        w = 1
+                    if w == 1:
+                        cookie1 = cookie2 = []
+                        for cookie in cookie_user1:
+                            cookie1.append(cookie.split(";")[0])
+                        for cookie in cookie_user2:
+                            cookie2.append(cookie.split(";")[0])
+                        cookie_user1 = ""
+                        cookie_user2 = ""
+                        for c in cookie1:
+                            if "=" in c:
+                                cookie_user1 = cookie_user1 + c + ";"
+                        for c in cookie2:
+                            if "=" in c:
+                                cookie_user2 = cookie_user2 + c + ";"
+                        cookie_dict = {}
+                        if cookie_user1 != cookie_user2:
+                            #We have two different user cookies now
+                            cookie_dict[cookie_user1] = cookie_user2
+                            url_n_cookie_pair[getProtocolDomain(url)]=cookie_dict
+                            #{"url":{cookie_user1:cookie_user2}}
+            #Auth Header Method
+            '''
+            TO-DO: Currently supports only auth header in request. We need to support auth header present in response JSON or XML body
+            '''
+            auth_user1 = {}
+            auth_user2 = {}
+            for k in auth_req1["headers"]:
+                if re.findall("Authorization|Authentication|auth",k,re.I):
+                    auth_user1[k] = auth_req1["headers"][k]
+            for k in auth_req2["headers"]:
+                if re.findall("Authorization|Authentication|auth",k,re.I):
+                    auth_user2[k] = auth_req2["headers"][k]
+            auth_dict ={}
+            if cmp(auth_user1, auth_user2) != 0:
+                auth_dict[auth_user1] = auth_user2
+                url_n_header_pair[getProtocolDomain(url)] = auth_dict
+                #{"url":{{"auth":"foo","authee":"foooee"}:{"auth":"foo1","authee":"foooee1"}}}
+    except:
+        PrintException("[ERROR] Extracting Auth Tokens for two different users")
+    return url_n_cookie_pair,url_n_header_pair

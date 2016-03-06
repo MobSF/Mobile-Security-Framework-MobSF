@@ -36,13 +36,13 @@ def DynamicAnalyzer(request):
                 SCREEN_FILE=os.path.join(settings.STATIC_DIR, 'screen/screen.png')
                 if os.path.exists(SCREEN_FILE):
                     os.remove(SCREEN_FILE)
-
-                VBOXEXE=settings.VBOX
-                UUID=settings.UUID
-                SUUID=settings.SUUID
                 #Start DM
                 Proxy("","","","")
-                RefreshVM(UUID,SUUID,VBOXEXE)
+                #Refersh VM
+                if settings.REAL_DEVICE:
+                    print "\n[INFO] MobSF will perform Dynamic Analysis on a real Androdi Device"
+                else:
+                    RefreshVM(settings.UUID,settings.SUUID,settings.VBOX)
                 context = {'md5' : MD5,
                        'pkg' : PKG,
                        'lng' : LNCH,
@@ -78,7 +78,10 @@ def GetEnv(request):
                 APP_PATH=APP_DIR+APP_FILE    #APP PATH
                 TOOLS_DIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
                 DWD_DIR=settings.DWD_DIR
-                VM_IP=settings.VM_IP #VM IP
+                if settings.REAL_DEVICE:
+                    VM_IP=settings.DEVICE_IP#Device IP
+                else:
+                    VM_IP=settings.VM_IP #VM IP
                 PROXY_IP=settings.PROXY_IP #Proxy IP
                 PORT=str(settings.PORT) #Proxy Port
                 WebProxy(APP_DIR,PROXY_IP,PORT)
