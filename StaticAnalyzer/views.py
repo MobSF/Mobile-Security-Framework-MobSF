@@ -6,6 +6,7 @@ from django.template.loader import get_template
 from StaticAnalyzer.models import StaticAnalyzerAndroid,StaticAnalyzerIPA,StaticAnalyzerIOSZIP
 from django.conf import settings
 from django.utils.html import escape
+from MobSF.exception_printer import PrintException
 from xml.dom import minidom
 from .dvm_permissions import DVM_PERMISSIONS
 import sqlite3 as sq
@@ -13,7 +14,7 @@ import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,ast,sys
 try:
     import xhtml2pdf.pisa as pisa
 except:
-    print "\n[ERROR] xhtml2pdf is not installed. Cannot generate PDF reports"
+    PrintException("[ERROR] xhtml2pdf is not installed. Cannot generate PDF reports")
 try:
     import StringIO
     StringIO = StringIO.StringIO
@@ -139,12 +140,11 @@ def PDF(request):
                 return HttpResponseRedirect('/error/') 
         else:
             return HttpResponseRedirect('/error/') 
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        print "\n[ERROR] PDF Report Generation Error - "+str(e) + " Line: "+str(exc_tb.tb_lineno)
+    except:
+        
+        PrintException("[ERROR] PDF Report Generation Error")
         return HttpResponseRedirect('/error/') 
         pass
-
 def Java(request):
     try:
         m=re.match('[0-9a-f]{32}',request.GET['md5'])
@@ -152,13 +152,13 @@ def Java(request):
         if m:
             MD5=request.GET['md5']
             if typ=='eclipse':
-                SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/src/')
+                SRC=os.path.join(settings.UPLD_DIR, MD5+'/src/')
                 t=typ
             elif typ=='studio':
-                SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/app/src/main/java/')
+                SRC=os.path.join(settings.UPLD_DIR, MD5+'/app/src/main/java/')
                 t=typ
             elif typ=='apk':
-                SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/java_source/')
+                SRC=os.path.join(settings.UPLD_DIR, MD5+'/java_source/')
                 t=typ
             else:
                 return HttpResponseRedirect('/error/')
@@ -180,15 +180,15 @@ def Java(request):
                     }
         template="java.html"
         return render(request,template,context)
-    except Exception as e:
-        print "[ERROR] Getting Java Files - " + str(e)
+    except:
+        PrintException("[ERROR] Getting Java Files")
         return HttpResponseRedirect('/error/')
 def Smali(request):
     try:
         m=re.match('[0-9a-f]{32}',request.GET['md5'])
         if m:
             MD5=request.GET['md5']
-            SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/smali_source/')
+            SRC=os.path.join(settings.UPLD_DIR, MD5+'/smali_source/')
             html=''
             for dirName, subDir, files in os.walk(SRC):
                 for jfile in files:
@@ -206,10 +206,10 @@ def Smali(request):
                     }
         template="smali.html"
         return render(request,template,context)
-    except Exception as e:
-        print "[ERROR] Getting Smali Files - " + str(e)
+    except:
+        PrintException("[ERROR] Getting Smali Files")
         return HttpResponseRedirect('/error/')
-def Search(request):
+def Find(request):
     try:
         m=re.match('[0-9a-f]{32}',request.POST['md5'])
         if m:
@@ -218,10 +218,10 @@ def Search(request):
             code=request.POST['code']
             matches=[]
             if code=='java':
-                SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/java_source/')
+                SRC=os.path.join(settings.UPLD_DIR, MD5+'/java_source/')
                 ext='.java'
             elif code=='smali':
-                SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/smali_source/')
+                SRC=os.path.join(settings.UPLD_DIR, MD5+'/smali_source/')
                 ext='.smali'
             else:
                 return HttpResponseRedirect('/error/')
@@ -246,8 +246,8 @@ def Search(request):
         }
         template="search.html"
         return render(request,template,context)
-    except Exception as e:
-        print "[ERROR] Searching Failed - " + str(e)
+    except:
+        PrintException("[ERROR] Searching Failed")
         return HttpResponseRedirect('/error/')     
 def ViewSource(request):
     try:
@@ -262,15 +262,15 @@ def ViewSource(request):
                 if fil.endswith('.java'):
                     typ=request.GET['type']
                     if typ=='eclipse':
-                        SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/src/')
+                        SRC=os.path.join(settings.UPLD_DIR, MD5+'/src/')
                     elif typ=='studio':
-                        SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/app/src/main/java/')
+                        SRC=os.path.join(settings.UPLD_DIR, MD5+'/app/src/main/java/')
                     elif typ=='apk':
-                        SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/java_source/')
+                        SRC=os.path.join(settings.UPLD_DIR, MD5+'/java_source/')
                     else:
                         return HttpResponseRedirect('/error/')
                 elif fil.endswith('.smali'):
-                    SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/smali_source/')
+                    SRC=os.path.join(settings.UPLD_DIR, MD5+'/smali_source/')
                 sfile=os.path.join(SRC,fil)
                 dat=''
                 with io.open(sfile, mode='r',encoding="utf8",errors="ignore") as f:
@@ -282,19 +282,18 @@ def ViewSource(request):
                    'dat': dat}
         template="view_source.html"
         return render(request,template,context)
-    except Exception as e:
-        print "[ERROR] Viewing Source - " + str(e)
+    except:
+        PrintException("[ERROR] Viewing Source")
         return HttpResponseRedirect('/error/')
 def ManifestView(request):
     try:
-
         DIR=settings.BASE_DIR   #BASE DIR
         MD5=request.GET['md5']  #MD5
         TYP=request.GET['type'] #APK or SOURCE
         BIN=request.GET['bin']
         m=re.match('[0-9a-f]{32}',MD5)
         if m and (TYP=='eclipse' or TYP=='studio' or TYP=='apk') and (BIN=='1' or BIN=='0'):
-            APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
+            APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
             TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
             if BIN=='1':
                 x=True
@@ -306,15 +305,17 @@ def ManifestView(request):
                         'dat': MANI}
             template="view_mani.html"
             return render(request,template,context)
-    except Exception as e:
-        print "[ERROR] Viewing AndroidManifest.xml - " + str(e)
+    except:
+        PrintException("[ERROR] Viewing AndroidManifest.xml")
         return HttpResponseRedirect('/error/')
+
 def python_list(value):
     if not value:
         value = []
     if isinstance(value, list):
         return value
     return ast.literal_eval(value)
+
 def StaticAnalyzer(request):
     try:
         #Input validation
@@ -324,7 +325,7 @@ def StaticAnalyzer(request):
             DIR=settings.BASE_DIR        #BASE DIR
             APP_NAME=request.GET['name'] #APP ORGINAL NAME
             MD5=request.GET['checksum']  #MD5
-            APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
+            APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
             TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
             print "[INFO] Starting Analysis on : "+APP_NAME
             RESCAN= str(request.GET.get('rescan', 0))
@@ -372,7 +373,11 @@ def StaticAnalyzer(request):
                     'emails': DB[0].EMAILS,
                     'strings': python_list(DB[0].STRINGS),
                     'zipped' : DB[0].ZIPPED,
-                    'mani': DB[0].MANI
+                    'mani': DB[0].MANI,
+                    'e_act': DB[0].E_ACT,
+                    'e_ser': DB[0].E_SER,
+                    'e_bro': DB[0].E_BRO,
+                    'e_cnt': DB[0].E_CNT,
                     }
                 else:
                     APP_FILE=MD5 + '.apk'        #NEW FILENAME
@@ -387,7 +392,7 @@ def StaticAnalyzer(request):
                     PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,'',True) #Manifest XML
                     MANI='../ManifestView/?md5='+MD5+'&type=apk&bin=1'
                     SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(PARSEDXML,APP_DIR)
-                    MANIFEST_ANAL,EXPORTED_ACT=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
+                    MANIFEST_ANAL,EXPORTED_ACT,EXPORTED_CNT=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
                     PERMISSIONS=FormatPermissions(PERM)
                     CNT_ACT =len(ACTIVITIES)
                     CNT_PRO =len(PROVIDERS)
@@ -449,7 +454,11 @@ def StaticAnalyzer(request):
                             STRINGS= STRINGS,
                             ZIPPED= ZIPPED,
                             MANI= MANI,
-                            EXPORTED_ACT=EXPORTED_ACT)
+                            EXPORTED_ACT=EXPORTED_ACT,
+                            E_ACT=EXPORTED_CNT["act"],
+                            E_SER=EXPORTED_CNT["ser"],
+                            E_BRO=EXPORTED_CNT["bro"],
+                            E_CNT=EXPORTED_CNT["cnt"])
                         elif RESCAN=='0':
                             print "\n[INFO] Saving to Database"
                             STATIC_DB=StaticAnalyzerAndroid(TITLE = 'Static Analysis',
@@ -491,10 +500,14 @@ def StaticAnalyzer(request):
                             STRINGS= STRINGS,
                             ZIPPED= ZIPPED,
                             MANI= MANI,
-                            EXPORTED_ACT=EXPORTED_ACT)
+                            EXPORTED_ACT=EXPORTED_ACT,
+                            E_ACT=EXPORTED_CNT["act"],
+                            E_SER=EXPORTED_CNT["ser"],
+                            E_BRO=EXPORTED_CNT["bro"],
+                            E_CNT=EXPORTED_CNT["cnt"])
                             STATIC_DB.save()
-                    except Exception as e:
-                        print "\n[ERROR] Saving to Database Failed - "+str(e)
+                    except:
+                        PrintException("[ERROR] Saving to Database Failed")
                         pass
                     context = {
                     'title' : 'Static Analysis',
@@ -535,7 +548,11 @@ def StaticAnalyzer(request):
                     'emails': EMAILS,
                     'strings': STRINGS,
                     'zipped' : ZIPPED,
-                    'mani': MANI
+                    'mani': MANI,
+                    'e_act': EXPORTED_CNT["act"],
+                    'e_ser': EXPORTED_CNT["ser"],
+                    'e_bro': EXPORTED_CNT["bro"],
+                    'e_cnt': EXPORTED_CNT["cnt"], 
                     }
                 template="static_analysis.html"
                 return render(request,template,context)
@@ -580,7 +597,11 @@ def StaticAnalyzer(request):
                     'dang': DB[0].DANG,
                     'urls': DB[0].URLS,
                     'emails': DB[0].EMAILS,
-                    'mani': DB[0].MANI
+                    'mani': DB[0].MANI,
+                    'e_act': DB[0].E_ACT,
+                    'e_ser': DB[0].E_SER,
+                    'e_bro': DB[0].E_BRO,
+                    'e_cnt': DB[0].E_CNT,
                     }
                 else:
                     APP_FILE=MD5 + '.zip'        #NEW FILENAME
@@ -598,7 +619,7 @@ def StaticAnalyzer(request):
                         PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,pro_type,False)   #Manifest XML
                         MANI='../ManifestView/?md5='+MD5+'&type='+pro_type+'&bin=0'
                         SERVICES,ACTIVITIES,RECEIVERS,PROVIDERS,LIBRARIES,PERM,PACKAGENAME,MAINACTIVITY,MIN_SDK,MAX_SDK,TARGET_SDK,ANDROVER,ANDROVERNAME=ManifestData(PARSEDXML,APP_DIR)
-                        MANIFEST_ANAL,EXPORTED_ACT=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
+                        MANIFEST_ANAL,EXPORTED_ACT,EXPORTED_CNT=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
                         PERMISSIONS=FormatPermissions(PERM)
                         CNT_ACT =len(ACTIVITIES)
                         CNT_PRO =len(PROVIDERS)
@@ -649,7 +670,11 @@ def StaticAnalyzer(request):
                                 STRINGS= "",
                                 ZIPPED= "",
                                 MANI= MANI,
-                                EXPORTED_ACT=EXPORTED_ACT)
+                                EXPORTED_ACT=EXPORTED_ACT,
+                                E_ACT=EXPORTED_CNT["act"],
+                                E_SER=EXPORTED_CNT["ser"],
+                                E_BRO=EXPORTED_CNT["bro"],
+                                E_CNT=EXPORTED_CNT["cnt"])
                             elif RESCAN=='0':
                                 print "\n[INFO] Saving to Database"
                                 STATIC_DB=StaticAnalyzerAndroid(TITLE = 'Static Analysis',
@@ -691,10 +716,14 @@ def StaticAnalyzer(request):
                                 STRINGS= "",
                                 ZIPPED= "",
                                 MANI= MANI,
-                                EXPORTED_ACT=EXPORTED_ACT)
+                                EXPORTED_ACT=EXPORTED_ACT,
+                                E_ACT=EXPORTED_CNT["act"],
+                                E_SER=EXPORTED_CNT["ser"],
+                                E_BRO=EXPORTED_CNT["bro"],
+                                E_CNT=EXPORTED_CNT["cnt"])
                                 STATIC_DB.save()
-                        except Exception as e:
-                            print "\n[ERROR] Saving to Database Failed - "+str(e)
+                        except:
+                            PrintException("[ERROR] Saving to Database Failed")
                             pass
                         context = {
                         'title' : 'Static Analysis',
@@ -733,13 +762,17 @@ def StaticAnalyzer(request):
                         'urls': URLS,
                         'emails': EMAILS,
                         'mani': MANI,
+                        'e_act': EXPORTED_CNT["act"],
+                        'e_ser': EXPORTED_CNT["ser"],
+                        'e_bro': EXPORTED_CNT["bro"],
+                        'e_cnt': EXPORTED_CNT["cnt"],                        
                         }
                     elif Valid and pro_type=='ios':
                         print "[INFO] Redirecting to iOS Source Code Analyzer"
                         return HttpResponseRedirect('/StaticAnalyzer_iOS/?name='+APP_NAME+'&type=ios&checksum='+MD5)
                     else:
                         return HttpResponseRedirect('/ZIP_FORMAT/')
-                template="static_analysis_zip.html"
+                template="static_analysis_android_zip.html"
                 return render(request,template,context)
             else:
                 print "\n[ERROR] Only APK,IPA and Zipped Android/iOS Source code supported now!"  
@@ -747,6 +780,7 @@ def StaticAnalyzer(request):
             return HttpResponseRedirect('/error/')
 
     except Exception as e:
+        PrintException("[ERROR] Static Analyzer")
         context = {
         'title' : 'Error',
         'exp' : e.message,
@@ -766,8 +800,8 @@ def GetHardcodedCert(files):
             certz="<tr><td>Certificate/Key Files Hardcoded inside the App.</td><td>"+certz+"</td><tr>"
         return certz
         return re.sub(RE_XML_ILLEGAL, "?", dat)
-    except Exception as e:
-        print "[ERROR] Getting Hardcoded Certificates - " + str(e)
+    except:
+        PrintException("[ERROR] Getting Hardcoded Certificates")
 
 def ReadManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
     try:
@@ -789,8 +823,8 @@ def ReadManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
             with io.open(manifest,mode='r',encoding="utf8",errors="ignore") as f:
                 dat=f.read()
         return dat
-    except Exception as e:
-        print "[ERROR] Reading Manifest file - " + str(e)
+    except:
+        PrintException("[ERROR] Reading Manifest file")
 
 def GetManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
     try:
@@ -800,13 +834,13 @@ def GetManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
         try:
             print "[INFO] Parsing AndroidManifest.xml"
             mfest=minidom.parseString(dat)
-        except Exception as e:
-            print "[ERROR] Pasrsing AndroidManifest.xml - " + str(e)
+        except:
+            PrintException("[ERROR] Pasrsing AndroidManifest.xml")
             mfest=minidom.parseString(r'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="Failed"  android:versionName="Failed" package="Failed"  platformBuildVersionCode="Failed" platformBuildVersionName="Failed XML Parsing" ></manifest>')      
             print "[WARNING] Using Fake XML to continue the Analysis"
         return mfest
-    except Exception as e:
-        print "[ERROR] Parsing Manifest file - " + str(e)
+    except:
+        PrintException("[ERROR] Parsing Manifest file")
 def ValidAndroidZip(APP_DIR):
     try:
         print "[INFO] Checking for ZIP Validity and Mode"
@@ -825,8 +859,8 @@ def ValidAndroidZip(APP_DIR):
         if xcode:
             return 'ios',True
         return '',False
-    except Exception as e:
-        print "[ERROR] Determining Upload type - " + str(e)
+    except:
+        PrintException("[ERROR] Determining Upload type")
 
 def HashGen(APP_PATH):
     try:
@@ -843,8 +877,8 @@ def HashGen(APP_PATH):
         sha1val = sha1.hexdigest()
         sha256val=sha256.hexdigest()
         return sha1val, sha256val
-    except Exception as e:
-        print "[ERROR] Generating Hashes - " + str(e)
+    except:
+        PrintException("[ERROR] Generating Hashes")
 
 def FileSize(APP_PATH): return round(float(os.path.getsize(APP_PATH)) / (1024 * 1024),2)
 def GenDownloads(APP_DIR,MD5):
@@ -852,18 +886,18 @@ def GenDownloads(APP_DIR,MD5):
         print "[INFO] Generating Downloads"
         #For Java
         DIR=os.path.join(APP_DIR,'java_source/')
-        DWD=os.path.join(settings.BASE_DIR,'static/downloads/') + MD5 + '-java.zip'
+        DWD=os.path.join(settings.DWD_DIR, MD5 + '-java.zip')
         zipf = zipfile.ZipFile(DWD, 'w')
         zipdir(DIR, zipf)
         zipf.close()
         #For Smali
         DIR=os.path.join(APP_DIR,'smali_source/')
-        DWD=os.path.join(settings.BASE_DIR,'static/downloads/') + MD5 + '-smali.zip'
+        DWD=os.path.join(settings.DWD_DIR, MD5 + '-smali.zip')
         zipf = zipfile.ZipFile(DWD, 'w')
         zipdir(DIR, zipf)
         zipf.close()
-    except Exception as e:
-        print "[ERROR] Generating Downloads - " + str(e)
+    except:
+        PrintException("[ERROR] Generating Downloads")
 
 def zipdir(path, zip):
     try:
@@ -871,8 +905,8 @@ def zipdir(path, zip):
         for root, dirs, files in os.walk(path):
             for file in files:
                 zip.write(os.path.join(root, file))
-    except Exception as e:
-        print "[ERROR] Zipping - " + str(e)
+    except:
+        PrintException("[ERROR] Zipping")
 
 def Unzip(APP_PATH, EXT_PATH):
     print "[INFO] Unzipping"
@@ -882,8 +916,8 @@ def Unzip(APP_PATH, EXT_PATH):
                 z.extractall(EXT_PATH)
                 files=z.namelist()
         return files
-    except Exception as e:
-        print "\n[ERROR] Unzipping Error - "+str(e)
+    except:
+        PrintException("[ERROR] Unzipping Error")
         if platform.system()=="Windows":
             print "\n[INFO] Not yet Implemented."
         else:
@@ -895,8 +929,8 @@ def Unzip(APP_PATH, EXT_PATH):
                 x=['Length   Date   Time   Name']
                 x=x+dat
                 return x
-            except Exception as e1:
-                print "\n[ERROR] Unzipping Error - "+str(e1)
+            except:
+                PrintException("[ERROR] Unzipping Error")
 
 def FormatPermissions(PERMISSIONS):
     try:
@@ -909,8 +943,8 @@ def FormatPermissions(PERMISSIONS):
             DESC= DESC+ '</tr>'
         DESC=DESC.replace('dangerous','<span class="label label-danger">dangerous</span>').replace('normal','<span class="label label-info">normal</span>').replace('signatureOrSystem','<span class="label label-warning">SignatureOrSystem</span>').replace('signature','<span class="label label-success">signature</span>')
         return DESC
-    except Exception as e:
-        print "[ERROR] Formatting Permissions - " + str(e)
+    except:
+        PrintException("[ERROR] Formatting Permissions")
 
 def CertInfo(APP_DIR,TOOLS_DIR):
     try:
@@ -931,8 +965,8 @@ def CertInfo(APP_DIR,TOOLS_DIR):
         dat=''
         dat=escape(subprocess.check_output(args)).replace('\n', '</br>')
         return dat
-    except Exception as e:
-        print "[ERROR] Reading Code Signing Certificate - " + str(e)
+    except:
+        PrintException("[ERROR] Reading Code Signing Certificate")
 
 def WinFixJava(TOOLS_DIR):
     try:
@@ -944,8 +978,8 @@ def WinFixJava(TOOLS_DIR):
             dat=f.read().replace("[xxx]",settings.JAVA_PATH+"java")
         with open(ORG,'w') as f:
             f.write(dat)
-    except Exception as e:
-        print "[ERROR] Running JAVA path fix in Windows - " + str(e)
+    except:
+        PrintException("[ERROR] Running JAVA path fix in Windows")
 
 def Dex2Jar(APP_DIR,TOOLS_DIR):
     try:
@@ -960,8 +994,8 @@ def Dex2Jar(APP_DIR,TOOLS_DIR):
             subprocess.call(["chmod", "777", INV])
         args=[D2J,APP_DIR+'classes.dex','-o',APP_DIR +'classes.jar']
         subprocess.call(args)
-    except Exception as e:
-        print "[ERROR] Converting Dex to JAR - " + str(e)
+    except:
+        PrintException("[ERROR] Converting Dex to JAR")
 
 def Dex2Smali(APP_DIR,TOOLS_DIR):
     try:
@@ -971,8 +1005,8 @@ def Dex2Smali(APP_DIR,TOOLS_DIR):
         OUTPUT=os.path.join(APP_DIR,'smali_source/')
         args=[settings.JAVA_PATH+'java','-jar',BS_PATH,DEX_PATH,'-o',OUTPUT]
         subprocess.call(args)
-    except Exception as e:
-        print "[ERROR] Converting DEX to SMALI - " + str(e)
+    except:
+        PrintException("[ERROR] Converting DEX to SMALI")
 
 def Jar2Java(APP_DIR,TOOLS_DIR):
     try:
@@ -986,8 +1020,8 @@ def Jar2Java(APP_DIR,TOOLS_DIR):
             JD_PATH=TOOLS_DIR + 'cfr_0_101.jar'
             args=[settings.JAVA_PATH+'java','-jar', JD_PATH,JAR_PATH,'--outputdir',OUTPUT]
         subprocess.call(args)
-    except Exception as e:
-        print "[ERROR] Converting JAR to JAVA - " + str(e)
+    except:
+        PrintException("[ERROR] Converting JAR to JAVA")
         
 def Strings(APP_FILE,APP_DIR,TOOLS_DIR):
     try:
@@ -1003,8 +1037,8 @@ def Strings(APP_FILE,APP_DIR,TOOLS_DIR):
             pass
         dat=dat[1:-1].split(",")
         return dat
-    except Exception as e:
-        print "[ERROR] Extracting Strings from APK - " + str(e)
+    except:
+        PrintException("[ERROR] Extracting Strings from APK")
 
 def ManifestData(mfxml,app_dir):
     try:
@@ -1085,12 +1119,13 @@ def ManifestData(mfxml,app_dir):
         else:
             pass
         return SVC,ACT,BRD,CNP,LIB,DP,package,mainact,minsdk,maxsdk,targetsdk,androidversioncode,androidversionname
-    except Exception as e:
-        print "[ERROR] Extracting Manifest Data - " + str(e)
+    except:
+        PrintException("[ERROR] Extracting Manifest Data")
         
 def ManifestAnalysis(mfxml,mainact):
     try:
         print "[INFO] Manifest Analysis Started"
+        exp_count = dict.fromkeys(["act", "ser", "bro", "cnt"], 0)
         manifest = mfxml.getElementsByTagName("manifest")
         services = mfxml.getElementsByTagName("service")
         providers = mfxml.getElementsByTagName("provider")
@@ -1117,7 +1152,7 @@ def ManifestAnalysis(mfxml,mainact):
                     perm =' (permission '+service.getAttribute("android:permission")+' exists.) '
                 servicename = service.getAttribute("android:name")
                 RET=RET +'<tr><td>Service (' + servicename + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A service was found to be shared with other apps on the device without an intent filter or a permission requirement therefore leaving it accessible to any other application on the device.</td></tr>'
-
+                exp_count["ser"] = exp_count["ser"] + 1
         ##APPLICATIONS
         for application in applications:
 
@@ -1135,16 +1170,21 @@ def ManifestAnalysis(mfxml,mainact):
                 ad=''
                 if node.nodeName == 'activity':
                     itmname= 'Activity'
+                    cnt_id= "act"
                     ad='n'
                 elif node.nodeName == 'activity-alias':
                     itmname ='Activity-Alias'
+                    cnt_id= "act"
                     ad='n'
                 elif node.nodeName == 'provider':
                     itmname = 'Content Provider'
+                    cnt_id= "cnt"
                 elif node.nodeName == 'receiver':
                     itmname = 'Broadcast Receiver'
+                    cnt_id= "bro"
                 elif node.nodeName == 'service':
                     itmname = 'Service'
+                    cnt_id= "ser"
                 else:
                     itmname = 'NIL'
                 item=''
@@ -1170,6 +1210,7 @@ def ManifestAnalysis(mfxml,mainact):
                         if (itmname =='Activity' or itmname=='Activity-Alias'):
                             EXPORTED.append(item)
                         RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device.</td></tr>'
+                        exp_count[cnt_id] = exp_count[cnt_id] + 1
                 else:
                     isExp=False
                 impE=False
@@ -1191,6 +1232,7 @@ def ManifestAnalysis(mfxml,mainact):
                             if (itmname =='Activity' or itmname=='Activity-Alias'):
                                 EXPORTED.append(item)
                             RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.<br>An intent-filter exists.</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device. The presence of intent-filter indicates that the '+itmname+' is explicitly exported.</td></tr>'
+                            exp_count[cnt_id] = exp_count[cnt_id] + 1
 
         ##GRANT-URI-PERMISSIONS
         title = 'Improper Content Provider Permissions'
@@ -1232,14 +1274,14 @@ def ManifestAnalysis(mfxml,mainact):
                     RET=RET + '<tr><td>High Action Priority (' + value+')<br>[android:priority]</td><td><span class="label label-warning">medium</span></td><td>By setting an action priority higher than another action, the app effectively overrides other requests.</td></tr>'
         if len(RET)< 2:
             RET='<tr><td>None</td><td>None</td><td>None</td><tr>'
-        return RET,EXPORTED
-    except Exception as e:
-        print "[ERROR] Performing Manifest Analysis - " + str(e)
+        return RET,EXPORTED,exp_count
+    except:
+        PrintException("[ERROR] Performing Manifest Analysis")
 
 def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
     try:
         print "[INFO] Static Android Code Analysis Started"
-        c = {key: [] for key in ('inf_act','inf_ser','inf_bro','log','fileio','rand','dex_cert','dex_tamper','d_rootcheck','d_root','d_ssl_pin','dex_root','dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
+        c = {key: [] for key in ('inf_act','inf_ser','inf_bro','log','fileio','rand','dex_cert','dex_tamper','d_rootcheck','d_root','d_ssl_pin','dex_root','dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_tmpfile','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
         crypto=False
         obfus=False
         reflect=False
@@ -1280,13 +1322,15 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         c['d_con_private'].append(jfile_path.replace(JS,''))
                     if ((('WRITE_EXTERNAL_STORAGE') in PERMS) and (('.getExternalStorage') in dat or ('.getExternalFilesDir(') in dat)):
                         c['d_extstorage'].append(jfile_path.replace(JS,''))
+                    if (('WRITE_EXTERNAL_STORAGE') in PERMS) and (('.createTempFile(') in dat):
+                        c['d_tmpfile'].append(jfile_path.replace(JS,''))
                     if (('setJavaScriptEnabled(true)') in dat and ('.addJavascriptInterface(') in dat ):
                         c['d_jsenabled'].append(jfile_path.replace(JS,''))
                     if (('.setWebContentsDebuggingEnabled(true)') in dat and ('WebView') in dat ):
                         c['d_webviewdebug'].append(jfile_path.replace(JS,''))
                     if (('onReceivedSslError(WebView') in dat and ('.proceed();') in dat ):
                         c['d_webviewdisablessl'].append(jfile_path.replace(JS,''))
-                    if ((('rawQuery(') in dat or ('query(') in dat or ('SQLiteDatabase') in dat or ('execSQL(') in dat) and (('android.database.sqlite') in dat)):
+                    if ((('rawQuery(') in dat or ('execSQL(') in dat) and (('android.database.sqlite') in dat)):
                         c['d_sqlite'].append(jfile_path.replace(JS,''))
                     if ((('javax.net.ssl') in dat) and (('TrustAllSSLSocket-Factory') in dat or ('AllTrustSSLSocketFactory') in dat or ('NonValidatingSSLSocketFactory')  in dat or('ALLOW_ALL_HOSTNAME_VERIFIER') in dat or ('.setDefaultHostnameVerifier(') in dat or ('NullHostnameVerifier(') in dat)):
                         c['d_ssl'].append(jfile_path.replace(JS,''))
@@ -1318,10 +1362,11 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         c['rand'].append(jfile_path.replace(JS,''))
                     if(re.findall('Log.|System.out.print',dat)):
                         c['log'].append(jfile_path.replace(JS,''))
+
                     
                     #Inorder to Add rule to Code Analysis, add identifier to c, add rule here and define identifier description and severity the bottom of this function.
                     #API Check
-                    if ((('java.lang.System') in dat or ('java.lang.Runtime') in dat ) and ('.load(') in dat):
+                    if (re.findall("System.loadLibrary\(|System.load\(", dat)):
                         native=True
                     if(re.findall('dalvik.system.DexClassLoader|java.security.ClassLoader|java.net.URLClassLoader|java.security.SecureClassLoader',dat)):
                         dynamic=True
@@ -1489,11 +1534,12 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
         #Code Review Description
         dg={'d_sensitive' : "Files may contain hardcoded sensitive informations like usernames, passwords, keys etc.",
             'd_ssl': 'Insecure Implementation of SSL. Trusting all the certificates or accepting self signed certificates is a critical Security Hole.',
-            'd_sqlite': 'App uses SQLite Database. Sensitive Information should be encrypted.',
-            'd_con_world_readable':'The Object is World Readable. Any App can read from the Object',
-            'd_con_world_writable':'The Object is World Writable. Any App can write to the Object',
+            'd_sqlite': 'App uses SQLite Database and execute raw SQL query. Untrusted user input in raw SQL queries can cause SQL Injection. Also sensitive information should be encrypted and written to the database.',
+            'd_con_world_readable':'The file is World Readable. Any App can read from the file',
+            'd_con_world_writable':'The file is World Writable. Any App can write to the file',
             'd_con_private':'App can write to App Directory. Sensitive Information should be encrypted.',
             'd_extstorage': 'App can read/write to External Storage. Any App can read data written to External Storage.',
+            'd_tmpfile': 'App creates temp file. Sensitive information should never be written into a temp file.',
             'd_jsenabled':'Insecure WebView Implementation. Execution of user controlled code in WebView is a critical Security Hole.',
             'd_webviewdisablessl':'Insecure WebView Implementation. WebView ignores SSL Certificate Errors.',
             'd_webviewdebug':'Remote WebView debugging is enabled.',
@@ -1517,6 +1563,8 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
         spn_dang='<span class="label label-danger">high</span>'
         spn_info='<span class="label label-info">info</span>'
         spn_sec='<span class="label label-success">secure</span>'
+        spn_warn='<span class="label label-warning">warning</span>'
+
         for k in dg:
             if c[k]:
                 link=''
@@ -1524,6 +1572,8 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_info+'</td><td>'
                 elif (re.findall('d_rootcheck|dex_cert|dex_tamper|dex_debug|dex_debug_con|dex_debug_key|dex_emulator|dex_root|d_ssl_pin',k)):
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_sec+'</td><td>'
+                elif (re.findall('d_jsenabled',k)):
+                    hd='<tr><td>'+dg[k]+'</td><td>'+spn_warn+'</td><td>'
                 else:
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_dang+'</td><td>'
 
@@ -1533,8 +1583,8 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                 dang+=hd+link+"</td></tr>"
 
         return html,dang,URLnFile,EmailnFile,crypto,obfus,reflect,dynamic,native
-    except Exception as e:
-        print "[ERROR] Performing Code Analysis - " + str(e)
+    except:
+        PrintException("[ERROR] Performing Code Analysis")
         
 ##############################################################
 # Code to support iOS Static Code Anlysis
@@ -1551,7 +1601,7 @@ def StaticAnalyzer_iOS(request):
             DIR=settings.BASE_DIR        #BASE DIR
             APP_NAME=request.GET['name'] #APP ORGINAL NAME
             MD5=request.GET['checksum']  #MD5
-            APP_DIR=os.path.join(DIR,'uploads/'+MD5+'/') #APP DIRECTORY
+            APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
             TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/mac/')  #TOOLS DIR
             if TYP=='ipa':
                 #DB
@@ -1736,6 +1786,7 @@ def StaticAnalyzer_iOS(request):
         else:
             return HttpResponseRedirect('/error/')
     except Exception as e:
+        PrintException("[ERROR] Static Analyzer iOS")
         context = {
         'title' : 'Error',
         'exp' : e.message,
@@ -1758,9 +1809,9 @@ def ViewFile(request):
                 return HttpResponseRedirect('/error/')
             else:
                 if mode=='ipa':
-                    SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/Payload/')
+                    SRC=os.path.join(settings.UPLD_DIR, MD5+'/Payload/')
                 elif mode=='ios':
-                    SRC=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/')
+                    SRC=os.path.join(settings.UPLD_DIR, MD5+'/')
                 sfile=os.path.join(SRC,fil)
                 dat=''
                 if typ=='m':
@@ -1776,7 +1827,7 @@ def ViewFile(request):
                     dat=HandleSqlite(sfile)
                 elif typ=='txt':
                     format='plain'
-                    APP_DIR=os.path.join(settings.BASE_DIR,'uploads/'+MD5+'/')
+                    APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/')
                     FILE=os.path.join(APP_DIR,"classdump.txt")
                     with io.open(FILE,mode='r',encoding="utf8",errors="ignore") as f:
                         dat=f.read()
@@ -1788,8 +1839,8 @@ def ViewFile(request):
                    'dat' : dat}
         template="view.html"
         return render(request,template,context)
-    except Exception as e:
-        print "[ERROR] View iOS File - "+ str(e)
+    except:
+        PrintException("[ERROR] View iOS File")
         return HttpResponseRedirect('/error/')
 def readBinXML(FILE):
     try:
@@ -1798,8 +1849,8 @@ def readBinXML(FILE):
         with io.open(FILE,mode='r',encoding="utf8",errors="ignore") as f:
             dat=f.read() 
         return dat
-    except Exception as e:
-        print "[ERROR] Converting Binary XML to Readable XML - " + str(e)
+    except:
+        PrintException("[ERROR] Converting Binary XML to Readable XML")
         
 def HandleSqlite(SFile):
     try:
@@ -1825,8 +1876,8 @@ def HandleSqlite(SFile):
                     dat+=str(x).decode('utf8', 'ignore') + " | "
                 data+=dat+"\n"
         return data
-    except Exception as e:
-        print "[ERROR] Dumping SQLITE Database - " + str(e)
+    except:
+        PrintException("[ERROR] Dumping SQLITE Database")
         pass
 
 def iOS_ListFiles(SRC,MD5,BIN,MODE):
@@ -1868,8 +1919,8 @@ def iOS_ListFiles(SRC,MD5,BIN,MODE):
             certz="<tr><td>Certificate/Key Files Hardcoded inside the App.</td><td>"+certz+"</td><tr>"
             sfiles+=certz
         return filez,sfiles
-    except Exception as e:
-        print "[ERROR] iOS List Files - " + str(e)
+    except:
+        PrintException("[ERROR] iOS List Files")
         
 def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
     try:
@@ -1893,16 +1944,24 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
             print "[INFO] Reading Info.plist"
             XML=readBinXML(XML_FILE)
             p=plistlib.readPlistFromString(XML)
-            BIN_NAME=p["CFBundleDisplayName"]
-            BIN=p["CFBundleExecutable"]
-            ID=p["CFBundleIdentifier"]
-            VER=p["CFBundleVersion"]
-            SDK=p["DTSDKName"]
-            PLTFM=p["DTPlatformVersion"]
-            MIN=p["MinimumOSVersion"]
+            BIN_NAME = BIN = ID = VER = SDK = PLTFM = MIN = ""
+            if "CFBundleDisplayName" in p:
+                BIN_NAME=p["CFBundleDisplayName"]
+            if "CFBundleExecutable" in p:
+                BIN=p["CFBundleExecutable"]
+            if "CFBundleIdentifier" in p:
+                ID=p["CFBundleIdentifier"]
+            if "CFBundleVersion" in p:
+                VER=p["CFBundleVersion"]
+            if "DTSDKName" in p:
+                SDK=p["DTSDKName"]
+            if "DTPlatformVersion" in p:
+                PLTFM=p["DTPlatformVersion"]
+            if "MinimumOSVersion" in p:
+                MIN=p["MinimumOSVersion"]
             
-        except Exception as e:
-            print "Error - while reading from Info.plist: " + str(e)
+        except:
+            PrintException("[ERROR] - Reading from Info.plist")
             pass
 
         BIN_PATH=os.path.join(BIN_DIR,BIN)  #Full Dir/Payload/x.app/x
@@ -2004,15 +2063,15 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
             if "UIWebView" in CDUMP:
                 WVIEW="<tr><td>Binary uses WebView Component.</td><td><span class='label label-info'>Info</span></td><td>The binary may use WebView Component.</td></tr>"
        
-        except Exception as e:
-            print "Error - Cannot perform class dump: "+ str(e)
+        except:
+            PrintException("[ERROR] - Cannot perform class dump")
             pass
 
         BIN_RES=PIE+SSMASH+ARC+BANNED_API+WEAK_CRYPTO+CRYPTO+WEAK_HASH+HASH+RAND+LOG+MALL+DBG+WVIEW
         #classdump
         return XML,BIN_NAME,ID,VER,SDK,PLTFM,MIN,LIBS,BIN_RES
-    except Exception as e:
-        print "[ERROR] iOS Binary Analysis - " + str(e)
+    except:
+        PrintException("[ERROR] iOS Binary Analysis")
         
 def iOS_Source_Analysis(SRC,MD5):
     try:
@@ -2141,7 +2200,7 @@ def iOS_Source_Analysis(SRC,MD5):
                 dang+=hd+link+"</td></tr>"
 
         return html,dang,URLnFile,EmailnFile,XML,BIN_NAME,ID,VER,SDK,PLTFM,MIN
-    except Exception as e:
-        print "[ERROR] iOS Source Code Analysis - " + str(e)
+    except:
+        PrintException("[ERROR] iOS Source Code Analysis")
         
 

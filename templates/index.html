@@ -38,15 +38,18 @@
             <div class="inner">
               <h3 class="masthead-brand"><img src="/static/img/logo-head.png" >Mobile Security Framework</h3>
               <ul class="nav masthead-nav">
-                <li class="active"><a href="#">Home</a></li>
-                <li><a href="features">Features</a></li>
+                
+                <li><a href="RecentScans">Recent Scans</a></li>
                 <li><a href="about">About</a></li>
+                <li>
+                <form action="/Search" method="GET">
+               <input name="md5" type="text" class="form-control" placeholder="Search MD5">
+               </form></li>
+              
               </ul>
-              <!--
-			   <form class="navbar-form navbar-right">
-               <input type="text" class="form-control" placeholder="Search...MD5 or SHA1">
-               </form>
-             -->
+
+			 
+     
             </div>
           </div>
 
@@ -79,7 +82,7 @@ progress::-webkit-progress-value {
   background:
     -webkit-linear-gradient(45deg, transparent, transparent 33%, rgba(0, 0, 0, 0.1) 33%, rgba(0, 0, 0, 0.1) 66%, transparent 66%),
     -webkit-linear-gradient(top, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.2)),
-    -webkit-linear-gradient(left, #ba7448, #c4672d);
+    -webkit-linear-gradient(left, #66ccff, #3399ff);
 
   background-size: 25px 14px, 100% 100%, 100% 100%;
   -webkit-animation: move 5s linear 0 infinite;
@@ -109,7 +112,7 @@ progress::-webkit-progress-value {
 
           <div class="mastfoot">
             <div class="inner">
-             <p>&copy; Mobile Security Framework 2015. All Rights Reserved</p>
+             <p>&copy; Mobile Security Framework {% now "Y" %} . All Rights Reserved</p>
             </div>
           </div>
         </div>
@@ -117,21 +120,6 @@ progress::-webkit-progress-value {
     </div>
 
     <script>
-    function getCookie(name) {
-             var cookieValue = null;
-             if (document.cookie && document.cookie != '') {
-                 var cookies = document.cookie.split(';');
-                 for (var i = 0; i < cookies.length; i++) {
-                     var cookie = jQuery.trim(cookies[i]);
-                 if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                     break;
-                 }
-             }
-         }
-         return cookieValue;
-         }
-
 function _(el){
   return document.getElementById(el);
 }
@@ -172,7 +160,7 @@ $('input[type=file]').change(function ()
                 ajax.addEventListener("error", errorHandler, false);
                 ajax.addEventListener("abort", abortHandler, false);
                 ajax.open("POST", "../Upload/");
-                ajax.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                ajax.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
                 ajax.send(formdata);
           }
 

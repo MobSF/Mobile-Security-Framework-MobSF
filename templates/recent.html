@@ -1,0 +1,37 @@
+
+  {% extends "base_top_only.html" %}
+   {% block content %}
+    
+
+<div class="box box-default">
+          <div class="box-header with-border">
+            <h3 class="box-title"><i class="fa fa-rocket"></i> Recent Scans</h3>
+          </div>
+
+          <div class="box-body">
+         
+              <div class="table-responsive">
+                      <table class="table table-bordered table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>MD5</th>
+                                <th>View Report</th>    
+                            </tr>
+                        </thead>
+                    <tbody>
+                      {% for e in entries %}
+                      <tr>
+                        <td>{{ e.NAME }}</td>
+                        <td>{{ e.MD5 }}</td>
+                        <td><a target="_blank" href="../{{ e.URL }}"><i class="fa fa-eye"></i> Open Report</a></td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+               </div>
+
+          </div>
+          <!-- /.box-body -->
+        </div>
+{% endblock %}

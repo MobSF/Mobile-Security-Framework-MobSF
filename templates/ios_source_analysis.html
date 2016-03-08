@@ -1,132 +1,189 @@
-{% extends "skelton_base.html" %}
-   {% block content %}
-   <link href="/static/css/dashboard.css" rel="stylesheet">
-     <script src="/static/js/jquery.min.js"></script>
-<h1 class="page-header">Static Analysis <a href="../StaticAnalyzer_iOS/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=ios&amp;rescan=1" class="btn btn-info" role="button">Rescan</a></h1>
 
-<!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Info.plist</h4>
-      </div>
-      <div class="modal-body">
-        <code>
-        {{ plist }}
-    </code>
-      </div>
-      <div class="modal-footer">
+  {% extends "base.html" %}
+   {% block content %}
+      <!-- Left side column. contains the logo and sidebar -->
+      <aside class="main-sidebar">
+        <!-- sidebar: style can be found in sidebar.less -->
+        <div class="sidebar" id="scrollspy">
+
+          <!-- sidebar menu: : style can be found in sidebar.less -->
+          <ul class="nav sidebar-menu">
+              <li class="header">Static Analysis</li>
+            <li class="active"><a href="#information"><i class="glyphicon glyphicon-info-sign"></i> Information</a></li>
+            <li><a href="#options"><i class="fa fa-gears"></i> Options</a></li>
+            <li><a href="#ios-api"><i class="fa fa-dot-circle-o"></i> iOS API</a></li>
+            <li><a href="#code"><i class="fa fa-code"></i> Code Analysis</a></li>
+            <li><a href="#file"><i class="fa fa-file-text-o"></i> File Analysis</a></li>
+             <li class="treeview">
+              <a href="javascript::;"><i class="fa fa-plus"></i> Reconnaissance</a>
+              <ul class="nav treeview-menu">
+                <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
+                <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
+              </ul>
+            </li>
+            <li><a href="#libraries"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</a></li>
+            <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li> 
+            <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=IOSZIP"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li>
+          </ul>
+        </div>
+        <!-- /.sidebar -->
+      </aside>
+
+      <!-- Content Wrapper. Contains page content -->
+      <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
      
-      </div>
-    </div>
-  </div>
+<!-- Modal -->
+
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Info.plist</h4>
+              </div>
+              <div class="modal-body">
+          <pre><code>
+           {{ plist }}
+          </code></pre>
+              </div>
+             
+            </div>
+            <!-- /.modal-content -->
+          </div>
+          <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+     
+
+        <!-- Main content -->
+        <div class="content body">
+
+<section id="information">
+  <h2 class="page-header"></h2>
+  <p class="lead">
+      <div class="row">
+    <div class="col-sm-7">
+      <div class="box box-primary">
+        <div class="box-header with-border">
+          <h3 class="box-title">File Information</h3>
+          <span class="label label-primary pull-right"><i class="glyphicon glyphicon-file"></i></span>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+           <div class="list-group">
+                  <p>                                       
+                      <span class="label label-primary">Name</span>
+                      {{ name }}
+                  </p>
+                  <p>
+                      <span class="label label-primary">Size</span>
+                      {{ size }}
+                  </p>
+                  <p>
+                      <span class="label label-primary">MD5</span>
+                      {{ md5 }}
+                  </p>
+                  <p>
+                     <span class="label label-primary">SHA1</span>
+                      {{ sha1 }}                
+                  </p>
+                  <p>
+                     <span class="label label-primary">SHA256</span>
+                    {{ sha256 }}
+                </p>
+             </div>
+        
+        </div><!-- /.box-body -->
+      </div><!-- /.box -->
+    </div><!-- /.col -->
+    <div class="col-sm-5">
+      <div class="box box-danger">
+        <div class="box-header with-border">
+          <h3 class="box-title">App Information</h3>
+          <span class="label label-danger pull-right"><i class="glyphicon glyphicon-info-sign"></i></span>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+        <div class="list-group">
+               <p>                                       
+              <span class="label label-primary">App Name</span>
+              {{ bin_name }}
+              </p>
+               <p>                                       
+              <span class="label label-primary">Identifier</span>
+              {{ id }}
+                <span class="label label-primary">SDK Name</span>
+              {{ sdk }}
+             
+
+              </p>
+                <p>                                       
+             <span class="label label-primary">Version</span>
+              {{ ver }}
+               </p>
+               <p>
+              <span class="label label-primary">Platform Version</span>
+              {{ pltfm }}
+            </p>
+            <p>
+             <span class="label label-primary">Min OS Version</span>
+              {{ min }}
+            </p>
+       </div>
+        
+        </div><!-- /.box-body -->
+      </div><!-- /.box -->
+    </div><!-- /.col -->
+  </div><!-- /.row -->
+  </p>
+</section><!-- /#introduction -->
+
+
+<!-- ============================================================= -->
+
+<section id="options">
+  <h2 class="page-header"></h2>
+      <!-- Small boxes (Stat box) -->
+
+ 
+  <div class="row">
+
+    <div class="col-sm-12">
+      <div class="box box-danger">
+        <div class="box-header with-border">
+          <h3 class="box-title">Options</h3>
+          <span class="label label-danger pull-right"><i class="fa fa-flash"></i></span>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+         <div align="center">
+      <a data-target="#myModal" role="button" class="btn btn-info" data-toggle="modal"><i class="fa fa-list"></i> View Info.plist</a>
+      <a href="../StaticAnalyzer_iOS/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=ios&amp;rescan=1" class="btn btn-info" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a>
 </div>
 
-                  <div class="col-lg-7">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> FILE INFORMATION</h3>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-                                    <p>                                       
-                                       <span class="label label-primary">File Name</span>
-                                    {{ name }}
-                                    </p>
-                                    <p>
-                                       <span class="label label-primary">Size</span>
-                                    {{ size }}
-                                   </p><p>
-                                       <span class="label label-primary">MD5</span>
-                                    {{ md5 }}
-                                    
-                                   </p><p>
-                                     <span class="label label-primary">SHA1</span>
-                                    {{ sha1 }}
-                                  
-                                     </p><p>
-                                     <span class="label label-primary">SHA256</span>
-                                    {{ sha256 }}
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-    
-                <div class="col-lg-5">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span> APP INFORMATION</h3>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-                                    <p>                                       
-                                    <span class="label label-primary">App Name</span>
-                                    {{ bin_name }}
-                                    </p>
-                                     <p>                                       
-                                    <span class="label label-primary">Identifier</span>
-                                    {{ id }}
-                                    <span class="label label-primary">Version</span>
-                                    {{ ver }}
+               </div><!-- /.box-body -->
+      </div><!-- /.box -->
+    </div><!-- /.col -->
+  </div><!-- /.row -->
+ 
+</section>
 
-                                    </p>
-                                      <p>                                       
-                                    <span class="label label-primary">SDK Name</span>
-                                    {{ sdk }}
-                                    <span class="label label-primary">Platform Version</span>
-                                    {{ pltfm }}
-                                   <span class="label label-primary">Min OS Version</span>
-                                    {{ min }}
-                    
-                                    </p>
-                                      
-                         <p>
-                          <a data-target="#myModal" role="button" class="btn btn-info" data-toggle="modal">View Info.plist</a>
-         <a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=IOSZIP" class="btn btn-success" role="button">Download PDF Report</a>
-                         </p>
-                         </p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-       
-             <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-warning-sign"></span> CODE ANALYSIS</h3>
-                            </div>
-                            <div class="panel-body">
-                  <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>ISSUE</th>
-                                                <th>STATUS</th>
-                                                <th>DESCRIPTION</th>
-                                                
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                    {{ insecure| safe}}
-                    </tbody>
-                    </table>
-                                
-                            </div>
-                        </div>
-                    </div>
-          </div>  
-  <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-tasks"></span> iOS API</h3>
-                            </div>
-                            <div class="panel-body">
-                  <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
+
+<!-- ============================================================= -->
+
+
+
+<section id="ios-api">
+   <h2 class="page-header"></h2>
+  <!-- /.box -->
+
+          <div class="box">
+          <div class="box-header">
+             <!-- /.box-header -->
+              <h3 class="box-title"><i class="fa  fa-dot-circle-o"></i> iOS API</h3>
+            </div>
+ <div class="box-body no-padding">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped">
                                         <thead>
                                             <tr>
                                                 
@@ -141,55 +198,61 @@
                     </table>
                                 
                             </div>
-                        </div>
-                    </div>
+            <!-- /.box-body -->
           </div>
+          <!-- /.box -->
+        </div>
+</section>
 
-              <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> URLS</h3>
-                            </div>
-                            <div class="panel-body">
-                  <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        
+
+<!-- ============================================================= -->
+
+<section id="code">
+   <h2 class="page-header"></h2>
+   <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa  fa-code"></i> Code Analysis</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+             <div class="table-responsive">
+                                      <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ISSUE</th>
+                                                <th>STATUS</th>
+                                                <th>DESCRIPTION</th>
+                                                
+                                            </tr>
+                                        </thead>
                                         <tbody>
-                
-                  {{ urls | safe}} 
+                    {{ insecure| safe}}
                     </tbody>
                     </table>
                                 
                             </div>
-                        </div>
-                    </div>
+            </div>
+            <!-- /.box-body -->
           </div>
-                  <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-envelope"></span> EMAILS</h3>
-                            </div>
-                            <div class="panel-body">
-                  <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        
-                                        <tbody>
-                
-                  {{ emails | safe}} 
-                    </tbody>
-                    </table>
-                                
-                            </div>
-                        </div>
-                    </div>
-          </div>
-  <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-lock"></span> FILE ANALYSIS</h3>
-                            </div>
-                            <div class="panel-body">
-                  <div class="table-responsive">
+          <!-- /.box -->
+</section>
+
+
+<!-- ============================================================= -->
+
+<section id="file">
+  <h2 class="page-header"></h2>
+    <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-file-text-o"></i> File Analysis</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+            <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
                                         <thead>
                                             <tr>
@@ -201,34 +264,107 @@
                     {{ file_analysis | safe}}
                     </tbody>
                     </table>
-                                
                             </div>
-                        </div>
-                    </div>
-          </div> 
-                <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-chevron-down"></span> LIBRARIES</h3>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-                  <p>  
-                  {{ libs|safe }}
-                  </p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
 
-              <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> FILES</h3>
+
+<!-- ============================================================= -->
+
+<section id="url">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-globe"></i> URLs</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        
+                                        <tbody>
+                
+                  {{ urls | safe}} 
+                    </tbody>
+                    </table>
+                                
                             </div>
-                            <div class="panel-body">
-                                <div class="list-group">
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+<section id="email">
+  <h2 class="page-header"></h2>
+     <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-envelope"></i> Emails</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        
+                                        <tbody>
+                
+                  {{ emails | safe}} 
+                    </tbody>
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+
+
+
+<!-- ============================================================= -->
+
+<section id="libraries">
+  <h2 class="page-header"></h2>
+  <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+            <div class="list-group">
+             <p>  
+             {{ libs|safe }}
+             </p>
+            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+
+<section id="files">
+  <h2 class="page-header"></h2>
+  <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-files-o"></i> Files</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+           <div class="list-group">
                   <p>  
                 {% for file in files %}
                   {{ file}} <br>
@@ -236,10 +372,13 @@
                   
                   </p>
                                 </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-  
-      
-   {% endblock %}
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+        </div><!-- /.content -->
+      </div><!-- /.content-wrapper -->
+
+       
+{% endblock %}

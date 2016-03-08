@@ -1,29 +1,29 @@
-{% extends "skelton_base.html" %}
+  {% extends "base_top_only.html" %}
    {% block content %}
-</br>  
-   <div class="page-header">
-      </div> 
-    <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-list-alt"></span> SMALI SOURCE</h3>
-                            </div>
-                            <form class="navbar-form navbar-right" action="../Search/" method="POST">
-                               {% csrf_token %} 
-                            Find in files: <input type="text" name="q" class="form-control" placeholder="Find....">
-                            <input type="hidden" name="md5" value="{{md5}}">
-                            <input type="hidden" name="code" value="smali">
-                           </form>
-                            <div class="panel-body">
-                  <div class="table-responsive">
+    
+
+<div class="box box-default">
+          <div class="box-header with-border">
+            <h3 class="box-title"><i class="fa fa-code"></i> Smali Source</h3>
+           <form class="navbar-form navbar-right" action="../Find/" method="POST">
+               {% csrf_token %} 
+            Find in files: <input type="text" name="q" class="form-control" placeholder="Find....">
+            <input type="hidden" name="md5" value="{{md5}}">
+            <input type="hidden" name="code" value="smali">
+           </form>
+          </div>
+
+          <div class="box-body">
+         
+              <div class="table-responsive">
                   <table class="table table-bordered table-hover table-striped">
                     <tbody>
                     {{ files | safe}}
                     </tbody>
-                    </table>
-                                
-                            </div>
-                        </div>
-                    </div>
+                  </table>
+               </div>
+
           </div>
-   {% endblock %}
+          <!-- /.box-body -->
+        </div>
+{% endblock %}

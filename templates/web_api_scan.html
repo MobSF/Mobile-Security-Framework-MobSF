@@ -1,0 +1,112 @@
+
+  {% extends "base.html" %}
+   {% block content %}
+      <!-- Left side column. contains the logo and sidebar -->
+      <aside class="main-sidebar">
+        <!-- sidebar: style can be found in sidebar.less -->
+        <div class="sidebar" id="scrollspy">
+
+          <!-- sidebar menu: : style can be found in sidebar.less -->
+
+          <ul class="nav sidebar-menu">
+            <li class="header">Web API Scan Results</li>
+            {% for finding_name, value in result.items %}
+            <li class="active"><a href="#{{finding_name}}"><i class="glyphicon glyphicon-info-sign"></i> {{finding_name}}</a></li>
+            {% endfor %}
+
+            {% if result.items|length > 0 %}
+            <li><a href="javascript:window.print()"><i class="fa fa-cloud-download"></i> Download / Print</a></li>
+            {% endif %}
+             
+          </ul>
+        </div>
+        <!-- /.sidebar -->
+      </aside>
+
+      <!-- Content Wrapper. Contains page content -->
+      <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+
+        <!-- Main content -->
+        <div class="content body">
+
+<!-- ============================================================= -->
+
+<!--
+
+        #Format : RESULT {"Information Gathering":[{techinfo:foo}, {url:foo}, {proof:foo}, {request_response[req,resp]}..}
+-->
+
+<!-- ============================================================= -->
+
+
+ {% for finding_name, value in result.items %}
+<section id="{{ finding_name }}">
+  <h2 class="page-header"></h2>
+  <!-- /.box -->
+          <div class="box">
+            <div class="box-header">
+             <!-- /.box-header -->
+              <h3 class="box-title">{{ finding_name }}</h3>
+            </div>
+          <div class="box-body">
+             <div class="table-responsive">
+              {% for find_dic in result|key:finding_name %}
+
+              <strong>Description:</strong>  {{find_dic|key:"techinfo" | safe}} </br>
+              <strong>URL:</strong>  {{find_dic|key:"url"}} </br>
+              <strong>Finding:</strong>  {{find_dic|key:"proof"}} </br>
+              </br>
+          <div class="col-md-12">
+          <!-- Custom Tabs -->
+             <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#request{{ finding_name | spacify}}{{ forloop.counter0 }}" data-toggle="tab" aria-expanded="true">Request</a></li>
+              <li class=""><a href="#response{{ finding_name | spacify}}{{ forloop.counter0 }}" data-toggle="tab" aria-expanded="false">Response</a></li>
+            </ul>
+            <div class="tab-content">
+
+              <div class="tab-pane" id="request{{ finding_name |spacify}}{{ forloop.counter0 }}">
+<pre>
+{{find_dic|key:"request"}}
+</pre>
+              </div>
+
+               <div class="tab-pane" id="response{{ finding_name |spacify}}{{ forloop.counter0 }}">
+<pre>
+{{find_dic|key:"response"}}
+</pre>
+              </div>
+
+              <!-- /.tab-pane -->
+            </div>
+            <!-- /.tab-content -->
+          </div>
+          <!-- nav-tabs-custom -->
+          </div>
+
+           
+
+               {% endfor %}
+
+            </div>
+       
+            <!-- /.box-body -->
+        </div>
+          <!-- /.box -->
+      </div>
+</section>
+
+<!--end scan row-->
+   {% endfor %}
+
+                              
+        </div><!-- /.content -->
+      </div><!-- /.content-wrapper -->
+
+       
+{% endblock %}
+
+ 
+
+

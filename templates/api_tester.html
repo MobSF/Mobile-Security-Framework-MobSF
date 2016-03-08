@@ -1,0 +1,171 @@
+
+  {% extends "base_top_only.html" %}
+   {% block content %}
+    
+    <script src="/static/js/jquery.min.js"></script>
+   
+<br>  
+<style>
+select { width: 100%; height:100%; }
+</style>
+
+
+<h2 class="page-header">Web API Fuzzer</h2>
+<form id="scanform" action="{{ formloc }}" method="POST">
+<div class="row">
+  <div class="col-md-6">
+          <div class="box box-solid">
+            <div class="box-header with-border">
+              <h3 class="box-title">{{ urlmsg }}</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+
+        
+            {% csrf_token %} 
+            <input type="hidden" name="md5" value="{{md5}}">
+            <select name="scope" id="scope" multiple {{d}}>
+              {% for url in urls %}
+              <option {{ selected }} value="{{ forloop.counter0 }}">{{url}}</option> 
+              {% endfor %}
+            </select>
+                    
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+
+          <div class="col-md-6">
+          <div class="box box-solid">
+            <div class="box-header with-border">
+              <h3 class="box-title">{{ tstmsg }}</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <select name="tests" id="tests" multiple {{d}}>
+            {% for test in tests %}
+              <option {{ selected }} value="{{ forloop.counter0 }}">{{test}}</option> 
+              {% endfor %}
+
+              </select>
+           
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+  </div>
+<!--end scan row-->
+
+<div class="col-md-6" style="{{v}}">
+          <div class="box box-solid">
+            <div class="box-header with-border">
+              <h3 class="box-title">Configure URL Options</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <div class="box-group" id="accordion">
+                <!-- we are adding the .panel class so bootstrap.js collapse plugin detects it -->
+
+                {% for key, urls in dict_urls.items %}
+                 <div class="panel box box-primary">
+                  <div class="box-header with-border">
+                    <h4 class="box-title">
+                      <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{ forloop.counter0 }}" aria-expanded="true" class="">
+                        {{key}}
+                      </a>
+                    </h4>
+                  </div>
+                  <div id="collapse{{ forloop.counter0 }}" class="panel-collapse collapse in" aria-expanded="true">
+                    <div class="box-body">
+                        <label for="login-{{key}}">Login API</label>
+                        <select name="login-{{key}}">
+                          <option value="none">None</option>
+                        {% for url in urls %}
+                          <option value="{{url}}">{{url}}</option>
+                         {% endfor %}
+                        </select>
+
+                        <label for="pin-{{key}}">Login PIN API</label>
+                        <select name="pin-{{key}}">
+                          <option value="none">None</option>
+                        {% for url in urls %}
+                          <option value="{{url}}">{{url}}</option>
+                         {% endfor %}
+                        </select>
+
+                         <label for="logout-{{key}}">Logout API</label>
+                        <select name="logout-{{key}}">
+                          <option value="none">None</option>
+                        {% for url in urls %}
+                          <option value="{{url}}">{{url}}</option>
+                         {% endfor %}
+                        </select>
+
+                        <label for="register-{{key}}">Register API</label>
+                        <select name="register-{{key}}">
+                          <option value="none">None</option>
+                        {% for url in urls %}
+                          <option value="{{url}}">{{url}}</option>
+                         {% endfor %}
+                        </select>
+                </div>
+                </div>
+                </div>
+                 {% endfor %}
+         
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+
+
+<!--NextRow-->
+
+<div class="col-md-6" style="{{v}}">
+          <div class="box box-solid">
+            <div class="box-header with-border">
+              <h3 class="box-title">Choose Scan Mode</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <div class="box-group" id="accordion">
+                <!-- we are adding the .panel class so bootstrap.js collapse plugin detects it -->
+
+              <div class="panel box box-primary">
+                  <div class="box-header with-border">
+                  <input type = "radio"
+                         name = "scanmode"
+                         value = "basic"
+                         checked = "checked" />
+                  <label for = "basic">Basic Checks</label>
+                  
+                  <input type = "radio"
+                         name = "scanmode"
+                         value = "all" />
+                  <label for = "all">All Checks</label>
+         
+                  </div>
+
+                </div>
+
+
+            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+
+
+    <input type="submit" value="{{ btntxt }}">
+      </form>
+
+
+
+		
+   {% endblock %}
