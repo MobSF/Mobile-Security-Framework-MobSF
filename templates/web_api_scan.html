@@ -13,7 +13,11 @@
             {% for finding_name, value in result.items %}
             <li class="active"><a href="#{{finding_name}}"><i class="glyphicon glyphicon-info-sign"></i> {{finding_name}}</a></li>
             {% endfor %}
-            
+
+            {% if result.items|length > 0 %}
+            <li><a href="javascript:window.print()"><i class="fa fa-cloud-download"></i> Download / Print</a></li>
+            {% endif %}
+             
           </ul>
         </div>
         <!-- /.sidebar -->

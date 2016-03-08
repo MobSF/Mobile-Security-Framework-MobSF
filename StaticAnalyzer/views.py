@@ -1281,7 +1281,7 @@ def ManifestAnalysis(mfxml,mainact):
 def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
     try:
         print "[INFO] Static Android Code Analysis Started"
-        c = {key: [] for key in ('inf_act','inf_ser','inf_bro','log','fileio','rand','dex_cert','dex_tamper','d_rootcheck','d_root','d_ssl_pin','dex_root','dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
+        c = {key: [] for key in ('inf_act','inf_ser','inf_bro','log','fileio','rand','dex_cert','dex_tamper','d_rootcheck','d_root','d_ssl_pin','dex_root','dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_tmpfile','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
         crypto=False
         obfus=False
         reflect=False
@@ -1322,13 +1322,15 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         c['d_con_private'].append(jfile_path.replace(JS,''))
                     if ((('WRITE_EXTERNAL_STORAGE') in PERMS) and (('.getExternalStorage') in dat or ('.getExternalFilesDir(') in dat)):
                         c['d_extstorage'].append(jfile_path.replace(JS,''))
+                    if (('WRITE_EXTERNAL_STORAGE') in PERMS) and (('.createTempFile(') in dat):
+                        c['d_tmpfile'].append(jfile_path.replace(JS,''))
                     if (('setJavaScriptEnabled(true)') in dat and ('.addJavascriptInterface(') in dat ):
                         c['d_jsenabled'].append(jfile_path.replace(JS,''))
                     if (('.setWebContentsDebuggingEnabled(true)') in dat and ('WebView') in dat ):
                         c['d_webviewdebug'].append(jfile_path.replace(JS,''))
                     if (('onReceivedSslError(WebView') in dat and ('.proceed();') in dat ):
                         c['d_webviewdisablessl'].append(jfile_path.replace(JS,''))
-                    if ((('rawQuery(') in dat or ('query(') in dat or ('SQLiteDatabase') in dat or ('execSQL(') in dat) and (('android.database.sqlite') in dat)):
+                    if ((('rawQuery(') in dat or ('execSQL(') in dat) and (('android.database.sqlite') in dat)):
                         c['d_sqlite'].append(jfile_path.replace(JS,''))
                     if ((('javax.net.ssl') in dat) and (('TrustAllSSLSocket-Factory') in dat or ('AllTrustSSLSocketFactory') in dat or ('NonValidatingSSLSocketFactory')  in dat or('ALLOW_ALL_HOSTNAME_VERIFIER') in dat or ('.setDefaultHostnameVerifier(') in dat or ('NullHostnameVerifier(') in dat)):
                         c['d_ssl'].append(jfile_path.replace(JS,''))
@@ -1360,6 +1362,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         c['rand'].append(jfile_path.replace(JS,''))
                     if(re.findall('Log.|System.out.print',dat)):
                         c['log'].append(jfile_path.replace(JS,''))
+
                     
                     #Inorder to Add rule to Code Analysis, add identifier to c, add rule here and define identifier description and severity the bottom of this function.
                     #API Check
@@ -1531,11 +1534,12 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
         #Code Review Description
         dg={'d_sensitive' : "Files may contain hardcoded sensitive informations like usernames, passwords, keys etc.",
             'd_ssl': 'Insecure Implementation of SSL. Trusting all the certificates or accepting self signed certificates is a critical Security Hole.',
-            'd_sqlite': 'App uses SQLite Database. Sensitive Information should be encrypted.',
-            'd_con_world_readable':'The Object is World Readable. Any App can read from the Object',
-            'd_con_world_writable':'The Object is World Writable. Any App can write to the Object',
+            'd_sqlite': 'App uses SQLite Database and execute raw SQL query. Untrusted user input in raw SQL queries can cause SQL Injection. Also sensitive information should be encrypted and written to the database.',
+            'd_con_world_readable':'The file is World Readable. Any App can read from the file',
+            'd_con_world_writable':'The file is World Writable. Any App can write to the file',
             'd_con_private':'App can write to App Directory. Sensitive Information should be encrypted.',
             'd_extstorage': 'App can read/write to External Storage. Any App can read data written to External Storage.',
+            'd_tmpfile': 'App creates temp file. Sensitive information should never be written into a temp file.',
             'd_jsenabled':'Insecure WebView Implementation. Execution of user controlled code in WebView is a critical Security Hole.',
             'd_webviewdisablessl':'Insecure WebView Implementation. WebView ignores SSL Certificate Errors.',
             'd_webviewdebug':'Remote WebView debugging is enabled.',
@@ -1940,13 +1944,21 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
             print "[INFO] Reading Info.plist"
             XML=readBinXML(XML_FILE)
             p=plistlib.readPlistFromString(XML)
-            BIN_NAME=p["CFBundleDisplayName"]
-            BIN=p["CFBundleExecutable"]
-            ID=p["CFBundleIdentifier"]
-            VER=p["CFBundleVersion"]
-            SDK=p["DTSDKName"]
-            PLTFM=p["DTPlatformVersion"]
-            MIN=p["MinimumOSVersion"]
+            BIN_NAME = BIN = ID = VER = SDK = PLTFM = MIN = ""
+            if "CFBundleDisplayName" in p:
+                BIN_NAME=p["CFBundleDisplayName"]
+            if "CFBundleExecutable" in p:
+                BIN=p["CFBundleExecutable"]
+            if "CFBundleIdentifier" in p:
+                ID=p["CFBundleIdentifier"]
+            if "CFBundleVersion" in p:
+                VER=p["CFBundleVersion"]
+            if "DTSDKName" in p:
+                SDK=p["DTSDKName"]
+            if "DTPlatformVersion" in p:
+                PLTFM=p["DTPlatformVersion"]
+            if "MinimumOSVersion" in p:
+                MIN=p["MinimumOSVersion"]
             
         except:
             PrintException("[ERROR] - Reading from Info.plist")

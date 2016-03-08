@@ -55,7 +55,7 @@ def FindJava():
 					PrintException("[ERROR] Please install Oracle JDK 1.7 or above")
 					return ""
 			else:
-				pPrintException("[ERROR] Oracle Java JDK 1.7 or above is not found!")
+				PrintException("[ERROR] Oracle Java JDK 1.7 or above is not found!")
 				return ""
 	except:
 		PrintException("[ERROR] Oracle Java (JDK >=1.7) is not found!")

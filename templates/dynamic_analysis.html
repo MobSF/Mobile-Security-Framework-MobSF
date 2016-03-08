@@ -14,7 +14,7 @@
           <!-- sidebar menu: : style can be found in sidebar.less -->
           <ul class="nav sidebar-menu">
             <li class="header">Dynamic Analysis</li>
-            <li class="active"><a href="#downloads"><i class="fa fa-cloud-download"></i> Downloads</a></li>
+            <li class="active"><a href="#general"><i class="fa fa-rocket"></i> Information</a></li>
              <li class="treeview">
               <a href="javascript::;"><i class="glyphicon glyphicon-phone"></i> API Monitor</a>
               <ul class="nav treeview-menu">
@@ -57,6 +57,7 @@
                 <li><a href="#otherfiles"><i class="fa fa-file-o"></i> Other Files</a></li>
               </ul>
             </li>
+            <li><a href="javascript:window.print()"><i class="fa fa-cloud-download"></i> Download / Print</a></li>
             
           </ul>
         </div>
@@ -72,8 +73,9 @@
 
 
 
-<section id="downloads">
-  <h2 class="page-header"></h2>
+<section id="general">
+  <h2 class="page-header"><strong>Dynamic Analysis Result </strong> - {{pkg}} </h2>
+  <div align="center"><a class="btn btn-success btn-lg" role="button" href="../APIFuzzer?md5={{ md5 }}">Start Web API Fuzzer</a></div>
   <p class="lead">
     <div class="row">
     <div class="col-sm-12">
@@ -89,7 +91,6 @@
             <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
             <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
             <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-AppData.tar">Application Data</a>
-            <a class="btn btn-info btn-lg" role="button" href="../APIFuzzer?md5={{ md5 }}">Start Web API Fuzzer</a>
             
             <!--<a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-pcap.cap">Packet Capture</a>-->
        </div>

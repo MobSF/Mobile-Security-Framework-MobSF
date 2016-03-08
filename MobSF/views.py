@@ -19,7 +19,6 @@ def PushtoRecent(NAME,MD5,URL):
         PrintException("[ERROR] Adding Scan URL to Database")
 
 def index(request):
-    print "[INFO] Mobile Security Framework v0.9 beta"
     context = {}
     template="index.html"
     return render(request,template,context)

@@ -34,6 +34,11 @@ TESTS = ['Information Gathering','Security Headers','IDOR','Session Handling','S
 STATUS = { "INFO": "<span class='label label-info'>Info</span>", "SECURE": "<span class='label label-success'>Secure</span>", "INSECURE": "<span class='label label-danger'>Insecure</span>", "WARNING": "<span class='label label-warning'>Warning</span>"}
 ACCEPTED_CONTENT_TYPE = ["application/json","text/html","application/xml","text/xml"]
 
+def NoAPI(request):
+    context = {'title':'No Web API(s) Found'}
+    template ="not_api.html"
+    return render(request,template,context)
+
 def APIFuzzer(request):
     global TESTS
     print "\n[INFO] API Testing Started"
@@ -43,6 +48,8 @@ def APIFuzzer(request):
             m=re.match('[0-9a-f]{32}',MD5)
             if m:
                 URLS = getListOfURLS(MD5,False)
+                if (len(URLS)) == 0:
+                    return HttpResponseRedirect('/NoAPI/')
                 context = {'title' : 'API Tester',
                     'urlmsg': 'Select URLs under Scope',
                     'md5' : MD5,
@@ -133,7 +140,7 @@ def StartScan(request):
                         else:
                             URLS_CONF[action_domain[1]] = {action_domain[0]:value}
 
-                print URLS_CONF
+                #print URLS_CONF
 
                 RESULT = {}
                 SCOPE_URLS = []
@@ -607,13 +614,11 @@ def api_pathtraversal(SCAN_REQUESTS,URLS_CONF,SCAN_MODE):
                             for payload in path_traversal_payloads(SCAN_MODE):
                                 payload = payload.replace("{FILE}",settings.CHECK_FILE)
                                 request_bd["body"] = body.replace(val,payload)
-                                print "BODY", request_bd
                                 bdpt_res = HTTP_Request(request_bd)
                                 if bdpt_res:
                                     if (re.findall(settings.RESPONSE_REGEX,bdpt_res.body)):
                                         #Path Traversal Detected
                                         result.append(genFindingsDict(STATUS["INSECURE"]+" Path Traversal Vulnerability found on Request Body", url, "Check the Response Below", bdpt_res))
-
     except:
         PrintException("[ERROR] Path Traversal Tester")
     return result
@@ -758,10 +763,14 @@ def api_session_check(SCAN_REQUESTS,LOGOUT_REQUESTS,URLS_CONF):
     result = []
     try:
         LOGIN_API, PIN_API, REGISTER_API,LOGOUT_API = getAPI(URLS_CONF)
+        COMBINED_API = LOGIN_API +  PIN_API + REGISTER_API
         url_n_cookie_pair,url_n_header_pair = getAuthTokens(SCAN_REQUESTS, URLS_CONF)
         for request in SCAN_REQUESTS:
             url = request["url"]
-            if (url not in LOGIN_API) and (url not in PIN_API) and (url not in REGISTER_API):
+            #Logic to detect and remove similar looking login, pin or register URL
+            querystring = urlparse(url).query
+            url_without_query = url.replace(querystring,"").replace("?","")
+            if (url not in COMBINED_API) and (url_without_query not in COMBINED_API):
                 if (url_n_cookie_pair):
                     if getProtocolDomain(url) in url_n_cookie_pair:
                         cookie = "nil"
@@ -797,16 +806,17 @@ def api_session_check(SCAN_REQUESTS,LOGOUT_REQUESTS,URLS_CONF):
                                         for lreq in LOGOUT_REQUESTS:
                                             logout_url = lreq['url']
                                             if getProtocolDomain(logout_url) == getProtocolDomain(url):
-                                                r = HTTP_Request(lreq)
+                                                logout_resp = HTTP_Request(lreq)
                                                 res_check_agn = HTTP_Request(request)
-                                                if res_check_agn:
+                                                if res_check_agn and logout_resp:
                                                     if res_check_agn.code:
                                                         res_code = str(res_check_agn.code)
                                                         if (res_code[0] == "2"):
                                                             if res.code == res_check_agn.code:
-                                                                if res_check_agn.body and res.body:
+                                                                if res_check_agn.body and res.body and logout_resp.body:
                                                                     if res_check_agn.body == res.body:
-                                                                        result.append(genFindingsDict(STATUS["INSECURE"]+" Session is not handled properly", url, "Response body remains the same even after perfroming a logout.", res))
+                                                                        if FuzzyBodyComparison(logout_resp.body,res_check_agn.body) == False:
+                                                                            result.append(genFindingsDict(STATUS["INSECURE"]+" Session is not handled properly", url, "Response body remains the same even after perfroming a logout.", res))
                                                                 else:
                                                                     result.append(genFindingsDict(STATUS["INSECURE"]+" Session is not handled properly", url, "Response code remains the same even after perfroming a logout.", res))
     except:
@@ -949,7 +959,8 @@ def getListOfURLS(MD5,ALL):
             return dat
         else:
             for x in dat:
-                URLS.append(getProtocolDomain(x))
+                if ("://" in x) and (len(x) > 7):
+                    URLS.append(getProtocolDomain(x))
             URLS=list(set(URLS))
             return URLS
     except:
@@ -1692,3 +1703,28 @@ def getAuthTokensTwoUser(SCAN_REQUESTS, URLS_CONF):
     except:
         PrintException("[ERROR] Extracting Auth Tokens for two different users")
     return url_n_cookie_pair,url_n_header_pair
+
+#Session Related
+
+def FuzzyBodyComparison(body1,body2):
+    #For Logout and Normal response comparison
+    b1_len=len(body1)
+    b2_len=len(body2)
+
+    if (b1_len>600) and (b2_len >600):
+        x = None
+        y = None
+        if body1[0:350] == body2[0:350]:
+            x = True
+        else:
+            x = False
+        if body1[-350:] == body2[-350:]:
+            y = True
+        else:
+            y = False
+        return x or y
+    else:
+        if body1 == body2:
+            return True
+        else:
+            return False

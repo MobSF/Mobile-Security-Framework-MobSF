@@ -17,8 +17,25 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '#r$=rg*lit&!4nukg++@%k+n9#6fhkv_*a6)2t$n1b=*wpvptl'
+#Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
+#SECRET_KEY = '#r$=rg*lit&!4nukg++@%k+n9#6fhkv_*a6)2t$n1b=*wpvptl'
+
+try:
+    SECRET_KEY
+except NameError:
+    SECRET_FILE = os.path.join(BASE_DIR, "MobSF/secret")
+    try:
+        SECRET_KEY = open(SECRET_FILE).read().strip()
+    except IOError:
+        try:
+            import random
+            SECRET_KEY = ''.join([random.SystemRandom().choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
+            secret = file(SECRET_FILE, 'w')
+            secret.write(SECRET_KEY)
+            secret.close()
+        except IOError:
+            Exception('Please create a %s file with random characters \
+            to generate your secret key!' % SECRET_FILE)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # ^ This is fine Do not turn it off untill MobSF framework moves from Beta to Stable
@@ -79,6 +96,9 @@ STATICFILES_DIRS = (
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATIC_URL = '/static/'
+MOBSF_VER = "v0.9 Beta"
+
+print '\n\n\033[1m\033[34mMobile Security Framework '+ MOBSF_VER +'\033[0m'
 
 # DO NOT EDIT ANYTHING ABOVE THIS
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -103,7 +123,7 @@ DATABASES = {
 }
 
 #==========DECOMPILER SETTINGS===============
-DECOMPILER = "jd-core" 
+DECOMPILER = "cfr" 
 
 #Two Decompilers are available 
 #1. jd-core
@@ -111,34 +131,41 @@ DECOMPILER = "jd-core"
 #============================================
 
 #============JAVA SETTINGS=================== 
+
+#JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/'  # Use "/" instead of "\" for the path and the path should end with a "/".
+#JAVA_PATH='/usr/bin/'
+
 if platform.system()=="Windows":
     JAVA_PATH=java.FindJava()
-    #JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/'  # Use "/" instead of "\" for the path and the path should end with a "/".
     VBOX='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe' #Path to VBoxManage.exe
 else:
     #For OSX and Linux
-    #JAVA_PATH='/usr/bin/'
     JAVA_PATH=java.FindJava()
     VBOX=vbox.FindVbox() #Path to VBoxManage in Linux/OSX
 
 #===============DEVICE Settings=================
 REAL_DEVICE = False
 DEVICE_IP = '192.168.0.104'
+DEVICE_ADB_PORT = 5555
+DEVICE_TIMEOUT = 300
 #===============================================
 
 #================VM SETTINGS ==================
 #VBoxManage showhdinfo "MobSF_VM_0.1-disk3.vdi"
 #VM UUID
-UUID='d2736249-7394-4dc6-8d6e-154aa99460b0'
+UUID='81c7edd3-6038-4024-9735-682bdbacab8b'
 #Snapshot UUID
-SUUID='957de995-41c6-4f50-b260-73c530165ab6'
+SUUID='434126a3-4966-42b8-9aa1-2c43028c6db5'
 #IP of the MobSF VM
 VM_IP='192.168.56.101'
+VM_ADB_PORT = 5555
+VM_TIMEOUT = 100
 #=============================================
 
 #================HOST/PROXY SETTINGS ===========
 PROXY_IP='192.168.56.1' #Host/Server/Proxy IP
 PORT=1337 #Proxy Port
+ROOT_CA='0025aabb.0'
 
 SCREEN_IP = PROXY_IP #ScreenCast IP
 SCREEN_PORT = 9339 #ScreenCast Port
@@ -168,6 +195,6 @@ RESPONSE_REGEX = "root:|nobody:"
 
 #=========Rate Limit Check - API Testing========
 RATE_REGISTER = 20
-RATE_LOGIN = 10
+RATE_LOGIN = 20
 #===============================================
 

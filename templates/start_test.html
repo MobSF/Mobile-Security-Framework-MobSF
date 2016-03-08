@@ -40,13 +40,23 @@ textarea:focus {
     function loading(){
         $('#my').attr('src','/static/screen/loading.jpg');
         }
+    function setScreenResoultion(width,height){
+      $('#screen_width').val(width);
+      $('#screen_height').val(height);
+    }
+    function getScreenResolution() {
+      return [$('#screen_width').val(),$('#screen_height').val()]
+    }
 </script>
 
-<h2 class="page-header">Dynamic Analyzer</h2>
+<h2 class="page-header"><strong>Dynamic Analyzer </strong>- {{ pkg }}</h2>
+<input type="hidden" id="screen_width" value="">
+<input type="hidden" id="screen_height" value="">
 <div class="row">
     <p id="but">
       <a id="start" class="btn btn-primary" role="button">Create Environment</a>
       <a id="screen" class="btn btn-primary" role="button" style="visibility: hidden" >Show Screen</a>
+      <a id="rootca" class="btn btn-primary" role="button" style="visibility: hidden" >Remove MobSF RootCA</a>
       <a id="expactt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Exported Activity Tester</a>
       <a id="actt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Activity Tester</a>
       <a id="ss" class="btn btn-primary" role="button" style="visibility: hidden" >Take a Screenshot</a>
@@ -111,13 +121,20 @@ textarea:focus {
 
           if (touch === "on")
           {
-        var offset = $(this).offset();
-        var x = e.pageX - offset.left;
-        var y = e.pageY - offset.top;
-        x = x * (800/320); 
-        y = y * (1280/580);
-        console.log('X Axis: '+ x + " Y Axis: "+ y);
-        $.ajax({
+        var res=getScreenResolution()
+        var width = res[0];
+        var height =res[1];
+        if (width.length > 0 && height.length > 0)
+        {
+          width = parseInt(width);
+          height = parseInt(height);
+          var offset = $(this).offset();
+          var x = e.pageX - offset.left;
+          var y = e.pageY - offset.top;
+          x = x * (width/320); 
+          y = y * (height/580);
+          console.log('X Axis: '+ x + " Y Axis: "+ y);
+          $.ajax({
                     url : '../Touch/', 
                     type : 'POST',
                     dataType: 'json', 
@@ -135,6 +152,7 @@ textarea:focus {
                             document.getElementById("er").srcdoc = xhr.responseText;
                         }   
           });
+      }
       }
         });
    
@@ -154,6 +172,8 @@ textarea:focus {
                                     },
                                     success : function(json) {
                                     	if (json.ready==="yes"){
+                                      //Set Screen Resolution
+                                      setScreenResoultion(json.screen_witdth,json.screen_height);
                                     	ready=json.ready;
                                       //show screen
                                       $('#screen').css("visibility","visible");
@@ -167,10 +187,33 @@ textarea:focus {
                                       $('#actt').css("visibility","visible");
                                       //show execute adb
                                       $('#adb').css("visibility","visible");
+                                       //show mobsf rootca installer
+                                      $('#rootca').css("visibility","visible");
 
                                     	$('#start').addClass("btn btn-success");
                                     	$('#start').text("Environment Created");
                                     	$('#stat').append("\nRunning HTTPS Proxy");
+
+                                      //Install MobSF RootCA
+                                      $.ajax({
+                                      url : "../MobSFCA/", 
+                                      type : "POST",
+                                      dataType: "json", 
+                                      data : {
+                                          action: "install",
+                                          csrfmiddlewaretoken: '{{ csrf_token }}',
+                                          },
+                                          success : function(json) {
+                                          if (json.ca==="installed"){
+                                            $('#stat').append("\nMobSF RootCA Installed Successfully");
+                                          }
+                                          $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                          },
+                                          error : function(xhr,errmsg,err) {
+                                              document.getElementById("er").srcdoc = xhr.responseText;
+                                          }   
+                                      });
+
                                     	$('#stat').append("\nConnecting to VM");
                                     	$('#stat').append("\nMounting");
                                     	$('#stat').append("\nInstalling APK");
@@ -188,7 +231,7 @@ textarea:focus {
                       });
                     return false;  
                 }); 
-      //Scren
+      //Screen
 
       $("#screen").click(function() {
                   
@@ -256,6 +299,47 @@ textarea:focus {
                                     	$('#stat').append("\nScreenshot Taken!");
                                     	$('#stat').scrollTop($('#stat')[0].scrollHeight);
 										}
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                        document.getElementById("er").srcdoc = xhr.responseText;
+                                    }   
+                      });
+                    return false;  
+                }); 
+
+    //MobSF CA
+
+      $("#rootca").click(function() {
+                  
+                       var stext = $("#rootca").text();
+                       var act;
+                       if (stext === "Remove MobSF RootCA")
+                       {
+                        $("#rootca").text("Install MobSF RootCA");
+                        act = "remove";
+                       }
+                       else
+                       {
+                        $("#rootca").text("Remove MobSF RootCA");
+                        act = "install";
+                       }
+
+                        $.ajax({
+                                url : "../MobSFCA/", 
+                                type : "POST",
+                                dataType: "json", 
+                                data : {
+                                    action: act,
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    },
+                                    success : function(json) {
+                                      if (json.ca==="installed"){
+                                      $('#stat').append("\nMobSF RootCA Installed Successfully");
+                                    }
+                                    else if (json.ca==="removed"){
+                                      $('#stat').append("\nMobSF RootCA Removed Successfully");
+                                    }
+                                    $('#stat').scrollTop($('#stat')[0].scrollHeight);
                                     },
                                     error : function(xhr,errmsg,err) {
                                         document.getElementById("er").srcdoc = xhr.responseText;
@@ -357,6 +441,41 @@ textarea:focus {
 //Finish Testing
      $("#stop").one( "click", function() {
                     	$('#stat').append("\nCollecting Data...");
+
+                      //Stop Screen Casting if it's running
+
+                       var stext = $("#screen").text();
+                       if (stext === "Stop Screen")
+                       {
+                        $("#screen").text("Show Screen");
+                        mode = "off";
+                       }
+
+                        $.ajax({
+                          url : "../ScreenCast/", 
+                          type : "POST",
+                          dataType: "json", 
+                          data : {
+                              mode: mode,
+                              csrfmiddlewaretoken: '{{ csrf_token }}',
+                              },
+                              success : function(json) {
+                                
+                                if (json.status==="off"){
+                                touch = "off;"
+                                refresh = false;
+                                $('#stat').append("\nScreen sharing stopped");
+                                $('#my').attr('src', '/static/screen/loading.jpg');
+
+                              }
+                                $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                
+                              },
+                              error : function(xhr,errmsg,err) {
+                                  document.getElementById("er").srcdoc = xhr.responseText;
+                              }   
+                        });
+                        //
                     		$.ajax({
                                 url : "../FinalTest/", 
                                 type : "POST",

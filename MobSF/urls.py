@@ -23,6 +23,8 @@ urlpatterns = [
     url(r'^ManifestView/$', 'StaticAnalyzer.views.ManifestView', name='ManifestView'),
     url(r'^DynamicAnalyzer/$', 'DynamicAnalyzer.views.DynamicAnalyzer', name='DynamicAnalyzer'),
     url(r'^GetEnv/$', 'DynamicAnalyzer.views.GetEnv', name='GetEnv'),
+    url(r'^GetRes/$', 'DynamicAnalyzer.views.GetRes', name='GetRes'),
+    url(r'^MobSFCA/$', 'DynamicAnalyzer.views.MobSFCA', name='MobSFCA'),
     url(r'^TakeScreenShot/$', 'DynamicAnalyzer.views.TakeScreenShot', name='TakeScreenShot'),
     url(r'^ExportedActivityTester/$', 'DynamicAnalyzer.views.ExportedActivityTester', name='ExportedActivityTester'),
     url(r'^ActivityTester/$', 'DynamicAnalyzer.views.ActivityTester', name='ActivityTester'),
@@ -35,6 +37,7 @@ urlpatterns = [
     url(r'^Touch/$', 'DynamicAnalyzer.views.Touch', name='Touch'),
     url(r'^APIFuzzer/$', 'APITester.views.APIFuzzer', name='APIFuzzer'),
     url(r'^StartScan/$', 'APITester.views.StartScan', name='StartScan'),
+    url(r'^NoAPI/$', 'APITester.views.NoAPI', name='NoAPI'),
     #url(r'^admin/', include(admin.site.urls)),
 ]
 

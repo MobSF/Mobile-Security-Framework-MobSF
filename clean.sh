@@ -17,10 +17,13 @@ then
 	rm -rf static/screen/screen.png
 	echo "Deleting temp and log files"
 	rm -rf logs/*
+	rm -rf classes-error.zip
 	echo "Deleting DB"
 	rm -rf db.sqlite3
 	echo "Migrating DB changes"
 	python manage.py migrate
+	echo "Deleting App Secret File"
+	rm -rf MobSF/secret
 	echo "Creating certs directory"
 	mkdir logs/certs
 	echo "Creating Placeholders"

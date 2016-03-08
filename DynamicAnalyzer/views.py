@@ -15,7 +15,7 @@ from MobSF.exception_printer import PrintException
 '''
 I have a strong feeling that some Security Checks on the Web Framework are not enough, Need to improve RCE Detection, 
 Unauthorized TCP Connection Prevention logic etc..
-I hate globals but as long as things work, it's fine and this is not the place for Python Skills show off!
+I hate globals but as long as things work, it's fine.
 '''
 tcp_server_mode = "off" #ScreenCast TCP Service Status
 
@@ -36,12 +36,16 @@ def DynamicAnalyzer(request):
                 SCREEN_FILE=os.path.join(settings.STATIC_DIR, 'screen/screen.png')
                 if os.path.exists(SCREEN_FILE):
                     os.remove(SCREEN_FILE)
+                # Delete Contents of Screenshot Dir
+                SCRDIR=os.path.join(settings.UPLD_DIR, MD5+'/screenshots-apk/')
+                if os.path.isdir(SCRDIR):
+                    shutil.rmtree(SCRDIR)
                 #Start DM
                 Proxy("","","","")
-                #Refersh VM
                 if settings.REAL_DEVICE:
-                    print "\n[INFO] MobSF will perform Dynamic Analysis on a real Androdi Device"
+                    print "\n[INFO] MobSF will perform Dynamic Analysis on real Android Device"
                 else:
+                    #Refersh VM
                     RefreshVM(settings.UUID,settings.SUUID,settings.VBOX)
                 context = {'md5' : MD5,
                        'pkg' : PKG,
@@ -78,15 +82,15 @@ def GetEnv(request):
                 APP_PATH=APP_DIR+APP_FILE    #APP PATH
                 TOOLS_DIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
                 DWD_DIR=settings.DWD_DIR
-                if settings.REAL_DEVICE:
-                    VM_IP=settings.DEVICE_IP#Device IP
-                else:
-                    VM_IP=settings.VM_IP #VM IP
+                ADB_CON_ID=getIdentifier()
                 PROXY_IP=settings.PROXY_IP #Proxy IP
                 PORT=str(settings.PORT) #Proxy Port
                 WebProxy(APP_DIR,PROXY_IP,PORT)
-                ConnectInstallRun(TOOLS_DIR,VM_IP,APP_PATH,PKG,LNCH,True) #Change True to support non-activity components
-                data = {'ready': 'yes'}
+                ConnectInstallRun(TOOLS_DIR,ADB_CON_ID,APP_PATH,PKG,LNCH,True) #Change True to support non-activity components
+                SCREEN_WIDTH, SCREEN_HEIGHT = GetRes()
+                data = {'ready': 'yes',
+                        'screen_witdth': SCREEN_WIDTH,
+                        'screen_height': SCREEN_HEIGHT,}
                 return HttpResponse(json.dumps(data), content_type='application/json') 
             else:
                 return HttpResponseRedirect('/error/')
@@ -109,8 +113,8 @@ def TakeScreenShot(request):
                 SCRDIR=os.path.join(settings.UPLD_DIR, MD5+'/screenshots-apk/')#make sure that list only png from this directory
                 TOOLSDIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
                 adb=getADB(TOOLSDIR)
-                subprocess.call([adb, "shell", "screencap", "-p", "/system/screen.png"])
-                subprocess.call([adb, "pull", "/system/screen.png", SCRDIR + "screenshot-"+str(r)+".png"])
+                subprocess.call([adb, "-s", getIdentifier() ,"shell", "screencap", "-p", "/data/local/screen.png"])
+                subprocess.call([adb, "-s", getIdentifier() ,"pull", "/data/local/screen.png", SCRDIR + "screenshot-"+str(r)+".png"])
                 print "\n[INFO] Screenshot Taken"
                 data = {'screenshot': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json') 
@@ -121,7 +125,6 @@ def TakeScreenShot(request):
     except:
         PrintException("[ERROR] Taking Screenshot")
         return HttpResponseRedirect('/error/')
-
 #AJAX
 def ScreenCast(request):
     print "\n[INFO] Invoking ScreenCast Service in VM/Device"
@@ -135,11 +138,11 @@ def ScreenCast(request):
             IP = settings.SCREEN_IP
             PORT = str(settings.SCREEN_PORT)
             if mode == "on":
-                args=[adb,"shell","am","startservice","-a",IP+":"+PORT, "opensecurity.screencast/.StartScreenCast"]
+                args=[adb,"-s", getIdentifier(),"shell","am","startservice","-a",IP+":"+PORT, "opensecurity.screencast/.StartScreenCast"]
                 data = {'status': 'on'}
                 tcp_server_mode = "on"
             elif mode == "off":
-                args=[adb, "shell", "am", "force-stop", "opensecurity.screencast"]
+                args=[adb, "-s", getIdentifier(), "shell", "am", "force-stop", "opensecurity.screencast"]
                 data = {'status': 'off'}
                 tcp_server_mode = "off"
             if (mode == "on") or (mode == "off"):
@@ -171,7 +174,7 @@ def Touch(request):
             y_axis=request.POST['y']
             TOOLSDIR=os.path.join(settings.BASE_DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
             adb=getADB(TOOLSDIR)
-            args=[adb,"shell","input","tap",x_axis,y_axis]
+            args=[adb, "-s", getIdentifier(), "shell","input","tap",x_axis,y_axis]
             data = {'status': 'success'}
             try:
                 subprocess.call(args)
@@ -199,11 +202,12 @@ def ExecuteADB(request):
             '''
             TOOLSDIR=os.path.join(settings.BASE_DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
             adb=getADB(TOOLSDIR)
-            args=[adb] + CMD.split(' ')
+            args=[adb, "-s", getIdentifier()] +  CMD.split(' ')
+            resp="error"
             try:
                 resp=subprocess.check_output(args)
             except:
-                 PrintException("[ERROR] Execute ADB Commands")
+                PrintException("[ERROR] Executing ADB Commands")
             data = {'cmd': 'yes','resp': resp}
             return HttpResponse(json.dumps(data), content_type='application/json')
         else:
@@ -211,6 +215,33 @@ def ExecuteADB(request):
     except:
         PrintException("[ERROR] Executing ADB Commands")
         return HttpResponseRedirect('/error/')
+
+#AJAX
+def MobSFCA(request):
+    try:
+        if request.method == 'POST':
+            data = {}
+            act=request.POST['action']
+            TOOLSDIR=os.path.join(settings.BASE_DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
+            ROOTCA=os.path.join(settings.BASE_DIR, 'DynamicAnalyzer/pyWebProxy/ca.crt')
+            adb=getADB(TOOLSDIR)
+            if act =="install":
+                print "\n[INFO] Installing MobSF RootCA"
+                subprocess.call([adb, "-s",getIdentifier() ,"push", ROOTCA, "/data/local/"+settings.ROOT_CA])
+                subprocess.call([adb, "-s",getIdentifier() ,"shell", "su", "-c", "cp", "/data/local/"+settings.ROOT_CA, "/system/etc/security/cacerts/"+settings.ROOT_CA])
+                subprocess.call([adb, "-s",getIdentifier() ,"shell", "rm", "/data/local/"+settings.ROOT_CA])
+                data = {'ca': 'installed'}
+            elif act =="remove":
+                print "\n[INFO] Removing MobSF RootCA"
+                subprocess.call([adb, "-s",getIdentifier() ,"shell", "su", "-c", "rm", "/system/etc/security/cacerts/"+settings.ROOT_CA])   
+                data = {'ca': 'removed'}
+            return HttpResponse(json.dumps(data), content_type='application/json')
+        else:
+            return HttpResponseRedirect('/error/')
+    except:
+        PrintException("[ERROR] MobSF RootCA Handler")
+        return HttpResponseRedirect('/error/')
+
 #AJAX
 def FinalTest(request):
     #Closing Services in VM/Device
@@ -234,18 +265,20 @@ def FinalTest(request):
                 adb=getADB(TOOLSDIR)
                 #Change to check output of subprocess when analysis is done
                 #Can't RCE
-                os.system(adb+' logcat -d dalvikvm:W ActivityManager:I > "'+APKDIR + 'logcat.txt"')
+                os.system(adb+' -s '+getIdentifier()+' logcat -d dalvikvm:W ActivityManager:I > "'+APKDIR + 'logcat.txt"')
                 print "\n[INFO] Downloading Logcat logs"
-                os.system(adb+' logcat -d Xposed:I *:S > "'+APKDIR + 'x_logcat.txt"')
+                #os.system(adb+' -s '+getIdentifier()+' logcat -d Xposed:I *:S > "'+APKDIR + 'x_logcat.txt"')
+                subprocess.call([adb, "-s", getIdentifier(), "pull", "/data/data/de.robv.android.xposed.installer/log/error.log", APKDIR + "x_logcat.txt"])
+
                 print "\n[INFO] Downloading Droidmon API Monitor Logcat logs"
                 #Can't RCE
-                os.system(adb+' shell dumpsys > "'+APKDIR + 'dump.txt"');
+                os.system(adb+' -s '+getIdentifier()+' shell dumpsys > "'+APKDIR + 'dump.txt"');
                 print "\n[INFO] Downloading Dumpsys logs"
 
-                subprocess.call([adb, "shell", "am", "force-stop", PACKAGE])
+                subprocess.call([adb, "-s", getIdentifier(), "shell", "am", "force-stop", PACKAGE])
                 print "\n[INFO] Stopping Application"
 
-                subprocess.call([adb, "shell", "am", "force-stop", "opensecurity.screencast"])
+                subprocess.call([adb, "-s", getIdentifier(), "shell", "am", "force-stop", "opensecurity.screencast"])
                 print "\n[INFO] Stopping ScreenCast Service"
 
                 data = {'final': 'yes'}
@@ -277,23 +310,26 @@ def DumpData(request):
                 adb=getADB(TOOLSDIR)
                 Proxy("","","","") #Let's try to close Proxy a bit early as we don't have much control on the order of thread execution
                 print "\n[INFO] Deleting Dump Status File"
-                subprocess.call([adb, "shell", "rm", "-rf","/sdcard/mobsec_status"])
+                subprocess.call([adb, "-s", getIdentifier(), "shell", "rm","/sdcard/mobsec_status"])
                 print "\n[INFO] Creating TAR of Application Files."
-                subprocess.call([adb, "shell", "am", "startservice", "-a", PACKAGE, "opensecurity.ajin.datapusher/.GetPackageLocation"])
+                subprocess.call([adb, "-s", getIdentifier(), "shell", "am", "startservice", "-a", PACKAGE, "opensecurity.ajin.datapusher/.GetPackageLocation"])
                 print "\n[INFO] Waiting for TAR dump to complete..."
-                timeout=100
+                if settings.REAL_DEVICE:
+                    timeout=settings.DEVICE_TIMEOUT
+                else:
+                    timeout=settings.VM_TIMEOUT
                 start_time=time.time()
                 while True:
                     current_time=time.time()
-                    if "MOBSEC-TAR-CREATED" in subprocess.check_output([adb, "shell", "cat", "/sdcard/mobsec_status"]):
+                    if "MOBSEC-TAR-CREATED" in subprocess.check_output([adb, "-s", getIdentifier(), "shell", "cat", "/sdcard/mobsec_status"]):
                         break
                     if (current_time-start_time) > timeout:
-                        print "\n[ERROR] TAR Generation Failed...."
+                        print "\n[ERROR] TAR Generation Failed. Process timed out."
                         break
                 print "\n[INFO] Dumping Application Files from Device/VM"
-                subprocess.call([adb, "pull", "/sdcard/"+PACKAGE+".tar", APKDIR+PACKAGE+".tar"])
+                subprocess.call([adb, "-s", getIdentifier(), "pull", "/data/local/"+PACKAGE+".tar", APKDIR+PACKAGE+".tar"])
                 print "\n[INFO] Stopping ADB"
-                subprocess.call([adb,"kill-server"])
+                subprocess.call([adb, "-s", getIdentifier(), "kill-server"])
                 data = {'dump': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json') 
             else:
@@ -334,13 +370,13 @@ def ExportedActivityTester(request):
                             try:
                                 n+=1
                                 print "\n[INFO] Launching Exported Activity - "+ str(n)+ ". "+line
-                                subprocess.call([adb,"shell", "am","start", "-n", PKG+"/"+line])
+                                subprocess.call([adb, "-s", getIdentifier(), "shell", "am","start", "-n", PKG+"/"+line])
                                 Wait(4)
-                                subprocess.call([adb, "shell", "screencap", "-p", "/system/screen.png"])
+                                subprocess.call([adb, "-s", getIdentifier(), "shell", "screencap", "-p", "/data/local/screen.png"])
                                 #? get appended from Air :-() if activity names are used
-                                subprocess.call([adb, "pull", "/system/screen.png", SCRDIR + "expact-"+str(n)+".png"])
+                                subprocess.call([adb, "-s", getIdentifier(), "pull", "/data/local/screen.png", SCRDIR + "expact-"+str(n)+".png"])
                                 print "\n[INFO] Activity Screenshot Taken"
-                                subprocess.call([adb, "shell", "am", "force-stop", PKG])
+                                subprocess.call([adb, "-s", getIdentifier(), "shell", "am", "force-stop", PKG])
                                 print "\n[INFO] Stopping App"
                             except:
                                 PrintException("[ERROR] Exported Activity Tester")
@@ -390,13 +426,13 @@ def ActivityTester(request):
                             try:
                                 n+=1
                                 print "\n[INFO] Launching Activity - "+ str(n)+ ". "+line
-                                subprocess.call([adb,"shell", "am","start", "-n", PKG+"/"+line])
+                                subprocess.call([adb, "-s", getIdentifier(), "shell", "am","start", "-n", PKG+"/"+line])
                                 Wait(4)
-                                subprocess.call([adb, "shell", "screencap", "-p", "/system/screen.png"])
+                                subprocess.call([adb, "-s", getIdentifier(), "shell", "screencap", "-p", "/data/local/screen.png"])
                                 #? get appended from Air :-() if activity names are used
-                                subprocess.call([adb, "pull", "/system/screen.png", SCRDIR + "act-"+str(n)+".png"])
+                                subprocess.call([adb, "-s", getIdentifier(), "pull", "/data/local/screen.png", SCRDIR + "act-"+str(n)+".png"])
                                 print "\n[INFO] Activity Screenshot Taken"
-                                subprocess.call([adb, "shell", "am", "force-stop", PKG])
+                                subprocess.call([adb, "-s", getIdentifier(), "shell", "am", "force-stop", PKG])
                                 print "\n[INFO] Stopping App"
                             except:
                                 PrintException("Activity Tester")
@@ -493,6 +529,7 @@ def Report(request):
                        'reflect': API_RELECT,
                        'sysman': API_ACNTMNGER,
                        'process': API_CMD,
+                       'pkg': PKG,
                        'title': 'Dynamic Analysis'}
                 template="dynamic_analysis.html"
                 return render(request,template,context)
@@ -552,26 +589,30 @@ def getADB(TOOLSDIR):
         PrintException("[ERROR] Getting ADB Location")
         return "adb"
 
-def ConnectInstallRun(TOOLSDIR,IP,APKPATH,PACKAGE,LAUNCH,isACT):
-    #-------check strace under monkeyrunner 
+def ConnectInstallRun(TOOLSDIR,ADB_CON_ID,APKPATH,PACKAGE,LAUNCH,isACT):
     print "\n[INFO] Starting App for Dynamic Analysis"
     try:
         adb=getADB(TOOLSDIR)
         subprocess.call([adb, "kill-server"])
         subprocess.call([adb, "start-server"])
         print "\n[INFO] ADB Started"
-        Wait(7) 
-        print "\n[INFO] Connecting to VM"
-        subprocess.call([adb, "connect", IP])
+        Wait(5) 
+        print "\n[INFO] Connecting to VM/Device"
+        subprocess.call([adb, "connect", ADB_CON_ID])
         subprocess.call([adb, "wait-for-device"])
         print "\n[INFO] Mounting"
-        subprocess.call([adb, "shell", "mount", "-o", "rw,remount", "-t", "rfs", "/dev/block/sda6", "/system"])
+        if settings.REAL_DEVICE:
+            subprocess.call([adb, "-s", getIdentifier(), "shell", "su", "-c", "mount", "-o", "rw,remount,rw", "/system"])
+        else:
+            subprocess.call([adb, "-s", getIdentifier(), "shell", "su", "-c", "mount", "-o", "rw,remount,rw", "/system"])
+            #This may not work for VMs other than the default MobSF VM
+            subprocess.call([adb, "-s", getIdentifier(), "shell", "mount", "-o", "rw,remount", "-t", "rfs", "/dev/block/sda6", "/system"])
         print "\n[INFO] Installing APK"
-        subprocess.call([adb, "install", APKPATH])
+        subprocess.call([adb, "-s", getIdentifier(), "install", "-r", APKPATH])
         if isACT:
             runApp = PACKAGE + "/" + LAUNCH
             print "\n[INFO] Launching APK Main Activity"
-            subprocess.call([adb, "shell", "am", "start", "-n", runApp])
+            subprocess.call([adb, "-s", getIdentifier(), "shell", "am", "start", "-n", runApp])
         else:
             print "\n[INFO] App Doesn't have a Main Activity"
             #Handle Service or Give Choice to Select in Future.
@@ -636,7 +677,7 @@ def APIAnalysis(PKG,LOCATION):
                 #print "PARAM is :" + param
                 #print "Value is :"+ value
                 try:
-                    APIs=json.loads(value)
+                    APIs=json.loads(value,strict=False)
                     RET=''
                     CLS=''
                     MTD=''
@@ -709,7 +750,15 @@ def Download(MD5,DWDDIR,APKDIR,PKG):
         DSshot=os.path.join(DWDDIR,MD5+'-screenshots-apk/')
         DWeb=os.path.join(DWDDIR,MD5+'-WebTraffic.txt')
         DStar=os.path.join(DWDDIR,MD5+'-AppData.tar')
-       
+        
+        #Delete existing data 
+        dellist = [DLogcat,DxLogcat,DDumpsys,DSshot,DWeb,DStar]
+        for item in dellist:
+            if os.path.isdir(item):
+                shutil.rmtree(item)
+            elif os.path.isfile(item):
+                os.remove(item)
+        #Copy new data
         shutil.copyfile(Logcat,DLogcat)
         shutil.copyfile(xLogcat,DxLogcat)
         shutil.copyfile(Dumpsys,DDumpsys)
@@ -770,9 +819,11 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
         UNTAR_DIR = os.path.join(APKDIR,'DYNAMIC_DeviceData/')
         if not os.path.exists(UNTAR_DIR):
             os.makedirs(UNTAR_DIR)
-        tar = tarfile.open(TARLOC)
-        tar.extractall(UNTAR_DIR)
-        tar.close()
+        with tarfile.open(TARLOC) as tar:
+            try:
+                tar.extractall(UNTAR_DIR)
+            except:
+                pass
     except:
         PrintException("[ERROR] TAR EXTRACTION FAILED")
     #Do Static Analysis on Data from Device
@@ -852,7 +903,6 @@ def View(request):
         return HttpResponseRedirect('/error/')
 
 def ScreenCastService():
-    print "\n[INFO] Starting ScreenCast Service Server"
     global tcp_server_mode
     print "\n[INFO] ScreenCast Service Status: " + tcp_server_mode
     try:
@@ -869,9 +919,13 @@ def ScreenCastService():
             while (tcp_server_mode == "on"):
                 ss, address = s.accept()
                 print "Got Connection from: ", address[0]
-                if address[0] == settings.VM_IP:
+                if settings.REAL_DEVICE:
+                    IP = settings.DEVICE_IP
+                else:
+                    IP = settings.VM_IP
+                if address[0] == IP:
                     '''
-                    Very Basic Check to ensure that only MobSF VM is allowed to connect 
+                    Very Basic Check to ensure that only MobSF VM/Device is allowed to connect 
                     to MobSF ScreenCast Service.
                     '''
                     with open(SCREEN_DIR+'screen.png','wb') as f:
@@ -886,10 +940,41 @@ def ScreenCastService():
             s.close()
     except:
         s.close()
-        PrintException("[ERROR] TCP Socket Connection")
+        PrintException("[ERROR] ScreenCast Server")
         pass
+def GetRes():
+    print "\n[INFO] Getting Screen Resolution"
+    try:
+        TOOLSDIR=os.path.join(settings.BASE_DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
+        adb=getADB(TOOLSDIR)
+        resp=subprocess.check_output([adb, "-s", getIdentifier(), "shell", "dumpsys" ,"window"])
+        resp = resp.split("\n")
+        res = ""
+        for line in resp:
+            if "mUnrestrictedScreen" in line:
+                res = line
+                break
+        res = res.split("(0,0)")[1]
+        res = res.strip()
+        res = res.split("x")
+        if len(res) == 2:
+            return res[0], res[1]
+            #width, height
+        return "",""
+    except:
+        PrintException("[ERROR] Getting Screen Resolution")
+        return "",""
+
 
 #Helper Functions
+def getIdentifier():
+    try:
+        if settings.REAL_DEVICE:
+            return settings.DEVICE_IP + ":" + str(settings.DEVICE_ADB_PORT)
+        else:
+            return settings.VM_IP + ":" + str(settings.VM_ADB_PORT)
+    except:
+        PrintException("[ERROR] Getting ADB Connection Identifier for Device/VM")
 
 def is_number(s):
     try:
