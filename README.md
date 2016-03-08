@@ -34,6 +34,7 @@ See Changelog here : https://github.com/ajinabraham/Mobile-Security-Framework-Mo
 ##Credits
 
 * Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
+* MindMac - For writing Android Blue Pill
 * Thomas Abraham - For JS Hacks on UI.
 * Anto Joseph (@antojosep007) - For the help with SuperSU.
 * Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset.
