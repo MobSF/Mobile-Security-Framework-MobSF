@@ -32,7 +32,7 @@ def getADB(TOOLSDIR):
     except Exception as e:
         print ("\n[ERROR] Getting ADB Location - "+str(e))
         return "adb"
-print "\nMobSFier Script\n\nThis script allows you to configure any rooted android Device or VM to perfrom MobSF dynamic analysis.\n(Supports Android Version 4.03 to 4.4)"
+print "\nMobSFy Script\n\nThis script allows you to configure any rooted android Device or VM to perfrom MobSF dynamic analysis.\n(Supports Android Version 4.03 to 4.4)"
 try:
     adbconnect = raw_input("Enter the IP and Port of the Device/VM (Ex: 192.168.1.2:5555) and press enter: ")
     if ":" in adbconnect:
@@ -92,7 +92,7 @@ try:
         print "\n 1 .Install the Framework\n 2. Restart the device\n 3. Enable Droidmon, JustTrustMe and RootCloak."
         ExecuteCMD([adb,"-s",adbconnect ,"shell", "am", "start", "-n", "de.robv.android.xposed.installer/de.robv.android.xposed.installer.WelcomeActivity"])
 
-        print "\n[INFO] MobSFier Script Executed Successfully"
+        print "\n[INFO] MobSFy Script Executed Successfully"
     else:
         print "\n[ERROR] Please enter the IP and Port in the following format (192.168.1.2:5555)"
         sys.exit(0)
