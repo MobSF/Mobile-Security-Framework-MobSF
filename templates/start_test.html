@@ -236,7 +236,7 @@ textarea:focus {
       $("#screen").click(function() {
                   
                        var stext = $("#screen").text();
-
+			var mode;
                        if (stext === "Show Screen")
                        {
                         $("#screen").text("Stop Screen");
@@ -443,8 +443,9 @@ textarea:focus {
                     	$('#stat').append("\nCollecting Data...");
 
                       //Stop Screen Casting if it's running
-
+			
                        var stext = $("#screen").text();
+                       var mode;
                        if (stext === "Stop Screen")
                        {
                         $("#screen").text("Show Screen");
