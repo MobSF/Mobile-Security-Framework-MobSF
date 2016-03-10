@@ -450,7 +450,6 @@ textarea:focus {
                        {
                         $("#screen").text("Show Screen");
                         md = "off";
-                       }
 
                         $.ajax({
                           url : "../ScreenCast/", 
@@ -476,6 +475,7 @@ textarea:focus {
                                   document.getElementById("er").srcdoc = xhr.responseText;
                               }   
                         });
+                       }
                         //
                     		$.ajax({
                                 url : "../FinalTest/", 
