@@ -96,7 +96,7 @@ STATICFILES_DIRS = (
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATIC_URL = '/static/'
-MOBSF_VER = "v0.9 Beta"
+MOBSF_VER = "v0.9.1 Beta"
 
 print '\n\n\033[1m\033[34mMobile Security Framework '+ MOBSF_VER +'\033[0m'
 
