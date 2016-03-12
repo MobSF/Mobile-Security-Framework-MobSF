@@ -123,7 +123,7 @@ DATABASES = {
 }
 
 #==========DECOMPILER SETTINGS===============
-DECOMPILER = "cfr" 
+DECOMPILER = "jd-core" 
 
 #Two Decompilers are available 
 #1. jd-core
@@ -145,7 +145,7 @@ else:
 
 #===============DEVICE Settings=================
 REAL_DEVICE = False
-DEVICE_IP = '192.168.0.104'
+DEVICE_IP = '192.168.1.18'
 DEVICE_ADB_PORT = 5555
 DEVICE_TIMEOUT = 300
 #===============================================

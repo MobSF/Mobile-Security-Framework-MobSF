@@ -227,9 +227,9 @@ def MobSFCA(request):
             adb=getADB(TOOLSDIR)
             if act =="install":
                 print "\n[INFO] Installing MobSF RootCA"
-                subprocess.call([adb, "-s",getIdentifier() ,"push", ROOTCA, "/data/local/"+settings.ROOT_CA])
-                subprocess.call([adb, "-s",getIdentifier() ,"shell", "su", "-c", "cp", "/data/local/"+settings.ROOT_CA, "/system/etc/security/cacerts/"+settings.ROOT_CA])
-                subprocess.call([adb, "-s",getIdentifier() ,"shell", "rm", "/data/local/"+settings.ROOT_CA])
+                subprocess.call([adb, "-s",getIdentifier() ,"push", ROOTCA, "/data/local/tmp/"+settings.ROOT_CA])
+                subprocess.call([adb, "-s",getIdentifier() ,"shell", "su", "-c", "cp", "/data/local/tmp/"+settings.ROOT_CA, "/system/etc/security/cacerts/"+settings.ROOT_CA])
+                subprocess.call([adb, "-s",getIdentifier() ,"shell", "rm", "/data/local/tmp/"+settings.ROOT_CA])
                 data = {'ca': 'installed'}
             elif act =="remove":
                 print "\n[INFO] Removing MobSF RootCA"

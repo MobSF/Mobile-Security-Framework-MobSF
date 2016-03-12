@@ -1281,7 +1281,7 @@ def ManifestAnalysis(mfxml,mainact):
 def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
     try:
         print "[INFO] Static Android Code Analysis Started"
-        c = {key: [] for key in ('inf_act','inf_ser','inf_bro','log','fileio','rand','dex_cert','dex_tamper','d_rootcheck','d_root','d_ssl_pin','dex_root','dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_tmpfile','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
+        c = {key: [] for key in ('inf_act','inf_ser','inf_bro','log','fileio','rand','d_hcode','dex_cert','dex_tamper','d_rootcheck','d_root','d_ssl_pin','dex_root','dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_tmpfile','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
         crypto=False
         obfus=False
         reflect=False
@@ -1362,6 +1362,8 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         c['rand'].append(jfile_path.replace(JS,''))
                     if(re.findall('Log.|System.out.print',dat)):
                         c['log'].append(jfile_path.replace(JS,''))
+                    if ".hashCode()" in dat:
+                        c['d_hcode'].append(jfile_path.replace(JS,''))
 
                     
                     #Inorder to Add rule to Code Analysis, add identifier to c, add rule here and define identifier description and severity the bottom of this function.
@@ -1378,6 +1380,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     if (('utils.AESObfuscator') in dat and ('getObfuscator') in dat):
                         c['obf'].append(jfile_path.replace(JS,''))
                         obfus=True
+
                     if (('getRuntime().exec(') in dat and ('getRuntime(') in dat):
                         c['exec'].append(jfile_path.replace(JS,''))
                     if (('ServerSocket') in dat and ('net.ServerSocket') in dat):
@@ -1553,6 +1556,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
             'd_ssl_pin':' This App uses an SSL Pinning Library (org.thoughtcrime.ssl.pinning) to prevent MITM attacks in secure communication channel.',
             'd_root' : 'This App may request root (Super User) privileges.',
             'd_rootcheck' : 'This App may have root detection capabilities.',
+            'd_hcode' : 'This App uses Java Hash Code. It\'s a weak hash function and should never be used in Secure Crypto Implementation.',
             'rand' : 'The App uses an insecure Random Number Generator.',
             'log' : 'The App logs information. Sensitive information should never be logged.',
             }
@@ -1568,7 +1572,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
         for k in dg:
             if c[k]:
                 link=''
-                if (re.findall('d_sqlite|d_con_private|log',k)):
+                if (re.findall('d_con_private|log',k)):
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_info+'</td><td>'
                 elif (re.findall('d_rootcheck|dex_cert|dex_tamper|dex_debug|dex_debug_con|dex_debug_key|dex_emulator|dex_root|d_ssl_pin',k)):
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_sec+'</td><td>'

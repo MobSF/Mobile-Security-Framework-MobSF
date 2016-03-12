@@ -43,10 +43,10 @@ try:
         ExecuteCMD([adb, "connect",adbconnect])
         ExecuteCMD([adb, "wait-for-device"])
         #Install MITM RootCA
-        ExecuteCMD([adb, "-s",adbconnect ,"push", ROOTCA, "/data/local/0025aabb.0"])
+        ExecuteCMD([adb, "-s",adbconnect ,"push", ROOTCA, "/data/local/tmp/0025aabb.0"])
         ExecuteCMD([adb, "-s",adbconnect ,"shell", "su", "-c", "mount", "-o", "rw,remount,rw", "/system"])
-        ExecuteCMD([adb, "-s",adbconnect ,"shell", "su", "-c", "cp", "/data/local/0025aabb.0", "/system/etc/security/cacerts/0025aabb.0"])
-        ExecuteCMD([adb, "-s",adbconnect ,"shell", "rm", "/data/local/0025aabb.0"])
+        ExecuteCMD([adb, "-s",adbconnect ,"shell", "su", "-c", "cp", "/data/local/tmp/0025aabb.0", "/system/etc/security/cacerts/0025aabb.0"])
+        ExecuteCMD([adb, "-s",adbconnect ,"shell", "rm", "/data/local/tmp/0025aabb.0"])
         #Install MobSF requirements
         DP = os.path.join(TOOLSDIR,'onDevice/DataPusher.apk')
         SC = os.path.join(TOOLSDIR,'onDevice/ScreenCast.apk')
@@ -70,7 +70,7 @@ try:
         print "\n[INFO] Copying hooks.json"
         ExecuteCMD([adb,"-s",adbconnect ,"push", HK, "/data/local/tmp/"])
         print "\n[INFO] Installing Xposed Framework"
-        ExecuteCMD([adb,"install", "-r", XP])
+        ExecuteCMD([adb,"-s",adbconnect ,"install", "-r", XP])
         print "\n[INFO] Installing Droidmon API Analyzer"
         ExecuteCMD([adb,"-s",adbconnect ,"install", "-r", DM])
         print "\n[INFO] Installing JustTrustMe"
@@ -87,11 +87,12 @@ try:
             ExecuteCMD([adb,"-s",adbconnect ,"push", FC, "/data/local/tmp/"])
             print "\n[INFO] Copying fake-drivers"
             ExecuteCMD([adb,"-s",adbconnect ,"push", FD, "/data/local/tmp/"])
-            
         print "\n[INFO] Launching Xposed Framework."
-        print "\n 1 .Install the Framework\n 2. Restart the device\n 3. Enable Droidmon, JustTrustMe and RootCloak."
         ExecuteCMD([adb,"-s",adbconnect ,"shell", "am", "start", "-n", "de.robv.android.xposed.installer/de.robv.android.xposed.installer.WelcomeActivity"])
-
+        if vm_or_ip == "1":
+            print "\n 1 .Install the Framework\n 2. Restart the device\n 3. Enable Android BluePill, Droidmon, JustTrustMe and RootCloak."
+        else:
+            print "\n 1 .Install the Framework\n 2. Restart the device\n 3. Enable Droidmon, JustTrustMe and RootCloak."
         print "\n[INFO] MobSFy Script Executed Successfully"
     else:
         print "\n[ERROR] Please enter the IP and Port in the following format (192.168.1.2:5555)"

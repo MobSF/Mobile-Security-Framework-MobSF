@@ -236,16 +236,17 @@ textarea:focus {
       $("#screen").click(function() {
                   
                        var stext = $("#screen").text();
+                       var md;
 
                        if (stext === "Show Screen")
                        {
                         $("#screen").text("Stop Screen");
-                        mode = "on";
+                        md = "on";
                        }
                        else
                        {
                         $("#screen").text("Show Screen");
-                        mode = "off";
+                        md = "off";
                        }
               
 
@@ -254,7 +255,7 @@ textarea:focus {
                                 type : "POST",
                                 dataType: "json", 
                                 data : {
-                                    mode: mode,
+                                    mode: md,
                                     csrfmiddlewaretoken: '{{ csrf_token }}',
                                     },
                                     success : function(json) {
@@ -445,18 +446,17 @@ textarea:focus {
                       //Stop Screen Casting if it's running
 
                        var stext = $("#screen").text();
+                       var md;
                        if (stext === "Stop Screen")
                        {
                         $("#screen").text("Show Screen");
-                        mode = "off";
-                       }
-
+                        md = "off";
                         $.ajax({
                           url : "../ScreenCast/", 
                           type : "POST",
                           dataType: "json", 
                           data : {
-                              mode: mode,
+                              mode: md,
                               csrfmiddlewaretoken: '{{ csrf_token }}',
                               },
                               success : function(json) {
@@ -475,6 +475,7 @@ textarea:focus {
                                   document.getElementById("er").srcdoc = xhr.responseText;
                               }   
                         });
+                      }
                         //
                     		$.ajax({
                                 url : "../FinalTest/", 
