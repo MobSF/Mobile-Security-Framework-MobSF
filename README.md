@@ -5,7 +5,7 @@ Version: v0.9.1 beta
 Mobile Security Framework (MobSF) is an intelligent, all-in-one open source mobile application (Android/iOS) automated pen-testing framework capable of performing static and dynamic analysis. It can be used for effective and fast security analysis of Android and iOS Applications and supports both binaries (APK &amp; IPA) and zipped source code. MobSF can also perform Web API Security testing with it's API Fuzzer that can do Information Gathering, analyze Security Headers, identify Mobile API specific vulnerabilities like XXE, SSRF, Path Traversal, IDOR, and other logical issues related to Session and API Rate Limiting.
 
 ## Documentation
-* https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/wiki
+* https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/wiki/1.-Documentation
 
 ## Video Course
 * Automated Mobile Application Security Assessment with MobSF: https://opsecx.com/index.php/course/automated-mobile-application-security-assessment-with-mobsf/?p=github
