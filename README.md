@@ -13,7 +13,7 @@ Mobile Security Framework (MobSF) is an intelligent, all-in-one open source mobi
 ## Queries
 
 * Features Requests: [@ajinabraham](http://twitter.com/ajinabraham) or [@OpenSecurity_IN](http://twitter.com/OpenSecurity_IN). 
-* Open Bugs Here:  https://github.com/ajinabraham/YSO-Mobile-Security-Framework/issues
+* Open Bugs Here:  https://github.com/ajinabraham/Mobile-Security-Framework/issues
 
 ## Screenshots
 
