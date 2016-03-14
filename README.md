@@ -8,7 +8,7 @@ Mobile Security Framework (MobSF) is an intelligent, all-in-one open source mobi
 * https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/wiki/1.-Documentation
 
 ## Video Course
-* Automated Mobile Application Security Assessment with MobSF: https://opsecx.com/index.php/course/automated-mobile-application-security-assessment-with-mobsf/?p=github
+* Automated Mobile Application Security Assessment with MobSF: https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/
 
 ## Queries
 
