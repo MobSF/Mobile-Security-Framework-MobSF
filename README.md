@@ -14,6 +14,7 @@ Mobile Security Framework (MobSF) is an intelligent, all-in-one open source mobi
 
 * Features Requests: [@ajinabraham](http://twitter.com/ajinabraham) or [@OpenSecurity_IN](http://twitter.com/OpenSecurity_IN). 
 * Open Bugs Here:  https://github.com/ajinabraham/Mobile-Security-Framework/issues
+* Please add the log files `logs/MobSF.log` and `logs/webproxy.log` while opening bugs.
 
 ## Screenshots
 
