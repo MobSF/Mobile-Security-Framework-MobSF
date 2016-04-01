@@ -122,26 +122,21 @@ DATABASES = {
     }
 }
 
-#==========DECOMPILER SETTINGS===============
+#==========DECOMPILER SETTINGS================
 DECOMPILER = "jd-core" 
 
 #Two Decompilers are available 
 #1. jd-core
 #2. cfr
-#============================================
+#==============================================
 
-#============JAVA SETTINGS=================== 
+#============JAVA SETTINGS=====================
+JAVA_PATH=java.FindJava()
 
-#JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/'  # Use "/" instead of "\" for the path and the path should end with a "/".
-#JAVA_PATH='/usr/bin/'
-
-if platform.system()=="Windows":
-    JAVA_PATH=java.FindJava()
-    VBOX='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe' #Path to VBoxManage.exe
-else:
-    #For OSX and Linux
-    JAVA_PATH=java.FindJava()
-    VBOX=vbox.FindVbox() #Path to VBoxManage in Linux/OSX
+#Sample Java Path
+#Windows - JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/'  
+#OSX and Linux - JAVA_PATH='/usr/bin/'
+#===============================================
 
 #===============DEVICE Settings=================
 REAL_DEVICE = False
@@ -150,8 +145,17 @@ DEVICE_ADB_PORT = 5555
 DEVICE_TIMEOUT = 300
 #===============================================
 
+#================VirtualBox Settings============
+if REAL_DEVICE == False:
+    if platform.system()=="Windows":
+        VBOX='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
+        #Path to VBoxManage.exe
+    else:
+        VBOX=vbox.FindVbox()
+        #Path to VBoxManage in Linux/OSX
+#===============================================
+
 #================VM SETTINGS ==================
-#VBoxManage showhdinfo "MobSF_VM_0.1-disk3.vdi"
 #VM UUID
 UUID='81c7edd3-6038-4024-9735-682bdbacab8b'
 #Snapshot UUID
