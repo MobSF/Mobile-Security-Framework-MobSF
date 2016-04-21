@@ -1601,7 +1601,7 @@ def StaticAnalyzer_iOS(request):
         TYP=request.GET['type']
         RESCAN= str(request.GET.get('rescan', 0))
         m=re.match('[0-9a-f]{32}',request.GET['checksum'])
-        if ((m) and (request.GET['name'].endswith('.ipa') or request.GET['name'].endswith('.zip')) and ((TYP=='ipa') or (TYP=='ios'))):
+        if ((m) and (request.GET['name'].lower().endswith('.ipa') or request.GET['name'].lower().endswith('.zip')) and ((TYP=='ipa') or (TYP=='ios'))):
             DIR=settings.BASE_DIR        #BASE DIR
             APP_NAME=request.GET['name'] #APP ORGINAL NAME
             MD5=request.GET['checksum']  #MD5
