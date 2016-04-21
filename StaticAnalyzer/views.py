@@ -321,7 +321,7 @@ def StaticAnalyzer(request):
         #Input validation
         TYP=request.GET['type']
         m=re.match('[0-9a-f]{32}',request.GET['checksum'])
-        if ((m) and (request.GET['name'].endswith('.apk') or request.GET['name'].endswith('.zip')) and ((TYP=='zip') or (TYP=='apk'))):
+        if ((m) and (request.GET['name'].lower().endswith('.apk') or request.GET['name'].lower().endswith('.zip')) and ((TYP=='zip') or (TYP=='apk'))):
             DIR=settings.BASE_DIR        #BASE DIR
             APP_NAME=request.GET['name'] #APP ORGINAL NAME
             MD5=request.GET['checksum']  #MD5
