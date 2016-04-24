@@ -9,6 +9,7 @@ import sqlite3 as sq
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from pyWebProxy.pywebproxy import *
 from MobSF.exception_printer import PrintException
+from MalwareAnalyzer.views import MalwareCheck
 #===================================
 #Dynamic Analyzer Calls begins here!
 #===================================
@@ -472,7 +473,7 @@ def Report(request):
                 DWD_DIR=settings.DWD_DIR
                 DRDMONAPISLOC=os.path.join(APP_DIR,'x_logcat.txt') #Use check_outputs instead later.
                 API_NET,API_BASE64, API_FILEIO, API_BINDER, API_CRYPTO, API_DEVICEINFO, API_CNTVL,API_SMS,API_SYSPROP,API_DEXLOADER,API_RELECT,API_ACNTMNGER,API_CMD=APIAnalysis(PKG,DRDMONAPISLOC)
-                URL,EMAIL,HTTP,XML,SQLiteDB,OtherFiles=RunAnalysis(APP_DIR,MD5,PKG)
+                URL,DOMAINS,EMAIL,HTTP,XML,SQLiteDB,OtherFiles=RunAnalysis(APP_DIR,MD5,PKG)
                 Download(MD5,DWD_DIR,APP_DIR,PKG)
                 #Only After Download Process is Done
                 IMGS=[]
@@ -508,6 +509,7 @@ def Report(request):
 
                 context = {'emails' : EMAIL,
                        'urls' : URL,
+                       'domains': DOMAINS,
                        'md5' : MD5,
                        'http' : HTTP,
                        'xml': XML,
@@ -785,6 +787,7 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
     traffic=''
     wb=''
     xlg=''
+    DOMAINS={}
     try:
         with io.open(Web,mode='r',encoding="utf8",errors="ignore") as f:
             wb=f.read()
@@ -800,6 +803,9 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
     #URLs My Custom regex
     p = re.compile(ur'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE) 
     urllist=re.findall(p, traffic.lower())
+    #Domain Extraction and Malware Check
+    print "[INFO] Performing Malware Check on extracted Domains"
+    DOMAINS = MalwareCheck(urllist)
     for url in urllist:
         if url not in URLS:
             URLS.append(url)
@@ -860,7 +866,7 @@ def RunAnalysis(APKDIR,MD5,PACKAGE):
     except:
         PrintException("[ERROR] Dynamic File Analysis")
         pass              
-    return URLS,EMAILS,wb,xmlfiles,SQLiteDB,OtherFiles
+    return URLS,DOMAINS,EMAILS,wb,xmlfiles,SQLiteDB,OtherFiles
 
 def View(request):
     print "\n[INFO] Viewing File"
