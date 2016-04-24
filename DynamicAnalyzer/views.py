@@ -58,7 +58,7 @@ def DynamicAnalyzer(request):
         else:
             return HttpResponseRedirect('/error/')
     except:
-        PrintException("ERROR] DynamicAnalyzer")
+        PrintException("[ERROR] DynamicAnalyzer")
         return HttpResponseRedirect('/error/')
 
 #AJAX

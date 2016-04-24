@@ -6,7 +6,9 @@ from django.template.loader import get_template
 from StaticAnalyzer.models import StaticAnalyzerAndroid,StaticAnalyzerIPA,StaticAnalyzerIOSZIP
 from django.conf import settings
 from django.utils.html import escape
+from django.template.defaulttags import register
 from MobSF.exception_printer import PrintException
+from MalwareAnalyzer.views import MalwareCheck
 from xml.dom import minidom
 from .dvm_permissions import DVM_PERMISSIONS
 import sqlite3 as sq
@@ -20,6 +22,10 @@ try:
     StringIO = StringIO.StringIO
 except Exception:
     from io import StringIO
+
+@register.filter
+def key(d, key_name):
+    return d.get(key_name)
 
 def PDF(request):
     try:
@@ -67,6 +73,7 @@ def PDF(request):
                     'api': DB[0].API,
                     'dang': DB[0].DANG,
                     'urls': DB[0].URLS,
+                    'domains': python_dict(DB[0].DOMAINS),
                     'emails': DB[0].EMAILS,
                     'strings': python_list(DB[0].STRINGS),
                     'zipped' : DB[0].ZIPPED,
@@ -126,6 +133,7 @@ def PDF(request):
                         'api' : DB[0].HTML,
                         'insecure' : DB[0].CODEANAL,
                         'urls' : DB[0].URLnFile,
+                        'domains': python_dict(DB[0].DOMAINS),
                         'emails' : DB[0].EmailnFile
                         }
                         template= get_template("ios_source_analysis_pdf.html")
@@ -133,7 +141,7 @@ def PDF(request):
                 return HttpResponseRedirect('/error/') 
             html  = template.render(context)
             result = StringIO()
-            pdf = pisa.pisaDocument(StringIO( "{0}".format(html.encode('utf-8'))), result)
+            pdf = pisa.pisaDocument(StringIO( "{0}".format(html.encode('utf-8'))), result, encoding='utf-8')
             if not pdf.err:
                 return HttpResponse(result.getvalue(), content_type='application/pdf')
             else:
@@ -315,6 +323,12 @@ def python_list(value):
     if isinstance(value, list):
         return value
     return ast.literal_eval(value)
+def python_dict(value):
+    if not value:
+        value = {}
+    if isinstance(value, dict):
+        return value
+    return ast.literal_eval(value)
 
 def StaticAnalyzer(request):
     try:
@@ -370,6 +384,7 @@ def StaticAnalyzer(request):
                     'api': DB[0].API,
                     'dang': DB[0].DANG,
                     'urls': DB[0].URLS,
+                    'domains': python_dict(DB[0].DOMAINS),
                     'emails': DB[0].EMAILS,
                     'strings': python_list(DB[0].STRINGS),
                     'zipped' : DB[0].ZIPPED,
@@ -404,7 +419,7 @@ def StaticAnalyzer(request):
                     Dex2Smali(APP_DIR,TOOLS_DIR)
                     Jar2Java(APP_DIR,TOOLS_DIR)
         
-                    API,DANG,URLS,EMAILS,CRYPTO,OBFUS,REFLECT,DYNAMIC,NATIVE=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,"apk")
+                    API,DANG,URLS,DOMAINS,EMAILS,CRYPTO,OBFUS,REFLECT,DYNAMIC,NATIVE=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,"apk")
                     print "\n[INFO] Generating Java and Smali Downloads"
                     GenDownloads(APP_DIR,MD5)
                     STRINGS=Strings(APP_FILE,APP_DIR,TOOLS_DIR)
@@ -450,6 +465,7 @@ def StaticAnalyzer(request):
                             API= API,
                             DANG= DANG,
                             URLS= URLS,
+                            DOMAINS= DOMAINS,
                             EMAILS= EMAILS,
                             STRINGS= STRINGS,
                             ZIPPED= ZIPPED,
@@ -496,6 +512,7 @@ def StaticAnalyzer(request):
                             API= API,
                             DANG= DANG,
                             URLS= URLS,
+                            DOMAINS= DOMAINS,
                             EMAILS= EMAILS,
                             STRINGS= STRINGS,
                             ZIPPED= ZIPPED,
@@ -545,6 +562,7 @@ def StaticAnalyzer(request):
                     'api': API,
                     'dang': DANG,
                     'urls': URLS,
+                    'domains': DOMAINS,
                     'emails': EMAILS,
                     'strings': STRINGS,
                     'zipped' : ZIPPED,
@@ -596,6 +614,7 @@ def StaticAnalyzer(request):
                     'api': DB[0].API,
                     'dang': DB[0].DANG,
                     'urls': DB[0].URLS,
+                    'domains': python_dict(DB[0].DOMAINS),
                     'emails': DB[0].EMAILS,
                     'mani': DB[0].MANI,
                     'e_act': DB[0].E_ACT,
@@ -625,7 +644,7 @@ def StaticAnalyzer(request):
                         CNT_PRO =len(PROVIDERS)
                         CNT_SER =len(SERVICES)
                         CNT_BRO = len(RECEIVERS)
-                        API,DANG,URLS,EMAILS,CRYPTO,OBFUS,REFLECT,DYNAMIC,NATIVE=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,pro_type)
+                        API,DANG,URLS,DOMAINS,EMAILS,CRYPTO,OBFUS,REFLECT,DYNAMIC,NATIVE=CodeAnalysis(APP_DIR,MD5,PERMISSIONS,pro_type)
                         print "\n[INFO] Connecting to Database"
                         try:
                             #SAVE TO DB
@@ -666,6 +685,7 @@ def StaticAnalyzer(request):
                                 API= API,
                                 DANG= DANG,
                                 URLS= URLS,
+                                DOMAINS= DOMAINS,
                                 EMAILS= EMAILS,
                                 STRINGS= "",
                                 ZIPPED= "",
@@ -712,6 +732,7 @@ def StaticAnalyzer(request):
                                 API= API,
                                 DANG= DANG,
                                 URLS= URLS,
+                                DOMAINS= DOMAINS,
                                 EMAILS= EMAILS,
                                 STRINGS= "",
                                 ZIPPED= "",
@@ -760,6 +781,7 @@ def StaticAnalyzer(request):
                         'api': API,
                         'dang': DANG,
                         'urls': URLS,
+                        'domains': DOMAINS,
                         'emails': EMAILS,
                         'mani': MANI,
                         'e_act': EXPORTED_CNT["act"],
@@ -1289,6 +1311,8 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
         native=False
         EmailnFile=''
         URLnFile=''
+        ALLURLSLST = list()
+        DOMAINS = dict ()
         if TYP=="apk":
             JS=os.path.join(APP_DIR, 'java_source/')
         elif TYP=="studio":
@@ -1464,6 +1488,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     #URLs My Custom regex
                     p = re.compile(ur'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE) 
                     urllist=re.findall(p, dat.lower())
+                    ALLURLSLST.extend(urllist)
                     uflag=0
                     for url in urllist:
                         if url not in URLS:
@@ -1471,7 +1496,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                             uflag=1
                     if uflag==1:
                         URLnFile+="<tr><td>" + "<br>".join(URLS) + "</td><td><a href='../ViewSource/?file=" + escape(fl)+"&md5="+MD5+"&type="+TYP+"'>"+escape(base_fl)+"</a></td></tr>"
-                    
+
                     #Email Etraction Regex
                     
                     regex = re.compile("[\w.-]+@[\w-]+\.[\w.]+")
@@ -1482,7 +1507,10 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                             eflag=1
                     if eflag==1:
                         EmailnFile+="<tr><td>" + "<br>".join(EMAILS) + "</td><td><a href='../ViewSource/?file=" + escape(fl)+"&md5="+MD5+"&type="+TYP+"'>"+escape(base_fl)+"</a></td></tr>"
-                    
+        
+        #Domain Extraction and Malware Check
+        print "[INFO] Performing Malware Check on extracted Domains"
+        DOMAINS = MalwareCheck(ALLURLSLST)
         print "[INFO] Finished Code Analysis, Email and URL Extraction"
         #API Description
         dc ={'gps':'GPS Location',
@@ -1586,7 +1614,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
 
                 dang+=hd+link+"</td></tr>"
 
-        return html,dang,URLnFile,EmailnFile,crypto,obfus,reflect,dynamic,native
+        return html,dang,URLnFile,DOMAINS,EmailnFile,crypto,obfus,reflect,dynamic,native
     except:
         PrintException("[ERROR] Performing Code Analysis")
         
@@ -1698,6 +1726,7 @@ def StaticAnalyzer_iOS(request):
                     'api' : DB[0].HTML,
                     'insecure' : DB[0].CODEANAL,
                     'urls' : DB[0].URLnFile,
+                    'domains': python_dict(DB[0].DOMAINS),
                     'emails' : DB[0].EmailnFile
                     }
                 else:
@@ -1709,7 +1738,7 @@ def StaticAnalyzer_iOS(request):
                     SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
                     SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
                     FILES,SFILES=iOS_ListFiles(APP_DIR,MD5,False,'ios')
-                    HTML,CODEANAL,URLnFile,EmailnFile,INFO_PLIST,BIN_NAME,ID,VER,SDK,PLTFM,MIN=iOS_Source_Analysis(APP_DIR,MD5)
+                    HTML,CODEANAL,URLnFile,DOMAINS,EmailnFile,INFO_PLIST,BIN_NAME,ID,VER,SDK,PLTFM,MIN=iOS_Source_Analysis(APP_DIR,MD5)
                     LIBS,BIN_ANAL='',''
                     #Saving to DB
                     print "\n[INFO] Connecting to DB"
@@ -1735,6 +1764,7 @@ def StaticAnalyzer_iOS(request):
                         HTML=HTML,
                         CODEANAL=CODEANAL,
                         URLnFile=URLnFile,
+                        DOMAINS=DOMAINS,
                         EmailnFile=EmailnFile)
                     elif RESCAN=='0':
                         print "\n[INFO] Saving to Database"
@@ -1758,6 +1788,7 @@ def StaticAnalyzer_iOS(request):
                         HTML=HTML,
                         CODEANAL=CODEANAL,
                         URLnFile=URLnFile,
+                        DOMAINS=DOMAINS,
                         EmailnFile=EmailnFile)
                         STATIC_DB.save()
                     context = {
@@ -1781,6 +1812,7 @@ def StaticAnalyzer_iOS(request):
                     'api' : HTML,
                     'insecure' : CODEANAL,
                     'urls' : URLnFile,
+                    'domains': DOMAINS,
                     'emails' : EmailnFile
                     }
                 template="ios_source_analysis.html"
@@ -2080,6 +2112,8 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
 def iOS_Source_Analysis(SRC,MD5):
     try:
         print "[INFO] Starting iOS Source Code and PLIST Analysis"
+        ALLURLSLST = list()
+        DOMAINS = dict ()
         APP=''
         InfoP=''
         BIN_NAME=''
@@ -2151,6 +2185,7 @@ def iOS_Source_Analysis(SRC,MD5):
                     #URLs My Custom regex
                     p = re.compile(ur'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE) 
                     urllist=re.findall(p, dat.lower())
+                    ALLURLSLST.extend(urllist)
                     uflag=0
                     for url in urllist:
                         if url not in URLS:
@@ -2158,7 +2193,6 @@ def iOS_Source_Analysis(SRC,MD5):
                             uflag=1
                     if uflag==1:
                         URLnFile+="<tr><td>" + "<br>".join(URLS) + "</td><td><a href='../ViewFile/?file=" + escape(fl)+"&type=m&mode=ios&md5="+MD5+"'>"+escape(base_fl)+"</a></td></tr>"
-                    
                     #Email Etraction Regex
                     
                     regex = re.compile("[\w.-]+@[\w-]+\.[\w.]+")
@@ -2169,6 +2203,9 @@ def iOS_Source_Analysis(SRC,MD5):
                             eflag=1
                     if eflag==1:
                         EmailnFile+="<tr><td>" + "<br>".join(EMAILS) + "</td><td><a href='../ViewFile/?file=" + escape(fl)+"&type=m&mode=ios&md5="+MD5+"'>"+escape(base_fl)+"</a></td></tr>"
+        #Domain Extraction and Malware Check
+        print "[INFO] Performing Malware Check on extracted Domains"
+        DOMAINS = MalwareCheck(ALLURLSLST)
         print "[INFO] Finished Code Analysis, Email and URL Extraction"
         dc={'webv' : 'WebView Component',
             'net' : 'Network Calls',
@@ -2203,7 +2240,7 @@ def iOS_Source_Analysis(SRC,MD5):
 
                 dang+=hd+link+"</td></tr>"
 
-        return html,dang,URLnFile,EmailnFile,XML,BIN_NAME,ID,VER,SDK,PLTFM,MIN
+        return html,dang,URLnFile,DOMAINS,EmailnFile,XML,BIN_NAME,ID,VER,SDK,PLTFM,MIN
     except:
         PrintException("[ERROR] iOS Source Code Analysis")
         

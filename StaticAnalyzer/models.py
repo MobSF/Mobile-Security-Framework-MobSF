@@ -36,6 +36,7 @@ class StaticAnalyzerAndroid(models.Model):
 	API=models.TextField()
 	DANG=models.TextField()
 	URLS=models.TextField()
+	DOMAINS=models.TextField()
 	EMAILS=models.TextField()
 	STRINGS=models.TextField()
 	ZIPPED=models.TextField()
@@ -84,4 +85,5 @@ class StaticAnalyzerIOSZIP(models.Model):
 	HTML=models.TextField()
 	CODEANAL=models.TextField()
 	URLnFile=models.TextField()
+	DOMAINS=models.TextField()
 	EmailnFile=models.TextField()

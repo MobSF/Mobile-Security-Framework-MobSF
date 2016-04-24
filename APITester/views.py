@@ -18,7 +18,7 @@ from lxml import etree
 
 @register.filter
 def key(d, key_name):
-    return d[key_name]
+    return d.get(key_name)
 
 @register.filter
 def spacify(value, autoescape=None):

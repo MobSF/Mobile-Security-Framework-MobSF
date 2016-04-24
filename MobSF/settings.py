@@ -59,6 +59,7 @@ INSTALLED_APPS = (
     'DynamicAnalyzer',
     'MobSF',
     'APITester',
+    'MalwareAnalyzer',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -96,9 +97,13 @@ STATICFILES_DIRS = (
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATIC_URL = '/static/'
-MOBSF_VER = "v0.9.1 Beta"
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+MOBSF_VER = "v0.9.2 Beta"
 
-print '\n\n\033[1m\033[34mMobile Security Framework '+ MOBSF_VER +'\033[0m'
+if platform.system()=="Windows":
+    print '\n\nMobile Security Framework '+ MOBSF_VER
+else:
+    print '\n\n\033[1m\033[34mMobile Security Framework '+ MOBSF_VER +'\033[0m'
 
 # DO NOT EDIT ANYTHING ABOVE THIS
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -183,15 +188,6 @@ UPSTREAM_PROXY_USERNAME = None
 UPSTREAM_PROXY_PASSWORD = None
 #===============================================
 
-#===============MobSF Cloud Settings============
-
-CLOUD_SERVER = 'http://opensecurity.in:8080'
-#This server validates SSRF and XXE during Web API Testing
-#See the source code of the cloud server from APITester/cloud/cloud_server.py
-#You can also host the cloud server. Host it on a public IP and point CLOUD_SERVER to that IP.
-
-#===============================================
-
 #=========Path Traversal - API Testing==========
 CHECK_FILE = "/etc/passwd"
 RESPONSE_REGEX = "root:|nobody:"
@@ -201,4 +197,14 @@ RESPONSE_REGEX = "root:|nobody:"
 RATE_REGISTER = 20
 RATE_LOGIN = 20
 #===============================================
+
+#===============MobSF Cloud Settings============
+CLOUD_SERVER = 'http://opensecurity.in:8080'
+#This server validates SSRF and XXE during Web API Testing
+#See the source code of the cloud server from APITester/cloud/cloud_server.py
+#You can also host the cloud server. Host it on a public IP and point CLOUD_SERVER to that IP.
+
+#===============================================
+
+
 

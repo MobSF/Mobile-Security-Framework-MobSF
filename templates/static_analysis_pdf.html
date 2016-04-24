@@ -237,7 +237,14 @@
                             <div class="panel-body">
 								  <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                                        
+                                        {% if urls|length > 1 %} 
+                  <thead>
+                  <tr>
+                     <th>URL</th>
+                     <th>File</th>
+                  </tr>
+                 </thead>
+                    {% endif %}
                                         <tbody>
 								
 									{{ urls | safe}} 
@@ -249,6 +256,50 @@
                     </div>
 					</div>
                     <hr>
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-screenshot"></span> Malware Check</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        {% if urls|length > 1 %} 
+                  <thead>
+                  <tr>
+                     <th>Domain</th>
+                     <th>Status</th>
+                  </tr>
+                 </thead>
+                  {% endif %}
+                                      <tbody>
+                
+                  {% for domain, details in domains.items %}
+                  <tr><td>{{domain}}</td><td> 
+
+                    {% if details|key:"bad" == "yes" %}
+                    <span class="label label-danger">malware</span></br>
+<pre>
+<strong>URL: </strong>{{details|key:"domain_or_url"}}
+<strong>IP: </strong><span class="label label-danger">{{details|key:"ip"}}</span>
+<strong>Description: </strong>{{details|key:"desc"}}
+</pre>
+                  {% else %}
+                    <span class="label label-success">good</span></br>
+                  {% endif %}
+
+
+                  </td> </tr>
+                  {% endfor %}
+                   
+                    </tbody>
+                                        </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    <hr>
 							    <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
@@ -257,7 +308,14 @@
                             <div class="panel-body">
 								  <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                                        
+                                        {% if emails|length > 1 %} 
+                  <thead>
+                  <tr>
+                     <th>Email</th>
+                     <th>File</th>
+                  </tr>
+                 </thead>
+                 {% endif %}
                                         <tbody>
 								
 									{{ emails | safe}} 
