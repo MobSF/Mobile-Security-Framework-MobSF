@@ -136,15 +136,16 @@ DECOMPILER = "cfr"
 #==============================================
 
 #==========Dex to Jar Converter================
-JAR_CONVERTER = "d2j"
-PYTHON3_PATH = ""
+JAR_CONVERTER = "enjarify"
 #Two dex to jar converters are available 
 #1. d2j
 #2. enjarify
 '''
-enjarify requires python3. Install Python 3 and
-add the path to environment variable PATH.
+enjarify requires python3. Install Python 3 and add the path to environment variable 
+PATH or provide the Python 3 path to PYTHON3_PATH variable in settings.py
+ex: PYTHON3_PATH = "C:/Users/<user>/AppData/Local/Programs/Python/Python35-32/"
 '''
+PYTHON3_PATH = ""
 #==============================================
 
 #============JAVA SETTINGS=====================

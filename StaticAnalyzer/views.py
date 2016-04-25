@@ -1013,7 +1013,7 @@ def WinFixPython3(TOOLS_DIR):
             pathenv=os.environ["path"]
             if pathenv:
                 paths=pathenv.split(";")
-                for path in pathenv:
+                for path in paths:
                     if "python3" in path.lower():
                         PYTHON3_PATH = path
         PYTHON3 = os.path.join(PYTHON3_PATH,"python")
