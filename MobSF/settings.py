@@ -128,11 +128,23 @@ DATABASES = {
 }
 
 #==========DECOMPILER SETTINGS================
-DECOMPILER = "jd-core" 
+DECOMPILER = "cfr"
 
 #Two Decompilers are available 
 #1. jd-core
 #2. cfr
+#==============================================
+
+#==========Dex to Jar Converter================
+JAR_CONVERTER = "d2j"
+
+#Two dex to jar converters are available 
+#1. d2j
+#2. enjarify
+'''
+enjarify requires python3. Install Python 3 and
+add the path to environment variable PATH.
+'''
 #==============================================
 
 #============JAVA SETTINGS=====================
@@ -200,10 +212,11 @@ RATE_LOGIN = 20
 
 #===============MobSF Cloud Settings============
 CLOUD_SERVER = 'http://opensecurity.in:8080'
-#This server validates SSRF and XXE during Web API Testing
-#See the source code of the cloud server from APITester/cloud/cloud_server.py
-#You can also host the cloud server. Host it on a public IP and point CLOUD_SERVER to that IP.
-
+'''
+This server validates SSRF and XXE during Web API Testing
+See the source code of the cloud server from APITester/cloud/cloud_server.py
+You can also host the cloud server. Host it on a public IP and point CLOUD_SERVER to that IP.
+'''
 #===============================================
 
 

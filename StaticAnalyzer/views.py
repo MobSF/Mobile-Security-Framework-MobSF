@@ -415,7 +415,7 @@ def StaticAnalyzer(request):
                     CNT_BRO = len(RECEIVERS)
         
                     CERT_INFO=CertInfo(APP_DIR,TOOLS_DIR)
-                    Dex2Jar(APP_DIR,TOOLS_DIR)
+                    Dex2Jar(APP_PATH,APP_DIR,TOOLS_DIR)
                     Dex2Smali(APP_DIR,TOOLS_DIR)
                     Jar2Java(APP_DIR,TOOLS_DIR)
         
@@ -1003,19 +1003,35 @@ def WinFixJava(TOOLS_DIR):
     except:
         PrintException("[ERROR] Running JAVA path fix in Windows")
 
-def Dex2Jar(APP_DIR,TOOLS_DIR):
+def Dex2Jar(APP_PATH,APP_DIR,TOOLS_DIR):
     try:
         print "[INFO] DEX -> JAR"
-        if platform.system()=="Windows":
-            WinFixJava(TOOLS_DIR)
-            D2J=os.path.join(TOOLS_DIR,'d2j2/') +'d2j-dex2jar.bat'
+        args = []
+        working_dir = False
+        if settings.JAR_CONVERTER == "d2j":
+            print "[INFO] Using JAR converter - dex2jar"
+            if platform.system()=="Windows":
+                WinFixJava(TOOLS_DIR)
+                D2J=os.path.join(TOOLS_DIR,'d2j2/d2j-dex2jar.bat')
+            else:
+                INV=os.path.join(TOOLS_DIR,'d2j2/d2j_invoke.sh')
+                D2J=os.path.join(TOOLS_DIR,'d2j2/d2j-dex2jar.sh')
+                subprocess.call(["chmod", "777", D2J])
+                subprocess.call(["chmod", "777", INV])
+            args=[D2J,APP_DIR+'classes.dex','-f','-o',APP_DIR +'classes.jar']
+        elif settings.JAR_CONVERTER == "enjarify":
+            print "[INFO] Using JAR converter - Google enjarify"
+            WD=os.path.join(TOOLS_DIR,'enjarify/')
+            if platform.system()=="Windows":
+                EJ=os.path.join(WD,'enjarify.bat')
+                args=[EJ,APP_PATH,"-f","-o",APP_DIR +'classes.jar']
+            else:
+                working_dir = True
+                args=["python3","-O","-m","enjarify.main",APP_PATH,"-f","-o",APP_DIR +'classes.jar']
+        if working_dir:
+            subprocess.call(args, cwd=WD)
         else:
-            INV=os.path.join(TOOLS_DIR,'d2j2/') +'d2j_invoke.sh'
-            D2J=os.path.join(TOOLS_DIR,'d2j2/') +'d2j-dex2jar.sh'
-            subprocess.call(["chmod", "777", D2J])
-            subprocess.call(["chmod", "777", INV])
-        args=[D2J,APP_DIR+'classes.dex','-o',APP_DIR +'classes.jar']
-        subprocess.call(args)
+            subprocess.call(args)
     except:
         PrintException("[ERROR] Converting Dex to JAR")
 
@@ -1039,7 +1055,7 @@ def Jar2Java(APP_DIR,TOOLS_DIR):
             JD_PATH=TOOLS_DIR + 'jd-core.jar'
             args=[settings.JAVA_PATH+'java','-jar', JD_PATH, JAR_PATH,OUTPUT]
         elif settings.DECOMPILER=='cfr':
-            JD_PATH=TOOLS_DIR + 'cfr_0_101.jar'
+            JD_PATH=TOOLS_DIR + 'cfr_0_115.jar'
             args=[settings.JAVA_PATH+'java','-jar', JD_PATH,JAR_PATH,'--outputdir',OUTPUT]
         subprocess.call(args)
     except:
