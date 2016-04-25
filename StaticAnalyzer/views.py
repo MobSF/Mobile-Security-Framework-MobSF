@@ -1003,6 +1003,30 @@ def WinFixJava(TOOLS_DIR):
     except:
         PrintException("[ERROR] Running JAVA path fix in Windows")
 
+def WinFixPython3(TOOLS_DIR):
+    try:
+        print "[INFO] Running Python 3 path fix in Windows"
+        PYTHON3_PATH=""
+        if len(settings.PYTHON3_PATH) > 2:
+            PYTHON3_PATH = settings.PYTHON3_PATH
+        else:
+            pathenv=os.environ["path"]
+            if pathenv:
+                paths=pathenv.split(";")
+                for path in pathenv:
+                    if "python3" in path.lower():
+                        PYTHON3_PATH = path
+        PYTHON3 = os.path.join(PYTHON3_PATH,"python")
+        DMY=os.path.join(TOOLS_DIR,'enjarify/enjarify.tmp')
+        ORG=os.path.join(TOOLS_DIR,'enjarify/enjarify.bat')
+        dat=''
+        with open(DMY,'r') as f:
+            dat=f.read().replace("[xxx]",PYTHON3)
+        with open(ORG,'w') as f:
+            f.write(dat)
+    except:
+        PrintException("[ERROR] Running Python 3 path fix in Windows")
+
 def Dex2Jar(APP_PATH,APP_DIR,TOOLS_DIR):
     try:
         print "[INFO] DEX -> JAR"
@@ -1023,11 +1047,16 @@ def Dex2Jar(APP_PATH,APP_DIR,TOOLS_DIR):
             print "[INFO] Using JAR converter - Google enjarify"
             WD=os.path.join(TOOLS_DIR,'enjarify/')
             if platform.system()=="Windows":
+                WinFixPython3(TOOLS_DIR)
                 EJ=os.path.join(WD,'enjarify.bat')
                 args=[EJ,APP_PATH,"-f","-o",APP_DIR +'classes.jar']
             else:
                 working_dir = True
-                args=["python3","-O","-m","enjarify.main",APP_PATH,"-f","-o",APP_DIR +'classes.jar']
+                if len(settings.PYTHON3_PATH)>2:
+                    PYTHON3 = os.path.join(settings.PYTHON3_PATH,"python3")
+                else:
+                    PYTHON3 = "python3"
+                args=[PYTHON3,"-O","-m","enjarify.main",APP_PATH,"-f","-o",APP_DIR +'classes.jar']
         if working_dir:
             subprocess.call(args, cwd=WD)
         else:

@@ -137,7 +137,7 @@ DECOMPILER = "cfr"
 
 #==========Dex to Jar Converter================
 JAR_CONVERTER = "d2j"
-
+PYTHON3_PATH = ""
 #Two dex to jar converters are available 
 #1. d2j
 #2. enjarify
