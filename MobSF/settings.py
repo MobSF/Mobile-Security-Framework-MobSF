@@ -136,7 +136,7 @@ DECOMPILER = "cfr"
 #==============================================
 
 #==========Dex to Jar Converter================
-JAR_CONVERTER = "enjarify"
+JAR_CONVERTER = "d2j"
 #Two dex to jar converters are available 
 #1. d2j
 #2. enjarify
