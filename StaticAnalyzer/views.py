@@ -1222,20 +1222,6 @@ def ManifestAnalysis(mfxml,mainact):
             package = node.getAttribute("package")
         RET=''
         EXPORTED=[]
-        ##SERVICES
-        ##search for services without permissions set
-        #if a service is exporeted and has no permission
-        #nor an intent filter, flag it
-        #I doubt if this part gets executed evver
-        for service in services:
-            if service.getAttribute("android:exported") == 'true':
-                perm = ''
-                if service.getAttribute("android:permission"):
-                    #service permission exists
-                    perm =' (permission '+service.getAttribute("android:permission")+' exists.) '
-                servicename = service.getAttribute("android:name")
-                RET=RET +'<tr><td>Service (' + servicename + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A service was found to be shared with other apps on the device without an intent filter or a permission requirement therefore leaving it accessible to any other application on the device.</td></tr>'
-                exp_count["ser"] = exp_count["ser"] + 1
         ##APPLICATIONS
         for application in applications:
 
@@ -1281,41 +1267,46 @@ def ManifestAnalysis(mfxml,mainact):
                     RET=RET+ '<tr><td>Launch Mode of Activity ('+item + ') is not standard.</td><td><span class="label label-danger">high</span></td><td>An Activity should not be having the launch mode attribute set to "singleTask/singleInstance" as it becomes root Activity and it is possible for other applications to read the contents of the calling Intent. So it is required to use the "standard" launch mode attribute when sensitive information is included in an Intent.</td></tr>'
                 #Exported Check
                 item=''
-                isExp=False
-                if ('NIL' != itmname) and (node.getAttribute("android:exported") == 'true'):
-                    isExp=True
-                    perm=''
-                    item=node.getAttribute("android:name")
-                    if node.getAttribute("android:permission"):
-                        #permission exists
-                        perm = ' (permission '+node.getAttribute("android:permission")+' exists.) '
-                    if item!=mainact:
-                        if (itmname =='Activity' or itmname=='Activity-Alias'):
-                            EXPORTED.append(item)
-                        RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device.</td></tr>'
-                        exp_count[cnt_id] = exp_count[cnt_id] + 1
-                else:
-                    isExp=False
-                impE=False
-                if ('NIL' != itmname) and (node.getAttribute("android:exported") == 'false'):
-                    impE=True
-                else:
-                    impE=False
-                if (isExp==False and impE==False):
-                    isInf=False
-                    #Logic to support intent-filter
-                    intentfilters = node.childNodes
-                    for i in intentfilters:
-                        inf=i.nodeName
-                        if inf=="intent-filter":
-                            isInf=True
-                    if isInf:
+                isInf = False
+                isPermExist = False
+                if ('NIL' != itmname):
+                    if (node.getAttribute("android:exported") == 'true'):
+                        perm=''
                         item=node.getAttribute("android:name")
+                        if node.getAttribute("android:permission"):
+                            #permission exists
+                            perm = '<strong>PERMISSION: </strong>'+node.getAttribute("android:permission")
+                            isPermExist = True
                         if item!=mainact:
-                            if (itmname =='Activity' or itmname=='Activity-Alias'):
-                                EXPORTED.append(item)
-                            RET=RET +'<tr><td>'+itmname+' (' + item + ') is not Protected.<br>An intent-filter exists.</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' was found to be shared with other apps on the device therefore leaving it accessible to any other application on the device. The presence of intent-filter indicates that the '+itmname+' is explicitly exported.</td></tr>'
-                            exp_count[cnt_id] = exp_count[cnt_id] + 1
+                            if isPermExist:
+                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected.</br>'+perm+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by permission.</td></tr>'
+                            else:
+                                if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                    EXPORTED.append(item)
+                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is not Protected. <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be shared with other apps on the device therefore leaving it accessible to any other application on the device.</td></tr>'
+                                exp_count[cnt_id] = exp_count[cnt_id] + 1
+                    elif (node.getAttribute("android:exported") != 'false'):
+                        #Check for Implicitly Exported
+                        #Logic to support intent-filter
+                        intentfilters = node.childNodes
+                        for i in intentfilters:
+                            inf=i.nodeName
+                            if inf=="intent-filter":
+                                isInf=True
+                        if isInf:
+                            item=node.getAttribute("android:name")
+                            if node.getAttribute("android:permission"):
+                                #permission exists
+                                perm = '<strong>PERMISSION: </strong>'+node.getAttribute("android:permission")  
+                                isPermExist = True
+                            if item!=mainact:
+                                if isPermExist:
+                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected.</br>'+perm+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by permission.</td></tr>'
+                                else:
+                                    if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                        EXPORTED.append(item)
+                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is not Protected.<br>An intent-filter exists.</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be shared with other apps on the device therefore leaving it accessible to any other application on the device. The presence of intent-filter indicates that the '+itmname+' is explicitly exported.</td></tr>'
+                                    exp_count[cnt_id] = exp_count[cnt_id] + 1
 
         ##GRANT-URI-PERMISSIONS
         title = 'Improper Content Provider Permissions'
@@ -1364,7 +1355,19 @@ def ManifestAnalysis(mfxml,mainact):
 def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
     try:
         print "[INFO] Static Android Code Analysis Started"
-        c = {key: [] for key in ('inf_act','inf_ser','inf_bro','log','fileio','rand','d_hcode','dex_cert','dex_tamper','d_rootcheck','d_root','d_ssl_pin','dex_root','dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite','d_con_world_readable','d_con_world_writable','d_con_private','d_extstorage','d_tmpfile','d_jsenabled','gps','crypto','exec','server_socket','socket','datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget','webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient','notify','cellinfo','cellloc','subid','devid','softver','simserial','simop','opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest')}
+        c = {key: [] for key in (
+            'inf_act','inf_ser','inf_bro','log','fileio','rand','d_hcode','d_app_tamper',
+            'dex_cert','dex_tamper','d_rootcheck','d_root','d_ssl_pin','dex_root',
+            'dex_debug_key','dex_debug','dex_debug_con','dex_emulator','d_prevent_screenshot',
+            'd_webviewdisablessl','d_webviewdebug','d_sensitive','d_ssl','d_sqlite',
+            'd_con_world_readable','d_con_world_writable','d_con_private','d_extstorage',
+            'd_tmpfile','d_jsenabled','gps','crypto','exec','server_socket','socket',
+            'datagramp','datagrams','ipc','msg','webview_addjs','webview','webviewget',
+            'webviewpost','httpcon','urlcon','jurl','httpsurl','nurl','httpclient',
+            'notify','cellinfo','cellloc','subid','devid','softver','simserial','simop',
+            'opname','contentq','refmethod','obf','gs','bencode','bdecode','dex','mdigest',
+            'sqlc_password','d_sql_cipher','d_con_world_rw','ecb','rsa_no_pad','weak_iv'
+            )}
         crypto=False
         obfus=False
         reflect=False
@@ -1396,13 +1399,16 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     #Initialize
                     URLS=[]
                     EMAILS=[]
+
                     #Code Analysis
                     #print "[INFO] Doing Code Analysis on - " + jfile_path
-
-                    if (re.findall('MODE_WORLD_READABLE|Context.MODE_WORLD_READABLE',dat)):
+                    #==========================Android Security Code Review =================================
+                    if (re.findall('MODE_WORLD_READABLE|Context.MODE_WORLD_READABLE',dat) or re.findall('openFileOutput\(\s*".+"\s*,\s*1\s*\)',dat)):
                         c['d_con_world_readable'].append(jfile_path.replace(JS,''))
-                    if (re.findall('MODE_WORLD_WRITABLE|Context.MODE_WORLD_WRITABLE',dat)):
+                    if (re.findall('MODE_WORLD_WRITABLE|Context.MODE_WORLD_WRITABLE',dat) or re.findall('openFileOutput\(\s*".+"\s*,\s*2\s*\)',dat)):
                         c['d_con_world_writable'].append(jfile_path.replace(JS,''))
+                    if re.findall('openFileOutput\(\s*".+"\s*,\s*3\s*\)',dat):
+                        c['d_con_world_rw'].append(jfile_path.replace(JS,''))
                     if (re.findall('MODE_PRIVATE|Context.MODE_PRIVATE',dat)):
                         c['d_con_private'].append(jfile_path.replace(JS,''))
                     if ((('WRITE_EXTERNAL_STORAGE') in PERMS) and (('.getExternalStorage') in dat or ('.getExternalFilesDir(') in dat)):
@@ -1419,8 +1425,6 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         c['d_sqlite'].append(jfile_path.replace(JS,''))
                     if ((('javax.net.ssl') in dat) and (('TrustAllSSLSocket-Factory') in dat or ('AllTrustSSLSocketFactory') in dat or ('NonValidatingSSLSocketFactory')  in dat or('ALLOW_ALL_HOSTNAME_VERIFIER') in dat or ('.setDefaultHostnameVerifier(') in dat or ('NullHostnameVerifier(') in dat)):
                         c['d_ssl'].append(jfile_path.replace(JS,''))
-                    #Add Sachin's Code Here and Add support for detecting insecure ssl algoo's 
-
                     if (('password = "') in dat.lower() or ('secret = "') in dat.lower() or ('username = "') in dat.lower() or ('key = "') in dat.lower()):
                         c['d_sensitive'].append(jfile_path.replace(JS,''))
                     if (('import dexguard.util') in dat and ('DebugDetector.isDebuggable') in dat):
@@ -1439,25 +1443,40 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         c['dex_cert'].append(jfile_path.replace(JS,''))
                     if (('org.thoughtcrime.ssl.pinning') in dat and (('PinningHelper.getPinnedHttpsURLConnection') in dat or ('PinningHelper.getPinnedHttpClient') in dat or ('PinningSSLSocketFactory(') in dat)):
                         c['d_ssl_pin'].append(jfile_path.replace(JS,''))
+                    if ('PackageManager.GET_SIGNATURES' in dat) and ('getPackageName(' in dat):
+                        c['d_app_tamper'].append(jfile_path.replace(JS,''))
                     if (('com.noshufou.android.su') in dat or ('com.thirdparty.superuser') in dat or ('eu.chainfire.supersu') in dat or ('com.koushikdutta.superuser') in dat or ('eu.chainfire.') in dat):
                         c['d_root'].append(jfile_path.replace(JS,''))
                     if (('.contains("test-keys")') in dat or ('/system/app/Superuser.apk') in dat or ('isDeviceRooted()') in dat or ('/system/bin/failsafe/su') in dat or ('/system/sd/xbin/su') in dat or ('"/system/xbin/which", "su"') in dat or ('RootTools.isAccessGiven()') in dat):
                         c['d_rootcheck'].append(jfile_path.replace(JS,''))
                     if (re.findall('java.util.Random',dat)):
                         c['rand'].append(jfile_path.replace(JS,''))
-                    if(re.findall('Log.|System.out.print',dat)):
+                    if (re.findall('Log.|System.out.print',dat)):
                         c['log'].append(jfile_path.replace(JS,''))
-                    if ".hashCode()" in dat:
+                    if (".hashCode()" in dat):
                         c['d_hcode'].append(jfile_path.replace(JS,''))
+                    if ("getWindow().setFlags(" in dat) and (".FLAG_SECURE" in dat):
+                        c['d_prevent_screenshot'].append(jfile_path.replace(JS,''))
+                    if ("SQLiteOpenHelper.getWritableDatabase(" in dat):
+                        c['sqlc_password'].append(jfile_path.replace(JS,''))
+                    if ("SQLiteDatabase.loadLibs(" in dat) and ("net.sqlcipher." in dat):
+                        c['d_sql_cipher'].append(jfile_path.replace(JS,''))
+                    if (re.findall('Cipher\.getInstance\(\s*".+ECB',dat)):
+                        c['ecb'].append(jfile_path.replace(JS,''))
+                    if (re.findall('ccipher\.getinstance\(\s*"rsa/.+/nopadding',dat.lower())):
+                        c['rsa_no_pad'].append(jfile_path.replace(JS,''))
+                    if ("0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00" in dat) or ("0x01,0x02,0x03,0x04,0x05,0x06,0x07" in dat):
+                        c['weak_iv'].append(jfile_path.replace(JS,''))
 
-                    
                     #Inorder to Add rule to Code Analysis, add identifier to c, add rule here and define identifier description and severity the bottom of this function.
+                    #=========================Android API Analysis =========================
                     #API Check
+
                     if (re.findall("System.loadLibrary\(|System.load\(", dat)):
                         native=True
-                    if(re.findall('dalvik.system.DexClassLoader|java.security.ClassLoader|java.net.URLClassLoader|java.security.SecureClassLoader',dat)):
+                    if (re.findall('dalvik.system.DexClassLoader|java.security.ClassLoader|java.net.URLClassLoader|java.security.SecureClassLoader',dat)):
                         dynamic=True
-                    if(re.findall('java.lang.reflect.Method|java.lang.reflect.Field|Class.forName',dat)):
+                    if (re.findall('java.lang.reflect.Method|java.lang.reflect.Field|Class.forName',dat)):
                         reflect=True
                     if (re.findall('javax.crypto|kalium.crypto|bouncycastle.crypto',dat)):
                         crypto=True
@@ -1532,7 +1551,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         c['mdigest'].append(jfile_path.replace(JS,''))
                     if ((('android.location') in dat )and (('getLastKnownLocation(') in dat or ('requestLocationUpdates(') in dat or ('getLatitude(') in dat or ('getLongitude(') in dat)):
                         c['gps'].append(jfile_path.replace(JS,''))
-                    if(re.findall('OpenFileOutput|getSharedPreferences|SharedPreferences.Editor|getCacheDir|getExternalStorageState|openOrCreateDatabase',dat)):
+                    if (re.findall('OpenFileOutput|getSharedPreferences|SharedPreferences.Editor|getCacheDir|getExternalStorageState|openOrCreateDatabase',dat)):
                         c['fileio'].append(jfile_path.replace(JS,''))
                     if (re.findall('startActivity\(|startActivityForResult\(',dat)):
                         c['inf_act'].append(jfile_path.replace(JS,''))
@@ -1541,8 +1560,6 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     if (re.findall('sendBroadcast\(|sendOrderedBroadcast\(|sendStickyBroadcast\(',dat)):
                         c['inf_bro'].append(jfile_path.replace(JS,''))
                     
-                   
-
                     fl=jfile_path.replace(JS,'')
                     base_fl=ntpath.basename(fl)
                     
@@ -1623,12 +1640,14 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                 for l in c[ky]:
                     link+="<a href='../ViewSource/?file="+ escape(l) +"&md5="+MD5+"&type="+TYP+"'>"+escape(ntpath.basename(l))+"</a> "
                 html+=hd+link+"</td></tr>"
-        #Code Review Description
+        
+        #Security Code Review Description
         dg={'d_sensitive' : "Files may contain hardcoded sensitive informations like usernames, passwords, keys etc.",
             'd_ssl': 'Insecure Implementation of SSL. Trusting all the certificates or accepting self signed certificates is a critical Security Hole.',
             'd_sqlite': 'App uses SQLite Database and execute raw SQL query. Untrusted user input in raw SQL queries can cause SQL Injection. Also sensitive information should be encrypted and written to the database.',
             'd_con_world_readable':'The file is World Readable. Any App can read from the file',
             'd_con_world_writable':'The file is World Writable. Any App can write to the file',
+            'd_con_world_rw': 'The file is World Readable and Writable. Any App can read/write to the file',
             'd_con_private':'App can write to App Directory. Sensitive Information should be encrypted.',
             'd_extstorage': 'App can read/write to External Storage. Any App can read data written to External Storage.',
             'd_tmpfile': 'App creates temp file. Sensitive information should never be written into a temp file.',
@@ -1648,9 +1667,16 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
             'd_hcode' : 'This App uses Java Hash Code. It\'s a weak hash function and should never be used in Secure Crypto Implementation.',
             'rand' : 'The App uses an insecure Random Number Generator.',
             'log' : 'The App logs information. Sensitive information should never be logged.',
+            'd_app_tamper' : 'The App may use package signature for tamper detection.',
+            'd_prevent_screenshot' : 'This App has capabilities to prevent against Screenshots from Recent Task History/ Now On Tap etc.',
+            'd_sql_cipher' : 'This App uses SQL Cipher. SQLCipher provides 256-bit AES encryption to sqlite database files.',
+            'sqlc_password' : 'This App uses SQL Cipher. But the secret may be hardcoded.',
+            'ecb' : 'The App uses ECB mode in Cryptographic encryption algorithm. ECB mode is known to be weak as it results in the same ciphertext for identical blocks of plaintext.',
+            'rsa_no_pad' : 'This App uses RSA Crypto without OAEP padding. The purpose of the padding scheme is to prevent a number of attacks on RSA that only work when the encryption is performed without padding.',
+            'weak_iv' : 'The App may use weak IVs like "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00" or "0x01,0x02,0x03,0x04,0x05,0x06,0x07". Not using a random IV makes the resulting ciphertext much more predictable and susceptible to a dictionary attack.',
             }
 
-                    
+
 
         dang=''
         spn_dang='<span class="label label-danger">high</span>'
@@ -1663,7 +1689,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                 link=''
                 if (re.findall('d_con_private|log',k)):
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_info+'</td><td>'
-                elif (re.findall('d_rootcheck|dex_cert|dex_tamper|dex_debug|dex_debug_con|dex_debug_key|dex_emulator|dex_root|d_ssl_pin',k)):
+                elif (re.findall('d_sql_cipher|d_prevent_screenshot|d_app_tamper|d_rootcheck|dex_cert|dex_tamper|dex_debug|dex_debug_con|dex_debug_key|dex_emulator|dex_root|d_ssl_pin',k)):
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_sec+'</td><td>'
                 elif (re.findall('d_jsenabled',k)):
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_warn+'</td><td>'
