@@ -128,7 +128,7 @@ DATABASES = {
 }
 
 #==========DECOMPILER SETTINGS================
-DECOMPILER = "cfr"
+DECOMPILER = "jd-core"
 
 #Two Decompilers are available 
 #1. jd-core
@@ -155,6 +155,12 @@ JAVA_PATH=java.FindJava()
 #Windows - JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/'  
 #OSX and Linux - JAVA_PATH='/usr/bin/'
 #===============================================
+
+#==========SKIP CLASSES==========================
+SKIP_CLASSES = ['android/support/','com/google/','android/content/','com/android/',
+'com/facebook/','com/twitter/','twitter4j/','org/apache/','com/squareup/okhttp/',
+'oauth/signpost/','org/chromium/']
+#================================================
 
 #===============DEVICE Settings=================
 REAL_DEVICE = False

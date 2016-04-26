@@ -65,6 +65,7 @@ def PDF(request):
                     'serv_count' : DB[0].CNT_SER,
                     'bro_count' : DB[0].CNT_BRO,
                     'certinfo': DB[0].CERT_INFO,
+                    'issued':DB[0].ISSUED,
                     'native' : DB[0].NATIVE,
                     'dynamic' : DB[0].DYNAMIC,
                     'reflection' : DB[0].REFLECT,
@@ -180,7 +181,8 @@ def Java(request):
                             shutil.move(file_path,fp2)
                             file_path=fp2
                         fileparam=file_path.replace(SRC,'')
-                        html+="<tr><td><a href='../ViewSource/?file="+escape(fileparam)+"&md5="+MD5+"&type="+t+"'>"+escape(fileparam)+"</a></td></tr>"
+                        if (any(cls in fileparam for cls in settings.SKIP_CLASSES) == False):
+                            html+="<tr><td><a href='../ViewSource/?file="+escape(fileparam)+"&md5="+MD5+"&type="+t+"'>"+escape(fileparam)+"</a></td></tr>"
         context = {'title': 'Java Source',
                     'files': html,
                     'md5': MD5,
@@ -376,6 +378,7 @@ def StaticAnalyzer(request):
                     'serv_count' : DB[0].CNT_SER,
                     'bro_count' : DB[0].CNT_BRO,
                     'certinfo': DB[0].CERT_INFO,
+                    'issued': DB[0].ISSUED,
                     'native' : DB[0].NATIVE,
                     'dynamic' : DB[0].DYNAMIC,
                     'reflection' : DB[0].REFLECT,
@@ -402,7 +405,7 @@ def StaticAnalyzer(request):
                     SHA1, SHA256= HashGen(APP_PATH)       #SHA1 & SHA256 HASHES
         
                     FILES=Unzip(APP_PATH,APP_DIR)
-                    CERTZ = GetHardcodedCert(FILES)
+                    CERTZ = GetHardcodedCertKeystore(FILES)
                     print "[INFO] APK Extracted"
                     PARSEDXML= GetManifest(APP_DIR,TOOLS_DIR,'',True) #Manifest XML
                     MANI='../ManifestView/?md5='+MD5+'&type=apk&bin=1'
@@ -414,7 +417,7 @@ def StaticAnalyzer(request):
                     CNT_SER =len(SERVICES)
                     CNT_BRO = len(RECEIVERS)
         
-                    CERT_INFO=CertInfo(APP_DIR,TOOLS_DIR)
+                    CERT_INFO,ISSUED=CertInfo(APP_DIR,TOOLS_DIR)
                     Dex2Jar(APP_PATH,APP_DIR,TOOLS_DIR)
                     Dex2Smali(APP_DIR,TOOLS_DIR)
                     Jar2Java(APP_DIR,TOOLS_DIR)
@@ -457,6 +460,7 @@ def StaticAnalyzer(request):
                             CNT_SER = CNT_SER,
                             CNT_BRO = CNT_BRO,
                             CERT_INFO= CERT_INFO,
+                            ISSUED=ISSUED,
                             NATIVE = NATIVE,
                             DYNAMIC = DYNAMIC,
                             REFLECT = REFLECT,
@@ -504,6 +508,7 @@ def StaticAnalyzer(request):
                             CNT_SER = CNT_SER,
                             CNT_BRO = CNT_BRO,
                             CERT_INFO= CERT_INFO,
+                            ISSUED=ISSUED,
                             NATIVE = NATIVE,
                             DYNAMIC = DYNAMIC,
                             REFLECT = REFLECT,
@@ -554,6 +559,7 @@ def StaticAnalyzer(request):
                     'serv_count' : CNT_SER,
                     'bro_count' : CNT_BRO,
                     'certinfo': CERT_INFO,
+                    'issued':ISSUED,
                     'native' : NATIVE,
                     'dynamic' : DYNAMIC,
                     'reflection' : REFLECT,
@@ -627,7 +633,7 @@ def StaticAnalyzer(request):
                     APP_PATH=APP_DIR+APP_FILE    #APP PATH
                     print "[INFO] Extracting ZIP"
                     FILES = Unzip(APP_PATH,APP_DIR)
-                    CERTZ = GetHardcodedCert(FILES)
+                    CERTZ = GetHardcodedCertKeystore(FILES)
                     #Check if Valid Directory Structure and get ZIP Type
                     pro_type,Valid=ValidAndroidZip(APP_DIR)
                     print "[INFO] ZIP Type - " + pro_type
@@ -677,6 +683,7 @@ def StaticAnalyzer(request):
                                 CNT_SER = CNT_SER,
                                 CNT_BRO = CNT_BRO,
                                 CERT_INFO= "",
+                                ISSUED="",
                                 NATIVE = NATIVE,
                                 DYNAMIC = DYNAMIC,
                                 REFLECT = REFLECT,
@@ -724,6 +731,7 @@ def StaticAnalyzer(request):
                                 CNT_SER = CNT_SER,
                                 CNT_BRO = CNT_BRO,
                                 CERT_INFO= "",
+                                ISSUED="",
                                 NATIVE = NATIVE,
                                 DYNAMIC = DYNAMIC,
                                 REFLECT = REFLECT,
@@ -810,20 +818,25 @@ def StaticAnalyzer(request):
         }
         template="error.html"
         return render(request,template,context)
-def GetHardcodedCert(files):
+def GetHardcodedCertKeystore(files):
     try:
-        print "[INFO] Getting Hardcoded Certificates"
+        print "[INFO] Getting Hardcoded Certificates/Keystores"
+        dat=''
         certz=''
+        ks=''
         for f in files:
             ext=f.split('.')[-1]
             if re.search("cer|pem|cert|crt|pub|key|pfx|p12", ext):
                 certz+=escape(f) + "</br>"
+            if re.search("jks|bks", ext):
+                ks+=escape(f) + "</br>"
         if len(certz)>1:
-            certz="<tr><td>Certificate/Key Files Hardcoded inside the App.</td><td>"+certz+"</td><tr>"
-        return certz
-        return re.sub(RE_XML_ILLEGAL, "?", dat)
+            dat+="<tr><td>Certificate/Key Files Hardcoded inside the App.</td><td>"+certz+"</td><tr>"
+        if len(ks)>1:
+            dat+="<tr><td>Hardcoded Keystore Found.</td><td>"+ks+"</td><tr>"
+        return dat
     except:
-        PrintException("[ERROR] Getting Hardcoded Certificates")
+        PrintException("[ERROR] Getting Hardcoded Certificates/Keystores")
 
 def ReadManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
     try:
@@ -985,8 +998,11 @@ def CertInfo(APP_DIR,TOOLS_DIR):
 
         args=[settings.JAVA_PATH+'java','-jar', CP_PATH, certfile]
         dat=''
+        issued='good'
         dat=escape(subprocess.check_output(args)).replace('\n', '</br>')
-        return dat
+        if re.findall("Issuer: CN=Android Debug|Subject: CN=Android Debug",dat):
+            issued="bad"
+        return dat,issued
     except:
         PrintException("[ERROR] Reading Code Signing Certificate")
 
@@ -1373,7 +1389,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     shutil.move(jfile_path,p2)
                     jfile_path=p2
                 repath=dirName.replace(JS,'')
-                if jfile.endswith('.java') and not (repath.startswith('android\\') or repath.startswith('com\\google\\')) :
+                if jfile.endswith('.java') and (any(cls in repath for cls in settings.SKIP_CLASSES) == False):
                     dat=''
                     with io.open(jfile_path,mode='r',encoding="utf8",errors="ignore") as f:
                         dat=f.read()

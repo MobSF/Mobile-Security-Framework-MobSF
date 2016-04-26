@@ -28,6 +28,7 @@ class StaticAnalyzerAndroid(models.Model):
 	CNT_SER=models.CharField(max_length=50)
 	CNT_BRO=models.CharField(max_length=50)
 	CERT_INFO=models.TextField()
+	ISSUED=models.CharField(max_length=10)
 	NATIVE=models.CharField(max_length=50)
 	DYNAMIC=models.CharField(max_length=50)
 	REFLECT=models.CharField(max_length=50)

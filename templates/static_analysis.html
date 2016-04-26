@@ -346,6 +346,13 @@
             </div>
  <pre class="hierarchy bring-up"><code class="language-bash" data-lang="bash">
 {{ certinfo | safe}}
+{% if issued == "good" %} 
+<strong>Certicate Status: </strong><span class="label label-success">Good</span>
+{% else %}
+<strong>Certicate Status: </strong><span class="label label-danger">Bad</span>
+<strong>Description:</strong>App Signed by 'Android Debug' Certificate.
+Production ready applications should not be signed with 'Android Debug' Certificate.
+{% endif %}
 </code></pre>
 </section>
 
