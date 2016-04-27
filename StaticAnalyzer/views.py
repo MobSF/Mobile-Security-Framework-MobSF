@@ -8,13 +8,13 @@ from django.utils.html import escape
 from django.template.defaulttags import register
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid,StaticAnalyzerIPA,StaticAnalyzerIOSZIP
-from MobSF.utils import PrintException
+from MobSF.utils import PrintException,python_list,python_dict
 from MalwareAnalyzer.views import MalwareCheck
 
 from xml.dom import minidom
 from .dvm_permissions import DVM_PERMISSIONS
 import sqlite3 as sq
-import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,ast,sys,plistlib
+import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,sys,plistlib
 
 try:
     import xhtml2pdf.pisa as pisa
@@ -321,19 +321,6 @@ def ManifestView(request):
     except:
         PrintException("[ERROR] Viewing AndroidManifest.xml")
         return HttpResponseRedirect('/error/')
-
-def python_list(value):
-    if not value:
-        value = []
-    if isinstance(value, list):
-        return value
-    return ast.literal_eval(value)
-def python_dict(value):
-    if not value:
-        value = {}
-    if isinstance(value, dict):
-        return value
-    return ast.literal_eval(value)
 
 def StaticAnalyzer(request):
     try:

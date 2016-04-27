@@ -7,11 +7,11 @@ from django.utils.html import escape
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from pyWebProxy.pywebproxy import *
-from MobSF.utils import PrintException
+from MobSF.utils import PrintException,is_number,python_list,isBase64
 from MalwareAnalyzer.views import MalwareCheck
 
 import subprocess,os,re,shutil,tarfile,ntpath,platform,io,signal
-import json,random,time,ast,sys,psutil,unicodedata,socket,threading,base64
+import json,random,time,sys,psutil,unicodedata,socket,threading,base64
 import sqlite3 as sq
 #===================================
 #Dynamic Analyzer Calls begins here!
@@ -747,6 +747,7 @@ def APIAnalysis(PKG,LOCATION):
         PrintException("[ERROR] Dynamic API Analysis")
         pass
     return list(set(API_NET)),list(set(API_BASE64)), list(set(API_FILEIO)), list(set(API_BINDER)), list(set(API_CRYPTO)), list(set(API_DEVICEINFO)), list(set(API_CNTVAL)), list(set(API_SMS)), list(set(API_SYSPROP)),list(set(API_DEXLOADER)),list(set(API_RELECT)),list(set(API_ACNTMNGER)),list(set(API_CMD)) 
+
 def Download(MD5,DWDDIR,APKDIR,PKG):
     print "\n[INFO] Generating Downloads"
     try:
@@ -993,26 +994,3 @@ def getIdentifier():
             return settings.VM_IP + ":" + str(settings.VM_ADB_PORT)
     except:
         PrintException("[ERROR] Getting ADB Connection Identifier for Device/VM")
-
-def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        pass
-    try:
-        unicodedata.numeric(s)
-        return True
-    except (TypeError, ValueError):
-        pass
-    return False
-
-def python_list(value):
-    if not value:
-        value = []
-    if isinstance(value, list):
-        return value
-    return ast.literal_eval(value)
-
-def isBase64(str):
-    return re.match('^[A-Za-z0-9+/]+[=]{0,2}$', str)

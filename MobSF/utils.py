@@ -1,4 +1,4 @@
-import os, platform, random, subprocess, re, sys, linecache, time, datetime, ntpath
+import os,platform,random,subprocess,re,sys,linecache,time,datetime,ntpath,hashlib,urllib2,io,ast,unicodedata
 
 import settings
 
@@ -182,3 +182,63 @@ def PrintException(msg,web=False):
 def filename_from_path(path):
     head, tail = ntpath.split(path)
     return tail or ntpath.basename(head)
+
+def getMD5(data):
+    return hashlib.md5(data).hexdigest()
+
+def findBetween(s, first, last):
+    try :
+        start = s.index(first) + len(first)
+        end = s.index(last,start)
+        return s[start:end]
+    except ValueError:
+        return ""
+
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+    try:
+        unicodedata.numeric(s)
+        return True
+    except (TypeError, ValueError):
+        pass
+    return False
+
+def python_list(value):
+    if not value:
+        value = []
+    if isinstance(value, list):
+        return value
+    return ast.literal_eval(value)
+
+def python_dict(value):
+    if not value:
+        value = {}
+    if isinstance(value, dict):
+        return value
+    return ast.literal_eval(value)
+
+
+def isBase64(str):
+    return re.match('^[A-Za-z0-9+/]+[=]{0,2}$', str)
+
+def isInternetAvailable():
+    try:
+        response=urllib2.urlopen('http://216.58.220.46',timeout=5)
+        return True
+    except urllib2.URLError as err: pass
+    return False
+
+def sha256(file_path):
+    BLOCKSIZE = 65536
+    hasher = hashlib.sha256()
+    with io.open(file_path,mode='rb') as afile:
+        buf = afile.read(BLOCKSIZE)
+        while len(buf) > 0:
+            hasher.update(buf)
+            buf = afile.read(BLOCKSIZE)
+    return (hasher.hexdigest())
+
