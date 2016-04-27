@@ -3,16 +3,19 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.template.loader import get_template
-from StaticAnalyzer.models import StaticAnalyzerAndroid,StaticAnalyzerIPA,StaticAnalyzerIOSZIP
 from django.conf import settings
 from django.utils.html import escape
 from django.template.defaulttags import register
+
+from StaticAnalyzer.models import StaticAnalyzerAndroid,StaticAnalyzerIPA,StaticAnalyzerIOSZIP
 from MobSF.exception_printer import PrintException
 from MalwareAnalyzer.views import MalwareCheck
+
 from xml.dom import minidom
 from .dvm_permissions import DVM_PERMISSIONS
 import sqlite3 as sq
 import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,ast,sys,plistlib
+
 try:
     import xhtml2pdf.pisa as pisa
 except:

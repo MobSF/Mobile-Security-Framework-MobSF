@@ -1,15 +1,18 @@
 # -*- coding: utf_8 -*-
 from django.shortcuts import render
 from django.conf import settings
-import subprocess,os,re,shutil,tarfile,ntpath,platform,io,signal
-import json,random,time,ast,sys,psutil,unicodedata,socket,threading
+from django.template.defaulttags import register
 from django.http import HttpResponseRedirect, HttpResponse
 from django.utils.html import escape
-import sqlite3 as sq
+
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from pyWebProxy.pywebproxy import *
 from MobSF.exception_printer import PrintException
 from MalwareAnalyzer.views import MalwareCheck
+
+import subprocess,os,re,shutil,tarfile,ntpath,platform,io,signal
+import json,random,time,ast,sys,psutil,unicodedata,socket,threading,base64
+import sqlite3 as sq
 #===================================
 #Dynamic Analyzer Calls begins here!
 #===================================
@@ -19,6 +22,10 @@ Unauthorized TCP Connection Prevention logic etc..
 I hate globals but as long as things work, it's fine.
 '''
 tcp_server_mode = "off" #ScreenCast TCP Service Status
+
+@register.filter
+def key(d, key_name):
+    return d.get(key_name)
 
 def DynamicAnalyzer(request):
     
@@ -704,6 +711,11 @@ def APIAnalysis(PKG,LOCATION):
                     D="</br>METHOD: "+ escape(MTD) + "</br>ARGUMENTS: "+ escape(ARGS) + "</br>RETURN DATA: "+escape(RET)
                     
                     if re.findall("android.util.Base64",CLS):
+                        #Base64 Decode
+                        if ("decode" in MTD):
+                            args_list = python_list(ARGS)
+                            if isBase64(args_list[0]):
+                                D+='</br><span class="label label-info">Decoded String:</span> '+escape(base64.b64decode(args_list[0]))
                         API_BASE64.append(D)
                     if re.findall('libcore.io|android.app.SharedPreferencesImpl$EditorImpl',CLS):
                         API_FILEIO.append(D)
@@ -1001,3 +1013,6 @@ def python_list(value):
     if isinstance(value, list):
         return value
     return ast.literal_eval(value)
+
+def isBase64(str):
+    return re.match('^[A-Za-z0-9+/]+[=]{0,2}$', str)

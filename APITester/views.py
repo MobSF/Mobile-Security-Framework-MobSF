@@ -3,15 +3,17 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.conf import settings
-from random import randint,shuffle,choice
-from urlparse import urlparse
-from cgi import parse_qs
-from APITester.models import ScopeURLSandTests
-from MobSF.exception_printer import PrintException
 from django.template.defaulttags import register
 from django.template.defaultfilters import stringfilter
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
+
+from APITester.models import ScopeURLSandTests
+from MobSF.exception_printer import PrintException
+
+from random import randint,shuffle,choice
+from urlparse import urlparse
+from cgi import parse_qs
 import tornado.httpclient
 import os,re,json,io,hashlib,datetime,socket,string
 from lxml import etree
