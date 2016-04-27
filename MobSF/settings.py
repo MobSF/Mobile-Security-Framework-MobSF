@@ -10,7 +10,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os,platform
-import java, vbox
+import utils
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -28,11 +28,11 @@ except NameError:
         SECRET_KEY = open(SECRET_FILE).read().strip()
     except IOError:
         try:
-            import random
-            SECRET_KEY = ''.join([random.SystemRandom().choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
+            SECRET_KEY = utils.genRandom()
             secret = file(SECRET_FILE, 'w')
             secret.write(SECRET_KEY)
             secret.close()
+            utils.Migrate(BASE_DIR)
         except IOError:
             Exception('Please create a %s file with random characters \
             to generate your secret key!' % SECRET_FILE)
@@ -97,26 +97,36 @@ STATICFILES_DIRS = (
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATIC_URL = '/static/'
+#Allowed Extensions
+ALLOWED_EXTENSIONS = {
+".txt":"text/plain",
+".png":"image/png",
+".zip":"application/zip",
+".tar":"application/x-tar"
+}
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 MOBSF_VER = "v0.9.2 Beta"
-
-if platform.system()=="Windows":
-    print '\n\nMobile Security Framework '+ MOBSF_VER
-else:
-    print '\n\n\033[1m\033[34mMobile Security Framework '+ MOBSF_VER +'\033[0m'
-
-# DO NOT EDIT ANYTHING ABOVE THIS
+utils.printMobSFverison(MOBSF_VER)
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# DO NOT EDIT ANYTHING ABOVE THIS
+
+#==========MobSF Home Directory=================
+USE_HOME = True
+#True : All Uploads/Downloads will be stored in user's home directory
+#False : All Uploads/Downloads will be stored in MobSF root directory
+#===============================================
+
+MobSF_HOME = utils.getMobSFHome(USE_HOME)
 #Logs Directory
-LOG_DIR=os.path.join(BASE_DIR,'logs/')
-#Static Directory
-STATIC_DIR=os.path.join(BASE_DIR,'static/')
+LOG_DIR=os.path.join(MobSF_HOME, 'logs/')
 #Download Directory
-DWD_DIR=os.path.join(STATIC_DIR, 'downloads/')
+DWD_DIR=os.path.join(MobSF_HOME, 'downloads/')
+#Screenshot Directory
+SCREEN_DIR = os.path.join(MobSF_HOME, 'downloads/screen/')
 #Upload Directory
-UPLD_DIR=os.path.join(BASE_DIR,'uploads/')
+UPLD_DIR=os.path.join(MobSF_HOME, 'uploads/')
 #Database Directory
-DB_DIR = os.path.join(BASE_DIR, 'db.sqlite3')
+DB_DIR = os.path.join(MobSF_HOME, 'db.sqlite3')
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
@@ -149,7 +159,7 @@ PYTHON3_PATH = ""
 #==============================================
 
 #============JAVA SETTINGS=====================
-JAVA_PATH=java.FindJava()
+JAVA_PATH=utils.FindJava()
 
 #Sample Java Path
 #Windows - JAVA_PATH='C:/Program Files/Java/jdk1.7.0_17/bin/'  
@@ -170,13 +180,10 @@ DEVICE_TIMEOUT = 300
 #===============================================
 
 #================VirtualBox Settings============
-if REAL_DEVICE == False:
-    if platform.system()=="Windows":
-        VBOX='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
-        #Path to VBoxManage.exe
-    else:
-        VBOX=vbox.FindVbox()
-        #Path to VBoxManage in Linux/OSX
+VBOX = utils.FindVbox()
+#VBOX = "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
+#or
+#VBOX = "/usr/bin/VBoxManage"
 #===============================================
 
 #================VM SETTINGS ==================

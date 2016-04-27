@@ -50,7 +50,7 @@ import uuid
 import re,sys,threading,json,codecs
 from multiprocessing import Process, Value, Lock
 from socket_wrapper import wrap_socket
-from MobSF.exception_printer import PrintException
+from MobSF.utils import PrintException
 from django.conf import settings
 
 kill = False #Global Variable that shows the state of Tornado Proxy

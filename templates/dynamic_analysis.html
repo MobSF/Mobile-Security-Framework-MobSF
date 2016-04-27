@@ -90,13 +90,13 @@
         </div><!-- /.box-header -->
         <div class="box-body">
         <div class="list-group">
-            <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-WebTraffic.txt">HTTP(S) Traffic</a>
-            <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-logcat.txt">Logcat Logs</a>
-            <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
-            <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
-            <a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-AppData.tar">Application Data</a>
+            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-WebTraffic.txt">HTTP(S) Traffic</a>
+            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
+            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
+            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
+            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-AppData.tar">Application Data</a>
             
-            <!--<a class="btn btn-info btn-lg" role="button" href="../static/downloads/{{ md5 }}-pcap.cap">Packet Capture</a>-->
+            <!--<a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-pcap.cap">Packet Capture</a>-->
        </div>
         
         </div><!-- /.box-body -->
@@ -418,7 +418,7 @@
                       
                                     {% for img, desc in expacttest.items %}
                                         <tr>
-                                         <td><img alt="{{desc}}" src="../static/downloads/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                                         <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
                                         <td>{{ desc }}</td>
                                         </tr>
                                     {% endfor %}
@@ -446,7 +446,7 @@
                                     <table class="table table-bordered table-hover table-striped">
                        {% for img, desc in acttest.items %}
                                         <tr>
-                                         <td><img alt="{{desc}}" src="../static/downloads/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                                         <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
                                         <td>{{ desc }}</td>
                                         </tr>
                                     {% endfor %}
@@ -476,7 +476,7 @@
                             <div class="list-group">
                 
                                         {% for i in imgs %}
-                                         <img alt="Screenshot" src="../static/downloads/{{ md5 }}-screenshots-apk/{{ i}}" class="img-thumbnail" height="600" width="350">
+                                         <img alt="Screenshot" src="../download/{{ md5 }}-screenshots-apk/{{ i}}" class="img-thumbnail" height="600" width="350">
                                         {% endfor %}
                                    
 

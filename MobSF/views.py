@@ -2,12 +2,16 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
-from .forms import UploadFileForm
 from django.conf import settings
 from django.utils import timezone
-import os, hashlib, platform, json,shutil,re
-from MobSF.exception_printer import PrintException
+from django.utils.encoding import smart_str
+from django.core.servers.basehttp import FileWrapper
+
+from MobSF.utils import PrintException, filename_from_path
 from MobSF.models import RecentScansDB
+from .forms import UploadFileForm
+
+import os, hashlib, platform, json,shutil,re
 
 def PushtoRecent(NAME,MD5,URL):
     try:
@@ -133,4 +137,26 @@ def Search(request):
         else:
             return HttpResponseRedirect('/NotFound')
     return HttpResponseRedirect('/error/') 
+
+def Download(request):
+    try:
+        if request.method == 'GET':
+            allowed_exts = settings.ALLOWED_EXTENSIONS
+            filename = request.path.replace("/download/","",1)
+            #Security Checks
+            if ("../") in filename:
+                print "\n[ATTACK] Path Traversal Attack detected"
+                return HttpResponseRedirect('/error/')
+            ext = os.path.splitext(filename)[1]
+            if (ext in allowed_exts):
+                dwd_file = os.path.join(settings.DWD_DIR,filename)
+                if os.path.isfile(dwd_file):
+                    wrapper = FileWrapper(file(dwd_file))
+                    response = HttpResponse(wrapper, content_type=allowed_exts[ext])
+                    response['Content-Length'] = os.path.getsize(dwd_file)
+                    return response
+    except:
+        PrintException("Error Downloading File")
+    return HttpResponseRedirect('/error/') 
+
 

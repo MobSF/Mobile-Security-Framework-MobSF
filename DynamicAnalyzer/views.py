@@ -7,7 +7,7 @@ from django.utils.html import escape
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from pyWebProxy.pywebproxy import *
-from MobSF.exception_printer import PrintException
+from MobSF.utils import PrintException
 from MalwareAnalyzer.views import MalwareCheck
 
 import subprocess,os,re,shutil,tarfile,ntpath,platform,io,signal
@@ -41,7 +41,7 @@ def DynamicAnalyzer(request):
             m=re.match('[0-9a-f]{32}',MD5)
             if m:
                 # Delete ScreenCast Cache
-                SCREEN_FILE=os.path.join(settings.STATIC_DIR, 'screen/screen.png')
+                SCREEN_FILE=os.path.join(settings.SCREEN_DIR, 'screen.png')
                 if os.path.exists(SCREEN_FILE):
                     os.remove(SCREEN_FILE)
                 # Delete Contents of Screenshot Dir
@@ -924,7 +924,7 @@ def ScreenCastService():
     global tcp_server_mode
     print "\n[INFO] ScreenCast Service Status: " + tcp_server_mode
     try:
-        SCREEN_DIR=os.path.join(settings.STATIC_DIR, 'screen/')
+        SCREEN_DIR=settings.SCREEN_DIR
         if not os.path.exists(SCREEN_DIR):
             os.makedirs(SCREEN_DIR)
 

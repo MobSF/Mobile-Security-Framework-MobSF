@@ -5,6 +5,7 @@ urlpatterns = [
     # Examples:
     url(r'^$','MobSF.views.index', name='index'),
     url(r'^Upload/$', 'MobSF.views.Upload', name='Upload'),
+    url(r'^download/', 'MobSF.views.Download', name='download'),
     url(r'^about/$', 'MobSF.views.about', name='about'),
     url(r'^RecentScans/$', 'MobSF.views.RecentScans', name='RecentScans'),
     url(r'^Search/$', 'MobSF.views.Search', name='Search'),

@@ -38,7 +38,7 @@ textarea:focus {
 <br>  
 <script>
     function loading(){
-        $('#my').attr('src','/static/screen/loading.jpg');
+        $('#my').attr('src','/static/img/loading.jpg');
         }
     function setScreenResoultion(width,height){
       $('#screen_width').val(width);
@@ -75,7 +75,7 @@ textarea:focus {
         <div class='sensor'></div>
         <div class='speaker'></div>
         <div class='screen' id='container'>
-        <img width='320' height='580' src='/static/screen/screen.png' id='my' onerror='loading()' style='background-color:black;'>
+        <img width='320' height='580' src='../download/screen/screen.png' id='my' onerror='loading()' style='background-color:black;'>
         </div>
         </div>
           <!-- nav-tabs-custom -->
@@ -264,14 +264,14 @@ textarea:focus {
                                       $('#stat').append("\nScreen sharing started");
                                        screenfunc = setInterval(function(){
                                         if (refresh === true)
-                                        $('#my').attr('src', '/static/screen/screen.png?'+new Date().getTime());
+                                        $('#my').attr('src', '../download/screen/screen.png?'+new Date().getTime());
                                       },300);
                                     }
                                     else if (json.status==="off"){
                                       touch = "off;"
                                       refresh = false;
                                       $('#stat').append("\nScreen sharing stopped");
-                                      $('#my').attr('src', '/static/screen/loading.jpg');
+                                      $('#my').attr('src', '/static/img/loading.jpg');
 
                                     }
                                       $('#stat').scrollTop($('#stat')[0].scrollHeight);
@@ -464,7 +464,7 @@ textarea:focus {
                                 touch = "off;"
                                 refresh = false;
                                 $('#stat').append("\nScreen sharing stopped");
-                                $('#my').attr('src', '/static/screen/loading.jpg');
+                                $('#my').attr('src', '/static/img/loading.jpg');
 
                               }
                                 $('#stat').scrollTop($('#stat')[0].scrollHeight);

@@ -8,7 +8,7 @@ from django.utils.html import escape
 from django.template.defaulttags import register
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid,StaticAnalyzerIPA,StaticAnalyzerIOSZIP
-from MobSF.exception_printer import PrintException
+from MobSF.utils import PrintException
 from MalwareAnalyzer.views import MalwareCheck
 
 from xml.dom import minidom
@@ -346,6 +346,7 @@ def StaticAnalyzer(request):
             MD5=request.GET['checksum']  #MD5
             APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
             TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
+            DWD_DIR = settings.DWD_DIR
             print "[INFO] Starting Analysis on : "+APP_NAME
             RESCAN= str(request.GET.get('rescan', 0))
             if TYP=='apk':
