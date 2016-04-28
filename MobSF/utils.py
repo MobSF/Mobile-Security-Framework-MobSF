@@ -133,7 +133,7 @@ def FindJava():
                         if "oracle" in dat:
                             print "\n[INFO] Oracle Java (JDK >= 1.7) is installed!"
                             return WIN_JAVA
-            PrintException("[[ERROR]] Oracle JDK 1.7 or above is not found!")
+            PrintException("[ERROR] Oracle JDK 1.7 or above is not found!")
             return ""
         else:
             print "\n[INFO] Finding JDK Location in Linux/MAC...."
@@ -149,13 +149,13 @@ def FindJava():
                     print "\n[INFO] JDK 1.7 or above is available"
                     return MAC_LINUX_JAVA
                 else:
-                    PrintException("[[ERROR]] Please install Oracle JDK 1.7 or above")
+                    PrintException("[ERROR] Please install Oracle JDK 1.7 or above")
                     return ""
             else:
-                PrintException("[[ERROR]] Oracle Java JDK 1.7 or above is not found!")
+                PrintException("[ERROR] Oracle Java JDK 1.7 or above is not found!")
                 return ""
     except:
-        PrintException("[[ERROR]] Oracle Java (JDK >=1.7) is not found!")
+        PrintException("[ERROR] Oracle Java (JDK >=1.7) is not found!")
         return ""
 
 def RunProcess(args):
@@ -169,7 +169,7 @@ def RunProcess(args):
             dat+=line
         return dat
     except:
-        PrintException("[[ERROR]] Finding Java path - Cannot Run Process")
+        PrintException("[ERROR] Finding Java path - Cannot Run Process")
         return ""
 
 class Color(object):
@@ -218,19 +218,19 @@ def findBetween(s, first, last):
         start = s.index(first) + len(first)
         end = s.index(last,start)
         return s[start:end]
-    except Value[ERROR]:
+    except ValueError:
         return ""
 
 def is_number(s):
     try:
         float(s)
         return True
-    except Value[ERROR]:
+    except ValueError:
         pass
     try:
         unicodedata.numeric(s)
         return True
-    except (Type[ERROR], Value[ERROR]):
+    except (TypeError, ValueError):
         pass
     return False
 
@@ -256,7 +256,7 @@ def isInternetAvailable():
     try:
         response=urllib2.urlopen('http://216.58.220.46',timeout=5)
         return True
-    except urllib2.URL[ERROR] as err: pass
+    except urllib2.URLError as err: pass
     return False
 
 def sha256(file_path):
