@@ -1,5 +1,4 @@
 import os,platform,random,subprocess,re,sys,linecache,time,datetime,ntpath,hashlib,urllib2,io,ast,unicodedata
-
 import settings
 
 def printMobSFverison(MOBSF_VER):
@@ -7,6 +6,29 @@ def printMobSFverison(MOBSF_VER):
         print '\n\nMobile Security Framework '+ MOBSF_VER
     else:
         print '\n\n\033[1m\033[34mMobile Security Framework '+ MOBSF_VER +'\033[0m'
+
+def createUserConfig(MobSF_HOME):
+    try:
+        CONFIG_PATH = os.path.join(MobSF_HOME,'config.py')
+        if isFileExists(CONFIG_PATH) == False:
+            SAMPLE_CONF = os.path.join(settings.BASE_DIR,"MobSF/settings.py")
+            with io.open(SAMPLE_CONF, mode='r', encoding="utf8", errors="ignore") as f:
+                dat=f.readlines()
+            CONFIG = list()
+            add = False
+            for line in dat:
+                if "^CONFIG-START^" in line:
+                    add = True
+                if "^CONFIG-END^" in line:
+                    break
+                if add:
+                    CONFIG.append(line.lstrip())
+            CONFIG.pop(0)
+            COMFIG_STR = ''.join(CONFIG)
+            with io.open(CONFIG_PATH, mode='w', encoding="utf8", errors="ignore") as f:
+                f.write(COMFIG_STR)
+    except:
+        PrintException("[ERROR] Cannot create config file")
 
 def getMobSFHome(useHOME):
     try:
@@ -16,6 +38,7 @@ def getMobSFHome(useHOME):
             #MobSF Home Directory
             if not os.path.exists(MobSF_HOME):
                 os.makedirs(MobSF_HOME)
+            createUserConfig(MobSF_HOME)
         else:
             MobSF_HOME = settings.BASE_DIR
         #Logs Directory
@@ -40,7 +63,7 @@ def getMobSFHome(useHOME):
             os.makedirs(UPLD_DIR)
         return MobSF_HOME
     except:
-        PrintException("Error Creating MobSF Home Directory")
+        PrintException("[ERROR] Creating MobSF Home Directory")
 
 def Migrate(BASE_DIR):
     try:
@@ -48,7 +71,7 @@ def Migrate(BASE_DIR):
         args = ["python", manage, "migrate"]
         subprocess.call(args)
     except:
-        PrintException("Error Cannot Migrate")
+        PrintException("[ERROR] Cannot Migrate")
 
 def FindVbox():
     try:
@@ -70,7 +93,7 @@ def FindVbox():
                         return path
             print "\n[WARNING] Could not find VirtualBox path." 
     except:
-        PrintException("Error Cannot find VirtualBox path.")
+        PrintException("[ERROR] Cannot find VirtualBox path.")
 
 #Maintain JDK Version
 JAVA_VER='1.7|1.8|1.9|2.0|2.1|2.2|2.3'
@@ -110,7 +133,7 @@ def FindJava():
                         if "oracle" in dat:
                             print "\n[INFO] Oracle Java (JDK >= 1.7) is installed!"
                             return WIN_JAVA
-            PrintException("[ERROR] Oracle JDK 1.7 or above is not found!")
+            PrintException("[[ERROR]] Oracle JDK 1.7 or above is not found!")
             return ""
         else:
             print "\n[INFO] Finding JDK Location in Linux/MAC...."
@@ -126,13 +149,13 @@ def FindJava():
                     print "\n[INFO] JDK 1.7 or above is available"
                     return MAC_LINUX_JAVA
                 else:
-                    PrintException("[ERROR] Please install Oracle JDK 1.7 or above")
+                    PrintException("[[ERROR]] Please install Oracle JDK 1.7 or above")
                     return ""
             else:
-                PrintException("[ERROR] Oracle Java JDK 1.7 or above is not found!")
+                PrintException("[[ERROR]] Oracle Java JDK 1.7 or above is not found!")
                 return ""
     except:
-        PrintException("[ERROR] Oracle Java (JDK >=1.7) is not found!")
+        PrintException("[[ERROR]] Oracle Java (JDK >=1.7) is not found!")
         return ""
 
 def RunProcess(args):
@@ -146,7 +169,7 @@ def RunProcess(args):
             dat+=line
         return dat
     except:
-        PrintException("[ERROR] Finding Java path - Cannot Run Process")
+        PrintException("[[ERROR]] Finding Java path - Cannot Run Process")
         return ""
 
 class Color(object):
@@ -158,7 +181,10 @@ class Color(object):
 
 
 def PrintException(msg,web=False):
-    LOGPATH=settings.LOG_DIR
+    try:
+        LOGPATH=settings.LOG_DIR
+    except:
+        LOGPATH = os.path.join(settings.BASE_DIR,"logs/")
     if not os.path.exists(LOGPATH):
         os.makedirs(LOGPATH)
     exc_type, exc_obj, tb = sys.exc_info()
@@ -192,19 +218,19 @@ def findBetween(s, first, last):
         start = s.index(first) + len(first)
         end = s.index(last,start)
         return s[start:end]
-    except ValueError:
+    except Value[ERROR]:
         return ""
 
 def is_number(s):
     try:
         float(s)
         return True
-    except ValueError:
+    except Value[ERROR]:
         pass
     try:
         unicodedata.numeric(s)
         return True
-    except (TypeError, ValueError):
+    except (Type[ERROR], Value[ERROR]):
         pass
     return False
 
@@ -230,7 +256,7 @@ def isInternetAvailable():
     try:
         response=urllib2.urlopen('http://216.58.220.46',timeout=5)
         return True
-    except urllib2.URLError as err: pass
+    except urllib2.URL[ERROR] as err: pass
     return False
 
 def sha256(file_path):
