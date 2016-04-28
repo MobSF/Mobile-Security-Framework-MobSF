@@ -92,7 +92,7 @@ utils.printMobSFverison(MOBSF_VER)
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #==========MobSF Home Directory=================
-USE_HOME = False
+USE_HOME = True
 
 #True : All Uploads/Downloads will be stored in user's home directory
 #False : All Uploads/Downloads will be stored in MobSF root directory
@@ -173,6 +173,7 @@ BACKSMALI_BINARY = ""
 AXMLPRINTER_BINARY = ""
 CFR_DECOMPILER_BINARY = ""
 JD_CORE_DECOMPILER_BINARY = ""
+PROCYON_DECOMPILER_BINARY = ""
 ADB_BINARY = ""
 ENJARIFY_DIRECTORY = ""
 
@@ -260,6 +261,7 @@ DECOMPILER = "jd-core"
 #Two Decompilers are available 
 #1. jd-core
 #2. cfr
+#3. procyon
 #==============================================
 
 #==========Dex to Jar Converter================

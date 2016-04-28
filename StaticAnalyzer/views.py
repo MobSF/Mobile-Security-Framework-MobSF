@@ -1110,6 +1110,12 @@ def Jar2Java(APP_DIR,TOOLS_DIR):
             else:
                 JD_PATH = os.path.join(TOOLS_DIR, 'cfr_0_115.jar')
             args=[settings.JAVA_PATH+'java','-jar', JD_PATH,JAR_PATH,'--outputdir',OUTPUT]
+        elif settings.DECOMPILER=="procyon":
+            if len(settings.PROCYON_DECOMPILER_BINARY) > 0 and isFileExists(settings.PROCYON_DECOMPILER_BINARY):
+                PD_PATH = settings.PROCYON_DECOMPILER_BINARY
+            else:
+                PD_PATH = os.path.join(TOOLS_DIR, 'procyon-decompiler-0.5.30.jar')
+            args=[settings.JAVA_PATH+'java','-jar',PD_PATH,JAR_PATH,'-o',OUTPUT]
         subprocess.call(args)
     except:
         PrintException("[ERROR] Converting JAR to JAVA")
