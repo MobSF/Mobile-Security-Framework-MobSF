@@ -7,7 +7,7 @@ from django.utils.html import escape
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from pyWebProxy.pywebproxy import *
-from MobSF.utils import PrintException,is_number,python_list,isBase64
+from MobSF.utils import PrintException,is_number,python_list,isBase64,isFileExists
 from MalwareAnalyzer.views import MalwareCheck
 
 import subprocess,os,re,shutil,tarfile,ntpath,platform,io,signal
@@ -582,18 +582,21 @@ def WebProxy(APKDIR,ip,port):
 def getADB(TOOLSDIR):
     print "\n[INFO] Getting ADB Location"
     try:
-        adb='adb'
-        if platform.system()=="Darwin":
-            adb_dir=os.path.join(TOOLSDIR, 'adb/mac/')
-            subprocess.call(["chmod", "777", adb_dir])
-            adb=os.path.join(TOOLSDIR , 'adb/mac/adb')
-        elif platform.system()=="Linux":
-            adb_dir=os.path.join(TOOLSDIR, 'adb/linux/')
-            subprocess.call(["chmod", "777", adb_dir])
-            adb=os.path.join(TOOLSDIR , 'adb/linux/adb')
-        elif platform.system()=="Windows":
-            adb=os.path.join(TOOLSDIR , 'adb/windows/adb.exe')
-        return adb
+        if len(settings.ADB_BINARY) > 0 and isFileExists(settings.ADB_BINARY):
+            return settings.ADB_BINARY
+        else:
+            adb='adb'
+            if platform.system()=="Darwin":
+                adb_dir=os.path.join(TOOLSDIR, 'adb/mac/')
+                subprocess.call(["chmod", "777", adb_dir])
+                adb=os.path.join(TOOLSDIR , 'adb/mac/adb')
+            elif platform.system()=="Linux":
+                adb_dir=os.path.join(TOOLSDIR, 'adb/linux/')
+                subprocess.call(["chmod", "777", adb_dir])
+                adb=os.path.join(TOOLSDIR , 'adb/linux/adb')
+            elif platform.system()=="Windows":
+                adb=os.path.join(TOOLSDIR , 'adb/windows/adb.exe')
+            return adb
     except:
         PrintException("[ERROR] Getting ADB Location")
         return "adb"

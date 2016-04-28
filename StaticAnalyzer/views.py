@@ -8,7 +8,7 @@ from django.utils.html import escape
 from django.template.defaulttags import register
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid,StaticAnalyzerIPA,StaticAnalyzerIOSZIP
-from MobSF.utils import PrintException,python_list,python_dict
+from MobSF.utils import PrintException,python_list,python_dict,isDirExists,isFileExists
 from MalwareAnalyzer.views import MalwareCheck
 
 from xml.dom import minidom
@@ -837,7 +837,10 @@ def ReadManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
             print "[INFO] Getting Manifest from Binary"
             print "[INFO] AXML -> XML"
             manifest=os.path.join(APP_DIR,"AndroidManifest.xml")
-            CP_PATH=TOOLS_DIR + 'AXMLPrinter2.jar'
+            if len(settings.AXMLPRINTER_BINARY) > 0 and isFileExists(settings.AXMLPRINTER_BINARY):
+                CP_PATH = settings.AXMLPRINTER_BINARY
+            else:
+                CP_PATH = os.path.join(TOOLS_DIR,'AXMLPrinter2.jar')
             args=[settings.JAVA_PATH+'java','-jar', CP_PATH, manifest]
             dat=subprocess.check_output(args)
         else:
@@ -1049,10 +1052,15 @@ def Dex2Jar(APP_PATH,APP_DIR,TOOLS_DIR):
                 D2J=os.path.join(TOOLS_DIR,'d2j2/d2j-dex2jar.sh')
                 subprocess.call(["chmod", "777", D2J])
                 subprocess.call(["chmod", "777", INV])
+            if len(settings.DEX2JAR_BINARY) > 0 and isFileExists(settings.DEX2JAR_BINARY):
+                D2J = settings.DEX2JAR_BINARY
             args=[D2J,APP_DIR+'classes.dex','-f','-o',APP_DIR +'classes.jar']
         elif settings.JAR_CONVERTER == "enjarify":
             print "[INFO] Using JAR converter - Google enjarify"
-            WD=os.path.join(TOOLS_DIR,'enjarify/')
+            if len(settings.ENJARIFY_DIRECTORY) > 0 and isDirExists(settings.ENJARIFY_DIRECTORY):
+                WD = settings.ENJARIFY_DIRECTORY
+            else:
+                WD = os.path.join(TOOLS_DIR,'enjarify/')
             if platform.system()=="Windows":
                 WinFixPython3(TOOLS_DIR)
                 EJ=os.path.join(WD,'enjarify.bat')
@@ -1075,9 +1083,12 @@ def Dex2Smali(APP_DIR,TOOLS_DIR):
     try:
         print "[INFO] DEX -> SMALI"
         DEX_PATH=APP_DIR+'classes.dex'
-        BS_PATH=TOOLS_DIR+ 'baksmali.jar'
-        OUTPUT=os.path.join(APP_DIR,'smali_source/')
-        args=[settings.JAVA_PATH+'java','-jar',BS_PATH,DEX_PATH,'-o',OUTPUT]
+        if len(settings.BACKSMALI_BINARY) > 0 and isFileExists(settings.BACKSMALI_BINARY):
+            BS_PATH = settings.BACKSMALI_BINARY
+        else:
+            BS_PATH = os.path.join(TOOLS_DIR,'baksmali.jar')
+        OUTPUT = os.path.join(APP_DIR,'smali_source/')
+        args = [settings.JAVA_PATH+'java','-jar',BS_PATH,DEX_PATH,'-o',OUTPUT]
         subprocess.call(args)
     except:
         PrintException("[ERROR] Converting DEX to SMALI")
@@ -1088,10 +1099,16 @@ def Jar2Java(APP_DIR,TOOLS_DIR):
         JAR_PATH=APP_DIR + 'classes.jar'
         OUTPUT=os.path.join(APP_DIR, 'java_source/')
         if settings.DECOMPILER=='jd-core':
-            JD_PATH=TOOLS_DIR + 'jd-core.jar'
+            if len(settings.JD_CORE_DECOMPILER_BINARY) > 0 and isFileExists(settings.JD_CORE_DECOMPILER_BINARY):
+                JD_PATH = settings.JD_CORE_DECOMPILER_BINARY
+            else:
+                JD_PATH = os.path.join(TOOLS_DIR, 'jd-core.jar')
             args=[settings.JAVA_PATH+'java','-jar', JD_PATH, JAR_PATH,OUTPUT]
         elif settings.DECOMPILER=='cfr':
-            JD_PATH=TOOLS_DIR + 'cfr_0_115.jar'
+            if len(settings.CFR_DECOMPILER_BINARY) > 0 and isFileExists(settings.CFR_DECOMPILER_BINARY):
+                JD_PATH = settings.CFR_DECOMPILER_BINARY
+            else:
+                JD_PATH = os.path.join(TOOLS_DIR, 'cfr_0_115.jar')
             args=[settings.JAVA_PATH+'java','-jar', JD_PATH,JAR_PATH,'--outputdir',OUTPUT]
         subprocess.call(args)
     except:
@@ -2083,19 +2100,23 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
         print "[INFO] Running otool against the Binary"
         #Libs Used
         LIBS=''
-        args=['otool','-L',BIN_PATH]
+        if len(settings.OTOOL_BINARY) > 0 and isFileExists(OTOOL_BINARY):
+            OTOOL = settings.OTOOL_BINARY
+        else:
+            OTOOL = "otool"
+        args=[OTOOL,'-L',BIN_PATH]
         dat=subprocess.check_output(args)
         dat=escape(dat.replace(BIN_DIR + "/",""))
         LIBS=dat.replace("\n","</br>")
         #PIE
-        args=['otool','-hv',BIN_PATH]
+        args=[OTOOL,'-hv',BIN_PATH]
         dat=subprocess.check_output(args)
         if "PIE" in dat:
             PIE= "<tr><td><strong>fPIE -pie</strong> flag is Found</td><td><span class='label label-success'>Secure</span></td><td>App is compiled with Position Independent Executable (PIE) flag. This enables Address Space Layout Randomization (ASLR), a memory protection mechanism for exploit mitigation.</td></tr>"
         else:
             PIE="<tr><td><strong>fPIE -pie</strong> flag is not Found</td><td><span class='label label-danger'>Insecure</span></td><td>App is not compiled with Position Independent Executable (PIE) flag. So Address Space Layout Randomization (ASLR) is missing. ASLR is a memory protection mechanism for exploit mitigation.</td></tr>"
         #Stack Smashing Protection & ARC
-        args=['otool','-Iv',BIN_PATH]
+        args=[OTOOL,'-Iv',BIN_PATH]
         dat=subprocess.check_output(args)
         if "stack_chk_guard" in dat:
             SSMASH="<tr><td><strong>fstack-protector-all</strong> flag is Found</td><td><span class='label label-success'>Secure</span></td><td>App is compiled with Stack Smashing Protector (SSP) flag and is having protection against Stack Overflows/Stack Smashing Attacks.</td></tr>"
@@ -2167,7 +2188,10 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
         WVIEW=''
         try:
             print "[INFO] Running class-dump-z against the Binary"
-            CLASSDUMPZ_BIN=os.path.join(TOOLS_DIR,'class-dump-z')
+            if len(settings.CLASSDUMPZ_BINARY) > 0 and isFileExists(settings.CLASSDUMPZ_BINARY):
+                CLASSDUMPZ_BIN = settings.CLASSDUMPZ_BINARY
+            else:
+                CLASSDUMPZ_BIN = os.path.join(TOOLS_DIR,'class-dump-z')
             subprocess.call(["chmod", "777", CLASSDUMPZ_BIN])
             dat=subprocess.check_output([CLASSDUMPZ_BIN,BIN_PATH])
             CDUMP=dat

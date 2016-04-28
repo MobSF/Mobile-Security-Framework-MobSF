@@ -8,9 +8,6 @@ def printMobSFverison(MOBSF_VER):
     else:
         print '\n\n\033[1m\033[34mMobile Security Framework '+ MOBSF_VER +'\033[0m'
 
-def genRandom():
-    return ''.join([random.SystemRandom().choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
-
 def getMobSFHome(useHOME):
     try:
         MobSF_HOME = ""
@@ -56,6 +53,8 @@ def Migrate(BASE_DIR):
 def FindVbox():
     try:
         if settings.REAL_DEVICE == False:
+            if len(settings.VBOXMANAGE_BINARY) > 0 and isFileExists(settings.VBOXMANAGE_BINARY):
+                return settings.VBOXMANAGE_BINARY
             if platform.system()=="Windows":
                 #Path to VBoxManage.exe
                 vbox_path=["C:\Program Files\Oracle\VirtualBox\VBoxManage.exe",
@@ -77,6 +76,8 @@ def FindVbox():
 JAVA_VER='1.7|1.8|1.9|2.0|2.1|2.2|2.3'
 def FindJava():
     try:
+        if len(settings.JAVA_DIRECTORY) > 0 and isDirExists(settings.JAVA_DIRECTORY):
+            return settings.JAVA_DIRECTORY
         if platform.system()=="Windows":
             print "\n[INFO] Finding JDK Location in Windows...."
             WIN_JAVA_LIST=["C:/Program Files/Java/","C:/Program Files (x86)/Java/"] #JDK 7 jdk1.7.0_17/bin/
@@ -241,4 +242,19 @@ def sha256(file_path):
             hasher.update(buf)
             buf = afile.read(BLOCKSIZE)
     return (hasher.hexdigest())
+
+def isFileExists(file_path):
+    if os.path.isfile(file_path):
+        return True
+    else:
+        return False
+
+def isDirExists(dir_path):
+    if os.path.isdir(dir_path):
+        return True
+    else:
+        return False
+
+def genRandom():
+    return ''.join([random.SystemRandom().choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
 
