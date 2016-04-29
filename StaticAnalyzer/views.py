@@ -1657,7 +1657,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
         
         #Security Code Review Description
         dg={'d_sensitive' : "Files may contain hardcoded sensitive informations like usernames, passwords, keys etc.",
-            'd_ssl': 'Insecure Implementation of SSL. Trusting all the certificates or accepting self signed certificates is a critical Security Hole.',
+            'd_ssl': 'Insecure Implementation of SSL. Trusting all the certificates or accepting self signed certificates is a critical Security Hole. This application is vulnerable to MITM attacks',
             'd_sqlite': 'App uses SQLite Database and execute raw SQL query. Untrusted user input in raw SQL queries can cause SQL Injection. Also sensitive information should be encrypted and written to the database.',
             'd_con_world_readable':'The file is World Readable. Any App can read from the file',
             'd_con_world_writable':'The file is World Writable. Any App can write to the file',
@@ -1666,7 +1666,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
             'd_extstorage': 'App can read/write to External Storage. Any App can read data written to External Storage.',
             'd_tmpfile': 'App creates temp file. Sensitive information should never be written into a temp file.',
             'd_jsenabled':'Insecure WebView Implementation. Execution of user controlled code in WebView is a critical Security Hole.',
-            'd_webviewdisablessl':'Insecure WebView Implementation. WebView ignores SSL Certificate Errors.',
+            'd_webviewdisablessl':'Insecure WebView Implementation. WebView ignores SSL Certificate errors and accept any SSL Certificate. This application is vulnerable to MITM attacks',
             'd_webviewdebug':'Remote WebView debugging is enabled.',
             'dex_debug': 'DexGuard Debug Detection code to detect wheather an App is debuggable or not is identified.',
             'dex_debug_con':'DexGuard Debugger Detection code is identified.',
@@ -2253,7 +2253,7 @@ def iOS_Source_Analysis(SRC,MD5):
         #Code Analysis
         EmailnFile=''
         URLnFile=''
-        c = {key: [] for key in ('i_buf','webv','i_log','net','i_sqlite','fileio')}
+        c = {key: [] for key in ('i_buf','webv','i_log','net','i_sqlite','fileio','ssl_bypass','ssl_uiwebview','path_traversal')}
         for dirName, subDir, files in os.walk(SRC):
             for jfile in files:
                 if jfile.endswith(".m"):
@@ -2278,13 +2278,20 @@ def iOS_Source_Analysis(SRC,MD5):
                         c['fileio'].append(jfile_path.replace(SRC,''))
                     if (re.findall("WebView|UIWebView",dat)):
                         c['webv'].append(jfile_path.replace(SRC,''))
-                    #CODE-ISSUES
+                    
+                    #SECURITY ANALYSIS
                     if (re.findall("strcpy|memcpy|strcat|strncat|strncpy|sprintf|vsprintf|gets",dat)):
                         c['i_buf'].append(jfile_path.replace(SRC,''))
                     if (re.findall("NSLog",dat)):
                         c['i_log'].append(jfile_path.replace(SRC,''))
                     if (re.findall("sqlite3_exec",dat)):
                         c['i_sqlite'].append(jfile_path.replace(SRC,''))
+                    if re.findall('canAuthenticateAgainstProtectionSpace|continueWithoutCredentialForAuthenticationChallenge|kCFStreamSSLAllowsExpiredCertificates|kCFStreamSSLAllowsAnyRoot|kCFStreamSSLAllowsExpiredRoots|allowInvalidCertificates\s*=\s*(YES|yes)',dat):
+                        c['ssl_bypass'].append(jfile_path.replace(SRC,''))
+                    if re.findall('setAllowsAnyHTTPSCertificate:YES|allowsAnyHTTPSCertificateForHost|loadingUnvalidatedHTTPSPage\s*=\s*(YES|yes)',dat):
+                        c['ssl_uiwebview'].append(jfile_path.replace(SRC,''))
+                    if "NSTemporaryDirectory()," in dat:
+                        c['path_traversal'].append(jfile_path.replace(SRC,''))
         
                     fl=jfile_path.replace(SRC,'')
                     base_fl=ntpath.basename(fl)
@@ -2328,19 +2335,24 @@ def iOS_Source_Analysis(SRC,MD5):
         dg={'i_buf' : 'The App may contain banned API(s). These API(s) are insecure and must not be used.',
             'i_log' : 'The App logs information. Sensitive information should never be logged.',
             'i_sqlite' : 'App uses SQLite Database. Sensitive Information should be encrypted.',
+            'ssl_bypass' : 'App allows self signed or invalid SSL certificates. App is vulnerable to MITM attacks.',
+            'ssl_uiwebview' : 'UIWebView in App ignore SSL errors and accept any SSL Certificate. App is vulnerable to MITM attacks.',
+            'path_traversal' : 'Untrusted user input to "NSTemporaryDirectory()"" will result in path traversal vulnerability.',
             }
         dang=''
         spn_dang='<span class="label label-danger">high</span>'
         spn_info='<span class="label label-info">info</span>'
         spn_sec='<span class="label label-success">secure</span>'
+        spn_warn='<span class="label label-warning">warning</span>'
         for k in dg:
             if c[k]:
                 link=''
                 if (re.findall('i_sqlite',k)):
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_info+'</td><td>'
+                elif (re.findall('path_traversal',k)):
+                    hd='<tr><td>'+dg[k]+'</td><td>'+spn_warn+'</td><td>'
                 else:
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_dang+'</td><td>'
-
                 for ll in c[k]:
                     link+="<a href='../ViewFile/?file="+ escape(ll) +"&type=m&mode=ios&md5="+MD5+"'>"+escape(ntpath.basename(ll))+"</a> "
 
