@@ -2187,9 +2187,7 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
         x=list(set(x))
         x=', '.join(x)
         if len(x)>1:
-            DBG="<tr><td>Binary calls <strong>ptrace</strong> Function for anti-debugging.</td><td><span class='label label-success'>Secure</span></td><td>The binary may use <strong>ptrace</strong> function. It is used to detect and prevent debuggers.</td></tr>"
-        else:
-            DBG="<tr><td>Binary does not call <strong>ptrace</strong> Function for anti-debugging.</td><td><span class='label label-warning'>Warning</span></td><td>The binary does not use <strong>ptrace</strong> function. It is used to detect and prevent debuggers.</td></tr>"
+            DBG="<tr><td>Binary calls <strong>ptrace</strong> Function for anti-debugging.</td><td><span class='label label-warning'>warning</span></td><td>The binary may use <strong>ptrace</strong> function. It can be used to detect and prevent debuggers. Ptrace is not a public API and Apps that use non-public APIs will be rejected from AppStore. </td></tr>"
         CDUMP=''
         WVIEW=''
         try:

@@ -1,11 +1,12 @@
 import os,platform,random,subprocess,re,sys,linecache,time,datetime,ntpath,hashlib,urllib2,io,ast,unicodedata
 import settings
 
-def printMobSFverison(MOBSF_VER):
+def printMobSFverison(MOBSF_VER, BANNER):
     if platform.system()=="Windows":
         print '\n\nMobile Security Framework '+ MOBSF_VER
     else:
         print '\n\n\033[1m\033[34mMobile Security Framework '+ MOBSF_VER +'\033[0m'
+    print BANNER
 
 def createUserConfig(MobSF_HOME):
     try:

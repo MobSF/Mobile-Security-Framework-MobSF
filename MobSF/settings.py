@@ -18,7 +18,15 @@ import utils
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 MOBSF_VER = "v0.9.2 Beta"
-utils.printMobSFverison(MOBSF_VER)
+BANNER ="""
+  __  __       _    ____  _____          ___   ___   ____  
+ |  \/  | ___ | |__/ ___||  ___| __   __/ _ \ / _ \ |___ \ 
+ | |\/| |/ _ \| '_ \___ \| |_    \ \ / / | | | (_) |  __) |
+ | |  | | (_) | |_) |__) |  _|    \ V /| |_| |\__, | / __/ 
+ |_|  |_|\___/|_.__/____/|_|       \_/  \___(_) /_(_)_____|                                                                                                          
+                                                            
+"""
+utils.printMobSFverison(MOBSF_VER, BANNER)
 #==============================================
 
 #==========MobSF Home Directory=================
