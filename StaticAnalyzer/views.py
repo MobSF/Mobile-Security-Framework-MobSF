@@ -624,9 +624,12 @@ def StaticAnalyzer(request):
                     APP_PATH=APP_DIR+APP_FILE    #APP PATH
                     print "[INFO] Extracting ZIP"
                     FILES = Unzip(APP_PATH,APP_DIR)
-                    CERTZ = GetHardcodedCertKeystore(FILES)
                     #Check if Valid Directory Structure and get ZIP Type
                     pro_type,Valid=ValidAndroidZip(APP_DIR)
+                    if Valid and pro_type=='ios':
+                        print "[INFO] Redirecting to iOS Source Code Analyzer"
+                        return HttpResponseRedirect('/StaticAnalyzer_iOS/?name='+APP_NAME+'&type=ios&checksum='+MD5)
+                    CERTZ = GetHardcodedCertKeystore(FILES)
                     print "[INFO] ZIP Type - " + pro_type
                     if Valid and (pro_type=='eclipse' or pro_type=='studio'):
                         #ANALYSIS BEGINS
@@ -788,9 +791,6 @@ def StaticAnalyzer(request):
                         'e_bro': EXPORTED_CNT["bro"],
                         'e_cnt': EXPORTED_CNT["cnt"],                        
                         }
-                    elif Valid and pro_type=='ios':
-                        print "[INFO] Redirecting to iOS Source Code Analyzer"
-                        return HttpResponseRedirect('/StaticAnalyzer_iOS/?name='+APP_NAME+'&type=ios&checksum='+MD5)
                     else:
                         return HttpResponseRedirect('/ZIP_FORMAT/')
                 template="static_analysis_android_zip.html"

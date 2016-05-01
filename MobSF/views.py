@@ -23,7 +23,7 @@ def PushtoRecent(NAME,MD5,URL):
         PrintException("[ERROR] Adding Scan URL to Database")
 
 def index(request):
-    context = {}
+    context = {'version': settings.MOBSF_VER}
     template="index.html"
     return render(request,template,context)
 
