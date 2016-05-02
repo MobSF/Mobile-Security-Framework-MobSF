@@ -1232,10 +1232,29 @@ def ManifestAnalysis(mfxml,mainact):
         intents = mfxml.getElementsByTagName("intent-filter")
         actions = mfxml.getElementsByTagName("action")
         granturipermissions = mfxml.getElementsByTagName("grant-uri-permission")
+        permissions = mfxml.getElementsByTagName("permission")
         for node in manifest:
             package = node.getAttribute("package")
         RET=''
         EXPORTED=[]
+        PERMISSION_DICT = dict()
+        ##PERMISSION
+        for permission in permissions:
+            if permission.getAttribute("android:protectionLevel"):
+                protectionlevel = permission.getAttribute("android:protectionLevel")
+                if protectionlevel == "0x00000000":
+                    protectionlevel = "normal"
+                elif protectionlevel == "0x00000001":
+                    protectionlevel = "dangerous"
+                elif protectionlevel == "0x00000002":
+                    protectionlevel = "signature"
+                elif protectionlevel == "0x00000003":
+                    protectionlevel = "signatureOrSystem"
+
+                PERMISSION_DICT[permission.getAttribute("android:name")] = protectionlevel
+            elif permission.getAttribute("android:name"):
+                PERMISSION_DICT[permission.getAttribute("android:name")] = "normal"
+
         ##APPLICATIONS
         for application in applications:
 
@@ -1289,11 +1308,14 @@ def ManifestAnalysis(mfxml,mainact):
                         item=node.getAttribute("android:name")
                         if node.getAttribute("android:permission"):
                             #permission exists
-                            perm = '<strong>PERMISSION: </strong>'+node.getAttribute("android:permission")
+                            perm = '<strong>Permission: </strong>'+node.getAttribute("android:permission")
                             isPermExist = True
                         if item!=mainact:
                             if isPermExist:
-                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected.</br>'+perm+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by permission.</td></tr>'
+                                prot = ""
+                                if node.getAttribute("android:permission") in PERMISSION_DICT:
+                                    prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[node.getAttribute("android:permission")]
+                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by permission.</td></tr>'
                             else:
                                 if (itmname =='Activity' or itmname=='Activity-Alias'):
                                     EXPORTED.append(item)
@@ -1311,11 +1333,14 @@ def ManifestAnalysis(mfxml,mainact):
                             item=node.getAttribute("android:name")
                             if node.getAttribute("android:permission"):
                                 #permission exists
-                                perm = '<strong>PERMISSION: </strong>'+node.getAttribute("android:permission")  
+                                perm = '<strong>Permission: </strong>'+node.getAttribute("android:permission")  
                                 isPermExist = True
                             if item!=mainact:
                                 if isPermExist:
-                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected.</br>'+perm+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by permission.</td></tr>'
+                                    prot = ""
+                                    if node.getAttribute("android:permission") in PERMISSION_DICT:
+                                        prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[node.getAttribute("android:permission")] 
+                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by permission.</td></tr>'
                                 else:
                                     if (itmname =='Activity' or itmname=='Activity-Alias'):
                                         EXPORTED.append(item)
