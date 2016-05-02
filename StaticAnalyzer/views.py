@@ -8,13 +8,13 @@ from django.utils.html import escape
 from django.template.defaulttags import register
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid,StaticAnalyzerIPA,StaticAnalyzerIOSZIP
-from MobSF.exception_printer import PrintException
+from MobSF.utils import PrintException,python_list,python_dict,isDirExists,isFileExists
 from MalwareAnalyzer.views import MalwareCheck
 
 from xml.dom import minidom
 from .dvm_permissions import DVM_PERMISSIONS
 import sqlite3 as sq
-import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,ast,sys,plistlib
+import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,sys,plistlib
 
 try:
     import xhtml2pdf.pisa as pisa
@@ -322,19 +322,6 @@ def ManifestView(request):
         PrintException("[ERROR] Viewing AndroidManifest.xml")
         return HttpResponseRedirect('/error/')
 
-def python_list(value):
-    if not value:
-        value = []
-    if isinstance(value, list):
-        return value
-    return ast.literal_eval(value)
-def python_dict(value):
-    if not value:
-        value = {}
-    if isinstance(value, dict):
-        return value
-    return ast.literal_eval(value)
-
 def StaticAnalyzer(request):
     try:
         #Input validation
@@ -346,6 +333,7 @@ def StaticAnalyzer(request):
             MD5=request.GET['checksum']  #MD5
             APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
             TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
+            DWD_DIR = settings.DWD_DIR
             print "[INFO] Starting Analysis on : "+APP_NAME
             RESCAN= str(request.GET.get('rescan', 0))
             if TYP=='apk':
@@ -636,9 +624,12 @@ def StaticAnalyzer(request):
                     APP_PATH=APP_DIR+APP_FILE    #APP PATH
                     print "[INFO] Extracting ZIP"
                     FILES = Unzip(APP_PATH,APP_DIR)
-                    CERTZ = GetHardcodedCertKeystore(FILES)
                     #Check if Valid Directory Structure and get ZIP Type
                     pro_type,Valid=ValidAndroidZip(APP_DIR)
+                    if Valid and pro_type=='ios':
+                        print "[INFO] Redirecting to iOS Source Code Analyzer"
+                        return HttpResponseRedirect('/StaticAnalyzer_iOS/?name='+APP_NAME+'&type=ios&checksum='+MD5)
+                    CERTZ = GetHardcodedCertKeystore(FILES)
                     print "[INFO] ZIP Type - " + pro_type
                     if Valid and (pro_type=='eclipse' or pro_type=='studio'):
                         #ANALYSIS BEGINS
@@ -800,9 +791,6 @@ def StaticAnalyzer(request):
                         'e_bro': EXPORTED_CNT["bro"],
                         'e_cnt': EXPORTED_CNT["cnt"],                        
                         }
-                    elif Valid and pro_type=='ios':
-                        print "[INFO] Redirecting to iOS Source Code Analyzer"
-                        return HttpResponseRedirect('/StaticAnalyzer_iOS/?name='+APP_NAME+'&type=ios&checksum='+MD5)
                     else:
                         return HttpResponseRedirect('/ZIP_FORMAT/')
                 template="static_analysis_android_zip.html"
@@ -849,7 +837,10 @@ def ReadManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
             print "[INFO] Getting Manifest from Binary"
             print "[INFO] AXML -> XML"
             manifest=os.path.join(APP_DIR,"AndroidManifest.xml")
-            CP_PATH=TOOLS_DIR + 'AXMLPrinter2.jar'
+            if len(settings.AXMLPRINTER_BINARY) > 0 and isFileExists(settings.AXMLPRINTER_BINARY):
+                CP_PATH = settings.AXMLPRINTER_BINARY
+            else:
+                CP_PATH = os.path.join(TOOLS_DIR,'AXMLPrinter2.jar')
             args=[settings.JAVA_PATH+'java','-jar', CP_PATH, manifest]
             dat=subprocess.check_output(args)
         else:
@@ -1061,10 +1052,15 @@ def Dex2Jar(APP_PATH,APP_DIR,TOOLS_DIR):
                 D2J=os.path.join(TOOLS_DIR,'d2j2/d2j-dex2jar.sh')
                 subprocess.call(["chmod", "777", D2J])
                 subprocess.call(["chmod", "777", INV])
+            if len(settings.DEX2JAR_BINARY) > 0 and isFileExists(settings.DEX2JAR_BINARY):
+                D2J = settings.DEX2JAR_BINARY
             args=[D2J,APP_DIR+'classes.dex','-f','-o',APP_DIR +'classes.jar']
         elif settings.JAR_CONVERTER == "enjarify":
             print "[INFO] Using JAR converter - Google enjarify"
-            WD=os.path.join(TOOLS_DIR,'enjarify/')
+            if len(settings.ENJARIFY_DIRECTORY) > 0 and isDirExists(settings.ENJARIFY_DIRECTORY):
+                WD = settings.ENJARIFY_DIRECTORY
+            else:
+                WD = os.path.join(TOOLS_DIR,'enjarify/')
             if platform.system()=="Windows":
                 WinFixPython3(TOOLS_DIR)
                 EJ=os.path.join(WD,'enjarify.bat')
@@ -1087,9 +1083,12 @@ def Dex2Smali(APP_DIR,TOOLS_DIR):
     try:
         print "[INFO] DEX -> SMALI"
         DEX_PATH=APP_DIR+'classes.dex'
-        BS_PATH=TOOLS_DIR+ 'baksmali.jar'
-        OUTPUT=os.path.join(APP_DIR,'smali_source/')
-        args=[settings.JAVA_PATH+'java','-jar',BS_PATH,DEX_PATH,'-o',OUTPUT]
+        if len(settings.BACKSMALI_BINARY) > 0 and isFileExists(settings.BACKSMALI_BINARY):
+            BS_PATH = settings.BACKSMALI_BINARY
+        else:
+            BS_PATH = os.path.join(TOOLS_DIR,'baksmali.jar')
+        OUTPUT = os.path.join(APP_DIR,'smali_source/')
+        args = [settings.JAVA_PATH+'java','-jar',BS_PATH,DEX_PATH,'-o',OUTPUT]
         subprocess.call(args)
     except:
         PrintException("[ERROR] Converting DEX to SMALI")
@@ -1100,11 +1099,23 @@ def Jar2Java(APP_DIR,TOOLS_DIR):
         JAR_PATH=APP_DIR + 'classes.jar'
         OUTPUT=os.path.join(APP_DIR, 'java_source/')
         if settings.DECOMPILER=='jd-core':
-            JD_PATH=TOOLS_DIR + 'jd-core.jar'
+            if len(settings.JD_CORE_DECOMPILER_BINARY) > 0 and isFileExists(settings.JD_CORE_DECOMPILER_BINARY):
+                JD_PATH = settings.JD_CORE_DECOMPILER_BINARY
+            else:
+                JD_PATH = os.path.join(TOOLS_DIR, 'jd-core.jar')
             args=[settings.JAVA_PATH+'java','-jar', JD_PATH, JAR_PATH,OUTPUT]
         elif settings.DECOMPILER=='cfr':
-            JD_PATH=TOOLS_DIR + 'cfr_0_115.jar'
+            if len(settings.CFR_DECOMPILER_BINARY) > 0 and isFileExists(settings.CFR_DECOMPILER_BINARY):
+                JD_PATH = settings.CFR_DECOMPILER_BINARY
+            else:
+                JD_PATH = os.path.join(TOOLS_DIR, 'cfr_0_115.jar')
             args=[settings.JAVA_PATH+'java','-jar', JD_PATH,JAR_PATH,'--outputdir',OUTPUT]
+        elif settings.DECOMPILER=="procyon":
+            if len(settings.PROCYON_DECOMPILER_BINARY) > 0 and isFileExists(settings.PROCYON_DECOMPILER_BINARY):
+                PD_PATH = settings.PROCYON_DECOMPILER_BINARY
+            else:
+                PD_PATH = os.path.join(TOOLS_DIR, 'procyon-decompiler-0.5.30.jar')
+            args=[settings.JAVA_PATH+'java','-jar',PD_PATH,JAR_PATH,'-o',OUTPUT]
         subprocess.call(args)
     except:
         PrintException("[ERROR] Converting JAR to JAVA")
@@ -1221,10 +1232,29 @@ def ManifestAnalysis(mfxml,mainact):
         intents = mfxml.getElementsByTagName("intent-filter")
         actions = mfxml.getElementsByTagName("action")
         granturipermissions = mfxml.getElementsByTagName("grant-uri-permission")
+        permissions = mfxml.getElementsByTagName("permission")
         for node in manifest:
             package = node.getAttribute("package")
         RET=''
         EXPORTED=[]
+        PERMISSION_DICT = dict()
+        ##PERMISSION
+        for permission in permissions:
+            if permission.getAttribute("android:protectionLevel"):
+                protectionlevel = permission.getAttribute("android:protectionLevel")
+                if protectionlevel == "0x00000000":
+                    protectionlevel = "normal"
+                elif protectionlevel == "0x00000001":
+                    protectionlevel = "dangerous"
+                elif protectionlevel == "0x00000002":
+                    protectionlevel = "signature"
+                elif protectionlevel == "0x00000003":
+                    protectionlevel = "signatureOrSystem"
+
+                PERMISSION_DICT[permission.getAttribute("android:name")] = protectionlevel
+            elif permission.getAttribute("android:name"):
+                PERMISSION_DICT[permission.getAttribute("android:name")] = "normal"
+
         ##APPLICATIONS
         for application in applications:
 
@@ -1278,11 +1308,14 @@ def ManifestAnalysis(mfxml,mainact):
                         item=node.getAttribute("android:name")
                         if node.getAttribute("android:permission"):
                             #permission exists
-                            perm = '<strong>PERMISSION: </strong>'+node.getAttribute("android:permission")
+                            perm = '<strong>Permission: </strong>'+node.getAttribute("android:permission")
                             isPermExist = True
                         if item!=mainact:
                             if isPermExist:
-                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected.</br>'+perm+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by permission.</td></tr>'
+                                prot = ""
+                                if node.getAttribute("android:permission") in PERMISSION_DICT:
+                                    prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[node.getAttribute("android:permission")]
+                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by permission.</td></tr>'
                             else:
                                 if (itmname =='Activity' or itmname=='Activity-Alias'):
                                     EXPORTED.append(item)
@@ -1300,11 +1333,14 @@ def ManifestAnalysis(mfxml,mainact):
                             item=node.getAttribute("android:name")
                             if node.getAttribute("android:permission"):
                                 #permission exists
-                                perm = '<strong>PERMISSION: </strong>'+node.getAttribute("android:permission")  
+                                perm = '<strong>Permission: </strong>'+node.getAttribute("android:permission")  
                                 isPermExist = True
                             if item!=mainact:
                                 if isPermExist:
-                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected.</br>'+perm+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by permission.</td></tr>'
+                                    prot = ""
+                                    if node.getAttribute("android:permission") in PERMISSION_DICT:
+                                        prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[node.getAttribute("android:permission")] 
+                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by permission.</td></tr>'
                                 else:
                                     if (itmname =='Activity' or itmname=='Activity-Alias'):
                                         EXPORTED.append(item)
@@ -1646,7 +1682,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
         
         #Security Code Review Description
         dg={'d_sensitive' : "Files may contain hardcoded sensitive informations like usernames, passwords, keys etc.",
-            'd_ssl': 'Insecure Implementation of SSL. Trusting all the certificates or accepting self signed certificates is a critical Security Hole.',
+            'd_ssl': 'Insecure Implementation of SSL. Trusting all the certificates or accepting self signed certificates is a critical Security Hole. This application is vulnerable to MITM attacks',
             'd_sqlite': 'App uses SQLite Database and execute raw SQL query. Untrusted user input in raw SQL queries can cause SQL Injection. Also sensitive information should be encrypted and written to the database.',
             'd_con_world_readable':'The file is World Readable. Any App can read from the file',
             'd_con_world_writable':'The file is World Writable. Any App can write to the file',
@@ -1655,7 +1691,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
             'd_extstorage': 'App can read/write to External Storage. Any App can read data written to External Storage.',
             'd_tmpfile': 'App creates temp file. Sensitive information should never be written into a temp file.',
             'd_jsenabled':'Insecure WebView Implementation. Execution of user controlled code in WebView is a critical Security Hole.',
-            'd_webviewdisablessl':'Insecure WebView Implementation. WebView ignores SSL Certificate Errors.',
+            'd_webviewdisablessl':'Insecure WebView Implementation. WebView ignores SSL Certificate errors and accept any SSL Certificate. This application is vulnerable to MITM attacks',
             'd_webviewdebug':'Remote WebView debugging is enabled.',
             'dex_debug': 'DexGuard Debug Detection code to detect wheather an App is debuggable or not is identified.',
             'dex_debug_con':'DexGuard Debugger Detection code is identified.',
@@ -2095,19 +2131,23 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
         print "[INFO] Running otool against the Binary"
         #Libs Used
         LIBS=''
-        args=['otool','-L',BIN_PATH]
+        if len(settings.OTOOL_BINARY) > 0 and isFileExists(OTOOL_BINARY):
+            OTOOL = settings.OTOOL_BINARY
+        else:
+            OTOOL = "otool"
+        args=[OTOOL,'-L',BIN_PATH]
         dat=subprocess.check_output(args)
         dat=escape(dat.replace(BIN_DIR + "/",""))
         LIBS=dat.replace("\n","</br>")
         #PIE
-        args=['otool','-hv',BIN_PATH]
+        args=[OTOOL,'-hv',BIN_PATH]
         dat=subprocess.check_output(args)
         if "PIE" in dat:
             PIE= "<tr><td><strong>fPIE -pie</strong> flag is Found</td><td><span class='label label-success'>Secure</span></td><td>App is compiled with Position Independent Executable (PIE) flag. This enables Address Space Layout Randomization (ASLR), a memory protection mechanism for exploit mitigation.</td></tr>"
         else:
             PIE="<tr><td><strong>fPIE -pie</strong> flag is not Found</td><td><span class='label label-danger'>Insecure</span></td><td>App is not compiled with Position Independent Executable (PIE) flag. So Address Space Layout Randomization (ASLR) is missing. ASLR is a memory protection mechanism for exploit mitigation.</td></tr>"
         #Stack Smashing Protection & ARC
-        args=['otool','-Iv',BIN_PATH]
+        args=[OTOOL,'-Iv',BIN_PATH]
         dat=subprocess.check_output(args)
         if "stack_chk_guard" in dat:
             SSMASH="<tr><td><strong>fstack-protector-all</strong> flag is Found</td><td><span class='label label-success'>Secure</span></td><td>App is compiled with Stack Smashing Protector (SSP) flag and is having protection against Stack Overflows/Stack Smashing Attacks.</td></tr>"
@@ -2172,14 +2212,15 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
         x=list(set(x))
         x=', '.join(x)
         if len(x)>1:
-            DBG="<tr><td>Binary calls <strong>ptrace</strong> Function for anti-debugging.</td><td><span class='label label-success'>Secure</span></td><td>The binary may use <strong>ptrace</strong> function. It is used to detect and prevent debuggers.</td></tr>"
-        else:
-            DBG="<tr><td>Binary does not call <strong>ptrace</strong> Function for anti-debugging.</td><td><span class='label label-warning'>Warning</span></td><td>The binary does not use <strong>ptrace</strong> function. It is used to detect and prevent debuggers.</td></tr>"
+            DBG="<tr><td>Binary calls <strong>ptrace</strong> Function for anti-debugging.</td><td><span class='label label-warning'>warning</span></td><td>The binary may use <strong>ptrace</strong> function. It can be used to detect and prevent debuggers. Ptrace is not a public API and Apps that use non-public APIs will be rejected from AppStore. </td></tr>"
         CDUMP=''
         WVIEW=''
         try:
             print "[INFO] Running class-dump-z against the Binary"
-            CLASSDUMPZ_BIN=os.path.join(TOOLS_DIR,'class-dump-z')
+            if len(settings.CLASSDUMPZ_BINARY) > 0 and isFileExists(settings.CLASSDUMPZ_BINARY):
+                CLASSDUMPZ_BIN = settings.CLASSDUMPZ_BINARY
+            else:
+                CLASSDUMPZ_BIN = os.path.join(TOOLS_DIR,'class-dump-z')
             subprocess.call(["chmod", "777", CLASSDUMPZ_BIN])
             dat=subprocess.check_output([CLASSDUMPZ_BIN,BIN_PATH])
             CDUMP=dat
@@ -2237,7 +2278,7 @@ def iOS_Source_Analysis(SRC,MD5):
         #Code Analysis
         EmailnFile=''
         URLnFile=''
-        c = {key: [] for key in ('i_buf','webv','i_log','net','i_sqlite','fileio')}
+        c = {key: [] for key in ('i_buf','webv','i_log','net','i_sqlite','fileio','ssl_bypass','ssl_uiwebview','path_traversal')}
         for dirName, subDir, files in os.walk(SRC):
             for jfile in files:
                 if jfile.endswith(".m"):
@@ -2262,13 +2303,20 @@ def iOS_Source_Analysis(SRC,MD5):
                         c['fileio'].append(jfile_path.replace(SRC,''))
                     if (re.findall("WebView|UIWebView",dat)):
                         c['webv'].append(jfile_path.replace(SRC,''))
-                    #CODE-ISSUES
+                    
+                    #SECURITY ANALYSIS
                     if (re.findall("strcpy|memcpy|strcat|strncat|strncpy|sprintf|vsprintf|gets",dat)):
                         c['i_buf'].append(jfile_path.replace(SRC,''))
                     if (re.findall("NSLog",dat)):
                         c['i_log'].append(jfile_path.replace(SRC,''))
                     if (re.findall("sqlite3_exec",dat)):
                         c['i_sqlite'].append(jfile_path.replace(SRC,''))
+                    if re.findall('canAuthenticateAgainstProtectionSpace|continueWithoutCredentialForAuthenticationChallenge|kCFStreamSSLAllowsExpiredCertificates|kCFStreamSSLAllowsAnyRoot|kCFStreamSSLAllowsExpiredRoots|allowInvalidCertificates\s*=\s*(YES|yes)',dat):
+                        c['ssl_bypass'].append(jfile_path.replace(SRC,''))
+                    if re.findall('setAllowsAnyHTTPSCertificate:YES|allowsAnyHTTPSCertificateForHost|loadingUnvalidatedHTTPSPage\s*=\s*(YES|yes)',dat):
+                        c['ssl_uiwebview'].append(jfile_path.replace(SRC,''))
+                    if "NSTemporaryDirectory()," in dat:
+                        c['path_traversal'].append(jfile_path.replace(SRC,''))
         
                     fl=jfile_path.replace(SRC,'')
                     base_fl=ntpath.basename(fl)
@@ -2312,19 +2360,24 @@ def iOS_Source_Analysis(SRC,MD5):
         dg={'i_buf' : 'The App may contain banned API(s). These API(s) are insecure and must not be used.',
             'i_log' : 'The App logs information. Sensitive information should never be logged.',
             'i_sqlite' : 'App uses SQLite Database. Sensitive Information should be encrypted.',
+            'ssl_bypass' : 'App allows self signed or invalid SSL certificates. App is vulnerable to MITM attacks.',
+            'ssl_uiwebview' : 'UIWebView in App ignore SSL errors and accept any SSL Certificate. App is vulnerable to MITM attacks.',
+            'path_traversal' : 'Untrusted user input to "NSTemporaryDirectory()"" will result in path traversal vulnerability.',
             }
         dang=''
         spn_dang='<span class="label label-danger">high</span>'
         spn_info='<span class="label label-info">info</span>'
         spn_sec='<span class="label label-success">secure</span>'
+        spn_warn='<span class="label label-warning">warning</span>'
         for k in dg:
             if c[k]:
                 link=''
                 if (re.findall('i_sqlite',k)):
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_info+'</td><td>'
+                elif (re.findall('path_traversal',k)):
+                    hd='<tr><td>'+dg[k]+'</td><td>'+spn_warn+'</td><td>'
                 else:
                     hd='<tr><td>'+dg[k]+'</td><td>'+spn_dang+'</td><td>'
-
                 for ll in c[k]:
                     link+="<a href='../ViewFile/?file="+ escape(ll) +"&type=m&mode=ios&md5="+MD5+"'>"+escape(ntpath.basename(ll))+"</a> "
 

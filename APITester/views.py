@@ -9,13 +9,14 @@ from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 
 from APITester.models import ScopeURLSandTests
-from MobSF.exception_printer import PrintException
+from MobSF.utils import PrintException, getMD5, is_number, findBetween
+
 
 from random import randint,shuffle,choice
 from urlparse import urlparse
 from cgi import parse_qs
 import tornado.httpclient
-import os,re,json,io,hashlib,datetime,socket,string
+import os,re,json,io,datetime,socket,string
 from lxml import etree
 
 @register.filter
@@ -1100,23 +1101,6 @@ def getIPList(url):
         PrintException("[ERROR] Getting IP(s) from URL")
     return ips
 
-def findBetween(s, first, last):
-    try :
-        start = s.index(first) + len(first)
-        end = s.index(last,start)
-        return s[start:end]
-    except ValueError:
-        return ""
-
-def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
-
-def getMD5(data):
-    return hashlib.md5(data).hexdigest()
 
 #SSRF and XXE
  

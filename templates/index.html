@@ -24,10 +24,11 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-  </head>
+  <script src="/static/js/dropzone.js"></script>
+<link rel="stylesheet" href="/static/css/dropzone.css">
+</head>
 
   <body>
-
     <div class="site-wrapper">
 
       <div class="site-wrapper-inner">
@@ -35,26 +36,21 @@
         <div class="cover-container">
 
           <div class="masthead clearfix">
-            <div class="inner">
-              <h3 class="masthead-brand"><img src="/static/img/logo-head.png" >Mobile Security Framework</h3>
-              <ul class="nav masthead-nav">
-                
-                <li><a href="RecentScans">Recent Scans</a></li>
-                <li><a href="about">About</a></li>
-                <li>
-                <form action="/Search" method="GET">
-               <input name="md5" type="text" class="form-control" placeholder="Search MD5">
-               </form></li>
-              
-              </ul>
+            <div align="center" class="inner">
+              <h3 class="masthead-brand"><img src="/static/img/MobSF_Logo_small.png" width="45%" height="45%"></h3>
 
-			 
-     
             </div>
+           
           </div>
 
 
 <style>
+
+#dropzone { margin-bottom: 3rem; }
+
+.dropzone { border: 2px dashed #0087F7; border-radius: 5px; background: #F5F5F5; }
+.dropzone .dz-message { font-weight: 400; color: rgba(0, 0, 0, 0.6); font-size: 20px; font-style: italic;}
+.dropzone .dz-message .note { font-size: 0.8em; font-weight: 200; display: block; margin-top: 1.4rem; }
 
 
 progress {
@@ -93,26 +89,45 @@ progress::-webkit-progress-value {
   100% {background-position: -100px 0px, 0 0, 0 0}
 }
 
-
 </style>
+
+  <div class="inner cover">
+
+
+      <form id="upload-widget" method="POST" action="/Upload/" class="dropzone">
+      {% csrf_token %}
+      </form>
+
+
 <div class="inner cover">
+
+
+</div>
+</br>
+
  <form id="upload_form" enctype="multipart/form-data" method="post">
   {% csrf_token %}
   <div class="fileUpload btn btn-default btn-lg" id="but">
   <input type="file" name="file" id="uploadFile" placeholder="Choose File">
   <span class="glyphicon glyphicon-cloud-upload"></span>
    Upload &amp; Analyze
-  </div></br>
-  <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
-
+  </div>
   <h4 id="status"></h4>
+  <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
+  
 </form>
 </div>
 
 
           <div class="mastfoot">
+
+                <form action="/Search" method="GET">
+                <input name="md5" type="text" class="form-control" placeholder="Search MD5">
+                </form>
+
             <div class="inner">
-             <p>&copy; Mobile Security Framework {% now "Y" %} . All Rights Reserved</p>
+              <h5><strong><a href="RecentScans">Recent Scans</a> | <a href="about">About</a></strong></h5></br>
+             <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}. All Rights Reserved</p>
             </div>
           </div>
         </div>
@@ -123,6 +138,52 @@ progress::-webkit-progress-value {
 function _(el){
   return document.getElementById(el);
 }
+function responseHandler (json, isbutton) {
+
+  if (json.status==='error')
+  {
+    _("status").innerHTML = json.description;
+  }
+  else if (json.status==='success')
+  {
+
+    i=1;
+    setInterval(function () {
+      dot='';
+      for (x=1;x<=i;x++)
+       {
+        dot+='.';
+       }
+       _("status").innerHTML = "Analyzing" +dot;
+       i+=1;
+       if(i==5)
+       {
+        i=1;
+       }
+    }, 2000);
+   
+    window.location.href=window.location.href+json.url;
+  }
+}
+
+
+ Dropzone.options.uploadWidget = {
+  paramName: 'file',
+  createImageThumbnails: false,
+  maxFilesize: 50, // MB
+  maxFiles: 8,
+  dictDefaultMessage: 'Drag files here or click Upload & Analyze',
+  acceptedFiles: '.apk,.ipa,.zip',
+
+  init: function() {
+    this.on('success', function( file, resp ){
+      //console.log( file );
+      console.log( resp );
+      responseHandler (resp);
+    });
+  },
+  
+};
 
 
 $(document).ready(function () 
@@ -181,31 +242,7 @@ function completeHandler(event)
 {
   
   var json= JSON.parse(event.target.responseText);
-  if (json.status==='error')
-  {
-    _("status").innerHTML = json.description;
-  }
-  else if (json.status==='success')
-  {
-
-    i=1;
-    setInterval(function () {
-      dot='';
-      for (x=1;x<=i;x++)
-       {
-        dot+='.';
-       }
-       _("status").innerHTML = "Analyzing" +dot;
-       i+=1;
-       if(i==5)
-       {
-        i=1;
-       }
-    }, 2000);
-   
-    window.location.href=window.location.href+json.url;
-    _("progressBar").value = 100;
-  }
+  responseHandler(json);
 }
 function errorHandler(event){
   _("status").innerHTML = "Upload Failed!";

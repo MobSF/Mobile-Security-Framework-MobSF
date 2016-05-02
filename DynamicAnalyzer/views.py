@@ -7,11 +7,11 @@ from django.utils.html import escape
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from pyWebProxy.pywebproxy import *
-from MobSF.exception_printer import PrintException
+from MobSF.utils import PrintException,is_number,python_list,isBase64,isFileExists
 from MalwareAnalyzer.views import MalwareCheck
 
 import subprocess,os,re,shutil,tarfile,ntpath,platform,io,signal
-import json,random,time,ast,sys,psutil,unicodedata,socket,threading,base64
+import json,random,time,sys,psutil,unicodedata,socket,threading,base64
 import sqlite3 as sq
 #===================================
 #Dynamic Analyzer Calls begins here!
@@ -41,7 +41,7 @@ def DynamicAnalyzer(request):
             m=re.match('[0-9a-f]{32}',MD5)
             if m:
                 # Delete ScreenCast Cache
-                SCREEN_FILE=os.path.join(settings.STATIC_DIR, 'screen/screen.png')
+                SCREEN_FILE=os.path.join(settings.SCREEN_DIR, 'screen.png')
                 if os.path.exists(SCREEN_FILE):
                     os.remove(SCREEN_FILE)
                 # Delete Contents of Screenshot Dir
@@ -582,18 +582,21 @@ def WebProxy(APKDIR,ip,port):
 def getADB(TOOLSDIR):
     print "\n[INFO] Getting ADB Location"
     try:
-        adb='adb'
-        if platform.system()=="Darwin":
-            adb_dir=os.path.join(TOOLSDIR, 'adb/mac/')
-            subprocess.call(["chmod", "777", adb_dir])
-            adb=os.path.join(TOOLSDIR , 'adb/mac/adb')
-        elif platform.system()=="Linux":
-            adb_dir=os.path.join(TOOLSDIR, 'adb/linux/')
-            subprocess.call(["chmod", "777", adb_dir])
-            adb=os.path.join(TOOLSDIR , 'adb/linux/adb')
-        elif platform.system()=="Windows":
-            adb=os.path.join(TOOLSDIR , 'adb/windows/adb.exe')
-        return adb
+        if len(settings.ADB_BINARY) > 0 and isFileExists(settings.ADB_BINARY):
+            return settings.ADB_BINARY
+        else:
+            adb='adb'
+            if platform.system()=="Darwin":
+                adb_dir=os.path.join(TOOLSDIR, 'adb/mac/')
+                subprocess.call(["chmod", "777", adb_dir])
+                adb=os.path.join(TOOLSDIR , 'adb/mac/adb')
+            elif platform.system()=="Linux":
+                adb_dir=os.path.join(TOOLSDIR, 'adb/linux/')
+                subprocess.call(["chmod", "777", adb_dir])
+                adb=os.path.join(TOOLSDIR , 'adb/linux/adb')
+            elif platform.system()=="Windows":
+                adb=os.path.join(TOOLSDIR , 'adb/windows/adb.exe')
+            return adb
     except:
         PrintException("[ERROR] Getting ADB Location")
         return "adb"
@@ -747,6 +750,7 @@ def APIAnalysis(PKG,LOCATION):
         PrintException("[ERROR] Dynamic API Analysis")
         pass
     return list(set(API_NET)),list(set(API_BASE64)), list(set(API_FILEIO)), list(set(API_BINDER)), list(set(API_CRYPTO)), list(set(API_DEVICEINFO)), list(set(API_CNTVAL)), list(set(API_SMS)), list(set(API_SYSPROP)),list(set(API_DEXLOADER)),list(set(API_RELECT)),list(set(API_ACNTMNGER)),list(set(API_CMD)) 
+
 def Download(MD5,DWDDIR,APKDIR,PKG):
     print "\n[INFO] Generating Downloads"
     try:
@@ -924,7 +928,7 @@ def ScreenCastService():
     global tcp_server_mode
     print "\n[INFO] ScreenCast Service Status: " + tcp_server_mode
     try:
-        SCREEN_DIR=os.path.join(settings.STATIC_DIR, 'screen/')
+        SCREEN_DIR=settings.SCREEN_DIR
         if not os.path.exists(SCREEN_DIR):
             os.makedirs(SCREEN_DIR)
 
@@ -993,26 +997,3 @@ def getIdentifier():
             return settings.VM_IP + ":" + str(settings.VM_ADB_PORT)
     except:
         PrintException("[ERROR] Getting ADB Connection Identifier for Device/VM")
-
-def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        pass
-    try:
-        unicodedata.numeric(s)
-        return True
-    except (TypeError, ValueError):
-        pass
-    return False
-
-def python_list(value):
-    if not value:
-        value = []
-    if isinstance(value, list):
-        return value
-    return ast.literal_eval(value)
-
-def isBase64(str):
-    return re.match('^[A-Za-z0-9+/]+[=]{0,2}$', str)
