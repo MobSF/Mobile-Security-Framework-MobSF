@@ -94,6 +94,8 @@ def doScan(app, server_url):
     return SCAN_DB, SCAN_URLS
 
 def startScan(directory,server_url):
+    SCAN_URLS = []
+    SCAN_DB = {}
     print "\nLooking for Android/iOS binaries or source code in : " + directory
     for root, directories, filenames in os.walk(directory):
         for filename in filenames: 
