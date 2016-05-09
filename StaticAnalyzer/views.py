@@ -2313,7 +2313,7 @@ def iOS_Source_Analysis(SRC,MD5):
                         c['i_sqlite'].append(jfile_path.replace(SRC,''))
                     if re.findall('canAuthenticateAgainstProtectionSpace|continueWithoutCredentialForAuthenticationChallenge|kCFStreamSSLAllowsExpiredCertificates|kCFStreamSSLAllowsAnyRoot|kCFStreamSSLAllowsExpiredRoots|allowInvalidCertificates\s*=\s*(YES|yes)',dat):
                         c['ssl_bypass'].append(jfile_path.replace(SRC,''))
-                    if re.findall('setAllowsAnyHTTPSCertificate:YES|allowsAnyHTTPSCertificateForHost|loadingUnvalidatedHTTPSPage\s*=\s*(YES|yes)',dat):
+                    if re.findall('setAllowsAnyHTTPSCertificate:\s*YES|allowsAnyHTTPSCertificateForHost|loadingUnvalidatedHTTPSPage\s*=\s*(YES|yes)',dat):
                         c['ssl_uiwebview'].append(jfile_path.replace(SRC,''))
                     if "NSTemporaryDirectory()," in dat:
                         c['path_traversal'].append(jfile_path.replace(SRC,''))
