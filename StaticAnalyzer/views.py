@@ -1500,7 +1500,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         c['sqlc_password'].append(jfile_path.replace(JS,''))
                     if ("SQLiteDatabase.loadLibs(" in dat) and ("net.sqlcipher." in dat):
                         c['d_sql_cipher'].append(jfile_path.replace(JS,''))
-                    if (re.findall('Cipher\.getInstance\(\s*".+ECB',dat)):
+                    if (re.findall('Cipher\.getInstance\(\s*"\s*AES\/ECB',dat)):
                         c['ecb'].append(jfile_path.replace(JS,''))
                     if (re.findall('ccipher\.getinstance\(\s*"rsa/.+/nopadding',dat.lower())):
                         c['rsa_no_pad'].append(jfile_path.replace(JS,''))
