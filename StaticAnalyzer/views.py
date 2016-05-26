@@ -34,7 +34,7 @@ def PDF(request):
     try:
         MD5=request.GET['md5']
         TYP=request.GET['type']
-        m=re.match('[0-9a-f]{32}',MD5)
+        m=re.match('^[0-9a-f]{32}$',MD5)
         if m:
             if (TYP=='APK' or TYP=='ANDZIP'):
                 DB=StaticAnalyzerAndroid.objects.filter(MD5=MD5)
@@ -159,7 +159,7 @@ def PDF(request):
         pass
 def Java(request):
     try:
-        m=re.match('[0-9a-f]{32}',request.GET['md5'])
+        m=re.match('^[0-9a-f]{32}$',request.GET['md5'])
         typ=request.GET['type']
         if m:
             MD5=request.GET['md5']
@@ -198,7 +198,7 @@ def Java(request):
         return HttpResponseRedirect('/error/')
 def Smali(request):
     try:
-        m=re.match('[0-9a-f]{32}',request.GET['md5'])
+        m=re.match('^[0-9a-f]{32}$',request.GET['md5'])
         if m:
             MD5=request.GET['md5']
             SRC=os.path.join(settings.UPLD_DIR, MD5+'/smali_source/')
@@ -224,7 +224,7 @@ def Smali(request):
         return HttpResponseRedirect('/error/')
 def Find(request):
     try:
-        m=re.match('[0-9a-f]{32}',request.POST['md5'])
+        m=re.match('^[0-9a-f]{32}$',request.POST['md5'])
         if m:
             MD5=request.POST['md5']
             q=request.POST['q']
@@ -265,7 +265,7 @@ def Find(request):
 def ViewSource(request):
     try:
         fil=''
-        m=re.match('[0-9a-f]{32}',request.GET['md5'])
+        m=re.match('^[0-9a-f]{32}$',request.GET['md5'])
         if m and (request.GET['file'].endswith('.java') or request.GET['file'].endswith('.smali')):
             fil=request.GET['file']
             MD5=request.GET['md5']
@@ -304,7 +304,7 @@ def ManifestView(request):
         MD5=request.GET['md5']  #MD5
         TYP=request.GET['type'] #APK or SOURCE
         BIN=request.GET['bin']
-        m=re.match('[0-9a-f]{32}',MD5)
+        m=re.match('^[0-9a-f]{32}$',MD5)
         if m and (TYP=='eclipse' or TYP=='studio' or TYP=='apk') and (BIN=='1' or BIN=='0'):
             APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
             TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
@@ -326,7 +326,7 @@ def StaticAnalyzer(request):
     try:
         #Input validation
         TYP=request.GET['type']
-        m=re.match('[0-9a-f]{32}',request.GET['checksum'])
+        m=re.match('^[0-9a-f]{32}$',request.GET['checksum'])
         if ((m) and (request.GET['name'].lower().endswith('.apk') or request.GET['name'].lower().endswith('.zip')) and ((TYP=='zip') or (TYP=='apk'))):
             DIR=settings.BASE_DIR        #BASE DIR
             APP_NAME=request.GET['name'] #APP ORGINAL NAME
@@ -1754,7 +1754,7 @@ def StaticAnalyzer_iOS(request):
         print "[INFO] iOS Static Analysis Started"
         TYP=request.GET['type']
         RESCAN= str(request.GET.get('rescan', 0))
-        m=re.match('[0-9a-f]{32}',request.GET['checksum'])
+        m=re.match('^[0-9a-f]{32}$',request.GET['checksum'])
         if ((m) and (request.GET['name'].lower().endswith('.ipa') or request.GET['name'].lower().endswith('.zip')) and ((TYP=='ipa') or (TYP=='ios'))):
             DIR=settings.BASE_DIR        #BASE DIR
             APP_NAME=request.GET['name'] #APP ORGINAL NAME
@@ -1963,7 +1963,7 @@ def ViewFile(request):
         typ=request.GET['type']
         MD5=request.GET['md5']
         mode=request.GET['mode']
-        m=re.match('[0-9a-f]{32}',MD5)
+        m=re.match('^[0-9a-f]{32}$',MD5)
         ext=fil.split('.')[-1]
         f=re.search("plist|db|sqlitedb|sqlite|txt|m",ext)
         if m and f and re.findall('xml|db|txt|m',typ) and re.findall('ios|ipa',mode):

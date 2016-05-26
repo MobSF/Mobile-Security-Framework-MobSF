@@ -38,7 +38,7 @@ def DynamicAnalyzer(request):
             if re.findall(";|\$\(|\|\||&&",PKG) or re.findall(";|\$\(|\|\||&&",LNCH):
                 print "[ATTACK] Possible RCE"
                 return HttpResponseRedirect('/error/') 
-            m=re.match('[0-9a-f]{32}',MD5)
+            m=re.match('^[0-9a-f]{32}$',MD5)
             if m:
                 # Delete ScreenCast Cache
                 SCREEN_FILE=os.path.join(settings.SCREEN_DIR, 'screen.png')
@@ -82,7 +82,7 @@ def GetEnv(request):
             if re.findall(";|\$\(|\|\||&&",PKG) or re.findall(";|\$\(|\|\||&&",LNCH):
                 print "[ATTACK] Possible RCE"
                 return HttpResponseRedirect('/error/') 
-            m=re.match('[0-9a-f]{32}',MD5)
+            m=re.match('^[0-9a-f]{32}$',MD5)
             if m:
                 DIR=settings.BASE_DIR
                 APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
@@ -113,7 +113,7 @@ def TakeScreenShot(request):
     try:
         if request.method == 'POST':
             MD5=request.POST['md5']
-            m=re.match('[0-9a-f]{32}',MD5)
+            m=re.match('^[0-9a-f]{32}$',MD5)
             if m:
                 data = {}
                 r=random.randint(1, 1000000)
@@ -263,7 +263,7 @@ def FinalTest(request):
             if re.findall(";|\$\(|\|\||&&",PACKAGE):
                 print "[ATTACK] Possible RCE"
                 return HttpResponseRedirect('/error/') 
-            m=re.match('[0-9a-f]{32}',MD5)
+            m=re.match('^[0-9a-f]{32}$',MD5)
             if m:
                 #Stop ScreenCast Client if it is running
                 tcp_server_mode = "off"
@@ -307,7 +307,7 @@ def DumpData(request):
             data = {}
             PACKAGE=request.POST['pkg']
             MD5=request.POST['md5']
-            m=re.match('[0-9a-f]{32}',MD5)
+            m=re.match('^[0-9a-f]{32}$',MD5)
             if m:
                 if re.findall(";|\$\(|\|\||&&",PACKAGE):
                     print "[ATTACK] Possible RCE"
@@ -353,7 +353,7 @@ def ExportedActivityTester(request):
     try:
         MD5=request.POST['md5']
         PKG=request.POST['pkg']
-        m=re.match('[0-9a-f]{32}',MD5)
+        m=re.match('^[0-9a-f]{32}$',MD5)
         if m:
             if re.findall(";|\$\(|\|\||&&",PKG):
                 print "[ATTACK] Possible RCE"
@@ -410,7 +410,7 @@ def ActivityTester(request):
     try:
         MD5=request.POST['md5']
         PKG=request.POST['pkg']
-        m=re.match('[0-9a-f]{32}',MD5)
+        m=re.match('^[0-9a-f]{32}$',MD5)
         if m:
             if re.findall(";|\$\(|\|\||&&",PKG):
                 print "[ATTACK] Possible RCE"
@@ -473,7 +473,7 @@ def Report(request):
             if re.findall(";|\$\(|\|\||&&",PKG):
                 print "[ATTACK] Possible RCE"
                 return HttpResponseRedirect('/error/') 
-            m=re.match('[0-9a-f]{32}',MD5)
+            m=re.match('^[0-9a-f]{32}$',MD5)
             if m:
                 DIR=settings.BASE_DIR
                 APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
@@ -891,7 +891,7 @@ def View(request):
         fil=''
         rtyp=''
         dat=''
-        m=re.match('[0-9a-f]{32}',request.GET['md5'])
+        m=re.match('^[0-9a-f]{32}$',request.GET['md5'])
         if m:
             fil=request.GET['file']
             MD5=request.GET['md5']

@@ -48,7 +48,7 @@ def APIFuzzer(request):
     try:
         if request.method == 'GET':
             MD5=request.GET['md5']
-            m=re.match('[0-9a-f]{32}',MD5)
+            m=re.match('^[0-9a-f]{32}$',MD5)
             if m:
                 URLS = getListOfURLS(MD5,False)
                 if (len(URLS)) == 0:
@@ -71,7 +71,7 @@ def APIFuzzer(request):
                 return HttpResponseRedirect('/error/')
         elif request.method =="POST":
             MD5=request.POST['md5']
-            m=re.match('[0-9a-f]{32}',MD5)
+            m=re.match('^[0-9a-f]{32}$',MD5)
             if m:
                 SCOPE_URLS = [] #All DOMAINS that needs to be tested
                 SCOPE_TESTS = [] #All TESTS that needs to be executed
@@ -128,7 +128,7 @@ def StartScan(request):
     try:
         if request.method =="POST":
             MD5=request.POST['md5']
-            m=re.match('[0-9a-f]{32}',MD5)
+            m=re.match('^[0-9a-f]{32}$',MD5)
             if m:
                 #Scan Mode
                 SCAN_MODE=request.POST['scanmode']
