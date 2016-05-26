@@ -269,6 +269,8 @@ def ViewSource(request):
         if m and (request.GET['file'].endswith('.java') or request.GET['file'].endswith('.smali')):
             fil=request.GET['file']
             MD5=request.GET['md5']
+            if (("../" in MD5) or ("%2e%2e" in MD5) or (".." in MD5) or ("%252e" in MD5)):
+                return HttpResponseRedirect('/error/')
             if (("../" in fil) or ("%2e%2e" in fil) or (".." in fil) or ("%252e" in fil)):
                 return HttpResponseRedirect('/error/')
             else:
