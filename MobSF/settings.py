@@ -127,7 +127,6 @@ except NameError:
 # ^ This is fine Do not turn it off until MobSF moves from Beta to Stable
 
 DEBUG = True
-TEMPLATE_DEBUG = True
 ALLOWED_HOSTS = []
 # Application definition
 INSTALLED_APPS = (
@@ -164,9 +163,16 @@ USE_L10N = True
 USE_TZ = True
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/uploads/'
-TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR,'templates'),
-    )
+TEMPLATES = [
+    {
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'APP_DIRS': True,
+    'DIRS': [os.path.join(BASE_DIR,'templates')],
+    'OPTIONS': {
+        'debug': True,
+        }
+    },
+]
 STATICFILES_DIRS = (
   os.path.join(BASE_DIR, 'static/'),
 )
