@@ -83,6 +83,24 @@ ALLOWED_EXTENSIONS = {
 }
 #===============================================
 
+#=============ALLOWED MIMETYPES=================
+APK_MIME = ['application/octet-stream',
+'application/vnd.android.package-archive',
+'application/x-zip-compressed',
+'binary/octet-stream',
+]
+IPA_MIME = ['application/octet-stream',
+'application/x-itunes-ipa',
+'application/x-zip-compressed',
+'binary/octet-stream',
+]
+ZIP_MIME = ['application/zip',
+'application/octet-stream',
+'application/x-zip-compressed',
+'binary/octet-stream',
+]
+#===============================================
+
 #=====MOBSF SECRET GENERATION AND MIGRATION=====
 #Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
 try:

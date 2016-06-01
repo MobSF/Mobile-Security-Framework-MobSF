@@ -51,19 +51,19 @@ def Upload(request):
             if form.is_valid():
                 file_type =request.FILES['file'].content_type
                 print "[INFO] MIME Type: " + file_type + " FILE: " + str(request.FILES['file'].name)
-                if (file_type=="application/octet-stream" or file_type=="application/vnd.android.package-archive" or file_type=="application/x-zip-compressed") and request.FILES['file'].name.lower().endswith('.apk'):     #APK
+                if (file_type in settings.APK_MIME) and request.FILES['file'].name.lower().endswith('.apk'):     #APK
                     md5=handle_uploaded_file(request.FILES['file'],'.apk')
                     response_data['url'] = 'StaticAnalyzer/?name='+request.FILES['file'].name+'&type=apk&checksum='+md5
                     response_data['status'] = 'success'
                     PushtoRecent(request.FILES['file'].name,md5,response_data['url'])
                     print "\n[INFO] Performing Static Analysis of Android APK"
-                elif (file_type=="application/zip" or file_type=="application/octet-stream" or file_type=="application/x-zip-compressed") and request.FILES['file'].name.lower().endswith('.zip'):   #Android /iOS Zipped Source
+                elif (file_type in settings.ZIP_MIME) and request.FILES['file'].name.lower().endswith('.zip'):   #Android /iOS Zipped Source
                     md5=handle_uploaded_file(request.FILES['file'],'.zip')
                     response_data['url'] = 'StaticAnalyzer/?name='+request.FILES['file'].name+'&type=zip&checksum='+md5
                     response_data['status'] = 'success'
                     PushtoRecent(request.FILES['file'].name,md5,response_data['url'])
                     print "\n[INFO] Performing Static Analysis of Android/iOS Source Code"
-                elif ((file_type=="application/octet-stream" or file_type=="application/x-itunes-ipa" or file_type=="application/x-zip-compressed") and request.FILES['file'].name.lower().endswith('.ipa')):   #iOS Binary
+                elif (file_type in settings.IPA_MIME) and request.FILES['file'].name.lower().endswith('.ipa'):   #iOS Binary
                     if platform.system()=="Darwin":
                         md5=handle_uploaded_file(request.FILES['file'],'.ipa')
                         response_data['url'] = 'StaticAnalyzer_iOS/?name='+request.FILES['file'].name+'&type=ipa&checksum='+md5
