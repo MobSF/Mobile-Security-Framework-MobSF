@@ -214,7 +214,7 @@ def api_info_gathering(SCOPE_URLS):
         #Initally Do on Scope URLs
         for url in SCOPE_URLS:
             response = HTTP_GET_Request(url)
-            if not response == None:
+            if response is not None:
                 for header, value in list(response.headers.items()):
                     if header.lower() == "server":
                         result.append(genFindingsDict(STATUS["INFO"]+" Server Information Disclosure", url, header + ": " +value, response))
@@ -240,7 +240,7 @@ def api_security_headers(SCOPE_URLS):
         #Initally Do on Scope URLs
         for url in SCOPE_URLS:
             response = HTTP_GET_Request(url)
-            if not response == None:
+            if response is not None:
                 XSS_PROTECTION = False
                 HSTS_PROTECTION = False
                 HPKP_PROTECTION = False
@@ -345,9 +345,9 @@ def api_ssrf(SCAN_REQUESTS,URLS_CONF):
 
 
             #SSRF Test on URI
-            if len(path_n_querystring) > 0:
+            if path_n_querystring:
                 SSRF_entry_list = extractURLS(path_n_querystring)
-                if len(SSRF_entry_list) > 0:
+                if SSRF_entry_list:
                     print "\n[INFO] Injecting SSRF Payload on URI"
                     request_uri = request
                     #for each URL in path + querystring
@@ -405,7 +405,7 @@ def api_ssrf(SCAN_REQUESTS,URLS_CONF):
             if request["body"]:
                 body = request["body"]
                 SSRF_entry_list_body = extractURLS(body)
-                if len(SSRF_entry_list_body) > 0:
+                if SSRF_entry_list_body:
                     request_bd = request
                     print "\n[INFO] Injecting SSRF Payload on Request Body"
                     #for each URL in request body

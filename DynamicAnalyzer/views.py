@@ -153,7 +153,7 @@ def ScreenCast(request):
                 args=[adb, "-s", getIdentifier(), "shell", "am", "force-stop", "opensecurity.screencast"]
                 data = {'status': 'off'}
                 tcp_server_mode = "off"
-            if (mode == "on") or (mode == "off"):
+            if (mode in ["on", "off"]):
                 try:
                     subprocess.call(args)
                     t = threading.Thread(target=ScreenCastService)
@@ -370,7 +370,7 @@ def ExportedActivityTester(request):
                 if DB.exists():
                     print "\n[INFO] Fetching Exported Activity List from DB"
                     EXPORTED_ACT=python_list(DB[0].EXPORTED_ACT)
-                    if len(EXPORTED_ACT)>0:
+                    if EXPORTED_ACT:
                         n=0
                         print "\n[INFO] Starting Exported Activity Tester..."
                         print "\n[INFO] "+str(len(EXPORTED_ACT))+" Exported Activities Identified"
@@ -426,7 +426,7 @@ def ActivityTester(request):
                 if DB.exists():
                     print "\n[INFO] Fetching Activity List from DB"
                     ACTIVITIES=python_list(DB[0].ACTIVITIES)
-                    if len(ACTIVITIES)>0:
+                    if ACTIVITIES:
                         n=0
                         print "\n[INFO] Starting Activity Tester..."
                         print "\n[INFO] "+str(len(ACTIVITIES))+" Activities Identified"
@@ -503,10 +503,10 @@ def Report(request):
                             print "\n[INFO] Fetching Exported Activity & Activity List from DB"
                             EXPORTED_ACT=python_list(DB[0].EXPORTED_ACT)
                             ACTDESC=python_list(DB[0].ACTIVITIES)
-                            if len(ACTIMGS)>0:
+                            if ACTIMGS:
                                 if len(ACTIMGS)==len(ACTDESC):
                                     ACT = dict(zip(ACTIMGS, ACTDESC))
-                            if len(EXPACTIMGS)>0:
+                            if EXPACTIMGS:
                                 if len(EXPACTIMGS)==len(EXPORTED_ACT):
                                     EXPACT = dict(zip(EXPACTIMGS, EXPORTED_ACT))
                         else:

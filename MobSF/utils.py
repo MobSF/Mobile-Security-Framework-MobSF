@@ -196,7 +196,7 @@ def PrintException(msg,web=False):
     line = linecache.getline(filename, lineno, f.f_globals)
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-    dat= '\n['+st+']\n'+msg+' ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
+    dat= '\n['+st+']\n'+msg+' ({0}, LINE {1} "{2}"): {3}'.format(filename, lineno, line.strip(), exc_obj)
     if platform.system()=="Windows":
         print dat
     else:
@@ -265,7 +265,7 @@ def sha256(file_path):
     hasher = hashlib.sha256()
     with io.open(file_path,mode='rb') as afile:
         buf = afile.read(BLOCKSIZE)
-        while len(buf) > 0:
+        while buf:
             hasher.update(buf)
             buf = afile.read(BLOCKSIZE)
     return (hasher.hexdigest())

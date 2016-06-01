@@ -36,7 +36,7 @@ def PDF(request):
         TYP=request.GET['type']
         m=re.match('^[0-9a-f]{32}$',MD5)
         if m:
-            if (TYP=='APK' or TYP=='ANDZIP'):
+            if TYP in ['APK','ANDZIP']:
                 DB=StaticAnalyzerAndroid.objects.filter(MD5=MD5)
                 if DB.exists():
                     print "\n[INFO] Fetching data from DB for PDF Report Generation (Android)"
@@ -156,7 +156,7 @@ def PDF(request):
         
         PrintException("[ERROR] PDF Report Generation Error")
         return HttpResponseRedirect('/error/') 
-        pass
+
 def Java(request):
     try:
         m=re.match('^[0-9a-f]{32}$',request.GET['md5'])
@@ -305,7 +305,7 @@ def ManifestView(request):
         TYP=request.GET['type'] #APK or SOURCE
         BIN=request.GET['bin']
         m=re.match('^[0-9a-f]{32}$',MD5)
-        if m and (TYP=='eclipse' or TYP=='studio' or TYP=='apk') and (BIN=='1' or BIN=='0'):
+        if m and (TYP in ['eclipse', 'studio', 'apk']) and (BIN in ['1','0']):
             APP_DIR=os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
             TOOLS_DIR=os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
             if BIN=='1':
@@ -327,7 +327,7 @@ def StaticAnalyzer(request):
         #Input validation
         TYP=request.GET['type']
         m=re.match('^[0-9a-f]{32}$',request.GET['checksum'])
-        if ((m) and (request.GET['name'].lower().endswith('.apk') or request.GET['name'].lower().endswith('.zip')) and ((TYP=='zip') or (TYP=='apk'))):
+        if ((m) and (request.GET['name'].lower().endswith('.apk') or request.GET['name'].lower().endswith('.zip')) and (TYP in ['zip','apk'])):
             DIR=settings.BASE_DIR        #BASE DIR
             APP_NAME=request.GET['name'] #APP ORGINAL NAME
             MD5=request.GET['checksum']  #MD5
@@ -521,7 +521,6 @@ def StaticAnalyzer(request):
                             STATIC_DB.save()
                     except:
                         PrintException("[ERROR] Saving to Database Failed")
-                        pass
                     context = {
                     'title' : 'Static Analysis',
                     'name' : APP_NAME,
@@ -631,7 +630,7 @@ def StaticAnalyzer(request):
                         return HttpResponseRedirect('/StaticAnalyzer_iOS/?name='+APP_NAME+'&type=ios&checksum='+MD5)
                     CERTZ = GetHardcodedCertKeystore(FILES)
                     print "[INFO] ZIP Type - " + pro_type
-                    if Valid and (pro_type=='eclipse' or pro_type=='studio'):
+                    if Valid and (pro_type in ['eclipse', 'studio']):
                         #ANALYSIS BEGINS
                         SIZE=str(FileSize(APP_PATH)) + 'MB'   #FILE SIZE
                         SHA1,SHA256= HashGen(APP_PATH)        #SHA1 & SHA256 HASHES
@@ -747,7 +746,6 @@ def StaticAnalyzer(request):
                                 STATIC_DB.save()
                         except:
                             PrintException("[ERROR] Saving to Database Failed")
-                            pass
                         context = {
                         'title' : 'Static Analysis',
                         'name' : APP_NAME,
@@ -899,7 +897,7 @@ def HashGen(APP_PATH):
         BLOCKSIZE = 65536
         with io.open(APP_PATH, mode='rb') as afile:
             buf = afile.read(BLOCKSIZE)
-            while len(buf) > 0:
+            while buf:
                 sha1.update(buf)
                 sha256.update(buf)
                 buf = afile.read(BLOCKSIZE)
@@ -1213,8 +1211,6 @@ def ManifestData(mfxml,app_dir):
                 DP[ i ] = DVM_PERMISSIONS["MANIFEST_PERMISSION"][ prm ]
             except KeyError :
                 DP[ i ] = [ "dangerous", "Unknown permission from android reference", "Unknown permission from android reference" ]
-        else:
-            pass
         return SVC,ACT,BRD,CNP,LIB,DP,package,mainact,minsdk,maxsdk,targetsdk,androidversioncode,androidversionname
     except:
         PrintException("[ERROR] Extracting Manifest Data")
@@ -1291,11 +1287,11 @@ def ManifestAnalysis(mfxml,mainact):
                     itmname = 'NIL'
                 item=''
                 #Task Affinity
-                if ((itmname =='Activity' or itmname=='Activity-Alias') and (node.getAttribute("android:taskAffinity"))):
+                if ((itmname  in ['Activity', 'Activity-Alias']) and (node.getAttribute("android:taskAffinity"))):
                     item=node.getAttribute("android:name")
                     RET=RET+ '<tr><td>TaskAffinity is set for Activity </br>('+item + ')</td><td><span class="label label-danger">high</span></td><td>If taskAffinity is set, then other application could read the Intents sent to Activities belonging to another task. Always use the default setting keeping the affinity as the package name in order to prevent sensitive information inside sent or received Intents from being read by another application.</td></tr>'
                 #LaunchMode
-                if ((itmname =='Activity' or itmname=='Activity-Alias') and ((node.getAttribute("android:launchMode")=='singleInstance') or (node.getAttribute("android:launchMode")=='singleTask'))):
+                if ((itmname in ['Activity', 'Activity-Alias']) and ((node.getAttribute("android:launchMode")=='singleInstance') or (node.getAttribute("android:launchMode")=='singleTask'))):
                     item=node.getAttribute("android:name")
                     RET=RET+ '<tr><td>Launch Mode of Activity ('+item + ') is not standard.</td><td><span class="label label-danger">high</span></td><td>An Activity should not be having the launch mode attribute set to "singleTask/singleInstance" as it becomes root Activity and it is possible for other applications to read the contents of the calling Intent. So it is required to use the "standard" launch mode attribute when sensitive information is included in an Intent.</td></tr>'
                 #Exported Check
@@ -1317,7 +1313,7 @@ def ManifestAnalysis(mfxml,mainact):
                                     prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[node.getAttribute("android:permission")]
                                 RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by permission.</td></tr>'
                             else:
-                                if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                if (itmname in ['Activity', 'Activity-Alias']):
                                     EXPORTED.append(item)
                                 RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is not Protected. <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be shared with other apps on the device therefore leaving it accessible to any other application on the device.</td></tr>'
                                 exp_count[cnt_id] = exp_count[cnt_id] + 1
@@ -1342,7 +1338,7 @@ def ManifestAnalysis(mfxml,mainact):
                                         prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[node.getAttribute("android:permission")] 
                                     RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by permission.</td></tr>'
                                 else:
-                                    if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                    if (itmname in ['Activity', 'Activity-Alias']):
                                         EXPORTED.append(item)
                                     RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is not Protected.<br>An intent-filter exists.</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be shared with other apps on the device therefore leaving it accessible to any other application on the device. The presence of intent-filter indicates that the '+itmname+' is explicitly exported.</td></tr>'
                                     exp_count[cnt_id] = exp_count[cnt_id] + 1
@@ -1755,7 +1751,7 @@ def StaticAnalyzer_iOS(request):
         TYP=request.GET['type']
         RESCAN= str(request.GET.get('rescan', 0))
         m=re.match('^[0-9a-f]{32}$',request.GET['checksum'])
-        if ((m) and (request.GET['name'].lower().endswith('.ipa') or request.GET['name'].lower().endswith('.zip')) and ((TYP=='ipa') or (TYP=='ios'))):
+        if ((m) and (request.GET['name'].lower().endswith('.ipa') or request.GET['name'].lower().endswith('.zip')) and (TYP in ['ipa', 'ios'])):
             DIR=settings.BASE_DIR        #BASE DIR
             APP_NAME=request.GET['name'] #APP ORGINAL NAME
             MD5=request.GET['checksum']  #MD5
@@ -2040,7 +2036,6 @@ def HandleSqlite(SFile):
         return data
     except:
         PrintException("[ERROR] Dumping SQLITE Database")
-        pass
 
 def iOS_ListFiles(SRC,MD5,BIN,MODE):
     try:
@@ -2124,8 +2119,6 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
             
         except:
             PrintException("[ERROR] - Reading from Info.plist")
-            pass
-
         BIN_PATH=os.path.join(BIN_DIR,BIN)  #Full Dir/Payload/x.app/x
         print "[INFO] iOS Binary : " + BIN
         print "[INFO] Running otool against the Binary"
@@ -2232,8 +2225,6 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
        
         except:
             PrintException("[ERROR] - Cannot perform class dump")
-            pass
-
         BIN_RES=PIE+SSMASH+ARC+BANNED_API+WEAK_CRYPTO+CRYPTO+WEAK_HASH+HASH+RAND+LOG+MALL+DBG+WVIEW
         #classdump
         return XML,BIN_NAME,ID,VER,SDK,PLTFM,MIN,LIBS,BIN_RES

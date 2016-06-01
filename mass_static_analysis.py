@@ -62,7 +62,7 @@ def genMD5(app):
     hasher = hashlib.md5()
     with open(app, 'rb') as afile:
         buf = afile.read(BLOCKSIZE)
-        while len(buf) > 0:
+        while buf:
             hasher.update(buf)
             buf = afile.read(BLOCKSIZE)
     return (hasher.hexdigest())
