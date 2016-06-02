@@ -47,7 +47,7 @@ import ssl
 import os
 import datetime
 import uuid
-import re,sys,threading,json,codecs
+import re,sys,threading,json,io
 from multiprocessing import Process, Value, Lock
 from socket_wrapper import wrap_socket
 from MobSF.utils import PrintException
@@ -85,7 +85,7 @@ def SaveOnExit():
             f3.write(TRAFFIC)
 
         print "\n[INFO] Saving Request Objects"
-        with codecs.open(os.path.join(log,"requestdb"), "w", "utf-8") as f:
+        with io.open(os.path.join(log,"requestdb"), "w", "utf-8") as f:
             json.dump(REQUEST_LIST,f)
 
     except:
