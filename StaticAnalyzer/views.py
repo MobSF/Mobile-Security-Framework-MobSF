@@ -1024,7 +1024,7 @@ def WinFixPython3(TOOLS_DIR):
                 for path in paths:
                     if "python3" in path.lower():
                         PYTHON3_PATH = path
-        PYTHON3 = os.path.join(PYTHON3_PATH,"python")
+        PYTHON3 = "\"" + os.path.join(PYTHON3_PATH,"python") + "\""
         DMY=os.path.join(TOOLS_DIR,'enjarify/enjarify.tmp')
         ORG=os.path.join(TOOLS_DIR,'enjarify/enjarify.bat')
         dat=''
