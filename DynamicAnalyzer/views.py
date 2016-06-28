@@ -236,12 +236,12 @@ def MobSFCA(request):
             if act =="install":
                 print "\n[INFO] Installing MobSF RootCA"
                 subprocess.call([adb, "-s",getIdentifier() ,"push", ROOTCA, "/data/local/tmp/"+settings.ROOT_CA])
-                subprocess.call([adb, "-s",getIdentifier() ,"shell", "su", "-c", "cp", "/data/local/tmp/"+settings.ROOT_CA, "/system/etc/security/cacerts/"+settings.ROOT_CA])
+                subprocess.call([adb, "-s",getIdentifier() ,"shell", "su", "-c", "cp /data/local/tmp/"+settings.ROOT_CA + " /system/etc/security/cacerts/"+settings.ROOT_CA])
                 subprocess.call([adb, "-s",getIdentifier() ,"shell", "rm", "/data/local/tmp/"+settings.ROOT_CA])
                 data = {'ca': 'installed'}
             elif act =="remove":
                 print "\n[INFO] Removing MobSF RootCA"
-                subprocess.call([adb, "-s",getIdentifier() ,"shell", "su", "-c", "rm", "/system/etc/security/cacerts/"+settings.ROOT_CA])   
+                subprocess.call([adb, "-s",getIdentifier() ,"shell", "su", "-c", "rm /system/etc/security/cacerts/"+settings.ROOT_CA])   
                 data = {'ca': 'removed'}
             return HttpResponse(json.dumps(data), content_type='application/json')
         else:
@@ -614,9 +614,9 @@ def ConnectInstallRun(TOOLSDIR,ADB_CON_ID,APKPATH,PACKAGE,LAUNCH,isACT):
         subprocess.call([adb, "wait-for-device"])
         print "\n[INFO] Mounting"
         if settings.REAL_DEVICE:
-            subprocess.call([adb, "-s", getIdentifier(), "shell", "su", "-c", "mount", "-o", "rw,remount,rw", "/system"])
+            subprocess.call([adb, "-s", getIdentifier(), "shell", "su", "-c", "mount -o rw,remount,rw /system"])
         else:
-            subprocess.call([adb, "-s", getIdentifier(), "shell", "su", "-c", "mount", "-o", "rw,remount,rw", "/system"])
+            subprocess.call([adb, "-s", getIdentifier(), "shell", "su", "-c", "mount -o rw,remount,rw /system"])
             #This may not work for VMs other than the default MobSF VM
             subprocess.call([adb, "-s", getIdentifier(), "shell", "mount", "-o", "rw,remount", "-t", "rfs", "/dev/block/sda6", "/system"])
         print "\n[INFO] Installing APK"
