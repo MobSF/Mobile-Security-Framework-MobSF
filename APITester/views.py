@@ -16,8 +16,9 @@ from random import randint,shuffle,choice
 from urlparse import urlparse
 from cgi import parse_qs
 import tornado.httpclient
-import os,re,json,io,datetime,socket,string
+import os,re,json,io,datetime,socket,string,urllib
 from lxml import etree
+
 
 @register.filter
 def key(d, key_name):
@@ -365,7 +366,10 @@ def api_ssrf(SCAN_REQUESTS,URLS_CONF):
                                 SSRF_PAYLOAD = settings.CLOUD_SERVER.replace("https://","") + "/" + SSRF_MD5
                         else:
                             SSRF_PAYLOAD = settings.CLOUD_SERVER + "/"+ SSRF_MD5
-                        new_pq = path_n_querystring.replace(entry,SSRF_PAYLOAD)
+
+                        encoded_entry = urllib.quote_plus(entry) 
+                        encoded_ssrf_payload = urllib.quote_plus(SSRF_PAYLOAD)
+                        new_pq = path_n_querystring.replace(entry,SSRF_PAYLOAD).replace(encoded_entry, encoded_ssrf_payload)
                         request_uri["url"] = domain + new_pq
                         ssrf_res = HTTP_Request(request_uri)
                         ssrf_res = HTTP_Request(request_uri)
@@ -382,7 +386,10 @@ def api_ssrf(SCAN_REQUESTS,URLS_CONF):
                                 SSRF_PAYLOAD = settings.CLOUD_SERVER.replace("https://","")
                         else:
                             SSRF_PAYLOAD = settings.CLOUD_SERVER
-                        new_pq = path_n_querystring.replace(entry,SSRF_PAYLOAD)
+                        
+                        encoded_entry = urllib.quote_plus(entry) 
+                        encoded_ssrf_payload = urllib.quote_plus(SSRF_PAYLOAD)
+                        new_pq = path_n_querystring.replace(entry,SSRF_PAYLOAD).replace(encoded_entry, encoded_ssrf_payload)
                         request_uri["url"] = domain + new_pq
                         if ip_check:
                             #IP METHOD
@@ -422,9 +429,13 @@ def api_ssrf(SCAN_REQUESTS,URLS_CONF):
                                 SSRF_PAYLOAD = settings.CLOUD_SERVER.replace("https://","") + "/" + SSRF_MD5
                         else:
                             SSRF_PAYLOAD = settings.CLOUD_SERVER + "/"+ SSRF_MD5
-                        request_bd["body"] = body.replace(entry,SSRF_PAYLOAD)
+
+                        encoded_entry = urllib.quote_plus(entry) 
+                        encoded_ssrf_payload = urllib.quote_plus(SSRF_PAYLOAD)
+                        request_bd["body"] = body.replace(entry,SSRF_PAYLOAD).replace(encoded_entry, encoded_ssrf_payload)
                         ssrf_res = HTTP_Request(request_bd)
                         ssrf_res = HTTP_Request(request_bd)
+                        
                         if getStatusByHash(SSRF_MD5) == "yes":
                             ip_check = False
                             #SSRF detected
@@ -438,7 +449,9 @@ def api_ssrf(SCAN_REQUESTS,URLS_CONF):
                                 SSRF_PAYLOAD = settings.CLOUD_SERVER.replace("https://","")
                         else:
                             SSRF_PAYLOAD = settings.CLOUD_SERVER
-                        request_bd["body"] = body.replace(entry,SSRF_PAYLOAD)
+                        encoded_entry = urllib.quote_plus(entry) 
+                        encoded_ssrf_payload = urllib.quote_plus(SSRF_PAYLOAD)
+                        request_bd["body"] = body.replace(entry,SSRF_PAYLOAD).replace(encoded_entry, encoded_ssrf_payload)
                         if ip_check:
                             #IP METHOD
                             #Check only if SSRF is not detected by Hash Method
@@ -496,7 +509,18 @@ def api_xxe(SCAN_REQUESTS,URLS_CONF):
                     pass
                 if xml:
                     #Start XXE Test
+                    
                     xxe_request = request
+                    print "\n[INFO] Generic XXE Check"
+                    #Vanila XXE Payload
+                    VALIDATE_STRING = settings.XXE_VALIDATE_STRING
+                    XXE_PAYLOAD_BASIC = '<?xml version="1.0"?><!DOCTYPE bla [<!ENTITY x "'+VALIDATE_STRING+'"> ]><y>&x;</y>'
+                    xxe_request["body"] = XXE_PAYLOAD_BASIC
+                    xxe_res = HTTP_Request(xxe_request)
+                    xxe_res = HTTP_Request(xxe_request)
+                    if xxe_res:
+                        if VALIDATE_STRING in xxe_res.body:
+                            result.append(genFindingsDict(STATUS["INSECURE"]+"Generic XML External Entity (XXE) Vulnerability Identified", url, "Generic XXE Payload reflection", xxe_res,True))
                     for xxe in xxe_paylods():
                         #append payload to body
                         XXE_MD5 = getMD5(str(datetime.datetime.now()) + str(randint(0,50000)))
@@ -520,6 +544,7 @@ def api_xxe(SCAN_REQUESTS,URLS_CONF):
                             #XXE detected
                             result.append(genFindingsDict(STATUS["INSECURE"]+"XML External Entity (XXE) Vulnerability Identified", url, "MobSF Cloud Server Detected XXE via Hash Method", xxe_res))
                             break
+
     except:
         PrintException("[ERROR] XXE Tester")
     return result
@@ -586,7 +611,7 @@ def api_pathtraversal(SCAN_REQUESTS,URLS_CONF,SCAN_MODE):
                     if pt_res:
                         if (re.findall(settings.RESPONSE_REGEX,pt_res.body)):
                             #Path Traversal Detected
-                            result.append(genFindingsDict(STATUS["INSECURE"]+" Path Traversal Vulnerability found on Request URI", url, "Check the Response Below", pt_res))
+                            result.append(genFindingsDict(STATUS["INSECURE"]+" Path Traversal Vulnerability found on Request URI", url, "Check the Response Below", pt_res,True))
 
             #Scan in Request Body
             if request["body"]:
@@ -926,6 +951,7 @@ def api_check_ratelimit(SCAN_REQUESTS,URLS_CONF):
 
 # Helper Functions
 def HTTP_Request(req):
+    #print "DEBUGGING", req
     print "\n[INFO] Making HTTP Requst to: " +  req["url"]
     response = None
     http_client = tornado.httpclient.HTTPClient()
@@ -1000,8 +1026,17 @@ def getScanRequests(MD5,SCOPE_URLS,URLS_CONF):
         data = []
         LOGIN_API, PIN_API, REGISTER_API,LOGOUT_API = getAPI(URLS_CONF)
         APKDIR=os.path.join(settings.UPLD_DIR, MD5+'/')
+        '''
         with io.open(os.path.join(APKDIR,"requestdb"), mode='r',encoding="utf8",errors="ignore") as fp:
             data = json.load(fp) #List of Request Dict
+        '''
+        #Developement - Remove Pickle if possible
+        import pickle
+        REQUEST_DB_FILE = os.path.join(APKDIR,"requestdb")
+        fp = open(REQUEST_DB_FILE,'r')
+        data = pickle.load(fp)
+        fp.close()
+
         for request in data:
             if getProtocolDomain(request["url"]) in SCOPE_URLS:
                 if request["url"] in LOGOUT_API:
@@ -1060,12 +1095,12 @@ def extractURLS(string):
     ipport = []
     final = []
     try:
-
+        #URL Decode
+        string = urllib.unquote(string)
         p = re.compile(ur'((?:https?://|s?ftps?://|file://|javascript:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE) 
         urllist = re.findall(p, string.lower())
         p = re.compile(ur'(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\:[0-9]{1,5}', re.UNICODE) 
         ipport = re.findall(p, string.lower())
-
         final = list(set(ipport + urllist))
 
     except:

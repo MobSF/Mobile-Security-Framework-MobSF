@@ -1438,13 +1438,13 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                     #Code Analysis
                     #print "[INFO] Doing Code Analysis on - " + jfile_path
                     #==========================Android Security Code Review =================================
-                    if (re.findall('MODE_WORLD_READABLE|Context.MODE_WORLD_READABLE',dat) or re.findall('openFileOutput\(\s*".+"\s*,\s*1\s*\)',dat)):
+                    if (re.findall('MODE_WORLD_READABLE|Context\.MODE_WORLD_READABLE',dat) or re.findall('openFileOutput\(\s*".+"\s*,\s*1\s*\)',dat)):
                         c['d_con_world_readable'].append(jfile_path.replace(JS,''))
-                    if (re.findall('MODE_WORLD_WRITABLE|Context.MODE_WORLD_WRITABLE',dat) or re.findall('openFileOutput\(\s*".+"\s*,\s*2\s*\)',dat)):
+                    if (re.findall('MODE_WORLD_WRITABLE|Context\.MODE_WORLD_WRITABLE',dat) or re.findall('openFileOutput\(\s*".+"\s*,\s*2\s*\)',dat)):
                         c['d_con_world_writable'].append(jfile_path.replace(JS,''))
                     if re.findall('openFileOutput\(\s*".+"\s*,\s*3\s*\)',dat):
                         c['d_con_world_rw'].append(jfile_path.replace(JS,''))
-                    if (re.findall('MODE_PRIVATE|Context.MODE_PRIVATE',dat)):
+                    if (re.findall('MODE_PRIVATE|Context\.MODE_PRIVATE',dat)):
                         c['d_con_private'].append(jfile_path.replace(JS,''))
                     if ((('WRITE_EXTERNAL_STORAGE') in PERMS) and (('.getExternalStorage') in dat or ('.getExternalFilesDir(') in dat)):
                         c['d_extstorage'].append(jfile_path.replace(JS,''))
@@ -1484,9 +1484,9 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         c['d_root'].append(jfile_path.replace(JS,''))
                     if (('.contains("test-keys")') in dat or ('/system/app/Superuser.apk') in dat or ('isDeviceRooted()') in dat or ('/system/bin/failsafe/su') in dat or ('/system/sd/xbin/su') in dat or ('"/system/xbin/which", "su"') in dat or ('RootTools.isAccessGiven()') in dat):
                         c['d_rootcheck'].append(jfile_path.replace(JS,''))
-                    if (re.findall('java.util.Random',dat)):
+                    if (re.findall('java\.util\.Random',dat)):
                         c['rand'].append(jfile_path.replace(JS,''))
-                    if (re.findall('Log.|System.out.print',dat)):
+                    if (re.findall('Log\.(v|d|i|w|e|f|s)|System\.out\.print',dat)):
                         c['log'].append(jfile_path.replace(JS,''))
                     if (".hashCode()" in dat):
                         c['d_hcode'].append(jfile_path.replace(JS,''))
@@ -1498,7 +1498,7 @@ def CodeAnalysis(APP_DIR,MD5,PERMS,TYP):
                         c['d_sql_cipher'].append(jfile_path.replace(JS,''))
                     if (re.findall('Cipher\.getInstance\(\s*"\s*AES\/ECB',dat)):
                         c['ecb'].append(jfile_path.replace(JS,''))
-                    if (re.findall('ccipher\.getinstance\(\s*"rsa/.+/nopadding',dat.lower())):
+                    if (re.findall('cipher\.getinstance\(\s*"rsa/.+/nopadding',dat.lower())):
                         c['rsa_no_pad'].append(jfile_path.replace(JS,''))
                     if ("0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00" in dat) or ("0x01,0x02,0x03,0x04,0x05,0x06,0x07" in dat):
                         c['weak_iv'].append(jfile_path.replace(JS,''))

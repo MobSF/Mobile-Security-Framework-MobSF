@@ -233,8 +233,12 @@ else:
     VBOXMANAGE_BINARY = "/usr/bin/VBoxManage"
     CFR_DECOMPILER_BINARY = "/home/ajin/tools/cfr.jar"
     '''
-    #==============================================
+    #===============================================
 
+    #==============RESPONSE VALIDATION==============
+    XXE_VALIDATE_STRING = "m0bsfxx3"
+    #===============================================
+    
     #=========Path Traversal - API Testing==========
     CHECK_FILE = "/etc/passwd"
     RESPONSE_REGEX = "root:|nobody:"
