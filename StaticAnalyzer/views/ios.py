@@ -445,7 +445,7 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
             ARC="<tr><td><strong>fobjc-arc</strong> flag is not Found</td><td><span class='label label-danger'>Insecure</span></td><td>App is not compiled with Automatic Reference Counting (ARC) flag. ARC is a compiler feature that provides automatic memory management of Objective-C objects and protects from memory corruption vulnerabilities.</td></tr>"
         ##########
         BANNED_API=''
-        x=re.findall("alloca|gets|memcpy|scanf|sprintf|sscanf|strcat|StrCat|strcpy|StrCpy|strlen|StrLen|strncat|StrNCat|strncpy|StrNCpy|strtok|swprintf|vsnprintf|vsprintf|vswprintf|wcscat|wcscpy|wcslen|wcsncat|wcsncpy|wcstok|wmemcpy",dat)
+        x=re.findall("alloca|gets|memcpy|printf|scanf|sprintf|sscanf|strcat|StrCat|strcpy|StrCpy|strlen|StrLen|strncat|StrNCat|strncpy|StrNCpy|strtok|swprintf|vsnprintf|vsprintf|vswprintf|wcscat|wcscpy|wcslen|wcsncat|wcsncpy|wcstok|wmemcpy",dat)
         x=list(set(x))
         x=', '.join(x)
         if len(x)>1:
