@@ -525,7 +525,6 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
         strings=subprocess.check_output(args)
         strings=escape(strings.replace(BIN_DIR + "/",""))
         STRINGS=strings.replace("\n","</br>")
-        print(STRINGS) # TODO(Remove)
 
         return XML,BIN_NAME,ID,VER,SDK,PLTFM,MIN,LIBS,BIN_RES,STRINGS
     except:
