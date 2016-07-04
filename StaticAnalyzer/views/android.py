@@ -16,14 +16,6 @@ from .dvm_permissions import DVM_PERMISSIONS
 import sqlite3 as sq
 import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,sys,plistlib
 
-PDF_POSSIBLE = True
-
-try:
-    import xhtml2pdf.pisa as pisa
-except:
-    PrintException("[ERROR] xhtml2pdf is not installed. Cannot generate PDF reports")
-    PDF_POSSIBLE = False
-
 try:
     import StringIO
     StringIO = StringIO.StringIO
@@ -33,136 +25,6 @@ except Exception:
 @register.filter
 def key(d, key_name):
     return d.get(key_name)
-
-def PDF(request):
-    if not PDF_POSSIBLE:
-        print("[ERROR] As already said, xhtml2pdf is not installed.")
-        return HttpResponseRedirect('/error/')
-    try:
-        MD5=request.GET['md5']
-        TYP=request.GET['type']
-        m=re.match('^[0-9a-f]{32}$',MD5)
-        if m:
-            if TYP in ['APK','ANDZIP']:
-                DB=StaticAnalyzerAndroid.objects.filter(MD5=MD5)
-                if DB.exists():
-                    print "\n[INFO] Fetching data from DB for PDF Report Generation (Android)"
-                    context = {
-                    'title' : DB[0].TITLE,
-                    'name' : DB[0].APP_NAME,
-                    'size' : DB[0].SIZE,
-                    'md5': DB[0].MD5,
-                    'sha1' : DB[0].SHA1,
-                    'sha256' : DB[0].SHA256,
-                    'packagename' : DB[0].PACKAGENAME,
-                    'mainactivity' : DB[0].MAINACTIVITY,
-                    'targetsdk' : DB[0].TARGET_SDK,
-                    'maxsdk' : DB[0].MAX_SDK,
-                    'minsdk' : DB[0].MIN_SDK,
-                    'androvername' : DB[0].ANDROVERNAME,
-                    'androver': DB[0].ANDROVER,
-                    'manifest': DB[0].MANIFEST_ANAL,
-                    'permissions' : DB[0].PERMISSIONS,
-                    'files' : python_list(DB[0].FILES),
-                    'certz' : DB[0].CERTZ,
-                    'activities' : python_list(DB[0].ACTIVITIES),
-                    'receivers' : python_list(DB[0].RECEIVERS),
-                    'providers' : python_list(DB[0].PROVIDERS),
-                    'services' : python_list(DB[0].SERVICES),
-                    'libraries' : python_list(DB[0].LIBRARIES),
-                    'act_count' : DB[0].CNT_ACT,
-                    'prov_count' : DB[0].CNT_PRO,
-                    'serv_count' : DB[0].CNT_SER,
-                    'bro_count' : DB[0].CNT_BRO,
-                    'certinfo': DB[0].CERT_INFO,
-                    'issued':DB[0].ISSUED,
-                    'native' : DB[0].NATIVE,
-                    'dynamic' : DB[0].DYNAMIC,
-                    'reflection' : DB[0].REFLECT,
-                    'crypto': DB[0].CRYPTO,
-                    'obfus': DB[0].OBFUS,
-                    'api': DB[0].API,
-                    'dang': DB[0].DANG,
-                    'urls': DB[0].URLS,
-                    'domains': python_dict(DB[0].DOMAINS),
-                    'emails': DB[0].EMAILS,
-                    'strings': python_list(DB[0].STRINGS),
-                    'zipped' : DB[0].ZIPPED,
-                    'mani': DB[0].MANI
-                    }
-                    if TYP=='APK':
-                        template= get_template("static_analysis_pdf.html")
-                    else:
-                        template= get_template("static_analysis_zip_pdf.html")
-            elif re.findall('IPA|IOSZIP',TYP):
-                if TYP=='IPA':
-                    DB=StaticAnalyzerIPA.objects.filter(MD5=MD5)
-                    if DB.exists():
-                        print "\n[INFO] Fetching data from DB for PDF Report Generation (IOS IPA)"
-                        context = {
-                        'title' : DB[0].TITLE,
-                        'name' : DB[0].APPNAMEX,
-                        'size' : DB[0].SIZE,
-                        'md5': DB[0].MD5,
-                        'sha1' : DB[0].SHA1,
-                        'sha256' : DB[0].SHA256,
-                        'plist' : DB[0].INFOPLIST,
-                        'bin_name' : DB[0].BINNAME,
-                        'id' : DB[0].IDF,
-                        'ver' : DB[0].VERSION,
-                        'sdk' : DB[0].SDK,
-                        'pltfm' : DB[0].PLTFM,
-                        'min' : DB[0].MINX,
-                        'bin_anal' : DB[0].BIN_ANAL,
-                        'libs' : DB[0].LIBS,
-                        'files' : python_list(DB[0].FILES),
-                        'file_analysis' : DB[0].SFILESX,
-                        }
-                        template= get_template("ios_binary_analysis_pdf.html")
-                elif TYP=='IOSZIP':
-                    DB=StaticAnalyzerIOSZIP.objects.filter(MD5=MD5)
-                    if DB.exists():
-                        print "\n[INFO] Fetching data from DB for PDF Report Generation (IOS ZIP)"
-                        context = {
-                        'title' : DB[0].TITLE,
-                        'name' : DB[0].APPNAMEX,
-                        'size' : DB[0].SIZE,
-                        'md5': DB[0].MD5,
-                        'sha1' : DB[0].SHA1,
-                        'sha256' : DB[0].SHA256,
-                        'plist' : DB[0].INFOPLIST,
-                        'bin_name' : DB[0].BINNAME,
-                        'id' : DB[0].IDF,
-                        'ver' : DB[0].VERSION,
-                        'sdk' : DB[0].SDK,
-                        'pltfm' : DB[0].PLTFM,
-                        'min' : DB[0].MINX,
-                        'bin_anal' : DB[0].BIN_ANAL,
-                        'libs' : DB[0].LIBS,
-                        'files' : python_list(DB[0].FILES),
-                        'file_analysis' : DB[0].SFILESX,
-                        'api' : DB[0].HTML,
-                        'insecure' : DB[0].CODEANAL,
-                        'urls' : DB[0].URLnFile,
-                        'domains': python_dict(DB[0].DOMAINS),
-                        'emails' : DB[0].EmailnFile
-                        }
-                        template= get_template("ios_source_analysis_pdf.html")
-            else:
-                return HttpResponseRedirect('/error/')
-            html  = template.render(context)
-            result = StringIO()
-            pdf = pisa.pisaDocument(StringIO( "{0}".format(html.encode('utf-8'))), result, encoding='utf-8')
-            if not pdf.err:
-                return HttpResponse(result.getvalue(), content_type='application/pdf')
-            else:
-                return HttpResponseRedirect('/error/')
-        else:
-            return HttpResponseRedirect('/error/')
-    except:
-
-        PrintException("[ERROR] PDF Report Generation Error")
-        return HttpResponseRedirect('/error/')
 
 def Java(request):
     try:
@@ -203,6 +65,7 @@ def Java(request):
     except:
         PrintException("[ERROR] Getting Java Files")
         return HttpResponseRedirect('/error/')
+        
 def Smali(request):
     try:
         m=re.match('^[0-9a-f]{32}$',request.GET['md5'])

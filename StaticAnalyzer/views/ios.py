@@ -11,7 +11,7 @@ from shared_func import FileSize
 from shared_func import HashGen
 from shared_func import Unzip
 
-from StaticAnalyzer.models import StaticAnalyzerAndroid,StaticAnalyzerIPA,StaticAnalyzerIOSZIP
+from StaticAnalyzer.models import StaticAnalyzerIPA,StaticAnalyzerIOSZIP
 from MobSF.utils import PrintException,python_list,python_dict,isDirExists,isFileExists
 from MalwareAnalyzer.views import MalwareCheck
 
