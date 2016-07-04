@@ -85,9 +85,16 @@ def SaveOnExit():
             f3.write(TRAFFIC)
 
         print "\n[INFO] Saving Request Objects"
+        #DEVELOPMENT - remove pickle if possible
+        REQUEST_DB_FILE = os.path.join(log,"requestdb")
+        import pickle
+        fp = open(REQUEST_DB_FILE,"wb")
+        pickle.dump(REQUEST_LIST,fp)
+        fp.close()
+        '''
         with codecs.open(os.path.join(log,"requestdb"), "w", "utf-8") as f:
             json.dump(REQUEST_LIST,f)
-
+        '''
     except:
         PrintException("[ERROR] Saving Captured Web Proxy Data")
     REQUEST_LIST = []
@@ -110,11 +117,15 @@ def Capture(request,response,request_object):
     TRAFFIC+= "\n\nRESPONSE: " +str(response.code) + " " + str(response.reason) + "\n"
     for header, value in list(response.headers.items()):
         TRAFFIC+= header + ": " + value + "\n"
+        '''
         if "content-type" in header.lower():
             if re.findall("json|xml|application\/javascript",value.lower()):
                 rdat=request.response_buffer
         else:
             rdat=''
+        '''
+        if request.response_buffer:
+            rdat=request.response_buffer
     TRAFFIC+= "\n\n" +rdat + "\n"
     #String is not memory efficient!
 
