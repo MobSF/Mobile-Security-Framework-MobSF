@@ -69,6 +69,7 @@ def StaticAnalyzer_iOS(request):
                     'libs' : DB[0].LIBS,
                     'files' : python_list(DB[0].FILES),
                     'file_analysis' : DB[0].SFILESX,
+                    'strings' : DB[0].STRINGS,
                     }
                 else:
                     print "[INFO] iOS Binary (IPA) Analysis Started"
@@ -81,15 +82,15 @@ def StaticAnalyzer_iOS(request):
                     print "[INFO] Extracting IPA"
                     Unzip(APP_PATH,APP_DIR)               #EXTRACT IPA
                     FILES,SFILES=iOS_ListFiles(BIN_DIR,MD5,True,'ipa')   #Get Files, normalize + to x, and convert binary plist -> xml
-                    INFO_PLIST,BIN_NAME,ID,VER,SDK,PLTFM,MIN,LIBS,BIN_ANAL=BinaryAnalysis(BIN_DIR,TOOLS_DIR,APP_DIR)
+                    INFO_PLIST,BIN_NAME,ID,VER,SDK,PLTFM,MIN,LIBS,BIN_ANAL,STRINGS=BinaryAnalysis(BIN_DIR,TOOLS_DIR,APP_DIR)
                     #Saving to DB
                     print "\n[INFO] Connecting to DB"
                     if RESCAN=='1':
                         print "\n[INFO] Updating Database..."
-                        StaticAnalyzerIPA.objects.filter(MD5=MD5).update(TITLE='Static Analysis',APPNAMEX=APP_NAME,SIZE=SIZE,MD5=MD5,SHA1=SHA1,SHA256=SHA256,INFOPLIST=INFO_PLIST,BINNAME=BIN_NAME,IDF=ID,VERSION=VER,SDK=SDK,PLTFM=PLTFM,MINX=MIN,BIN_ANAL=BIN_ANAL,LIBS=LIBS,FILES=FILES,SFILESX=SFILES)
+                        StaticAnalyzerIPA.objects.filter(MD5=MD5).update(TITLE='Static Analysis',APPNAMEX=APP_NAME,SIZE=SIZE,MD5=MD5,SHA1=SHA1,SHA256=SHA256,INFOPLIST=INFO_PLIST,BINNAME=BIN_NAME,IDF=ID,VERSION=VER,SDK=SDK,PLTFM=PLTFM,MINX=MIN,BIN_ANAL=BIN_ANAL,LIBS=LIBS,FILES=FILES,SFILESX=SFILES,STRINGS=STRINGS)
                     elif RESCAN=='0':
                         print "\n[INFO] Saving to Database"
-                        STATIC_DB=StaticAnalyzerIPA(TITLE='Static Analysis',APPNAMEX=APP_NAME,SIZE=SIZE,MD5=MD5,SHA1=SHA1,SHA256=SHA256,INFOPLIST=INFO_PLIST,BINNAME=BIN_NAME,IDF=ID,VERSION=VER,SDK=SDK,PLTFM=PLTFM,MINX=MIN,BIN_ANAL=BIN_ANAL,LIBS=LIBS,FILES=FILES,SFILESX=SFILES)
+                        STATIC_DB=StaticAnalyzerIPA(TITLE='Static Analysis',APPNAMEX=APP_NAME,SIZE=SIZE,MD5=MD5,SHA1=SHA1,SHA256=SHA256,INFOPLIST=INFO_PLIST,BINNAME=BIN_NAME,IDF=ID,VERSION=VER,SDK=SDK,PLTFM=PLTFM,MINX=MIN,BIN_ANAL=BIN_ANAL,LIBS=LIBS,FILES=FILES,SFILESX=SFILES,STRINGS=STRINGS)
                         STATIC_DB.save()
                     context = {
                     'title' : 'Static Analysis',
@@ -109,6 +110,7 @@ def StaticAnalyzer_iOS(request):
                     'libs' : LIBS,
                     'files' : FILES,
                     'file_analysis' : SFILES,
+                    'strings' : STRINGS,
                     }
                 template="ios_binary_analysis.html"
                 return render(request,template,context)
@@ -138,7 +140,8 @@ def StaticAnalyzer_iOS(request):
                     'insecure' : DB[0].CODEANAL,
                     'urls' : DB[0].URLnFile,
                     'domains': python_dict(DB[0].DOMAINS),
-                    'emails' : DB[0].EmailnFile
+                    'emails' : DB[0].EmailnFile,
+                    'strings' : DB[0].STRINGS
                     }
                 else:
                     print "[INFO] iOS Source Code Analysis Started"
@@ -516,7 +519,15 @@ def BinaryAnalysis(SRC,TOOLS_DIR,APP_DIR):
             PrintException("[ERROR] - Cannot perform class dump")
         BIN_RES=PIE+SSMASH+ARC+BANNED_API+WEAK_CRYPTO+CRYPTO+WEAK_HASH+HASH+RAND+LOG+MALL+DBG+WVIEW
         #classdump
-        return XML,BIN_NAME,ID,VER,SDK,PLTFM,MIN,LIBS,BIN_RES
+
+        # strings
+        args=["strings", BIN_PATH]
+        strings=subprocess.check_output(args)
+        strings=escape(strings.replace(BIN_DIR + "/",""))
+        STRINGS=strings.replace("\n","</br>")
+        print(STRINGS) # TODO(Remove)
+
+        return XML,BIN_NAME,ID,VER,SDK,PLTFM,MIN,LIBS,BIN_RES,STRINGS
     except:
         PrintException("[ERROR] iOS Binary Analysis")
 

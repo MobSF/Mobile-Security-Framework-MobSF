@@ -10,6 +10,8 @@ from django.template.defaulttags import register
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from MobSF.utils import PrintException,python_list,python_dict,isDirExists,isFileExists
 from MalwareAnalyzer.views import MalwareCheck
+from StaticAnalyzer.views.shared_func import HashGen
+
 
 from xml.dom import minidom
 from .dvm_permissions import DVM_PERMISSIONS
@@ -65,7 +67,7 @@ def Java(request):
     except:
         PrintException("[ERROR] Getting Java Files")
         return HttpResponseRedirect('/error/')
-        
+
 def Smali(request):
     try:
         m=re.match('^[0-9a-f]{32}$',request.GET['md5'])
@@ -679,6 +681,7 @@ def StaticAnalyzer(request):
         }
         template="error.html"
         return render(request,template,context)
+
 def GetHardcodedCertKeystore(files):
     try:
         print "[INFO] Getting Hardcoded Certificates/Keystores"
@@ -740,6 +743,7 @@ def GetManifest(APP_DIR,TOOLS_DIR,TYP,BIN):
         return mfest
     except:
         PrintException("[ERROR] Parsing Manifest file")
+
 def ValidAndroidZip(APP_DIR):
     try:
         print "[INFO] Checking for ZIP Validity and Mode"
@@ -761,23 +765,6 @@ def ValidAndroidZip(APP_DIR):
     except:
         PrintException("[ERROR] Determining Upload type")
 
-def HashGen(APP_PATH):
-    try:
-        print "[INFO] Generating Hashes"
-        sha1 = hashlib.sha1()
-        sha256 = hashlib.sha256()
-        BLOCKSIZE = 65536
-        with io.open(APP_PATH, mode='rb') as afile:
-            buf = afile.read(BLOCKSIZE)
-            while buf:
-                sha1.update(buf)
-                sha256.update(buf)
-                buf = afile.read(BLOCKSIZE)
-        sha1val = sha1.hexdigest()
-        sha256val=sha256.hexdigest()
-        return sha1val, sha256val
-    except:
-        PrintException("[ERROR] Generating Hashes")
 
 def FileSize(APP_PATH): return round(float(os.path.getsize(APP_PATH)) / (1024 * 1024),2)
 def GenDownloads(APP_DIR,MD5):
