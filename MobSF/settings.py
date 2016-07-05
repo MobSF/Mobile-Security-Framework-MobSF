@@ -259,6 +259,9 @@ else:
 
     #===============DEVICE SETTINGS=================
     REAL_DEVICE = False
+    #Device IP makes many bugs ,we can use device serial number instead . by CplusHua
+    #adb get-serialno 
+    DEVICE_SERIALNUMBER =''
     DEVICE_IP = '192.168.1.18'
     DEVICE_ADB_PORT = 5555
     DEVICE_TIMEOUT = 300

@@ -992,7 +992,8 @@ def GetRes():
 def getIdentifier():
     try:
         if settings.REAL_DEVICE:
-            return settings.DEVICE_IP + ":" + str(settings.DEVICE_ADB_PORT)
+            return settings.DEVICE_SERIALNUMBER
+            #return settings.DEVICE_IP + ":" + str(settings.DEVICE_ADB_PORT)
         else:
             return settings.VM_IP + ":" + str(settings.VM_ADB_PORT)
     except:
