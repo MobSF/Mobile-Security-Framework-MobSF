@@ -259,7 +259,7 @@ else:
 
     #===============DEVICE SETTINGS=================
     REAL_DEVICE = False
-    #Device IP make many bugs ,we can use device serial number instead . by CplusHua
+    #Device IP makes many bugs ,we can use device serial number instead . by CplusHua
     #adb get-serialno 
     DEVICE_SERIALNUMBER =''
     DEVICE_IP = '192.168.1.18'
