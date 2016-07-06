@@ -28,7 +28,7 @@ def index(request):
     return render(request,template,context)
 
 def handle_uploaded_file(f,typ):
-    md5 = hashlib.md5() #modify if crash for large 
+    md5 = hashlib.md5() #modify if crash for large
     for chunk in f.chunks():
         md5.update(chunk)
     md5sum = md5.hexdigest()
@@ -37,7 +37,7 @@ def handle_uploaded_file(f,typ):
         os.makedirs(ANAL_DIR)
     with open(ANAL_DIR+ md5sum+typ, 'wb+') as destination:
         for chunk in f.chunks():
-            destination.write(chunk) 
+            destination.write(chunk)
     return md5sum
 
 def Upload(request):
@@ -64,7 +64,7 @@ def Upload(request):
                     PushtoRecent(request.FILES['file'].name,md5,response_data['url'])
                     print "\n[INFO] Performing Static Analysis of Android/iOS Source Code"
                 elif (file_type in settings.IPA_MIME) and request.FILES['file'].name.lower().endswith('.ipa'):   #iOS Binary
-                    if platform.system()=="Darwin":
+                    if platform.system()=="Darwin": # Check for Mac OS X
                         md5=handle_uploaded_file(request.FILES['file'],'.ipa')
                         response_data['url'] = 'StaticAnalyzer_iOS/?name='+request.FILES['file'].name+'&type=ipa&checksum='+md5
                         response_data['status'] = 'success'
@@ -136,7 +136,7 @@ def Search(request):
             return HttpResponseRedirect('/'+DB[0].URL)
         else:
             return HttpResponseRedirect('/NotFound')
-    return HttpResponseRedirect('/error/') 
+    return HttpResponseRedirect('/error/')
 
 def Download(request):
     try:
@@ -157,6 +157,4 @@ def Download(request):
                     return response
     except:
         PrintException("Error Downloading File")
-    return HttpResponseRedirect('/error/') 
-
-
+    return HttpResponseRedirect('/error/')

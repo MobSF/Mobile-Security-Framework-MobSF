@@ -14,7 +14,7 @@
             <li><a href="#binary"><i class="fa fa-mobile"></i> Binary Analysis</a></li>
             <li><a href="#file"><i class="fa fa-file-text-o"></i> File Analysis</a></li>
             <li><a href="#libraries"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</a></li>
-            <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li>  
+            <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li>
             <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=IPA"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li>
           </ul>
         </div>
@@ -24,7 +24,7 @@
       <!-- Content Wrapper. Contains page content -->
       <div class="content-wrapper">
         <!-- Content Header (Page header) -->
-     
+
 
 
 <!-- Modal -->
@@ -42,14 +42,14 @@
            {{ plist }}
           </code></pre>
               </div>
-             
+
             </div>
             <!-- /.modal-content -->
           </div>
           <!-- /.modal-dialog -->
         </div>
         <!-- /.modal -->
-     
+
 
 
 
@@ -68,7 +68,7 @@
         </div><!-- /.box-header -->
         <div class="box-body">
            <div class="list-group">
-                  <p>                                       
+                  <p>
                       <span class="label label-primary">Name</span>
                       {{ name }}
                   </p>
@@ -82,14 +82,14 @@
                   </p>
                   <p>
                      <span class="label label-primary">SHA1</span>
-                      {{ sha1 }}                
+                      {{ sha1 }}
                   </p>
                   <p>
                      <span class="label label-primary">SHA256</span>
                     {{ sha256 }}
                 </p>
              </div>
-        
+
         </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->
@@ -101,19 +101,19 @@
         </div><!-- /.box-header -->
         <div class="box-body">
         <div class="list-group">
-               <p>                                       
+               <p>
               <span class="label label-primary">App Name</span>
               {{ bin_name }}
               </p>
-               <p>                                       
+               <p>
               <span class="label label-primary">Identifier</span>
               {{ id }}
                 <span class="label label-primary">SDK Name</span>
               {{ sdk }}
-             
+
 
               </p>
-                <p>                                       
+                <p>
              <span class="label label-primary">Version</span>
               {{ ver }}
                </p>
@@ -126,7 +126,7 @@
               {{ min }}
             </p>
        </div>
-        
+
         </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->
@@ -141,7 +141,7 @@
   <h2 class="page-header"></h2>
       <!-- Small boxes (Stat box) -->
 
- 
+
   <div class="row">
 
     <div class="col-sm-12">
@@ -161,7 +161,7 @@
       </div><!-- /.box -->
     </div><!-- /.col -->
   </div><!-- /.row -->
- 
+
 </section>
 
 
@@ -185,14 +185,14 @@
                           <th>ISSUE</th>
                           <th>STATUS</th>
                           <th>DESCRIPTION</th>
-                          
+
                       </tr>
                   </thead>
                   <tbody>
                     {{ bin_anal | safe}}
                     </tbody>
                     </table>
-                                
+
                             </div>
             <!-- /.box-body -->
           </div>
@@ -226,7 +226,7 @@
               {{ file_analysis | safe}}
               </tbody>
               </table>
-                                
+
                             </div>
             </div>
             <!-- /.box-body -->
@@ -249,12 +249,36 @@
             <!-- /.box-header -->
             <div class="box-body">
             <div class="list-group">
-               
-              
-                  <p>  
+
+
+                  <p>
                   {{ libs|safe }}
                   </p>
-                                
+
+                                </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+
+<section id="strings">
+  <h2 class="page-header"></h2>
+  <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-chevron-down"></i> Strings</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+            <div class="list-group">
+
+              
+                  <p>
+                  {{ strings|safe }}
+                  </p>
+
                                 </div>
             </div>
             <!-- /.box-body -->
@@ -273,11 +297,11 @@
             <!-- /.box-header -->
             <div class="box-body">
            <div class="list-group">
-                  <p>  
+                  <p>
                 {% for file in files %}
                   {{ file}} <br>
-                {% endfor %}                  
-                  
+                {% endfor %}
+
                   </p>
                                 </div>
             </div>
@@ -288,5 +312,5 @@
         </div><!-- /.content -->
       </div><!-- /.content-wrapper -->
 
-       
+
 {% endblock %}

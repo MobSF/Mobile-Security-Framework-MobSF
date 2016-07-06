@@ -47,6 +47,7 @@ class StaticAnalyzerAndroid(models.Model):
 	E_SER=models.CharField(max_length=50)
 	E_BRO=models.CharField(max_length=50)
 	E_CNT=models.CharField(max_length=50)
+
 class StaticAnalyzerIPA(models.Model):
 	TITLE=models.TextField()
 	APPNAMEX=models.TextField()
@@ -65,6 +66,8 @@ class StaticAnalyzerIPA(models.Model):
 	LIBS=models.TextField()
 	FILES=models.TextField()
 	SFILESX=models.TextField()
+	STRINGS=models.TextField()
+
 class StaticAnalyzerIOSZIP(models.Model):
 	TITLE=models.TextField()
 	APPNAMEX=models.TextField()
