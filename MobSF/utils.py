@@ -92,7 +92,7 @@ def FindVbox():
                 for path in vbox_path:
                     if os.path.isfile(path):
                         return path
-            print "\n[WARNING] Could not find VirtualBox path." 
+            print "\n[WARNING] Could not find VirtualBox path."
     except:
         PrintException("[ERROR] Cannot find VirtualBox path.")
 
@@ -284,4 +284,3 @@ def isDirExists(dir_path):
 
 def genRandom():
     return ''.join([random.SystemRandom().choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
-
