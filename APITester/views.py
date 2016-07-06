@@ -16,7 +16,7 @@ from random import randint,shuffle,choice
 from urlparse import urlparse
 from cgi import parse_qs
 import tornado.httpclient
-import os,re,json,io,datetime,socket,string,urllib
+import os,re,json,datetime,socket,string,urllib,pickle
 from lxml import etree
 
 
@@ -1026,12 +1026,6 @@ def getScanRequests(MD5,SCOPE_URLS,URLS_CONF):
         data = []
         LOGIN_API, PIN_API, REGISTER_API,LOGOUT_API = getAPI(URLS_CONF)
         APKDIR=os.path.join(settings.UPLD_DIR, MD5+'/')
-        '''
-        with io.open(os.path.join(APKDIR,"requestdb"), mode='r',encoding="utf8",errors="ignore") as fp:
-            data = json.load(fp) #List of Request Dict
-        '''
-        #Developement - Remove Pickle if possible
-        import pickle
         REQUEST_DB_FILE = os.path.join(APKDIR,"requestdb")
         fp = open(REQUEST_DB_FILE,'r')
         data = pickle.load(fp)
