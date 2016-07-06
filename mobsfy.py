@@ -53,8 +53,8 @@ try:
     ExecuteCMD([adb, "wait-for-device"])
     #Install MITM RootCA
     ExecuteCMD([adb, "-s",adbconnect ,"push", ROOTCA, "/data/local/tmp/0025aabb.0"])
-    ExecuteCMD([adb, "-s",adbconnect ,"shell", "su", "-c", "mount", "-o", "rw,remount,rw", "/system"])
-    ExecuteCMD([adb, "-s",adbconnect ,"shell", "su", "-c", "cp", "/data/local/tmp/0025aabb.0", "/system/etc/security/cacerts/0025aabb.0"])
+    ExecuteCMD([adb, "-s",adbconnect ,"shell", "su", "-c", "mount -o rw,remount,rw /system"])
+    ExecuteCMD([adb, "-s",adbconnect ,"shell", "su", "-c", "cp /data/local/tmp/0025aabb.0 /system/etc/security/cacerts/0025aabb.0"])
     ExecuteCMD([adb, "-s",adbconnect ,"shell", "rm", "/data/local/tmp/0025aabb.0"])
     #Install MobSF requirements
     DP = os.path.join(TOOLSDIR,'onDevice/DataPusher.apk')
