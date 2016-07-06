@@ -13,15 +13,17 @@ urlpatterns = [
     url(r'^NotFound/$', 'MobSF.views.NotFound', name='NotFound'),
     url(r'^ZIP_FORMAT/$', 'MobSF.views.ZIP_FORMAT', name='ZIP_FORMAT'),
     url(r'^MAC_ONLY/$', 'MobSF.views.MAC_ONLY', name='MAC_ONLY'),
+    
     url(r'^StaticAnalyzer/$', 'StaticAnalyzer.views.android.StaticAnalyzer', name='StaticAnalyzer'),
     url(r'^StaticAnalyzer_iOS/$', 'StaticAnalyzer.views.ios.StaticAnalyzer_iOS', name='StaticAnalyzer_iOS'),
+    url(r'^ViewFile/$', 'StaticAnalyzer.views.ios.ViewFile', name='ViewFile'),
     url(r'^ViewSource/$', 'StaticAnalyzer.views.android.ViewSource', name='ViewSource'),
     url(r'^PDF/$', 'StaticAnalyzer.views.shared_func.PDF', name='PDF'),
-    url(r'^ViewFile/$', 'StaticAnalyzer.views.android.ViewFile', name='ViewFile'),
     url(r'^Smali/$', 'StaticAnalyzer.views.android.Smali', name='Smali'),
     url(r'^Java/$', 'StaticAnalyzer.views.android.Java', name='Java'),
-    url(r'^Find/$', 'StaticAnalyzer.views.Find', name='Find'),
+    url(r'^Find/$', 'StaticAnalyzer.views.android.Find', name='Find'),
     url(r'^ManifestView/$', 'StaticAnalyzer.views.android.ManifestView', name='ManifestView'),
+
     url(r'^DynamicAnalyzer/$', 'DynamicAnalyzer.views.DynamicAnalyzer', name='DynamicAnalyzer'),
     url(r'^GetEnv/$', 'DynamicAnalyzer.views.GetEnv', name='GetEnv'),
     url(r'^GetRes/$', 'DynamicAnalyzer.views.GetRes', name='GetRes'),
@@ -36,6 +38,7 @@ urlpatterns = [
     url(r'^View/$', 'DynamicAnalyzer.views.View', name='View'),
     url(r'^ScreenCast/$', 'DynamicAnalyzer.views.ScreenCast', name='ScreenCast'),
     url(r'^Touch/$', 'DynamicAnalyzer.views.Touch', name='Touch'),
+    
     url(r'^APIFuzzer/$', 'APITester.views.APIFuzzer', name='APIFuzzer'),
     url(r'^StartScan/$', 'APITester.views.StartScan', name='StartScan'),
     url(r'^NoAPI/$', 'APITester.views.NoAPI', name='NoAPI'),

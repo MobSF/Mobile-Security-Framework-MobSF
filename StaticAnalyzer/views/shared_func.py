@@ -10,6 +10,7 @@ import zipfile
 import subprocess
 
 from django.http import HttpResponseRedirect
+from django.http import HttpResponse
 from django.template.loader import get_template
 from django.template.defaulttags import register
 
@@ -163,6 +164,7 @@ def PDF(request):
                         'libs' : DB[0].LIBS,
                         'files' : python_list(DB[0].FILES),
                         'file_analysis' : DB[0].SFILESX,
+                        'strings' : DB[0].STRINGS
                         }
                         template= get_template("ios_binary_analysis_pdf.html")
                 elif TYP=='IOSZIP':
