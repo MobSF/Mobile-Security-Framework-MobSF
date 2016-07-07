@@ -647,7 +647,10 @@ def HandleSqlite(SFile):
             rows=cur.fetchall()
             head=''
             for r in rows:
-                head+=(r[1]).decode('utf8', 'ignore') + " | "
+                z = r[1]
+                if type(z) is unicode:
+                    z = unicodedata.normalize('NFKD', z).encode('ascii','ignore')
+                head+=str(z).decode('utf8', 'ignore') + " | "
             data+=head + " \n=====================================================================\n"
             cur.execute("SELECT * FROM '%s'" % table)
             rows=cur.fetchall()
