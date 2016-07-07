@@ -265,9 +265,9 @@ else:
     #===============================================
     #================VM SETTINGS ===================
     #VM UUID
-    UUID='81c7edd3-6038-4024-9735-682bdbacab8b'
+    UUID='408e1874-759f-4417-9453-53ef21dc2ade'
     #Snapshot UUID
-    SUUID='434126a3-4966-42b8-9aa1-2c43028c6db5'
+    SUUID='2db0380a-8f06-43df-92da-bb9d53e64b29'
     #IP of the MobSF VM
     VM_IP='192.168.56.101'
     VM_ADB_PORT = 5555

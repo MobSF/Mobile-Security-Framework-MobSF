@@ -9,7 +9,7 @@ from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 
 from APITester.models import ScopeURLSandTests
-from MobSF.utils import PrintException, getMD5, is_number, findBetween
+from MobSF.utils import PrintException, getMD5, is_number, findBetween, python_list
 
 
 from random import randint,shuffle,choice
@@ -151,9 +151,8 @@ def StartScan(request):
                 SELECTED_TESTS = []
                 DB=ScopeURLSandTests.objects.filter(MD5=MD5)
                 if DB.exists():
-                    SCOPE_URLS = DB[0].SCOPEURLS
-                    SELECTED_TESTS = DB[0].SCOPETESTS
-
+                    SCOPE_URLS = python_list(DB[0].SCOPEURLS)
+                    SELECTED_TESTS = python_list(DB[0].SCOPETESTS)
                 SCAN_REQUESTS, LOGOUT_REQUESTS = getScanRequests(MD5,SCOPE_URLS,URLS_CONF) #List of Request Dict that we need to scan
                 if 'Information Gathering' in SELECTED_TESTS:
                     res = api_info_gathering(SCOPE_URLS)

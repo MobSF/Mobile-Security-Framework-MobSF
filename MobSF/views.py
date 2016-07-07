@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 from django.conf import settings
 from django.utils import timezone
 from django.utils.encoding import smart_str
-from django.core.servers.basehttp import FileWrapper
+from wsgiref.util import FileWrapper
 
 from MobSF.utils import PrintException, filename_from_path
 from MobSF.models import RecentScansDB
