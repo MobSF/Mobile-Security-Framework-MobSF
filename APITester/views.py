@@ -9,14 +9,14 @@ from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 
 from APITester.models import ScopeURLSandTests
-from MobSF.utils import PrintException, getMD5, is_number, findBetween
+from MobSF.utils import PrintException, getMD5, is_number, findBetween, python_list
 
 
 from random import randint,shuffle,choice
 from urlparse import urlparse
 from cgi import parse_qs
 import tornado.httpclient
-import os,re,json,io,datetime,socket,string,urllib
+import os,re,json,datetime,socket,string,urllib,pickle
 from lxml import etree
 
 
@@ -151,9 +151,8 @@ def StartScan(request):
                 SELECTED_TESTS = []
                 DB=ScopeURLSandTests.objects.filter(MD5=MD5)
                 if DB.exists():
-                    SCOPE_URLS = DB[0].SCOPEURLS
-                    SELECTED_TESTS = DB[0].SCOPETESTS
-
+                    SCOPE_URLS = python_list(DB[0].SCOPEURLS)
+                    SELECTED_TESTS = python_list(DB[0].SCOPETESTS)
                 SCAN_REQUESTS, LOGOUT_REQUESTS = getScanRequests(MD5,SCOPE_URLS,URLS_CONF) #List of Request Dict that we need to scan
                 if 'Information Gathering' in SELECTED_TESTS:
                     res = api_info_gathering(SCOPE_URLS)
@@ -1026,12 +1025,6 @@ def getScanRequests(MD5,SCOPE_URLS,URLS_CONF):
         data = []
         LOGIN_API, PIN_API, REGISTER_API,LOGOUT_API = getAPI(URLS_CONF)
         APKDIR=os.path.join(settings.UPLD_DIR, MD5+'/')
-        '''
-        with io.open(os.path.join(APKDIR,"requestdb"), mode='r',encoding="utf8",errors="ignore") as fp:
-            data = json.load(fp) #List of Request Dict
-        '''
-        #Developement - Remove Pickle if possible
-        import pickle
         REQUEST_DB_FILE = os.path.join(APKDIR,"requestdb")
         fp = open(REQUEST_DB_FILE,'r')
         data = pickle.load(fp)

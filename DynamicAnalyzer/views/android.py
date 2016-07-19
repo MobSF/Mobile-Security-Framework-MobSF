@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.utils.html import escape
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
-from pyWebProxy.pywebproxy import *
+from DynamicAnalyzer.pyWebProxy.pywebproxy import *
 from MobSF.utils import PrintException,is_number,python_list,isBase64,isFileExists
 from MalwareAnalyzer.views import MalwareCheck
 
@@ -647,13 +647,18 @@ def HandleSqlite(SFile):
             rows=cur.fetchall()
             head=''
             for r in rows:
-                head+=str(r[1]).decode('utf8', 'ignore') + " | "
+                z = r[1]
+                if type(z) is unicode:
+                    z = unicodedata.normalize('NFKD', z).encode('ascii','ignore')
+                head+=str(z).decode('utf8', 'ignore') + " | "
             data+=head + " \n=====================================================================\n"
             cur.execute("SELECT * FROM '%s'" % table)
             rows=cur.fetchall()
             for r in rows:
                 dat=''
                 for x in r:
+                    if type(x) is unicode:
+                        x = unicodedata.normalize('NFKD', x).encode('ascii','ignore')
                     dat+=str(x).decode('utf8', 'ignore') + " | "
                 data+=dat+"\n"
         return data
@@ -908,7 +913,6 @@ def View(request):
                     rtyp='xml'
                 elif typ=='db':
                     dat=HandleSqlite(sfile)
-                    dat=dat.decode("windows-1252").encode("utf8")
                     rtyp='plain'
                 elif typ=='others':
                     rtyp='plain'

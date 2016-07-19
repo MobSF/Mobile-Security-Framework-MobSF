@@ -47,7 +47,7 @@ import ssl
 import os
 import datetime
 import uuid
-import re,sys,threading,json,codecs
+import re,sys,threading,json,pickle
 from multiprocessing import Process, Value, Lock
 from socket_wrapper import wrap_socket
 from MobSF.utils import PrintException
@@ -85,16 +85,10 @@ def SaveOnExit():
             f3.write(TRAFFIC)
 
         print "\n[INFO] Saving Request Objects"
-        #DEVELOPMENT - remove pickle if possible
         REQUEST_DB_FILE = os.path.join(log,"requestdb")
-        import pickle
         fp = open(REQUEST_DB_FILE,"wb")
         pickle.dump(REQUEST_LIST,fp)
         fp.close()
-        '''
-        with codecs.open(os.path.join(log,"requestdb"), "w", "utf-8") as f:
-            json.dump(REQUEST_LIST,f)
-        '''
     except:
         PrintException("[ERROR] Saving Captured Web Proxy Data")
     REQUEST_LIST = []
