@@ -2,12 +2,7 @@
 """
 Module providing the shared functions for static analysis of iOS and Android
 """
-import os
-import hashlib
-import io
-import re
-import zipfile
-import subprocess
+import os, hashlib, io, re, zipfile, subprocess
 
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
@@ -32,10 +27,6 @@ try:
     import xhtml2pdf.pisa as pisa
 except:
     PrintException("[ERROR] xhtml2pdf is not installed. Cannot generate PDF reports")
-
-@register.filter
-def key(d, key_name):
-    return d.get(key_name)
 
 def FileSize(APP_PATH):
     """Return the size of the file."""

@@ -10,16 +10,16 @@ from DynamicAnalyzer.pyWebProxy.pywebproxy import *
 from MobSF.utils import PrintException,is_number,python_list,isBase64,isFileExists
 from MalwareAnalyzer.views import MalwareCheck
 
-import subprocess,os,re,shutil,tarfile,ntpath,platform,io,signal
-import json,random,time,sys,psutil,unicodedata,socket,threading,base64
+import subprocess,os,re,shutil,tarfile,ntpath,platform,io
+import json,random,time,sys,unicodedata,socket,threading,base64
 import sqlite3 as sq
 #===================================
 #Dynamic Analyzer Calls begins here!
 #===================================
 '''
-I have a strong feeling that some Security Checks on the Web Framework are not enough, Need to improve RCE Detection, 
-Unauthorized TCP Connection Prevention logic etc..
-I hate globals but as long as things work, it's fine.
+Need to improve RCE Detection on Framework, audit all subprocess calls
+TCP Connnection to screenshot service needs to be secured.
+Globals!
 '''
 tcp_server_mode = "off" #ScreenCast TCP Service Status
 
@@ -90,11 +90,11 @@ def GetEnv(request):
                 APP_PATH=APP_DIR+APP_FILE    #APP PATH
                 TOOLS_DIR=os.path.join(DIR, 'DynamicAnalyzer/tools/')  #TOOLS DIR
                 DWD_DIR=settings.DWD_DIR
-                ADB_CON_ID=getIdentifier()
                 PROXY_IP=settings.PROXY_IP #Proxy IP
                 PORT=str(settings.PORT) #Proxy Port
                 WebProxy(APP_DIR,PROXY_IP,PORT)
-                ConnectInstallRun(TOOLS_DIR,ADB_CON_ID,APP_PATH,PKG,LNCH,True) #Change True to support non-activity components
+                Connect(TOOLS_DIR)
+                InstallRun(TOOLS_DIR, APP_PATH,PKG,LNCH,True)  #Change True to support non-activity components
                 SCREEN_WIDTH, SCREEN_HEIGHT = GetRes()
                 data = {'ready': 'yes',
                         'screen_witdth': SCREEN_WIDTH,
@@ -601,8 +601,8 @@ def getADB(TOOLSDIR):
         PrintException("[ERROR] Getting ADB Location")
         return "adb"
 
-def ConnectInstallRun(TOOLSDIR,ADB_CON_ID,APKPATH,PACKAGE,LAUNCH,isACT):
-    print "\n[INFO] Starting App for Dynamic Analysis"
+def Connect(TOOLSDIR):
+    print "\n[INFO] Connecting to VM/Device"
     try:
         adb=getADB(TOOLSDIR)
         subprocess.call([adb, "kill-server"])
@@ -610,7 +610,7 @@ def ConnectInstallRun(TOOLSDIR,ADB_CON_ID,APKPATH,PACKAGE,LAUNCH,isACT):
         print "\n[INFO] ADB Started"
         Wait(5) 
         print "\n[INFO] Connecting to VM/Device"
-        subprocess.call([adb, "connect", ADB_CON_ID])
+        subprocess.call([adb, "connect",getIdentifier()])
         subprocess.call([adb, "wait-for-device"])
         print "\n[INFO] Mounting"
         if settings.REAL_DEVICE:
@@ -619,6 +619,13 @@ def ConnectInstallRun(TOOLSDIR,ADB_CON_ID,APKPATH,PACKAGE,LAUNCH,isACT):
             subprocess.call([adb, "-s", getIdentifier(), "shell", "su", "-c", "mount", "-o", "rw,remount,rw", "/system"])
             #This may not work for VMs other than the default MobSF VM
             subprocess.call([adb, "-s", getIdentifier(), "shell", "mount", "-o", "rw,remount", "-t", "rfs", "/dev/block/sda6", "/system"])
+    except:
+        PrintException("[ERROR]  Connecting to VM/Device")
+
+def InstallRun(TOOLSDIR,APKPATH,PACKAGE,LAUNCH,isACT):
+    print "\n[INFO] Starting App for Dynamic Analysis"
+    try:
+        adb = getADB(TOOLSDIR)
         print "\n[INFO] Installing APK"
         subprocess.call([adb, "-s", getIdentifier(), "install", "-r", APKPATH])
         if isACT:

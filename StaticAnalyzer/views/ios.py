@@ -1,4 +1,7 @@
 # -*- coding: utf_8 -*-
+"""
+iOS Static Code Analysis
+"""
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
@@ -7,9 +10,7 @@ from django.conf import settings
 from django.utils.html import escape
 from django.template.defaulttags import register
 
-from shared_func import FileSize
-from shared_func import HashGen
-from shared_func import Unzip
+from StaticAnalyzer.views.shared_func import FileSize, HashGen, Unzip
 
 from StaticAnalyzer.models import StaticAnalyzerIPA,StaticAnalyzerIOSZIP
 from MobSF.utils import PrintException,python_list,python_dict,isDirExists,isFileExists
@@ -17,7 +18,7 @@ from MalwareAnalyzer.views import MalwareCheck
 
 from xml.dom import minidom
 import sqlite3 as sq
-import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,sys,plistlib
+import io, re, os, subprocess, ntpath, shutil, plistlib
 
 try:
     import xhtml2pdf.pisa as pisa

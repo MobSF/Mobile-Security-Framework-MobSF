@@ -1,0 +1,576 @@
+
+  {% extends "base_top_only.html" %}
+   {% block content %}
+    
+    <script src="/static/js/jquery.min.js"></script>
+    <link rel='stylesheet' href='/static/css/devices.min.css' type='text/css'>
+
+   <style>
+   textarea {
+ 
+  width: 100%;
+  height: 500px;
+  -moz-border-bottom-colors: none;
+  -moz-border-left-colors: none;
+  -moz-border-right-colors: none;
+  -moz-border-top-colors: none;
+  background: none repeat scroll 0 0 rgba(0, 0, 0, 0.07);
+  border-color: -moz-use-text-color #FFFFFF #FFFFFF -moz-use-text-color;
+  border-image: none;
+  border-radius: 6px 6px 6px 6px;
+  border-style: none solid solid none;
+  border-width: medium 1px 1px medium;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) inset;
+  color: #555555;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 1em;
+  line-height: 1.4em;
+  padding: 5px 8px;
+  transition: background-color 0.2s ease 0s;
+}
+
+
+textarea:focus {
+    background: none repeat scroll 0 0 #FFFFFF;
+    outline-width: 0;
+}
+</style>
+<br>  
+<script>
+    function loading(){
+        $('#my').attr('src','/static/img/loading.jpg');
+        }
+    function setScreenResoultion(width,height){
+      $('#screen_width').val(width);
+      $('#screen_height').val(height);
+    }
+    function getScreenResolution() {
+      return [$('#screen_width').val(),$('#screen_height').val()]
+    }
+</script>
+
+<h2 class="page-header"><strong>Dynamic Analyzer </strong>- {{ pkg }}</h2>
+<input type="hidden" id="screen_width" value="">
+<input type="hidden" id="screen_height" value="">
+<div class="row">
+    <p id="but">
+      <a id="start" class="btn btn-primary" role="button">Create Environment</a>
+      <a id="screen" class="btn btn-primary" role="button" style="visibility: hidden" >Show Screen</a>
+      <a id="rootca" class="btn btn-primary" role="button" style="visibility: hidden" >Remove MobSF RootCA</a>
+      <a id="expactt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Exported Activity Tester</a>
+      <a id="actt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Activity Tester</a>
+      <a id="ss" class="btn btn-primary" role="button" style="visibility: hidden" >Take a Screenshot</a>
+      <a id="stop" class="btn btn-primary" role="button" style="visibility: hidden" >Finish</a>
+
+    </p>
+  </div>
+
+      <div class="row">
+        <div class="col-md-5">
+          <!-- Custom Tabs -->
+        
+        <div class='marvel-device htc-one'>
+        <div class='top-bar'></div>
+        <div class='camera'></div>
+        <div class='sensor'></div>
+        <div class='speaker'></div>
+        <div class='screen' id='container'>
+        <img width='320' height='580' src='../download/screen/screen.png' id='my' onerror='loading()' style='background-color:black;'>
+        </div>
+        </div>
+          <!-- nav-tabs-custom -->
+        </div>
+        <!-- /.col -->
+
+        <div class="col-md-7">
+          <!-- Custom Tabs (Pulled to the right) -->
+      <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#tab_1" data-toggle="tab">VM Status</a></li>
+              <li><a href="#tab_2" data-toggle="tab">Errors</a></li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane active" id="tab_1">
+              <textarea id="stat">VM Snapshot loaded</textarea>
+
+          <div id="adb" style="visibility: hidden">
+            <h3>Execute adb Commands</h3> <input width="250" id="cmd" class="form-control" type="text" placeholder="shell am startservice -n com.mypackage/.service.MyService"> </br><a id="exec" class="btn btn-primary btn-lg" role="button" >Execute</a>
+          </div>
+              </div>
+              <!-- /.tab-pane -->
+              <div class="tab-pane" id="tab_2"> 
+              <iframe sandbox frameborder="0" width="100%" height="650px" id="er"></iframe>
+              </div>
+            </div>
+            <!-- /.tab-content -->
+          </div>
+          <!-- nav-tabs-custom -->
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+<!--Fooo-->
+
+
+
+      <script>
+   $(document).ready(function() { 
+     var touch = "off";
+     var refresh = false;
+        $('#my').click(function(e) {
+
+          if (touch === "on")
+          {
+        var res=getScreenResolution()
+        var width = res[0];
+        var height =res[1];
+        if (width.length > 0 && height.length > 0)
+        {
+          width = parseInt(width);
+          height = parseInt(height);
+          var offset = $(this).offset();
+          var x = e.pageX - offset.left;
+          var y = e.pageY - offset.top;
+          x = x * (width/320); 
+          y = y * (height/580);
+          console.log('X Axis: '+ x + " Y Axis: "+ y);
+          $.ajax({
+                    url : '../Touch/', 
+                    type : 'POST',
+                    dataType: 'json', 
+                    data : {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            x: x,
+                            y: y,
+                            },
+                        success : function(json) {
+                            if (json.status==='success'){
+                            console.log('Clicked!');
+                            }
+                        },
+                        error : function(xhr,errmsg,err) {
+                            document.getElementById("er").srcdoc = xhr.responseText;
+                        }   
+          });
+      }
+      }
+        });
+   
+   	     $('#stat').attr('readonly','readonly');
+                   
+                    $("#start").one( "click", function() {
+                    	$('#stat').append("\nTrying to setup the environment");
+                    		$.ajax({
+                                url : "../GetEnv/", 
+                                type : "POST",
+                                dataType: "json", 
+                                data : {
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    md5: '{{ md5 }}',
+                                    pkg: '{{ pkg }}',
+                                    lng: '{{ lng }}',
+                                    },
+                                    success : function(json) {
+                                    	if (json.ready==="yes"){
+                                      //Set Screen Resolution
+                                      setScreenResoultion(json.screen_witdth,json.screen_height);
+                                    	ready=json.ready;
+                                      //show screen
+                                      $('#screen').css("visibility","visible");
+                                          //show screenshot
+                                      $('#ss').css("visibility","visible");
+                                      //show finish
+                                      $('#stop').css("visibility","visible");
+                                      //show exported activity tester
+                                      $('#expactt').css("visibility","visible");
+                                      //show activity tester
+                                      $('#actt').css("visibility","visible");
+                                      //show execute adb
+                                      $('#adb').css("visibility","visible");
+                                       //show mobsf rootca installer
+                                      $('#rootca').css("visibility","visible");
+
+                                    	$('#start').addClass("btn btn-success");
+                                    	$('#start').text("Environment Created");
+                                    	$('#stat').append("\nRunning HTTPS Proxy");
+
+                                      //Install MobSF RootCA
+                                      $.ajax({
+                                      url : "../MobSFCA/", 
+                                      type : "POST",
+                                      dataType: "json", 
+                                      data : {
+                                          action: "install",
+                                          csrfmiddlewaretoken: '{{ csrf_token }}',
+                                          },
+                                          success : function(json) {
+                                          if (json.ca==="installed"){
+                                            $('#stat').append("\nMobSF RootCA Installed Successfully");
+                                          }
+                                          $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                          },
+                                          error : function(xhr,errmsg,err) {
+                                              document.getElementById("er").srcdoc = xhr.responseText;
+                                          }   
+                                      });
+
+                                    	$('#stat').append("\nConnecting to VM");
+                                    	$('#stat').append("\nMounting");
+                                    	$('#stat').append("\nInstalling APK");
+                                    	$('#stat').append("\nRunning APK");    
+                                    	$('#stat').append("\nEnvironment is Ready!");
+                                    	$('#stat').append("\nAgents are running in the Background");
+                                    	$('#stat').append("\nGo Ahead and navigate through all the flows of the Application.");
+                                    	$('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                    }
+
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                        document.getElementById("er").srcdoc = xhr.responseText;
+                                    }   
+                      });
+                    return false;  
+                }); 
+      //Screen
+
+      $("#screen").click(function() {
+                  
+                       var stext = $("#screen").text();
+                       var md;
+                       if (stext === "Show Screen")
+                       {
+                        $("#screen").text("Stop Screen");
+                        md = "on";
+                       }
+                       else
+                       {
+                        $("#screen").text("Show Screen");
+                        md = "off";
+                       }
+              
+
+                        $.ajax({
+                                url : "../ScreenCast/", 
+                                type : "POST",
+                                dataType: "json", 
+                                data : {
+                                    mode: md,
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    },
+                                    success : function(json) {
+                                      if (json.status==="on"){
+                                        touch = "on";
+                                        refresh = true;
+                                      $('#stat').append("\nScreen sharing started");
+                                       screenfunc = setInterval(function(){
+                                        if (refresh === true)
+                                        $('#my').attr('src', '../download/screen/screen.png?'+new Date().getTime());
+                                      },300);
+                                    }
+                                    else if (json.status==="off"){
+                                      touch = "off;"
+                                      refresh = false;
+                                      $('#stat').append("\nScreen sharing stopped");
+                                      $('#my').attr('src', '/static/img/loading.jpg');
+
+                                    }
+                                      $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                      
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                        document.getElementById("er").srcdoc = xhr.responseText;
+                                    }   
+                      });
+                    return false;  
+                }); 
+//Screenshot
+ 			$("#ss").click(function() {
+                    	$('#stat').append("\nTaking a Scrennshot....");
+                    		$.ajax({
+                                url : "../TakeScreenShot/", 
+                                type : "POST",
+                                dataType: "json", 
+                                data : {
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    md5: '{{ md5 }}',
+                                    },
+                                    success : function(json) {
+                                    	if (json.screenshot==="yes"){
+                                    	$('#stat').append("\nScreenshot Taken!");
+                                    	$('#stat').scrollTop($('#stat')[0].scrollHeight);
+										}
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                        document.getElementById("er").srcdoc = xhr.responseText;
+                                    }   
+                      });
+                    return false;  
+                }); 
+
+    //MobSF CA
+
+      $("#rootca").click(function() {
+                  
+                       var stext = $("#rootca").text();
+                       var act;
+                       if (stext === "Remove MobSF RootCA")
+                       {
+                        $("#rootca").text("Install MobSF RootCA");
+                        act = "remove";
+                       }
+                       else
+                       {
+                        $("#rootca").text("Remove MobSF RootCA");
+                        act = "install";
+                       }
+
+                        $.ajax({
+                                url : "../MobSFCA/", 
+                                type : "POST",
+                                dataType: "json", 
+                                data : {
+                                    action: act,
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    },
+                                    success : function(json) {
+                                      if (json.ca==="installed"){
+                                      $('#stat').append("\nMobSF RootCA Installed Successfully");
+                                    }
+                                    else if (json.ca==="removed"){
+                                      $('#stat').append("\nMobSF RootCA Removed Successfully");
+                                    }
+                                    $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                        document.getElementById("er").srcdoc = xhr.responseText;
+                                    }   
+                      });
+                    return false;  
+                }); 
+
+      //Execute ADB
+     $("#exec").click(function()  {
+      var cmddata= $("#cmd").val();
+      document.getElementById("er").srcdoc="";
+      //DOM XSS Prevention
+      cmddata=DOMXSSSafeJS(cmddata);
+
+                        $.ajax({
+                                url : "../ExecuteADB/", 
+                                type : "POST",
+                                dataType: "json", 
+                                data : {
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    cmd: cmddata,
+                                    },
+                                    success : function(json) {
+                                      if (json.cmd==="yes"){
+                                  $('#stat').append("\nADB command executed successfully");
+                                  $('#stat').append("\nResults: "+ DOMXSSSafeHTML(json.resp));
+                                  $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                    }
+
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                       document.getElementById("er").srcdoc = xhr.responseText;
+                                    }   
+                      });
+                    return false;  
+                }); 
+       //Start ExportedActivity Tester
+     $("#expactt").click(function()  {
+                        $('#stat').append("\nStarting Exported Activity Tester...");
+                        $.ajax({
+                                url : "../ExportedActivityTester/", 
+                                type : "POST",
+                                dataType: "json", 
+                                data : {
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    md5: '{{ md5 }}',
+                                    pkg: '{{ pkg }}',
+                                    },
+                                    success : function(json) {
+                                      if (json.expacttest==="done"){
+                                  $('#stat').append("\nExported Activity Testing Completed.");
+                                  $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                    }
+                                    else if(json.expacttest=="noact"){
+                                      $('#stat').append("\nNo Activities Found!");
+                                  $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                    }
+
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                       document.getElementById("er").srcdoc = xhr.responseText;
+                                    }   
+                      });
+                    return false;  
+                }); 
+
+
+      //Start Activity Tester
+     $("#actt").click(function()  {
+                        $('#stat').append("\nStarting Activity Tester...");
+                        $.ajax({
+                                url : "../ActivityTester/", 
+                                type : "POST",
+                                dataType: "json", 
+                                data : {
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    md5: '{{ md5 }}',
+                                    pkg: '{{ pkg }}',
+                                    },
+                                    success : function(json) {
+                                      if (json.acttest==="done"){
+                                  $('#stat').append("\nActivity Testing Completed.");
+                                  $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                    }
+                                    else if(json.acttest=="noact"){
+                                      $('#stat').append("\nNo Activities Found!");
+                                  $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                    }
+
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                       document.getElementById("er").srcdoc = xhr.responseText;
+                                    }   
+                      });
+                    return false;  
+                }); 
+
+//Finish Testing
+     $("#stop").one( "click", function() {
+                    	$('#stat').append("\nCollecting Data...");
+
+                      //Stop Screen Casting if it's running
+			
+                       var stext = $("#screen").text();
+                       var md;
+                       if (stext === "Stop Screen")
+                       {
+                        $("#screen").text("Show Screen");
+                        md = "off";
+                        $.ajax({
+                          url : "../ScreenCast/", 
+                          type : "POST",
+                          dataType: "json", 
+                          data : {
+                              mode: md,
+                              csrfmiddlewaretoken: '{{ csrf_token }}',
+                              },
+                              success : function(json) {
+                                
+                                if (json.status==="off"){
+                                touch = "off;"
+                                refresh = false;
+                                $('#stat').append("\nScreen sharing stopped");
+                                $('#my').attr('src', '/static/img/loading.jpg');
+
+                              }
+                                $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                
+                              },
+                              error : function(xhr,errmsg,err) {
+                                  document.getElementById("er").srcdoc = xhr.responseText;
+                              }   
+                        });
+                      }
+                        //
+                    		$.ajax({
+                                url : "../FinalTest/", 
+                                type : "POST",
+                                dataType: "json", 
+                                data : {
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    md5: '{{ md5 }}',
+                                    pkg: '{{ pkg }}',
+                                    },
+                                    success : function(json) {
+                                    	if (json.final==="yes"){
+                                    	$('#stop').addClass("btn btn-success");
+                                    	$('#stop').text("Testing Completed");
+                                    	$('#stat').append("\nDownloading Logcat logs");
+                             			$('#stat').append("\nDownloading Droidmon API Monitor Logcat logs");
+                             			$('#stat').append("\nDownloading Dumpsys logs");
+                             			$('#stat').append("\nStopping Application");
+                                    	$('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                    	dump();
+                                    }
+
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                       document.getElementById("er").srcdoc = xhr.responseText;
+                                    }   
+                      });
+                    return false;  
+                }); 
+
+                //end doc.ready
+			});
+function DOMXSSSafeJS(data)
+{
+  return data
+      .replace(/</g, "\u003c")
+      .replace(/>/g, "\u003e")
+      .replace(/"/g, "\u0022")
+      .replace(/'/g, "\u0027")
+      .replace(/`/g, "\u0060")
+      .replace(/\(/g, "\u0028")
+      .replace(/\)/g, "\u0029")
+      .replace(/{/g, "\u007b")
+      .replace(/}/g, "\u007d")
+      .replace(/-/g, "\u002d")
+      .replace(/\+/g, "\u002b")
+      .replace(/\//g, "\u002f")
+      .replace(/\$/g, "\u0024");
+
+}
+function DOMXSSSafeHTML(data)
+{
+  return data
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#x27;")
+      .replace(/`/g, "&#x60;")
+      .replace(/\(/g, "&#x28;")
+      .replace(/\)/g, "&#x29;")
+      .replace(/{/g, "&#x7B;")
+      .replace(/}/g, "&#x7D;")
+      .replace(/-/g, "&#x2D;")
+      .replace(/\+/g, "&#x2B;");
+}
+		function dump()
+		{
+			$('#stat').append("\nDumping Application Data from the device. Please Wait....");
+			$('#stat').scrollTop($('#stat')[0].scrollHeight);
+                    		$.ajax({
+                                url : "../DumpData/", 
+                                type : "POST",
+                                dataType: "json", 
+                                data : {
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    md5: '{{ md5 }}',
+                                    pkg: '{{ pkg }}',
+                                    },
+                                    success : function(json) {
+                                    	if (json.dump==="yes"){
+                                    	$('#stat').append("\nApplication Data Dumped!");
+                             			$('#stat').append("\nGenerating Report...Please Wait!");
+                                    	$('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                    	//Call reporting
+                                      location.href="//"+location.host+"/Report/?md5={{ md5 }}&pkg={{ pkg }}";
+                                    }
+
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                       document.getElementById("er").srcdoc = xhr.responseText;
+                                    }   
+                      });
+               
+
+		}
+      </script>
+  
+		
+   {% endblock %}

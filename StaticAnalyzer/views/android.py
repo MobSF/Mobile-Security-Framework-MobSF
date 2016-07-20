@@ -1,4 +1,7 @@
 # -*- coding: utf_8 -*-
+"""
+Android Static Code Analysis
+"""
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
@@ -7,16 +10,15 @@ from django.conf import settings
 from django.utils.html import escape
 from django.template.defaulttags import register
 
-from StaticAnalyzer.models import StaticAnalyzerAndroid
-from MobSF.utils import PrintException,python_list,python_dict,isDirExists,isFileExists
-from MalwareAnalyzer.views import MalwareCheck
-from StaticAnalyzer.views.shared_func import HashGen
-
-
-from xml.dom import minidom
-from .dvm_permissions import DVM_PERMISSIONS
 import sqlite3 as sq
-import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,sys,plistlib
+import io, re, os, zipfile, subprocess, ntpath, shutil, platform
+from xml.dom import minidom
+
+from StaticAnalyzer.models import StaticAnalyzerAndroid
+from MobSF.utils import PrintException, python_list, python_dict, isDirExists, isFileExists
+from MalwareAnalyzer.views import MalwareCheck
+from StaticAnalyzer.views.shared_func import FileSize, HashGen, Unzip
+from .dvm_permissions import DVM_PERMISSIONS
 
 try:
     import StringIO
@@ -30,19 +32,19 @@ def key(d, key_name):
 
 def Java(request):
     try:
-        m=re.match('^[0-9a-f]{32}$',request.GET['md5'])
-        typ=request.GET['type']
+        m = re.match('^[0-9a-f]{32}$', request.GET['md5'])
+        typ = request.GET['type']
         if m:
-            MD5=request.GET['md5']
-            if typ=='eclipse':
-                SRC=os.path.join(settings.UPLD_DIR, MD5+'/src/')
-                t=typ
-            elif typ=='studio':
-                SRC=os.path.join(settings.UPLD_DIR, MD5+'/app/src/main/java/')
-                t=typ
-            elif typ=='apk':
-                SRC=os.path.join(settings.UPLD_DIR, MD5+'/java_source/')
-                t=typ
+            MD5 = request.GET['md5']
+            if typ == 'eclipse':
+                SRC = os.path.join(settings.UPLD_DIR, MD5+'/src/')
+                t = typ
+            elif typ == 'studio':
+                SRC = os.path.join(settings.UPLD_DIR, MD5+'/app/src/main/java/')
+                t = typ
+            elif typ == 'apk':
+                SRC = os.path.join(settings.UPLD_DIR, MD5+'/java_source/')
+                t = typ
             else:
                 return HttpResponseRedirect('/error/')
             html=''
@@ -766,7 +768,7 @@ def ValidAndroidZip(APP_DIR):
         PrintException("[ERROR] Determining Upload type")
 
 
-def FileSize(APP_PATH): return round(float(os.path.getsize(APP_PATH)) / (1024 * 1024),2)
+
 def GenDownloads(APP_DIR,MD5):
     try:
         print "[INFO] Generating Downloads"
@@ -793,30 +795,6 @@ def zipdir(path, zip):
                 zip.write(os.path.join(root, file))
     except:
         PrintException("[ERROR] Zipping")
-
-def Unzip(APP_PATH, EXT_PATH):
-    print "[INFO] Unzipping"
-    try:
-        files=[]
-        with zipfile.ZipFile(APP_PATH, "r") as z:
-                z.extractall(EXT_PATH)
-                files=z.namelist()
-        return files
-    except:
-        PrintException("[ERROR] Unzipping Error")
-        if platform.system()=="Windows":
-            print "\n[INFO] Not yet Implemented."
-        else:
-            print "\n[INFO] Using the Default OS Unzip Utility."
-            try:
-                subprocess.call(['unzip', '-o', '-q', APP_PATH, '-d', EXT_PATH])
-                dat=subprocess.check_output(['unzip','-qq','-l',APP_PATH])
-                dat=dat.split('\n')
-                x=['Length   Date   Time   Name']
-                x=x+dat
-                return x
-            except:
-                PrintException("[ERROR] Unzipping Error")
 
 def FormatPermissions(PERMISSIONS):
     try:

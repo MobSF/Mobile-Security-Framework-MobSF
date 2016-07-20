@@ -2,6 +2,7 @@ from django.conf.urls import url
 import MobSF.views
 import APITester.views
 import DynamicAnalyzer.views.android
+import DynamicAnalyzer.views.android_standalone
 import StaticAnalyzer.views.android
 import StaticAnalyzer.views.ios
 import StaticAnalyzer.views.shared_func
@@ -43,7 +44,9 @@ urlpatterns = [
     url(r'^View/$', DynamicAnalyzer.views.android.View),
     url(r'^ScreenCast/$', DynamicAnalyzer.views.android.ScreenCast),
     url(r'^Touch/$', DynamicAnalyzer.views.android.Touch),
-    
+
+    url(r'^AndroidDynamic/$', DynamicAnalyzer.views.android_standalone.DynamicAnalyzer),
+
     url(r'^APIFuzzer/$', APITester.views.APIFuzzer),
     url(r'^StartScan/$', APITester.views.StartScan),
     url(r'^NoAPI/$', APITester.views.NoAPI),

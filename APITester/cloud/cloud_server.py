@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-
 import tornado.ioloop
-import tornado.web,re
+import tornado.web
 import sqlite3 as lite
-import datetime
+import datetime, re
 
 def CleanDB():
     con = lite.connect('db.db')
