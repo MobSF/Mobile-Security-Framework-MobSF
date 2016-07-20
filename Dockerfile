@@ -22,7 +22,7 @@ RUN apt-get install -y software-properties-common && \
     apt-get install -y oracle-java8-installer && \
     apt-get clean
 
-#Install Python, PIP and virtualenv
+#Install Python, pip
 RUN \
   apt-get install -y \
   python \
@@ -34,7 +34,7 @@ RUN \
 RUN \
   rm -rf /var/lib/apt/lists/*
 
-#Get MobSF
+#Clone MobSF master
 WORKDIR /root
 RUN git clone https://github.com/ajinabraham/Mobile-Security-Framework-MobSF.git
 
