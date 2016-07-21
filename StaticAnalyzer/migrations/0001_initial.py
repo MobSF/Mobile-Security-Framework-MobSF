@@ -117,4 +117,21 @@ class Migration(migrations.Migration):
                 ('STRINGS', models.TextField()),
             ],
         ),
+        migrations.CreateModel(
+            name='StaticAnalyzerWindows',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('TITLE', models.TextField()),
+                ('APPNAMEX', models.TextField()),
+                ('SIZE', models.CharField(max_length=50)),
+                ('MD5', models.CharField(max_length=50)),
+                ('SHA1', models.TextField()),
+                ('SHA256', models.TextField()),
+                ('BINNAME', models.TextField()),
+                ('BIN_ANAL', models.TextField()),
+                ('HTML', models.TextField()),
+                ('CODEANAL', models.TextField()),
+                ('STRINGS', models.TextField()),
+            ],
+        ),
     ]

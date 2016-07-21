@@ -19,12 +19,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 MOBSF_VER = "v0.9.2 Beta"
 BANNER ="""
-  __  __       _    ____  _____          ___   ___   ____  
- |  \/  | ___ | |__/ ___||  ___| __   __/ _ \ / _ \ |___ \ 
+  __  __       _    ____  _____          ___   ___   ____
+ |  \/  | ___ | |__/ ___||  ___| __   __/ _ \ / _ \ |___ \
  | |\/| |/ _ \| '_ \___ \| |_    \ \ / / | | | (_) |  __) |
- | |  | | (_) | |_) |__) |  _|    \ V /| |_| |\__, | / __/ 
- |_|  |_|\___/|_.__/____/|_|       \_/  \___(_) /_(_)_____|                                                                                                          
-                                                            
+ | |  | | (_) | |_) |__) |  _|    \ V /| |_| |\__, | / __/
+ |_|  |_|\___/|_.__/____/|_|       \_/  \___(_) /_(_)_____|
+
 """
 utils.printMobSFverison(MOBSF_VER, BANNER)
 #==============================================
@@ -70,7 +70,7 @@ try:
     else:
         CONFIG_HOME = False
 except:
-    utils.PrintException("[ERROR] Parsing Config") 
+    utils.PrintException("[ERROR] Parsing Config")
     CONFIG_HOME = False
 #===============================================
 
@@ -98,6 +98,9 @@ ZIP_MIME = ['application/zip',
 'application/octet-stream',
 'application/x-zip-compressed',
 'binary/octet-stream',
+]
+APPX_MIME = [
+    'application/octet-stream'
 ]
 #===============================================
 
@@ -201,7 +204,7 @@ else:
 
     #==============3rd Party Tools=================
     '''
-    If you want to use a different version of 3rd party tools used by MobSF. 
+    If you want to use a different version of 3rd party tools used by MobSF.
     You can do that by specifying the path here. If specified, MobSF will run
     the tool from this location.
     '''
@@ -238,7 +241,7 @@ else:
     #==============RESPONSE VALIDATION==============
     XXE_VALIDATE_STRING = "m0bsfxx3"
     #===============================================
-    
+
     #=========Path Traversal - API Testing==========
     CHECK_FILE = "/etc/passwd"
     RESPONSE_REGEX = "root:|nobody:"
@@ -293,7 +296,7 @@ else:
     #==========DECOMPILER SETTINGS=================
 
     DECOMPILER = "jd-core"
-    #Two Decompilers are available 
+    #Two Decompilers are available
     #1. jd-core
     #2. cfr
     #3. procyon
@@ -301,12 +304,12 @@ else:
 
     #==========Dex to Jar Converter================
     JAR_CONVERTER = "d2j"
-    #Two Dex to Jar converters are available 
+    #Two Dex to Jar converters are available
     #1. d2j
     #2. enjarify
 
     '''
-    enjarify requires python3. Install Python 3 and add the path to environment variable 
+    enjarify requires python3. Install Python 3 and add the path to environment variable
     PATH or provide the Python 3 path to "PYTHON3_PATH" variable in settings.py
     ex: PYTHON3_PATH = "C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/"
     '''

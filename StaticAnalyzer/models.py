@@ -91,3 +91,16 @@ class StaticAnalyzerIOSZIP(models.Model):
 	URLnFile=models.TextField()
 	DOMAINS=models.TextField()
 	EmailnFile=models.TextField()
+
+class StaticAnalyzerWindows(models.Model):
+	TITLE=models.TextField()
+	APPNAMEX=models.TextField()
+	SIZE=models.CharField(max_length=50)
+	MD5=models.CharField(max_length=50)
+	SHA1=models.TextField()
+	SHA256=models.TextField()
+	BINNAME=models.TextField()
+	BIN_ANAL=models.TextField()
+	HTML=models.TextField()
+	CODEANAL=models.TextField()
+	STRINGS=models.TextField()
