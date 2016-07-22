@@ -349,10 +349,12 @@
 {{ certinfo | safe}}
 {% if issued == "good" %} 
 <strong>Certicate Status: </strong><span class="label label-success">Good</span>
-{% else %}
+{% elif issued == "bad" %}
 <strong>Certicate Status: </strong><span class="label label-danger">Bad</span>
 <strong>Description:</strong>App Signed by 'Android Debug' Certificate.
 Production ready applications should not be signed with 'Android Debug' Certificate.
+{% elif issued == "missing" %}
+<strong>Certicate Status: </strong><span class="label label-warning">Certificate not found</span>
 {% endif %}
 </code></pre>
 </section>

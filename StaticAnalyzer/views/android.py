@@ -816,6 +816,7 @@ def CertInfo(APP_DIR,TOOLS_DIR):
         cert=os.path.join(APP_DIR,'META-INF/')
         CP_PATH=TOOLS_DIR + 'CertPrint.jar'
         files = [ f for f in os.listdir(cert) if os.path.isfile(os.path.join(cert,f)) ]
+        certfile = None
         if "CERT.RSA" in files:
             certfile=os.path.join(cert,"CERT.RSA")
         else:
@@ -824,13 +825,16 @@ def CertInfo(APP_DIR,TOOLS_DIR):
                     certfile=os.path.join(cert,f)
                 elif f.lower().endswith(".dsa"):
                     certfile=os.path.join(cert,f)
-
-        args=[settings.JAVA_PATH+'java','-jar', CP_PATH, certfile]
-        dat=''
-        issued='good'
-        dat=escape(subprocess.check_output(args)).replace('\n', '</br>')
+        if certfile:
+            args=[settings.JAVA_PATH+'java','-jar', CP_PATH, certfile]
+            dat=''
+            issued='good'
+            dat=escape(subprocess.check_output(args)).replace('\n', '</br>')
+        else:
+            dat='No Code Signing Certificate Found!'
+            issued='missing'
         if re.findall("Issuer: CN=Android Debug|Subject: CN=Android Debug",dat):
-            issued="bad"
+            issued='bad'
         return dat,issued
     except:
         PrintException("[ERROR] Reading Code Signing Certificate")
