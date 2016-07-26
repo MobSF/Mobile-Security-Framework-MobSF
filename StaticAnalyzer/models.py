@@ -100,5 +100,6 @@ class StaticAnalyzerWindows(models.Model):
     SHA1 = models.TextField()
     SHA256 = models.TextField()
     BINNAME = models.TextField()
+    VERSION = models.TextField()
     BIN_ANAL = models.TextField()
     STRINGS = models.TextField()

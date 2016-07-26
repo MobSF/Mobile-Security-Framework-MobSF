@@ -10,13 +10,15 @@ from shared_func import HashGen
 from shared_func import Unzip
 
 from StaticAnalyzer.models import StaticAnalyzerWindows
+
 from MobSF.utils import PrintException
 from MobSF.utils import isFileExists
+
+from lxml import etree
 
 import re
 import os
 import subprocess
-import plistlib
 
 try:
     import xhtml2pdf.pisa as pisa
@@ -74,7 +76,7 @@ def staticanalyzer_windows(request):
                     print "[INFO] Extracting APPX"
                     Unzip(APP_PATH, APP_DIR)
                     # BIN_NAME, BIN_ANAL, STRINGS = BinaryAnalysis(BIN_DIR, TOOLS_DIR, APP_DIR)
-                    BIN_NAME = BinaryAnalysis(TOOLS_DIR, APP_DIR)
+                    BIN_NAME, VER = BinaryAnalysis(TOOLS_DIR, APP_DIR)
                     # Saving to DB
                     print "\n[INFO] Connecting to DB"
                     if rescan == '1':
@@ -89,6 +91,7 @@ def staticanalyzer_windows(request):
                             SHA1=SHA1,
                             SHA256=SHA256,
                             BINNAME=BIN_NAME,
+                            VERSION=VER,
                             # BIN_ANAL=BIN_ANAL,
                             # STRINGS=STRINGS
                         )
@@ -102,6 +105,7 @@ def staticanalyzer_windows(request):
                             SHA1=SHA1,
                             SHA256=SHA256,
                             BINNAME=BIN_NAME,
+                            VERSION=VER,
                             #BIN_ANAL=BIN_ANAL,
                             #STRINGS=STRINGS
                         )
@@ -114,6 +118,7 @@ def staticanalyzer_windows(request):
                         'sha1' : SHA1,
                         'sha256' : SHA256,
                         'bin_name' : BIN_NAME,
+                        'version' : VER,
                         #'bin_anal' : BIN_ANAL,
                         #'strings' : STRINGS,
                     }
@@ -141,40 +146,33 @@ def BinaryAnalysis(TOOLS_DIR, APP_DIR):
             if d.endswith(".exe"):
                 break
         BIN_DIR = os.path.join(APP_DIR, d)         #Full Dir/Payload/x.app
-        XML_FILE = os.path.join(BIN_DIR, "Info.plist")
+        xml_file = os.path.join(APP_DIR, "AppxManifest.xml")
         BIN = d.replace(".exe", "")
-        BIN_NAME = BIN
+        bin_name = BIN
 
-        return BIN
         ID = ""
-        VER = ""
+        ver = ""
         SDK = ""
         PLTFM = ""
         MIN = ""
         XML = ""
 
         try:
-            print "[INFO] Reading Info.plist"
-            XML = readBinXML(XML_FILE)
-            p = plistlib.readPlistFromString(XML)
-            BIN_NAME = BIN = ID = VER = SDK = PLTFM = MIN = ""
-            if "CFBundleDisplayName" in p:
-                BIN_NAME = p["CFBundleDisplayName"]
-            if "CFBundleExecutable" in p:
-                BIN = p["CFBundleExecutable"]
-            if "CFBundleIdentifier" in p:
-                ID = p["CFBundleIdentifier"]
-            if "CFBundleVersion" in p:
-                VER = p["CFBundleVersion"]
-            if "DTSDKName" in p:
-                SDK = p["DTSDKName"]
-            if "DTPlatformVersion" in p:
-                PLTFM = p["DTPlatformVersion"]
-            if "MinimumOSVersion" in p:
-                MIN = p["MinimumOSVersion"]
+            print "[INFO] Reading AppxManifest"
+            # TODO (Parse XML)
+            config = etree.XMLParser(remove_blank_text=True, resolve_entities=False)
+            xml = etree.XML(open(xml_file).read(), config)
+            for child in xml.getchildren():
+                if child.tag.endswith("}Identity"):
+                    print "[*] Found Identity"
+                    ver = child.get("Version")
+                    print ver
+
+            # p = plistlib.readPlistFromString(XML)
 
         except:
-            PrintException("[ERROR] - Reading from Info.plist")
+            PrintException("[ERROR] - Reading from AppxManifest.xml")
+        return bin_name, ver
         BIN_PATH = os.path.join(BIN_DIR, BIN)  #Full Dir/Payload/x.app/x
         print "[INFO] iOS Binary : " + BIN
         print "[INFO] Running otool against the Binary"
