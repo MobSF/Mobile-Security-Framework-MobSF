@@ -22,7 +22,7 @@ urlpatterns = [
 
     url(r'^StaticAnalyzer/$', StaticAnalyzer.views.android.StaticAnalyzer),
     url(r'^StaticAnalyzer_iOS/$', StaticAnalyzer.views.ios.StaticAnalyzer_iOS),
-    url(r'^StaticAnalyzer_Windows/$', StaticAnalyzer.views.windows.StaticAnalyzer_Windows),
+    url(r'^StaticAnalyzer_Windows/$', StaticAnalyzer.views.windows.staticanalyzer_windows),
     url(r'^ViewFile/$', StaticAnalyzer.views.ios.ViewFile),
     url(r'^ViewSource/$', StaticAnalyzer.views.android.ViewSource),
     url(r'^PDF/$', StaticAnalyzer.views.shared_func.PDF),
