@@ -106,25 +106,70 @@
               <span class="label label-primary">App Name</span>
               {{ bin_name }}
               </p>
-               <p>
-              <span class="label label-primary">Identifier</span>
-              {{ id }}
-                <span class="label label-primary">SDK Name</span>
-              {{ sdk }}
-
-
+              <p>
+                  <span class="label label-primary">Publisher</span>
+                  {{ pub_name }}
               </p>
-                <p>
-             <span class="label label-primary">Version</span>
-              {{ version }}
-               </p>
-               <p>
+              <p>
+               <span class="label label-primary">Version</span>
+               {{ version }}
+              </p>
+              <p>
+               <span class="label label-primary">Arch</span>
+               {{ arch }}
+              </p>
+              <p>
               <span class="label label-primary">Platform Version</span>
               {{ pltfm }}
             </p>
             <p>
              <span class="label label-primary">Min OS Version</span>
               {{ min }}
+            </p>
+       </div>
+
+        </div><!-- /.box-body -->
+      </div><!-- /.box -->
+    </div><!-- /.col -->
+    <div class="col-sm-5">
+      <div class="box box-danger">
+        <div class="box-header with-border">
+          <h3 class="box-title">XML Information</h3>
+          <span class="label label-danger pull-right"><i class="glyphicon glyphicon-info-sign"></i></span>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+        <div class="list-group">
+               <p>
+              <span class="label label-primary">compiler_version</span>
+              {{ compiler_version }}
+              </p>
+              <p>
+                  <span class="label label-primary">visual_studio_version</span>
+                  {{ visual_studio_version }}
+              </p>
+              <p>
+               <span class="label label-primary">visual_studio_edition</span>
+               {{ visual_studio_edition }}
+              </p>
+              <p>
+               <span class="label label-primary">target_os</span>
+               {{ target_os }}
+              </p>
+              <p>
+              <span class="label label-primary">appx_dll_version</span>
+              {{ appx_dll_version }}
+            </p>
+            <p>
+             <span class="label label-primary">proj_guid</span>
+              {{ proj_guid }}
+            </p>
+            <p>
+             <span class="label label-primary">opti_tool</span>
+              {{ opti_tool }}
+            </p>
+            <p>
+             <span class="label label-primary">target_run</span>
+              {{ target_run }}
             </p>
        </div>
 
