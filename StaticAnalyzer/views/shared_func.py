@@ -2,7 +2,7 @@
 """
 Module providing the shared functions for static analysis of iOS and Android
 """
-import os, hashlib, io, re, zipfile, subprocess
+import os, hashlib, io, re, zipfile, subprocess, platform
 
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
