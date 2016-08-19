@@ -6,10 +6,16 @@ try:
 except ImportError:
     from io import StringIO
 
+import ast
 import re
 import os
 import subprocess
 
+# Binskim analysis
+import json
+import requests
+
+# XML-Manifest
 from lxml import etree
 
 from django.shortcuts import render
@@ -57,7 +63,6 @@ def staticanalyzer_windows(request):
                         'sha1' : db_entry[0].SHA1,
                         'sha256' : db_entry[0].SHA256,
                         'bin_name' : db_entry[0].BINNAME,
-                        'bin_anal' : db_entry[0].BIN_ANAL,
                         'version' :  db_entry[0].VERSION,
                         'arch' :  db_entry[0].ARCH,
                         'compiler_version' :  db_entry[0].COMPILER_VERSION,
@@ -68,7 +73,9 @@ def staticanalyzer_windows(request):
                         'proj_guid' :  db_entry[0].PROJ_GUID,
                         'opti_tool' :  db_entry[0].OPTI_TOOL,
                         'target_run' :  db_entry[0].TARGET_RUN,
-                        'strings' : db_entry[0].STRINGS
+                        'strings' : db_entry[0].STRINGS,
+                        'bin_an_results' : ast.literal_eval(db_entry[0].BIN_AN_RESULTS),
+                        'bin_an_warnings' : ast.literal_eval(db_entry[0].BIN_AN_WARNINGS)
                     }
                 else:
                     print "[INFO] Windows Binary Analysis Started"
@@ -108,7 +115,8 @@ def staticanalyzer_windows(request):
                             OPTI_TOOL=xml_dic['opti_tool'],
                             TARGET_RUN=xml_dic['target_run'],
                             STRINGS=bin_an_dic['strings'],
-                            # BIN_ANAL=BIN_ANAL,
+                            BIN_AN_RESULTS=bin_an_dic['results'],
+                            BIN_AN_WARNINGS=bin_an_dic['warnings'],
                         )
                     elif rescan == '0':
                         print "\n[INFO] Saving to Database"
@@ -132,7 +140,8 @@ def staticanalyzer_windows(request):
                             OPTI_TOOL=xml_dic['opti_tool'],
                             TARGET_RUN=xml_dic['target_run'],
                             STRINGS=bin_an_dic['strings'],
-                            #BIN_ANAL=BIN_ANAL,
+                            BIN_AN_RESULTS=bin_an_dic['results'],
+                            BIN_AN_WARNINGS=bin_an_dic['warnings'],
                         )
                         db_item.save()
                     context = {
@@ -155,7 +164,8 @@ def staticanalyzer_windows(request):
                         'opti_tool' : xml_dic['opti_tool'],
                         'target_run' : xml_dic['target_run'],
                         'strings' : bin_an_dic['strings'],
-                        #'bin_anal' : BIN_ANAL,
+                        'bin_an_results' : bin_an_dic['results'],
+                        'bin_an_warnings' : bin_an_dic['warnings'],
                     }
                 template = "windows_binary_analysis.html"
                 return render(request, template, context)
@@ -176,6 +186,7 @@ def staticanalyzer_windows(request):
 def _binary_analysis(tools_dir, app_dir):
     """Start binary analsis."""
     print "[INFO] Starting Binary Analysis - XML"
+    # Search for exe
     bin_an_dic = {}
     dirs = os.listdir(app_dir)
     for file_name in dirs:
@@ -188,10 +199,61 @@ def _binary_analysis(tools_dir, app_dir):
 
     bin_path = os.path.join(app_dir, bin_an_dic['bin'])
 
+    # Execute strings command
     args = ["strings", bin_path]
     bin_an_dic['strings'] = escape(subprocess.check_output(args))
     bin_an_dic['strings'] = bin_an_dic['strings'].replace("\n", "</br>")
+
+    # Execute binskim analysis if vm is available
+    bin_an_dic = __binskim(bin_path, bin_an_dic)
     return bin_an_dic
+
+def __binskim(bin_path, bin_an_dic):
+    url = 'http://172.16.14.131:5000/upload'
+    files = {'file': open(bin_path, 'rb')}
+
+    r = requests.post(url, files=files)
+    name = r.text
+    print name
+
+    url = 'http://172.16.14.131:5000/static_analyze/' + name.strip()
+    print "---"
+    print url
+    print "---"
+    r = requests.get(url)
+    print r.text
+    output = json.loads(r.text)
+
+    current_run = output['runs'][0]
+    rules = output['runs'][0]['rules']
+
+    # Init sections
+    bin_an_dic['results'] = []
+    bin_an_dic['warnings'] = []
+
+    print "Results:"
+    if 'results' in current_run:
+        for res in current_run['results']:
+            print "RuleID: " + res['ruleId']
+            print "Level: " + res['level']
+            print "Descrition: " + rules[res['ruleId']]['shortDescription']
+            print "+++"
+            result = {
+                "rule_id": res['ruleId'],
+                "status": "Insecure",
+                "desc": rules[res['ruleId']]['shortDescription']
+            }
+            bin_an_dic['results'].append(result)
+
+    print "---\nWarnings:"
+    if 'configurationNotifications' in current_run:
+        for warn in current_run['configurationNotifications']:
+            print "RuleID: " + warn['ruleId']
+            print "Message: " + warn['message']
+            bin_an_dic['warnings'].append(warn)
+
+    return bin_an_dic
+
 
 def _parse_xml(app_dir):
     """Parse the AppxManifest file to get basic informations."""
