@@ -227,7 +227,19 @@
                     {% for result in bin_an_results %}
                       <tr>
                         <td>{{ result.rule_id }}</td>
-                        <td><span class='label label-info'>{{ result.status }}</span></td>
+                        <td>
+                          {% if result.status == "Insecure" %}
+                            <span class='label label-danger'>
+                          {% endif %}
+                          {% if result.status == "Secure" %}
+                            <span class='label label-sucess'>
+                          {% endif %}
+                          {% if result.status == "Info" %}
+                            <span class='label label-info'>
+                          {% endif %}
+                              {{ result.status }}
+                          </span>
+                        </td>
                         <td>{{ result.desc }}</td>
                       </tr>
                     {% endfor %}
