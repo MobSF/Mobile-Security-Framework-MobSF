@@ -276,6 +276,11 @@ else:
     VM_ADB_PORT = 5555
     VM_TIMEOUT = 100
     #==============================================
+    #================WINDOWS-VM-Settings ===================
+    #IP of the MobSF VM
+    # 0.0.0.0 == disabled
+    WINDOWS_VM_IP = '0.0.0.0'
+    #==============================================
 
     #================HOST/PROXY SETTINGS ==========
     PROXY_IP='192.168.56.1' #Host/Server/Proxy IP

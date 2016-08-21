@@ -185,9 +185,14 @@ def staticanalyzer_windows(request):
 
 def _binary_analysis(tools_dir, app_dir):
     """Start binary analsis."""
-    print "[INFO] Starting Binary Analysis - XML"
-    # Search for exe
+    print "[INFO] Starting Binary Analysis"
     bin_an_dic = {}
+
+    # Init optional sections to prevent None-Pointer-Errors
+    bin_an_dic['results'] = []
+    bin_an_dic['warnings'] = []
+
+    # Search for exe
     dirs = os.listdir(app_dir)
     for file_name in dirs:
         if file_name.endswith(".exe"):
@@ -205,39 +210,34 @@ def _binary_analysis(tools_dir, app_dir):
     bin_an_dic['strings'] = bin_an_dic['strings'].replace("\n", "</br>")
 
     # Execute binskim analysis if vm is available
-    bin_an_dic = __binskim(bin_path, bin_an_dic)
+    if settings.WINDOWS_VM_IP != "0.0.0.0":
+        bin_an_dic = __binskim(bin_path, bin_an_dic)
+    else:
+        print "[INFO] WindowsVM not configured in settings.py. Skipping Binskim."
+
     return bin_an_dic
 
 def __binskim(bin_path, bin_an_dic):
-    url = 'http://172.16.14.131:5000/upload'
+    # Uplaod sample
+    url = 'http://{}:5000/upload'.format(settings.WINDOWS_VM_IP)
     files = {'file': open(bin_path, 'rb')}
-
     r = requests.post(url, files=files)
+    # Name of the sample is return by the remote machine
     name = r.text
-    print name
 
-    url = 'http://172.16.14.131:5000/static_analyze/' + name.strip()
-    print "---"
-    print url
-    print "---"
+    # Analyse the sample
+    url = 'http://{}:5000/static_analyze/{}'.format(settings.WINDOWS_VM_IP, name.strip())
     r = requests.get(url)
-    print r.text
+
+    # Load output as json
     output = json.loads(r.text)
 
+    # Parse output to results and warnings
     current_run = output['runs'][0]
     rules = output['runs'][0]['rules']
 
-    # Init sections
-    bin_an_dic['results'] = []
-    bin_an_dic['warnings'] = []
-
-    print "Results:"
     if 'results' in current_run:
         for res in current_run['results']:
-            print "RuleID: " + res['ruleId']
-            print "Level: " + res['level']
-            print "Descrition: " + rules[res['ruleId']]['shortDescription']
-            print "+++"
             result = {
                 "rule_id": res['ruleId'],
                 "status": "Insecure",
@@ -245,13 +245,11 @@ def __binskim(bin_path, bin_an_dic):
             }
             bin_an_dic['results'].append(result)
 
-    print "---\nWarnings:"
     if 'configurationNotifications' in current_run:
         for warn in current_run['configurationNotifications']:
-            print "RuleID: " + warn['ruleId']
-            print "Message: " + warn['message']
             bin_an_dic['warnings'].append(warn)
 
+    # Return updated dict
     return bin_an_dic
 
 
