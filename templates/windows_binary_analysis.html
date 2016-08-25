@@ -243,6 +243,17 @@
                         <td>{{ result.desc }}</td>
                       </tr>
                     {% endfor %}
+                    {% for warn in bin_an_warnings %}
+                    <tr>
+                      <td>{{ warn.rule_id }}</td>
+                      <td>
+                          <span class='label label-info'>
+                            {{ warn.status }}
+                        </span>
+                      </td>
+                      <td>{{ warn.desc }}</td>
+                    </tr>
+                    {% endfor %}
                     </tbody>
                     </table>
 

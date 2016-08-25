@@ -24,7 +24,7 @@ def static_analyze(sample):
     command = "analyze"
     path = app.config['mobsf_samples'] + sample
     output_p = "-o"
-    output_d = "C:\\Tools\\test.json"
+    output_d = app.config['mobsf_samples'] + sample + "_binskim"
     verbose = "-v"
     policy_p = "--config"
     policy_d = "default" # TODO(Other policies?)

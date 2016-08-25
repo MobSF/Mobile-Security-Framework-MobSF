@@ -218,25 +218,27 @@ def _binary_analysis(tools_dir, app_dir):
     return bin_an_dic
 
 def __binskim(bin_path, bin_an_dic):
-    # Uplaod sample
+    """Run the binskim analysis."""
+    print "[INFO] WindowsVM configured, running binskim."
+    # Upload sample
     url = 'http://{}:5000/upload'.format(settings.WINDOWS_VM_IP)
     files = {'file': open(bin_path, 'rb')}
-    r = requests.post(url, files=files)
+    response = requests.post(url, files=files)
     # Name of the sample is return by the remote machine
-    name = r.text
+    name = response.text
 
     # Analyse the sample
     url = 'http://{}:5000/static_analyze/{}'.format(settings.WINDOWS_VM_IP, name.strip())
-    r = requests.get(url)
+    response = requests.get(url)
 
     # Load output as json
-    output = json.loads(r.text)
+    output = json.loads(response.text)
 
     # Parse output to results and warnings
     current_run = output['runs'][0]
-    rules = output['runs'][0]['rules']
 
     if 'results' in current_run:
+        rules = output['runs'][0]['rules']
         for res in current_run['results']:
             result = {
                 "rule_id": res['ruleId'],
@@ -244,10 +246,24 @@ def __binskim(bin_path, bin_an_dic):
                 "desc": rules[res['ruleId']]['shortDescription']
             }
             bin_an_dic['results'].append(result)
+    else:
+        print "[WARNING] binskim has no results."
+        # Create an warining for the gui
+        warning = {
+            "rule_id": "No Binskim-Results",
+            "status": "Info",
+            "desc": "No results from Binskim."
+        }
+        bin_an_dic['warnings'].append(warning)
 
     if 'configurationNotifications' in current_run:
         for warn in current_run['configurationNotifications']:
-            bin_an_dic['warnings'].append(warn)
+            warning = {
+                "rule_id": warn['ruleId'],
+                "status": "Info",
+                "desc": warn['message']
+            }
+            bin_an_dic['warnings'].append(warning)
 
     # Return updated dict
     return bin_an_dic
@@ -257,24 +273,38 @@ def _parse_xml(app_dir):
     """Parse the AppxManifest file to get basic informations."""
     print "[INFO] Starting Binary Analysis - XML"
     xml_file = os.path.join(app_dir, "AppxManifest.xml")
-    xml_dic = {}
+    xml_dic = {
+        'version' : '',
+        'arch' : '',
+        'app_name' : '',
+        'pub_name' : '',
+        'compiler_version' : '',
+        'visual_studio_version' : '',
+        'visual_studio_edition' : '',
+        'target_os' : '',
+        'appx_dll_version' : '',
+        'proj_guid' : '',
+        'opti_tool' : '',
+        'target_run' : ''
+    }
 
     try:
         print "[INFO] Reading AppxManifest"
         config = etree.XMLParser(remove_blank_text=True, resolve_entities=False)
         xml = etree.XML(open(xml_file).read(), config)
         for child in xml.getchildren():
-            if child.tag.endswith("}Identity"): # } to prevent conflict with PhoneIdentity..
+            # } to prevent conflict with PhoneIdentity..
+            if isinstance(child.tag, str) and child.tag.endswith("}Identity"):
                 xml_dic['version'] = child.get("Version")
                 xml_dic['arch'] = child.get("ProcessorArchitecture")
-            elif child.tag.endswith("Properties"):
+            elif isinstance(child.tag, str) and child.tag.endswith("Properties"):
                 for sub_child in child.getchildren():
                     if sub_child.tag.endswith("}DisplayName"):
                         # TODO(Needed? Compare to existing app_name)
                         xml_dic['app_name'] = sub_child.text
                     elif sub_child.tag.endswith("}PublisherDisplayName"):
                         xml_dic['pub_name'] = sub_child.text
-            elif child.tag.endswith("}Metadata"):
+            elif isinstance(child.tag, str) and child.tag.endswith("}Metadata"):
                 xml_dic = __parse_xml_metadata(xml_dic, child)
     except:
         PrintException("[ERROR] - Reading from AppxManifest.xml")

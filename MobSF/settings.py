@@ -279,7 +279,7 @@ else:
     #================WINDOWS-VM-Settings ===================
     #IP of the MobSF VM
     # 0.0.0.0 == disabled
-    WINDOWS_VM_IP = '0.0.0.0'
+    WINDOWS_VM_IP =  '0.0.0.0' # '172.16.14.131'
     #==============================================
 
     #================HOST/PROXY SETTINGS ==========
