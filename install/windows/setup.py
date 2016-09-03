@@ -28,6 +28,10 @@ config = ""
 
 def download_config():
     """Download initial config file."""
+
+    # Create config path
+    os.makedirs(CONFIG_PATH, exist_ok=True)
+
     # Open File
     f = open(CONFIG_PATH + CONFIG_FILE, "wb")
 
@@ -47,8 +51,6 @@ def download_config():
 
 def read_config():
     """Read the config file and write it to the global var."""
-    # Create config path
-    os.makedirs(CONFIG_PATH, exist_ok=True)
 
     global config
     config = configparser.ConfigParser()
