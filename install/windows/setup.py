@@ -52,6 +52,8 @@ def download_config():
 def read_config():
     """Read the config file and write it to the global var."""
 
+    print("[*] Reading config file..")
+
     global config
     config = configparser.ConfigParser()
     config.read(CONFIG_PATH + CONFIG_FILE)
@@ -59,6 +61,9 @@ def read_config():
 
 def create_folders():
     """Create MobSF dirs."""
+
+    print("[*] Creating other folders...")
+
     os.makedirs(config['MobSF']['subdir_downloads'], exist_ok=True)
     os.makedirs(config['MobSF']['subdir_tools'], exist_ok=True)
     os.makedirs(config['MobSF']['subdir_samples'], exist_ok=True)
@@ -67,7 +72,7 @@ def create_folders():
 def check_dependencies():
     """Check dependencies and install if necessary."""
 
-    print("[*] Checking dependencies.")
+    print("[*] Checking dependencies...")
     missing_deps = []
     try:
         import flask
@@ -110,6 +115,8 @@ def tools_binskim():
     BINSKIM_NUGET = config['binskim']['nuget']
     MOBSF_SUBDIR_TOOLS = config['MobSF']['subdir_tools']
     NUGET = MOBSF_SUBDIR_TOOLS + config['nuget']['file']
+
+    print("[*] Downloading and installing Binskim...")
 
     # Execute nuget to get binkim
     output = subprocess.check_output(
@@ -172,7 +179,7 @@ def tools_rpcclient():
     f = open(MOBSF_SUBDIR_TOOLS + RPC_FILE, "wb")
 
     # Downloading File
-    print("[*] Downloading nuget..")
+    print("[*] Downloading rpc_server..")
     file = urllib.request.urlopen(RPC_URL)
 
     # Save content
@@ -204,6 +211,8 @@ def autostart():
     AUTOSTART_FILE = config['autostart']['file']
     batch_file = AUTOSTART + AUTOSTART_FILE
 
+    print("[*] Creating autostart binary...")
+
     # Open file
     f = open(batch_file, "wb")
 
@@ -216,6 +225,8 @@ def autostart():
 
     # Close handle
     f.close()
+
+    print("[*] Done. Start the server.")
 
     # Execute. Beware the " " because of windows strange paths..
     os.system('"'+batch_file+'"')
