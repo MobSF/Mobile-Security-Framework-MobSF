@@ -216,7 +216,14 @@ def _binary_analysis(tools_dir, app_dir):
         bin_an_dic = __binskim(name, bin_an_dic)
         bin_an_dic = __binscope(name, bin_an_dic)
     else:
-        print "[INFO] WindowsVM not configured in settings.py. Skipping Binskim."
+        print "[INFO] WindowsVM not configured in settings.py. Skipping Binskim and Binscope."
+        warning = {
+            "rule_id": "VM",
+            "status": "Info",
+            "desc": "VM is not configured. Please read the readme.md in MobSF/install/windows."
+        }
+        bin_an_dic['results'].append(warning)
+
 
     return bin_an_dic
 
