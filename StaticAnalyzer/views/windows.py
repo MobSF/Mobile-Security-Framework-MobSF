@@ -211,24 +211,33 @@ def _binary_analysis(tools_dir, app_dir):
 
     # Execute binskim analysis if vm is available
     if settings.WINDOWS_VM_IP != "0.0.0.0":
-        bin_an_dic = __binskim(bin_path, bin_an_dic)
+        print "[INFO] WindowsVM configured."
+        name = _upload_sample(bin_path)
+        bin_an_dic = __binskim(name, bin_an_dic)
+        bin_an_dic = __binscope(name, bin_an_dic)
     else:
         print "[INFO] WindowsVM not configured in settings.py. Skipping Binskim."
 
     return bin_an_dic
 
-def __binskim(bin_path, bin_an_dic):
-    """Run the binskim analysis."""
-    print "[INFO] WindowsVM configured, running binskim."
+def _upload_sample(bin_path):
+    """Upload sample to windows vm."""
+    print "[INFO] Uploading sample."
+
     # Upload sample
     url = 'http://{}:5000/upload'.format(settings.WINDOWS_VM_IP)
     files = {'file': open(bin_path, 'rb')}
     response = requests.post(url, files=files)
+
     # Name of the sample is return by the remote machine
     name = response.text
+    return name
 
+def __binskim(name, bin_an_dic):
+    """Run the binskim analysis."""
+    print "[INFO] Running binskim."
     # Analyse the sample
-    url = 'http://{}:5000/static_analyze/{}'.format(settings.WINDOWS_VM_IP, name.strip())
+    url = 'http://{}:5000/static_analyze/binskim/{}'.format(settings.WINDOWS_VM_IP, name.strip())
     response = requests.get(url)
 
     # Load output as json
@@ -268,6 +277,57 @@ def __binskim(bin_path, bin_an_dic):
     # Return updated dict
     return bin_an_dic
 
+def __binscope(name, bin_an_dic):
+    """Run the binskim analysis."""
+    print "[INFO] Running binscope. This might take a while, depending on the binary size."
+    # Analyse the sample
+    url = (
+        'http://{}:5000/static_analyze/binscope/{}'.format(settings.WINDOWS_VM_IP, name.strip())
+    )
+    response = requests.get(url)
+
+    # Load output as json
+    #output = json.loads(response.text)
+    print response.text
+
+    res = response.text[response.text.find('<'):]
+    config = etree.XMLParser(remove_blank_text=True, resolve_entities=False)
+    xml_file = etree.XML(bytes(res), config)
+
+    for item in xml_file.find('items').getchildren():
+        if item.find('issueType') is not None:
+            print "Type: {}".format(item.find('issueType').text)
+            print "Result: {}".format(item.find('result').text)
+
+            res = item.find('result').text
+
+            if res == 'PASS':
+                status = "Secure"
+                try:
+                    desc = item.find('Information').text
+                except AttributeError:
+                    desc = "No description provided by analysing tool."
+            elif res == 'FAIL':
+                status = "Insecure"
+
+                if item.find('Failure1') is not None:
+                    desc = item.find('Failure1').text
+                elif item.find('Information') is not None:
+                    desc = item.find('Information').text
+                elif item.find('diagnostic') is not None:
+                    status = "Info"
+                    desc = item.find('diagnostic').text
+                else:
+                    desc = "No description provided by analysing tool."
+
+            result = {
+                "rule_id": item.find('issueType').text,
+                "status": status,
+                "desc": desc
+            }
+            bin_an_dic['results'].append(result)
+
+    return bin_an_dic
 
 def _parse_xml(app_dir):
     """Parse the AppxManifest file to get basic informations."""

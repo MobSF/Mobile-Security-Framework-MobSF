@@ -11,8 +11,9 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-@app.route('/static_analyze/<string:sample>')
-def static_analyze(sample):
+
+@app.route('/static_analyze/binskim/<string:sample>')
+def binskim(sample):
     """Perform an static analysis on the sample and return the json"""
 
     # Check if param is a md5 to prevent attacks (we only use lower-case)
@@ -27,7 +28,7 @@ def static_analyze(sample):
     output_d = app.config['mobsf_samples'] + sample + "_binskim"
     verbose = "-v"
     policy_p = "--config"
-    policy_d = "default" # TODO(Other policies?)
+    policy_d = "default"  # TODO(Other policies?)
 
     # Assemble
     params = [
@@ -35,17 +36,63 @@ def static_analyze(sample):
             command,
             path,
             output_p, output_d,
-            #verbose,
+            # verbose,
             policy_p, policy_d
         ]
 
     # Execute process
     p = subprocess.Popen(subprocess.list2cmdline(params))
-    p.wait() # Wait for the process to finish..
+    p.wait()  # Wait for the process to finish..
 
     # Open the file and return the json
     f = open(output_d)
     return f.read()
+
+
+@app.route('/static_analyze/binscope/<string:sample>')
+def binscope(sample):
+    # Set params for execution of binskim
+    binscope = ["C:\\MobSF\\Tools\\BinScope\\BinScope.exe"]
+    target = ["C:\\MobSF\\Samples\\" + sample]
+    out_type = ["/Red", "/v"]
+    output = ["/l", target[0] + "_binscope"]
+    checks = [
+        '/Checks', 'ATLVersionCheck',
+        '/Checks', 'ATLVulnCheck',
+        '/Checks', 'AppContainerCheck',
+        '/Checks', 'CompilerVersionCheck',
+        '/Checks', 'DBCheck',
+        '/Checks', 'DefaultGSCookieCheck',
+        '/Checks', 'ExecutableImportsCheck',
+        '/Checks', 'FunctionPointersCheck',
+        '/Checks', 'GSCheck',
+        '/Checks', 'GSFriendlyInitCheck',
+        '/Checks', 'GSFunctionSafeBuffersCheck',
+        '/Checks', 'HighEntropyVACheck',
+        '/Checks', 'NXCheck',
+        '/Checks', 'RSA32Check',
+        '/Checks', 'SafeSEHCheck',
+        '/Checks', 'SharedSectionCheck',
+        '/Checks', 'VB6Check',
+        '/Checks', 'WXCheck',
+    ]
+    # Assemble
+    params = (
+        binscope +
+        target +
+        out_type +
+        output +
+        checks
+    )
+
+    # Execute process
+    p = subprocess.Popen(subprocess.list2cmdline(params))
+    p.wait()  # Wait for the process to finish..
+
+    # Open the file and return the json
+    f = open(output[1])
+    return f.read()
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
@@ -63,11 +110,11 @@ def upload_file():
             return redirect(request.url)
         if file:
             m = hashlib.md5()
-            pos = file.tell() # Store pos
+            pos = file.tell()  # Store pos
             test = file.read()
             # print(test) # Debug print
             m.update(test)
-            file.seek(pos) # Restore pos
+            file.seek(pos)  # Restore pos
             file.save(os.path.join(app.config['mobsf_samples'], m.hexdigest()))
             return m.hexdigest()
     return '''

@@ -26,21 +26,11 @@ AUTOSTART = (
 # Global var so we don't have to pass it every time..
 config = ""
 
-
-def init():
-    """Initialize configparser."""
+def read_config():
+    """Read the config file and write it to the global var."""
     # Create config path
     os.makedirs(CONFIG_PATH, exist_ok=True)
 
-    # Download config
-    _download_config()
-
-    # Read config
-    _read_config()
-
-
-def _read_config():
-    """Read the config file and write it to the global var."""
     global config
     config = configparser.ConfigParser()
     config.read(CONFIG_PATH + CONFIG_FILE)
@@ -49,7 +39,7 @@ def _read_config():
     _mobsf_folders()
 
 
-def _download_config():
+def download_config():
     """Download initial config file."""
     # Open File
     f = open(CONFIG_PATH + CONFIG_FILE, "wb")
@@ -174,7 +164,7 @@ def _find_exe(path, list):
 
 
 def tools_rpcclient():
-    """Download and install the rpc-server for MobSF"""
+    """Download and install rpc-server for MobSF"""
     RPC_URL = config['rpc']['url']
     MOBSF_SUBDIR_TOOLS = config['MobSF']['subdir_tools']
     RPC_FILE = config['rpc']['file']
@@ -194,6 +184,19 @@ def tools_rpcclient():
 
     # Aaaand close
     f.close()
+
+
+def tools_binscope():
+    """Download and install Binscope for MobSF"""
+    URL = config['binscope']['url']
+    os.makedirs(config['MobSF']['subdir_tools']+'BinScope', exist_ok=True)
+    print("""
+    [!] Sadly for Binscope there is no automated install yet.
+        Please download the installer from
+        {}
+        and install it to
+        C:\\MobSF\\Tools\\BinScope""".format(URL))
+    input("Press enter when done...")
 
 
 def autostart():
@@ -219,9 +222,12 @@ def autostart():
     os.system('"'+batch_file+'"')
 
 if __name__ == "__main__":
-    init()
+    makedirs()
+    download_config()
+    read_config()
     check_dependencies()
     tools_nuget()
     tools_binskim()
+    tools_binscope()
     tools_rpcclient()
     autostart()
