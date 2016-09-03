@@ -1,5 +1,5 @@
 #Mass Static Analysis
-import tornado.httpclient, subprocess, os, urllib2, argparse, mimetypes, urlparse, re, json, hashlib, urllib
+import tornado.httpclient, os, urllib2, argparse, mimetypes, re, json, hashlib, urllib
 from threading import Thread
 
 def HTTP_GET_Request(url):
@@ -17,9 +17,9 @@ def HTTP_GET_Request(url):
 
 def isServerUp(url):
     try:
-        response=urllib2.urlopen(url,timeout=5)
+        response = urllib2.urlopen(url, timeout=5)
         return True
-    except urllib2.URLError as err: pass
+    except urllib2.URLError: pass
     return False
 
 def getCSRF(url):

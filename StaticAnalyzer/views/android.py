@@ -1,4 +1,7 @@
 # -*- coding: utf_8 -*-
+"""
+Android Static Code Analysis
+"""
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
@@ -7,16 +10,16 @@ from django.conf import settings
 from django.utils.html import escape
 from django.template.defaulttags import register
 
-from StaticAnalyzer.models import StaticAnalyzerAndroid
-from MobSF.utils import PrintException,python_list,python_dict,isDirExists,isFileExists
-from MalwareAnalyzer.views import MalwareCheck
-from StaticAnalyzer.views.shared_func import HashGen
-from StaticAnalyzer.views.shared_func import Unzip
-
-from xml.dom import minidom
-from StaticAnalyzer.views.dvm_permissions import DVM_PERMISSIONS
 import sqlite3 as sq
-import io,re,os,glob,hashlib, zipfile, subprocess,ntpath,shutil,platform,sys,plistlib
+import io, re, os, zipfile, subprocess, ntpath, shutil, platform
+from xml.dom import minidom
+
+from StaticAnalyzer.models import StaticAnalyzerAndroid
+from MobSF.utils import PrintException, python_list, python_dict, isDirExists, isFileExists
+from MalwareAnalyzer.views import MalwareCheck
+from StaticAnalyzer.views.shared_func import FileSize, HashGen, Unzip
+
+from .dvm_permissions import DVM_PERMISSIONS
 
 try:
     import StringIO
@@ -30,19 +33,19 @@ def key(d, key_name):
 
 def Java(request):
     try:
-        m=re.match('^[0-9a-f]{32}$',request.GET['md5'])
-        typ=request.GET['type']
+        m = re.match('^[0-9a-f]{32}$', request.GET['md5'])
+        typ = request.GET['type']
         if m:
-            MD5=request.GET['md5']
-            if typ=='eclipse':
-                SRC=os.path.join(settings.UPLD_DIR, MD5+'/src/')
-                t=typ
-            elif typ=='studio':
-                SRC=os.path.join(settings.UPLD_DIR, MD5+'/app/src/main/java/')
-                t=typ
-            elif typ=='apk':
-                SRC=os.path.join(settings.UPLD_DIR, MD5+'/java_source/')
-                t=typ
+            MD5 = request.GET['md5']
+            if typ == 'eclipse':
+                SRC = os.path.join(settings.UPLD_DIR, MD5+'/src/')
+                t = typ
+            elif typ == 'studio':
+                SRC = os.path.join(settings.UPLD_DIR, MD5+'/app/src/main/java/')
+                t = typ
+            elif typ == 'apk':
+                SRC = os.path.join(settings.UPLD_DIR, MD5+'/java_source/')
+                t = typ
             else:
                 return HttpResponseRedirect('/error/')
             html=''
@@ -766,7 +769,7 @@ def ValidAndroidZip(APP_DIR):
         PrintException("[ERROR] Determining Upload type")
 
 
-def FileSize(APP_PATH): return round(float(os.path.getsize(APP_PATH)) / (1024 * 1024),2)
+
 def GenDownloads(APP_DIR,MD5):
     try:
         print "[INFO] Generating Downloads"
@@ -814,6 +817,7 @@ def CertInfo(APP_DIR,TOOLS_DIR):
         cert=os.path.join(APP_DIR,'META-INF/')
         CP_PATH=TOOLS_DIR + 'CertPrint.jar'
         files = [ f for f in os.listdir(cert) if os.path.isfile(os.path.join(cert,f)) ]
+        certfile = None
         if "CERT.RSA" in files:
             certfile=os.path.join(cert,"CERT.RSA")
         else:
@@ -822,13 +826,16 @@ def CertInfo(APP_DIR,TOOLS_DIR):
                     certfile=os.path.join(cert,f)
                 elif f.lower().endswith(".dsa"):
                     certfile=os.path.join(cert,f)
-
-        args=[settings.JAVA_PATH+'java','-jar', CP_PATH, certfile]
-        dat=''
-        issued='good'
-        dat=escape(subprocess.check_output(args)).replace('\n', '</br>')
+        if certfile:
+            args=[settings.JAVA_PATH+'java','-jar', CP_PATH, certfile]
+            dat=''
+            issued='good'
+            dat=escape(subprocess.check_output(args)).replace('\n', '</br>')
+        else:
+            dat='No Code Signing Certificate Found!'
+            issued='missing'
         if re.findall("Issuer: CN=Android Debug|Subject: CN=Android Debug",dat):
-            issued="bad"
+            issued='bad'
         return dat,issued
     except:
         PrintException("[ERROR] Reading Code Signing Certificate")

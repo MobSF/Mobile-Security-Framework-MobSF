@@ -66,4 +66,3 @@ Made with <img src="https://cloud.githubusercontent.com/assets/4301109/16754758/
 * Abhinav Sejpal (@Abhinav_Sejpal) - For poking me with bugs and feature requests.
 * Anant Srivastava (@anantshri) - For Activity Tester Idea
 * Amrutha VC (@amruthavc) - For the new MobSF logo
-

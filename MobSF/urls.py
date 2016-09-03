@@ -2,6 +2,7 @@ from django.conf.urls import url
 import MobSF.views
 import APITester.views
 import DynamicAnalyzer.views.android
+import DynamicAnalyzer.views.android_standalone
 import StaticAnalyzer.views.android
 import StaticAnalyzer.views.ios
 import StaticAnalyzer.views.shared_func

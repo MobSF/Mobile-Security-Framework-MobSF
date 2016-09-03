@@ -45,11 +45,9 @@ import tornado.gen
 import socket
 import ssl
 import os
-import datetime
-import uuid
-import re,sys,threading,json,pickle
+import threading, pickle
 from multiprocessing import Process, Value, Lock
-from socket_wrapper import wrap_socket
+from DynamicAnalyzer.pyWebProxy.socket_wrapper import wrap_socket
 from MobSF.utils import PrintException
 from django.conf import settings
 
