@@ -9,7 +9,7 @@ Use and separate Windows-VM for MobSF and *don't* expose it to a network range, 
 1. Install the following requirements on the VM
   * [Python 3](https://www.python.org/downloads/)
   * Flask (via `python -m pip install flask`)
-2. Download the [setup.py](https://raw.githubusercontent.com/DominikSchlecht/Mobile-Security-Framework-MobSF/master/install/windows/rpc_client.py) script and run it
+2. Download the [setup.py](https://raw.githubusercontent.com/DominikSchlecht/Mobile-Security-Framework-MobSF/master/install/windows/setup.py) script and run it
 3. If there are no errors, everything is good and the RPC-Server should be running
 
 ##Steps for MobSF
