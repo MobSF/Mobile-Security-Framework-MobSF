@@ -26,19 +26,6 @@ AUTOSTART = (
 # Global var so we don't have to pass it every time..
 config = ""
 
-def read_config():
-    """Read the config file and write it to the global var."""
-    # Create config path
-    os.makedirs(CONFIG_PATH, exist_ok=True)
-
-    global config
-    config = configparser.ConfigParser()
-    config.read(CONFIG_PATH + CONFIG_FILE)
-
-    # Create the other folders
-    _mobsf_folders()
-
-
 def download_config():
     """Download initial config file."""
     # Open File
@@ -56,6 +43,16 @@ def download_config():
 
     # Aaaand close
     f.close()
+
+
+def read_config():
+    """Read the config file and write it to the global var."""
+    # Create config path
+    os.makedirs(CONFIG_PATH, exist_ok=True)
+
+    global config
+    config = configparser.ConfigParser()
+    config.read(CONFIG_PATH + CONFIG_FILE)
 
 
 def create_folders():
@@ -222,9 +219,9 @@ def autostart():
     os.system('"'+batch_file+'"')
 
 if __name__ == "__main__":
-    create_folders()
     download_config()
     read_config()
+    create_folders()
     check_dependencies()
     tools_nuget()
     tools_binskim()
