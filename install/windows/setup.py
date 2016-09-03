@@ -58,7 +58,7 @@ def download_config():
     f.close()
 
 
-def _mobsf_folders():
+def create_folders():
     """Create MobSF dirs."""
     os.makedirs(config['MobSF']['subdir_downloads'], exist_ok=True)
     os.makedirs(config['MobSF']['subdir_tools'], exist_ok=True)
@@ -222,7 +222,7 @@ def autostart():
     os.system('"'+batch_file+'"')
 
 if __name__ == "__main__":
-    makedirs()
+    create_folders()
     download_config()
     read_config()
     check_dependencies()
