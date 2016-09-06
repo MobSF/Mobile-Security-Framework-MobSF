@@ -12,11 +12,11 @@
             <li class="active"><a href="#information"><i class="glyphicon glyphicon-info-sign"></i> Information</a></li>
             <li><a href="#options"><i class="fa fa-gears"></i> Options</a></li>
             <li><a href="#binary"><i class="fa fa-mobile"></i> Binary Analysis</a></li>
-            <li><a href="#file"><i class="fa fa-file-text-o"></i> File Analysis</a></li>
-            <li><a href="#libraries"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</a></li>
+            <!--<li><a href="#file"><i class="fa fa-file-text-o"></i> File Analysis</a></li>
+            <li><a href="#libraries"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</a></li> -->
             <li><a href="#strings"><i class="glyphicon glyphicon-sort-by-alphabet-alt"></i> Strings</a></li>
-            <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li>
-            <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=IPA"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li>
+            <!-- <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li>
+            <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=IPA"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li> -->
           </ul>
         </div>
         <!-- /.sidebar -->
@@ -106,25 +106,62 @@
               <span class="label label-primary">App Name</span>
               {{ bin_name }}
               </p>
-               <p>
-              <span class="label label-primary">Identifier</span>
-              {{ id }}
-                <span class="label label-primary">SDK Name</span>
-              {{ sdk }}
-
-
+              <p>
+                  <span class="label label-primary">Publisher</span>
+                  {{ pub_name }}
               </p>
-                <p>
-             <span class="label label-primary">Version</span>
-              {{ ver }}
-               </p>
+              <p>
+               <span class="label label-primary">Version</span>
+               {{ version }}
+              </p>
+              <p>
+               <span class="label label-primary">Arch</span>
+               {{ arch }}
+              </p>
+       </div>
+
+        </div><!-- /.box-body -->
+      </div><!-- /.box -->
+    </div><!-- /.col -->
+    <div class="col-sm-5">
+      <div class="box box-danger">
+        <div class="box-header with-border">
+          <h3 class="box-title">XML Information</h3>
+          <span class="label label-danger pull-right"><i class="glyphicon glyphicon-info-sign"></i></span>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+        <div class="list-group">
                <p>
-              <span class="label label-primary">Platform Version</span>
-              {{ pltfm }}
+              <span class="label label-primary">compiler_version</span>
+              {{ compiler_version }}
+              </p>
+              <p>
+                  <span class="label label-primary">visual_studio_version</span>
+                  {{ visual_studio_version }}
+              </p>
+              <p>
+               <span class="label label-primary">visual_studio_edition</span>
+               {{ visual_studio_edition }}
+              </p>
+              <p>
+               <span class="label label-primary">target_os</span>
+               {{ target_os }}
+              </p>
+              <p>
+              <span class="label label-primary">appx_dll_version</span>
+              {{ appx_dll_version }}
             </p>
             <p>
-             <span class="label label-primary">Min OS Version</span>
-              {{ min }}
+             <span class="label label-primary">proj_guid</span>
+              {{ proj_guid }}
+            </p>
+            <p>
+             <span class="label label-primary">opti_tool</span>
+              {{ opti_tool }}
+            </p>
+            <p>
+             <span class="label label-primary">target_run</span>
+              {{ target_run }}
             </p>
        </div>
 
@@ -153,12 +190,9 @@
         </div><!-- /.box-header -->
         <div class="box-body">
          <div align="center">
-      <a data-target="#myModal" role="button" class="btn btn-info" data-toggle="modal"><i class="fa fa-list"></i> View Info.plist</a>
-       <a target="_blank" href="../ViewFile/?file=classdump.txt&type=txt&md5={{ md5 }}&mode=ios" class="btn btn-warning" role="button"><i class="fa fa-code"></i> View Class Dump</a>
-      <a href="../StaticAnalyzer_iOS/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=ipa&amp;rescan=1" class="btn btn-info" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a>
-</div>
-
-               </div><!-- /.box-body -->
+           <a href="../StaticAnalyzer_Windows/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=appx&amp;rescan=1" class="btn btn-info" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a>
+         </div>
+       </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->
   </div><!-- /.row -->
@@ -190,7 +224,36 @@
                       </tr>
                   </thead>
                   <tbody>
-                    {{ bin_anal | safe}}
+                    {% for result in bin_an_results %}
+                      <tr>
+                        <td>{{ result.rule_id }}</td>
+                        <td>
+                          {% if result.status == "Insecure" %}
+                            <span class='label label-danger'>
+                          {% endif %}
+                          {% if result.status == "Secure" %}
+                            <span class='label label-success'>
+                          {% endif %}
+                          {% if result.status == "Info" %}
+                            <span class='label label-info'>
+                          {% endif %}
+                              {{ result.status }}
+                          </span>
+                        </td>
+                        <td>{{ result.desc }}</td>
+                      </tr>
+                    {% endfor %}
+                    {% for warn in bin_an_warnings %}
+                    <tr>
+                      <td>{{ warn.rule_id }}</td>
+                      <td>
+                          <span class='label label-info'>
+                            {{ warn.status }}
+                        </span>
+                      </td>
+                      <td>{{ warn.desc }}</td>
+                    </tr>
+                    {% endfor %}
                     </tbody>
                     </table>
 
@@ -201,67 +264,6 @@
         </div>
 </section>
 
-
-
-<!-- ============================================================= -->
-
-<section id="file">
-  <h2 class="page-header"></h2>
-    <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-file-text-o"></i> File Analysis</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body no-padding">
-            <div class="table-responsive">
-          <table class="table table-bordered table-hover table-striped">
-              <thead>
-                  <tr>
-                      <th>ISSUE</th>
-                      <th>FILES</th>
-                  </tr>
-              </thead>
-              <tbody>
-              {{ file_analysis | safe}}
-              </tbody>
-              </table>
-
-                            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
-
-
-
-<!-- ============================================================= -->
-
-<section id="libraries">
-  <h2 class="page-header"></h2>
-  <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-            <div class="list-group">
-
-
-                  <p>
-                  {{ libs|safe }}
-                  </p>
-
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
 
 <section id="strings">
   <h2 class="page-header"></h2>
@@ -287,29 +289,6 @@
           <!-- /.box -->
 </section>
 
-<section id="files">
-  <h2 class="page-header"></h2>
-  <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-files-o"></i> Files</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-           <div class="list-group">
-                  <p>
-                {% for file in files %}
-                  {{ file}} <br>
-                {% endfor %}
-
-                  </p>
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
         </div><!-- /.content -->
       </div><!-- /.content-wrapper -->
 

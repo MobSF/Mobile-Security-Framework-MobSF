@@ -18,6 +18,7 @@ from StaticAnalyzer.models import StaticAnalyzerAndroid
 from MobSF.utils import PrintException, python_list, python_dict, isDirExists, isFileExists
 from MalwareAnalyzer.views import MalwareCheck
 from StaticAnalyzer.views.shared_func import FileSize, HashGen, Unzip
+
 from .dvm_permissions import DVM_PERMISSIONS
 
 try:
