@@ -1,17 +1,25 @@
 /*
-   Copyright 2014 GitHub Inc.
+The MIT License (MIT)
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+Copyright (c) 2016 GitHub, Inc.
 
-       http://www.apache.org/licenses/LICENSE-2.0
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 */
 
@@ -19,18 +27,18 @@
   color: #969896;
 }
 
-.pl-c1      /* constant, markup.raw, meta.diff.header, meta.module-reference, meta.property-name, support, support.constant, support.variable, variable.other.constant */,
+.pl-c1 /* constant, variable.other.constant, support, meta.property-name, support.constant, support.variable, meta.module-reference, markup.raw, meta.diff.header */,
 .pl-s .pl-v /* string variable */ {
   color: #0086b3;
 }
 
-.pl-e  /* entity */,
+.pl-e /* entity */,
 .pl-en /* entity.name */ {
   color: #795da3;
 }
 
-.pl-s .pl-s1 /* string source */,
-.pl-smi      /* storage.modifier.import, storage.modifier.package, storage.type.java, variable.other, variable.parameter.function */ {
+.pl-smi /* variable.parameter.function, storage.modifier.package, storage.modifier.import, storage.type.java, variable.other */,
+.pl-s .pl-s1 /* string source */ {
   color: #333;
 }
 
@@ -42,13 +50,13 @@
   color: #a71d5d;
 }
 
-.pl-pds              /* punctuation.definition.string, string.regexp.character-class */,
-.pl-s                /* string */,
+.pl-s /* string */,
+.pl-pds /* punctuation.definition.string, string.regexp.character-class */,
 .pl-s .pl-pse .pl-s1 /* string punctuation.section.embedded source */,
-.pl-sr               /* string.regexp */,
-.pl-sr .pl-cce       /* string.regexp constant.character.escape */,
-.pl-sr .pl-sra       /* string.regexp string.regexp.arbitrary-repitition */,
-.pl-sr .pl-sre       /* string.regexp source.ruby.embedded */ {
+.pl-sr /* string.regexp */,
+.pl-sr .pl-cce /* string.regexp constant.character.escape */,
+.pl-sr .pl-sre /* string.regexp source.ruby.embedded */,
+.pl-sr .pl-sra /* string.regexp string.regexp.arbitrary-repitition */ {
   color: #183691;
 }
 
@@ -61,24 +69,24 @@
 }
 
 .pl-ii /* invalid.illegal */ {
-  background-color: #b52a1d;
   color: #f8f8f8;
+  background-color: #b52a1d;
 }
 
 .pl-sr .pl-cce /* string.regexp constant.character.escape */ {
-  color: #63a35c;
   font-weight: bold;
+  color: #63a35c;
 }
 
 .pl-ml /* markup.list */ {
   color: #693a17;
 }
 
-.pl-mh        /* markup.heading */,
+.pl-mh /* markup.heading */,
 .pl-mh .pl-en /* markup.heading entity.name */,
-.pl-ms        /* meta.separator */ {
-  color: #1d3e81;
+.pl-ms /* meta.separator */ {
   font-weight: bold;
+  color: #1d3e81;
 }
 
 .pl-mq /* markup.quote */ {
@@ -86,28 +94,28 @@
 }
 
 .pl-mi /* markup.italic */ {
-  color: #333;
   font-style: italic;
+  color: #333;
 }
 
 .pl-mb /* markup.bold */ {
-  color: #333;
   font-weight: bold;
+  color: #333;
 }
 
 .pl-md /* markup.deleted, meta.diff.header.from-file */ {
-  background-color: #ffecec;
   color: #bd2c00;
+  background-color: #ffecec;
 }
 
 .pl-mi1 /* markup.inserted, meta.diff.header.to-file */ {
-  background-color: #eaffea;
   color: #55a532;
+  background-color: #eaffea;
 }
 
 .pl-mdr /* meta.diff.range */ {
-  color: #795da3;
   font-weight: bold;
+  color: #795da3;
 }
 
 .pl-mo /* meta.output */ {
