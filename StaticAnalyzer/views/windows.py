@@ -29,6 +29,8 @@ from shared_func import Unzip
 
 from StaticAnalyzer.models import StaticAnalyzerWindows
 
+from StaticAnalyzer.tools.strings import strings
+
 from MobSF.utils import PrintException
 
 ##############################################################
@@ -205,9 +207,11 @@ def _binary_analysis(tools_dir, app_dir):
     bin_path = os.path.join(app_dir, bin_an_dic['bin'])
 
     # Execute strings command
-    args = ["strings", bin_path]
-    bin_an_dic['strings'] = escape(subprocess.check_output(args))
-    bin_an_dic['strings'] = bin_an_dic['strings'].replace("\n", "</br>")
+    bin_an_dic['strings'] = ""
+    sl = list(strings(bin_path))
+    sl = set(sl)  # Make unique
+    sl = [escape(s) for s in sl]
+    bin_an_dic['strings'] = "</br>".join(sl)
 
     # Execute binskim analysis if vm is available
     if settings.WINDOWS_VM_IP != "0.0.0.0":
