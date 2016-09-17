@@ -1,11 +1,13 @@
-import configparser
-import urllib.request
-import subprocess
-from setuptools import find_packages
+"""Setup script for the Windows vm for usage with MobSF for static analysis of Windows apps."""
 import os
 import sys
 import re
-import zipfile
+
+import configparser
+import urllib.request
+import subprocess
+
+# pylint: disable=C0325
 
 # Only static URL, let's hope this never changes..
 CONFIG_URL = (
@@ -19,12 +21,12 @@ CONFIG_FILE = "config.txt"
 
 # Static path to autostart
 AUTOSTART = (
-    "C:\\Users\\{}\\AppData\\Roaming\Microsoft\\"
+    "C:\\Users\\{}\\AppData\\Roaming\\Microsoft\\"
     "Windows\\Start Menu\\Programs\\Startup\\".format(os.getlogin())
 )
 
 # Global var so we don't have to pass it every time..
-config = ""
+CONFIG = ""
 
 def download_config():
     """Download initial config file."""
@@ -54,9 +56,9 @@ def read_config():
 
     print("[*] Reading config file..")
 
-    global config
-    config = configparser.ConfigParser()
-    config.read(CONFIG_PATH + CONFIG_FILE)
+    global CONFIG
+    CONFIG = configparser.ConfigParser()
+    CONFIG.read(CONFIG_PATH + CONFIG_FILE)
 
 
 def create_folders():
@@ -64,9 +66,9 @@ def create_folders():
 
     print("[*] Creating other folders...")
 
-    os.makedirs(config['MobSF']['subdir_downloads'], exist_ok=True)
-    os.makedirs(config['MobSF']['subdir_tools'], exist_ok=True)
-    os.makedirs(config['MobSF']['subdir_samples'], exist_ok=True)
+    os.makedirs(CONFIG['MobSF']['subdir_downloads'], exist_ok=True)
+    os.makedirs(CONFIG['MobSF']['subdir_tools'], exist_ok=True)
+    os.makedirs(CONFIG['MobSF']['subdir_samples'], exist_ok=True)
 
 
 def check_dependencies():
@@ -80,17 +82,27 @@ def check_dependencies():
     except ImportError as e:
         print("[!] Flask not installed!")
         missing_deps.append("flask")
+
+    try:
+        import rsa
+        print("[+] rsa is installed.")
+    except ImportError as e:
+        print("[!] rsa not installed!")
+        missing_deps.append("rsa")
+
+
     if len(missing_deps) > 0:
         print("[!] Please install these missing dependencies:")
         print(missing_deps)
+        sys.exit()
     else:
         print("[+] Everything good.")
 
 
 def tools_nuget():
-    NUGET_URL = config['nuget']['url']
-    MOBSF_SUBDIR_TOOLS = config['MobSF']['subdir_tools']
-    NUGET_FILE = config['nuget']['file']
+    NUGET_URL = CONFIG['nuget']['url']
+    MOBSF_SUBDIR_TOOLS = CONFIG['MobSF']['subdir_tools']
+    NUGET_FILE = CONFIG['nuget']['file']
 
     # Open File
     f = open(MOBSF_SUBDIR_TOOLS + NUGET_FILE, "wb")
@@ -112,9 +124,9 @@ def tools_nuget():
 def tools_binskim():
     """Download and extract binskim."""
     # Get dirs, urls etc.
-    BINSKIM_NUGET = config['binskim']['nuget']
-    MOBSF_SUBDIR_TOOLS = config['MobSF']['subdir_tools']
-    NUGET = MOBSF_SUBDIR_TOOLS + config['nuget']['file']
+    BINSKIM_NUGET = CONFIG['binskim']['nuget']
+    MOBSF_SUBDIR_TOOLS = CONFIG['MobSF']['subdir_tools']
+    NUGET = MOBSF_SUBDIR_TOOLS + CONFIG['nuget']['file']
 
     print("[*] Downloading and installing Binskim...")
 
@@ -147,15 +159,15 @@ def tools_binskim():
 
     # Determinde which one is for which arch
     if "x86" in binaries[0]:
-        config['binskim']['file_x86'] = binaries[0]
-        config['binskim']['file_x64'] = binaries[1]
+        CONFIG['binskim']['file_x86'] = binaries[0]
+        CONFIG['binskim']['file_x64'] = binaries[1]
     else:
-        config['binskim']['file_x86'] = binaries[1]
-        config['binskim']['file_x64'] = binaries[0]
+        CONFIG['binskim']['file_x86'] = binaries[1]
+        CONFIG['binskim']['file_x64'] = binaries[0]
 
     # Write to config
     with open('C:\\MobSF\\Config\\config.txt', 'w') as configfile:
-        config.write(configfile)
+        CONFIG.write(configfile)
 
 
 def _find_exe(path, list):
@@ -171,9 +183,9 @@ def _find_exe(path, list):
 
 def tools_rpcclient():
     """Download and install rpc-server for MobSF"""
-    RPC_URL = config['rpc']['url']
-    MOBSF_SUBDIR_TOOLS = config['MobSF']['subdir_tools']
-    RPC_FILE = config['rpc']['file']
+    RPC_URL = CONFIG['rpc']['url']
+    MOBSF_SUBDIR_TOOLS = CONFIG['MobSF']['subdir_tools']
+    RPC_FILE = CONFIG['rpc']['file']
 
     # Open File
     f = open(MOBSF_SUBDIR_TOOLS + RPC_FILE, "wb")
@@ -194,21 +206,46 @@ def tools_rpcclient():
 
 def tools_binscope():
     """Download and install Binscope for MobSF"""
-    URL = config['binscope']['url']
-    os.makedirs(config['MobSF']['subdir_tools']+'BinScope', exist_ok=True)
+    URL = CONFIG['binscope']['url']
+    os.makedirs(CONFIG['MobSF']['subdir_tools']+'BinScope', exist_ok=True)
     print("""
-    [!] Sadly for Binscope there is no automated install yet.
-        Please download the installer from
-        {}
-        and install it to
-        C:\\MobSF\\Tools\\BinScope""".format(URL))
+[!] Sadly for Binscope there is no automated install yet.
+    Please download the installer from
+    {}
+    and install it to
+    C:\\MobSF\\Tools\\BinScope""".format(URL))
     input("Press enter when done...")
 
 
+def generate_secret():
+    """Generate rsa keys for authentication."""
+    import rsa
+    print("[*] Generating secret, please hang on.")
+    # Generate keys, taken from https://stuvel.eu/python-rsa-doc/usage.html#generating-keys
+    (pubkey, privkey) = rsa.newkeys(2048)
+
+    # Save private and pub key
+    f = open(CONFIG['MobSF']['priv_key_file'], 'w')
+    f.write(privkey.save_pkcs1().decode('utf-8'))
+    f.close()
+    f = open(CONFIG['MobSF']['pub_key_file'], 'w')
+    f.write(pubkey.save_pkcs1().decode('utf-8'))
+    f.close()
+
+    print(
+        "[!] Please move the private key file\n"
+        "\t{}\n"
+        "\tto MobSF to the path specified in settings.py\n"
+        "\t(default: Mobile-Security-Framework-MobSF/MobSF/windows_vm_priv_key.asc)"
+        .format(CONFIG['MobSF']['priv_key_file'])
+    )
+    input("Please press any key when done..")
+
+
 def autostart():
-    MOBSF_SUBDIR_TOOLS = config['MobSF']['subdir_tools']
-    RPC_FILE = config['rpc']['file']
-    AUTOSTART_FILE = config['autostart']['file']
+    MOBSF_SUBDIR_TOOLS = CONFIG['MobSF']['subdir_tools']
+    RPC_FILE = CONFIG['rpc']['file']
+    AUTOSTART_FILE = CONFIG['autostart']['file']
     batch_file = AUTOSTART + AUTOSTART_FILE
 
     print("[*] Creating autostart binary...")
@@ -240,4 +277,5 @@ if __name__ == "__main__":
     tools_binskim()
     tools_binscope()
     tools_rpcclient()
+    generate_secret()
     autostart()

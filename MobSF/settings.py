@@ -279,8 +279,8 @@ else:
     #==============================================
     #================WINDOWS-VM-Settings ===================
     #IP of the MobSF VM
-    # 0.0.0.0 == disabled
-    WINDOWS_VM_IP =  '0.0.0.0'
+    WINDOWS_VM_IP =  '0.0.0.0'  # 0.0.0.0 == disabled
+    WINDOWS_VM_SECRET = 'MobSF/windows_vm_priv_key.asc'
     #==============================================
 
     #================HOST/PROXY SETTINGS ==========
