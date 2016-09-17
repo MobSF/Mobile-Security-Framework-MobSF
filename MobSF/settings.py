@@ -100,7 +100,8 @@ ZIP_MIME = ['application/zip',
 'binary/octet-stream',
 ]
 APPX_MIME = [
-    'application/octet-stream'
+    'application/octet-stream',
+    'application/vns.ms-appx'
 ]
 #===============================================
 
