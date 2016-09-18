@@ -1,13 +1,15 @@
 """Setup script for the Windows vm for usage with MobSF for static analysis of Windows apps."""
+# Most pylinter warnings are disabled because implementation happendend on a Python2 machine
+# while the code is Python3
 import os
 import sys
 import re
 
-import configparser
-import urllib.request
+import configparser # pylint: disable-msg=E0401
+import urllib.request # pylint: disable-msg=E0401,E0611
 import subprocess
 
-# pylint: disable=C0325
+# pylint: disable=C0325,W0603
 
 # Only static URL, let's hope this never changes..
 CONFIG_URL = (
@@ -32,23 +34,23 @@ def download_config():
     """Download initial config file."""
 
     # Create config path
-    os.makedirs(CONFIG_PATH, exist_ok=True)
+    os.makedirs(CONFIG_PATH, exist_ok=True) # pylint: disable-msg=E1123
 
     # Open File
-    f = open(CONFIG_PATH + CONFIG_FILE, "wb")
+    conf_file = open(CONFIG_PATH + CONFIG_FILE, "wb")
 
     # Downloading File
     print("[*] Downloading config file..")
-    file = urllib.request.urlopen(CONFIG_URL)
+    conf_file = urllib.request.urlopen(CONFIG_URL) # pylint: disable-msg=E1101
 
     # Save content
     print("[*] Saving to File {}".format(CONFIG_FILE))
 
     # Write content to file
-    f.write(bytes(file.read()))
+    conf_file.write(bytes(conf_file.read()))
 
     # Aaaand close
-    f.close()
+    conf_file.close()
 
 
 def read_config():
@@ -66,9 +68,9 @@ def create_folders():
 
     print("[*] Creating other folders...")
 
-    os.makedirs(CONFIG['MobSF']['subdir_downloads'], exist_ok=True)
-    os.makedirs(CONFIG['MobSF']['subdir_tools'], exist_ok=True)
-    os.makedirs(CONFIG['MobSF']['subdir_samples'], exist_ok=True)
+    os.makedirs(CONFIG['MobSF']['subdir_downloads'], exist_ok=True) # pylint: disable-msg=E1123
+    os.makedirs(CONFIG['MobSF']['subdir_tools'], exist_ok=True) # pylint: disable-msg=E1123
+    os.makedirs(CONFIG['MobSF']['subdir_samples'], exist_ok=True) # pylint: disable-msg=E1123
 
 
 def check_dependencies():
@@ -76,17 +78,11 @@ def check_dependencies():
 
     print("[*] Checking dependencies...")
     missing_deps = []
-    try:
-        import flask
-        print("[+] flask is installed.")
-    except ImportError as e:
-        print("[!] Flask not installed!")
-        missing_deps.append("flask")
 
     try:
         import rsa
         print("[+] rsa is installed.")
-    except ImportError as e:
+    except ImportError: # pylint: disable-msg=C0103
         print("[!] rsa not installed!")
         missing_deps.append("rsa")
 
@@ -100,42 +96,44 @@ def check_dependencies():
 
 
 def tools_nuget():
-    NUGET_URL = CONFIG['nuget']['url']
-    MOBSF_SUBDIR_TOOLS = CONFIG['MobSF']['subdir_tools']
-    NUGET_FILE = CONFIG['nuget']['file']
+    """Download nuget."""
+    # Get config params
+    nuget_url = CONFIG['nuget']['url']
+    mobsf_subdir_tools = CONFIG['MobSF']['subdir_tools']
+    nuget_file_path = CONFIG['nuget']['file']
 
     # Open File
-    f = open(MOBSF_SUBDIR_TOOLS + NUGET_FILE, "wb")
+    nuget_file = open(mobsf_subdir_tools + nuget_file_path, "wb")
 
     # Downloading File
     print("[*] Downloading nuget..")
-    file = urllib.request.urlopen(NUGET_URL)
+    nuget_file = urllib.request.urlopen(nuget_url) # pylint: disable-msg=E1101
 
     # Save content
-    print("[*] Saving to File {}".format(NUGET_FILE))
+    print("[*] Saving to File {}".format(nuget_file_path))
 
     # Write content to file
-    f.write(bytes(file.read()))
+    nuget_file.write(bytes(nuget_file.read()))
 
     # Aaaand close
-    f.close()
+    nuget_file.close()
 
 
 def tools_binskim():
     """Download and extract binskim."""
     # Get dirs, urls etc.
-    BINSKIM_NUGET = CONFIG['binskim']['nuget']
-    MOBSF_SUBDIR_TOOLS = CONFIG['MobSF']['subdir_tools']
-    NUGET = MOBSF_SUBDIR_TOOLS + CONFIG['nuget']['file']
+    binskim_nuget = CONFIG['binskim']['nuget']
+    mobsf_subdir_tools = CONFIG['MobSF']['subdir_tools']
+    nuget = mobsf_subdir_tools + CONFIG['nuget']['file']
 
     print("[*] Downloading and installing Binskim...")
 
     # Execute nuget to get binkim
     output = subprocess.check_output(
         [
-            NUGET,
-            "install", BINSKIM_NUGET, '-Pre',
-            '-o', MOBSF_SUBDIR_TOOLS
+            nuget,
+            "install", binskim_nuget, '-Pre',
+            '-o', mobsf_subdir_tools
         ]
     )
 
@@ -143,7 +141,9 @@ def tools_binskim():
     # config file on every new release of binskim..
 
     # Search for the version number
-    folder = re.search(b"Microsoft\.CodeAnalysis\.BinSkim\..*' ", output)
+    folder = re.search(
+        b"Microsoft\.CodeAnalysis\.BinSkim\..*' ", output # pylint: disable-msg=W1401
+    )
     try:
         # Substring-Foo for removing b'X's
         folder = str(folder.group(0)[:-2])[2:-1]
@@ -152,7 +152,7 @@ def tools_binskim():
         sys.exit()
 
     # Search for the exes
-    binaries = _find_exe(MOBSF_SUBDIR_TOOLS + folder, [])
+    binaries = _find_exe(mobsf_subdir_tools + folder, [])
     if len(binaries) != 2:
         print("[!] Found more than 2 exes for binskim, panic!")
         sys.exit()
@@ -167,54 +167,56 @@ def tools_binskim():
 
     # Write to config
     with open('C:\\MobSF\\Config\\config.txt', 'w') as configfile:
-        CONFIG.write(configfile)
+        CONFIG.write(configfile) # pylint: disable-msg=E1101
 
 
-def _find_exe(path, list):
+def _find_exe(path, exe_list):
     """Return a list of all exes in path, recursive"""
     for filename in os.listdir(path):
         if os.path.isfile(os.path.join(path, filename)):
             if ".exe" in filename:
-                list.append(path + "\\" + filename)
+                exe_list.append(path + "\\" + filename)
         else:
-            list = _find_exe(path + "\\" + filename, list)
-    return list
+            exe_list = _find_exe(path + "\\" + filename, exe_list)
+    return exe_list
 
 
 def tools_rpcclient():
-    """Download and install rpc-server for MobSF"""
-    RPC_URL = CONFIG['rpc']['url']
-    MOBSF_SUBDIR_TOOLS = CONFIG['MobSF']['subdir_tools']
-    RPC_FILE = CONFIG['rpc']['file']
+    """Download and install rpc-server for MobSF."""
+    rpc_url = CONFIG['rpc']['url']
+    mobsf_subdir_tools = CONFIG['MobSF']['subdir_tools']
+    rpc_file = CONFIG['rpc']['file']
 
     # Open File
-    f = open(MOBSF_SUBDIR_TOOLS + RPC_FILE, "wb")
+    local_file = open(mobsf_subdir_tools + rpc_file, "wb")
 
     # Downloading File
     print("[*] Downloading rpc_server..")
-    file = urllib.request.urlopen(RPC_URL)
+    rpc_file = urllib.request.urlopen(rpc_url) # pylint: disable-msg=E1101
 
     # Save content
-    print("[*] Saving to File {}".format(RPC_FILE))
+    print("[*] Saving to File {}".format(rpc_file))
 
     # Write content to file
-    f.write(bytes(file.read()))
+    local_file.write(bytes(rpc_file.read()))
 
     # Aaaand close
-    f.close()
+    local_file.close()
 
 
 def tools_binscope():
     """Download and install Binscope for MobSF"""
-    URL = CONFIG['binscope']['url']
-    os.makedirs(CONFIG['MobSF']['subdir_tools']+'BinScope', exist_ok=True)
+    url = CONFIG['binscope']['url']
+    os.makedirs( # pylint: disable-msg=E1123
+        CONFIG['MobSF']['subdir_tools']+'BinScope', exist_ok=True
+    )
     print("""
 [!] Sadly for Binscope there is no automated install yet.
     Please download the installer from
     {}
     and install it to
-    C:\\MobSF\\Tools\\BinScope""".format(URL))
-    input("Press enter when done...")
+    C:\\MobSF\\Tools\\BinScope""".format(url))
+    input("Press enter when done...") # pylint: disable-msg=W0141
 
 
 def generate_secret():
@@ -225,12 +227,12 @@ def generate_secret():
     (pubkey, privkey) = rsa.newkeys(2048)
 
     # Save private and pub key
-    f = open(CONFIG['MobSF']['priv_key_file'], 'w')
-    f.write(privkey.save_pkcs1().decode('utf-8'))
-    f.close()
-    f = open(CONFIG['MobSF']['pub_key_file'], 'w')
-    f.write(pubkey.save_pkcs1().decode('utf-8'))
-    f.close()
+    priv_key_file = open(CONFIG['MobSF']['priv_key_file'], 'w')
+    priv_key_file.write(privkey.save_pkcs1().decode('utf-8'))
+    priv_key_file.close()
+    pub_key_file = open(CONFIG['MobSF']['pub_key_file'], 'w')
+    pub_key_file.write(pubkey.save_pkcs1().decode('utf-8'))
+    pub_key_file.close()
 
     print(
         "[!] Please move the private key file\n"
@@ -239,29 +241,30 @@ def generate_secret():
         "\t(default: Mobile-Security-Framework-MobSF/MobSF/windows_vm_priv_key.asc)"
         .format(CONFIG['MobSF']['priv_key_file'])
     )
-    input("Please press any key when done..")
+    input("Please press any key when done..") # pylint: disable-msg=W0141
 
 
 def autostart():
-    MOBSF_SUBDIR_TOOLS = CONFIG['MobSF']['subdir_tools']
-    RPC_FILE = CONFIG['rpc']['file']
-    AUTOSTART_FILE = CONFIG['autostart']['file']
-    batch_file = AUTOSTART + AUTOSTART_FILE
+    """Create the autostart binary and run it."""
+    mobsf_subdir_tools = CONFIG['MobSF']['subdir_tools']
+    rpc_file = CONFIG['rpc']['file']
+    autostart_file = CONFIG['autostart']['file']
+    batch_file = AUTOSTART + autostart_file
 
     print("[*] Creating autostart binary...")
 
     # Open file
-    f = open(batch_file, "wb")
+    autostart_file = open(batch_file, "wb")
 
     # Define bat-text
     text = """
     @echo off
     python {} %*
-    pause""".format(MOBSF_SUBDIR_TOOLS + RPC_FILE)
-    f.write(bytes(text, 'utf8'))
+    pause""".format(mobsf_subdir_tools + rpc_file)
+    autostart_file.write(bytes(text, 'utf8'))
 
     # Close handle
-    f.close()
+    autostart_file.close()
 
     print("[*] Done. Start the server.")
 
