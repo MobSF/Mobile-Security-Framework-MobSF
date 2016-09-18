@@ -37,7 +37,7 @@ def download_config():
     os.makedirs(CONFIG_PATH, exist_ok=True) # pylint: disable-msg=E1123
 
     # Open File
-    conf_file = open(CONFIG_PATH + CONFIG_FILE, "wb")
+    conf_file_local = open(CONFIG_PATH + CONFIG_FILE, "wb")
 
     # Downloading File
     print("[*] Downloading config file..")
@@ -47,10 +47,10 @@ def download_config():
     print("[*] Saving to File {}".format(CONFIG_FILE))
 
     # Write content to file
-    conf_file.write(bytes(conf_file.read()))
+    conf_file_local.write(bytes(conf_file.read()))
 
     # Aaaand close
-    conf_file.close()
+    conf_file_local.close()
 
 
 def read_config():
@@ -103,7 +103,7 @@ def tools_nuget():
     nuget_file_path = CONFIG['nuget']['file']
 
     # Open File
-    nuget_file = open(mobsf_subdir_tools + nuget_file_path, "wb")
+    nuget_file_local = open(mobsf_subdir_tools + nuget_file_path, "wb")
 
     # Downloading File
     print("[*] Downloading nuget..")
@@ -113,10 +113,10 @@ def tools_nuget():
     print("[*] Saving to File {}".format(nuget_file_path))
 
     # Write content to file
-    nuget_file.write(bytes(nuget_file.read()))
+    nuget_file_local.write(bytes(nuget_file.read()))
 
     # Aaaand close
-    nuget_file.close()
+    nuget_file_local.close()
 
 
 def tools_binskim():
@@ -185,23 +185,23 @@ def tools_rpcclient():
     """Download and install rpc-server for MobSF."""
     rpc_url = CONFIG['rpc']['url']
     mobsf_subdir_tools = CONFIG['MobSF']['subdir_tools']
-    rpc_file = CONFIG['rpc']['file']
+    rpc_file_path = CONFIG['rpc']['file']
 
     # Open File
-    local_file = open(mobsf_subdir_tools + rpc_file, "wb")
+    rpc_local_file = open(mobsf_subdir_tools + rpc_file_path, "wb")
 
     # Downloading File
     print("[*] Downloading rpc_server..")
     rpc_file = urllib.request.urlopen(rpc_url) # pylint: disable-msg=E1101
 
     # Save content
-    print("[*] Saving to File {}".format(rpc_file))
+    print("[*] Saving to File {}".format(rpc_file_path))
 
     # Write content to file
-    local_file.write(bytes(rpc_file.read()))
+    rpc_local_file.write(bytes(rpc_file.read()))
 
     # Aaaand close
-    local_file.close()
+    rpc_local_file.close()
 
 
 def tools_binscope():
