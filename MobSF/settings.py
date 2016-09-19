@@ -279,7 +279,7 @@ else:
     #==============================================
     #================WINDOWS-VM-Settings ===================
     #IP of the MobSF VM
-    WINDOWS_VM_IP =  '0.0.0.0'  # 0.0.0.0 == disabled
+    WINDOWS_VM_IP =  '0.0.0.0'  # 0.0.0.0 == disabled, port 8000 is assumed
     WINDOWS_VM_SECRET = 'MobSF/windows_vm_priv_key.asc'
     #==============================================
 
