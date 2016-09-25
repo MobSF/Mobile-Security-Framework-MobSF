@@ -16,6 +16,9 @@ from MobSF.utils import python_dict
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from StaticAnalyzer.models import StaticAnalyzerIPA
 from StaticAnalyzer.models import StaticAnalyzerIOSZIP
+from StaticAnalyzer.models import StaticAnalyzerWindows
+
+import ast
 
 try:
     import StringIO
@@ -187,6 +190,37 @@ def PDF(request):
                         'emails' : DB[0].EmailnFile
                         }
                         template= get_template("ios_source_analysis_pdf.html")
+            elif re.findall('APPX',TYP):
+                if TYP == 'APPX':
+                    db_entry = StaticAnalyzerWindows.objects.filter( # pylint: disable-msg=E1101
+                        MD5=MD5
+                    )
+                    if db_entry.exists():
+                        print "\n[INFO] Fetching data from DB for PDF Report Generation (APPX)"
+                        context = {
+                            'title' : db_entry[0].TITLE,
+                            'name' : db_entry[0].APP_NAME,
+                            'pub_name' : db_entry[0].PUB_NAME,
+                            'size' : db_entry[0].SIZE,
+                            'md5': db_entry[0].MD5,
+                            'sha1' : db_entry[0].SHA1,
+                            'sha256' : db_entry[0].SHA256,
+                            'bin_name' : db_entry[0].BINNAME,
+                            'version' :  db_entry[0].VERSION,
+                            'arch' :  db_entry[0].ARCH,
+                            'compiler_version' :  db_entry[0].COMPILER_VERSION,
+                            'visual_studio_version' :  db_entry[0].VISUAL_STUDIO_VERSION,
+                            'visual_studio_edition' :  db_entry[0].VISUAL_STUDIO_EDITION,
+                            'target_os' :  db_entry[0].TARGET_OS,
+                            'appx_dll_version' :  db_entry[0].APPX_DLL_VERSION,
+                            'proj_guid' :  db_entry[0].PROJ_GUID,
+                            'opti_tool' :  db_entry[0].OPTI_TOOL,
+                            'target_run' :  db_entry[0].TARGET_RUN,
+                            'strings' : db_entry[0].STRINGS,
+                            'bin_an_results' : ast.literal_eval(db_entry[0].BIN_AN_RESULTS),
+                            'bin_an_warnings' : ast.literal_eval(db_entry[0].BIN_AN_WARNINGS)
+                        }
+                        template= get_template("windows_binary_analysis_pdf.html")
             else:
                 return HttpResponseRedirect('/error/')
             html  = template.render(context)
