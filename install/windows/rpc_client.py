@@ -60,7 +60,6 @@ def test_challenge(signature):
     print("Check complete")
     return "OK!"
 
-
 def upload_file(sample_file, signature):
     """Upload a file."""
 

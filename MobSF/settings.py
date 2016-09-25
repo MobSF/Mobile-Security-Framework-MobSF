@@ -8,7 +8,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
-import os,platform,imp
+import os
+import imp
 import utils
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -18,7 +19,7 @@ import utils
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 MOBSF_VER = "v0.9.2 Beta"
-BANNER ="""
+BANNER = """
   __  __       _    ____  _____          ___   ___   ____
  |  \/  | ___ | |__/ ___||  ___| __   __/ _ \ / _ \ |___ \
  | |\/| |/ _ \| '_ \___ \| |_    \ \ / / | | | (_) |  __) |
@@ -63,7 +64,7 @@ DATABASES = {
 try:
     #Update Config from MobSF Home Directory
     if USE_HOME:
-        USER_CONFIG = os.path.join(MobSF_HOME,'config.py')
+        USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
         sett = imp.load_source('user_settings', USER_CONFIG)
         locals().update({k: v for k, v in sett.__dict__.items() if not k.startswith("__")})
         CONFIG_HOME = True
@@ -76,28 +77,31 @@ except:
 
 #=============ALLOWED EXTENSIONS================
 ALLOWED_EXTENSIONS = {
-".txt":"text/plain",
-".png":"image/png",
-".zip":"application/zip",
-".tar":"application/x-tar"
+    ".txt":"text/plain",
+    ".png":"image/png",
+    ".zip":"application/zip",
+    ".tar":"application/x-tar"
 }
 #===============================================
 
 #=============ALLOWED MIMETYPES=================
-APK_MIME = ['application/octet-stream',
-'application/vnd.android.package-archive',
-'application/x-zip-compressed',
-'binary/octet-stream',
+APK_MIME = [
+    'application/octet-stream',
+    'application/vnd.android.package-archive',
+    'application/x-zip-compressed',
+    'binary/octet-stream',
 ]
-IPA_MIME = ['application/octet-stream',
-'application/x-itunes-ipa',
-'application/x-zip-compressed',
-'binary/octet-stream',
+IPA_MIME = [
+    'application/octet-stream',
+    'application/x-itunes-ipa',
+    'application/x-zip-compressed',
+    'binary/octet-stream',
 ]
-ZIP_MIME = ['application/zip',
-'application/octet-stream',
-'application/x-zip-compressed',
-'binary/octet-stream',
+ZIP_MIME = [
+    'application/zip',
+    'application/octet-stream',
+    'application/x-zip-compressed',
+    'binary/octet-stream',
 ]
 APPX_MIME = [
     'application/octet-stream',
@@ -169,16 +173,18 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/uploads/'
 TEMPLATES = [
     {
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'APP_DIRS': True,
-    'DIRS': [os.path.join(BASE_DIR,'templates')],
-    'OPTIONS': {
-        'debug': True,
-        }
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates')
+            ],
+        'OPTIONS': {
+            'debug': True,
+            }
     },
 ]
 STATICFILES_DIRS = (
-  os.path.join(BASE_DIR, 'static/'),
+    os.path.join(BASE_DIR, 'static/'),
 )
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
@@ -199,9 +205,12 @@ else:
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     #==========SKIP CLASSES==========================
-    SKIP_CLASSES = ['android/support/','com/google/','android/content/','com/android/',
-    'com/facebook/','com/twitter/','twitter4j/','org/apache/','com/squareup/okhttp/',
-    'oauth/signpost/','org/chromium/']
+    SKIP_CLASSES = [
+        'android/support/', 'com/google/', 'android/content/',
+        'com/android/', 'com/facebook/', 'com/twitter/',
+        'twitter4j/', 'org/apache/', 'com/squareup/okhttp/',
+        'oauth/signpost/', 'org/chromium/'
+        ]
 
     #==============3rd Party Tools=================
     '''
@@ -269,11 +278,11 @@ else:
     #===============================================
     #================VM SETTINGS ===================
     #VM UUID
-    UUID='408e1874-759f-4417-9453-53ef21dc2ade'
+    UUID = '408e1874-759f-4417-9453-53ef21dc2ade'
     #Snapshot UUID
-    SUUID='2db0380a-8f06-43df-92da-bb9d53e64b29'
+    SUUID = '2db0380a-8f06-43df-92da-bb9d53e64b29'
     #IP of the MobSF VM
-    VM_IP='192.168.56.101'
+    VM_IP = '192.168.56.101'
     VM_ADB_PORT = 5555
     VM_TIMEOUT = 100
     #==============================================
@@ -284,9 +293,9 @@ else:
     #==============================================
 
     #================HOST/PROXY SETTINGS ==========
-    PROXY_IP='192.168.56.1' #Host/Server/Proxy IP
-    PORT=1337 #Proxy Port
-    ROOT_CA='0025aabb.0'
+    PROXY_IP = '192.168.56.1' #Host/Server/Proxy IP
+    PORT = 1337 #Proxy Port
+    ROOT_CA = '0025aabb.0'
     SCREEN_IP = PROXY_IP #ScreenCast IP
     SCREEN_PORT = 9339 #ScreenCast Port
     #==============================================
@@ -325,7 +334,7 @@ else:
 
 #The below code should be loaded last.
 #============JAVA SETTINGS======================
-JAVA_PATH=utils.FindJava()
+JAVA_PATH = utils.FindJava()
 #===============================================
 
 #================VirtualBox Settings============

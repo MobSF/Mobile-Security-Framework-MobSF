@@ -1,11 +1,5 @@
 # -*- coding: utf_8 -*-
 """Windows Analysis Module."""
-try:
-    import StringIO
-    StringIO = StringIO.StringIO
-except ImportError:
-    from io import StringIO
-
 import ast
 import re
 import os
@@ -40,7 +34,7 @@ proxy = xmlrpclib.ServerProxy( # pylint: disable-msg=C0103
 )
 
 ##############################################################
-# Code to support Windows Static Code Anlysis
+# Code to support Windows Static Code Analysis
 ##############################################################
 #Windows Support Functions
 def staticanalyzer_windows(request):
@@ -89,7 +83,7 @@ def staticanalyzer_windows(request):
                     }
                 else:
                     print "[INFO] Windows Binary Analysis Started"
-                    app_dic['app_path'] = app_dic['app_dir'] + app_dic['md5'] + '.appx'
+                    app_dic['app_path'] = os.path.join(app_dic['app_dir'], app_dic['md5'] + '.appx')
                     # ANALYSIS BEGINS
                     app_dic['size'] = str(FileSize(app_dic['app_path'])) + 'MB'
                     # Generate hashes
@@ -230,13 +224,13 @@ def _binary_analysis(tools_dir, app_dir):
     bin_an_dic['strings'] = "</br>".join(str_list)
 
     # Execute binskim analysis if vm is available
-    if settings.WINDOWS_VM_IP != "0.0.0.0":
-        print "[INFO] WindowsVM configured."
+    if settings.WINDOWS_VM_IP is not None:
+        print "[INFO] Windows VM configured."
         name = _upload_sample(bin_path)
         bin_an_dic = __binskim(name, bin_an_dic)
         bin_an_dic = __binscope(name, bin_an_dic)
     else:
-        print "[INFO] WindowsVM not configured in settings.py. Skipping Binskim and Binscope."
+        print "[INFO] Windowsc VM not configured in settings.py. Skipping Binskim and Binscope."
         warning = {
             "rule_id": "VM",
             "status": "Info",
