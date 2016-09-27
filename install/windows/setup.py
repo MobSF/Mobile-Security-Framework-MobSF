@@ -271,7 +271,22 @@ def autostart():
     # Execute. Beware the " " because of windows strange paths..
     os.system('"'+batch_file+'"')
 
-if __name__ == "__main__":
+def _place_lockfile():
+    path = "C:\\MobSF\\setup_done.txt"
+    open(path, 'a').close()
+
+def install_locally():
+    """Install the MobSF-Utils on the same system as MobSF."""
+    download_config()
+    read_config()
+    create_folders()
+    tools_nuget()
+    tools_binskim()
+    tools_binscope()
+    _place_lockfile()
+
+def _install_remote():
+    """Install the MobSF-Utils on a Windows-VM for static analysis."""
     download_config()
     read_config()
     create_folders()
@@ -282,3 +297,6 @@ if __name__ == "__main__":
     tools_rpcclient()
     generate_secret()
     autostart()
+
+if __name__ == "__main__":
+    _install_remote()
