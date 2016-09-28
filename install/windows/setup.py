@@ -6,7 +6,10 @@ import sys
 import re
 
 import configparser # pylint: disable-msg=E0401
-import urllib.request # pylint: disable-msg=E0401,E0611
+try:
+    import urllib.request as urlrequest # pylint: disable-msg=E0401,E0611
+except ImportError:
+    import urllib as urlrequest
 import subprocess
 
 # pylint: disable=C0325,W0603
@@ -24,7 +27,7 @@ CONFIG_FILE = "config.txt"
 # Static path to autostart
 AUTOSTART = (
     "C:\\Users\\{}\\AppData\\Roaming\\Microsoft\\"
-    "Windows\\Start Menu\\Programs\\Startup\\".format(os.getlogin())
+    "Windows\\Start Menu\\Programs\\Startup\\".format(os.getenv('username'))
 )
 
 # Global var so we don't have to pass it every time..
@@ -34,14 +37,15 @@ def download_config():
     """Download initial config file."""
 
     # Create config path
-    os.makedirs(CONFIG_PATH, exist_ok=True) # pylint: disable-msg=E1123
+    if not os.path.exists(CONFIG_PATH):
+        os.makedirs(CONFIG_PATH)
 
     # Open File
     conf_file_local = open(CONFIG_PATH + CONFIG_FILE, "wb")
 
     # Downloading File
     print("[*] Downloading config file..")
-    conf_file = urllib.request.urlopen(CONFIG_URL) # pylint: disable-msg=E1101
+    conf_file = urlrequest.urlopen(CONFIG_URL) # pylint: disable-msg=E1101
 
     # Save content
     print("[*] Saving to File {}".format(CONFIG_FILE))
@@ -68,9 +72,14 @@ def create_folders():
 
     print("[*] Creating other folders...")
 
-    os.makedirs(CONFIG['MobSF']['subdir_downloads'], exist_ok=True) # pylint: disable-msg=E1123
-    os.makedirs(CONFIG['MobSF']['subdir_tools'], exist_ok=True) # pylint: disable-msg=E1123
-    os.makedirs(CONFIG['MobSF']['subdir_samples'], exist_ok=True) # pylint: disable-msg=E1123
+    if not os.path.exists(CONFIG['MobSF']['subdir_downloads']):
+        os.makedirs(CONFIG['MobSF']['subdir_downloads'])
+
+    if not os.path.exists(CONFIG['MobSF']['subdir_tools']):
+        os.makedirs(CONFIG['MobSF']['subdir_tools'])
+
+    if not os.path.exists(CONFIG['MobSF']['subdir_samples']):
+        os.makedirs(CONFIG['MobSF']['subdir_samples'])
 
 
 def check_dependencies():
@@ -107,7 +116,7 @@ def tools_nuget():
 
     # Downloading File
     print("[*] Downloading nuget..")
-    nuget_file = urllib.request.urlopen(nuget_url) # pylint: disable-msg=E1101
+    nuget_file = urlrequest.urlopen(nuget_url) # pylint: disable-msg=E1101
 
     # Save content
     print("[*] Saving to File {}".format(nuget_file_path))
@@ -145,13 +154,18 @@ def tools_binskim():
         b"Microsoft\.CodeAnalysis\.BinSkim\..*' ", output # pylint: disable-msg=W1401
     )
     try:
-        # Substring-Foo for removing b'X's
-        folder = str(folder.group(0)[:-2])[2:-1]
+        # Substring-Foo for removing b'X's in python3
+        if sys.version_info.major == 3:
+        #if folder.group(0).startswith("b'"):
+            folder = str(folder.group(0)[:-2])[2:-1]
+        else:
+            folder = folder.group(0)[:-2]
     except AttributeError:
         print("[!] Unable to parse folder from binskim nuget installation.")
         sys.exit()
 
     # Search for the exes
+    print(mobsf_subdir_tools + folder)
     binaries = _find_exe(mobsf_subdir_tools + folder, [])
     if len(binaries) != 2:
         print("[!] Found more than 2 exes for binskim, panic!")
@@ -171,7 +185,7 @@ def tools_binskim():
 
 
 def _find_exe(path, exe_list):
-    """Return a list of all exes in path, recursive"""
+    """Return a list of all exes in path, recursive."""
     for filename in os.listdir(path):
         if os.path.isfile(os.path.join(path, filename)):
             if ".exe" in filename:
@@ -192,7 +206,7 @@ def tools_rpcclient():
 
     # Downloading File
     print("[*] Downloading rpc_server..")
-    rpc_file = urllib.request.urlopen(rpc_url) # pylint: disable-msg=E1101
+    rpc_file = urlrequest.urlopen(rpc_url) # pylint: disable-msg=E1101
 
     # Save content
     print("[*] Saving to File {}".format(rpc_file_path))
@@ -207,16 +221,19 @@ def tools_rpcclient():
 def tools_binscope():
     """Download and install Binscope for MobSF"""
     url = CONFIG['binscope']['url']
-    os.makedirs( # pylint: disable-msg=E1123
-        CONFIG['MobSF']['subdir_tools']+'BinScope', exist_ok=True
-    )
+    path = CONFIG['MobSF']['subdir_tools']+'BinScope'
+    if not os.path.exists(path):
+        os.makedirs(path)
     print("""
 [!] Sadly for Binscope there is no automated install yet.
     Please download the installer from
     {}
     and install it to
     C:\\MobSF\\Tools\\BinScope""".format(url))
-    input("Press enter when done...") # pylint: disable-msg=W0141
+    if sys.version_info.major == 3:
+        input("Press enter when done... ")
+    elif sys.version_info.major == 2:
+        raw_input("Press enter when done... ")
 
 
 def generate_secret():
@@ -241,7 +258,11 @@ def generate_secret():
         "\t(default: Mobile-Security-Framework-MobSF/MobSF/windows_vm_priv_key.asc)"
         .format(CONFIG['MobSF']['priv_key_file'])
     )
-    input("Please press any key when done..") # pylint: disable-msg=W0141
+    if sys.version_info.major == 3:
+        input("Please press any key when done..")
+    elif sys.version_info.major == 2:
+        raw_input("Please press any key when done..")
+
 
 
 def autostart():
