@@ -10,6 +10,10 @@ import json
 import base64
 import rsa
 
+# Local analysis
+import configparser
+import subprocess
+
 # XML-Manifest
 from lxml import etree
 
@@ -32,6 +36,7 @@ from MobSF.utils import PrintException
 proxy = xmlrpclib.ServerProxy( # pylint: disable-msg=C0103
     "http://{}:8000".format(settings.WINDOWS_VM_IP)
 )
+config = None
 
 ##############################################################
 # Code to support Windows Static Code Analysis
@@ -224,20 +229,29 @@ def _binary_analysis(tools_dir, app_dir):
     bin_an_dic['strings'] = "</br>".join(str_list)
 
     # Execute binskim analysis if vm is available
-    if settings.WINDOWS_VM_IP is not None:
-        print "[INFO] Windows VM configured."
-        name = _upload_sample(bin_path)
-        bin_an_dic = __binskim(name, bin_an_dic)
-        bin_an_dic = __binscope(name, bin_an_dic)
+    if settings.CURRENT_PLATFROM != 'Windows':
+        if settings.WINDOWS_VM_IP is not None:
+            print "[INFO] Windows VM configured."
+            name = _upload_sample(bin_path)
+            bin_an_dic = __binskim(name, bin_an_dic)
+            bin_an_dic = __binscope(name, bin_an_dic)
+        else:
+            print "[INFO] Windowsc VM not configured in settings.py. Skipping Binskim and Binscope."
+            warning = {
+                "rule_id": "VM",
+                "status": "Info",
+                "desc": "VM is not configured. Please read the readme.md in MobSF/install/windows."
+            }
+            bin_an_dic['results'].append(warning)
     else:
-        print "[INFO] Windowsc VM not configured in settings.py. Skipping Binskim and Binscope."
-        warning = {
-            "rule_id": "VM",
-            "status": "Info",
-            "desc": "VM is not configured. Please read the readme.md in MobSF/install/windows."
-        }
-        bin_an_dic['results'].append(warning)
+        # TODO(Anpassen für windows lokal)
+        print "[INFO] Running lokal analysis."
 
+        global config
+        config = configparser.ConfigParser()
+        config.read('C:\\MobSF\\Config\\config.txt')
+
+        bin_an_dic = __binskim(bin_path, bin_an_dic, run_local=True, app_dir=app_dir)
 
     return bin_an_dic
 
@@ -254,16 +268,51 @@ def _upload_sample(bin_path):
 
     return name
 
-def __binskim(name, bin_an_dic):
+def __binskim(name, bin_an_dic, run_local=False, app_dir=None):
     """Run the binskim analysis."""
     print "[INFO] Running binskim."
-    # Analyse the sample
-    response = proxy.binskim(name, _get_token())
+    if run_local:
+        bin_path = os.path.join(app_dir, bin_an_dic['bin'])
 
-    # Load output as json
-    output = json.loads(response)
+        # Set params for execution of binskim
+        binskim_path = config['binskim']['file_x64']
+        command = "analyze"
+        path = bin_path
+        output_p = "-o"
+        output_d = config['MobSF']['subdir_samples'] + bin_an_dic['bin'] + "_binskim"
+        # verbose = "-v"
+        policy_p = "--config"
+        policy_d = "default"  # TODO(Other policies?)
 
-    # Parse output to results and warnings
+        # Assemble
+        params = [
+            binskim_path,
+            command,
+            path,
+            output_p, output_d,
+            # verbose,
+            policy_p, policy_d
+        ]
+
+        # Execute process
+        pipe = subprocess.Popen(subprocess.list2cmdline(params))
+        pipe.wait()  # Wait for the process to finish..
+
+        # Open the file and return the json
+        out_file = open(output_d)
+        output = json.loads(out_file.read())
+    else:
+        # Analyse the sample
+        response = proxy.binskim(name, _get_token())
+
+        # Load output as json
+        output = json.loads(response)
+
+    bin_an_dic = __parse_binskim(bin_an_dic, output)
+    return bin_an_dic
+
+def __parse_binskim(bin_an_dic, output):
+    """Parse output to results and warnings"""
     current_run = output['runs'][0]
 
     if 'results' in current_run:
@@ -296,6 +345,7 @@ def __binskim(name, bin_an_dic):
 
     # Return updated dict
     return bin_an_dic
+
 
 def __binscope(name, bin_an_dic):
     """Run the binskim analysis."""
