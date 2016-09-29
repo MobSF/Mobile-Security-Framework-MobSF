@@ -252,6 +252,7 @@ def _binary_analysis(tools_dir, app_dir):
         config.read('C:\\MobSF\\Config\\config.txt')
 
         bin_an_dic = __binskim(bin_path, bin_an_dic, run_local=True, app_dir=app_dir)
+        bin_an_dic = __binscope(bin_path, bin_an_dic, run_local=True, app_dir=app_dir)
 
     return bin_an_dic
 
@@ -346,13 +347,59 @@ def __parse_binskim(bin_an_dic, output):
     # Return updated dict
     return bin_an_dic
 
-
-def __binscope(name, bin_an_dic):
+def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
     """Run the binskim analysis."""
     print "[INFO] Running binscope. This might take a while, depending on the binary size."
 
-    # Analyse the sample
-    response = proxy.binscope(name, _get_token())
+    if run_local:
+        global config
+        bin_path = os.path.join(app_dir, bin_an_dic['bin'])
+
+        # Set params for execution of binskim
+        binscope_path = [config['binscope']['file']]
+        target = [bin_path]
+        out_type = ["/Red", "/v"]
+        output = ["/l", target[0] + "_binscope"]
+        checks = [
+            '/Checks', 'ATLVersionCheck',
+            '/Checks', 'ATLVulnCheck',
+            '/Checks', 'AppContainerCheck',
+            '/Checks', 'CompilerVersionCheck',
+            '/Checks', 'DBCheck',
+            '/Checks', 'DefaultGSCookieCheck',
+            '/Checks', 'ExecutableImportsCheck',
+            '/Checks', 'FunctionPointersCheck',
+            '/Checks', 'GSCheck',
+            '/Checks', 'GSFriendlyInitCheck',
+            '/Checks', 'GSFunctionSafeBuffersCheck',
+            '/Checks', 'HighEntropyVACheck',
+            '/Checks', 'NXCheck',
+            '/Checks', 'RSA32Check',
+            '/Checks', 'SafeSEHCheck',
+            '/Checks', 'SharedSectionCheck',
+            '/Checks', 'VB6Check',
+            '/Checks', 'WXCheck',
+        ]
+
+        # Assemble
+        params = (
+            binscope_path +
+            target +
+            out_type +
+            output +
+            checks
+        )
+
+        # Execute process
+        p = subprocess.Popen(subprocess.list2cmdline(params))
+        p.wait()  # Wait for the process to finish..
+
+        # Open the file and return the json
+        f = open(output[1])
+        response = f.read()
+    else:
+        # Analyse the sample
+        response = proxy.binscope(name, _get_token())
 
     res = response[response.find('<'):]
     config = etree.XMLParser( # pylint: disable-msg=E1101
