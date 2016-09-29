@@ -344,6 +344,7 @@ else:
     # Path to lock-file (so setup is only run once)
     PATH_TO_LOCK_FILE = "C:\\MobSF\\setup_done.txt"
     if (os.path.isfile(PATH_TO_LOCK_FILE) is False) and CURRENT_PLATFROM == 'Windows':
+        print "[INFO] Running first time setup for windows."
         # Setup is to-be-executed
         windows_setup.install_locally()
     #==============================================

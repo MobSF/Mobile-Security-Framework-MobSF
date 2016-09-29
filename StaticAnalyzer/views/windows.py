@@ -398,7 +398,7 @@ def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
         f = open(output[1])
         response = f.read()
     else:
-        # Analyse the sample
+        # Analyse the sample via rpc
         response = proxy.binscope(name, _get_token())
 
     res = response[response.find('<'):]
@@ -410,9 +410,6 @@ def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
 
     for item in xml_file.find('items').getchildren():
         if item.find('issueType') is not None:
-            # print "Type: {}".format(item.find('issueType').text)
-            # print "Result: {}".format(item.find('result').text)
-
             res = item.find('result').text
 
             if res == 'PASS':
