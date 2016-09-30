@@ -4,6 +4,7 @@
 import os
 import sys
 import re
+import shutil
 
 import configparser # pylint: disable-msg=E0401
 try:
@@ -112,7 +113,7 @@ def tools_nuget():
     nuget_file_path = CONFIG['nuget']['file']
 
     # Open File
-    nuget_file_local = open(mobsf_subdir_tools + nuget_file_path, "wb")
+    nuget_file_local = open(os.path.join(mobsf_subdir_tools, nuget_file_path), "wb")
 
     # Downloading File
     print("[*] Downloading nuget..")
@@ -165,7 +166,6 @@ def tools_binskim():
         sys.exit()
 
     # Search for the exes
-    print(mobsf_subdir_tools + folder)
     binaries = _find_exe(mobsf_subdir_tools + folder, [])
     if len(binaries) != 2:
         print("[!] Found more than 2 exes for binskim, panic!")
@@ -180,7 +180,7 @@ def tools_binskim():
         CONFIG['binskim']['file_x64'] = binaries[0]
 
     # Write to config
-    with open('C:\\MobSF\\Config\\config.txt', 'w') as configfile:
+    with open(os.path.join(CONFIG_PATH, CONFIG_FILE), 'w') as configfile:
         CONFIG.write(configfile) # pylint: disable-msg=E1101
 
 
@@ -221,19 +221,25 @@ def tools_rpcclient():
 def tools_binscope():
     """Download and install Binscope for MobSF"""
     url = CONFIG['binscope']['url']
-    path = CONFIG['MobSF']['subdir_tools']+'BinScope'
-    if not os.path.exists(path):
-        os.makedirs(path)
+    binscope_path = CONFIG['MobSF']['subdir_tools']+'BinScope'
+    if not os.path.exists(binscope_path):
+        os.makedirs(binscope_path)
     print("""
 [!] Sadly for Binscope there is no automated install yet.
     Please download the installer from
     {}
     and install it to
-    C:\\MobSF\\Tools\\BinScope""".format(url))
+    {}""".format(url, binscope_path))
     if sys.version_info.major == 3:
         input("Press enter when done... ")
     elif sys.version_info.major == 2:
         raw_input("Press enter when done... ")
+
+    CONFIG['binscope']['file'] = binscope_path + "\\Binscope.exe"
+
+    # Write to config
+    with open(os.path.join(CONFIG_PATH, CONFIG_FILE), 'w') as configfile:
+        CONFIG.write(configfile) # pylint: disable-msg=E1101
 
 
 def generate_secret():
@@ -293,14 +299,43 @@ def autostart():
     os.system('"'+batch_file+'"')
 
 def _place_lockfile():
-    path = "C:\\MobSF\\setup_done.txt"
+    path = os.path.join(CONFIG['MobSF']['dir'], 'setup_done.txt')
     open(path, 'a').close()
 
-def install_locally():
+
+def local_config(mobsf_home, config_path):
+    """Move local config and save paths."""
+    # Set the CONFIG_PATH
+    global CONFIG_PATH
+    CONFIG_PATH = config_path
+
+    # Copy predefined config to MobSF folder
+    shutil.copy(
+        mobsf_home + "\\install\\windows\\config.txt",
+        os.path.join(CONFIG_PATH, CONFIG_FILE)
+    )
+
+def rewrite_local_config(mobsf_home):
+    CONFIG['MobSF']['subdir_tools'] = mobsf_home + "\\StaticAnalyzer\\tools\\windows\\"
+    CONFIG['MobSF']['dir'] = mobsf_home
+
+    # Write to config
+    with open(os.path.join(CONFIG_PATH, CONFIG_FILE), 'w') as configfile:
+        CONFIG.write(configfile) # pylint: disable-msg=E1101
+
+
+def install_locally(mobsf_home, user_config=None):
     """Install the MobSF-Utils on the same system as MobSF."""
-    download_config()
+    if user_config:
+        local_config(mobsf_home, user_config)
+    else:
+        user_config = os.path.join(mobsf_home + "\\MobSF\\")
+        local_config(mobsf_home, user_config)
+
     read_config()
-    create_folders()
+    rewrite_local_config(mobsf_home)
+    if not os.path.exists(CONFIG['MobSF']['subdir_tools']):
+        os.makedirs(CONFIG['MobSF']['subdir_tools'])
     tools_nuget()
     tools_binskim()
     tools_binscope()
