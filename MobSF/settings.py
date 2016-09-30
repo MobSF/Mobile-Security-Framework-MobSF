@@ -337,8 +337,9 @@ else:
     # Configure the params here if you are not on windows
     # Private key if rpc server is needed
     WINDOWS_VM_SECRET = 'MobSF/windows_vm_priv_key.asc'
-    #IP of the MobSF VM
-    WINDOWS_VM_IP =  '0.0.0.0'  # 0.0.0.0 == disabled, port 8000 is assumed
+    #IP and Port of the MobSF Windows VM
+    WINDOWS_VM_IP =  '0.0.0.0'  # 0.0.0.0 == disabled
+    WINDOWS_VM_PORT = '8000'
 
     # Configure here if you are on windows
     # Path to lock-file (so setup is only run once)

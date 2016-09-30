@@ -34,7 +34,10 @@ from MobSF.utils import PrintException
 
 
 proxy = xmlrpclib.ServerProxy( # pylint: disable-msg=C0103
-    "http://{}:8000".format(settings.WINDOWS_VM_IP)
+    "http://{}:{}".format(
+        settings.WINDOWS_VM_IP,
+        settings.WINDOWS_VM_PORT
+    )
 )
 config = None
 
