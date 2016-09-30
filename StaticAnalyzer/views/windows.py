@@ -250,13 +250,14 @@ def _binary_analysis(tools_dir, app_dir):
             }
             bin_an_dic['results'].append(warning)
     else:
-        # TODO(Anpassen für windows lokal)
         print "[INFO] Running lokal analysis."
 
         global config
         config = configparser.ConfigParser()
-        config.read('C:\\MobSF\\Config\\config.txt')
+        # Switch to settings definded path if available
+        config.read('MobSF\\config.txt')
 
+        # Run analysis functions
         bin_an_dic = __binskim(bin_path, bin_an_dic, run_local=True, app_dir=app_dir)
         bin_an_dic = __binscope(bin_path, bin_an_dic, run_local=True, app_dir=app_dir)
 
@@ -286,7 +287,7 @@ def __binskim(name, bin_an_dic, run_local=False, app_dir=None):
         command = "analyze"
         path = bin_path
         output_p = "-o"
-        output_d = config['MobSF']['subdir_samples'] + bin_an_dic['bin'] + "_binskim"
+        output_d = bin_path + "_binskim"
         # verbose = "-v"
         policy_p = "--config"
         policy_d = "default"  # TODO(Other policies?)
