@@ -67,6 +67,7 @@ Example:
 > causing the bug, and potential solutions (and your opinions on their
 > merits).
 
+Open Bugs here: https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/issues
 
 <a name="features"></a>
 ## Feature requests
