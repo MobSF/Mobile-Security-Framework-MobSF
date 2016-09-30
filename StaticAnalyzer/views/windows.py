@@ -1,6 +1,5 @@
 # -*- coding: utf_8 -*-
 """Windows Analysis Module."""
-import ast
 import re
 import os
 
@@ -31,6 +30,7 @@ from StaticAnalyzer.models import StaticAnalyzerWindows
 from StaticAnalyzer.tools.strings import strings
 
 from MobSF.utils import PrintException
+from MobSF.utils import python_list
 
 
 proxy = xmlrpclib.ServerProxy( # pylint: disable-msg=C0103
@@ -86,8 +86,8 @@ def staticanalyzer_windows(request):
                         'opti_tool' :  db_entry[0].OPTI_TOOL,
                         'target_run' :  db_entry[0].TARGET_RUN,
                         'strings' : db_entry[0].STRINGS,
-                        'bin_an_results' : ast.literal_eval(db_entry[0].BIN_AN_RESULTS),
-                        'bin_an_warnings' : ast.literal_eval(db_entry[0].BIN_AN_WARNINGS)
+                        'bin_an_results' : python_list(db_entry[0].BIN_AN_RESULTS),
+                        'bin_an_warnings' : python_list(db_entry[0].BIN_AN_WARNINGS)
                     }
                 else:
                     print "[INFO] Windows Binary Analysis Started"
