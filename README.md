@@ -30,8 +30,8 @@ Made with <img src="https://cloud.githubusercontent.com/assets/4301109/16754758/
 ## Queries
 
 * Features Requests: [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN). 
-* Open Bugs Here:  https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/issues
-* Please add the log files `logs/MobSF.log` and `logs/webproxy.log` while opening bugs.
+* Read [CONTRIBUTING.md](https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/blob/master/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
+* Open Bugs after reading [Guidelines to Report a Bug](https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/blob/master/CONTRIBUTING.md#using-the-issue-tracker)
 
 ## Screenshots
 
