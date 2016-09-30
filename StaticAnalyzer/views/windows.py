@@ -32,13 +32,9 @@ from StaticAnalyzer.tools.strings import strings
 from MobSF.utils import PrintException
 from MobSF.utils import python_list
 
-
-proxy = xmlrpclib.ServerProxy( # pylint: disable-msg=C0103
-    "http://{}:{}".format(
-        settings.WINDOWS_VM_IP,
-        settings.WINDOWS_VM_PORT
-    )
-)
+# Only used when xmlrpc is used
+proxy = None
+# Used to store the local config if windows analysis happens local
 config = None
 
 ##############################################################
@@ -233,8 +229,15 @@ def _binary_analysis(tools_dir, app_dir):
 
     # Execute binskim analysis if vm is available
     if settings.CURRENT_PLATFROM != 'Windows':
-        if settings.WINDOWS_VM_IP is not None:
+        if settings.WINDOWS_VM_IP != '0.0.0.0':
             print "[INFO] Windows VM configured."
+            global proxy
+            proxy  = xmlrpclib.ServerProxy( # pylint: disable-msg=C0103
+                "http://{}:{}".format(
+                    settings.WINDOWS_VM_IP,
+                    settings.WINDOWS_VM_PORT
+                )
+            )
             name = _upload_sample(bin_path)
             bin_an_dic = __binskim(name, bin_an_dic)
             bin_an_dic = __binscope(name, bin_an_dic)
