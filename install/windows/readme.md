@@ -17,3 +17,18 @@ Use and separate Windows-VM for MobSF and *don't* expose it to a network range w
 To integrate a Windows-VM into MobSF, please following these steps.
 * Get the IP of you VM and set in the MobSF/settings.py-File (search for `WINDOWS_VM_IP`)
 * (If not yet done:) Copy the private rsa key from the vm to MobSF
+
+###Tested On
+Windows 10, Windows 7
+##FAQ
+
+1. If you see errors like this
+
+```
+Unhandled Exception: System.NotSupportedException: The requested security protocol is not supported.
+   at System.Net.ServicePointManager.set_SecurityProtocol(SecurityProtocolType value)
+   at NuGet.CommandLine.Program.MainCore(String workingDirectory, String[] args)
+   at NuGet.CommandLine.Program.Main(String[] args)
+```
+Install [.NET Framework 4.6](https://www.microsoft.com/en-in/download/confirmation.aspx?id=48130)
+
