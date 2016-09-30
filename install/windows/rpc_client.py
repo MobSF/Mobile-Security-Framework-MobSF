@@ -1,56 +1,136 @@
-import configparser
-import hashlib
-import re
-import subprocess
-import sys
+"""MobSF rpc_client for static windows app analysis."""
+# pylint: disable=C0325,W0603,C0103
 import os
 
-from flask import Flask, request, redirect, url_for
+import re
+import subprocess
+import configparser # pylint: disable-msg=E0401
+import hashlib
+import random
+import string
+import base64
 
-app = Flask(__name__)
+from xmlrpc.server import SimpleXMLRPCServer # pylint: disable-msg=E0401
+
+import rsa
+
+config = None
+challenge = None
+pub_key = None
+
+def _init_key():
+    global pub_key
+    pub_key = rsa.PublicKey.load_pkcs1(
+        open(config['MobSF']['pub_key_file']).read()
+    )
+
+def _check_challenge(signature):
+    signature = base64.b64decode(signature)
+    try:
+        rsa.verify(challenge.encode('utf-8'), signature, pub_key)
+        print("[*] Challenge successfully verified.")
+        _revoke_challenge()
+    except rsa.pkcs1.VerificationError:
+        print("[!] Received wrong signature for challenge.")
+        raise Exception("Access Denied.")
+    except (TypeError, AttributeError):
+        print("[!] Challenge already unset.")
+        raise Exception("Access Denied.")
 
 
-@app.route('/static_analyze/binskim/<string:sample>')
-def binskim(sample):
+def _revoke_challenge():
+    """Revoke the challenge (to prevent replay attacks)"""
+    global challenge
+    challenge = None
+
+
+def get_challenge():
+    """Return an ascii challenge to validate authentication in _check_challenge."""
+    global challenge
+    # Not using os.urandom for Python 2/3 transfer errors
+    challenge = ''.join(
+        random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(256)
+    )
+    return "{}".format(challenge)
+
+
+def test_challenge(signature):
+    """Test function to check if rsa is working."""
+    _check_challenge(signature)
+    print("Check complete")
+    return "OK!"
+
+def upload_file(sample_file, signature):
+    """Upload a file."""
+
+    # Check challenge
+    _check_challenge(signature)
+
+    # Get md5
+    md5 = hashlib.md5()
+    md5.update(sample_file.data)
+
+    # Save the file to disk
+    with open(
+        os.path.join(
+            config['MobSF']['subdir_samples'],
+            md5.hexdigest()
+        ),
+        "wb"
+    ) as handle:
+        handle.write(sample_file.data)
+
+    # Return md5 as reference to the sample
+    return md5.hexdigest()
+
+
+def binskim(sample, signature):
     """Perform an static analysis on the sample and return the json"""
+
+    # Check challenge
+    _check_challenge(signature)
 
     # Check if param is a md5 to prevent attacks (we only use lower-case)
     if len(re.findall(r"([a-f\d]{32})", sample)) == 0:
         return "Wrong Input!"
 
     # Set params for execution of binskim
-    binskim = app.config['binskimx64']
+    binskim_path = config['binskim']['file_x64']
     command = "analyze"
-    path = app.config['mobsf_samples'] + sample
+    path = config['MobSF']['subdir_samples'] + sample
     output_p = "-o"
-    output_d = app.config['mobsf_samples'] + sample + "_binskim"
-    verbose = "-v"
+    output_d = config['MobSF']['subdir_samples'] + sample + "_binskim"
+    # verbose = "-v"
     policy_p = "--config"
     policy_d = "default"  # TODO(Other policies?)
 
     # Assemble
     params = [
-            binskim,
-            command,
-            path,
-            output_p, output_d,
-            # verbose,
-            policy_p, policy_d
-        ]
+        binskim_path,
+        command,
+        path,
+        output_p, output_d,
+        # verbose,
+        policy_p, policy_d
+    ]
 
     # Execute process
-    p = subprocess.Popen(subprocess.list2cmdline(params))
-    p.wait()  # Wait for the process to finish..
+    pipe = subprocess.Popen(subprocess.list2cmdline(params))
+    pipe.wait()  # Wait for the process to finish..
 
     # Open the file and return the json
-    f = open(output_d)
-    return f.read()
+    out_file = open(output_d)
+    return out_file.read()
 
 
-@app.route('/static_analyze/binscope/<string:sample>')
-def binscope(sample):
+def binscope(sample, signature):
+    """Run binscope against an sample file."""
+
+    # Check challenge
+    _check_challenge(signature)
+
     # Set params for execution of binskim
-    binscope = ["C:\\MobSF\\Tools\\BinScope\\BinScope.exe"]
+    binscope_path = ["C:\\MobSF\\Tools\\BinScope\\BinScope.exe"]
     target = ["C:\\MobSF\\Samples\\" + sample]
     out_type = ["/Red", "/v"]
     output = ["/l", target[0] + "_binscope"]
@@ -76,7 +156,7 @@ def binscope(sample):
     ]
     # Assemble
     params = (
-        binscope +
+        binscope_path +
         target +
         out_type +
         output +
@@ -92,52 +172,18 @@ def binscope(sample):
     return f.read()
 
 
-@app.route('/upload', methods=['GET', 'POST'])
-def upload_file():
-    """Upload a file."""
-    if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        if file.filename == '':
-            flash('No file selected.')
-            return redirect(request.url)
-        if file:
-            m = hashlib.md5()
-            pos = file.tell()  # Store pos
-            test = file.read()
-            # print(test) # Debug print
-            m.update(test)
-            file.seek(pos)  # Restore pos
-            file.save(os.path.join(app.config['mobsf_samples'], m.hexdigest()))
-            return m.hexdigest()
-    return '''
-    <!doctype html>
-    <title>Upload new Sample-File</title>
-    <h1>Upload new Sample-File</h1>
-    This should normaly be done via multipart post request.
-    <form action="" method=post enctype=multipart/form-data>
-      <p><input type=file name=file>
-         <input type=submit value=Upload>
-    </form>
-    '''
-
-
 if __name__ == '__main__':
     # Init configparser
     config = configparser.ConfigParser()
     config.read('C:\\MobSF\\Config\\config.txt')
 
-    # Set the required config args in flask
-    app.config['mobsf_dir'] = config['MobSF']['dir']
-    app.config['mobsf_tools_dir'] = config['MobSF']['subdir_tools']
-    app.config['mobsf_samples'] = config['MobSF']['subdir_samples']
-    app.config['binskimx64'] = config['binskim']['file_x64']
-    app.config['binskimx86'] = config['binskim']['file_x86']
+    _init_key()
 
-    # Start the app
-    app.run(host='0.0.0.0')
+    server = SimpleXMLRPCServer(("0.0.0.0", 8000))
+    print("Listening on port 8000...")
+    server.register_function(get_challenge, "get_challenge")
+    server.register_function(test_challenge, "test_challenge")
+    server.register_function(upload_file, "upload_file")
+    server.register_function(binskim, "binskim")
+    server.register_function(binscope, "binscope")
+    server.serve_forever()

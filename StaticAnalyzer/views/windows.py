@@ -1,13 +1,17 @@
 # -*- coding: utf_8 -*-
 """Windows Analysis Module."""
-import ast
 import re
 import os
-import subprocess
 
-# Binskim analysis
+# Binskim/Binscope analysis
+import xmlrpclib
 import json
-import requests
+import base64
+import rsa
+
+# Local analysis
+import configparser
+import subprocess
 
 # XML-Manifest
 from lxml import etree
@@ -23,7 +27,15 @@ from shared_func import Unzip
 
 from StaticAnalyzer.models import StaticAnalyzerWindows
 
+from StaticAnalyzer.tools.strings import strings
+
 from MobSF.utils import PrintException
+from MobSF.utils import python_list
+
+# Only used when xmlrpc is used
+proxy = None
+# Used to store the local config if windows analysis happens local
+config = None
 
 ##############################################################
 # Code to support Windows Static Code Analysis
@@ -45,7 +57,9 @@ def staticanalyzer_windows(request):
             app_dic['tools_dir'] = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/tools/windows/')
             if typ == 'appx':
                 # DB
-                db_entry = StaticAnalyzerWindows.objects.filter(MD5=app_dic['md5'])
+                db_entry = StaticAnalyzerWindows.objects.filter( # pylint: disable-msg=E1101
+                    MD5=app_dic['md5']
+                )
                 if db_entry.exists() and rescan == '0':
                     print "\n[INFO] Analysis is already Done. Fetching data from the DB..."
                     context = {
@@ -68,8 +82,8 @@ def staticanalyzer_windows(request):
                         'opti_tool' :  db_entry[0].OPTI_TOOL,
                         'target_run' :  db_entry[0].TARGET_RUN,
                         'strings' : db_entry[0].STRINGS,
-                        'bin_an_results' : ast.literal_eval(db_entry[0].BIN_AN_RESULTS),
-                        'bin_an_warnings' : ast.literal_eval(db_entry[0].BIN_AN_WARNINGS)
+                        'bin_an_results' : python_list(db_entry[0].BIN_AN_RESULTS),
+                        'bin_an_warnings' : python_list(db_entry[0].BIN_AN_WARNINGS)
                     }
                 else:
                     print "[INFO] Windows Binary Analysis Started"
@@ -87,7 +101,7 @@ def staticanalyzer_windows(request):
                     print "\n[INFO] Connecting to DB"
                     if rescan == '1':
                         print "\n[INFO] Updating Database..."
-                        StaticAnalyzerWindows.objects.filter(
+                        StaticAnalyzerWindows.objects.filter( # pylint: disable-msg=E1101
                             MD5=app_dic['md5']
                         ).update(
                             TITLE='Static Analysis',
@@ -177,6 +191,14 @@ def staticanalyzer_windows(request):
         template = "error.html"
         return render(request, template, context)
 
+def _get_token():
+    """Get the authentication token for windows vm xmlrpc client."""
+    challenge = proxy.get_challenge()
+    priv_key = rsa.PrivateKey.load_pkcs1(open(settings.WINDOWS_VM_SECRET).read())
+    signature = rsa.sign(challenge, priv_key, 'SHA-512')
+    sig_b64 = base64.b64encode(signature)
+    return sig_b64
+
 def _binary_analysis(tools_dir, app_dir):
     """Start binary analsis."""
     print "[INFO] Starting Binary Analysis"
@@ -199,26 +221,44 @@ def _binary_analysis(tools_dir, app_dir):
     bin_path = os.path.join(app_dir, bin_an_dic['bin'])
 
     # Execute strings command
-    # Works only in Mac and Linux by default.
-    args = ["strings", bin_path]
-    bin_an_dic['strings'] = escape(subprocess.check_output(args))
-    bin_an_dic['strings'] = bin_an_dic['strings'].replace("\n", "</br>")
+    bin_an_dic['strings'] = ""
+    str_list = list(strings(bin_path))
+    str_list = set(str_list)  # Make unique # pylint: disable-msg=R0204
+    str_list = [escape(s) for s in str_list]
+    bin_an_dic['strings'] = "</br>".join(str_list)
 
     # Execute binskim analysis if vm is available
-    if settings.WINDOWS_VM_IP is not None:
-        print "[INFO] Windows VM configured."
-        name = _upload_sample(bin_path)
-        bin_an_dic = __binskim(name, bin_an_dic)
-        bin_an_dic = __binscope(name, bin_an_dic)
+    if settings.CURRENT_PLATFROM != 'Windows':
+        if settings.WINDOWS_VM_IP != '0.0.0.0':
+            print "[INFO] Windows VM configured."
+            global proxy
+            proxy  = xmlrpclib.ServerProxy( # pylint: disable-msg=C0103
+                "http://{}:{}".format(
+                    settings.WINDOWS_VM_IP,
+                    settings.WINDOWS_VM_PORT
+                )
+            )
+            name = _upload_sample(bin_path)
+            bin_an_dic = __binskim(name, bin_an_dic)
+            bin_an_dic = __binscope(name, bin_an_dic)
+        else:
+            print "[INFO] Windows VM not configured in settings.py. Skipping Binskim and Binscope."
+            warning = {
+                "rule_id": "VM",
+                "status": "Info",
+                "desc": "VM is not configured. Please read the readme.md in MobSF/install/windows."
+            }
+            bin_an_dic['results'].append(warning)
     else:
-        print "[INFO] Windowsc VM not configured in settings.py. Skipping Binskim and Binscope."
-        warning = {
-            "rule_id": "VM",
-            "status": "Info",
-            "desc": "VM is not configured. Please read the readme.md in MobSF/install/windows."
-        }
-        bin_an_dic['results'].append(warning)
+        # TODO(Anpassen für windows lokal)
+        print "[INFO] Running lokal analysis."
 
+        global config
+        config = configparser.ConfigParser()
+        config.read('C:\\MobSF\\Config\\config.txt')
+
+        bin_an_dic = __binskim(bin_path, bin_an_dic, run_local=True, app_dir=app_dir)
+        bin_an_dic = __binscope(bin_path, bin_an_dic, run_local=True, app_dir=app_dir)
 
     return bin_an_dic
 
@@ -226,26 +266,60 @@ def _upload_sample(bin_path):
     """Upload sample to windows vm."""
     print "[INFO] Uploading sample."
 
-    # Upload sample
-    url = 'http://{}:5000/upload'.format(settings.WINDOWS_VM_IP)
-    files = {'file': open(bin_path, 'rb')}
-    response = requests.post(url, files=files)
+    # Upload test
+    with open(bin_path, "rb") as handle:
+        binary_data = xmlrpclib.Binary(handle.read())
 
     # Name of the sample is return by the remote machine
-    name = response.text
+    name = proxy.upload_file(binary_data, _get_token())
+
     return name
 
-def __binskim(name, bin_an_dic):
+def __binskim(name, bin_an_dic, run_local=False, app_dir=None):
     """Run the binskim analysis."""
     print "[INFO] Running binskim."
-    # Analyse the sample
-    url = 'http://{}:5000/static_analyze/binskim/{}'.format(settings.WINDOWS_VM_IP, name.strip())
-    response = requests.get(url)
+    if run_local:
+        bin_path = os.path.join(app_dir, bin_an_dic['bin'])
 
-    # Load output as json
-    output = json.loads(response.text)
+        # Set params for execution of binskim
+        binskim_path = config['binskim']['file_x64']
+        command = "analyze"
+        path = bin_path
+        output_p = "-o"
+        output_d = config['MobSF']['subdir_samples'] + bin_an_dic['bin'] + "_binskim"
+        # verbose = "-v"
+        policy_p = "--config"
+        policy_d = "default"  # TODO(Other policies?)
 
-    # Parse output to results and warnings
+        # Assemble
+        params = [
+            binskim_path,
+            command,
+            path,
+            output_p, output_d,
+            # verbose,
+            policy_p, policy_d
+        ]
+
+        # Execute process
+        pipe = subprocess.Popen(subprocess.list2cmdline(params))
+        pipe.wait()  # Wait for the process to finish..
+
+        # Open the file and return the json
+        out_file = open(output_d)
+        output = json.loads(out_file.read())
+    else:
+        # Analyse the sample
+        response = proxy.binskim(name, _get_token())
+
+        # Load output as json
+        output = json.loads(response)
+
+    bin_an_dic = __parse_binskim(bin_an_dic, output)
+    return bin_an_dic
+
+def __parse_binskim(bin_an_dic, output):
+    """Parse output to results and warnings"""
     current_run = output['runs'][0]
 
     if 'results' in current_run:
@@ -279,28 +353,69 @@ def __binskim(name, bin_an_dic):
     # Return updated dict
     return bin_an_dic
 
-def __binscope(name, bin_an_dic):
+def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
     """Run the binskim analysis."""
     print "[INFO] Running binscope. This might take a while, depending on the binary size."
-    # Analyse the sample
-    url = (
-        'http://{}:5000/static_analyze/binscope/{}'.format(settings.WINDOWS_VM_IP, name.strip())
+
+    if run_local:
+        global config
+        bin_path = os.path.join(app_dir, bin_an_dic['bin'])
+
+        # Set params for execution of binskim
+        binscope_path = [config['binscope']['file']]
+        target = [bin_path]
+        out_type = ["/Red", "/v"]
+        output = ["/l", target[0] + "_binscope"]
+        checks = [
+            '/Checks', 'ATLVersionCheck',
+            '/Checks', 'ATLVulnCheck',
+            '/Checks', 'AppContainerCheck',
+            '/Checks', 'CompilerVersionCheck',
+            '/Checks', 'DBCheck',
+            '/Checks', 'DefaultGSCookieCheck',
+            '/Checks', 'ExecutableImportsCheck',
+            '/Checks', 'FunctionPointersCheck',
+            '/Checks', 'GSCheck',
+            '/Checks', 'GSFriendlyInitCheck',
+            '/Checks', 'GSFunctionSafeBuffersCheck',
+            '/Checks', 'HighEntropyVACheck',
+            '/Checks', 'NXCheck',
+            '/Checks', 'RSA32Check',
+            '/Checks', 'SafeSEHCheck',
+            '/Checks', 'SharedSectionCheck',
+            '/Checks', 'VB6Check',
+            '/Checks', 'WXCheck',
+        ]
+
+        # Assemble
+        params = (
+            binscope_path +
+            target +
+            out_type +
+            output +
+            checks
+        )
+
+        # Execute process
+        p = subprocess.Popen(subprocess.list2cmdline(params))
+        p.wait()  # Wait for the process to finish..
+
+        # Open the file and return the json
+        f = open(output[1])
+        response = f.read()
+    else:
+        # Analyse the sample via rpc
+        response = proxy.binscope(name, _get_token())
+
+    res = response[response.find('<'):]
+    config = etree.XMLParser( # pylint: disable-msg=E1101
+        remove_blank_text=True,
+        resolve_entities=False
     )
-    response = requests.get(url)
-
-    # Load output as json
-    #output = json.loads(response.text)
-    print response.text
-
-    res = response.text[response.text.find('<'):]
-    config = etree.XMLParser(remove_blank_text=True, resolve_entities=False)
-    xml_file = etree.XML(bytes(res), config)
+    xml_file = etree.XML(bytes(res), config) # pylint: disable-msg=E1101
 
     for item in xml_file.find('items').getchildren():
         if item.find('issueType') is not None:
-            print "Type: {}".format(item.find('issueType').text)
-            print "Result: {}".format(item.find('result').text)
-
             res = item.find('result').text
 
             if res == 'PASS':
@@ -352,8 +467,11 @@ def _parse_xml(app_dir):
 
     try:
         print "[INFO] Reading AppxManifest"
-        config = etree.XMLParser(remove_blank_text=True, resolve_entities=False)
-        xml = etree.XML(open(xml_file).read(), config)
+        config = etree.XMLParser( # pylint: disable-msg=E1101
+            remove_blank_text=True,
+            resolve_entities=False
+        )
+        xml = etree.XML(open(xml_file).read(), config) # pylint: disable-msg=E1101
         for child in xml.getchildren():
             # } to prevent conflict with PhoneIdentity..
             if isinstance(child.tag, str) and child.tag.endswith("}Identity"):

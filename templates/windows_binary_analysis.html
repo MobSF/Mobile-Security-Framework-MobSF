@@ -14,9 +14,8 @@
             <li><a href="#binary"><i class="fa fa-mobile"></i> Binary Analysis</a></li>
             <!--<li><a href="#file"><i class="fa fa-file-text-o"></i> File Analysis</a></li>
             <li><a href="#libraries"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</a></li> -->
-            <li><a href="#strings"><i class="glyphicon glyphicon-sort-by-alphabet-alt"></i> Strings</a></li>
-            <!-- <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li>
-            <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=IPA"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li> -->
+            <!-- <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li> -->
+            <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APPX"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li>
           </ul>
         </div>
         <!-- /.sidebar -->
@@ -30,17 +29,17 @@
 
 <!-- Modal -->
 
-        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal fade" id="myModalStrings" tabindex="-1" role="dialog" aria-labelledby="myModalLabelStrings">
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title">Info.plist</h4>
+                <h4 class="modal-title">Strings</h4>
               </div>
               <div class="modal-body">
           <pre><code>
-           {{ plist }}
+           {{ strings|safe }}
           </code></pre>
               </div>
 
@@ -50,8 +49,6 @@
           <!-- /.modal-dialog -->
         </div>
         <!-- /.modal -->
-
-
 
 
         <!-- Main content -->
@@ -190,6 +187,7 @@
         </div><!-- /.box-header -->
         <div class="box-body">
          <div align="center">
+           <a data-target="#myModalStrings" role="button" class="btn btn-info" data-toggle="modal"><i class="fa fa-list"></i> View Strings</a>
            <a href="../StaticAnalyzer_Windows/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=appx&amp;rescan=1" class="btn btn-info" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a>
          </div>
        </div><!-- /.box-body -->
@@ -264,30 +262,6 @@
         </div>
 </section>
 
-
-<section id="strings">
-  <h2 class="page-header"></h2>
-  <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-sort-by-alphabet-alt"></i> Strings</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-            <div class="list-group">
-
-
-                  <p>
-                  {{ strings|safe }}
-                  </p>
-
-            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
 
         </div><!-- /.content -->
       </div><!-- /.content-wrapper -->

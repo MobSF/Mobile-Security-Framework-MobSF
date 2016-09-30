@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 import os
 import imp
 import utils
+import platform
+
+import install.windows.setup as windows_setup
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF FRAMEWORK CONFIGURATIONS
@@ -104,7 +107,9 @@ ZIP_MIME = [
     'binary/octet-stream',
 ]
 APPX_MIME = [
-    'application/octet-stream'
+    'application/octet-stream',
+    'application/vns.ms-appx',
+    'application/x-zip-compressed'
 ]
 #===============================================
 
@@ -285,12 +290,6 @@ else:
     VM_ADB_PORT = 5555
     VM_TIMEOUT = 100
     #==============================================
-    #================WINDOWS VM-Settings ==========
-    #IP of the Windows VM
-    #WINDOWS_VM_IP = "192.168.0.2"
-    WINDOWS_VM_IP = None
-    #==============================================
-
     #================HOST/PROXY SETTINGS ==========
     PROXY_IP = '192.168.56.1' #Host/Server/Proxy IP
     PORT = 1337 #Proxy Port
@@ -330,6 +329,26 @@ else:
     PYTHON3_PATH = ""
     #==============================================
     #^CONFIG-END^: Do not edit this line
+
+    #================WINDOWS-Analysis-Settings ===================
+    # Get the OS MobSF is currently running on
+    CURRENT_PLATFROM = platform.system()
+
+    # Configure the params here if you are not on windows
+    # Private key if rpc server is needed
+    WINDOWS_VM_SECRET = 'MobSF/windows_vm_priv_key.asc'
+    #IP and Port of the MobSF Windows VM
+    WINDOWS_VM_IP =  '0.0.0.0'  # 0.0.0.0 == disabled
+    WINDOWS_VM_PORT = '8000'
+
+    # Configure here if you are on windows
+    # Path to lock-file (so setup is only run once)
+    PATH_TO_LOCK_FILE = "C:\\MobSF\\setup_done.txt"
+    if (os.path.isfile(PATH_TO_LOCK_FILE) is False) and CURRENT_PLATFROM == 'Windows':
+        print "[INFO] Running first time setup for windows."
+        # Setup is to-be-executed
+        windows_setup.install_locally()
+    #==============================================
 
 #The below code should be loaded last.
 #============JAVA SETTINGS======================
