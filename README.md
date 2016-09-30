@@ -17,9 +17,15 @@ Made with <img src="https://cloud.githubusercontent.com/assets/4301109/16754758/
 ## Documentation
 * https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/wiki/1.-Documentation
 
-## Presentation Slides
-* [NULLCON 2016](https://www.slideshare.net/ajin25/nullcon-goa-2016-automated-mobile-application-security-testing-with-mobile-security-framework-mobsf)
-* [c0c0n 2015](https://www.slideshare.net/ajin25/automated-security-analysis-of-android-ios-applications-with-mobile-security-framework-c0c0n-2015)
+##Collaborators
+
+* [Ajin Abraham](https://in.linkedin.com/in/ajinabraham)
+* [Dominik Schlecht](https://github.com/DominikSchlecht)
+
+## Presentations
+* OWASP APPSEC EU 2016 - [Slides](http://www.slideshare.net/ajin25/automated-mobile-application-security-assessment-with-mobsf) | [Video](https://www.youtube.com/watch?v=h00v1euuFXg)
+* NULLCON 2016 - [Slides](https://www.slideshare.net/ajin25/nullcon-goa-2016-automated-mobile-application-security-testing-with-mobile-security-framework-mobsf)
+* c0c0n 2015 - [Slides](https://www.slideshare.net/ajin25/automated-security-analysis-of-android-ios-applications-with-mobile-security-framework-c0c0n-2015)
 
 ## Video Course
 * Automated Mobile Application Security Assessment with MobSF: https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/
@@ -27,11 +33,11 @@ Made with <img src="https://cloud.githubusercontent.com/assets/4301109/16754758/
 ## What's New?
 * See Changelog: https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/wiki/3.-Changelog
 
-## Queries
+## Feature Requests & Bugs
 
+* Read [CONTRIBUTING.md](https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/blob/master/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
 * Features Requests: [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN). 
-* Open Bugs Here:  https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/issues
-* Please add the log files `logs/MobSF.log` and `logs/webproxy.log` while opening bugs.
+* Open Bugs after reading [Guidelines to Report a Bug](https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/blob/master/CONTRIBUTING.md#using-the-issue-tracker)
 
 ## Screenshots
 
@@ -57,7 +63,7 @@ Made with <img src="https://cloud.githubusercontent.com/assets/4301109/16754758/
 ![api-fuzzer-start-report](https://cloud.githubusercontent.com/assets/4301109/13615236/5d8df210-e59a-11e5-827a-ccf642e96609.png)
 
 ##Credits
-
+* Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
 * Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
 * MindMac - For writing Android Blue Pill
 * Thomas Abraham - For JS Hacks on UI.
