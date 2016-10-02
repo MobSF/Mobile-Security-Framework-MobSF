@@ -611,7 +611,7 @@ def Connect(TOOLSDIR):
         Wait(5) 
         print "\n[INFO] Connecting to VM/Device"
         subprocess.call([adb, "connect",getIdentifier()])
-        subprocess.call([adb, "wait-for-device"])
+        subprocess.call([adb, "-s",getIdentifier(), "wait-for-device"])
         print "\n[INFO] Mounting"
         if settings.REAL_DEVICE:
             subprocess.call([adb, "-s", getIdentifier(), "shell", "su", "-c", "mount", "-o", "rw,remount,rw", "/system"])
