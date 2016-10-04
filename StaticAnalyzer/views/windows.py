@@ -229,7 +229,7 @@ def _binary_analysis(tools_dir, app_dir):
 
     # Execute binskim analysis if vm is available
     if settings.CURRENT_PLATFROM != 'Windows':
-        if settings.WINDOWS_VM_IP != '0.0.0.0':
+        if settings.WINDOWS_VM_IP:
             print "[INFO] Windows VM configured."
             global proxy
             proxy  = xmlrpclib.ServerProxy( # pylint: disable-msg=C0103
