@@ -23,8 +23,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 MOBSF_VER = "v0.9.2 Beta"
 BANNER ="""
-  __  __       _    ____  _____          ___   ___   ____
- |  \/  | ___ | |__/ ___||  ___| __   __/ _ \ / _ \ |___ \
+  __  __       _    ____  _____          ___   ___   ____  
+ |  \/  | ___ | |__/ ___||  ___| __   __/ _ \ / _ \ |___ \ 
  | |\/| |/ _ \| '_ \___ \| |_    \ \ / / | | | (_) |  __) |
  | |  | | (_) | |_) |__) |  _|    \ V /| |_| |\__, | / __/
  |_|  |_|\___/|_.__/____/|_|       \_/  \___(_) /_(_)_____|
@@ -338,7 +338,7 @@ else:
     WINDOWS_VM_SECRET = 'MobSF/windows_vm_priv_key.asc'
     #IP and Port of the MobSF Windows VM
 
-    WINDOWS_VM_IP =  None  # eg. '127.0.0.1'; None = disabled
+    WINDOWS_VM_IP = None  # eg. '127.0.0.1'; None = disabled
     WINDOWS_VM_PORT = '8000'
 
     # Configure here if you are on windows
