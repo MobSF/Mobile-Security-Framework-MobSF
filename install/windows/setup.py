@@ -2,10 +2,11 @@
 # Most pylinter warnings are disabled because implementation happendend on a Python2 machine
 # while the code is Python3
 import os
-import sys
+import platform
 import re
 import shutil
 import subprocess
+import sys
 
 try:
     import urllib.request as urlrequest
@@ -220,10 +221,17 @@ def tools_rpcclient():
 
 def tools_binscope():
     """Download and install Binscope for MobSF"""
-    binscope_url = CONFIG['binscope']['url']
+
     mobsf_subdir_tools = CONFIG['MobSF']['subdir_tools']
     binscope_path = mobsf_subdir_tools + 'BinScope'
-    binscope_installer_path = binscope_path + "\\BinScope_x64.msi"
+
+    # Download the right version for os
+    if platform.machine().endswith('64'):
+        binscope_url = CONFIG['binscope']['url_x64']
+        binscope_installer_path = binscope_path + "\\BinScope_x64.msi"
+    else:
+        binscope_url = CONFIG['binscope']['url_x86']
+        binscope_installer_path = binscope_path + "\\BinScope_x86.msi"
 
     if not os.path.exists(binscope_path):
         os.makedirs(binscope_path)
