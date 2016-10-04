@@ -2,16 +2,18 @@
 # Most pylinter warnings are disabled because implementation happendend on a Python2 machine
 # while the code is Python3
 import os
-import sys
+import platform
 import re
 import shutil
+import subprocess
+import sys
 
-import configparser # pylint: disable-msg=E0401
 try:
-    import urllib.request as urlrequest # pylint: disable-msg=E0401,E0611
+    import urllib.request as urlrequest
 except ImportError:
     import urllib as urlrequest
-import subprocess
+
+import configparser
 
 # pylint: disable=C0325,W0603
 
@@ -157,7 +159,6 @@ def tools_binskim():
     try:
         # Substring-Foo for removing b'X's in python3
         if sys.version_info.major == 3:
-        #if folder.group(0).startswith("b'"):
             folder = str(folder.group(0)[:-2])[2:-1]
         else:
             folder = folder.group(0)[:-2]
@@ -206,7 +207,7 @@ def tools_rpcclient():
 
     # Downloading File
     print("[*] Downloading rpc_server..")
-    rpc_file = urlrequest.urlopen(rpc_url) # pylint: disable-msg=E1101
+    rpc_file = urlrequest.urlopen(rpc_url)
 
     # Save content
     print("[*] Saving to File {}".format(rpc_file_path))
@@ -220,20 +221,46 @@ def tools_rpcclient():
 
 def tools_binscope():
     """Download and install Binscope for MobSF"""
-    url = CONFIG['binscope']['url']
-    binscope_path = CONFIG['MobSF']['subdir_tools']+'BinScope'
+
+    mobsf_subdir_tools = CONFIG['MobSF']['subdir_tools']
+    binscope_path = mobsf_subdir_tools + 'BinScope'
+
+    # Download the right version for os
+    if platform.machine().endswith('64'):
+        binscope_url = CONFIG['binscope']['url_x64']
+        binscope_installer_path = binscope_path + "\\BinScope_x64.msi"
+    else:
+        binscope_url = CONFIG['binscope']['url_x86']
+        binscope_installer_path = binscope_path + "\\BinScope_x86.msi"
+
     if not os.path.exists(binscope_path):
         os.makedirs(binscope_path)
-    print("""
-[!] Sadly for Binscope there is no automated install yet.
-    Please download the installer from
-    {}
-    and install it to
-    {}""".format(url, binscope_path))
-    if sys.version_info.major == 3:
-        input("Press enter when done... ")
-    elif sys.version_info.major == 2:
-        raw_input("Press enter when done... ")
+
+    binscope_installer_file = open(binscope_installer_path, "wb")
+
+    # Downloading File
+    print("[*] Downloading BinScope..")
+    binscope_installer = urlrequest.urlopen(binscope_url)
+
+    # Save content
+    print("[*] Saving to File {}".format(binscope_installer_path))
+
+    # Write content to file
+    binscope_installer_file.write(bytes(binscope_installer.read()))
+
+    # Aaaand close
+    binscope_installer_file.close()
+
+    # Execute the installer
+    print("[*] Installing BinScope to {}".format(binscope_path))
+    subprocess.check_output(
+        [
+            'msiexec',
+            'INSTALLLOCATION=' + binscope_path,
+            '/i', binscope_installer_path,
+            '/passive'
+        ]
+    )
 
     CONFIG['binscope']['file'] = binscope_path + "\\Binscope.exe"
 
@@ -265,6 +292,8 @@ def generate_secret():
         .format(CONFIG['MobSF']['priv_key_file'])
     )
     if sys.version_info.major == 3:
+        # pylint: disable-msg=W0141
+        # For python3
         input("Please press any key when done..")
     elif sys.version_info.major == 2:
         raw_input("Please press any key when done..")
@@ -316,6 +345,7 @@ def local_config(mobsf_home, config_path):
     )
 
 def rewrite_local_config(mobsf_home):
+    """For local installation some config-vars need to be rewritten."""
     CONFIG['MobSF']['subdir_tools'] = mobsf_home + "\\StaticAnalyzer\\tools\\windows\\"
     CONFIG['MobSF']['dir'] = mobsf_home
 
@@ -355,4 +385,5 @@ def _install_remote():
     autostart()
 
 if __name__ == "__main__":
+    # Gets directly run if setup.py is run on a remote machine
     _install_remote()

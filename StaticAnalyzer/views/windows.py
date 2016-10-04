@@ -2,6 +2,7 @@
 """Windows Analysis Module."""
 import re
 import os
+import platform
 
 # Binskim/Binscope analysis
 import xmlrpclib
@@ -229,7 +230,7 @@ def _binary_analysis(tools_dir, app_dir):
 
     # Execute binskim analysis if vm is available
     if settings.CURRENT_PLATFROM != 'Windows':
-        if settings.WINDOWS_VM_IP != '0.0.0.0':
+        if settings.WINDOWS_VM_IP:
             print "[INFO] Windows VM configured."
             global proxy
             proxy  = xmlrpclib.ServerProxy( # pylint: disable-msg=C0103
@@ -283,7 +284,11 @@ def __binskim(name, bin_an_dic, run_local=False, app_dir=None):
         bin_path = os.path.join(app_dir, bin_an_dic['bin'])
 
         # Set params for execution of binskim
-        binskim_path = config['binskim']['file_x64']
+        if platform.machine().endswith('64'):
+            binskim_path = config['binskim']['file_x64']
+        else:
+            binskim_path = config['binskim']['file_x86']
+
         command = "analyze"
         path = bin_path
         output_p = "-o"
