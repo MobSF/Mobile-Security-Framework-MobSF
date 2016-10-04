@@ -237,6 +237,7 @@ def MobSFCA(request):
                 print "\n[INFO] Installing MobSF RootCA"
                 subprocess.call([adb, "-s",getIdentifier() ,"push", ROOTCA, "/data/local/tmp/"+settings.ROOT_CA])
                 subprocess.call([adb, "-s",getIdentifier() ,"shell", "su", "-c", "cp", "/data/local/tmp/"+settings.ROOT_CA, "/system/etc/security/cacerts/"+settings.ROOT_CA])
+                subprocess.call([adb, "-s",getIdentifier() ,"shell", "su", "-c", "chmod", "644", "/system/etc/security/cacerts/"+settings.ROOT_CA])
                 subprocess.call([adb, "-s",getIdentifier() ,"shell", "rm", "/data/local/tmp/"+settings.ROOT_CA])
                 data = {'ca': 'installed'}
             elif act =="remove":
@@ -611,7 +612,7 @@ def Connect(TOOLSDIR):
         Wait(5) 
         print "\n[INFO] Connecting to VM/Device"
         subprocess.call([adb, "connect",getIdentifier()])
-        subprocess.call([adb, "wait-for-device"])
+        subprocess.call([adb, "-s",getIdentifier(), "wait-for-device"])
         print "\n[INFO] Mounting"
         if settings.REAL_DEVICE:
             subprocess.call([adb, "-s", getIdentifier(), "shell", "su", "-c", "mount", "-o", "rw,remount,rw", "/system"])
