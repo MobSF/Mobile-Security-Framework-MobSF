@@ -2,6 +2,7 @@
 """Windows Analysis Module."""
 import re
 import os
+import platform
 
 # Binskim/Binscope analysis
 import xmlrpclib
@@ -283,7 +284,11 @@ def __binskim(name, bin_an_dic, run_local=False, app_dir=None):
         bin_path = os.path.join(app_dir, bin_an_dic['bin'])
 
         # Set params for execution of binskim
-        binskim_path = config['binskim']['file_x64']
+        if platform.machine().endswith('64'):
+            binskim_path = config['binskim']['file_x64']
+        else:
+            binskim_path = config['binskim']['file_x86']
+
         command = "analyze"
         path = bin_path
         output_p = "-o"
