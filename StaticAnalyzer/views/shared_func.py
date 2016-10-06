@@ -18,8 +18,6 @@ from StaticAnalyzer.models import StaticAnalyzerIPA
 from StaticAnalyzer.models import StaticAnalyzerIOSZIP
 from StaticAnalyzer.models import StaticAnalyzerWindows
 
-import ast
-
 try:
     import StringIO
     StringIO = StringIO.StringIO
@@ -216,9 +214,10 @@ def PDF(request):
                             'proj_guid' :  db_entry[0].PROJ_GUID,
                             'opti_tool' :  db_entry[0].OPTI_TOOL,
                             'target_run' :  db_entry[0].TARGET_RUN,
+                            'files' :  python_list(db_entry[0].FILES),
                             'strings' : db_entry[0].STRINGS,
-                            'bin_an_results' : ast.literal_eval(db_entry[0].BIN_AN_RESULTS),
-                            'bin_an_warnings' : ast.literal_eval(db_entry[0].BIN_AN_WARNINGS)
+                            'bin_an_results' : python_list(db_entry[0].BIN_AN_RESULTS),
+                            'bin_an_warnings' : python_list(db_entry[0].BIN_AN_WARNINGS)
                         }
                         template= get_template("windows_binary_analysis_pdf.html")
             else:

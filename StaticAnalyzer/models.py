@@ -111,6 +111,7 @@ class StaticAnalyzerWindows(models.Model):
     PROJ_GUID = models.TextField()
     OPTI_TOOL = models.TextField()
     TARGET_RUN = models.TextField()
+    FILES = models.TextField()
     STRINGS = models.TextField()
     BIN_AN_RESULTS=models.TextField()
     BIN_AN_WARNINGS=models.TextField()

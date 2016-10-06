@@ -82,6 +82,7 @@ def staticanalyzer_windows(request):
                         'proj_guid' :  db_entry[0].PROJ_GUID,
                         'opti_tool' :  db_entry[0].OPTI_TOOL,
                         'target_run' :  db_entry[0].TARGET_RUN,
+                        'files' : python_list(db_entry[0].FILES),
                         'strings' : db_entry[0].STRINGS,
                         'bin_an_results' : python_list(db_entry[0].BIN_AN_RESULTS),
                         'bin_an_warnings' : python_list(db_entry[0].BIN_AN_WARNINGS)
@@ -95,7 +96,7 @@ def staticanalyzer_windows(request):
                     app_dic['sha1'], app_dic['sha256'] = HashGen(app_dic['app_path'])
                     # EXTRACT APPX
                     print "[INFO] Extracting APPX"
-                    Unzip(app_dic['app_path'], app_dic['app_dir'])
+                    app_dic['files'] = Unzip(app_dic['app_path'], app_dic['app_dir'])
                     xml_dic = _parse_xml(app_dic['app_dir'])
                     bin_an_dic = _binary_analysis(app_dic['tools_dir'], app_dic['app_dir'])
                     # Saving to db
@@ -123,6 +124,7 @@ def staticanalyzer_windows(request):
                             PROJ_GUID=xml_dic['proj_guid'],
                             OPTI_TOOL=xml_dic['opti_tool'],
                             TARGET_RUN=xml_dic['target_run'],
+                            FILES=app_dic['files'],
                             STRINGS=bin_an_dic['strings'],
                             BIN_AN_RESULTS=bin_an_dic['results'],
                             BIN_AN_WARNINGS=bin_an_dic['warnings'],
@@ -148,6 +150,7 @@ def staticanalyzer_windows(request):
                             PROJ_GUID=xml_dic['proj_guid'],
                             OPTI_TOOL=xml_dic['opti_tool'],
                             TARGET_RUN=xml_dic['target_run'],
+                            FILES=app_dic['files'],
                             STRINGS=bin_an_dic['strings'],
                             BIN_AN_RESULTS=bin_an_dic['results'],
                             BIN_AN_WARNINGS=bin_an_dic['warnings'],
@@ -172,6 +175,7 @@ def staticanalyzer_windows(request):
                         'proj_guid' : xml_dic['proj_guid'],
                         'opti_tool' : xml_dic['opti_tool'],
                         'target_run' : xml_dic['target_run'],
+                        'files' : app_dic['files'],
                         'strings' : bin_an_dic['strings'],
                         'bin_an_results' : bin_an_dic['results'],
                         'bin_an_warnings' : bin_an_dic['warnings'],

@@ -166,4 +166,21 @@
     </div>
   </div>
 <hr>
+
+<div class="col-lg-12">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> FILES</h3><hr>
+    </div>
+    <div class="panel-body">
+      <div class="list-group">
+        <p>
+          {% for file in files %}
+            {{ file}} <br>
+          {% endfor %}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
    {% endblock %}
