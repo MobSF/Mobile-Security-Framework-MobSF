@@ -98,7 +98,7 @@ def staticanalyzer_windows(request):
                     print "[INFO] Extracting APPX"
                     app_dic['files'] = Unzip(app_dic['app_path'], app_dic['app_dir'])
                     xml_dic = _parse_xml(app_dic['app_dir'])
-                    bin_an_dic = _binary_analysis(app_dic['tools_dir'], app_dic['app_dir'])
+                    bin_an_dic = _binary_analysis(app_dic)
                     # Saving to db
                     print "\n[INFO] Connecting to DB"
                     if rescan == '1':
@@ -204,7 +204,7 @@ def _get_token():
     sig_b64 = base64.b64encode(signature)
     return sig_b64
 
-def _binary_analysis(tools_dir, app_dir):
+def _binary_analysis(app_dic):
     """Start binary analsis."""
     print "[INFO] Starting Binary Analysis"
     bin_an_dic = {}
@@ -214,8 +214,7 @@ def _binary_analysis(tools_dir, app_dir):
     bin_an_dic['warnings'] = []
 
     # Search for exe
-    dirs = os.listdir(app_dir)
-    for file_name in dirs:
+    for file_name in app_dic['files']:
         if file_name.endswith(".exe"):
             bin_an_dic['bin'] = file_name
             bin_an_dic['bin_name'] = file_name.replace(".exe", "")
@@ -223,7 +222,7 @@ def _binary_analysis(tools_dir, app_dir):
     if not bin_an_dic['bin_name']:
         PrintException("[ERROR] No executeable in appx.")
 
-    bin_path = os.path.join(app_dir, bin_an_dic['bin'])
+    bin_path = os.path.join(app_dic['app_dir'], bin_an_dic['bin'])
 
     # Execute strings command
     bin_an_dic['strings'] = ""
@@ -263,8 +262,8 @@ def _binary_analysis(tools_dir, app_dir):
         config.read('MobSF\\config.txt')
 
         # Run analysis functions
-        bin_an_dic = __binskim(bin_path, bin_an_dic, run_local=True, app_dir=app_dir)
-        bin_an_dic = __binscope(bin_path, bin_an_dic, run_local=True, app_dir=app_dir)
+        bin_an_dic = __binskim(bin_path, bin_an_dic, run_local=True, app_dir=app_dic['app_dir'])
+        bin_an_dic = __binscope(bin_path, bin_an_dic, run_local=True, app_dir=app_dic['app_dir'])
 
     return bin_an_dic
 
