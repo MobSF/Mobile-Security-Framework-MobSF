@@ -231,6 +231,18 @@ def _binary_analysis(app_dic):
     str_list = [escape(s) for s in str_list]
     bin_an_dic['strings'] = "</br>".join(str_list)
 
+    # Search for unsave function
+    pattern = re.compile("\&\#39\;(alloca|gets|memcpy|printf|scanf|sprintf|sscanf|strcat|StrCat|strcpy|StrCpy|strlen|StrLen|strncat|StrNCat|strncpy|StrNCpy|strtok|swprintf|vsnprintf|vsprintf|vswprintf|wcscat|wcscpy|wcslen|wcsncat|wcsncpy|wcstok|wmemcpy)\&\#39\;")
+    for elem in str_list:
+        if pattern.match(elem):
+            result = {
+                "rule_id": 'Possible Insecure Function',
+                "status": 'Insecure',
+                "desc": "Possible Insecure Function detected: {}".format(elem[5:-5])
+            }
+            bin_an_dic['results'].append(result)
+
+
     # Execute binskim analysis if vm is available
     if settings.CURRENT_PLATFROM != 'Windows':
         if settings.WINDOWS_VM_IP:
