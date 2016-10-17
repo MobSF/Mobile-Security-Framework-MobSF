@@ -35,6 +35,7 @@ urlpatterns = [
     url(r'^GetRes/$', DynamicAnalyzer.views.android.GetRes),
     url(r'^MobSFCA/$', DynamicAnalyzer.views.android.MobSFCA),
     url(r'^TakeScreenShot/$', DynamicAnalyzer.views.android.TakeScreenShot),
+    url(r'^ClipDump/$', DynamicAnalyzer.views.android.clip_dump),
     url(r'^ExportedActivityTester/$',
         DynamicAnalyzer.views.android.ExportedActivityTester),
     url(r'^ActivityTester/$', DynamicAnalyzer.views.android.ActivityTester),

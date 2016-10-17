@@ -269,7 +269,7 @@ else:
     # VM UUID
     UUID = '408e1874-759f-4417-9453-53ef21dc2ade'
     # Snapshot UUID
-    SUUID = '2db0380a-8f06-43df-92da-bb9d53e64b29'
+    SUUID = '5c9deb28-def6-49c0-9233-b5e03edd85c6'
     # IP of the MobSF VM
     VM_IP = '192.168.56.101'
     VM_ADB_PORT = 5555

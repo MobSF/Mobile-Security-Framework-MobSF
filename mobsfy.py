@@ -74,6 +74,7 @@ try:
     # Install MobSF requirements
     DP = os.path.join(TOOLSDIR, 'onDevice/DataPusher.apk')
     SC = os.path.join(TOOLSDIR, 'onDevice/ScreenCast.apk')
+    CD = os.path.join(TOOLSDIR, 'onDevice/ClipDump.apk')
     # 3P
     XP = os.path.join(TOOLSDIR, 'onDevice/Xposed.apk')
     # Xposed Modules and Support Files
@@ -91,6 +92,8 @@ try:
     ExecuteCMD([adb, "-s", adbconnect, "install", "-r", DP])
     print "\n[INFO] Installing MobSF ScreenCast"
     ExecuteCMD([adb, "-s", adbconnect, "install", "-r", SC])
+    print "\n[INFO] Installing MobSF Clipboard Dumper"
+    ExecuteCMD([adb, "-s", adbconnect, "install", "-r", CD])
     print "\n[INFO] Copying hooks.json"
     ExecuteCMD([adb, "-s", adbconnect, "push", HK, "/data/local/tmp/"])
     print "\n[INFO] Installing Xposed Framework"

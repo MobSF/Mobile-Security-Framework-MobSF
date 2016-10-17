@@ -209,6 +209,35 @@ def ScreenCast(request):
 # AJAX
 
 
+def clip_dump(request):
+    """
+    Dump Android ClipBoard
+    """
+    print "\n[INFO] Starting Clipboard Dump Service in VM/Device"
+    try:
+        data = {}
+        if request.method == 'POST':
+            tools_dir = os.path.join(
+                settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
+            adb = getADB(tools_dir)
+            args = [adb, "-s", getIdentifier(), "shell", "am", "startservice",
+                         "opensecurity.clipdump/.ClipDumper"]
+            try:
+                subprocess.call(args)
+                data = {'status': 'success'}
+            except:
+                PrintException("[ERROR] Dumping Clipboard")
+                data = {'status': 'error'}
+        else:
+            data = {'status': 'failed'}
+        return HttpResponse(json.dumps(data), content_type='application/json')
+    except:
+        PrintException("[ERROR] Dumping Clipboard")
+        return HttpResponseRedirect('/error/')
+
+# AJAX
+
+
 def Touch(request):
     print "\n[INFO] Sending Touch Events"
     try:
@@ -339,7 +368,6 @@ def FinalTest(request):
                 os.system(adb + ' -s ' + getIdentifier() +
                           ' shell dumpsys > "' + APKDIR + 'dump.txt"')
                 print "\n[INFO] Downloading Dumpsys logs"
-
                 subprocess.call([adb, "-s", getIdentifier(),
                                  "shell", "am", "force-stop", PACKAGE])
                 print "\n[INFO] Stopping Application"
@@ -563,11 +591,10 @@ def Report(request):
                 APP_DIR = os.path.join(
                     settings.UPLD_DIR, MD5 + '/')  # APP DIRECTORY
                 DWD_DIR = settings.DWD_DIR
-                # Use check_outputs instead later.
                 DRDMONAPISLOC = os.path.join(APP_DIR, 'x_logcat.txt')
                 API_NET, API_BASE64, API_FILEIO, API_BINDER, API_CRYPTO, API_DEVICEINFO, API_CNTVL, API_SMS, API_SYSPROP, API_DEXLOADER, API_RELECT, API_ACNTMNGER, API_CMD = APIAnalysis(
                     PKG, DRDMONAPISLOC)
-                URL, DOMAINS, EMAIL, HTTP, XML, SQLiteDB, OtherFiles = RunAnalysis(
+                URL, DOMAINS, EMAIL, CLIPBOARD, HTTP, XML, SQLiteDB, OtherFiles = RunAnalysis(
                     APP_DIR, MD5, PKG)
                 Download(MD5, DWD_DIR, APP_DIR, PKG)
                 # Only After Download Process is Done
@@ -606,6 +633,7 @@ def Report(request):
                 context = {'emails': EMAIL,
                            'urls': URL,
                            'domains': DOMAINS,
+                           'clipboard': CLIPBOARD,
                            'md5': MD5,
                            'http': HTTP,
                            'xml': XML,
@@ -920,6 +948,9 @@ def RunAnalysis(APKDIR, MD5, PACKAGE):
     wb = ''
     xlg = ''
     DOMAINS = {}
+    logcat_data = []
+    CLIPBOARD = []
+    CLIP_TAG = "I/CLIPDUMP-INFO-LOG"
     try:
         with io.open(Web, mode='r', encoding="utf8", errors="ignore") as f:
             wb = f.read()
@@ -927,10 +958,14 @@ def RunAnalysis(APKDIR, MD5, PACKAGE):
         pass
 
     with io.open(Logcat, mode='r', encoding="utf8", errors="ignore") as f:
-        traffic = f.read()
+        logcat_data = f.readlines()
+        traffic = ''.join(logcat_data)
     with io.open(xLogcat, mode='r', encoding="utf8", errors="ignore") as f:
         xlg = f.read()
     traffic = wb + traffic + xlg
+    for log_line in logcat_data:
+        if log_line.startswith(CLIP_TAG):
+            CLIPBOARD.append(log_line.replace(CLIP_TAG, "Process ID "))
     URLS = []
     # URLs My Custom regex
     p = re.compile(ur'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
@@ -1006,7 +1041,7 @@ def RunAnalysis(APKDIR, MD5, PACKAGE):
     except:
         PrintException("[ERROR] Dynamic File Analysis")
         pass
-    return URLS, DOMAINS, EMAILS, wb, xmlfiles, SQLiteDB, OtherFiles
+    return URLS, DOMAINS, EMAILS, CLIPBOARD, wb, xmlfiles, SQLiteDB, OtherFiles
 
 
 def View(request):
