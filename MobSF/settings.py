@@ -17,7 +17,7 @@ import utils
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
-MOBSF_VER = "v0.9.2 Beta"
+MOBSF_VER = "v0.9.2.1 Beta"
 BANNER ="""
   __  __       _    ____  _____          ___   ___   ____  
  |  \/  | ___ | |__/ ___||  ___| __   __/ _ \ / _ \ |___ \ 

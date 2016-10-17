@@ -666,7 +666,7 @@ def StaticAnalyzer(request):
                         'e_cnt': EXPORTED_CNT["cnt"],
                         }
                     else:
-                        return HttpResponseRedirect('/ZIP_FORMAT/')
+                        return HttpResponseRedirect('/zip_format/')
                 template="static_analysis_android_zip.html"
                 return render(request,template,context)
             else:

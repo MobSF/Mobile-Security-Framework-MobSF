@@ -9,16 +9,16 @@ import StaticAnalyzer.views.shared_func
 
 urlpatterns = [
     # Examples:
-    url(r'^$',MobSF.views.index),
-    url(r'^Upload/$', MobSF.views.Upload),
-    url(r'^download/', MobSF.views.Download),
+    url(r'^$', MobSF.views.index),
+    url(r'^upload/$', MobSF.views.upload),
+    url(r'^download/', MobSF.views.download),
     url(r'^about/$', MobSF.views.about),
-    url(r'^RecentScans/$', MobSF.views.RecentScans),
-    url(r'^Search/$', MobSF.views.Search),
+    url(r'^recent_scans/$', MobSF.views.recent_scans),
+    url(r'^search/$', MobSF.views.search),
     url(r'^error/$', MobSF.views.error),
-    url(r'^NotFound/$', MobSF.views.NotFound),
-    url(r'^ZIP_FORMAT/$', MobSF.views.ZIP_FORMAT),
-    url(r'^MAC_ONLY/$', MobSF.views.MAC_ONLY),
+    url(r'^not_found/$', MobSF.views.not_found),
+    url(r'^zip_format/$', MobSF.views.zip_format),
+    url(r'^mac_only/$', MobSF.views.mac_only),
     
     url(r'^StaticAnalyzer/$', StaticAnalyzer.views.android.StaticAnalyzer),
     url(r'^StaticAnalyzer_iOS/$', StaticAnalyzer.views.ios.StaticAnalyzer_iOS),

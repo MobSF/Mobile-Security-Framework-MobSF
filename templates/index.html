@@ -94,7 +94,7 @@ progress::-webkit-progress-value {
   <div class="inner cover">
 
 
-      <form id="upload-widget" method="POST" action="/Upload/" class="dropzone">
+      <form id="upload-widget" method="POST" action="/upload/" class="dropzone">
       {% csrf_token %}
       </form>
 
@@ -121,12 +121,12 @@ progress::-webkit-progress-value {
 
           <div class="mastfoot">
 
-                <form action="/Search" method="GET">
+                <form action="/search" method="GET">
                 <input name="md5" type="text" class="form-control" placeholder="Search MD5">
                 </form>
 
             <div class="inner">
-              <h5><strong><a href="RecentScans">Recent Scans</a> | <a href="about">About</a></strong></h5></br>
+              <h5><strong><a href="recent_scans">Recent Scans</a> | <a href="about">About</a></strong></h5></br>
              <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}. All Rights Reserved</p>
             </div>
           </div>
@@ -220,7 +220,7 @@ $('input[type=file]').change(function ()
                 ajax.addEventListener("load", completeHandler, false);
                 ajax.addEventListener("error", errorHandler, false);
                 ajax.addEventListener("abort", abortHandler, false);
-                ajax.open("POST", "../Upload/");
+                ajax.open("POST", "../upload/");
                 ajax.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
                 ajax.send(formdata);
           }
