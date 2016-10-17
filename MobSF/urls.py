@@ -19,7 +19,7 @@ urlpatterns = [
     url(r'^not_found/$', MobSF.views.not_found),
     url(r'^zip_format/$', MobSF.views.zip_format),
     url(r'^mac_only/$', MobSF.views.mac_only),
-    
+
     url(r'^StaticAnalyzer/$', StaticAnalyzer.views.android.StaticAnalyzer),
     url(r'^StaticAnalyzer_iOS/$', StaticAnalyzer.views.ios.StaticAnalyzer_iOS),
     url(r'^ViewFile/$', StaticAnalyzer.views.ios.ViewFile),
@@ -35,7 +35,8 @@ urlpatterns = [
     url(r'^GetRes/$', DynamicAnalyzer.views.android.GetRes),
     url(r'^MobSFCA/$', DynamicAnalyzer.views.android.MobSFCA),
     url(r'^TakeScreenShot/$', DynamicAnalyzer.views.android.TakeScreenShot),
-    url(r'^ExportedActivityTester/$', DynamicAnalyzer.views.android.ExportedActivityTester),
+    url(r'^ExportedActivityTester/$',
+        DynamicAnalyzer.views.android.ExportedActivityTester),
     url(r'^ActivityTester/$', DynamicAnalyzer.views.android.ActivityTester),
     url(r'^FinalTest/$', DynamicAnalyzer.views.android.FinalTest),
     url(r'^DumpData/$', DynamicAnalyzer.views.android.DumpData),

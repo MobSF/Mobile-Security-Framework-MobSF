@@ -8,7 +8,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
-import os,imp
+import os
+import imp
 import utils
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -18,7 +19,7 @@ import utils
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 MOBSF_VER = "v0.9.2.1 Beta"
-BANNER ="""
+BANNER = """
   __  __       _    ____  _____          ___   ___   ____  
  |  \/  | ___ | |__/ ___||  ___| __   __/ _ \ / _ \ |___ \ 
  | |\/| |/ _ \| '_ \___ \| |_    \ \ / / | | | (_) |  __) |
@@ -32,21 +33,21 @@ utils.printMobSFverison(MOBSF_VER, BANNER)
 #==========MobSF Home Directory=================
 USE_HOME = False
 
-#True : All Uploads/Downloads will be stored in user's home directory
-#False : All Uploads/Downloads will be stored in MobSF root directory
-#If you need multiple users to share the scan results set this to False
+# True : All Uploads/Downloads will be stored in user's home directory
+# False : All Uploads/Downloads will be stored in MobSF root directory
+# If you need multiple users to share the scan results set this to False
 #===============================================
 
 MobSF_HOME = utils.getMobSFHome(USE_HOME)
-#Logs Directory
+# Logs Directory
 LOG_DIR = os.path.join(MobSF_HOME, 'logs/')
-#Download Directory
+# Download Directory
 DWD_DIR = os.path.join(MobSF_HOME, 'downloads/')
-#Screenshot Directory
+# Screenshot Directory
 SCREEN_DIR = os.path.join(MobSF_HOME, 'downloads/screen/')
-#Upload Directory
+# Upload Directory
 UPLD_DIR = os.path.join(MobSF_HOME, 'uploads/')
-#Database Directory
+# Database Directory
 DB_DIR = os.path.join(MobSF_HOME, 'db.sqlite3')
 
 # Database
@@ -61,48 +62,49 @@ DATABASES = {
 
 #==========LOAD CONFIG FROM MobSF HOME==========
 try:
-    #Update Config from MobSF Home Directory
+    # Update Config from MobSF Home Directory
     if USE_HOME:
-        USER_CONFIG = os.path.join(MobSF_HOME,'config.py')
+        USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
         sett = imp.load_source('user_settings', USER_CONFIG)
-        locals().update({k: v for k, v in sett.__dict__.items() if not k.startswith("__")})
+        locals().update(
+            {k: v for k, v in sett.__dict__.items() if not k.startswith("__")})
         CONFIG_HOME = True
     else:
         CONFIG_HOME = False
 except:
-    utils.PrintException("[ERROR] Parsing Config") 
+    utils.PrintException("[ERROR] Parsing Config")
     CONFIG_HOME = False
 #===============================================
 
 #=============ALLOWED EXTENSIONS================
 ALLOWED_EXTENSIONS = {
-".txt":"text/plain",
-".png":"image/png",
-".zip":"application/zip",
-".tar":"application/x-tar"
+    ".txt": "text/plain",
+    ".png": "image/png",
+    ".zip": "application/zip",
+    ".tar": "application/x-tar"
 }
 #===============================================
 
 #=============ALLOWED MIMETYPES=================
 APK_MIME = ['application/octet-stream',
-'application/vnd.android.package-archive',
-'application/x-zip-compressed',
-'binary/octet-stream',
-]
+            'application/vnd.android.package-archive',
+            'application/x-zip-compressed',
+            'binary/octet-stream',
+            ]
 IPA_MIME = ['application/octet-stream',
-'application/x-itunes-ipa',
-'application/x-zip-compressed',
-'binary/octet-stream',
-]
+            'application/x-itunes-ipa',
+            'application/x-zip-compressed',
+            'binary/octet-stream',
+            ]
 ZIP_MIME = ['application/zip',
-'application/octet-stream',
-'application/x-zip-compressed',
-'binary/octet-stream',
-]
+            'application/octet-stream',
+            'application/x-zip-compressed',
+            'binary/octet-stream',
+            ]
 #===============================================
 
 #=====MOBSF SECRET GENERATION AND MIGRATION=====
-#Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
+# Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
 try:
     SECRET_KEY
 except NameError:
@@ -165,16 +167,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/uploads/'
 TEMPLATES = [
     {
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'APP_DIRS': True,
-    'DIRS': [os.path.join(BASE_DIR,'templates')],
-    'OPTIONS': {
-        'debug': True,
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'OPTIONS': {
+            'debug': True,
         }
     },
 ]
 STATICFILES_DIRS = (
-  os.path.join(BASE_DIR, 'static/'),
+    os.path.join(BASE_DIR, 'static/'),
 )
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
@@ -195,9 +197,9 @@ else:
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     #==========SKIP CLASSES==========================
-    SKIP_CLASSES = ['android/support/','com/google/','android/content/','com/android/',
-    'com/facebook/','com/twitter/','twitter4j/','org/apache/','com/squareup/okhttp/',
-    'oauth/signpost/','org/chromium/']
+    SKIP_CLASSES = ['android/support/', 'com/google/', 'android/content/', 'com/android/',
+                    'com/facebook/', 'com/twitter/', 'twitter4j/', 'org/apache/', 'com/squareup/okhttp/',
+                    'oauth/signpost/', 'org/chromium/']
 
     #==============3rd Party Tools=================
     '''
@@ -206,7 +208,7 @@ else:
     the tool from this location.
     '''
 
-    #Android 3P Tools
+    # Android 3P Tools
     DEX2JAR_BINARY = ""
     BACKSMALI_BINARY = ""
     AXMLPRINTER_BINARY = ""
@@ -216,11 +218,11 @@ else:
     ADB_BINARY = ""
     ENJARIFY_DIRECTORY = ""
 
-    #iOS 3P Tools
+    # iOS 3P Tools
     OTOOL_BINARY = ""
     CLASSDUMPZ_BINARY = ""
 
-    #COMMON
+    # COMMON
     JAVA_DIRECTORY = ""
     VBOXMANAGE_BINARY = ""
 
@@ -238,7 +240,7 @@ else:
     #==============RESPONSE VALIDATION==============
     XXE_VALIDATE_STRING = "m0bsfxx3"
     #===============================================
-    
+
     #=========Path Traversal - API Testing==========
     CHECK_FILE = "/etc/passwd"
     RESPONSE_REGEX = "root:|nobody:"
@@ -264,26 +266,26 @@ else:
     DEVICE_TIMEOUT = 300
     #===============================================
     #================VM SETTINGS ===================
-    #VM UUID
-    UUID='408e1874-759f-4417-9453-53ef21dc2ade'
-    #Snapshot UUID
-    SUUID='2db0380a-8f06-43df-92da-bb9d53e64b29'
-    #IP of the MobSF VM
-    VM_IP='192.168.56.101'
+    # VM UUID
+    UUID = '408e1874-759f-4417-9453-53ef21dc2ade'
+    # Snapshot UUID
+    SUUID = '2db0380a-8f06-43df-92da-bb9d53e64b29'
+    # IP of the MobSF VM
+    VM_IP = '192.168.56.101'
     VM_ADB_PORT = 5555
     VM_TIMEOUT = 100
     #==============================================
 
     #================HOST/PROXY SETTINGS ==========
-    PROXY_IP='192.168.56.1' #Host/Server/Proxy IP
-    PORT=1337 #Proxy Port
-    ROOT_CA='0025aabb.0'
-    SCREEN_IP = PROXY_IP #ScreenCast IP
-    SCREEN_PORT = 9339 #ScreenCast Port
+    PROXY_IP = '192.168.56.1'  # Host/Server/Proxy IP
+    PORT = 1337  # Proxy Port
+    ROOT_CA = '0025aabb.0'
+    SCREEN_IP = PROXY_IP  # ScreenCast IP
+    SCREEN_PORT = 9339  # ScreenCast Port
     #==============================================
 
     #========UPSTREAM PROXY SETTINGS ==============
-    #If you are behind a Proxy
+    # If you are behind a Proxy
     UPSTREAM_PROXY_IP = None
     UPSTREAM_PROXY_PORT = None
     UPSTREAM_PROXY_USERNAME = None
@@ -293,17 +295,17 @@ else:
     #==========DECOMPILER SETTINGS=================
 
     DECOMPILER = "jd-core"
-    #Two Decompilers are available 
-    #1. jd-core
-    #2. cfr
-    #3. procyon
+    # Two Decompilers are available
+    # 1. jd-core
+    # 2. cfr
+    # 3. procyon
     #==============================================
 
     #==========Dex to Jar Converter================
     JAR_CONVERTER = "d2j"
-    #Two Dex to Jar converters are available 
-    #1. d2j
-    #2. enjarify
+    # Two Dex to Jar converters are available
+    # 1. d2j
+    # 2. enjarify
 
     '''
     enjarify requires python3. Install Python 3 and add the path to environment variable 
@@ -314,9 +316,9 @@ else:
     #==============================================
     #^CONFIG-END^: Do not edit this line
 
-#The below code should be loaded last.
+# The below code should be loaded last.
 #============JAVA SETTINGS======================
-JAVA_PATH=utils.FindJava()
+JAVA_PATH = utils.FindJava()
 #===============================================
 
 #================VirtualBox Settings============

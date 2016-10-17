@@ -45,21 +45,24 @@ import tornado.gen
 import socket
 import ssl
 import os
-import threading, pickle
+import threading
+import pickle
 from multiprocessing import Process, Value, Lock
 from DynamicAnalyzer.pyWebProxy.socket_wrapper import wrap_socket
 from MobSF.utils import PrintException
 from django.conf import settings
 
-kill = False #Global Variable that shows the state of Tornado Proxy
-log =""
+kill = False  # Global Variable that shows the state of Tornado Proxy
+log = ""
 
 TRAFFIC = ""
-REQUEST_LIST= []
+REQUEST_LIST = []
 URLS = []
 
-#API Tester
-def APITester(request,response):
+# API Tester
+
+
+def APITester(request, response):
     '''
     API Tester perform security testing on all API calls passed via the proxy.
     requestdb: File contains list of request dict
@@ -67,25 +70,27 @@ def APITester(request,response):
     '''
     print "not yet implemented"
 
-#Save things on Exit
+# Save things on Exit
+
+
 def SaveOnExit():
     print "\n[INFO] Saving Captured Web Proxy Data"
     try:
-        global REQUEST_LIST,URLS,TRAFFIC,log
+        global REQUEST_LIST, URLS, TRAFFIC, log
         print "\n[INFO] Saving URLS"
-        with open(os.path.join(log,"urls"), "w") as f2:
-            URLS=list(set(URLS))
-            URLS='\n'.join(URLS)
+        with open(os.path.join(log, "urls"), "w") as f2:
+            URLS = list(set(URLS))
+            URLS = '\n'.join(URLS)
             f2.write(URLS)
 
         print "\n[INFO] Saving WebTraffic"
-        with open(os.path.join(log,"WebTraffic.txt"), "w") as f3:
+        with open(os.path.join(log, "WebTraffic.txt"), "w") as f3:
             f3.write(TRAFFIC)
 
         print "\n[INFO] Saving Request Objects"
-        REQUEST_DB_FILE = os.path.join(log,"requestdb")
-        fp = open(REQUEST_DB_FILE,"wb")
-        pickle.dump(REQUEST_LIST,fp)
+        REQUEST_DB_FILE = os.path.join(log, "requestdb")
+        fp = open(REQUEST_DB_FILE, "wb")
+        pickle.dump(REQUEST_LIST, fp)
         fp.close()
     except:
         PrintException("[ERROR] Saving Captured Web Proxy Data")
@@ -93,22 +98,26 @@ def SaveOnExit():
     URLS = []
     TRAFFIC = ""
 
-#Save Data in Memory
-def Capture(request,response,request_object):
-    global REQUEST_LIST,URLS,TRAFFIC
+# Save Data in Memory
+
+
+def Capture(request, response, request_object):
+    global REQUEST_LIST, URLS, TRAFFIC
 
     REQUEST_LIST.append(request_object)
     URLS.append(str(response.request.url))
 
-    rdat=''
-    dat=response.request.body if response.request.body else ''
-    TRAFFIC+= "\n\nREQUEST: " + str(response.request.method)+ " " + str(response.request.url) + '\n'
+    rdat = ''
+    dat = response.request.body if response.request.body else ''
+    TRAFFIC += "\n\nREQUEST: " + \
+        str(response.request.method) + " " + str(response.request.url) + '\n'
     for header, value in list(response.request.headers.items()):
-        TRAFFIC+= header + ": " + value +"\n"
-    TRAFFIC+= "\n\n" + dat + "\n"
-    TRAFFIC+= "\n\nRESPONSE: " +str(response.code) + " " + str(response.reason) + "\n"
+        TRAFFIC += header + ": " + value + "\n"
+    TRAFFIC += "\n\n" + dat + "\n"
+    TRAFFIC += "\n\nRESPONSE: " + \
+        str(response.code) + " " + str(response.reason) + "\n"
     for header, value in list(response.headers.items()):
-        TRAFFIC+= header + ": " + value + "\n"
+        TRAFFIC += header + ": " + value + "\n"
         '''
         if "content-type" in header.lower():
             if re.findall("json|xml|application\/javascript",value.lower()):
@@ -117,15 +126,17 @@ def Capture(request,response,request_object):
             rdat=''
         '''
         if request.response_buffer:
-            rdat=request.response_buffer
-    TRAFFIC+= "\n\n" +rdat + "\n"
-    #String is not memory efficient!
+            rdat = request.response_buffer
+    TRAFFIC += "\n\n" + rdat + "\n"
+    # String is not memory efficient!
+
 
 class ProxyHandler(tornado.web.RequestHandler):
     """
     This RequestHandler processes all the requests that the application received
     """
-    SUPPORTED_METHODS = ['GET', 'POST', 'CONNECT', 'HEAD', 'PUT', 'DELETE', 'OPTIONS', 'TRACE']
+    SUPPORTED_METHODS = ['GET', 'POST', 'CONNECT',
+                         'HEAD', 'PUT', 'DELETE', 'OPTIONS', 'TRACE']
 
     def __new__(cls, application, request, **kwargs):
         # http://stackoverflow.com/questions/3209233/how-to-replace-an-instance-in-init-with-a-different-object
@@ -157,8 +168,9 @@ class ProxyHandler(tornado.web.RequestHandler):
             except KeyError:
                 self._reason = tornado.escape.native_str("Server Not Found")
     # This function writes a new response & caches it
+
     def finish_response(self, response):
-        Capture(self.request,response,self.request_object)
+        Capture(self.request, response, self.request_object)
         self.set_status(response.code)
         for header, value in response.headers.get_all():
             if header == "Set-Cookie":
@@ -188,13 +200,13 @@ class ProxyHandler(tornado.web.RequestHandler):
         # The requests that come through ssl streams are relative requests, so transparent
         # proxying is required. The following snippet decides the url that should be passed
         # to the async client
-        if self.request.uri.startswith(self.request.protocol,0): # Normal Proxy Request
+        # Normal Proxy Request
+        if self.request.uri.startswith(self.request.protocol, 0):
             self.request.url = self.request.uri
         else:  # Transparent Proxy Request
             self.request.url = self.request.protocol + "://" + self.request.host
             if self.request.uri != '/':  # Add uri only if needed
                 self.request.url += self.request.uri
-
 
         # Request header cleaning
         for header in restricted_request_headers:
@@ -203,42 +215,42 @@ class ProxyHandler(tornado.web.RequestHandler):
             except:
                 continue
 
-        #  httprequest object is created and then passed to async client with a callback
+        # httprequest object is created and then passed to async client with a
+        # callback
         self.request_kwargs = {
-            "url" : self.request.url,
-            "method" : self.request.method,
-            "body" : self.request.body if self.request.body else None,
-            "headers" :self.request.headers,
-            "follow_redirects" : False,
-            "use_gzip" : True,
-            "streaming_callback" : self.handle_data_chunk,
-            "header_callback" : None,
-            "proxy_host" : self.application.outbound_ip,
-            "proxy_port" : self.application.outbound_port,
-            "proxy_username" : self.application.outbound_username,
-            "proxy_password" : self.application.outbound_password,
-            "allow_nonstandard_methods" : True,
-            "validate_cert" : False
+            "url": self.request.url,
+            "method": self.request.method,
+            "body": self.request.body if self.request.body else None,
+            "headers": self.request.headers,
+            "follow_redirects": False,
+            "use_gzip": True,
+            "streaming_callback": self.handle_data_chunk,
+            "header_callback": None,
+            "proxy_host": self.application.outbound_ip,
+            "proxy_port": self.application.outbound_port,
+            "proxy_username": self.application.outbound_username,
+            "proxy_password": self.application.outbound_password,
+            "allow_nonstandard_methods": True,
+            "validate_cert": False
         }
         self.request_object = {
-            "url" : self.request.url,
-            "method" : self.request.method,
-            "body" : (self.request.body).decode('utf-8', 'ignore') if self.request.body else None,
-            "headers" :self.request.headers,
-            "follow_redirects" : True,
-            "use_gzip" : True,
-            "proxy_host" : self.application.outbound_ip,
-            "proxy_port" : self.application.outbound_port,
-            "proxy_username" : self.application.outbound_username,
-            "proxy_password" : self.application.outbound_password,
-            "allow_nonstandard_methods" : True,
-            "validate_cert" : False
+            "url": self.request.url,
+            "method": self.request.method,
+            "body": (self.request.body).decode('utf-8', 'ignore') if self.request.body else None,
+            "headers": self.request.headers,
+            "follow_redirects": True,
+            "use_gzip": True,
+            "proxy_host": self.application.outbound_ip,
+            "proxy_port": self.application.outbound_port,
+            "proxy_username": self.application.outbound_username,
+            "proxy_password": self.application.outbound_password,
+            "allow_nonstandard_methods": True,
+            "validate_cert": False
         }
         request = tornado.httpclient.HTTPRequest(**self.request_kwargs)
 
         response = yield tornado.gen.Task(self.application.async_client.fetch, request)
         self.finish_response(response)
-
 
     # The following 5 methods can be handled through the above implementation
     @tornado.web.asynchronous
@@ -279,22 +291,24 @@ class ProxyHandler(tornado.web.RequestHandler):
         * The stream is added back to the server for monitoring
         """
         host, port = self.request.uri.split(':')
+
         def start_tunnel():
             try:
-                certs = os.path.join(settings.LOG_DIR,'certs')
-                base=os.path.dirname(os.path.realpath(__file__))
-                ca_crt=os.path.join(base,"ca.crt")
-                ca_key=os.path.join(base,"ca.key")
-                self.request.connection.stream.write(b"HTTP/1.1 200 Connection established\r\n\r\n")
+                certs = os.path.join(settings.LOG_DIR, 'certs')
+                base = os.path.dirname(os.path.realpath(__file__))
+                ca_crt = os.path.join(base, "ca.crt")
+                ca_key = os.path.join(base, "ca.key")
+                self.request.connection.stream.write(
+                    b"HTTP/1.1 200 Connection established\r\n\r\n")
                 wrap_socket(
-                            self.request.connection.stream.socket,
-                            host,
-                            ca_crt,
-                            ca_key,
-                            "mobsec-yso",
-                            certs,
-                            success=ssl_success
-                           )
+                    self.request.connection.stream.socket,
+                    host,
+                    ca_crt,
+                    ca_key,
+                    "mobsec-yso",
+                    certs,
+                    success=ssl_success
+                )
             except tornado.iostream.StreamClosedError:
                 pass
 
@@ -305,19 +319,23 @@ class ProxyHandler(tornado.web.RequestHandler):
         # Tiny Hack to satisfy proxychains CONNECT request to HTTP port.
         # HTTPS fail check has to be improvised
         def ssl_fail():
-            self.request.connection.stream.write(b"HTTP/1.1 200 Connection established\r\n\r\n")
-            server.handle_stream(self.request.connection.stream, self.application.inbound_ip)
+            self.request.connection.stream.write(
+                b"HTTP/1.1 200 Connection established\r\n\r\n")
+            server.handle_stream(
+                self.request.connection.stream, self.application.inbound_ip)
 
         ######
         # Hacking to be done here, so as to check for ssl using proxy and auth
         try:
-            s = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0))
+            s = ssl.wrap_socket(socket.socket(
+                socket.AF_INET, socket.SOCK_STREAM, 0))
             upstream = tornado.iostream.SSLIOStream(s)
-            #start_tunnel()
+            # start_tunnel()
             upstream.set_close_callback(ssl_fail)
             upstream.connect((host, int(port)), start_tunnel)
         except Exception:
             self.finish()
+
 
 class CustomWebSocketHandler(tornado.websocket.WebSocketHandler):
     """
@@ -327,6 +345,7 @@ class CustomWebSocketHandler(tornado.websocket.WebSocketHandler):
       header => "Upgrade: websocket"
     * wss:// - CONNECT request is handled by main handler
     """
+
     def upstream_connect(self, io_loop=None, callback=None):
         """
         Implemented as a custom alternative to tornado.websocket.websocket_connect
@@ -335,11 +354,14 @@ class CustomWebSocketHandler(tornado.websocket.WebSocketHandler):
         if io_loop is None:
             io_loop = tornado.ioloop.IOLoop.current()
 
-        # During secure communication, we get relative URI, so make them absolute
-        if self.request.uri.startswith(self.request.protocol,0): # Normal Proxy Request
+        # During secure communication, we get relative URI, so make them
+        # absolute
+        # Normal Proxy Request
+        if self.request.uri.startswith(self.request.protocol, 0):
             self.request.url = self.request.uri
         else:  # Transparent Proxy Request
-            self.request.url = self.request.protocol + "://" + self.request.host + self.request.uri
+            self.request.url = self.request.protocol + \
+                "://" + self.request.host + self.request.uri
         # WebSocketClientConnection expects ws:// & wss://
         self.request.url = self.request.url.replace("http", "ws", 1)
 
@@ -350,17 +372,19 @@ class CustomWebSocketHandler(tornado.websocket.WebSocketHandler):
                 request_headers.add(name, value)
         # Build a custom request
         request = tornado.httpclient.HTTPRequest(
-                                                    url=self.request.url,
-                                                    headers=request_headers,
-                                                    proxy_host=self.application.outbound_ip,
-                                                    proxy_port=self.application.outbound_port,
-                                                    proxy_username=self.application.outbound_username,
-                                                    proxy_password=self.application.outbound_password
-                                                )
-        self.upstream_connection = CustomWebSocketClientConnection(io_loop, request)
+            url=self.request.url,
+            headers=request_headers,
+            proxy_host=self.application.outbound_ip,
+            proxy_port=self.application.outbound_port,
+            proxy_username=self.application.outbound_username,
+            proxy_password=self.application.outbound_password
+        )
+        self.upstream_connection = CustomWebSocketClientConnection(
+            io_loop, request)
         if callback is not None:
-            io_loop.add_future(self.upstream_connection.connect_future, callback)
-        return self.upstream_connection.connect_future # This returns a future
+            io_loop.add_future(
+                self.upstream_connection.connect_future, callback)
+        return self.upstream_connection.connect_future  # This returns a future
 
     def _execute(self, transforms, *args, **kwargs):
         """
@@ -370,22 +394,30 @@ class CustomWebSocketHandler(tornado.websocket.WebSocketHandler):
             """
             A callback which is called when connection to url is successful
             """
-            self.upstream = future.result() # We need upstream to write further messages
-            self.handshake_request = self.upstream_connection.request # HTTPRequest needed for caching :P
-            self.handshake_request.response_buffer = "" # Needed for websocket data & compliance with cache_handler stuff
-            self.handshake_request.version = "HTTP/1.1" # Tiny hack to protect caching (But according to websocket standards)
-            self.handshake_request.body = self.handshake_request.body or "" # I dont know why a None is coming :P
-            tornado.websocket.WebSocketHandler._execute(self, transforms, *args, **kwargs) # The regular procedures are to be done
+            self.upstream = future.result()  # We need upstream to write further messages
+            # HTTPRequest needed for caching :P
+            self.handshake_request = self.upstream_connection.request
+            # Needed for websocket data & compliance with cache_handler stuff
+            self.handshake_request.response_buffer = ""
+            # Tiny hack to protect caching (But according to websocket
+            # standards)
+            self.handshake_request.version = "HTTP/1.1"
+            # I dont know why a None is coming :P
+            self.handshake_request.body = self.handshake_request.body or ""
+            tornado.websocket.WebSocketHandler._execute(
+                self, transforms, *args, **kwargs)  # The regular procedures are to be done
 
-        # We try to connect to provided URL & then we proceed with connection on client side.
+        # We try to connect to provided URL & then we proceed with connection
+        # on client side.
         self.upstream = self.upstream_connect(callback=start_tunnel)
 
     def store_upstream_data(self, message):
         """
         Save websocket data sent from client to server, i.e add it to HTTPRequest.response_buffer with direction (>>)
         """
-        try: # Cannot write binary content as a string, so catch it
-            self.handshake_request.response_buffer += (">>> %s\r\n"%(message))
+        try:  # Cannot write binary content as a string, so catch it
+            self.handshake_request.response_buffer += (
+                ">>> %s\r\n" % (message))
         except TypeError:
             self.handshake_request.response_buffer += (">>> May be binary\r\n")
 
@@ -393,8 +425,9 @@ class CustomWebSocketHandler(tornado.websocket.WebSocketHandler):
         """
         Save websocket data sent from client to server, i.e add it to HTTPRequest.response_buffer with direction (<<)
         """
-        try: # Cannot write binary content as a string, so catch it
-            self.handshake_request.response_buffer += ("<<< %s\r\n"%(message))
+        try:  # Cannot write binary content as a string, so catch it
+            self.handshake_request.response_buffer += (
+                "<<< %s\r\n" % (message))
         except TypeError:
             self.handshake_request.response_buffer += ("<<< May be binary\r\n")
 
@@ -402,24 +435,29 @@ class CustomWebSocketHandler(tornado.websocket.WebSocketHandler):
         """
         Everytime a message is received from client side, this instance method is called
         """
-        self.upstream.write_message(message) # The obtained message is written to upstream
+        self.upstream.write_message(
+            message)  # The obtained message is written to upstream
         self.store_upstream_data(message)
 
-        # The following check ensures that if a callback is added for reading message from upstream, another one is not added
+        # The following check ensures that if a callback is added for reading
+        # message from upstream, another one is not added
         if not self.upstream.read_future:
-            self.upstream.read_message(callback=self.on_response) # A callback is added to read the data when upstream responds
+            # A callback is added to read the data when upstream responds
+            self.upstream.read_message(callback=self.on_response)
 
     def on_response(self, message):
         """
         A callback when a message is recieved from upstream
         *** Here message is a future
         """
-        # The following check ensures that if a callback is added for reading message from upstream, another one is not added
+        # The following check ensures that if a callback is added for reading
+        # message from upstream, another one is not added
         if not self.upstream.read_future:
             self.upstream.read_message(callback=self.on_response)
-        if self.ws_connection: # Check if connection still exists
-            if message.result(): # Check if it is not NULL ( Indirect checking of upstream connection )
-                self.write_message(message.result()) # Write obtained message to client
+        if self.ws_connection:  # Check if connection still exists
+            if message.result():  # Check if it is not NULL ( Indirect checking of upstream connection )
+                # Write obtained message to client
+                self.write_message(message.result())
                 self.store_downstream_data(message.result())
             else:
                 self.close()
@@ -430,15 +468,17 @@ class CustomWebSocketHandler(tornado.websocket.WebSocketHandler):
         """
         # Required for cache_handler
         self.handshake_response = tornado.httpclient.HTTPResponse(
-                                                                    self.handshake_request,
-                                                                    self.upstream_connection.code,
-                                                                    headers=self.upstream_connection.headers,
-                                                                    request_time=0
-                                                                 )
+            self.handshake_request,
+            self.upstream_connection.code,
+            headers=self.upstream_connection.headers,
+            request_time=0
+        )
         # Close fd descriptor
+
 
 class CustomWebSocketClientConnection(tornado.websocket.WebSocketClientConnection):
     # Had to extract response code, so it is necessary to override
+
     def _handle_1xx(self, code):
         self.code = code
         super(CustomWebSocketClientConnection, self)._handle_1xx(code)
@@ -446,16 +486,17 @@ class CustomWebSocketClientConnection(tornado.websocket.WebSocketClientConnectio
 
 # The tornado application, which is used to pass variables to request handler
 application = tornado.web.Application(handlers=[
-                                                    (r'.*', ProxyHandler)
-                                                    ],
-                                            debug=False,
-                                            gzip=True,
-                                           )
+    (r'.*', ProxyHandler)
+],
+    debug=False,
+    gzip=True,
+)
 application.async_client = tornado.httpclient.AsyncHTTPClient()
 instances = "1"
 
 # SSL MiTM
-# SSL certs, keys and other settings (os.path.expanduser because they are stored in users home directory ~/.owtf/proxy )
+# SSL certs, keys and other settings (os.path.expanduser because they are
+# stored in users home directory ~/.owtf/proxy )
 
 application.outbound_ip = settings.UPSTREAM_PROXY_IP
 application.outbound_port = settings.UPSTREAM_PROXY_PORT
@@ -463,29 +504,35 @@ application.outbound_username = settings.UPSTREAM_PROXY_USERNAME
 application.outbound_password = settings.UPSTREAM_PROXY_PASSWORD
 application.inbound_ip = settings.PROXY_IP
 
-#try: # Ensure CA.crt and Key exist
+# try: # Ensure CA.crt and Key exist
 #assert os.path.exists(application.ca_cert)
 #assert os.path.exists(application.ca_key)
-#except AssertionError:
+# except AssertionError:
 #print ("Files required for SSL MiTM are missing. Please run the install script")
 
 
-# Server has to be global, because it is used inside request handler to attach sockets for monitoring
+# Server has to be global, because it is used inside request handler to
+# attach sockets for monitoring
 global server
 server = tornado.httpserver.HTTPServer(application)
 server = server
 
 # Header filters
 # Restricted headers are picked from framework/config/framework_config.cfg
-# These headers are removed from the response obtained from webserver, before sending it to browser
+# These headers are removed from the response obtained from webserver,
+# before sending it to browser
 global restricted_response_headers
-rresh=["Content-Length","Content-Encoding","Etag","Transfer-Encoding","Connection","Vary","Accept-Ranges","Pragma"]
+rresh = ["Content-Length", "Content-Encoding", "Etag",
+         "Transfer-Encoding", "Connection", "Vary", "Accept-Ranges", "Pragma"]
 restricted_response_headers = rresh
-# These headers are removed from request obtained from browser, before sending it to webserver
+# These headers are removed from request obtained from browser, before
+# sending it to webserver
 global restricted_request_headers
-rreqh=["Connection","Pragma","Cache-Control","If-Modified-Since"]
+rreqh = ["Connection", "Pragma", "Cache-Control", "If-Modified-Since"]
 restricted_request_headers = rreqh
-def try_exit(): 
+
+
+def try_exit():
     global kill
     if kill:
         # clean up here
@@ -496,7 +543,8 @@ def try_exit():
         except:
             pass
 
-def startTornado(IP,PORT,log):
+
+def startTornado(IP, PORT, log):
     try:
         server.bind(int(PORT), address=IP)
         # Useful for using custom loggers because of relative paths in secure requests
@@ -505,23 +553,27 @@ def startTornado(IP,PORT,log):
     except:
         print "\n[INFO] WebProxy Socket is already in use"
         pass
-    #Clean Up
-    rmfiles = [os.path.join(log,"requestdb"),os.path.join(log,"urls"),os.path.join(log,"WebTraffic.txt")]
+    # Clean Up
+    rmfiles = [os.path.join(log, "requestdb"), os.path.join(
+        log, "urls"), os.path.join(log, "WebTraffic.txt")]
     for fil in rmfiles:
         if os.path.exists(fil):
             os.remove(fil)
     logp = os.path.join(settings.LOG_DIR, 'webproxy.log')
-    tornado.options.parse_command_line(args=["dummy_arg","--log_file_prefix="+logp,"--logging=info"])
+    tornado.options.parse_command_line(
+        args=["dummy_arg", "--log_file_prefix=" + logp, "--logging=info"])
     tornado.ioloop.PeriodicCallback(try_exit, 100).start()
     tornado.ioloop.IOLoop.instance().start()
 
-def Proxy(IP,PORT,LOG,STAT):
-    global kill,log
+
+def Proxy(IP, PORT, LOG, STAT):
+    global kill, log
     if STAT == "on":
         log = LOG
         kill = False
-        print "\n[INFO] Started Web Proxy at "+ IP+":"+PORT
-        threading.Thread(target=startTornado,kwargs=dict(IP=IP,PORT=PORT,log=log)).start()
+        print "\n[INFO] Started Web Proxy at " + IP + ":" + PORT
+        threading.Thread(target=startTornado, kwargs=dict(
+            IP=IP, PORT=PORT, log=log)).start()
     else:
         print "\n[INFO] Stopping any running instance of WebProxy"
         kill = True
