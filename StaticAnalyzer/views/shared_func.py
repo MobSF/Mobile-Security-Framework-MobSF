@@ -6,6 +6,7 @@ import os
 import hashlib
 import io
 import re
+import json
 import zipfile
 import subprocess
 import platform
@@ -144,6 +145,9 @@ def PDF(request):
                         template = get_template("static_analysis_pdf.html")
                     else:
                         template = get_template("static_analysis_zip_pdf.html")
+                else:
+                    return HttpResponse(json.dumps({"report": "Report not Found"}),
+                                        content_type="application/json; charset=utf-8")
             elif re.findall('IPA|IOSZIP', TYP):
                 if TYP == 'IPA':
                     DB = StaticAnalyzerIPA.objects.filter(MD5=MD5)
@@ -170,6 +174,9 @@ def PDF(request):
                             'strings': DB[0].STRINGS
                         }
                         template = get_template("ios_binary_analysis_pdf.html")
+                    else:
+                        return HttpResponse(json.dumps({"report": "Report not Found"}),
+                                            content_type="application/json; charset=utf-8")
                 elif TYP == 'IOSZIP':
                     DB = StaticAnalyzerIOSZIP.objects.filter(MD5=MD5)
                     if DB.exists():
@@ -199,8 +206,12 @@ def PDF(request):
                             'emails': DB[0].EmailnFile
                         }
                         template = get_template("ios_source_analysis_pdf.html")
+                    else:
+                        return HttpResponse(json.dumps({"report": "Report not Found"}),
+                                            content_type="application/json; charset=utf-8")
             else:
-                return HttpResponseRedirect('/error/')
+                return HttpResponse(json.dumps({"type": "Type is not Allowed"}),
+                                    content_type="application/json; charset=utf-8")
             html = template.render(context)
             result = StringIO()
             pdf = pisa.pisaDocument(StringIO("{0}".format(
@@ -210,7 +221,8 @@ def PDF(request):
             else:
                 return HttpResponseRedirect('/error/')
         else:
-            return HttpResponseRedirect('/error/')
+            return HttpResponse(json.dumps({"md5": "Invalid MD5"}),
+                                content_type="application/json; charset=utf-8")
     except:
 
         PrintException("[ERROR] PDF Report Generation Error")
