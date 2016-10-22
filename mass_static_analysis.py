@@ -84,7 +84,7 @@ def genMD5(app):
 
 def doScan(app, server_url):
     print "\nUploading : " + app
-    UPLOAD_URL = server_url + "/Upload/"
+    UPLOAD_URL = server_url + "/upload/"
     CSRF = getCSRF(server_url)
     APP_NAME = os.path.basename(app)
 
