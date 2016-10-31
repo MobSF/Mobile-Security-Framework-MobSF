@@ -308,8 +308,10 @@ def StaticAnalyzer(request):
                     MANI = '../ManifestView/?md5=' + MD5 + '&type=apk&bin=1'
                     SERVICES, ACTIVITIES, RECEIVERS, PROVIDERS, LIBRARIES, PERM, PACKAGENAME, MAINACTIVITY, MIN_SDK, MAX_SDK, TARGET_SDK, ANDROVER, ANDROVERNAME = ManifestData(
                         PARSEDXML, APP_DIR)
-                    MANIFEST_ANAL, EXPORTED_ACT, EXPORTED_CNT = ManifestAnalysis(
-                        PARSEDXML, MAINACTIVITY)
+# Esteve 29.07.2016 - begin - Target SDK and Min SDK are passed to the ManifestAnalysis function        
+                    MANIFEST_ANAL,EXPORTED_ACT,EXPORTED_CNT=ManifestAnalysis(PARSEDXML,MAINACTIVITY,MIN_SDK,TARGET_SDK)
+#                   MANIFEST_ANAL,EXPORTED_ACT,EXPORTED_CNT=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
+# Esteve 29.07.2016 - end - Target SDK and Min SDK are passed to the ManifestAnalysis function
                     PERMISSIONS = FormatPermissions(PERM)
                     CNT_ACT = len(ACTIVITIES)
                     CNT_PRO = len(PROVIDERS)
@@ -555,8 +557,10 @@ def StaticAnalyzer(request):
                         MANI = '../ManifestView/?md5=' + MD5 + '&type=' + pro_type + '&bin=0'
                         SERVICES, ACTIVITIES, RECEIVERS, PROVIDERS, LIBRARIES, PERM, PACKAGENAME, MAINACTIVITY, MIN_SDK, MAX_SDK, TARGET_SDK, ANDROVER, ANDROVERNAME = ManifestData(
                             PARSEDXML, APP_DIR)
-                        MANIFEST_ANAL, EXPORTED_ACT, EXPORTED_CNT = ManifestAnalysis(
-                            PARSEDXML, MAINACTIVITY)
+# Esteve 29.07.2016 - begin - Target SDK and Min SDK are passed to the ManifestAnalysis function      
+                        MANIFEST_ANAL,EXPORTED_ACT,EXPORTED_CNT=ManifestAnalysis(PARSEDXML,MAINACTIVITY,MIN_SDK,TARGET_SDK)
+#                       MANIFEST_ANAL,EXPORTED_ACT,EXPORTED_CNT=ManifestAnalysis(PARSEDXML,MAINACTIVITY)
+# Esteve 29.07.2016 - begin - Target SDK and Min SDK are passed to the ManifestAnalysis function 
                         PERMISSIONS = FormatPermissions(PERM)
                         CNT_ACT = len(ACTIVITIES)
                         CNT_PRO = len(PROVIDERS)
@@ -1081,7 +1085,13 @@ def ManifestData(mfxml, app_dir):
         for node in sdk:
             minsdk = node.getAttribute("android:minSdkVersion")
             maxsdk = node.getAttribute("android:maxSdkVersion")
-            targetsdk = node.getAttribute("android:targetSdkVersion")
+# Esteve 08.08.2016 - begin - If android:targetSdkVersion is not set, the default value is the one of the android:minSdkVersion  
+#           targetsdk=node.getAttribute("android:targetSdkVersion")  
+            if node.getAttribute("android:targetSdkVersion"):
+                targetsdk=node.getAttribute("android:targetSdkVersion")
+            else:
+                targetsdk=node.getAttribute("android:minSdkVersion")
+# Esteve 08.08.2016 - end - If android:targetSdkVersion is not set, the default value is the one of the android:minSdkVersion
         for node in manifest:
             package = node.getAttribute("package")
             androidversioncode = node.getAttribute("android:versionCode")
@@ -1134,8 +1144,7 @@ def ManifestData(mfxml, app_dir):
     except:
         PrintException("[ERROR] Extracting Manifest Data")
 
-
-def ManifestAnalysis(mfxml, mainact):
+def ManifestAnalysis(mfxml,mainact,min_sdk,target_sdk):
     try:
         print "[INFO] Manifest Analysis Started"
         exp_count = dict.fromkeys(["act", "ser", "bro", "cnt"], 0)
@@ -1147,19 +1156,17 @@ def ManifestAnalysis(mfxml, mainact):
         datas = mfxml.getElementsByTagName("data")
         intents = mfxml.getElementsByTagName("intent-filter")
         actions = mfxml.getElementsByTagName("action")
-        granturipermissions = mfxml.getElementsByTagName(
-            "grant-uri-permission")
+        granturipermissions = mfxml.getElementsByTagName("grant-uri-permission")
         permissions = mfxml.getElementsByTagName("permission")
         for node in manifest:
             package = node.getAttribute("package")
-        RET = ''
-        EXPORTED = []
+        RET=''
+        EXPORTED=[]
         PERMISSION_DICT = dict()
-        # PERMISSION
+        ##PERMISSION
         for permission in permissions:
             if permission.getAttribute("android:protectionLevel"):
-                protectionlevel = permission.getAttribute(
-                    "android:protectionLevel")
+                protectionlevel = permission.getAttribute("android:protectionLevel")
                 if protectionlevel == "0x00000000":
                     protectionlevel = "normal"
                 elif protectionlevel == "0x00000001":
@@ -1169,174 +1176,401 @@ def ManifestAnalysis(mfxml, mainact):
                 elif protectionlevel == "0x00000003":
                     protectionlevel = "signatureOrSystem"
 
-                PERMISSION_DICT[permission.getAttribute(
-                    "android:name")] = protectionlevel
+                PERMISSION_DICT[permission.getAttribute("android:name")] = protectionlevel
             elif permission.getAttribute("android:name"):
-                PERMISSION_DICT[permission.getAttribute(
-                    "android:name")] = "normal"
+                PERMISSION_DICT[permission.getAttribute("android:name")] = "normal"
 
-        # APPLICATIONS
+        ##APPLICATIONS
         for application in applications:
 
             if application.getAttribute("android:debuggable") == "true":
-                RET = RET + \
-                    '<tr><td>Debug Enabled For App <br>[android:debuggable=true]</td><td><span class="label label-danger">high</span></td><td>Debugging was enabled on the app which makes it easier for reverse engineers to hook a debugger to it. This allows dumping a stack trace and accessing debugging helper classes.</td></tr>'
+                RET=RET+ '<tr><td>Debug Enabled For App <br>[android:debuggable=true]</td><td><span class="label label-danger">high</span></td><td>Debugging was enabled on the app which makes it easier for reverse engineers to hook a debugger to it. This allows dumping a stack trace and accessing debugging helper classes.</td></tr>'
+# Esteve 23.07.2016 - begin - identify permission at the application level
+            if application.getAttribute("android:permission"):
+                permApplLevelExists = True
+                permApplLevel = application.getAttribute("android:permission")
+            else:
+                permApplLevelExists = False
+# Esteve 23.07.2016 - end
             if application.getAttribute("android:allowBackup") == "true":
-                RET = RET + \
-                    '<tr><td>Application Data can be Backed up<br>[android:allowBackup=true]</td><td><span class="label label-warning">medium</span></td><td>This flag allows anyone to backup your application data via adb. It allows users who have enabled USB debugging to copy application data off of the device.</td></tr>'
+                RET=RET+ '<tr><td>Application Data can be Backed up<br>[android:allowBackup=true]</td><td><span class="label label-warning">medium</span></td><td>This flag allows anyone to backup your application data via adb. It allows users who have enabled USB debugging to copy application data off of the device.</td></tr>'
             elif application.getAttribute("android:allowBackup") == "false":
                 pass
             else:
-                RET = RET + '<tr><td>Application Data can be Backed up<br>[android:allowBackup] flag is missing.</td><td><span class="label label-warning">medium</span></td><td>The flag [android:allowBackup] should be set to false. By default it is set to true and allows anyone to backup your application data via adb. It allows users who have enabled USB debugging to copy application data off of the device.</td></tr>'
-            if application.getAttribute("android:testOnly") == "true":
-                RET = RET + \
-                    '<tr><td>Application is in Test Mode <br>[android:testOnly=true]</td><td><span class="label label-danger">high</span></td><td> It may expose functionality or data outside of itself that would cause a security hole.</td></tr>'
+                RET=RET+ '<tr><td>Application Data can be Backed up<br>[android:allowBackup] flag is missing.</td><td><span class="label label-warning">medium</span></td><td>The flag [android:allowBackup] should be set to false. By default it is set to true and allows anyone to backup your application data via adb. It allows users who have enabled USB debugging to copy application data off of the device.</td></tr>'
+            if application.getAttribute("android:testOnly")== "true":
+                RET=RET+ '<tr><td>Application is in Test Mode <br>[android:testOnly=true]</td><td><span class="label label-danger">high</span></td><td> It may expose functionality or data outside of itself that would cause a security hole.</td></tr>'
             for node in application.childNodes:
-                ad = ''
+                ad=''
                 if node.nodeName == 'activity':
-                    itmname = 'Activity'
-                    cnt_id = "act"
-                    ad = 'n'
+                    itmname= 'Activity'
+                    cnt_id= "act"
+                    ad='n'
                 elif node.nodeName == 'activity-alias':
-                    itmname = 'Activity-Alias'
-                    cnt_id = "act"
-                    ad = 'n'
+                    itmname ='Activity-Alias'
+                    cnt_id= "act"
+                    ad='n'
                 elif node.nodeName == 'provider':
                     itmname = 'Content Provider'
-                    cnt_id = "cnt"
+                    cnt_id= "cnt"
                 elif node.nodeName == 'receiver':
                     itmname = 'Broadcast Receiver'
-                    cnt_id = "bro"
+                    cnt_id= "bro"
                 elif node.nodeName == 'service':
                     itmname = 'Service'
-                    cnt_id = "ser"
+                    cnt_id= "ser"
                 else:
                     itmname = 'NIL'
-                item = ''
-                # Task Affinity
-                if ((itmname in ['Activity', 'Activity-Alias']) and (node.getAttribute("android:taskAffinity"))):
-                    item = node.getAttribute("android:name")
-                    RET = RET + '<tr><td>TaskAffinity is set for Activity </br>(' + item + ')</td><td><span class="label label-danger">high</span></td><td>If taskAffinity is set, then other application could read the Intents sent to Activities belonging to another task. Always use the default setting keeping the affinity as the package name in order to prevent sensitive information inside sent or received Intents from being read by another application.</td></tr>'
-                # LaunchMode
-                if ((itmname in ['Activity', 'Activity-Alias']) and ((node.getAttribute("android:launchMode") == 'singleInstance') or (node.getAttribute("android:launchMode") == 'singleTask'))):
-                    item = node.getAttribute("android:name")
-                    RET = RET + '<tr><td>Launch Mode of Activity (' + item + ') is not standard.</td><td><span class="label label-danger">high</span></td><td>An Activity should not be having the launch mode attribute set to "singleTask/singleInstance" as it becomes root Activity and it is possible for other applications to read the contents of the calling Intent. So it is required to use the "standard" launch mode attribute when sensitive information is included in an Intent.</td></tr>'
-                # Exported Check
-                item = ''
+                item=''
+                #Task Affinity
+                if ((itmname =='Activity' or itmname=='Activity-Alias') and (node.getAttribute("android:taskAffinity"))):
+                    item=node.getAttribute("android:name")
+                    RET=RET+ '<tr><td>TaskAffinity is set for Activity </br>('+item + ')</td><td><span class="label label-danger">high</span></td><td>If taskAffinity is set, then other application could read the Intents sent to Activities belonging to another task. Always use the default setting keeping the affinity as the package name in order to prevent sensitive information inside sent or received Intents from being read by another application.</td></tr>'
+                #LaunchMode
+                if ((itmname =='Activity' or itmname=='Activity-Alias') and ((node.getAttribute("android:launchMode")=='singleInstance') or (node.getAttribute("android:launchMode")=='singleTask'))):
+                    item=node.getAttribute("android:name")
+                    RET=RET+ '<tr><td>Launch Mode of Activity ('+item + ') is not standard.</td><td><span class="label label-danger">high</span></td><td>An Activity should not be having the launch mode attribute set to "singleTask/singleInstance" as it becomes root Activity and it is possible for other applications to read the contents of the calling Intent. So it is required to use the "standard" launch mode attribute when sensitive information is included in an Intent.</td></tr>'
+                #Exported Check
+                item=''
                 isInf = False
                 isPermExist = False
+# Esteve 23.07.2016 - begin - initialise variables to identify the existence of a permission at the component level that matches a permission at the manifest level
+                protLevelExist = False
+                protlevel=''
+# Esteve 23.07.2016 - end   
                 if ('NIL' != itmname):
                     if (node.getAttribute("android:exported") == 'true'):
-                        perm = ''
-                        item = node.getAttribute("android:name")
+                        perm=''
+                        item=node.getAttribute("android:name")
                         if node.getAttribute("android:permission"):
-                            # permission exists
-                            perm = '<strong>Permission: </strong>' + \
-                                node.getAttribute("android:permission")
+                            #permission exists
+                            perm = '<strong>Permission: </strong>'+node.getAttribute("android:permission")
                             isPermExist = True
-                        if item != mainact:
+                        if item!=mainact:
                             if isPermExist:
                                 prot = ""
                                 if node.getAttribute("android:permission") in PERMISSION_DICT:
-                                    prot = "</br><strong>protectionLevel: </strong>" + \
-                                        PERMISSION_DICT[
-                                            node.getAttribute("android:permission")]
-                                RET = RET + '<tr><td><strong>' + itmname + '</strong> (' + item + ') is Protected by a permission.</br>' + perm + prot + \
-                                    ' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A' + \
-                                    ad + ' ' + itmname + ' is found to be exported, but is protected by permission.</td></tr>'
+                                    prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[node.getAttribute("android:permission")]
+# Esteve 23.07.2016 - begin - take into account protection level of the permission when claiming that a component is protected by it;
+#                           - the permission might not be defined in the application being analysed, if so, the protection level is not known;
+#                           - activities (or activity-alias) that are exported and have an unknown or normal or dangerous protection level are 
+#                             included in the EXPORTED data structure for further treatment; components in this situation are also
+#                             counted as exported.
+                                    protLevelExist = True
+                                    protlevel = PERMISSION_DICT[node.getAttribute("android:permission")]
+                                if protLevelExist:
+                                    if protlevel == 'normal':
+                                        RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission. However, the protection level of the permission is set to normal. This means that a malicious application can request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                        if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                            EXPORTED.append(item)
+                                        exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                    if protlevel == 'dangerous':
+                                        RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission. However, the protection level of the permission is set to dangerous. This means that a malicious application can request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                        if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                            EXPORTED.append(item)
+                                        exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                    if protlevel == 'signature':
+                                        RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by a permission.</td></tr>'
+                                    if protlevel == 'signatureOrSystem':
+                                        RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission. However, the protection level of the permission is set to signatureOrSystem. It is recommended that signature level is used instead. Signature level should suffice for most purposes, and does not depend on where the applications are installed on the device. </td></tr>'
+                                else:                 
+                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked. </br>'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission which is not defined in the analysed application. As a result, the protection level of the permission should be checked where it is defined. If it is set to normal or dangerous, a malicious application can request and obtain the permission and interact with the component. If it is set to signature, only applications signed with the same certificate can obtain the permission. </td></tr>'
+                                    if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                        EXPORTED.append(item)
+                                    exp_count[cnt_id] = exp_count[cnt_id] + 1
+# Esteve 23.07.2016 - end 
                             else:
-                                if (itmname in ['Activity', 'Activity-Alias']):
-                                    EXPORTED.append(item)
-                                RET = RET + '<tr><td><strong>' + itmname + '</strong> (' + item + ') is not Protected. <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A' + \
-                                    ad + ' ' + itmname + ' is found to be shared with other apps on the device therefore leaving it accessible to any other application on the device.</td></tr>'
-                                exp_count[cnt_id] = exp_count[cnt_id] + 1
+# Esteve 24.07.2016 - begin - At this point, we are dealing with components that do not have a permission neither at the component level nor at the
+#                             application level. As they are exported, they are not protected.
+                                if permApplLevelExists == False: 
+                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is not Protected. <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be shared with other apps on the device therefore leaving it accessible to any other application on the device.</td></tr>'
+                                    if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                       EXPORTED.append(item)
+                                    exp_count[cnt_id] = exp_count[cnt_id] + 1
+# Esteve 24.07.2016 - end 
+# Esteve 24.07.2016 - begin - At this point, we are dealing with components that have a permission at the application level, but not at the component
+#                             level. Two options are possible:
+#                                   1) The permission is defined at the manifest level, which allows us to differentiate the level of protection as
+#                                      we did just above for permissions specified at the component level.
+#                                   2) The permission is not defined at the manifest level, which means the protection level is unknown, as it is not
+#                                      defined in the analysed application. 
+                                else:
+                                    perm = '<strong>Permission: </strong>' + permApplLevel
+                                    prot = ""
+                                    if permApplLevel in PERMISSION_DICT:
+                                        prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[permApplLevel]
+                                        protLevelExist = True
+                                        protlevel = PERMISSION_DICT[permApplLevel]
+                                    if protLevelExist:
+                                        if protlevel == 'normal':
+                                           RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission at the application level. However, the protection level of the permission is set to normal. This means that a malicious application can request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                           if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                               EXPORTED.append(item)
+                                           exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                        if protlevel == 'dangerous':
+                                           RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission at the application level. However, the protection level of the permission is set to dangerous. This means that a malicious application can request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                           if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                               EXPORTED.append(item)
+                                           exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                        if protlevel == 'signature':
+                                           RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by a permission at the application level.</td></tr>'
+                                        if protlevel == 'signatureOrSystem':
+                                           RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission at the application level. However, the protection level of the permission is set to signatureOrSystem. It is recommended that signature level is used instead. Signature level should suffice for most purposes, and does not depend on where the applications are installed on the device. </td></tr>'
+                                    else:                 
+                                        RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked. </br>'+perm+' <br>[android:exported=true]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission at the application level which is not defined in the analysed application. As a result, the protection level of the permission should be checked where it is defined. If it is set to normal or dangerous, a malicious application can request and obtain the permission and interact with the component. If it is set to signature, only applications signed with the same certificate can obtain the permission. </td></tr>'
+                                        if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                            EXPORTED.append(item)
+                                        exp_count[cnt_id] = exp_count[cnt_id] + 1
+# Esteve 24.07.2016 - end
                     elif (node.getAttribute("android:exported") != 'false'):
-                        # Check for Implicitly Exported
-                        # Logic to support intent-filter
+                        #Check for Implicitly Exported
+                        #Logic to support intent-filter
                         intentfilters = node.childNodes
                         for i in intentfilters:
-                            inf = i.nodeName
-                            if inf == "intent-filter":
-                                isInf = True
+                            inf=i.nodeName
+                            if inf=="intent-filter":
+                                isInf=True
                         if isInf:
-                            item = node.getAttribute("android:name")
+                            perm=''
+                            item=node.getAttribute("android:name")
                             if node.getAttribute("android:permission"):
-                                # permission exists
-                                perm = '<strong>Permission: </strong>' + \
-                                    node.getAttribute("android:permission")
+                                #permission exists
+                                perm = '<strong>Permission: </strong>'+node.getAttribute("android:permission")
                                 isPermExist = True
-                            if item != mainact:
+                            if item!=mainact:
                                 if isPermExist:
                                     prot = ""
                                     if node.getAttribute("android:permission") in PERMISSION_DICT:
-                                        prot = "</br><strong>protectionLevel: </strong>" + \
-                                            PERMISSION_DICT[
-                                                node.getAttribute("android:permission")]
-                                    RET = RET + '<tr><td><strong>' + itmname + '</strong> (' + item + ') is Protected by a permission.</br>' + perm + prot + \
-                                        ' <br>[android:exported=true]</td><td><span class="label label-info">info</span></td><td> A' + \
-                                        ad + ' ' + itmname + ' is found to be exported, but is protected by permission.</td></tr>'
+                                        prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[node.getAttribute("android:permission")] 
+# Esteve 24.07.2016 - begin - take into account protection level of the permission when claiming that a component is protected by it;
+#                           - the permission might not be defined in the application being analysed, if so, the protection level is not known;
+#                           - activities (or activity-alias) that are exported and have an unknown or normal or dangerous protection level are 
+#                             included in the EXPORTED data structure for further treatment; components in this situation are also
+#                             counted as exported.
+                                        protLevelExist = True
+                                        protlevel = PERMISSION_DICT[node.getAttribute("android:permission")]
+                                    if protLevelExist:
+                                        if protlevel == 'normal':
+                                            RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[intent-filter]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission. However, the protection level of the permission is set to normal. This means that a malicious application can request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                            if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                                EXPORTED.append(item)
+                                            exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                        if protlevel == 'dangerous':
+                                            RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[intent-filter]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission. However, the protection level of the permission is set to dangerous. This means that a malicious application can request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                            if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                                EXPORTED.append(item)
+                                            exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                        if protlevel == 'signature':
+                                            RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission.</br>'+perm+prot+' <br>[intent-filter]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by a permission.</td></tr>'
+                                        if protlevel == 'signatureOrSystem':
+                                            RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[intent-filter]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission. However, the protection level of the permission is set to signatureOrSystem. It is recommended that signature level is used instead. Signature level should suffice for most purposes, and does not depend on where the applications are installed on the device. </td></tr>'
+                                    else:                 
+                                        RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked. </br>'+perm+' <br>[intent-filter]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission which is not defined in the analysed application. As a result, the protection level of the permission should be checked where it is defined. If it is set to normal or dangerous, a malicious application can request and obtain the permission and interact with the component. If it is set to signature, only applications signed with the same certificate can obtain the permission. </td></tr>'
+                                        if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                            EXPORTED.append(item)
+                                        exp_count[cnt_id] = exp_count[cnt_id] + 1
+# Esteve 24.07.2016 - end
                                 else:
-                                    if (itmname in ['Activity', 'Activity-Alias']):
-                                        EXPORTED.append(item)
-                                    RET = RET + '<tr><td><strong>' + itmname + '</strong> (' + item + ') is not Protected.<br>An intent-filter exists.</td><td><span class="label label-danger">high</span></td><td> A' + ad + ' ' + itmname + \
-                                        ' is found to be shared with other apps on the device therefore leaving it accessible to any other application on the device. The presence of intent-filter indicates that the ' + \
-                                        itmname + ' is explicitly exported.</td></tr>'
-                                    exp_count[cnt_id] = exp_count[cnt_id] + 1
+# Esteve 24.07.2016 - begin - At this point, we are dealing with components that do not have a permission neither at the component level nor at the
+#                             application level. As they are exported, they are not protected.
+                                    if permApplLevelExists == False: 
+                                        RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is not Protected. <br>An intent-filter exists.</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be shared with other apps on the device therefore leaving it accessible to any other application on the device. The presence of intent-filter indicates that the '+itmname+' is implicitly exported.</td></tr>'
+                                        if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                            EXPORTED.append(item)
+                                        exp_count[cnt_id] = exp_count[cnt_id] + 1
+# Esteve 24.07.2016 - end 
+# Esteve 24.07.2016 - begin - At this point, we are dealing with components that have a permission at the application level, but not at the component
+#                             level. Two options are possible:
+#                                   1) The permission is defined at the manifest level, which allows us to differentiate the level of protection as
+#                                      we did just above for permissions specified at the component level.
+#                                   2) The permission is not defined at the manifest level, which means the protection level is unknown, as it is not
+#                                      defined in the analysed application. 
+                                    else:
+                                        perm = '<strong>Permission: </strong>' + permApplLevel
+                                        prot = ""
+                                        if permApplLevel in PERMISSION_DICT:
+                                            prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[permApplLevel]
+                                            protLevelExist = True
+                                            protlevel = PERMISSION_DICT[permApplLevel]
+                                        if protLevelExist:
+                                            if protlevel == 'normal':
+                                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[intent-filter]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission at the application level. However, the protection level of the permission is set to normal. This means that a malicious application can request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                                if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                                     EXPORTED.append(item)
+                                                exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                            if protlevel == 'dangerous':
+                                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[intent-filter]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission at the application level. However, the protection level of the permission is set to dangerous. This means that a malicious application can request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                                if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                                    EXPORTED.append(item)
+                                                exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                            if protlevel == 'signature':
+                                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level.</br>'+perm+prot+' <br>[intent-filter]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by a permission at the application level.</td></tr>'
+                                            if protlevel == 'signatureOrSystem':
+                                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[intent-filter]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission at the application level. However, the protection level of the permission is set to signatureOrSystem. It is recommended that signature level is used instead. Signature level should suffice for most purposes, and does not depend on where the applications are installed on the device. </td></tr>'
+                                        else:                 
+                                            RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked. </br>'+perm+' <br>[intent-filter]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission at the application level which is not defined in the analysed application. As a result, the protection level of the permission should be checked where it is defined. If it is set to normal or dangerous, a malicious application can request and obtain the permission and interact with the component. If it is set to signature, only applications signed with the same certificate can obtain the permission. </td></tr>'
+                                            if (itmname =='Activity' or itmname=='Activity-Alias'):
+                                                EXPORTED.append(item)
+                                            exp_count[cnt_id] = exp_count[cnt_id] + 1
+# Esteve 24.07.2016 - end 
+# Esteve 29.07.2016 - begin The component is not explicitly exported (android:exported is not "true"). It is not implicitly exported either (it does not
+# make use of an intent filter). Despite that, it could still be exported by default, if it is a content provider and the android:targetSdkVersion
+# is older than 17 (Jelly Bean, Android versionn 4.2). This is true regardless of the system's API level.
+# Finally, it must also be taken into account that, if the minSdkVersion is greater or equal than 17, this check is unnecessary, because the
+# app will not be run on a system where the system's API level is below 17.
+                        else:
+                            if int(min_sdk) < 17:
+                                if itmname == 'Content Provider' and int(target_sdk) < 17:
+                                    perm=''
+                                    item=node.getAttribute("android:name")
+                                    if node.getAttribute("android:permission"):
+                                        #permission exists
+                                        perm = '<strong>Permission: </strong>'+node.getAttribute("android:permission")
+                                        isPermExist = True
+                                    if isPermExist:
+                                        prot = ""
+                                        if node.getAttribute("android:permission") in PERMISSION_DICT:
+                                            prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[node.getAttribute("android:permission")] 
+                                            protLevelExist = True
+                                            protlevel = PERMISSION_DICT[node.getAttribute("android:permission")]
+                                        if protLevelExist:
+                                            if protlevel == 'normal':
+                                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion < 17]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission. However, the protection level of the permission is set to normal. This means that a malicious application can request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                                exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                            if protlevel == 'dangerous':
+                                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion < 17]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission. However, the protection level of the permission is set to dangerous. This means that a malicious application can request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                                exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                            if protlevel == 'signature':
+                                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion < 17]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by a permission.</td></tr>'
+                                            if protlevel == 'signatureOrSystem':
+                                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion < 17]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission. However, the protection level of the permission is set to signatureOrSystem. It is recommended that signature level is used instead. Signature level should suffice for most purposes, and does not depend on where the applications are installed on the device. </td></tr>'
+                                        else:                 
+                                            RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked. </br>'+perm+' <br>[Content Provider, targetSdkVersion < 17]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission which is not defined in the analysed application. As a result, the protection level of the permission should be checked where it is defined. If it is set to normal or dangerous, a malicious application can request and obtain the permission and interact with the component. If it is set to signature, only applications signed with the same certificate can obtain the permission. </td></tr>'
+                                            exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                    else:
+                                        if permApplLevelExists == False:
+                                            RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is not Protected. <br>[Content Provider, targetSdkVersion < 17] </td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be shared with other apps on the device therefore leaving it accessible to any other application on the device. It is a Content Provider that targets an API level under 17, which makes it exported by default, regardless of the API level of the system that the application runs on.</td></tr>'
+                                            exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                        else:
+                                            perm = '<strong>Permission: </strong>' + permApplLevel
+                                            prot = ""
+                                            if permApplLevel in PERMISSION_DICT:
+                                                prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[permApplLevel]
+                                                protLevelExist = True
+                                                protlevel = PERMISSION_DICT[permApplLevel]
+                                            if protLevelExist:
+                                                if protlevel == 'normal':
+                                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion < 17]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission at the application level. However, the protection level of the permission is set to normal. This means that a malicious application can request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                                    exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                                if protlevel == 'dangerous':
+                                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion < 17]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission at the application level. However, the protection level of the permission is set to dangerous. This means that a malicious application can request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                                    exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                                if protlevel == 'signature':
+                                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion < 17]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported, but is protected by a permission at the application level.</td></tr>'
+                                                if protlevel == 'signatureOrSystem':
+                                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion < 17]</td><td><span class="label label-info">info</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission at the application level. However, the protection level of the permission is set to signatureOrSystem. It is recommended that signature level is used instead. Signature level should suffice for most purposes, and does not depend on where the applications are installed on the device. </td></tr>'
+                                            else:                 
+                                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked. </br>'+perm+' <br>[Content Provider, targetSdkVersion < 17]</td><td><span class="label label-danger">high</span></td><td> A'+ad+' '+itmname+' is found to be exported. It is protected by a permission at the application level which is not defined in the analysed application. As a result, the protection level of the permission should be checked where it is defined. If it is set to normal or dangerous, a malicious application can request and obtain the permission and interact with the component. If it is set to signature, only applications signed with the same certificate can obtain the permission. </td></tr>'
+                                                exp_count[cnt_id] = exp_count[cnt_id] + 1
+# Esteve 29.07.2016 - end 
+# Esteve 08.08.2016 - begin - If the content provider does not target an API version lower than 17, it could still be exported by default, depending 
+#                             on the API version of the platform. If it was below 17, the content provider would be exported by default.
+                                else:
+                                    if itmname == 'Content Provider' and int(target_sdk) >= 17:
+                                        perm=''
+                                        item=node.getAttribute("android:name")
+                                        if node.getAttribute("android:permission"):
+                                            #permission exists
+                                            perm = '<strong>Permission: </strong>'+node.getAttribute("android:permission")
+                                            isPermExist = True
+                                        if isPermExist:
+                                            prot = ""
+                                            if node.getAttribute("android:permission") in PERMISSION_DICT:
+                                                prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[node.getAttribute("android:permission")] 
+                                                protLevelExist = True
+                                                protlevel = PERMISSION_DICT[node.getAttribute("android:permission")]
+                                            if protLevelExist:
+                                                if protlevel == 'normal':
+                                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission. The protection level of the permission should be checked if the application runs on a device where the the API level is less than 17.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion >= 17]</td><td><span class="label label-danger">high</span></td><td> The '+itmname+' would be exported if the application ran on a device where the the API level was less than 17. In that situation, it would still be protected by a permission. However, the protection level of the permission is set to normal. This means that a malicious application could request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                                    exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                                if protlevel == 'dangerous':
+                                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission. The protection level of the permission should be checked if the application runs on a device where the the API level is less than 17.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion >= 17]</td><td><span class="label label-danger">high</span></td><td> The '+itmname+' would be exported if the application ran on a device where the the API level was less than 17. In that situation, it would still be protected by a permission. However, the protection level of the permission is set to dangerous. This means that a malicious application could request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                                    exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                                if protlevel == 'signature':
+                                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion >= 17]</td><td><span class="label label-info">info</span></td><td> The '+itmname+' would be exported if the application ran on a device where the the API level was less than 17. Nevertheless, it is protected by a permission.</td></tr>'
+                                                if protlevel == 'signatureOrSystem':
+                                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion >= 17]</td><td><span class="label label-info">info</span></td><td> The '+itmname+' would be exported if the application ran on a device where the API level was less than 17. In that situation, it would still be protected by a permission. However, the protection level of the permission is set to signatureOrSystem. It is recommended that signature level is used instead. Signature level should suffice for most purposes, and does not depend on where the applications are installed on the device. </td></tr>'
+                                            else:                 
+                                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission. The protection level of the permission should be checked if the application runs on a device where the the API level is less than 17. </br>'+perm+' <br>[Content Provider, targetSdkVersion >= 17]</td><td><span class="label label-danger">high</span></td><td> The '+itmname+' would be exported if the application ran on a device where the the API level was less than 17. In that situation, it would still be protected by a permission which is not defined in the analysed application. As a result, the protection level of the permission should be checked where it is defined. If it is set to normal or dangerous, a malicious application can request and obtain the permission and interact with the component. If it is set to signature, only applications signed with the same certificate can obtain the permission. </td></tr>'
+                                                exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                        else:
+                                            if permApplLevelExists == False:
+                                                RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') would not be Protected if the application ran on a device where the the API level was less than 17. <br>[Content Provider, targetSdkVersion >= 17] </td><td><span class="label label-danger">high</span></td><td> The '+itmname+' would be exported if the application ran on a device where the the API level was less than 17. In that situation, it would be shared with other apps on the device therefore leaving it accessible to any other application on the device. </td></tr>'
+                                                exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                            else:
+                                                perm = '<strong>Permission: </strong>' + permApplLevel
+                                                prot = ""
+                                                if permApplLevel in PERMISSION_DICT:
+                                                    prot = "</br><strong>protectionLevel: </strong>" + PERMISSION_DICT[permApplLevel]
+                                                    protLevelExist = True
+                                                    protlevel = PERMISSION_DICT[permApplLevel]
+                                                if protLevelExist:
+                                                    if protlevel == 'normal':
+                                                        RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked if the application runs on a device where the the API level is less than 17.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion >= 17]</td><td><span class="label label-danger">high</span></td><td> The '+itmname+' would be exported if the application ran on a device where the the API level was less than 17. In that situation, it would still be protected by a permission. However, the protection level of the permission is set to normal. This means that a malicious application could request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                                        exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                                    if protlevel == 'dangerous':
+                                                        RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked if the application runs on a device where the the API level is less than 17.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion >= 17]</td><td><span class="label label-danger">high</span></td><td> The '+itmname+' would be exported if the application ran on a device where the the API level was less than 17. In that situation, it would still be protected by a permission. However, the protection level of the permission is set to dangerous. This means that a malicious application could request and obtain the permission and interact with the component. If it was set to signature, only applications signed with the same certificate could obtain the permission. </td></tr>'
+                                                        exp_count[cnt_id] = exp_count[cnt_id] + 1
+                                                    if protlevel == 'signature':
+                                                        RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion >= 17]</td><td><span class="label label-info">info</span></td><td> The '+itmname+' would be exported if the application ran on a device where the the API level was less than 17. Nevertheless, it is protected by a permission.</td></tr>'
+                                                    if protlevel == 'signatureOrSystem':
+                                                        RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked.</br>'+perm+prot+' <br>[Content Provider, targetSdkVersion >= 17]</td><td><span class="label label-info">info</span></td><td> The '+itmname+' would be exported if the application ran on a device where the API level was less than 17. In that situation, it would still be protected by a permission. However, the protection level of the permission is set to signatureOrSystem. It is recommended that signature level is used instead. Signature level should suffice for most purposes, and does not depend on where the applications are installed on the device. </td></tr>'
+                                                else:                 
+                                                    RET=RET +'<tr><td><strong>'+itmname+'</strong> (' + item + ') is Protected by a permission at the application level, but the protection level of the permission should be checked if the application runs on a device where the the API level is less than 17. </br>'+perm+' <br>[Content Provider, targetSdkVersion >= 17]</td><td><span class="label label-danger">high</span></td><td> The '+itmname+' would be exported if the application ran on a device where the the API level was less than 17. In that situation, it would still be protected by a permission which is not defined in the analysed application. As a result, the protection level of the permission should be checked where it is defined. If it is set to normal or dangerous, a malicious application can request and obtain the permission and interact with the component. If it is set to signature, only applications signed with the same certificate can obtain the permission. </td></tr>'
+                                                    exp_count[cnt_id] = exp_count[cnt_id] + 1
+# Esteve 08.08.2016 - end 
 
-        # GRANT-URI-PERMISSIONS
+        ##GRANT-URI-PERMISSIONS
         title = 'Improper Content Provider Permissions'
         desc = ('A content provider permission was set to allows access from any other app on the ' +
                 'device. Content providers may contain sensitive information about an app and therefore should not be shared.')
         for granturi in granturipermissions:
             if granturi.getAttribute("android:pathPrefix") == '/':
-                RET = RET + '<tr><td>' + title + \
-                    '<br> [pathPrefix=/] </td>' + \
-                    '<td><span class="label label-danger">high</span></td><td>' + desc + '</td></tr>'
+                RET=RET+ '<tr><td>' + title + '<br> [pathPrefix=/] </td>' + '<td><span class="label label-danger">high</span></td><td>'+ desc+'</td></tr>'
             elif granturi.getAttribute("android:path") == '/':
-                RET = RET + '<tr><td>' + title + \
-                    '<br> [path=/] </td>' + \
-                    '<td><span class="label label-danger">high</span></td><td>' + desc + '</td></tr>'
+                RET=RET+ '<tr><td>' + title + '<br> [path=/] </td>' + '<td><span class="label label-danger">high</span></td><td>'+ desc+'</td></tr>'
             elif granturi.getAttribute("android:pathPattern") == '*':
-                RET = RET + '<tr><td>' + title + \
-                    '<br> [path=*]</td>' + \
-                    '<td><span class="label label-danger">high</span></td><td>' + desc + '</td></tr>'
+                RET=RET+ '<tr><td>' + title + '<br> [path=*]</td>' + '<td><span class="label label-danger">high</span></td><td>'+ desc +'</td></tr>'
 
-        # DATA
+        ##DATA
         for data in datas:
             if data.getAttribute("android:scheme") == "android_secret_code":
                 xmlhost = data.getAttribute("android:host")
                 desc = ("A secret code was found in the manifest. These codes, when entered into the dialer " +
-                        "grant access to hidden content that may contain sensitive information.")
-                RET = RET + '<tr><td>Dailer Code: ' + xmlhost + \
-                    'Found <br>[android:scheme="android_secret_code"]</td><td><span class="label label-danger">high</span></td><td>' + desc + '</td></tr>'
+                    "grant access to hidden content that may contain sensitive information.")
+                RET=RET+  '<tr><td>Dailer Code: '+ xmlhost + 'Found <br>[android:scheme="android_secret_code"]</td><td><span class="label label-danger">high</span></td><td>'+ desc + '</td></tr>'
             elif data.getAttribute("android:port"):
                 dataport = data.getAttribute("android:port")
                 title = "Data SMS Receiver Set"
                 desc = "A binary SMS recevier is configured to listen on a port. Binary SMS messages sent to a device are processed by the application in whichever way the developer choses. The data in this SMS should be properly validated by the application. Furthermore, the application should assume that the SMS being received is from an untrusted source."
-                RET = RET + '<tr><td> on Port: ' + dataport + \
-                    'Found<br>[android:port]</td><td><span class="label label-danger">high</span></td><td>' + \
-                    desc + '</td></tr>'
+                RET=RET+  '<tr><td> on Port: ' + dataport +  'Found<br>[android:port]</td><td><span class="label label-danger">high</span></td><td>'+ desc +'</td></tr>'
 
-        # INTENTS
+        ##INTENTS
 
         for intent in intents:
             if intent.getAttribute("android:priority").isdigit():
                 value = intent.getAttribute("android:priority")
                 if int(value) > 100:
-                    RET = RET + \
-                        '<tr><td>High Intent Priority (' + value + \
-                        ')<br>[android:priority]</td><td><span class="label label-warning">medium</span></td><td>By setting an intent priority higher than another intent, the app effectively overrides other requests.</td></tr>'
-        # ACTIONS
+                    RET=RET+ '<tr><td>High Intent Priority ('+ value +')<br>[android:priority]</td><td><span class="label label-warning">medium</span></td><td>By setting an intent priority higher than another intent, the app effectively overrides other requests.</td></tr>'
+        ##ACTIONS
         for action in actions:
             if action.getAttribute("android:priority").isdigit():
                 value = action.getAttribute("android:priority")
                 if int(value) > 100:
-                    RET = RET + \
-                        '<tr><td>High Action Priority (' + value + \
-                        ')<br>[android:priority]</td><td><span class="label label-warning">medium</span></td><td>By setting an action priority higher than another action, the app effectively overrides other requests.</td></tr>'
-        if len(RET) < 2:
-            RET = '<tr><td>None</td><td>None</td><td>None</td><tr>'
-        return RET, EXPORTED, exp_count
+                    RET=RET + '<tr><td>High Action Priority (' + value+')<br>[android:priority]</td><td><span class="label label-warning">medium</span></td><td>By setting an action priority higher than another action, the app effectively overrides other requests.</td></tr>'
+        if len(RET)< 2:
+            RET='<tr><td>None</td><td>None</td><td>None</td><tr>'
+        return RET,EXPORTED,exp_count
     except:
         PrintException("[ERROR] Performing Manifest Analysis")
 
