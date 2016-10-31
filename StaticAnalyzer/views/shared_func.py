@@ -138,6 +138,9 @@ def PDF(request):
                         'domains': python_dict(DB[0].DOMAINS),
                         'emails': DB[0].EMAILS,
                         'strings': python_list(DB[0].STRINGS),
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD 
+                        'apkid': DB[0].APKID,
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD 
                         'zipped': DB[0].ZIPPED,
                         'mani': DB[0].MANI
                     }

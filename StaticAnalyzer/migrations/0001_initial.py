@@ -56,6 +56,9 @@ class Migration(migrations.Migration):
                 ('DOMAINS', models.TextField()),
                 ('EMAILS', models.TextField()),
                 ('STRINGS', models.TextField()),
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD
+                ('APKID', models.TextField()),
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD
                 ('ZIPPED', models.TextField()),
                 ('MANI', models.TextField()),
                 ('EXPORTED_ACT', models.TextField()),
