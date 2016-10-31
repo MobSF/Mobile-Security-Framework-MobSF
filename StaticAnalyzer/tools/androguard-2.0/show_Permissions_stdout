@@ -1,0 +1,191 @@
+Androlyze version 3.0
+In [1]: 
+In [2]: Out[2]: 
+
+['android.permission.GET_TASKS',
+ 'android.permission.INTERNET',
+ 'android.permission.VIBRATE',
+ 'android.permission.READ_LOGS',
+ 'com.android.vending.BILLING',
+ 'android.permission.READ_PHONE_STATE',
+ 'android.permission.RESTART_PACKAGES',
+ 'android.permission.SYSTEM_ALERT_WINDOW',
+ 'android.permission.RECEIVE_BOOT_COMPLETED',
+ 'android.permission.PROCESS_OUTGOING_CALLS',
+ 'android.permission.WRITE_EXTERNAL_STORAGE',
+ 'android.permission.KILL_BACKGROUND_PROCESSES',
+ 'android.permission.MOUNT_UNMOUNT_FILESYSTEMS',
+ 'com.android.launcher.permission.UNINSTALL_SHORTCUT',
+ 'android.permission.ACCESS_WIFI_STATE',
+ 'android.permission.CHANGE_WIFI_STATE',
+ 'android.permission.ACCESS_NETWORK_STATE',
+ 'android.permission.CHANGE_NETWORK_STATE',
+ 'android.permission.BLUETOOTH',
+ 'android.permission.BLUETOOTH_ADMIN',
+ 'android.permission.WRITE_SETTINGS',
+ 'android.permission.WRITE_SYNC_SETTINGS',
+ 'android.permission.READ_SYNC_SETTINGS',
+ 'android.permission.INSTALL_PACKAGES',
+ 'android.permission.DELETE_PACKAGES',
+ 'com.android.launcher.permission.INSTALL_SHORTCUT',
+ 'android.permission.GET_ACCOUNTS',
+ 'android.permission.USE_CREDENTIALS',
+ 'android.permission.MANAGE_ACCOUNTS',
+ 'com.domobile.applock.PERMISSON_STOP_WATCHDOG_AFTER_SCREEN_OFF']
+
+In [3]: android.permission.CHANGE_NETWORK_STATE :
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0xd0) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->b(Landroid/content/Context; Landroid/content/Intent;)V (0x7a) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+android.permission.READ_SYNC_SETTINGS :
+1 Lcom/domobile/applock/kk;->d(Landroid/content/Context; Ljava/lang/String;)V (0x40) ---> Landroid/content/ContentResolver;->getMasterSyncAutomatically()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0x56) ---> Landroid/content/ContentResolver;->getMasterSyncAutomatically()Z
+android.permission.WRITE_SYNC_SETTINGS :
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0x66) ---> Landroid/content/ContentResolver;->setMasterSyncAutomatically(Z)V
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->b(Landroid/content/Context; Landroid/content/Intent;)V (0x38) ---> Landroid/content/ContentResolver;->setMasterSyncAutomatically(Z)V
+android.permission.INTERNET :
+1 Lcom/domobile/frame/a/a/a;->c(Ljava/lang/String;)Landroid/graphics/Bitmap; (0x14) ---> Ljava/net/URLConnection;->getInputStream()Ljava/io/InputStream;
+1 Lcom/domobile/frame/a/a/a;->d(Ljava/lang/String;)Landroid/graphics/Bitmap; (0x1a) ---> Ljava/net/URLConnection;->getInputStream()Ljava/io/InputStream;
+1 Lcom/google/android/gms/b/fw;->a(Ljava/lang/String;)Z (0x428) ---> Ljava/net/URLConnection;->getInputStream()Ljava/io/InputStream;
+1 Lcom/domobile/frame/b/d;->g(Ljava/lang/String;)Ljava/net/HttpURLConnection; (0x36) ---> Ljava/net/HttpURLConnection;->connect()V
+1 Lcom/google/android/gms/analytics/internal/l;->a(Ljava/net/URL; [B)I (0x5a) ---> Ljava/net/HttpURLConnection;->connect()V
+1 Lcom/google/android/gms/analytics/internal/l;->b(Ljava/net/URL;)I (0x1a) ---> Ljava/net/HttpURLConnection;->connect()V
+1 Lcom/google/android/gms/analytics/internal/l;->b(Ljava/net/URL; [B)I (0xd4) ---> Ljava/net/HttpURLConnection;->connect()V
+1 Lcom/google/android/gms/b/jg;->a()Landroid/webkit/WebView; (0x8) ---> Landroid/webkit/WebView;-><init>(Landroid/content/Context;)V
+1 Lcom/google/android/gms/b/nj;->c(Landroid/content/Context;)Ljava/lang/String; (0x4) ---> Landroid/webkit/WebView;-><init>(Landroid/content/Context;)V
+1 Lcom/google/android/gms/b/pe;-><init>(Lcom/google/android/gms/b/pf; Lcom/google/android/gms/ads/internal/client/AdSizeParcel; Z Z Lcom/google/android/gms/b/ap; Lcom/google/android/gms/ads/internal/util/client/VersionInfoParcel;)V (0x6) ---> Landroid/webkit/WebView;-><init>(Landroid/content/Context;)V
+1 Lcom/google/android/gms/b/ph;->onCreateWindow(Landroid/webkit/WebView; Z Z Landroid/os/Message;)Z (0x14) ---> Landroid/webkit/WebView;-><init>(Landroid/content/Context;)V
+1 Lcom/domobile/frame/a/b;->a(Lcom/domobile/frame/a/c;)Ljava/lang/String; (0x58) ---> Lorg/apache/http/impl/client/DefaultHttpClient;->execute(Lorg/apache/http/client/methods/HttpUriRequest;)Lorg/apache/http/HttpResponse;
+1 Lcom/domobile/frame/a/b;->a(Lcom/domobile/frame/a/c;)Ljava/lang/String; (0xe6) ---> Lorg/apache/http/impl/client/DefaultHttpClient;->execute(Lorg/apache/http/client/methods/HttpUriRequest;)Lorg/apache/http/HttpResponse;
+1 Lcom/google/android/gms/b/il;->onClick(Landroid/content/DialogInterface; I)V (0x30) ---> Landroid/app/DownloadManager;->enqueue(Landroid/app/DownloadManager$Request;)J
+1 Lcom/android/gallery3d/d/q;->a(Lcom/android/gallery3d/util/u; Ljava/net/URL; Ljava/io/OutputStream;)Z (0x2) ---> Ljava/net/URL;->openStream()Ljava/io/InputStream;
+1 Lcom/domobile/frame/a/a/a;->c(Ljava/lang/String;)Landroid/graphics/Bitmap; (0xc) ---> Ljava/net/URL;->openConnection()Ljava/net/URLConnection;
+1 Lcom/domobile/frame/a/a/a;->d(Ljava/lang/String;)Landroid/graphics/Bitmap; (0x12) ---> Ljava/net/URL;->openConnection()Ljava/net/URLConnection;
+1 Lcom/domobile/frame/b/d;->g(Ljava/lang/String;)Ljava/net/HttpURLConnection; (0x16) ---> Ljava/net/URL;->openConnection()Ljava/net/URLConnection;
+1 Lcom/google/android/gms/analytics/internal/l;->a(Ljava/net/URL;)Ljava/net/HttpURLConnection; (0x2) ---> Ljava/net/URL;->openConnection()Ljava/net/URLConnection;
+1 Lcom/google/android/gms/b/ff;->a(Lcom/google/android/gms/b/fj;)Lcom/google/android/gms/b/fk; (0xc) ---> Ljava/net/URL;->openConnection()Ljava/net/URLConnection;
+1 Lcom/google/android/gms/b/fw;->a(Ljava/lang/String;)Z (0x1ac) ---> Ljava/net/URL;->openConnection()Ljava/net/URLConnection;
+1 Lcom/google/android/gms/b/ln;->a(Lcom/google/android/gms/ads/internal/request/AdRequestInfoParcel; Landroid/content/Context; Ljava/lang/String; Ljava/lang/String; Ljava/lang/String; Ljava/lang/String; Lcom/google/android/gms/b/mb;)Lcom/google/android/gms/ads/internal/request/AdResponseParcel; (0x4e) ---> Ljava/net/URL;->openConnection()Ljava/net/URLConnection;
+1 Lcom/google/android/gms/b/og;->a()V (0x3e) ---> Ljava/net/URL;->openConnection()Ljava/net/URLConnection;
+1 Lcom/google/android/gms/b/xc;->b(Ljava/lang/String;)Ljava/net/HttpURLConnection; (0xe) ---> Ljava/net/URL;->openConnection()Ljava/net/URLConnection;
+1 Lcom/google/android/gms/b/yl;->a(Ljava/net/URL;)Ljava/net/HttpURLConnection; (0x0) ---> Ljava/net/URL;->openConnection()Ljava/net/URLConnection;
+android.permission.BROADCAST_STICKY :
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0xd0) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->b(Landroid/content/Context; Landroid/content/Intent;)V (0x7a) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+android.permission.BLUETOOTH :
+1 Lcom/domobile/applock/kk;->d(Landroid/content/Context; Ljava/lang/String;)V (0x80) ---> Landroid/bluetooth/BluetoothAdapter;->isEnabled()Z
+1 Lcom/domobile/applock/kl;->run()V (0x14) ---> Landroid/bluetooth/BluetoothAdapter;->isEnabled()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0xb2) ---> Landroid/bluetooth/BluetoothAdapter;->isEnabled()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0xd0) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->b(Landroid/content/Context; Landroid/content/Intent;)V (0x7a) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+android.permission.ACCESS_NETWORK_STATE :
+1 Lcom/google/android/gms/b/jh;->run()V (0x3c) ---> Landroid/webkit/WebView;->loadDataWithBaseURL(Ljava/lang/String; Ljava/lang/String; Ljava/lang/String; Ljava/lang/String; Ljava/lang/String;)V
+1 Lcom/google/android/gms/b/lr;->run()V (0x4a) ---> Landroid/webkit/WebView;->clearCache(Z)V
+1 Lcom/google/android/gms/b/np;->a(Landroid/webkit/WebView;)Z (0x0) ---> Landroid/webkit/WebView;->onPause()V
+1 Lcom/google/android/gms/b/np;->b(Landroid/webkit/WebView;)Z (0x0) ---> Landroid/webkit/WebView;->onResume()V
+1 Lcom/google/android/gms/b/pe;->a(Ljava/lang/String;)V (0x6) ---> Landroid/webkit/WebView;->loadUrl(Ljava/lang/String;)V
+1 Lcom/google/android/gms/b/pe;->loadData(Ljava/lang/String; Ljava/lang/String; Ljava/lang/String;)V (0x12) ---> Landroid/webkit/WebView;->loadData(Ljava/lang/String; Ljava/lang/String; Ljava/lang/String;)V
+1 Lcom/google/android/gms/b/pe;->loadDataWithBaseURL(Ljava/lang/String; Ljava/lang/String; Ljava/lang/String; Ljava/lang/String; Ljava/lang/String;)V (0x12) ---> Landroid/webkit/WebView;->loadDataWithBaseURL(Ljava/lang/String; Ljava/lang/String; Ljava/lang/String; Ljava/lang/String; Ljava/lang/String;)V
+1 Lcom/google/android/gms/b/pe;->loadUrl(Ljava/lang/String;)V (0x12) ---> Landroid/webkit/WebView;->loadUrl(Ljava/lang/String;)V
+1 Lcom/google/android/gms/b/pe;->n()V (0x10) ---> Landroid/webkit/WebView;->destroy()V
+1 Lcom/google/android/gms/b/pe;->onAttachedToWindow()V (0x6) ---> Landroid/webkit/WebView;->onAttachedToWindow()V
+1 Lcom/google/android/gms/b/pe;->onDetachedFromWindow()V (0x1e) ---> Landroid/webkit/WebView;->onDetachedFromWindow()V
+1 Lcom/google/android/gms/b/pe;->onDraw(Landroid/graphics/Canvas;)V (0x32) ---> Landroid/webkit/WebView;->onDraw(Landroid/graphics/Canvas;)V
+1 Lcom/google/android/gms/b/pe;->onPause()V (0xe) ---> Landroid/webkit/WebView;->onPause()V
+1 Lcom/google/android/gms/b/pe;->onResume()V (0xe) ---> Landroid/webkit/WebView;->onResume()V
+1 Lcom/google/android/gms/b/pe;->onTouchEvent(Landroid/view/MotionEvent;)Z (0x22) ---> Landroid/webkit/WebView;->onTouchEvent(Landroid/view/MotionEvent;)Z
+1 Lcom/google/android/gms/b/pe;->stopLoading()V (0xe) ---> Landroid/webkit/WebView;->stopLoading()V
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0xd0) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->b(Landroid/content/Context; Landroid/content/Intent;)V (0x7a) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/domobile/applock/RetrievePasswordActivity;->f()Z (0x40) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Lcom/domobile/applock/af;->a(Ljava/lang/Throwable;)Z (0x40) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Lcom/domobile/applock/af;->a(Ljava/lang/Throwable;)Z (0x4c) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Lcom/domobile/applock/hu;->onReceive(Landroid/content/Context; Landroid/content/Intent;)V (0x28) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Lcom/domobile/applock/service/CodeSetService;->onStart(Landroid/content/Intent; I)V (0x26) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Lcom/google/android/gms/analytics/internal/k;->f()Z (0x1a) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Lcom/google/android/gms/analytics/internal/l;->b()Z (0x26) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Lcom/google/android/gms/b/md;->a(Landroid/content/Context; Landroid/net/ConnectivityManager; Landroid/content/pm/PackageManager;)I (0x22) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Lcom/google/android/gms/b/md;->a(Landroid/content/Context; Landroid/content/pm/PackageManager;)V (0x6a) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Lcom/google/android/gms/b/md;->a(Landroid/content/Context; Landroid/content/pm/PackageManager;)V (0x76) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Lcom/google/android/gms/b/xi;->b()Z (0x52) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Lcom/google/android/gms/c/dq;->a()Z (0x14) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+android.permission.READ_PHONE_STATE :
+1 Lcom/domobile/frame/b/l;->J(Landroid/content/Context;)Ljava/lang/String; (0x10) ---> Landroid/telephony/TelephonyManager;->getDeviceId()Ljava/lang/String;
+android.permission.BLUETOOTH_ADMIN :
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0xd0) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0xfc) ---> Landroid/bluetooth/BluetoothAdapter;->disable()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->b(Landroid/content/Context; Landroid/content/Intent;)V (0x7a) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->b(Landroid/content/Context; Landroid/content/Intent;)V (0x96) ---> Landroid/bluetooth/BluetoothAdapter;->disable()Z
+android.permission.VIBRATE :
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0xd0) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->b(Landroid/content/Context; Landroid/content/Intent;)V (0x7a) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/android/gallery3d/b/ad;->b(I)V (0x18) ---> Landroid/os/Vibrator;->vibrate(J)V
+1 Lcom/android/gallery3d/b/o;->b(I)V (0x18) ---> Landroid/os/Vibrator;->vibrate(J)V
+1 Lcom/domobile/applock/fake/aa;->a()V (0x18) ---> Landroid/os/Vibrator;->vibrate(J)V
+1 Lcom/domobile/frame/b/l;->a(Landroid/content/Context; J)V (0x10) ---> Landroid/os/Vibrator;->vibrate(J)V
+1 Lcom/domobile/imagelock/LockPatternView;->a(F F)Lcom/domobile/imagelock/k; (0xe2) ---> Landroid/os/Vibrator;->vibrate([J I)V
+1 Lcom/domobile/imagelock/LockPatternView;->a(Landroid/view/MotionEvent;)V (0x8a) ---> Landroid/os/Vibrator;->vibrate([J I)V
+1 Lcom/domobile/lockbean/l;->onClick(Landroid/view/View;)V (0x92) ---> Landroid/os/Vibrator;->vibrate([J I)V
+1 Lcom/domobile/widget/timepicker/c;->c()V (0x34) ---> Landroid/os/Vibrator;->vibrate(J)V
+1 Lcom/domobile/frame/b/l;->a(Landroid/content/Context; I Landroid/app/Notification;)V (0x10) ---> Landroid/app/NotificationManager;->notify(I Landroid/app/Notification;)V
+android.permission.WRITE_SETTINGS :
+1 Lcom/domobile/widget/timepicker/c;->a()V (0x2c) ---> Landroid/provider/Settings$System;->getUriFor(Ljava/lang/String;)Landroid/net/Uri;
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0xd0) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->b(Landroid/content/Context; Landroid/content/Intent;)V (0x7a) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+android.permission.KILL_BACKGROUND_PROCESSES :
+1 Lcom/domobile/applock/ao;->f()V (0x56) ---> Landroid/app/ActivityManager;->killBackgroundProcesses(Ljava/lang/String;)V
+1 Lcom/domobile/applock/hh;->i(Landroid/content/Context; Ljava/lang/String;)V (0x10) ---> Landroid/app/ActivityManager;->killBackgroundProcesses(Ljava/lang/String;)V
+android.permission.ACCESS_WIFI_STATE :
+1 Lcom/domobile/a/a;->a(Landroid/content/Context;)Ljava/lang/String; (0x2a) ---> Landroid/net/wifi/WifiManager;->getConnectionInfo()Landroid/net/wifi/WifiInfo;
+1 Lcom/domobile/a/a;->b(Landroid/content/Context;)Ljava/lang/String; (0x16) ---> Landroid/net/wifi/WifiManager;->getConnectionInfo()Landroid/net/wifi/WifiInfo;
+1 Lcom/domobile/applock/aw;->g()[Ljava/lang/String; (0x1a) ---> Landroid/net/wifi/WifiManager;->getConfiguredNetworks()Ljava/util/List;
+1 Lcom/domobile/applock/bd;->a(Lcom/domobile/lockbean/Location; [Ljava/lang/String;)V (0x1c) ---> Landroid/net/wifi/WifiManager;->isWifiEnabled()Z
+1 Lcom/domobile/applock/bd;->h()[Ljava/lang/String; (0x1a) ---> Landroid/net/wifi/WifiManager;->getConfiguredNetworks()Ljava/util/List;
+1 Lcom/domobile/applock/kk;->d(Landroid/content/Context; Ljava/lang/String;)V (0x20) ---> Landroid/net/wifi/WifiManager;->isWifiEnabled()Z
+1 Lcom/domobile/applock/service/CodeSetService;->a(Landroid/content/Context; Landroid/content/Intent;)V (0x1e) ---> Landroid/net/wifi/WifiManager;->getConnectionInfo()Landroid/net/wifi/WifiInfo;
+1 Lcom/domobile/applock/service/CodeSetService;->b(Landroid/content/Context;)V (0x10) ---> Landroid/net/wifi/WifiManager;->isWifiEnabled()Z
+1 Lcom/domobile/applock/service/LockService;->b(Landroid/content/Context;)V (0xae) ---> Landroid/net/wifi/WifiManager;->isWifiEnabled()Z
+android.permission.WAKE_LOCK :
+1 Lcom/google/android/gms/analytics/a;->onReceive(Landroid/content/Context; Landroid/content/Intent;)V (0xc4) ---> Landroid/os/PowerManager$WakeLock;->acquire(J)V
+1 Lcom/google/android/gms/analytics/b;->a()V (0x1a) ---> Landroid/os/PowerManager$WakeLock;->release()V
+1 Lcom/google/android/gms/analytics/e;->onReceive(Landroid/content/Context; Landroid/content/Intent;)V (0x10c) ---> Landroid/os/PowerManager$WakeLock;->acquire(J)V
+1 Lcom/google/android/gms/analytics/f;->a()V (0x1a) ---> Landroid/os/PowerManager$WakeLock;->release()V
+1 Lcom/android/camera/bs;-><init>(Landroid/view/View; Landroid/content/Context; Landroid/net/Uri;)V (0xb4) ---> Landroid/widget/VideoView;->setVideoURI(Landroid/net/Uri;)V
+1 Lcom/android/camera/bs;-><init>(Landroid/view/View; Landroid/content/Context; Landroid/net/Uri;)V (0x11a) ---> Landroid/widget/VideoView;->start()V
+1 Lcom/android/camera/bs;->b()V (0x30) ---> Landroid/widget/VideoView;->stopPlayback()V
+1 Lcom/android/camera/bs;->c()V (0x10) ---> Landroid/widget/VideoView;->setVideoURI(Landroid/net/Uri;)V
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0xd0) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->b(Landroid/content/Context; Landroid/content/Intent;)V (0x7a) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/android/gallery3d/b/ad;->b(I)V (0x18) ---> Landroid/os/Vibrator;->vibrate(J)V
+1 Lcom/android/gallery3d/b/o;->b(I)V (0x18) ---> Landroid/os/Vibrator;->vibrate(J)V
+1 Lcom/domobile/applock/fake/aa;->a()V (0x18) ---> Landroid/os/Vibrator;->vibrate(J)V
+1 Lcom/domobile/frame/b/l;->a(Landroid/content/Context; J)V (0x10) ---> Landroid/os/Vibrator;->vibrate(J)V
+1 Lcom/domobile/widget/timepicker/c;->c()V (0x34) ---> Landroid/os/Vibrator;->vibrate(J)V
+1 Lcom/google/android/gms/ads/internal/overlay/m;->a(Z)V (0x18) ---> Landroid/media/MediaPlayer;->reset()V
+1 Lcom/google/android/gms/ads/internal/overlay/m;->a(Z)V (0x22) ---> Landroid/media/MediaPlayer;->release()V
+1 Lcom/google/android/gms/ads/internal/overlay/m;->g()V (0x24) ---> Landroid/media/MediaPlayer;->start()V
+1 Lcom/google/android/gms/ads/internal/overlay/m;->g()V (0x84) ---> Landroid/media/MediaPlayer;->pause()V
+1 Lcom/google/android/gms/ads/internal/overlay/m;->a()V (0x18) ---> Landroid/media/MediaPlayer;->stop()V
+1 Lcom/google/android/gms/ads/internal/overlay/m;->a()V (0x22) ---> Landroid/media/MediaPlayer;->release()V
+1 Lcom/google/android/gms/ads/internal/overlay/m;->b()V (0x1c) ---> Landroid/media/MediaPlayer;->start()V
+1 Lcom/google/android/gms/ads/internal/overlay/m;->c()V (0x2c) ---> Landroid/media/MediaPlayer;->pause()V
+android.permission.GET_TASKS :
+1 Lcom/domobile/applock/hh;->a(Landroid/app/ActivityManager;)Landroid/app/ActivityManager$RunningTaskInfo; (0x8) ---> Landroid/app/ActivityManager;->getRunningTasks(I)Ljava/util/List;
+1 Lcom/google/android/gms/b/nj;->f(Landroid/content/Context;)Ljava/lang/String; (0x1c) ---> Landroid/app/ActivityManager;->getRunningTasks(I)Ljava/util/List;
+android.permission.CHANGE_WIFI_STATE :
+1 Lcom/domobile/applock/RetrievePasswordActivity;->e()V (0x36) ---> Landroid/net/wifi/WifiManager;->setWifiEnabled(Z)Z
+1 Lcom/domobile/applock/RetrievePasswordActivity;->f()Z (0x7a) ---> Landroid/net/wifi/WifiManager;->setWifiEnabled(Z)Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->b(Landroid/content/Context; Landroid/content/Intent;)V (0x11c) ---> Landroid/net/wifi/WifiManager;->setWifiEnabled(Z)Z
+1 Lcom/domobile/applock/service/LockService;->b(Landroid/content/Context;)V (0xde) ---> Landroid/net/wifi/WifiManager;->setWifiEnabled(Z)Z
+android.permission.MODIFY_AUDIO_SETTINGS :
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->a(Landroid/content/Context; Landroid/content/Intent;)V (0xd0) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+1 Lcom/domobile/applock/receiver/SwitcherLockReceiver;->b(Landroid/content/Context; Landroid/content/Intent;)V (0x7a) ---> Landroid/bluetooth/BluetoothAdapter;->enable()Z
+android.permission.RESTART_PACKAGES :
+1 Lcom/domobile/applock/ao;->f()V (0x56) ---> Landroid/app/ActivityManager;->killBackgroundProcesses(Ljava/lang/String;)V
+1 Lcom/domobile/applock/hh;->i(Landroid/content/Context; Ljava/lang/String;)V (0x10) ---> Landroid/app/ActivityManager;->killBackgroundProcesses(Ljava/lang/String;)V
+android.permission.WRITE_EXTERNAL_STORAGE :
+1 Lcom/google/android/gms/b/il;->onClick(Landroid/content/DialogInterface; I)V (0x30) ---> Landroid/app/DownloadManager;->enqueue(Landroid/app/DownloadManager$Request;)J
+android.permission.GET_ACCOUNTS :
+1 Lcom/domobile/applock/hh;->E(Landroid/content/Context;)Ljava/lang/String; (0x14) ---> Landroid/accounts/AccountManager;->getAccountsByType(Ljava/lang/String;)[Landroid/accounts/Account;
+
+In [4]: Do you really want to exit ([y]/n)? 
+
