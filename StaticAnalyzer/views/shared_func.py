@@ -114,6 +114,9 @@ def PDF(request):
                         'androver': DB[0].ANDROVER,
                         'manifest': DB[0].MANIFEST_ANAL,
                         'permissions': DB[0].PERMISSIONS,
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                        'androperms' : DB[0].ANDROPERMS,
+# Esteve 21.08.2016 - end - Permission Analysis with Androguard
                         'files': python_list(DB[0].FILES),
                         'certz': DB[0].CERTZ,
                         'activities': python_list(DB[0].ACTIVITIES),

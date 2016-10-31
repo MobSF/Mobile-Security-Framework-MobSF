@@ -265,6 +265,9 @@ def StaticAnalyzer(request):
                         'androver': DB[0].ANDROVER,
                         'manifest': DB[0].MANIFEST_ANAL,
                         'permissions': DB[0].PERMISSIONS,
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                        'androperms' : DB[0].ANDROPERMS,
+# Esteve 21.08.2016 - end - Permission Analysis with Androguard
                         'files': python_list(DB[0].FILES),
                         'certz': DB[0].CERTZ,
                         'activities': python_list(DB[0].ACTIVITIES),
@@ -337,6 +340,9 @@ def StaticAnalyzer(request):
 # Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD
                     APKID=APKiD(APP_FILE,APP_DIR,TOOLS_DIR,APP_NAME)
 # Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                    ANDROPERMS=Androguard_Permissions(APP_FILE,APP_DIR,TOOLS_DIR,MD5,"apk")
+# Esteve 21.08.2016 - end - Permission Analysis with Androguard
                     ZIPPED = '&type=apk'
 
                     print "\n[INFO] Connecting to Database"
@@ -359,6 +365,9 @@ def StaticAnalyzer(request):
                                                                                  ANDROVER=ANDROVER,
                                                                                  MANIFEST_ANAL=MANIFEST_ANAL,
                                                                                  PERMISSIONS=PERMISSIONS,
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                                                                                 ANDROPERMS = ANDROPERMS,
+# Esteve 21.08.2016 - END - Permission Analysis with Androguard
                                                                                  FILES=FILES,
                                                                                  CERTZ=CERTZ,
                                                                                  ACTIVITIES=ACTIVITIES,
@@ -413,6 +422,9 @@ def StaticAnalyzer(request):
                                                               ANDROVER=ANDROVER,
                                                               MANIFEST_ANAL=MANIFEST_ANAL,
                                                               PERMISSIONS=PERMISSIONS,
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                                                              ANDROPERMS = ANDROPERMS,
+# Esteve 21.08.2016 - END - Permission Analysis with Androguard
                                                               FILES=FILES,
                                                               CERTZ=CERTZ,
                                                               ACTIVITIES=ACTIVITIES,
@@ -469,6 +481,9 @@ def StaticAnalyzer(request):
                         'androver': ANDROVER,
                         'manifest': MANIFEST_ANAL,
                         'permissions': PERMISSIONS,
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                        'androperms': ANDROPERMS,
+# Esteve 21.08.2016 - END - Permission Analysis with Androguard
                         'files': FILES,
                         'certz': CERTZ,
                         'activities': ACTIVITIES,
@@ -606,6 +621,10 @@ def StaticAnalyzer(request):
                                                                                      ANDROVER=ANDROVER,
                                                                                      MANIFEST_ANAL=MANIFEST_ANAL,
                                                                                      PERMISSIONS=PERMISSIONS,
+
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                                                                                     ANDROPERMS = "",
+# Esteve 21.08.2016 - END - Permission Analysis with Androguard
                                                                                      FILES=FILES,
                                                                                      CERTZ=CERTZ,
                                                                                      ACTIVITIES=ACTIVITIES,
@@ -660,6 +679,9 @@ def StaticAnalyzer(request):
                                                                   ANDROVER=ANDROVER,
                                                                   MANIFEST_ANAL=MANIFEST_ANAL,
                                                                   PERMISSIONS=PERMISSIONS,
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                                                                  ANDROPERMS = "",
+# Esteve 21.08.2016 - end - Permission Analysis with Androguard
                                                                   FILES=FILES,
                                                                   CERTZ=CERTZ,
                                                                   ACTIVITIES=ACTIVITIES,
@@ -1061,7 +1083,152 @@ def Jar2Java(APP_DIR, TOOLS_DIR):
     except:
         PrintException("[ERROR] Converting JAR to JAVA")
 
-
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard - begin
+def Androguard_Permissions(APP_FILE,APP_DIR,TOOLS_DIR,MD5,TYP):
+    try:
+        print "[INFO] Permission Analysis with Androguard"
+# Initialize variables
+        PERM_Manifest=[]
+        PERM_All=[]
+        PERM_All_Descriptions={}
+        Androguard_current_permission_paths=[]
+        PERM_All_Paths={}
+        PERM_All_Formatted=[]
+# Commands to be input to Androlyze are stored in the file show_Permissions_stdin
+        try:
+            f = open(TOOLS_DIR+'androguard-2.0/show_Permissions_stdin','w')
+            s = str("a, d, dx = AnalyzeAPK(\""+APP_DIR+APP_FILE+"\", decompiler=\"dad\")\n")
+            f.write(s)
+            s = str("a.get_permissions()\n")
+            f.write(s)
+            s = str("show_Permissions(dx)\n")
+            f.write(s)
+            f.close()
+        except:
+            print "[INFO] Permission Analysis with Androguard - Error creating temporary file show_Permissions_stdin"
+# Call to Androlyze 
+# The output of Androlyze is stored in the file show_Permissions_stdout
+        androlyze=TOOLS_DIR+'androguard-2.0/androlyze.py'
+        args=['python',androlyze,'-s']
+        try:
+            f = open(TOOLS_DIR+'androguard-2.0/show_Permissions_stdin', 'r')
+            g = open(TOOLS_DIR+'androguard-2.0/show_Permissions_stdout', 'w')
+            androlyze_process=subprocess.call(args,stdin=f,stdout=g)
+            f.close()
+            g.close()
+        except:
+            print "[INFO] Permission Analysis with Androguard - Error creating temporary file show_Permissions_stdout"
+# The output of androlyze is parsed so that it can be shown on the reports
+# Firstly, the output of the second command is parsed, which gives us the permissions declared in the manifest  
+        g = open(TOOLS_DIR+'androguard-2.0/show_Permissions_stdout', 'r')
+        line = g.readline()
+        while not line.startswith('['):
+            line = g.readline()
+        while not line.endswith(']\n'):
+            PERM_Manifest.append(line[2:(len(line) - 3)])
+            PERM_All.append(line[2:(len(line) - 3)])
+            line = g.readline()
+        if line == '[]\n':
+            pass
+        elif line.endswith(']\n'):
+            PERM_Manifest.append(line[2:(len(line) - 3)])
+            PERM_All.append(line[2:(len(line) - 3)])
+        for i in PERM_All:
+            PERM_All_Paths[ i ] = []    
+        line = g.readline()
+        line = g.readline()
+# Secondly, the output of the third command is parsed, which gives us the permissions used, and where they are used 
+        if line == 'In [3]: \n':
+            pass
+        else:
+            while line != '\n':
+# Here we have the permissions used
+                if line.startswith('In [3]:') and line.endswith(' :\n'):
+                    if line[8:(len(line) - 3)] in PERM_All:
+                        pass
+                    else:
+                        PERM_All.append(line[8:(len(line) - 3)])
+                        PERM_All_Paths[line[8:(len(line) - 3)]] = []
+                    permission_Androguard_current = line[8:(len(line) - 3)]
+                elif line.endswith(' :\n'):
+                    if line[0:(len(line) - 3)] in PERM_All:
+                        pass
+                    else:
+                        PERM_All.append(line[0:(len(line) - 3)])
+                        PERM_All_Paths[line[0:(len(line) - 3)]] = []
+                    permission_Androguard_current = line[0:(len(line) - 3)]
+# Here we have where the permissions used are indeed used               
+                Androguard_current_permission_paths=[]
+                line = g.readline()
+                while not line.endswith(' :\n') and line != '\n':
+                    pos = line.find(";")
+                    if pos != -1:
+                        subline11 = line[3:pos] + '.smali'
+                        subline12 = line[pos+1:]
+                        pos = subline12.find("--->")
+                        if pos != -1:
+                            subline21 = subline12[2:pos]
+                            subline22 = subline12[pos+5:]
+                        Androguard_current_permission_paths.append([line[0],subline11,subline21,subline22])
+                    line = g.readline()
+                PERM_All_Paths[permission_Androguard_current] = Androguard_current_permission_paths
+        g.close()
+# Now we add protection level, short and long description to all permissions    
+        for i in PERM_All:
+            prm = i
+            pos = i.rfind(".")
+            if pos != -1 :
+                prm = i[pos+1:]
+                try :
+                    PERM_All_Descriptions[ i ] = DVM_PERMISSIONS["MANIFEST_PERMISSION"][prm]
+                    if PERM_All_Descriptions[ i ][0] == 'dangerous':
+                        PERM_All_Descriptions[ i ].append('1')
+                        PERM_All_Descriptions[ i ].append(i)
+                    elif PERM_All_Descriptions[ i ][0] == 'signature':
+                        PERM_All_Descriptions[ i ].append('2')
+                        PERM_All_Descriptions[ i ].append(i)
+                    elif PERM_All_Descriptions[ i ][0] == 'signatureOrSystem':
+                        PERM_All_Descriptions[ i ].append('3')
+                        PERM_All_Descriptions[ i ].append(i)
+                    elif PERM_All_Descriptions[ i ][0] == 'normal':
+                        PERM_All_Descriptions[ i ].append('4')
+                        PERM_All_Descriptions[ i ].append(i)
+                except KeyError :
+                    PERM_All_Descriptions[ i ] = [ "dangerous", "Unknown permission from android reference", "Unknown permission from android reference", "1", i ]
+            else:
+                pass
+# Finally, the collected information must be formatted so that it can be shown in the reports
+        DESC=''
+        for key, value in sorted(PERM_All_Descriptions.items(), key=lambda e: (e[1][3], e[1][4])):
+            DESC=DESC + '<tr><td>' + key
+            if key not in PERM_Manifest:
+                DESC=DESC + '<br>' + '<strong>Warning: </strong>' + 'Permission declaration missing in the manifest: used but not declared' '</td>'
+            elif not PERM_All_Paths[key]:
+                DESC=DESC + '<br>' + '<strong>Warning: </strong>' + 'Permission declared in the manifest but not used' '</td>'
+            else:
+                DESC=DESC + '</td>'
+            if value[0] == 'dangerous':
+                DESC=DESC + '<td>' + '<span class="label label-danger">dangerous</span>' + '</td>'
+            elif value[0] == 'signature':
+                DESC=DESC + '<td>' + '<span class="label label-success">signature</span>' + '</td>'
+            elif value[0] == 'signatureOrSystem':
+                DESC=DESC + '<td>' + '<span class="label label-warning">SignatureOrSystem</span>' + '</td>'
+            elif value[0] == 'normal':
+                DESC=DESC + '<td>' + '<span class="label label-info">normal</span>' + '</td>'
+            DESC=DESC + '<td>' + value[1] + '</td>''<td>' + value[2] + '</td>'
+            link=''
+            for value2 in PERM_All_Paths[key]:
+                method = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + '<strong>Method: </strong>' + value2[2]
+                invocation = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + '<strong>Invocation: </strong>' + value2[3]
+                if value2[0] == '1':
+                    link = link + '<strong>File: </strong>' + '<a href=\'../ViewSource/?file='+ escape(value2[1]) + '&md5='+MD5+'&type='+TYP+'\'>'+escape(ntpath.basename(value2[1]))+'</a>' + '<br>' + method + '<br>' + invocation + '<br>'
+                else:
+                    link = link + '<strong>File: </strong>' + escape(ntpath.basename(value2[1])) + '<br>' + method + '<br>' + invocation + '<br>'
+            DESC=DESC + '<td>' + link + '</td></tr>'
+        return DESC
+    except:
+        PrintException("[ERROR] Permission Analysis with Androguard")
+# Esteve 21.08.2016 - end - Permission Analysis with Androguard
 def Strings(APP_FILE, APP_DIR, TOOLS_DIR):
     try:
         print "[INFO] Extracting Strings from APK"
