@@ -1952,6 +1952,9 @@ def CodeAnalysis(APP_DIR, MD5, PERMS, TYP):
             'inf_act', 'inf_ser', 'inf_bro', 'log', 'fileio', 'rand', 'd_hcode', 'd_app_tamper',
             'dex_cert', 'dex_tamper', 'd_rootcheck', 'd_root', 'd_ssl_pin', 'dex_root',
             'dex_debug_key', 'dex_debug', 'dex_debug_con', 'dex_emulator', 'd_prevent_screenshot',
+# Esteve 16.09.2016 - begin - Tap jacking prevention
+            'd_prevent_tapjacking',
+# Esteve 16.09.2016 - end
             'd_webviewdisablessl', 'd_webviewdebug', 'd_sensitive', 'd_ssl', 'd_sqlite',
             'd_con_world_readable', 'd_con_world_writable', 'd_con_private', 'd_extstorage',
             'd_tmpfile', 'd_jsenabled', 'gps', 'crypto', 'exec', 'server_socket', 'socket',
@@ -2051,9 +2054,16 @@ def CodeAnalysis(APP_DIR, MD5, PERMS, TYP):
                         c['log'].append(jfile_path.replace(JS, ''))
                     if (".hashCode()" in dat):
                         c['d_hcode'].append(jfile_path.replace(JS, ''))
-                    if ("getWindow().setFlags(" in dat) and (".FLAG_SECURE" in dat):
+# Esteve 16.09.2016 - begin - Check optimisation - Both setFlags and addFlags can be used to assign values to flags
+                    if (("getWindow().setFlags(" in dat) or ("getWindow().addFlags(" in dat)) and (".FLAG_SECURE" in dat):
+#                   if ("getWindow().setFlags(" in dat) and (".FLAG_SECURE" in dat):
+# Esteve 16.09.2016 - end
                         c['d_prevent_screenshot'].append(
                             jfile_path.replace(JS, ''))
+# Esteve 16.09.2016 - begin - Tap jacking prevention
+                    if ("setFilterTouchesWhenObscured(true)" in dat):
+                       c['d_prevent_tapjacking'].append(jfile_path.replace(JS,'')) 
+# Esteve 16.09.2016 - end
                     if ("SQLiteOpenHelper.getWritableDatabase(" in dat):
                         c['sqlc_password'].append(jfile_path.replace(JS, ''))
                     if ("SQLiteDatabase.loadLibs(" in dat) and ("net.sqlcipher." in dat):
@@ -2270,6 +2280,9 @@ def CodeAnalysis(APP_DIR, MD5, PERMS, TYP):
               'log': 'The App logs information. Sensitive information should never be logged.',
               'd_app_tamper': 'The App may use package signature for tamper detection.',
               'd_prevent_screenshot': 'This App has capabilities to prevent against Screenshots from Recent Task History/ Now On Tap etc.',
+# Esteve 16.09.2016 - begin - Tap jacking prevention
+              'd_prevent_tapjacking' : 'This app has capabilities to prevent tapjacking attacks.',
+# Esteve 16.09.2016 - end
               'd_sql_cipher': 'This App uses SQL Cipher. SQLCipher provides 256-bit AES encryption to sqlite database files.',
               'sqlc_password': 'This App uses SQL Cipher. But the secret may be hardcoded.',
               'ecb': 'The App uses ECB mode in Cryptographic encryption algorithm. ECB mode is known to be weak as it results in the same ciphertext for identical blocks of plaintext.',
@@ -2289,7 +2302,9 @@ def CodeAnalysis(APP_DIR, MD5, PERMS, TYP):
                 if (re.findall('d_con_private|log', k)):
                     hd = '<tr><td>' + dg[k] + \
                         '</td><td>' + spn_info + '</td><td>'
-                elif (re.findall('d_sql_cipher|d_prevent_screenshot|d_app_tamper|d_rootcheck|dex_cert|dex_tamper|dex_debug|dex_debug_con|dex_debug_key|dex_emulator|dex_root|d_ssl_pin', k)):
+# Esteve 16.09.2016 - begin - Tap jacking prevention - add d_prevent_tapjacking
+                elif (re.findall('d_sql_cipher|d_prevent_screenshot|d_prevent_tapjacking|d_app_tamper|d_rootcheck|dex_cert|dex_tamper|dex_debug|dex_debug_con|dex_debug_key|dex_emulator|dex_root|d_ssl_pin',k)):
+# Esteve 16.09.2016 - end
                     hd = '<tr><td>' + dg[k] + \
                         '</td><td>' + spn_sec + '</td><td>'
                 elif (re.findall('d_jsenabled', k)):
