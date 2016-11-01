@@ -44,9 +44,11 @@ try:
 except ImportError:
     from io import StringIO
 
+
 @register.filter
 def key(d, key_name):
     return d.get(key_name)
+
 
 def Java(request):
     try:
@@ -85,11 +87,13 @@ def Java(request):
             'md5': md5,
             'type': typ,
         }
+
         template = "java.html"
         return render(request, template, context)
     except:
         PrintException("[ERROR] Getting Java Files")
         return HttpResponseRedirect('/error/')
+
 
 def Smali(request):
     try:
@@ -117,11 +121,13 @@ def Smali(request):
             'files': html,
             'md5': md5,
         }
+
         template = "smali.html"
         return render(request, template, context)
     except:
         PrintException("[ERROR] Getting Smali Files")
         return HttpResponseRedirect('/error/')
+
 
 def Find(request):
     try:
@@ -169,6 +175,7 @@ def Find(request):
         PrintException("[ERROR] Searching Failed")
         return HttpResponseRedirect('/error/')
 
+
 def ViewSource(request):
     try:
         fil = ''
@@ -206,16 +213,18 @@ def ViewSource(request):
         PrintException("[ERROR] Viewing Source")
         return HttpResponseRedirect('/error/')
 
+
 def ManifestView(request):
     try:
-        DIR = settings.BASE_DIR   #BASE DIR
-        MD5 = request.GET['md5']  #MD5
-        TYP = request.GET['type'] #APK or SOURCE
+        DIR = settings.BASE_DIR  # BASE DIR
+        MD5 = request.GET['md5']  # MD5
+        TYP = request.GET['type']  # APK or SOURCE
         BIN = request.GET['bin']
         m = re.match('^[0-9a-f]{32}$', MD5)
         if m and (TYP in ['eclipse', 'studio', 'apk']) and (BIN in ['1', '0']):
-            APP_DIR = os.path.join(settings.UPLD_DIR, MD5+'/') #APP DIRECTORY
-            TOOLS_DIR = os.path.join(DIR, 'StaticAnalyzer/tools/')  #TOOLS DIR
+            APP_DIR = os.path.join(
+                settings.UPLD_DIR, MD5 + '/')  # APP DIRECTORY
+            TOOLS_DIR = os.path.join(DIR, 'StaticAnalyzer/tools/')  # TOOLS DIR
             if BIN == '1':
                 x = True
             elif BIN == '0':
@@ -843,12 +852,13 @@ def StaticAnalyzer(request):
     except Exception as e:
         PrintException("[ERROR] Static Analyzer")
         context = {
-            'title' : 'Error',
-            'exp' : e.message,
-            'doc' : e.__doc__
+            'title': 'Error',
+            'exp': e.message,
+            'doc': e.__doc__
         }
         template = "error.html"
         return render(request, template, context)
+
 
 def GetHardcodedCertKeystore(files):
     try:
@@ -874,6 +884,7 @@ def GetHardcodedCertKeystore(files):
     except:
         PrintException("[ERROR] Getting Hardcoded Certificates/Keystores")
 
+
 def ReadManifest(APP_DIR, TOOLS_DIR, TYP, BIN):
     try:
         dat = ''
@@ -886,19 +897,24 @@ def ReadManifest(APP_DIR, TOOLS_DIR, TYP, BIN):
                 CP_PATH = settings.AXMLPRINTER_BINARY
             else:
                 CP_PATH = os.path.join(TOOLS_DIR, 'AXMLPrinter2.jar')
-            args = [settings.JAVA_PATH+'java', '-jar', CP_PATH, manifest]
+
+            args = [settings.JAVA_PATH + 'java', '-jar', CP_PATH, manifest]
             dat = subprocess.check_output(args)
         else:
             print "[INFO] Getting Manifest from Source"
             if TYP == "eclipse":
                 manifest = os.path.join(APP_DIR, "AndroidManifest.xml")
             elif TYP == "studio":
-                manifest = os.path.join(APP_DIR, "app/src/main/AndroidManifest.xml")
+
+                manifest = os.path.join(
+                    APP_DIR, "app/src/main/AndroidManifest.xml"
+                )
             with io.open(manifest, mode='r', encoding="utf8", errors="ignore") as f:
                 dat = f.read()
         return dat
     except:
         PrintException("[ERROR] Reading Manifest file")
+
 
 def GetManifest(APP_DIR, TOOLS_DIR, TYP, BIN):
     try:
@@ -910,27 +926,39 @@ def GetManifest(APP_DIR, TOOLS_DIR, TYP, BIN):
             mfest = minidom.parseString(dat)
         except:
             PrintException("[ERROR] Pasrsing AndroidManifest.xml")
-            # pylint: disable=C0301
-            mfest = minidom.parseString(r'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="Failed"  android:versionName="Failed" package="Failed"  platformBuildVersionCode="Failed" platformBuildVersionName="Failed XML Parsing" ></manifest>')
+            mfest = minidom.parseString(
+                (
+                    r'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android='
+                    r'"http://schemas.android.com/apk/res/android" android:versionCode="Failed"  '
+                    r'android:versionName="Failed" package="Failed"  '
+                    r'platformBuildVersionCode="Failed" '
+                    r'platformBuildVersionName="Failed XML Parsing" ></manifest>'
+                )
+            )
             print "[WARNING] Using Fake XML to continue the Analysis"
         return mfest
     except:
         PrintException("[ERROR] Parsing Manifest file")
 
+
 def ValidAndroidZip(APP_DIR):
     try:
         print "[INFO] Checking for ZIP Validity and Mode"
-        #Eclipse
+        # Eclipse
         man = os.path.isfile(os.path.join(APP_DIR, "AndroidManifest.xml"))
         src = os.path.exists(os.path.join(APP_DIR, "src/"))
         if man and src:
             return 'eclipse', True
-        #Studio
-        man = os.path.isfile(os.path.join(APP_DIR, "app/src/main/AndroidManifest.xml"))
+        # Studio
+        man = os.path.isfile(
+            os.path.join(
+                APP_DIR, "app/src/main/AndroidManifest.xml"
+            )
+        )
         src = os.path.exists(os.path.join(APP_DIR, "app/src/main/java/"))
         if man and src:
             return 'studio', True
-        #iOS Source
+        # iOS Source
         xcode = [f for f in os.listdir(APP_DIR) if f.endswith(".xcodeproj")]
         if xcode:
             return 'ios', True
@@ -939,17 +967,16 @@ def ValidAndroidZip(APP_DIR):
         PrintException("[ERROR] Determining Upload type")
 
 
-
 def GenDownloads(APP_DIR, MD5):
     try:
         print "[INFO] Generating Downloads"
-        #For Java
+        # For Java
         DIR = os.path.join(APP_DIR, 'java_source/')
         DWD = os.path.join(settings.DWD_DIR, MD5 + '-java.zip')
         zipf = zipfile.ZipFile(DWD, 'w')
         zipdir(DIR, zipf)
         zipf.close()
-        #For Smali
+        # For Smali
         DIR = os.path.join(APP_DIR, 'smali_source/')
         DWD = os.path.join(settings.DWD_DIR, MD5 + '-smali.zip')
         zipf = zipfile.ZipFile(DWD, 'w')
@@ -957,6 +984,7 @@ def GenDownloads(APP_DIR, MD5):
         zipf.close()
     except:
         PrintException("[ERROR] Generating Downloads")
+
 
 def zipdir(path, zip):
     try:
@@ -966,6 +994,7 @@ def zipdir(path, zip):
                 zip.write(os.path.join(root, file))
     except:
         PrintException("[ERROR] Zipping")
+
 
 def FormatPermissions(PERMISSIONS):
     try:
@@ -992,6 +1021,7 @@ def FormatPermissions(PERMISSIONS):
     except:
         PrintException("[ERROR] Formatting Permissions")
 
+
 def CertInfo(APP_DIR, TOOLS_DIR):
     try:
         print "[INFO] Reading Code Signing Certificate"
@@ -1008,7 +1038,7 @@ def CertInfo(APP_DIR, TOOLS_DIR):
                 elif f.lower().endswith(".dsa"):
                     certfile = os.path.join(cert, f)
         if certfile:
-            args = [settings.JAVA_PATH+'java', '-jar', CP_PATH, certfile]
+            args = [settings.JAVA_PATH + 'java', '-jar', CP_PATH, certfile]
             dat = ''
             issued = 'good'
             dat = escape(subprocess.check_output(args)).replace('\n', '</br>')
@@ -1017,6 +1047,7 @@ def CertInfo(APP_DIR, TOOLS_DIR):
             issued = 'missing'
         if re.findall("Issuer: CN=Android Debug|Subject: CN=Android Debug", dat):
             issued = 'bad'
+
         cert_dic = {
             'cert_info' : dat,
             'issued' : issued
@@ -1025,6 +1056,7 @@ def CertInfo(APP_DIR, TOOLS_DIR):
     except:
         PrintException("[ERROR] Reading Code Signing Certificate")
 
+
 def WinFixJava(TOOLS_DIR):
     try:
         print "[INFO] Running JAVA path fix in Windows"
@@ -1032,11 +1064,12 @@ def WinFixJava(TOOLS_DIR):
         ORG = os.path.join(TOOLS_DIR, 'd2j2/d2j_invoke.bat')
         dat = ''
         with open(DMY, 'r') as f:
-            dat = f.read().replace("[xxx]", settings.JAVA_PATH+"java")
+            dat = f.read().replace("[xxx]", settings.JAVA_PATH + "java")
         with open(ORG, 'w') as f:
             f.write(dat)
     except:
         PrintException("[ERROR] Running JAVA path fix in Windows")
+
 
 def WinFixPython3(TOOLS_DIR):
     try:
@@ -1062,6 +1095,7 @@ def WinFixPython3(TOOLS_DIR):
     except:
         PrintException("[ERROR] Running Python 3 path fix in Windows")
 
+
 def Dex2Jar(APP_PATH, APP_DIR, TOOLS_DIR):
     try:
         print "[INFO] DEX -> JAR"
@@ -1079,7 +1113,13 @@ def Dex2Jar(APP_PATH, APP_DIR, TOOLS_DIR):
                 subprocess.call(["chmod", "777", INV])
             if len(settings.DEX2JAR_BINARY) > 0 and isFileExists(settings.DEX2JAR_BINARY):
                 D2J = settings.DEX2JAR_BINARY
-            args = [D2J, APP_DIR+'classes.dex', '-f', '-o', APP_DIR +'classes.jar']
+            args = [
+                D2J,
+                APP_DIR + 'classes.dex',
+                '-f',
+                '-o',
+                APP_DIR + 'classes.jar'
+            ]
         elif settings.JAR_CONVERTER == "enjarify":
             print "[INFO] Using JAR converter - Google enjarify"
             if len(settings.ENJARIFY_DIRECTORY) > 0 and isDirExists(settings.ENJARIFY_DIRECTORY):
@@ -1089,14 +1129,13 @@ def Dex2Jar(APP_PATH, APP_DIR, TOOLS_DIR):
             if platform.system() == "Windows":
                 WinFixPython3(TOOLS_DIR)
                 EJ = os.path.join(WD, 'enjarify.bat')
-                args = [EJ, APP_PATH, "-f", "-o", APP_DIR +'classes.jar']
+                args = [EJ, APP_PATH, "-f", "-o", APP_DIR + 'classes.jar']
             else:
                 working_dir = True
                 if len(settings.PYTHON3_PATH) > 2:
                     PYTHON3 = os.path.join(settings.PYTHON3_PATH, "python3")
                 else:
                     PYTHON3 = "python3"
-
                 args = [
                     PYTHON3,
                     "-O",
@@ -1114,19 +1153,24 @@ def Dex2Jar(APP_PATH, APP_DIR, TOOLS_DIR):
     except:
         PrintException("[ERROR] Converting Dex to JAR")
 
+
 def Dex2Smali(APP_DIR, TOOLS_DIR):
     try:
         print "[INFO] DEX -> SMALI"
-        DEX_PATH = APP_DIR+'classes.dex'
+        DEX_PATH = APP_DIR + 'classes.dex'
         if len(settings.BACKSMALI_BINARY) > 0 and isFileExists(settings.BACKSMALI_BINARY):
             BS_PATH = settings.BACKSMALI_BINARY
         else:
             BS_PATH = os.path.join(TOOLS_DIR, 'baksmali.jar')
         OUTPUT = os.path.join(APP_DIR, 'smali_source/')
-        args = [settings.JAVA_PATH+'java', '-jar', BS_PATH, DEX_PATH, '-o', OUTPUT]
+        args = [
+            settings.JAVA_PATH + 'java',
+            '-jar', BS_PATH, DEX_PATH, '-o', OUTPUT
+        ]
         subprocess.call(args)
     except:
         PrintException("[ERROR] Converting DEX to SMALI")
+
 
 def Jar2Java(APP_DIR, TOOLS_DIR):
     try:
@@ -1164,11 +1208,15 @@ def Jar2Java(APP_DIR, TOOLS_DIR):
     except:
         PrintException("[ERROR] Converting JAR to JAVA")
 
+
 def Strings(APP_FILE, APP_DIR, TOOLS_DIR):
     try:
         print "[INFO] Extracting Strings from APK"
         strings = TOOLS_DIR+'strings_from_apk.jar'
-        args = [settings.JAVA_PATH+'java', '-jar', strings, APP_DIR+APP_FILE, APP_DIR]
+        args = [
+            settings.JAVA_PATH + 'java',
+            '-jar', strings, APP_DIR+APP_FILE, APP_DIR
+        ]
         subprocess.call(args)
         dat = ''
         try:
@@ -1180,6 +1228,7 @@ def Strings(APP_FILE, APP_DIR, TOOLS_DIR):
         return dat
     except:
         PrintException("[ERROR] Extracting Strings from APK")
+
 
 def ManifestData(mfxml, app_dir):
     try:
@@ -1294,17 +1343,19 @@ def ManifestAnalysis(mfxml, man_data_dic):
         datas = mfxml.getElementsByTagName("data")
         intents = mfxml.getElementsByTagName("intent-filter")
         actions = mfxml.getElementsByTagName("action")
-        granturipermissions = mfxml.getElementsByTagName("grant-uri-permission")
+        granturipermissions = mfxml.getElementsByTagName(
+            "grant-uri-permission")
         permissions = mfxml.getElementsByTagName("permission")
         for node in manifest:
             package = node.getAttribute("package")
         RET = ''
         EXPORTED = []
         PERMISSION_DICT = dict()
-        ##PERMISSION
+        # PERMISSION
         for permission in permissions:
             if permission.getAttribute("android:protectionLevel"):
-                protectionlevel = permission.getAttribute("android:protectionLevel")
+                protectionlevel = permission.getAttribute(
+                    "android:protectionLevel")
                 if protectionlevel == "0x00000000":
                     protectionlevel = "normal"
                 elif protectionlevel == "0x00000001":
@@ -1314,27 +1365,59 @@ def ManifestAnalysis(mfxml, man_data_dic):
                 elif protectionlevel == "0x00000003":
                     protectionlevel = "signatureOrSystem"
 
-                PERMISSION_DICT[permission.getAttribute("android:name")] = protectionlevel
+                PERMISSION_DICT[permission.getAttribute(
+                    "android:name")] = protectionlevel
             elif permission.getAttribute("android:name"):
-                PERMISSION_DICT[permission.getAttribute("android:name")] = "normal"
+                PERMISSION_DICT[permission.getAttribute(
+                    "android:name")] = "normal"
 
-        ##APPLICATIONS
+        # APPLICATIONS
         for application in applications:
 
             if application.getAttribute("android:debuggable") == "true":
-                # pylint: disable=C0301
-                RET = RET+ '<tr><td>Debug Enabled For App <br>[android:debuggable=true]</td><td><span class="label label-danger">high</span></td><td>Debugging was enabled on the app which makes it easier for reverse engineers to hook a debugger to it. This allows dumping a stack trace and accessing debugging helper classes.</td></tr>'
+                RET = (
+                    RET + (
+                        '<tr><td>Debug Enabled For App <br>[android:debuggable=true]</td><td>'
+                        '<span class="label label-danger">high</span></td><td>Debugging was enabled'
+                        ' on the app which makes it easier for reverse engineers to hook a debugger'
+                        ' to it. This allows dumping a stack trace and accessing debugging helper '
+                        'classes.</td></tr>'
+                    )
+                )
             if application.getAttribute("android:allowBackup") == "true":
-                # pylint: disable=C0301
-                RET = RET+ '<tr><td>Application Data can be Backed up<br>[android:allowBackup=true]</td><td><span class="label label-warning">medium</span></td><td>This flag allows anyone to backup your application data via adb. It allows users who have enabled USB debugging to copy application data off of the device.</td></tr>'
+                RET = (
+                    RET+ (
+                        '<tr><td>Application Data can be Backed up<br>[android:allowBackup=true]'
+                        '</td><td><span class="label label-warning">medium</span></td><td>This flag'
+                        ' allows anyone to backup your application data via adb. It allows users '
+                        'who have enabled USB debugging to copy application data off of the '
+                        'device.</td></tr>'
+                    )
+                )
             elif application.getAttribute("android:allowBackup") == "false":
                 pass
             else:
-                # pylint: disable=C0301
-                RET = RET+ '<tr><td>Application Data can be Backed up<br>[android:allowBackup] flag is missing.</td><td><span class="label label-warning">medium</span></td><td>The flag [android:allowBackup] should be set to false. By default it is set to true and allows anyone to backup your application data via adb. It allows users who have enabled USB debugging to copy application data off of the device.</td></tr>'
+                RET = (
+                    RET+ (
+                        '<tr><td>Application Data can be Backed up<br>[android:allowBackup] flag '
+                        'is missing.</td><td><span class="label label-warning">medium</span></td>'
+                        '<td>The flag [android:allowBackup] should be set to false. By default it '
+                        'is set to true and allows anyone to backup your application data via adb. '
+                        'It allows users who have enabled USB debugging to copy application data '
+                        'off of the device.</td></tr>'
+                    )
+                )
             if application.getAttribute("android:testOnly") == "true":
                 # pylint: disable=C0301
-                RET = RET+ '<tr><td>Application is in Test Mode <br>[android:testOnly=true]</td><td><span class="label label-danger">high</span></td><td> It may expose functionality or data outside of itself that would cause a security hole.</td></tr>'
+                RET = (
+                    RET+ (
+                        '<tr><td>Application is in Test Mode <br>[android:testOnly=true]</td><td>'
+                        '<span class="label label-danger">high</span></td><td> It may expose '
+                        'functionality or data outside of itself that would cause a security hole.'
+                        '</td></tr>'
+                    )
+                )
+
             for node in application.childNodes:
                 ad = ''
                 if node.nodeName == 'activity':
@@ -1357,6 +1440,7 @@ def ManifestAnalysis(mfxml, man_data_dic):
                 else:
                     itmname = 'NIL'
                 item = ''
+
                 #Task Affinity
                 if (
                         itmname  in ['Activity', 'Activity-Alias'] and
@@ -1469,7 +1553,7 @@ def ManifestAnalysis(mfxml, man_data_dic):
                                     )
                                     exp_count[cnt_id] = exp_count[cnt_id] + 1
 
-        ##GRANT-URI-PERMISSIONS
+        # GRANT-URI-PERMISSIONS
         title = 'Improper Content Provider Permissions'
         desc = (
             'A content provider permission was set to allows access from any other app on the '
@@ -1493,7 +1577,7 @@ def ManifestAnalysis(mfxml, man_data_dic):
                     '<span class="label label-danger">high</span></td><td>' + desc + '</td></tr>'
                 )
 
-        ##DATA
+        # DATA
         for data in datas:
             if data.getAttribute("android:scheme") == "android_secret_code":
                 xmlhost = data.getAttribute("android:host")
@@ -1521,7 +1605,7 @@ def ManifestAnalysis(mfxml, man_data_dic):
                     '<td><span class="label label-danger">high</span></td><td>'+ desc +'</td></tr>'
                 )
 
-        ##INTENTS
+        # INTENTS
 
         for intent in intents:
             if intent.getAttribute("android:priority").isdigit():
@@ -2049,8 +2133,7 @@ def CodeAnalysis(APP_DIR, MD5, PERMS, TYP):
                             "</a></td></tr>"
                         )
 
-                    #Email Etraction Regex
-
+                    # Email Etraction Regex
                     regex = re.compile(r'[\w.-]+@[\w-]+\.[\w.]+')
                     eflag = 0
                     for email in regex.findall(dat.lower()):
@@ -2065,7 +2148,7 @@ def CodeAnalysis(APP_DIR, MD5, PERMS, TYP):
                             "</a></td></tr>"
                         )
 
-        #Domain Extraction and Malware Check
+        # Domain Extraction and Malware Check
         print "[INFO] Performing Malware Check on extracted Domains"
         DOMAINS = MalwareCheck(ALLURLSLST)
         print "[INFO] Finished Code Analysis, Email and URL Extraction"
@@ -2277,8 +2360,6 @@ def CodeAnalysis(APP_DIR, MD5, PERMS, TYP):
                     'attack.'
                 ),
         }
-
-
 
         dang = ''
         spn_dang = '<span class="label label-danger">high</span>'

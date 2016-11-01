@@ -217,7 +217,25 @@ textarea:focus {
                                     	$('#stat').append("\nConnecting to VM");
                                     	$('#stat').append("\nMounting");
                                     	$('#stat').append("\nInstalling APK");
-                                    	$('#stat').append("\nRunning APK");    
+                                    	$('#stat').append("\nRunning APK");
+                                      //Starting ClipDump
+                                      $.ajax({
+                                        url : "../ClipDump/", 
+                                        type : "POST",
+                                        dataType: "json", 
+                                        data : {
+                                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                                            },
+                                            success : function(json) {
+                                              if (json.status==="success"){
+                                              $('#stat').append("\nClipboard Monitoring Started!");
+                                              $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                              }
+                                            },
+                                            error : function(xhr,errmsg,err) {
+                                                document.getElementById("er").srcdoc = xhr.responseText;
+                                            }   
+                                      });
                                     	$('#stat').append("\nEnvironment is Ready!");
                                     	$('#stat').append("\nAgents are running in the Background");
                                     	$('#stat').append("\nGo Ahead and navigate through all the flows of the Application.");
