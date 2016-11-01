@@ -1,5 +1,7 @@
 from django.db import models
 # Create your models here.
+
+
 class StaticAnalyzerAndroid(models.Model):
     TITLE = models.TextField()
     APP_NAME = models.TextField()
@@ -48,6 +50,7 @@ class StaticAnalyzerAndroid(models.Model):
     E_BRO = models.CharField(max_length=50)
     E_CNT = models.CharField(max_length=50)
 
+
 class StaticAnalyzerIPA(models.Model):
     TITLE = models.TextField()
     APPNAMEX = models.TextField()
@@ -67,6 +70,7 @@ class StaticAnalyzerIPA(models.Model):
     FILES = models.TextField()
     SFILESX = models.TextField()
     STRINGS = models.TextField()
+
 
 class StaticAnalyzerIOSZIP(models.Model):
     TITLE = models.TextField()

@@ -47,6 +47,7 @@
             <li class="treeview">
               <a href="javascript::;"><i class="fa fa-plus"></i> Reconnaissance</a>
               <ul class="nav treeview-menu">
+              <li><a href="#clipboard"><i class="fa fa-clipboard"></i> Clipboard Dump</a></li>
               <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
               <li><a href="#domain"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</a></li>
               <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
@@ -512,7 +513,33 @@
           <!-- /.box -->
   </section>
 
+
 <!-- ============================================================= -->
+
+<section id="clipboard">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-clipboard"></i> Clipboard Dump</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+                            <div class="list-group">
+                                  {% for f in clipboard %}
+                                      {{ f}} <br>
+                                  {% endfor %}
+
+                                </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+  <!-- ============================================================= -->
 
 <section id="url">
   <h2 class="page-header"></h2>

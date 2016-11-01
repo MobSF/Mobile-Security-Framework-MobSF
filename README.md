@@ -1,5 +1,5 @@
 # Mobile-Security-Framework (MobSF)
-Version: v0.9.2 beta
+Version: v0.9.2.1 beta
 <p align="center">
   <img src="https://cloud.githubusercontent.com/assets/4301109/14958530/d5fb36ac-10a8-11e6-93b9-8859fd0158b6.png">
 </p>

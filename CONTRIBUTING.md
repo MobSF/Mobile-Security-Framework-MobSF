@@ -41,6 +41,8 @@ Guidelines for bug reports:
 
 4. **Add Log files** &mdash; Please add the log files `logs/MobSF.log` and `logs/webproxy.log` while opening bugs.
 
+5. **Timely Response** &mdash; Once you open a bug, you should also provide additional information if requested. Failure to do    so in 25 days will result in closure of the bug without further communication. 
+
 A good bug report shouldn't leave others needing to chase you up for more
 information. Please try to be as detailed as possible in your report. What is
 your environment? What steps will reproduce the issue? What browser(s) and OS
