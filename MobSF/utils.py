@@ -16,12 +16,12 @@ import unicodedata
 import settings
 
 
-def printMobSFverison(MOBSF_VER, BANNER):
+def printMobSFverison():
     if platform.system() == "Windows":
-        print '\n\nMobile Security Framework ' + MOBSF_VER
+        print '\n\nMobile Security Framework ' + settings.MOBSF_VER
     else:
-        print '\n\n\033[1m\033[34mMobile Security Framework ' + MOBSF_VER + '\033[0m'
-    print BANNER
+        print '\n\n\033[1m\033[34mMobile Security Framework ' + settings.MOBSF_VER + '\033[0m'
+    print settings.BANNER
 
 
 def createUserConfig(MobSF_HOME):

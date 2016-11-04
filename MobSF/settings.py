@@ -10,7 +10,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 
 import os
 import imp
-import utils
+from MobSF import utils
 import platform
 
 import install.windows.setup as windows_setup
@@ -31,7 +31,6 @@ BANNER = """
  |_|  |_|\___/|_.__/____/|_|     \_/  \___(_) /_(_)____/ 
                                                                                                              
 """
-utils.printMobSFverison(MOBSF_VER, BANNER)
 #==============================================
 
 #==========MobSF Home Directory=================
