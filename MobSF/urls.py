@@ -6,6 +6,7 @@ import DynamicAnalyzer.views.android_standalone
 import StaticAnalyzer.views.android
 import StaticAnalyzer.views.ios
 import StaticAnalyzer.views.shared_func
+import StaticAnalyzer.views.windows
 
 urlpatterns = [
     # Examples:
@@ -22,6 +23,7 @@ urlpatterns = [
 
     url(r'^StaticAnalyzer/$', StaticAnalyzer.views.android.StaticAnalyzer),
     url(r'^StaticAnalyzer_iOS/$', StaticAnalyzer.views.ios.StaticAnalyzer_iOS),
+    url(r'^StaticAnalyzer_Windows/$', StaticAnalyzer.views.windows.staticanalyzer_windows),
     url(r'^ViewFile/$', StaticAnalyzer.views.ios.ViewFile),
     url(r'^ViewSource/$', StaticAnalyzer.views.android.ViewSource),
     url(r'^PDF/$', StaticAnalyzer.views.shared_func.PDF),
@@ -46,8 +48,6 @@ urlpatterns = [
     url(r'^View/$', DynamicAnalyzer.views.android.View),
     url(r'^ScreenCast/$', DynamicAnalyzer.views.android.ScreenCast),
     url(r'^Touch/$', DynamicAnalyzer.views.android.Touch),
-
-    url(r'^AndroidDynamic/$', DynamicAnalyzer.views.android_standalone.DynamicAnalyzer),
 
     url(r'^APIFuzzer/$', APITester.views.APIFuzzer),
     url(r'^StartScan/$', APITester.views.StartScan),

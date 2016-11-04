@@ -15,8 +15,11 @@ from django.http import HttpResponseRedirect
 from django.conf import settings
 from django.utils.html import escape
 from StaticAnalyzer.views.shared_func import FileSize, HashGen, Unzip
+
 from StaticAnalyzer.models import StaticAnalyzerIPA, StaticAnalyzerIOSZIP
-from MobSF.utils import PrintException, python_list, python_dict, isFileExists
+from MobSF.utils import PrintException, python_list, python_dict, isDirExists, isFileExists
+from StaticAnalyzer.tools.strings import strings
+
 from MalwareAnalyzer.views import MalwareCheck
 try:
     import xhtml2pdf.pisa as pisa
@@ -402,6 +405,7 @@ def BinaryAnalysis(SRC, TOOLS_DIR, APP_DIR):
         for d in dirs:
             if d.endswith(".app"):
                 break
+
         BIN_DIR = os.path.join(SRC, d)  # Full Dir/Payload/x.app
         XML_FILE = os.path.join(BIN_DIR, "Info.plist")
         BIN = d.replace(".app", "")
@@ -553,10 +557,12 @@ def BinaryAnalysis(SRC, TOOLS_DIR, APP_DIR):
         # classdump
 
         # strings
-        args = ["strings", BIN_PATH]
-        strings = subprocess.check_output(args)
-        strings = escape(strings.replace(BIN_DIR + "/", ""))
-        STRINGS = strings.replace("\n", "</br>")
+        print "[INFO] Running strings against the Binary"
+        STRINGS = ""
+        sl = list(strings(BIN_PATH))
+        sl = set(sl)  # Make unique
+        sl = [escape(s) for s in sl]  # Escape evil strings
+        STRINGS = "</br>".join(sl)
 
         return XML, BIN_NAME, ID, VER, SDK, PLTFM, MIN, LIBS, BIN_RES, STRINGS
     except:

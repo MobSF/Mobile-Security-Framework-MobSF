@@ -110,6 +110,13 @@ def upload(request):
                         response_data['url'] = 'mac_only/'
                         response_data['status'] = 'success'
                         print "\n[ERROR] Static Analysis of iOS IPA requires OSX"
+                elif (file_type in settings.APPX_MIME) and request.FILES['file'].name.lower().endswith('.appx'):   #Windows APPX
+                    md5=handle_uploaded_file(request.FILES['file'],'.appx')
+                    response_data['url'] = 'StaticAnalyzer_Windows/?name='+request.FILES['file'].name+'&type=appx&checksum='+md5
+                    response_data['status'] = 'success'
+                    add_to_recent_scan(
+                        request.FILES['file'].name,md5,response_data['url'])
+                    print "\n[INFO] Performing Static Analysis of Windows APP"
                 else:
                     response_data['url'] = ''
                     response_data['description'] = 'File format not Supported!'

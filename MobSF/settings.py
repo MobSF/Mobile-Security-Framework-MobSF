@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 import os
 import imp
 import utils
+import platform
+
+import install.windows.setup as windows_setup
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF FRAMEWORK CONFIGURATIONS
@@ -18,14 +21,14 @@ import utils
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
+
 MOBSF_VER = "v0.9.2.1 Beta"
 BANNER = """
-  __  __       _    ____  _____          ___   ___   ____  
- |  \/  | ___ | |__/ ___||  ___| __   __/ _ \ / _ \ |___ \ 
+  __  __       _    ____  _____          ___   ___   ____
+ |  \/  | ___ | |__/ ___||  ___| __   __/ _ \ / _ \ |___ \
  | |\/| |/ _ \| '_ \___ \| |_    \ \ / / | | | (_) |  __) |
- | |  | | (_) | |_) |__) |  _|    \ V /| |_| |\__, | / __/ 
- |_|  |_|\___/|_.__/____/|_|       \_/  \___(_) /_(_)_____|                                                                                                          
-                                                            
+ | |  | | (_) | |_) |__) |  _|    \ V /| |_| |\__, | / __/
+ |_|  |_|\___/|_.__/____/|_|       \_/  \___(_) /_(_)_____|
 """
 utils.printMobSFverison(MOBSF_VER, BANNER)
 #==============================================
@@ -86,21 +89,31 @@ ALLOWED_EXTENSIONS = {
 #===============================================
 
 #=============ALLOWED MIMETYPES=================
-APK_MIME = ['application/octet-stream',
-            'application/vnd.android.package-archive',
-            'application/x-zip-compressed',
-            'binary/octet-stream',
-            ]
-IPA_MIME = ['application/octet-stream',
-            'application/x-itunes-ipa',
-            'application/x-zip-compressed',
-            'binary/octet-stream',
-            ]
-ZIP_MIME = ['application/zip',
-            'application/octet-stream',
-            'application/x-zip-compressed',
-            'binary/octet-stream',
-            ]
+
+APK_MIME = [
+    'application/octet-stream',
+    'application/vnd.android.package-archive',
+    'application/x-zip-compressed',
+    'binary/octet-stream',
+]
+IPA_MIME = [
+    'application/octet-stream',
+    'application/x-itunes-ipa',
+    'application/x-zip-compressed',
+    'binary/octet-stream',
+]
+ZIP_MIME = [
+    'application/zip',
+    'application/octet-stream',
+    'application/x-zip-compressed',
+    'binary/octet-stream',
+]
+APPX_MIME = [
+    'application/octet-stream',
+    'application/vns.ms-appx',
+    'application/x-zip-compressed'
+]
+
 #===============================================
 
 #=====MOBSF SECRET GENERATION AND MIGRATION=====
@@ -169,10 +182,14 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'APP_DIRS': True,
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'OPTIONS': {
-            'debug': True,
-        }
+        'DIRS':
+            [
+                os.path.join(BASE_DIR, 'templates')
+            ],
+        'OPTIONS':
+            {
+                'debug': True,
+            }
     },
 ]
 STATICFILES_DIRS = (
@@ -197,13 +214,17 @@ else:
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     #==========SKIP CLASSES==========================
-    SKIP_CLASSES = ['android/support/', 'com/google/', 'android/content/', 'com/android/',
-                    'com/facebook/', 'com/twitter/', 'twitter4j/', 'org/apache/', 'com/squareup/okhttp/',
-                    'oauth/signpost/', 'org/chromium/']
+
+    SKIP_CLASSES = [
+        'android/support/', 'com/google/', 'android/content/',
+        'com/android/', 'com/facebook/', 'com/twitter/',
+        'twitter4j/', 'org/apache/', 'com/squareup/okhttp/',
+        'oauth/signpost/', 'org/chromium/'
+        ]
 
     #==============3rd Party Tools=================
     '''
-    If you want to use a different version of 3rd party tools used by MobSF. 
+    If you want to use a different version of 3rd party tools used by MobSF.
     You can do that by specifying the path here. If specified, MobSF will run
     the tool from this location.
     '''
@@ -266,6 +287,7 @@ else:
     DEVICE_TIMEOUT = 300
     #===============================================
     #================VM SETTINGS ===================
+
     # VM UUID
     UUID = '408e1874-759f-4417-9453-53ef21dc2ade'
     # Snapshot UUID
@@ -275,13 +297,14 @@ else:
     VM_ADB_PORT = 5555
     VM_TIMEOUT = 100
     #==============================================
-
     #================HOST/PROXY SETTINGS ==========
+
     PROXY_IP = '192.168.56.1'  # Host/Server/Proxy IP
     PORT = 1337  # Proxy Port
     ROOT_CA = '0025aabb.0'
     SCREEN_IP = PROXY_IP  # ScreenCast IP
     SCREEN_PORT = 9339  # ScreenCast Port
+
     #==============================================
 
     #========UPSTREAM PROXY SETTINGS ==============
@@ -295,20 +318,23 @@ else:
     #==========DECOMPILER SETTINGS=================
 
     DECOMPILER = "jd-core"
+
     # Two Decompilers are available
     # 1. jd-core
     # 2. cfr
     # 3. procyon
+
     #==============================================
 
     #==========Dex to Jar Converter================
     JAR_CONVERTER = "d2j"
+
     # Two Dex to Jar converters are available
     # 1. d2j
     # 2. enjarify
 
     '''
-    enjarify requires python3. Install Python 3 and add the path to environment variable 
+    enjarify requires python3. Install Python 3 and add the path to environment variable
     PATH or provide the Python 3 path to "PYTHON3_PATH" variable in settings.py
     ex: PYTHON3_PATH = "C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/"
     '''
@@ -316,7 +342,31 @@ else:
     #==============================================
     #^CONFIG-END^: Do not edit this line
 
-# The below code should be loaded last.
+    #================WINDOWS-Analysis-Settings ===================
+    # Get the OS MobSF is currently running on
+    CURRENT_PLATFROM = platform.system()
+
+    # Configure the params here if you are not on windows
+    # Private key if rpc server is needed
+    WINDOWS_VM_SECRET = 'MobSF/windows_vm_priv_key.asc'
+    #IP and Port of the MobSF Windows VM
+
+    WINDOWS_VM_IP = None  # eg. '127.0.0.1'; None = disabled
+    WINDOWS_VM_PORT = '8000'
+
+    # Configure here if you are on windows
+    # Path to lock-file (so setup is only run once)
+    PATH_TO_LOCK_FILE = os.path.join(MobSF_HOME, "setup_done.txt")
+    if (os.path.isfile(PATH_TO_LOCK_FILE) is False) and CURRENT_PLATFROM == 'Windows':
+        print "[INFO] Running first time setup for windows."
+        # Setup is to-be-executed
+        if CONFIG_HOME:
+            windows_setup.install_locally(MobSF_HOME, user_config=USER_CONFIG)
+        else:
+            windows_setup.install_locally(MobSF_HOME)
+    #==============================================
+
+#The below code should be loaded last.
 #============JAVA SETTINGS======================
 JAVA_PATH = utils.FindJava()
 #===============================================

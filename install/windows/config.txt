@@ -1,0 +1,25 @@
+[MobSF]
+dir = C:\MobSF
+subdir_downloads = C:\MobSF\Downloads\
+subdir_tools = C:\MobSF\Tools\
+subdir_samples = C:\MobSF\Samples\
+priv_key_file = C:\MobSF\Tools\windows_vm_priv_key.asc
+pub_key_file = C:\MobSF\Tools\windows_vm_pub_key.asc
+
+[nuget]
+url = https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+file = nuget.exe
+
+[binskim]
+nuget = Microsoft.CodeAnalysis.BinSkim
+
+[binscope]
+url_x64 = https://download.microsoft.com/download/5/6/0/56027BE0-3A1F-4326-B966-BC99A15856AA/BinScope_x64.msi
+url_x86 = https://download.microsoft.com/download/5/6/0/56027BE0-3A1F-4326-B966-BC99A15856AA/BinScope_x86.msi
+
+[rpc]
+url = https://raw.githubusercontent.com/ajinabraham/Mobile-Security-Framework-MobSF/windows_static/install/windows/rpc_client.py
+file = rpc_client.py
+
+[autostart]
+file = mobsf_rpc.bat

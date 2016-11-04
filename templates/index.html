@@ -40,7 +40,7 @@
               <h3 class="masthead-brand"><img src="/static/img/MobSF_Logo_small.png" width="45%" height="45%"></h3>
 
             </div>
-           
+
           </div>
 
 
@@ -114,7 +114,7 @@ progress::-webkit-progress-value {
   </div>
   <h4 id="status"></h4>
   <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
-  
+
 </form>
 </div>
 
@@ -161,7 +161,7 @@ function responseHandler (json, isbutton) {
         i=1;
        }
     }, 2000);
-   
+
     window.location.href=window.location.href+json.url;
   }
 }
@@ -173,7 +173,7 @@ function responseHandler (json, isbutton) {
   maxFilesize: 100, // MB
   maxFiles: 8,
   dictDefaultMessage: 'Drag files here or click Upload & Analyze',
-  acceptedFiles: '.apk,.ipa,.zip',
+  acceptedFiles: '.apk,.ipa,.zip,.appx',
 
   init: function() {
     this.on('success', function( file, resp ){
@@ -182,27 +182,27 @@ function responseHandler (json, isbutton) {
       responseHandler (resp);
     });
   },
-  
+
 };
 
 
-$(document).ready(function () 
+$(document).ready(function ()
 {
-$('input[type=file]').change(function () 
+$('input[type=file]').change(function ()
 {
   var val = $(this).val().toLowerCase();
-  var regex = new RegExp("(.*?)\.(ipa|apk|zip)$");
+  var regex = new RegExp("(.*?)\.(ipa|apk|zip|appx)$");
   val = val.replace(/^.*[\\\/]/, '');
    try {
-        if (!(regex.test(val))) 
+        if (!(regex.test(val)))
           {
             $(this).val('');
-            _('status').innerHTML = "Please upload APK/IPA/ZIP only!";
+            _('status').innerHTML = "Please upload APK/IPA/ZIP/APPX only!";
           }
-          else 
+          else
           {
                 _('status').innerHTML = "";
-                if (_("uploadFile").files.length === 0) 
+                if (_("uploadFile").files.length === 0)
                 {
                   return;
                 }
@@ -210,12 +210,12 @@ $('input[type=file]').change(function ()
                  _("but").style.display = "none";
                 var file = _("uploadFile").files[0];
                 _("progressBar").style.visibility = "visible";
-               
-                
+
+
                 var formdata = new FormData();
                 formdata.append("file", file);
                 var ajax = new XMLHttpRequest();
-              
+
                 ajax.upload.addEventListener("progress", progressHandler, false);
                 ajax.addEventListener("load", completeHandler, false);
                 ajax.addEventListener("error", errorHandler, false);
@@ -226,7 +226,7 @@ $('input[type=file]').change(function ()
           }
 
       }
-      catch (e) 
+      catch (e)
       {
           alert("Error:" + e);
       }
@@ -240,7 +240,7 @@ function progressHandler(event){
 }
 function completeHandler(event)
 {
-  
+
   var json= JSON.parse(event.target.responseText);
   responseHandler(json);
 }
@@ -254,7 +254,7 @@ function abortHandler(event){
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-   
+
     <script src="/static/js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
