@@ -6,8 +6,6 @@ Android Static Code Analysis
 import re
 import os
 import zipfile
-import subprocess
-import platform
 
 try:
     import StringIO
@@ -22,8 +20,6 @@ from django.template.defaulttags import register
 
 from MobSF.utils import (
     PrintException,
-    isDirExists,
-    isFileExists,
     zipdir
 )
 
@@ -61,7 +57,6 @@ from StaticAnalyzer.views.android.manifest_analysis import (
     manifest_analysis,
     get_manifest
 )
-
 
 
 @register.filter

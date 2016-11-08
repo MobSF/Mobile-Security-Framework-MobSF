@@ -60,6 +60,7 @@ def get_context_from_db_entry(db_entry):
     return context
 
 def get_context_from_an(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic):
+    """Get the context for the webpage."""
     context = {
         'title' : 'Static Analysis',
         'name' : app_dic['app_name'],
@@ -110,6 +111,7 @@ def get_context_from_an(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic
     return context
 
 def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic):
+    """Update an DB entry."""
     # pylint: disable=E1101
     StaticAnalyzerAndroid.objects.filter(MD5=app_dic['md5']).update(
         TITLE='Static Analysis',
@@ -161,6 +163,7 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic):
     )
 
 def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic):
+    """Create a new DB-Entry."""
     static_db = StaticAnalyzerAndroid(
         TITLE='Static Analysis',
         APP_NAME=app_dic['app_name'],
@@ -212,6 +215,7 @@ def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic):
     static_db.save()
 
 def get_context_from_db_entry_zip(db_entry):
+    """Get the context from an DB entry, zip type."""
     print "\n[INFO] Analysis is already Done. Fetching data from the DB..."
 
     context = {
@@ -260,6 +264,7 @@ def get_context_from_db_entry_zip(db_entry):
     return context
 
 def get_context_from_an_zip(app_dic, man_data_dic, man_an_dic, code_an_dic):
+    """Get the context for the website, zip type."""
     context = {
         'title' : 'Static Analysis',
         'name' : app_dic['app_name'],
@@ -306,6 +311,7 @@ def get_context_from_an_zip(app_dic, man_data_dic, man_an_dic, code_an_dic):
     return context
 
 def update_db_entry_zip(app_dic, man_data_dic, man_an_dic, code_an_dic):
+    """Update an DB-Entry, zip type."""
     # pylint: disable=E1101
     StaticAnalyzerAndroid.objects.filter(MD5=app_dic['md5']).update(
         TITLE='Static Analysis',
@@ -357,6 +363,7 @@ def update_db_entry_zip(app_dic, man_data_dic, man_an_dic, code_an_dic):
     )
 
 def create_db_entry_zip(app_dic, man_data_dic, man_an_dic, code_an_dic):
+    """Create a new DB-Entry, zip type."""
     static_db = StaticAnalyzerAndroid(
         TITLE='Static Analysis',
         APP_NAME=app_dic['app_name'],
