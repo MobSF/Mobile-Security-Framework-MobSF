@@ -10,7 +10,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 
 import os
 import imp
-import utils
+from MobSF import utils
 import platform
 
 import install.windows.setup as windows_setup
@@ -22,15 +22,16 @@ import install.windows.setup as windows_setup
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v0.9.2.1 Beta"
+MOBSF_VER = "v0.9.3 Beta"
 BANNER = """
-  __  __       _    ____  _____          ___   ___   ____
- |  \/  | ___ | |__/ ___||  ___| __   __/ _ \ / _ \ |___ \
- | |\/| |/ _ \| '_ \___ \| |_    \ \ / / | | | (_) |  __) |
- | |  | | (_) | |_) |__) |  _|    \ V /| |_| |\__, | / __/
- |_|  |_|\___/|_.__/____/|_|       \_/  \___(_) /_(_)_____|
+  __  __       _    ____  _____        ___   ___   _____
+ |  \/  | ___ | |__/ ___||  ___|_   __/ _ \ / _ \ |___ /
+ | |\/| |/ _ \| '_ \___ \| |_  \ \ / / | | | (_) |  |_ \
+ | |  | | (_) | |_) |__) |  _|  \ V /| |_| |\__, | ___) |
+ |_|  |_|\___/|_.__/____/|_|     \_/  \___(_) /_(_)____/
+
+>>>>>>> upstream/master
 """
-utils.printMobSFverison(MOBSF_VER, BANNER)
 #==============================================
 
 #==========MobSF Home Directory=================
@@ -220,7 +221,7 @@ else:
         'com/android/', 'com/facebook/', 'com/twitter/',
         'twitter4j/', 'org/apache/', 'com/squareup/okhttp/',
         'oauth/signpost/', 'org/chromium/'
-        ]
+    ]
 
     #==============3rd Party Tools=================
     '''
@@ -340,18 +341,15 @@ else:
     '''
     PYTHON3_PATH = ""
     #==============================================
-    #^CONFIG-END^: Do not edit this line
-
-    #================WINDOWS-Analysis-Settings ===================
+    #================WINDOWS-Analysis-Settings ====
     # Get the OS MobSF is currently running on
     CURRENT_PLATFROM = platform.system()
 
-    # Configure the params here if you are not on windows
     # Private key if rpc server is needed
     WINDOWS_VM_SECRET = 'MobSF/windows_vm_priv_key.asc'
-    #IP and Port of the MobSF Windows VM
-
-    WINDOWS_VM_IP = None  # eg. '127.0.0.1'; None = disabled
+    # IP and Port of the MobSF Windows VM
+    # eg: WINDOWS_VM_IP = '127.0.0.1'
+    WINDOWS_VM_IP = None
     WINDOWS_VM_PORT = '8000'
 
     # Configure here if you are on windows
@@ -365,8 +363,9 @@ else:
         else:
             windows_setup.install_locally(MobSF_HOME)
     #==============================================
+    #^CONFIG-END^: Do not edit this line
 
-#The below code should be loaded last.
+# The below code should be loaded last.
 #============JAVA SETTINGS======================
 JAVA_PATH = utils.FindJava()
 #===============================================
