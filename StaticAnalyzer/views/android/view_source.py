@@ -1,5 +1,5 @@
 # -*- coding: utf_8 -*-
-"""Module for java analysis."""
+"""View Source of a file."""
 
 import io
 import ntpath

@@ -1,5 +1,5 @@
 # -*- coding: utf_8 -*-
-"""Module for smali analysis."""
+"""Find in java or smali files."""
 
 import re
 import shutil

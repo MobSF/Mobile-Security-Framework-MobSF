@@ -1,5 +1,5 @@
 # -*- coding: utf_8 -*-
-"""Module for java analysis."""
+"""List all java files."""
 
 import re
 import shutil
@@ -15,7 +15,7 @@ from MobSF.utils import (
 )
 
 def run(request):
-    """Perform static analysis on java code."""
+    """Show the java code."""
     try:
         match = re.match('^[0-9a-f]{32}$', request.GET['md5'])
         typ = request.GET['type']

@@ -335,7 +335,7 @@ def zipdir(path, zip_file):
         print "[INFO] Zipping"
         # pylint: disable=unused-variable
         # Needed by os.walk
-        for root, sub_dir, files in os.walk(path):
+        for root, _sub_dir, files in os.walk(path):
             for file_name in files:
                 zip_file.write(os.path.join(root, file_name))
     except:
