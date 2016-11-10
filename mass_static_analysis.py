@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Mass Static Analysis
 import tornado.httpclient
 import os
