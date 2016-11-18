@@ -97,6 +97,7 @@ APK_MIME = [
     'binary/octet-stream',
 ]
 IPA_MIME = [
+    'application/iphone',
     'application/octet-stream',
     'application/x-itunes-ipa',
     'application/x-zip-compressed',
