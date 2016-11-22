@@ -131,10 +131,13 @@ except NameError:
             secret = file(SECRET_FILE, 'w')
             secret.write(SECRET_KEY)
             secret.close()
-            utils.Migrate(BASE_DIR)
         except IOError:
             Exception('Please create a %s file with random characters \
             to generate your secret key!' % SECRET_FILE)
+        #Run Once
+        utils.Migrate(BASE_DIR)
+        utils.kali_fix(BASE_DIR)
+
 #=============================================
 
 #============DJANGO SETTINGS =================
