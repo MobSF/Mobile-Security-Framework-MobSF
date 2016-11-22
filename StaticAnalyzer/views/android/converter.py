@@ -18,12 +18,13 @@ from MobSF.utils import (
     isDirExists
 )
 
+
 def dex_2_jar(app_path, app_dir, tools_dir):
     """Run dex2jar."""
     try:
         print "[INFO] DEX -> JAR"
+        working_dir = None
         args = []
-        working_dir = False
         if settings.JAR_CONVERTER == "d2j":
             print "[INFO] Using JAR converter - dex2jar"
             if platform.system() == "Windows":
@@ -48,13 +49,13 @@ def dex_2_jar(app_path, app_dir, tools_dir):
             if len(settings.ENJARIFY_DIRECTORY) > 0 and isDirExists(settings.ENJARIFY_DIRECTORY):
                 working_dir = settings.ENJARIFY_DIRECTORY
             else:
-                working_dir = os.path.join(tools_dir, 'enjarify/')  # TODO(Need to understand this)
+                working_dir = os.path.join(tools_dir, 'enjarify/')
             if platform.system() == "Windows":
                 win_fix_python3(tools_dir)
                 enjarify = os.path.join(working_dir, 'enjarify.bat')
-                args = [enjarify, app_path, "-f", "-o", app_dir + 'classes.jar']
+                args = [enjarify, app_path, "-f",
+                        "-o", app_dir + 'classes.jar']
             else:
-                working_dir = True
                 if len(settings.PYTHON3_PATH) > 2:
                     python3 = os.path.join(settings.PYTHON3_PATH, "python3")
                 else:
@@ -67,7 +68,7 @@ def dex_2_jar(app_path, app_dir, tools_dir):
                     app_path,
                     "-f",
                     "-o",
-                    app_dir +'classes.jar'
+                    app_dir + 'classes.jar'
                 ]
         if working_dir:
             subprocess.call(args, cwd=working_dir)
@@ -110,7 +111,8 @@ def jar_2_java(app_dir, tools_dir):
                 jd_path = settings.JD_CORE_DECOMPILER_BINARY
             else:
                 jd_path = os.path.join(tools_dir, 'jd-core.jar')
-            args = [settings.JAVA_PATH+'java', '-jar', jd_path, jar_path, output]
+            args = [settings.JAVA_PATH + 'java',
+                    '-jar', jd_path, jar_path, output]
         elif settings.DECOMPILER == 'cfr':
             if (
                     len(settings.CFR_DECOMPILER_BINARY) > 0 and
@@ -119,7 +121,8 @@ def jar_2_java(app_dir, tools_dir):
                 jd_path = settings.CFR_DECOMPILER_BINARY
             else:
                 jd_path = os.path.join(tools_dir, 'cfr_0_115.jar')
-            args = [settings.JAVA_PATH+'java', '-jar', jd_path, jar_path, '--outputdir', output]
+            args = [settings.JAVA_PATH + 'java', '-jar',
+                    jd_path, jar_path, '--outputdir', output]
         elif settings.DECOMPILER == "procyon":
             if (
                     len(settings.PROCYON_DECOMPILER_BINARY) > 0 and
@@ -127,8 +130,10 @@ def jar_2_java(app_dir, tools_dir):
             ):
                 pd_path = settings.PROCYON_DECOMPILER_BINARY
             else:
-                pd_path = os.path.join(tools_dir, 'procyon-decompiler-0.5.30.jar')
-            args = [settings.JAVA_PATH+'java', '-jar', pd_path, jar_path, '-o', output]
+                pd_path = os.path.join(
+                    tools_dir, 'procyon-decompiler-0.5.30.jar')
+            args = [settings.JAVA_PATH + 'java',
+                    '-jar', pd_path, jar_path, '-o', output]
         subprocess.call(args)
     except:
         PrintException("[ERROR] Converting JAR to JAVA")

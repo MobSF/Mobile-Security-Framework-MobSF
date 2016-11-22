@@ -9,9 +9,9 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
 import os
+import platform
 import imp
 from MobSF import utils
-import platform
 
 import install.windows.setup as windows_setup
 
