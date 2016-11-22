@@ -20,7 +20,7 @@ import configparser
 # Only static URL, let's hope this never changes..
 CONFIG_URL = (
     "https://raw.githubusercontent.com/ajinabraham/"
-    "Mobile-Security-Framework-MobSF/windows_static/install/windows/config.txt"
+    "Mobile-Security-Framework-MobSF/master/install/windows/config.txt"
 )
 
 # Static path to config file as a starting point
