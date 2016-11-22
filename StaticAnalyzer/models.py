@@ -18,6 +18,9 @@ class StaticAnalyzerAndroid(models.Model):
     ANDROVER = models.CharField(max_length=50)
     MANIFEST_ANAL = models.TextField()
     PERMISSIONS = models.TextField()
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+    ANDROPERMS = models.TextField()
+# Esteve 21.08.2016 - END - Permission Analysis with Androguard
     FILES = models.TextField()
     CERTZ = models.TextField()
     ACTIVITIES = models.TextField()
@@ -42,6 +45,9 @@ class StaticAnalyzerAndroid(models.Model):
     DOMAINS = models.TextField()
     EMAILS = models.TextField()
     STRINGS = models.TextField()
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD
+    APKID = models.TextField()
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD
     ZIPPED = models.TextField()
     MANI = models.TextField()
     EXPORTED_ACT = models.TextField()

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>                                                           
+<parent id="androguard Test">
+
+   <main_path>./examples/android/TC/</main_path>
+   <libs_path>./libs/</libs_path>
+
+   <watermark>
+      <type>BM_A0</type>
+      <type>BM_A1</type>
+      <output>wm.xml</output>
+   </watermark>
+
+   <protect_code>
+   </protect_code>
+
+   <protect_names type="class">
+      
+      <except_class>
+         <name>org/t0t0/androguard/TC/TCActivity</name>
+      </except_class>
+
+      <except_fields>
+         <class>org/t0t0/androguard/TC/TCMod1</class>
+         <name>TC1</name>
+         <descriptor>I</descriptor>
+      </except_fields>
+
+   </protect_names>
+
+</parent>

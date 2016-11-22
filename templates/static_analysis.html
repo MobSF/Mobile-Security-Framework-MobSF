@@ -13,6 +13,9 @@
             <li><a href="#nature"><i class="glyphicon glyphicon-tasks"></i> Code Nature</a></li>
             <li><a href="#certificate"><i class="fa fa-certificate"></i> Signer Certificate</a></li>
             <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissions</a></li>
+            <!-- Esteve 21.08.2016 - begin - Permission Analysis with Androguard -->
+            <li><a href="#androperms"><i class="fa fa-align-justify"></i> Enhanced Permissions</a></li>
+            <!-- Esteve 21.08.2016 - end - Permission Analysis with Androguard -->
             <li><a href="#android-api"><i class="fa fa-dot-circle-o"></i> Android API</a></li>
 
             <li class="treeview">
@@ -31,6 +34,9 @@
                 <li><a href="#domain"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</a></li>
                 <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
                 <li><a href="#string"><i class="glyphicon glyphicon-sort-by-alphabet-alt"></i> Strings</a></li>
+                <!-- Esteve 14.08.2016 - begin - Pirated and Malicious Apps Detection with APKiD -->
+                <li><a href="#apkid"><i class="glyphicon glyphicon-fire"></i> Pirated/Malicious App Check</a></li>
+                <!-- Esteve 14.08.2016 - end - Pirated and Malicious Apps Detection with APKiD -->
               </ul>
             </li>
 
@@ -398,6 +404,43 @@ Production ready applications should not be signed with 'Android Debug' Certific
 
 
 <!-- ============================================================= -->
+<!-- Esteve 21.08.2016 - begin - Permission Analysis with Androguard -->
+
+<section id="androperms">
+  <h2 class="page-header"></h2>
+  <!-- /.box -->
+
+          <div class="box">
+          <div class="box-header">
+             <!-- /.box-header -->
+              <h3 class="box-title"><i class="fa fa-align-justify"></i> Android Permissions (Enhanced)</h3>
+            </div>
+  <div class="box-body no-padding">
+             <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>PERMISSION</th>
+                                                <th>STATUS</th>
+                                                <th>INFO </th>
+                                                <th>DESCRIPTION</th>
+                        <th>FILES</th>                        
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                    {{ androperms | safe}}
+                    </tbody>
+                    </table>
+                                
+                            </div>
+       
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+</section>
+
+<!-- Esteve 21.08.2016 - end - Permission Analysis with Androguard -->
 
 
 
@@ -694,7 +737,41 @@ Production ready applications should not be signed with 'Android Debug' Certific
           <!-- /.box -->
 </section>
 
+<!-- Esteve 14.08.2016 - begin - Pirated and Malicious Apps Detection with APKiD -->
 
+<section id="apkid">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-fire"></i> Pirated/Malicious App Check</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ISSUE</th>
+                                                <th>SEVERITY</th>
+                        <th>DESCRIPTION</th>
+                                                
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                    {{ apkid | safe}}
+                    </tbody>
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+
+<!-- Esteve 14.08.2016 - end - Pirated and Malicious Apps Detection with APKiD -->
 <!-- ============================================================= -->
 
 <section id="activities">
