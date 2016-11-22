@@ -3,11 +3,17 @@ import MobSF.views
 import APITester.views
 import DynamicAnalyzer.views.android
 import DynamicAnalyzer.views.android_standalone
-import StaticAnalyzer.views.android
+import StaticAnalyzer.views.android.static_analyzer
+import StaticAnalyzer.views.android.java
+import StaticAnalyzer.views.android.smali
+import StaticAnalyzer.views.android.view_source
+import StaticAnalyzer.views.android.manifest_view
+import StaticAnalyzer.views.android.find
 import StaticAnalyzer.views.ios
 import StaticAnalyzer.views.shared_func
 import StaticAnalyzer.views.windows
 from MobSF import utils
+
 
 urlpatterns = [
     # Examples:
@@ -22,16 +28,16 @@ urlpatterns = [
     url(r'^zip_format/$', MobSF.views.zip_format),
     url(r'^mac_only/$', MobSF.views.mac_only),
 
-    url(r'^StaticAnalyzer/$', StaticAnalyzer.views.android.StaticAnalyzer),
+    url(r'^StaticAnalyzer/$', StaticAnalyzer.views.android.static_analyzer.static_analyzer),
     url(r'^StaticAnalyzer_iOS/$', StaticAnalyzer.views.ios.StaticAnalyzer_iOS),
     url(r'^StaticAnalyzer_Windows/$', StaticAnalyzer.views.windows.staticanalyzer_windows),
     url(r'^ViewFile/$', StaticAnalyzer.views.ios.ViewFile),
-    url(r'^ViewSource/$', StaticAnalyzer.views.android.ViewSource),
+    url(r'^ViewSource/$', StaticAnalyzer.views.android.view_source.run),
     url(r'^PDF/$', StaticAnalyzer.views.shared_func.PDF),
-    url(r'^Smali/$', StaticAnalyzer.views.android.Smali),
-    url(r'^Java/$', StaticAnalyzer.views.android.Java),
-    url(r'^Find/$', StaticAnalyzer.views.android.Find),
-    url(r'^ManifestView/$', StaticAnalyzer.views.android.ManifestView),
+    url(r'^Smali/$', StaticAnalyzer.views.android.smali.run),
+    url(r'^Java/$', StaticAnalyzer.views.android.java.run),
+    url(r'^Find/$', StaticAnalyzer.views.android.find.run),
+    url(r'^ManifestView/$', StaticAnalyzer.views.android.manifest_view.run),
 
     url(r'^DynamicAnalyzer/$', DynamicAnalyzer.views.android.DynamicAnalyzer),
     url(r'^GetEnv/$', DynamicAnalyzer.views.android.GetEnv),
