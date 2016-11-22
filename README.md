@@ -51,6 +51,9 @@ MobSF is also bundled with [Androdi Tamer](https://androidtamer.com/tamer4-relea
 
 ![ios-static-analysis-ipa](https://cloud.githubusercontent.com/assets/4301109/13614950/e8174ac8-e598-11e5-8e03-d40ad7d9e5a4.png)
 
+###Static Analysis - Windows APPX
+![windows-static-analysis-appx](https://cloud.githubusercontent.com/assets/4301109/20524598/1e139a1e-b0e1-11e6-8489-ee38c4392b4b.png)
+
 ###Dynamic Analysis - Android APK
 
 ![android-dynamic-analysis](https://cloud.githubusercontent.com/assets/4301109/13615043/6fe62028-e599-11e5-9c50-e44adbba114a.png)
