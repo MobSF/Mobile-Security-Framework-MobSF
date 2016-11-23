@@ -323,7 +323,7 @@ else:
 
     DECOMPILER = "jd-core"
 
-    # Two Decompilers are available
+    # Three Decompilers are available
     # 1. jd-core
     # 2. cfr
     # 3. procyon
