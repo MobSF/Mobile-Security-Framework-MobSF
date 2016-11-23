@@ -127,8 +127,8 @@ def manifest_data(mfxml):
             rec = receiver.getAttribute("android:name")
             brd.append(rec)
 
-        for lib in libs:
-            libary = lib.getAttribute("android:name")
+        for _lib in libs:
+            libary = _lib.getAttribute("android:name")
             lib.append(libary)
 
         for permission in permissions:
