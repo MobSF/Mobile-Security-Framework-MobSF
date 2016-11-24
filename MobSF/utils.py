@@ -22,6 +22,11 @@ def printMobSFverison():
     else:
         print '\n\n\033[1m\033[34mMobile Security Framework ' + settings.MOBSF_VER + '\033[0m'
     print settings.BANNER
+    print "OS: " + platform.system()
+    print "Platform: " + platform.platform()
+    if platform.dist()[0]:
+        print "Dist: " + str(platform.dist())
+
 
 
 def createUserConfig(MobSF_HOME):
