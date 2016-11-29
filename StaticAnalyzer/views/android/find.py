@@ -63,7 +63,7 @@ def run(request):
             'term': query,
             'found' : str(flz)
         }
-        template = "search.html"
+        template = "general/search.html"
         return render(request, template, context)
     except:
         PrintException("[ERROR] Searching Failed")

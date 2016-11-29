@@ -44,7 +44,7 @@ def run(request):
             'md5': md5,
         }
 
-        template = "smali.html"
+        template = "static_analysis/smali.html"
         return render(request, template, context)
     except:
         PrintException("[ERROR] Getting Smali Files")

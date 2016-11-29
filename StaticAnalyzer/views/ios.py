@@ -124,7 +124,7 @@ def StaticAnalyzer_iOS(request):
                         'file_analysis': SFILES,
                         'strings': STRINGS,
                     }
-                template = "ios_binary_analysis.html"
+                template = "static_analysis/ios_binary_analysis.html"
                 return render(request, template, context)
             elif TYP == 'ios':
                 DB = StaticAnalyzerIOSZIP.objects.filter(MD5=MD5)
@@ -242,7 +242,7 @@ def StaticAnalyzer_iOS(request):
                         'domains': DOMAINS,
                         'emails': EmailnFile
                     }
-                template = "ios_source_analysis.html"
+                template = "static_analysis/ios_source_analysis.html"
                 return render(request, template, context)
             else:
                 return HttpResponseRedirect('/error/')
@@ -255,7 +255,7 @@ def StaticAnalyzer_iOS(request):
             'exp': exp.message,
             'doc': exp.__doc__
         }
-        template = "error.html"
+        template = "general/error.html"
         return render(request, template, context)
 
 
@@ -302,7 +302,7 @@ def ViewFile(request):
                    'file': escape(ntpath.basename(fil)),
                    'type': format,
                    'dat': dat}
-        template = "view.html"
+        template = "general/view.html"
         return render(request, template, context)
     except:
         PrintException("[ERROR] View iOS File")

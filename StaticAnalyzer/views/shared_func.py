@@ -71,7 +71,9 @@ def Unzip(APP_PATH, EXT_PATH):
         with zipfile.ZipFile(APP_PATH, "r") as z:
             for fileinfo in z.infolist():
                 dat = z.open(fileinfo.filename, "r")
-                filename = unicode(fileinfo.filename, encoding="utf-8", errors="ignore")
+                filename = fileinfo.filename
+                if not isinstance(filename, unicode):
+                    filename = unicode(fileinfo.filename, encoding="utf-8", errors="ignore")
                 outfile = os.path.join(EXT_PATH, filename)
                 if not os.path.exists(os.path.dirname(outfile)):
                     try:
@@ -155,9 +157,9 @@ def PDF(request):
                         'mani': DB[0].MANI
                     }
                     if TYP == 'APK':
-                        template = get_template("static_analysis_pdf.html")
+                        template = get_template("pdf/static_analysis_pdf.html")
                     else:
-                        template = get_template("static_analysis_zip_pdf.html")
+                        template = get_template("pdf/static_analysis_zip_pdf.html")
                 else:
                     return HttpResponse(json.dumps({"report": "Report not Found"}),
                                         content_type="application/json; charset=utf-8")
@@ -186,7 +188,7 @@ def PDF(request):
                             'file_analysis': DB[0].SFILESX,
                             'strings': DB[0].STRINGS
                         }
-                        template = get_template("ios_binary_analysis_pdf.html")
+                        template = get_template("pdf/ios_binary_analysis_pdf.html")
                     else:
                         return HttpResponse(json.dumps({"report": "Report not Found"}),
                                             content_type="application/json; charset=utf-8")
@@ -218,7 +220,7 @@ def PDF(request):
                             'domains': python_dict(DB[0].DOMAINS),
                             'emails': DB[0].EmailnFile
                         }
-                        template = get_template("ios_source_analysis_pdf.html")
+                        template = get_template("pdf/ios_source_analysis_pdf.html")
                     else:
                         return HttpResponse(json.dumps({"report": "Report not Found"}),
                                             content_type="application/json; charset=utf-8")
@@ -254,7 +256,7 @@ def PDF(request):
                             'bin_an_warnings': python_list(db_entry[0].BIN_AN_WARNINGS)
                         }
                         template = get_template(
-                            "windows_binary_analysis_pdf.html")
+                            "pdf/windows_binary_analysis_pdf.html")
             else:
                 return HttpResponse(json.dumps({"type": "Type is not Allowed"}),
                                     content_type="application/json; charset=utf-8")

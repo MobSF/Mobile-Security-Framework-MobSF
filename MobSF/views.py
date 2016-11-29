@@ -38,7 +38,7 @@ def index(request):
     Index Route
     """
     context = {'version': settings.MOBSF_VER}
-    template = "index.html"
+    template = "general/index.html"
     return render(request, template, context)
 
 
@@ -147,7 +147,7 @@ def about(request):
     About Route
     """
     context = {'title': 'About'}
-    template = "about.html"
+    template = "general/about.html"
     return render(request, template, context)
 
 
@@ -156,7 +156,7 @@ def error(request):
     Error Route
     """
     context = {'title': 'Error'}
-    template = "error.html"
+    template = "general/error.html"
     return render(request, template, context)
 
 
@@ -165,7 +165,7 @@ def zip_format(request):
     Zip Format Message Route
     """
     context = {'title': 'Zipped Source Instruction'}
-    template = "zip.html"
+    template = "general/zip.html"
     return render(request, template, context)
 
 
@@ -174,7 +174,7 @@ def mac_only(request):
     Mac Ony Message Route
     """
     context = {'title': 'Supports OSX Only'}
-    template = "ios.html"
+    template = "general/ios.html"
     return render(request, template, context)
 
 
@@ -183,7 +183,7 @@ def not_found(request):
     Not Found Route
     """
     context = {'title': 'Not Found'}
-    template = "not_found.html"
+    template = "general/not_found.html"
     return render(request, template, context)
 
 
@@ -193,7 +193,7 @@ def recent_scans(request):
     """
     db_obj = RecentScansDB.objects.all().order_by('-TS')
     context = {'title': 'Recent Scans', 'entries': db_obj}
-    template = "recent.html"
+    template = "general/recent.html"
     return render(request, template, context)
 
 

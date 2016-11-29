@@ -55,7 +55,7 @@ def run(request):
             'type': typ,
         }
 
-        template = "java.html"
+        template = "static_analysis/java.html"
         return render(request, template, context)
     except:
         PrintException("[ERROR] Getting Java Files")

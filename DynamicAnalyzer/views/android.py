@@ -76,7 +76,7 @@ def DynamicAnalyzer(request):
                            'pkg': PKG,
                            'lng': LNCH,
                            'title': 'Start Testing', }
-                template = "start_test.html"
+                template = "dynamic_analysis/start_test.html"
                 return render(request, template, context)
             else:
                 return HttpResponseRedirect('/error/')
@@ -657,7 +657,7 @@ def Report(request):
                            'process': API_CMD,
                            'pkg': PKG,
                            'title': 'Dynamic Analysis'}
-                template = "dynamic_analysis.html"
+                template = "dynamic_analysis/dynamic_analysis.html"
                 return render(request, template, context)
             else:
                 return HttpResponseRedirect('/error/')
@@ -1075,7 +1075,7 @@ def View(request):
                     return HttpResponseRedirect('/error/')
                 context = {'title': escape(ntpath.basename(fil)), 'file': escape(
                     ntpath.basename(fil)), 'dat': dat, 'type': rtyp, }
-                template = "view.html"
+                template = "general/view.html"
                 return render(request, template, context)
 
         else:

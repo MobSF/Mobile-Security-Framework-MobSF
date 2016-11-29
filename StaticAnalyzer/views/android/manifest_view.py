@@ -36,7 +36,7 @@ def run(request):
                 'file': 'AndroidManifest.xml',
                 'dat': manifest
             }
-            template = "view_mani.html"
+            template = "static_analysis/view_mani.html"
             return render(request, template, context)
     except:
         PrintException("[ERROR] Viewing AndroidManifest.xml")

@@ -52,7 +52,7 @@ ACCEPTED_CONTENT_TYPE = ["application/json",
 
 def NoAPI(request):
     context = {'title': 'No Web API(s) Found'}
-    template = "not_api.html"
+    template = "api_fuzzer/not_api.html"
     return render(request, template, context)
 
 
@@ -79,7 +79,7 @@ def APIFuzzer(request):
                            'v': 'display: none;',
                            'dict_urls': {},
                            }
-                template = "api_tester.html"
+                template = "api_fuzzer/api_tester.html"
                 return render(request, template, context)
             else:
                 return HttpResponseRedirect('/error/')
@@ -130,7 +130,7 @@ def APIFuzzer(request):
                            'dict_urls': DICT_URLS,
 
                            }
-                template = "api_tester.html"
+                template = "api_fuzzer/api_tester.html"
                 return render(request, template, context)
             else:
                 return HttpResponseRedirect('/error/')
@@ -215,7 +215,7 @@ def StartScan(request):
                 # "blaa": [{}, {}, {}, {}]}
                 context = {'result': RESULT,
                            'title': 'Web API Scan Results'}
-                template = "web_api_scan.html"
+                template = "api_fuzzer/web_api_scan.html"
                 return render(request, template, context)
             else:
                 return HttpResponseRedirect('/error/')

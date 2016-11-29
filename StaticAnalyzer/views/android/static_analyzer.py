@@ -181,7 +181,7 @@ def static_analyzer(request):
                         code_an_dic,
                         cert_dic
                     )
-                template = "static_analysis.html"
+                template = "static_analysis/static_analysis.html"
                 return render(request, template, context)
             elif typ == 'zip':
                 #Check if in DB
@@ -264,7 +264,7 @@ def static_analyzer(request):
                         )
                     else:
                         return HttpResponseRedirect('/ZIP_FORMAT/')
-                template = "static_analysis_android_zip.html"
+                template = "static_analysis/static_analysis_android_zip.html"
                 return render(request, template, context)
             else:
                 print "\n[ERROR] Only APK,IPA and Zipped Android/iOS Source code supported now!"
@@ -278,7 +278,7 @@ def static_analyzer(request):
             'exp': excep.message,
             'doc': excep.__doc__
         }
-        template = "error.html"
+        template = "general/error.html"
         return render(request, template, context)
 
 

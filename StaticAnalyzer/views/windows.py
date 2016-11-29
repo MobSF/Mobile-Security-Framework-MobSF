@@ -180,7 +180,7 @@ def staticanalyzer_windows(request):
                         'bin_an_results' : bin_an_dic['results'],
                         'bin_an_warnings' : bin_an_dic['warnings'],
                     }
-                template = "windows_binary_analysis.html"
+                template = "static_analysis/windows_binary_analysis.html"
                 return render(request, template, context)
             else:
                 return HttpResponseRedirect('/error/')
@@ -193,7 +193,7 @@ def staticanalyzer_windows(request):
             'exp' : exception.message,
             'doc' : exception.__doc__
         }
-        template = "error.html"
+        template = "general/error.html"
         return render(request, template, context)
 
 def _get_token():

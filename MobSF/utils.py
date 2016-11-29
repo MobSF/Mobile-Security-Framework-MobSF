@@ -308,10 +308,14 @@ def isBase64(str):
 
 def isInternetAvailable():
     try:
-        response = urllib2.urlopen('http://216.58.220.46', timeout=5)
+        urllib2.urlopen('http://216.58.220.46', timeout=5)
         return True
     except urllib2.URLError as err:
-        pass
+        try:
+            urllib2.urlopen('http://180.149.132.47', timeout=5)
+            return True
+        except urllib2.URLError as err1:
+            return False
     return False
 
 

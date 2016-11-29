@@ -57,7 +57,7 @@ def run(request):
             'file': escape(ntpath.basename(fil)),
             'dat': dat
         }
-        template = "view_source.html"
+        template = "static_analysis/view_source.html"
         return render(request, template, context)
     except:
         PrintException("[ERROR] Viewing Source")
