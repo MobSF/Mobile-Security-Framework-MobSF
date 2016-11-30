@@ -232,7 +232,7 @@ def _binary_analysis(app_dic):
     bin_an_dic['strings'] = "</br>".join(str_list)
 
     # Search for unsave function
-    pattern = re.compile("\&\#39\;(alloca|gets|memcpy|printf|scanf|sprintf|sscanf|strcat|StrCat|strcpy|StrCpy|strlen|StrLen|strncat|StrNCat|strncpy|StrNCpy|strtok|swprintf|vsnprintf|vsprintf|vswprintf|wcscat|wcscpy|wcslen|wcsncat|wcsncpy|wcstok|wmemcpy)\&\#39\;")
+    pattern = re.compile("(alloca|gets|memcpy|printf|scanf|sprintf|sscanf|strcat|StrCat|strcpy|StrCpy|strlen|StrLen|strncat|StrNCat|strncpy|StrNCpy|strtok|swprintf|vsnprintf|vsprintf|vswprintf|wcscat|wcscpy|wcslen|wcsncat|wcsncpy|wcstok|wmemcpy)")
     for elem in str_list:
         if pattern.match(elem):
             result = {
