@@ -22,7 +22,7 @@ import install.windows.setup as windows_setup
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v0.9.3.3 Beta"
+MOBSF_VER = "v0.9.3.4 Beta"
 BANNER = """
   __  __       _    ____  _____        ___   ___   _____ 
  |  \/  | ___ | |__/ ___||  ___|_   __/ _ \ / _ \ |___ / 
@@ -55,12 +55,26 @@ DB_DIR = os.path.join(MobSF_HOME, 'db.sqlite3')
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': DB_DIR,
     }
 }
+#Postgres DB - Install psycopg2
+'''
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'mobsf',
+        'USER': 'postgres',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '',
+    }
+}
+'''
 #===============================================
 
 #==========LOAD CONFIG FROM MobSF HOME==========

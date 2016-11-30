@@ -81,8 +81,9 @@ def Unzip(APP_PATH, EXT_PATH):
                     except OSError as exc: # Guard against race condition
                         if exc.errno != errno.EEXIST:
                             print "\n[WARN] OS Error: Race Condition"
-                with io.open(outfile, mode='wb') as f:
-                    f.write(dat.read())
+                if not outfile.endswith("/"):
+                    with io.open(outfile, mode='wb') as f:
+                        f.write(dat.read())
                 dat.close()
         return files
     except:
