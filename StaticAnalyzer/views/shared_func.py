@@ -74,6 +74,7 @@ def Unzip(APP_PATH, EXT_PATH):
                 filename = fileinfo.filename
                 if not isinstance(filename, unicode):
                     filename = unicode(fileinfo.filename, encoding="utf-8", errors="ignore")
+                files.append(filename)
                 outfile = os.path.join(EXT_PATH, filename)
                 if not os.path.exists(os.path.dirname(outfile)):
                     try:

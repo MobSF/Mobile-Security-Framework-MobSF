@@ -263,7 +263,7 @@ def static_analyzer(request):
                             code_an_dic
                         )
                     else:
-                        return HttpResponseRedirect('/ZIP_FORMAT/')
+                        return HttpResponseRedirect('/zip_format/')
                 template = "static_analysis/static_analysis_android_zip.html"
                 return render(request, template, context)
             else:
