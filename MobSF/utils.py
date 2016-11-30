@@ -13,6 +13,7 @@ import urllib2
 import io
 import ast
 import unicodedata
+import httplib
 import settings
 
 
@@ -26,8 +27,28 @@ def printMobSFverison():
     print "Platform: " + platform.platform()
     if platform.dist()[0]:
         print "Dist: " + str(platform.dist())
+    check_update()
 
-
+def check_update():
+    try:
+        print "\n[INFO] Checking for Update."
+        github_url = "https://raw.githubusercontent.com/ajinabraham/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
+        response = urllib2.urlopen(github_url)
+        html = response.read().split("\n")
+        for line in html:
+            if line.startswith("MOBSF_VER"):
+                line = line.replace("MOBSF_VER", "").replace('"', '')
+                line = line.replace("=", "").strip()
+                if line != settings.MOBSF_VER:
+                    print """\n[WARN] A new version of MobSF is available,
+Please update from master branch or check for new releases.\n"""
+                else:
+                    print "\n[INFO] No updates available."
+    except (urllib2.HTTPError, httplib.HTTPException):
+        print "\n[WARN] Cannot check for updates.. No Internet Connection Found."
+        return
+    except:
+        PrintException("[ERROR] Cannot Check for updates.")
 
 def createUserConfig(MobSF_HOME):
     try:
