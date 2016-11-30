@@ -22,7 +22,7 @@ import install.windows.setup as windows_setup
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v0.9.3.5 Beta"
+MOBSF_VER = "v0.9.3.6 Beta"
 BANNER = """
   __  __       _    ____  _____        ___   ___   _____ 
  |  \/  | ___ | |__/ ___||  ___|_   __/ _ \ / _ \ |___ / 
