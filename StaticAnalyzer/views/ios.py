@@ -420,6 +420,8 @@ def BinaryAnalysis(SRC, TOOLS_DIR, APP_DIR):
         try:
             print "[INFO] Reading Info.plist"
             XML = readBinXML(XML_FILE)
+            if isinstance(XML, unicode):
+                XML = XML.encode("utf-8", "replace")
             p = plistlib.readPlistFromString(XML)
             BIN_NAME = BIN = ID = VER = SDK = PLTFM = MIN = ""
             if "CFBundleDisplayName" in p:
@@ -561,7 +563,8 @@ def BinaryAnalysis(SRC, TOOLS_DIR, APP_DIR):
         STRINGS = ""
         sl = list(strings(BIN_PATH))
         sl = set(sl)  # Make unique
-        sl = [escape(s) for s in sl]  # Escape evil strings
+        sl = [s if isinstance(s, unicode) else unicode(s, encoding="utf-8", errors="replace") for s in sl]
+        sl = [escape(s) for s in sl]# Escape evil strings
         STRINGS = "</br>".join(sl)
 
         return XML, BIN_NAME, ID, VER, SDK, PLTFM, MIN, LIBS, BIN_RES, STRINGS

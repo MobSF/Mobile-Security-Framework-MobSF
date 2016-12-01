@@ -46,6 +46,7 @@ def cert_info(app_dir, tools_dir):
         cp_path = tools_dir + 'CertPrint.jar'
         files = [f for f in os.listdir(cert) if os.path.isfile(os.path.join(cert, f))]
         certfile = None
+        dat = ''
         if "CERT.RSA" in files:
             certfile = os.path.join(cert, "CERT.RSA")
         else:
@@ -56,9 +57,10 @@ def cert_info(app_dir, tools_dir):
                     certfile = os.path.join(cert, file_name)
         if certfile:
             args = [settings.JAVA_PATH + 'java', '-jar', cp_path, certfile]
-            dat = ''
             issued = 'good'
-            dat = escape(subprocess.check_output(args)).replace('\n', '</br>')
+            dat = subprocess.check_output(args)
+            unicode_output = unicode(dat, encoding="utf-8", errors="replace")
+            dat = escape(unicode_output).replace('\n', '</br>')
         else:
             dat = 'No Code Signing Certificate Found!'
             issued = 'missing'
