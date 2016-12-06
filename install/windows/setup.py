@@ -154,7 +154,7 @@ def tools_binskim():
 
     # Search for the version number
     folder = re.search(
-        b"Microsoft\.CodeAnalysis\.BinSkim\..*' ", output # pylint: disable-msg=W1401
+        b"Microsoft\.CodeAnalysis\.BinSkim\..*('|\") ", output # pylint: disable-msg=W1401
     )
     try:
         # Substring-Foo for removing b'X's in python3
