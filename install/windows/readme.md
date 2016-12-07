@@ -23,7 +23,7 @@ NOTE: These steps are not required, if you are running MobSF in a Windows Host.
 
 ##FAQ
 
-1. If you see errors like this
+* If you see errors like this
 
 ```
 Unhandled Exception: System.NotSupportedException: The requested security protocol is not supported.
@@ -33,3 +33,6 @@ Unhandled Exception: System.NotSupportedException: The requested security protoc
 ```
 Install [.NET Framework 4.6](https://www.microsoft.com/en-in/download/confirmation.aspx?id=48130)
 
+*  Error: **AttributeError: ConfigParser instance has no attribute 'getitem'**
+
+MobSF setup script assume that your VM or host Windows box have a C Drive and you have all the permissions to perform read/write operations in `C:\MobSF`. This error occurs if you don't have proper read/write permissions.
