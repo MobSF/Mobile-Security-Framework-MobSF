@@ -73,7 +73,7 @@ def upload_file(sample_file, signature):
     # Save the file to disk
     with open(
         os.path.join(
-            config['MobSF']['subdir_samples'],
+            config['MobSF']['samples'],
             md5.hexdigest()
         ),
         "wb"
