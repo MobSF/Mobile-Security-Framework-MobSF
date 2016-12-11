@@ -345,16 +345,20 @@ def autostart():
     # Execute. Beware the " " because of windows strange paths..
     os.system('"'+batch_file+'"')
 
-def _place_lockfile():
-    path = os.path.join(CONFIG['MobSF']['dir'], 'setup_done.txt')
+def _place_lockfile(mobsf_home):
+    path = os.path.join(mobsf_home, 'setup_done.txt')
     open(path, 'a').close()
 
 
-def local_config(mobsf_home, config_path):
+def local_config(mobsf_home):
     """Move local config and save paths."""
     # Set the CONFIG_PATH
-    global CONFIG_PATH
-    CONFIG_PATH = config_path
+    #global CONFIG_PATH
+    #CONFIG_PATH = config_path
+
+    # Create path if it doesn't exist yet
+    if not os.path.exists(CONFIG_PATH):
+        os.makedirs(CONFIG_PATH)
 
     # Copy predefined config to MobSF folder
     shutil.copy(
@@ -390,22 +394,24 @@ def rewrite_config():
         CONFIG.write(configfile) # pylint: disable-msg=E1101
 
 
-def install_locally(mobsf_home, user_config=None):
+def install_locally(mobsf_home):
     """Install the MobSF-Utils on the same system as MobSF."""
-    if user_config:
-        local_config(mobsf_home, user_config)
-    else:
-        user_config = os.path.join(mobsf_home + "\\MobSF\\")
-        local_config(mobsf_home, user_config)
+    #if user_config:
+    #    local_config(mobsf_home, user_config)
+    #else:
+    #    user_config = os.path.join(mobsf_home + "\\MobSF\\")
+    local_config(mobsf_home)
 
     read_config()
-    rewrite_local_config(mobsf_home)
-    if not os.path.exists(CONFIG['MobSF']['subdir_tools']):
-        os.makedirs(CONFIG['MobSF']['subdir_tools'])
+    #rewrite_local_config(mobsf_home)
+    rewrite_config()
+    create_folders()
+    #if not os.path.exists(CONFIG['MobSF']['subdir_tools']):
+    #    os.makedirs(CONFIG['MobSF']['subdir_tools'])
     tools_nuget()
     tools_binskim()
     tools_binscope()
-    _place_lockfile()
+    _place_lockfile(mobsf_home)
 
 def _install_remote():
     """Install the MobSF-Utils on a Windows-VM for static analysis."""

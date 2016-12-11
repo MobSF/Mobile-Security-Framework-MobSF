@@ -2,6 +2,7 @@
 """Windows Analysis Module."""
 import re
 import os
+from os.path import expanduser
 import platform
 
 # Binskim/Binscope analysis
@@ -271,7 +272,7 @@ def _binary_analysis(app_dic):
         global config
         config = configparser.ConfigParser()
         # Switch to settings definded path if available
-        config.read('MobSF\\config.txt')
+        config.read(expanduser("~") + "\\MobSF\\Config\\config.txt")
 
         # Run analysis functions
         bin_an_dic = __binskim(bin_path, bin_an_dic, run_local=True, app_dir=app_dic['app_dir'])

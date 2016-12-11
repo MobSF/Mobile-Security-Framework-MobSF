@@ -24,12 +24,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 MOBSF_VER = "v0.9.3.7 Beta"
 BANNER = """
-  __  __       _    ____  _____        ___   ___   _____ 
- |  \/  | ___ | |__/ ___||  ___|_   __/ _ \ / _ \ |___ / 
- | |\/| |/ _ \| '_ \___ \| |_  \ \ / / | | | (_) |  |_ \ 
+  __  __       _    ____  _____        ___   ___   _____
+ |  \/  | ___ | |__/ ___||  ___|_   __/ _ \ / _ \ |___ /
+ | |\/| |/ _ \| '_ \___ \| |_  \ \ / / | | | (_) |  |_ \
  | |  | | (_) | |_) |__) |  _|  \ V /| |_| |\__, | ___) |
- |_|  |_|\___/|_.__/____/|_|     \_/  \___(_) /_(_)____/ 
-                                                                                                             
+ |_|  |_|\___/|_.__/____/|_|     \_/  \___(_) /_(_)____/
+
 """
 #==============================================
 
@@ -376,7 +376,7 @@ else:
         print "[INFO] Running first time setup for windows."
         # Setup is to-be-executed
         if CONFIG_HOME:
-            windows_setup.install_locally(MobSF_HOME, user_config=USER_CONFIG)
+            windows_setup.install_locally(MobSF_HOME)
         else:
             windows_setup.install_locally(MobSF_HOME)
     #==============================================
