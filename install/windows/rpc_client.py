@@ -1,7 +1,7 @@
 """MobSF rpc_client for static windows app analysis."""
 # pylint: disable=C0325,W0603,C0103
 import os
-
+from os.path import expanduser
 import re
 import subprocess
 import configparser # pylint: disable-msg=E0401
@@ -21,7 +21,7 @@ pub_key = None
 def _init_key():
     global pub_key
     pub_key = rsa.PublicKey.load_pkcs1(
-        open(config['MobSF']['pub_key_file']).read()
+        open(config['MobSF']['pub_key']).read()
     )
 
 def _check_challenge(signature):
@@ -97,9 +97,9 @@ def binskim(sample, signature):
     # Set params for execution of binskim
     binskim_path = config['binskim']['file_x64']
     command = "analyze"
-    path = config['MobSF']['subdir_samples'] + sample
+    path = config['MobSF']['samples'] + sample
     output_p = "-o"
-    output_d = config['MobSF']['subdir_samples'] + sample + "_binskim"
+    output_d = config['MobSF']['samples'] + sample + "_binskim"
     # verbose = "-v"
     policy_p = "--config"
     policy_d = "default"  # TODO(Other policies?)
@@ -130,8 +130,9 @@ def binscope(sample, signature):
     _check_challenge(signature)
 
     # Set params for execution of binskim
-    binscope_path = ["C:\\MobSF\\Tools\\BinScope\\BinScope.exe"]
-    target = ["C:\\MobSF\\Samples\\" + sample]
+
+    binscope_path = [config['binscope']['file']]
+    target = [config['MobSF']['samples'] + sample]
     out_type = ["/Red", "/v"]
     output = ["/l", target[0] + "_binscope"]
     checks = [
@@ -175,7 +176,8 @@ def binscope(sample, signature):
 if __name__ == '__main__':
     # Init configparser
     config = configparser.ConfigParser()
-    config.read('C:\\MobSF\\Config\\config.txt')
+
+    config.read(expanduser("~") + "\\MobSF\\Config\\config.txt")
 
     _init_key()
 
