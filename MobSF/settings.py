@@ -22,7 +22,7 @@ import install.windows.setup as windows_setup
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v0.9.3.7 Beta"
+MOBSF_VER = "v0.9.3.8 Beta"
 BANNER = """
   __  __       _    ____  _____        ___   ___   _____
  |  \/  | ___ | |__/ ___||  ___|_   __/ _ \ / _ \ |___ /
@@ -375,10 +375,7 @@ else:
     if (os.path.isfile(PATH_TO_LOCK_FILE) is False) and CURRENT_PLATFROM == 'Windows':
         print "[INFO] Running first time setup for windows."
         # Setup is to-be-executed
-        if CONFIG_HOME:
-            windows_setup.install_locally(MobSF_HOME)
-        else:
-            windows_setup.install_locally(MobSF_HOME)
+        windows_setup.install_locally(MobSF_HOME)
     #==============================================
     #^CONFIG-END^: Do not edit this line
 
