@@ -366,7 +366,7 @@ else:
     WINDOWS_VM_SECRET = 'MobSF/windows_vm_priv_key.asc'
     # IP and Port of the MobSF Windows VM
     # eg: WINDOWS_VM_IP = '127.0.0.1'
-    WINDOWS_VM_IP = '192.168.178.67' # TODO(Remove)
+    WINDOWS_VM_IP = None
     WINDOWS_VM_PORT = '8000'
 
     # Configure here if you are on windows

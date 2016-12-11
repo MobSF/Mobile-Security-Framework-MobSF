@@ -48,10 +48,6 @@ def download_config():
     if os.path.exists(CONFIG_PATH + CONFIG_FILE):
         os.remove(CONFIG_PATH + CONFIG_FILE)
 
-    # TODO(Testing
-    input("Please copy config.txt to " + CONFIG_PATH)
-    return
-
     # TODO(Give user time to modify config, but mayber after rewrite?)
 
     # Open File
@@ -215,10 +211,6 @@ def tools_rpcclient():
     rpc_url = CONFIG['rpc']['url']
     mobsf_subdir_tools = CONFIG['MobSF']['tools']
     rpc_file_path = CONFIG['rpc']['file']
-
-    # TODO(Testing)
-    input("Please move rpc to " + mobsf_subdir_tools + rpc_file_path)
-    return
 
     # Open File
     rpc_local_file = open(mobsf_subdir_tools + rpc_file_path, "wb")
