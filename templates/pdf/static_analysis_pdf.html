@@ -216,7 +216,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                       </br>
                                    {% endif %}
                                    {% if intent_details|key:"path_patterns" %}
-                                      <strong>Hosts:</strong> {% for pattern in intent_details|key:"path_patterns" %}
+                                      <strong>Path Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
                                         {{pattern}},
                                       {% endfor %} 
                                       </br>
