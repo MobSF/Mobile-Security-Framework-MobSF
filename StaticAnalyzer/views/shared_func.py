@@ -35,6 +35,11 @@ except Exception:
 try:
     import xhtml2pdf.pisa as pisa
 except:
+    print """\n
+    Make sure you have installed the following dependencies in correct order and exact version.
+    xhtml2pdf==0.0.6
+    html5lib==1.0b8
+    """
     PrintException(
         "[ERROR] xhtml2pdf is not installed. Cannot generate PDF reports")
 
@@ -138,6 +143,7 @@ def PDF(request):
                         'providers': python_list(DB[0].PROVIDERS),
                         'services': python_list(DB[0].SERVICES),
                         'libraries': python_list(DB[0].LIBRARIES),
+                        'browsable_activities' : python_dict(DB[0].BROWSABLE),
                         'act_count': DB[0].CNT_ACT,
                         'prov_count': DB[0].CNT_PRO,
                         'serv_count': DB[0].CNT_SER,

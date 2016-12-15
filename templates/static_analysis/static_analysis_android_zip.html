@@ -13,6 +13,7 @@
             <li><a href="#nature"><i class="glyphicon glyphicon-tasks"></i> Code Nature</a></li>
             <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissions</a></li>
             <li><a href="#android-api"><i class="fa fa-dot-circle-o"></i> Android API</a></li>
+           <li><a href="#browsable"><i class="fa fa-clone"></i> Browsable Activities</a></li>
 
             <li class="treeview">
               <a href="javascript::;"><i class="fa fa-circle-o"></i> Security Analysis</a>
@@ -397,6 +398,87 @@
 
 
 <!-- ============================================================= -->
+
+<section id="browsable">
+  <h2 class="page-header"></h2>
+   <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-clone"></i> Browsable Activities</h3> 
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ACTIVITY</th>
+                                                <th>INTENT</th>   
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                      {% for activity,intent_details in browsable_activities.items %}
+                          <tr>
+                            <td>{{activity}}</td>
+                            <td>
+                                   {% if intent_details|key:"schemes" %}
+                                      <strong>Schemes</strong>: 
+                                      {% for scheme in intent_details|key:"schemes" %}
+                                        {{scheme}},
+                                      {% endfor %}
+                                       </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"hosts" %}
+                                      <strong>Hosts:</strong> {% for host in intent_details|key:"hosts" %}
+                                        {{host}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"ports" %}
+                                      <strong>Ports:</strong> {% for port in intent_details|key:"ports" %}
+                                        {{port}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"mime_types" %}
+                                      <strong>Mime Types:</strong> {% for mime in intent_details|key:"mime_types" %}
+                                        {{mime}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"paths" %}
+                                      <strong>Paths:</strong> {% for path in intent_details|key:"paths" %}
+                                        {{path}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"path_prefixs" %}
+                                      <strong>Path Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
+                                        {{prefix}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"path_patterns" %}
+                                      <strong>Hosts:</strong> {% for pattern in intent_details|key:"path_patterns" %}
+                                        {{pattern}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                              {% endfor %}
+                            </td>
+                          </tr>
+                    </tbody>
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+<!-- ============================================================= -->
+
 <section id="manifest">
   <h2 class="page-header"></h2>
    <!-- /.box -->
@@ -431,7 +513,6 @@
 
 
 <!-- ============================================================= -->
-
 <section id="code">
    <h2 class="page-header"></h2>
    <!-- /.box -->

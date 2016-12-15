@@ -68,9 +68,8 @@ def key(data, key_name):
 def static_analyzer(request):
     """Do static analysis on an request and save to db."""
     try:
-        #Input validation
+        # Input validation
         app_dic = {}
-
         typ = request.GET['type']
         # output = request.GET['format'] # Later for json output
         match = re.match('^[0-9a-f]{32}$', request.GET['checksum'])
@@ -84,30 +83,39 @@ def static_analyzer(request):
                     typ in ['zip', 'apk']
                 )
         ):
-            app_dic['dir'] = settings.BASE_DIR  #BASE DIR
-            app_dic['app_name'] = request.GET['name'] #APP ORGINAL NAME
-            app_dic['md5'] = request.GET['checksum']  #MD5
-            app_dic['app_dir'] = os.path.join(settings.UPLD_DIR, app_dic['md5']+'/') #APP DIRECTORY
-            app_dic['tools_dir'] = os.path.join(app_dic['dir'], 'StaticAnalyzer/tools/')  #TOOLS DIR
+            app_dic['dir'] = settings.BASE_DIR  # BASE DIR
+            app_dic['app_name'] = request.GET['name']  # APP ORGINAL NAME
+            app_dic['md5'] = request.GET['checksum']  # MD5
+            app_dic['app_dir'] = os.path.join(settings.UPLD_DIR, app_dic[
+                                              'md5'] + '/')  # APP DIRECTORY
+            app_dic['tools_dir'] = os.path.join(
+                app_dic['dir'], 'StaticAnalyzer/tools/')  # TOOLS DIR
             # DWD_DIR = settings.DWD_DIR # not needed? Var is never used.
-            print "[INFO] Starting Analysis on : "+app_dic['app_name']
+            print "[INFO] Starting Analysis on : " + app_dic['app_name']
             rescan = str(request.GET.get('rescan', 0))
             if typ == 'apk':
-                #Check if in DB
+                # Check if in DB
                 # pylint: disable=E1101
-                db_entry = StaticAnalyzerAndroid.objects.filter(MD5=app_dic['md5'])
+                db_entry = StaticAnalyzerAndroid.objects.filter(
+                    MD5=app_dic['md5'])
                 if db_entry.exists() and rescan == '0':
                     context = get_context_from_db_entry(db_entry)
                 else:
-                    app_dic['app_file'] = app_dic['md5'] + '.apk'  #NEW FILENAME
-                    app_dic['app_path'] = app_dic['app_dir'] + app_dic['app_file']  #APP PATH
+                    app_dic['app_file'] = app_dic[
+                        'md5'] + '.apk'  # NEW FILENAME
+                    app_dic['app_path'] = app_dic['app_dir'] + \
+                        app_dic['app_file']  # APP PATH
 
                     # ANALYSIS BEGINS
-                    app_dic['size'] = str(FileSize(app_dic['app_path'])) + 'MB'  #FILE SIZE
-                    app_dic['sha1'], app_dic['sha256'] = HashGen(app_dic['app_path'])
+                    app_dic['size'] = str(
+                        FileSize(app_dic['app_path'])) + 'MB'  # FILE SIZE
+                    app_dic['sha1'], app_dic[
+                        'sha256'] = HashGen(app_dic['app_path'])
 
-                    app_dic['files'] = Unzip(app_dic['app_path'], app_dic['app_dir'])
-                    app_dic['certz'] = get_hardcoded_cert_keystore(app_dic['files'])
+                    app_dic['files'] = Unzip(
+                        app_dic['app_path'], app_dic['app_dir'])
+                    app_dic['certz'] = get_hardcoded_cert_keystore(app_dic[
+                                                                   'files'])
 
                     print "[INFO] APK Extracted"
 
@@ -120,7 +128,8 @@ def static_analyzer(request):
                     )
 
                     # Set Manifest link
-                    app_dic['mani'] = '../ManifestView/?md5='+app_dic['md5']+'&type=apk&bin=1'
+                    app_dic['mani'] = '../ManifestView/?md5=' + \
+                        app_dic['md5'] + '&type=apk&bin=1'
                     man_data_dic = manifest_data(app_dic['parsed_xml'])
 
                     man_an_dic = manifest_analysis(
@@ -128,8 +137,10 @@ def static_analyzer(request):
                         man_data_dic
                     )
 
-                    cert_dic = cert_info(app_dic['app_dir'], app_dic['tools_dir'])
-                    dex_2_jar(app_dic['app_path'], app_dic['app_dir'], app_dic['tools_dir'])
+                    cert_dic = cert_info(
+                        app_dic['app_dir'], app_dic['tools_dir'])
+                    dex_2_jar(app_dic['app_path'], app_dic[
+                              'app_dir'], app_dic['tools_dir'])
                     dex_2_smali(app_dic['app_dir'], app_dic['tools_dir'])
                     jar_2_java(app_dic['app_dir'], app_dic['tools_dir'])
 
@@ -153,7 +164,7 @@ def static_analyzer(request):
 
                     print "\n[INFO] Connecting to Database"
                     try:
-                        #SAVE TO DB
+                        # SAVE TO DB
                         if rescan == '1':
                             print "\n[INFO] Updating Database..."
                             update_db_entry(
@@ -184,17 +195,21 @@ def static_analyzer(request):
                 template = "static_analysis/static_analysis.html"
                 return render(request, template, context)
             elif typ == 'zip':
-                #Check if in DB
+                # Check if in DB
                 # pylint: disable=E1101
-                db_entry = StaticAnalyzerAndroid.objects.filter(MD5=app_dic['md5'])
+                db_entry = StaticAnalyzerAndroid.objects.filter(
+                    MD5=app_dic['md5'])
                 if db_entry.exists() and rescan == '0':
-                    get_context_from_db_entry_zip(db_entry)
+                    context = get_context_from_db_entry_zip(db_entry)
                 else:
-                    app_dic['app_file'] = app_dic['md5'] + '.zip'        #NEW FILENAME
-                    app_dic['app_path'] = app_dic['app_dir']+ app_dic['app_file']    #APP PATH
+                    app_dic['app_file'] = app_dic[
+                        'md5'] + '.zip'  # NEW FILENAME
+                    app_dic['app_path'] = app_dic['app_dir'] + \
+                        app_dic['app_file']  # APP PATH
                     print "[INFO] Extracting ZIP"
-                    app_dic['files'] = Unzip(app_dic['app_path'], app_dic['app_dir'])
-                    #Check if Valid Directory Structure and get ZIP Type
+                    app_dic['files'] = Unzip(
+                        app_dic['app_path'], app_dic['app_dir'])
+                    # Check if Valid Directory Structure and get ZIP Type
                     pro_type, valid = valid_android_zip(app_dic['app_dir'])
                     if valid and pro_type == 'ios':
                         print "[INFO] Redirecting to iOS Source Code Analyzer"
@@ -202,12 +217,15 @@ def static_analyzer(request):
                             '/StaticAnalyzer_iOS/?name=' + app_dic['app_name'] +
                             '&type=ios&checksum=' + app_dic['md5']
                         )
-                    app_dic['certz'] = get_hardcoded_cert_keystore(app_dic['files'])
+                    app_dic['certz'] = get_hardcoded_cert_keystore(app_dic[
+                                                                   'files'])
                     print "[INFO] ZIP Type - " + pro_type
                     if valid and (pro_type in ['eclipse', 'studio']):
-                        #ANALYSIS BEGINS
-                        app_dic['size'] = str(FileSize(app_dic['app_path'])) + 'MB'   #FILE SIZE
-                        app_dic['sha1'], app_dic['sha256'] = HashGen(app_dic['app_path'])
+                        # ANALYSIS BEGINS
+                        app_dic['size'] = str(
+                            FileSize(app_dic['app_path'])) + 'MB'  # FILE SIZE
+                        app_dic['sha1'], app_dic[
+                            'sha256'] = HashGen(app_dic['app_path'])
 
                         # Manifest XML
                         app_dic['persed_xml'] = get_manifest(
@@ -219,7 +237,8 @@ def static_analyzer(request):
 
                         # Set manifest view link
                         app_dic['mani'] = (
-                            '../ManifestView/?md5='+app_dic['md5']+'&type='+pro_type+'&bin=0'
+                            '../ManifestView/?md5=' +
+                            app_dic['md5'] + '&type=' + pro_type + '&bin=0'
                         )
 
                         man_data_dic = manifest_data(app_dic['persed_xml'])
@@ -237,7 +256,7 @@ def static_analyzer(request):
                         )
                         print "\n[INFO] Connecting to Database"
                         try:
-                            #SAVE TO DB
+                            # SAVE TO DB
                             if rescan == '1':
                                 print "\n[INFO] Updating Database..."
                                 update_db_entry_zip(

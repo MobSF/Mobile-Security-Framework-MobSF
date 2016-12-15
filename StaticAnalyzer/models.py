@@ -25,6 +25,7 @@ class StaticAnalyzerAndroid(models.Model):
     PROVIDERS = models.TextField()
     SERVICES = models.TextField()
     LIBRARIES = models.TextField()
+    BROWSABLE = models.TextField()
     CNT_ACT = models.CharField(max_length=50)
     CNT_PRO = models.CharField(max_length=50)
     CNT_SER = models.CharField(max_length=50)
@@ -96,6 +97,7 @@ class StaticAnalyzerIOSZIP(models.Model):
     DOMAINS = models.TextField()
     EmailnFile = models.TextField()
 
+
 class StaticAnalyzerWindows(models.Model):
     TITLE = models.TextField()
     APP_NAME = models.TextField()
@@ -117,5 +119,5 @@ class StaticAnalyzerWindows(models.Model):
     TARGET_RUN = models.TextField()
     FILES = models.TextField()
     STRINGS = models.TextField()
-    BIN_AN_RESULTS=models.TextField()
-    BIN_AN_WARNINGS=models.TextField()
+    BIN_AN_RESULTS = models.TextField()
+    BIN_AN_WARNINGS = models.TextField()
