@@ -18,34 +18,6 @@ from MobSF.utils import (
 from .dvm_permissions import DVM_PERMISSIONS
 
 
-def format_permissions(permissions):
-    """Format the permissions for html output."""
-    try:
-        print "[INFO] Formatting Permissions"
-        desc = ''
-        for ech in permissions:
-            desc = desc + '<tr><td>' + ech + '</td>'
-            for threat_level in permissions[ech]:
-                desc = desc + '<td>' + threat_level + '</td>'
-            desc = desc + '</tr>'
-        desc = desc.replace(
-            'dangerous',
-            '<span class="label label-danger">dangerous</span>'
-        ).replace(
-            'normal',
-            '<span class="label label-info">normal</span>'
-        ).replace(
-            'signatureOrSystem',
-            '<span class="label label-warning">SignatureOrSystem</span>'
-        ).replace(
-            'signature',
-            '<span class="label label-success">signature</span>'
-        )
-        return desc
-    except:
-        PrintException("[ERROR] Formatting Permissions")
-
-
 def get_manifest(app_dir, toosl_dir, typ, binary):
     """Get the manifest file."""
     try:
@@ -558,7 +530,7 @@ def manifest_analysis(mfxml, man_data_dic):
             'exported_act': exported,
             'exported_cnt': exp_count,
             'browsable_activities': browsable_activities,
-            'permissons': format_permissions(man_data_dic['perm']),
+            'permissons': man_data_dic['perm'],
             'cnt_act': len(man_data_dic['activities']),
             'cnt_pro': len(man_data_dic['providers']),
             'cnt_ser': len(man_data_dic['services']),

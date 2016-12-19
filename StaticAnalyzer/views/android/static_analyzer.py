@@ -143,7 +143,6 @@ def static_analyzer(request):
                               'app_dir'], app_dic['tools_dir'])
                     dex_2_smali(app_dic['app_dir'], app_dic['tools_dir'])
                     jar_2_java(app_dic['app_dir'], app_dic['tools_dir'])
-
                     code_an_dic = code_analysis(
                         app_dic['app_dir'],
                         app_dic['md5'],

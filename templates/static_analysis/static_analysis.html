@@ -386,7 +386,24 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                             </tr>
                                         </thead>
                                         <tbody>
-                    {{ permissions | safe}}
+                    {% for perm,desc in permissions.items %}
+                    <tr>
+                    <td>{{ perm }}</td>
+                    <td>
+                    {% if desc.0 == 'dangerous' %}
+                      <span class="label label-danger">dangerous</span>
+                    {% elif desc.0 == 'normal' %}
+                      <span class="label label-info">normal</span>
+                    {% elif desc.0 == 'signatureOrSystem' %}
+                      <span class="label label-warning">SignatureOrSystem</span>
+                    {% elif desc.0 == 'signature' %}
+                      <span class="label label-success">signature</span>
+                    {% endif %}
+                    </td>
+                    <td>{{ desc.1 }}</td>
+                    <td>{{ desc.2 }}</td>
+                    </tr>
+                    {% endfor %}
                     </tbody>
                     </table>
                                 

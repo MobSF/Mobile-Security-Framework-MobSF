@@ -1,4 +1,14 @@
+{% extends "easy_pdf/base.html" %}
 
+{% block extra_style %}
+    <style type="text/css">
+        @font-face { font-family: Lato; src: url(fonts/Lato-Reg.ttf); }
+        body {
+            font-family: "Lato", "Helvetica", "sans-serif";
+            color: #333333;
+        }
+    </style>
+{% endblock %}
    {% block content %}
 
 <h1 align="center" class="page-header">Static Analysis - {{name}} </h1>
@@ -138,24 +148,20 @@ Production ready applications should not be signed with 'Android Debug' Certific
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
-                    <table>
-                      <thead>
-                    <tr>
-                        <th>PERMISSION</th>
-                        <th>INFO </th>
-                        <th>DESCRIPTION</th>
-                      </tr>
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>PERMISSION</th>
+                                                <th>STATUS</th>
+                                                <th>INFO </th>
+												<th>DESCRIPTION</th>
+                                                
+                                            </tr>
                                         </thead>
                                         <tbody>
-                    {% for perm,desc in permissions.items %}
-                    <tr>
-                    <td>{{ perm }} ({{ desc.0 }})</td>
-                    <td>{{ desc.1 }}</td>
-                    <td>{{ desc.2 }}</td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                    </table>
+										{{ permissions | safe}}
+										</tbody>
+										</table>
                                 
                             </div>
                         </div>

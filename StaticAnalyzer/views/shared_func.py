@@ -135,7 +135,7 @@ def PDF(request):
                         'androvername': DB[0].ANDROVERNAME,
                         'androver': DB[0].ANDROVER,
                         'manifest': DB[0].MANIFEST_ANAL,
-                        'permissions': DB[0].PERMISSIONS,
+                        'permissions': python_dict(DB[0].PERMISSIONS),
                         'files': python_list(DB[0].FILES),
                         'certz': DB[0].CERTZ,
                         'activities': python_list(DB[0].ACTIVITIES),

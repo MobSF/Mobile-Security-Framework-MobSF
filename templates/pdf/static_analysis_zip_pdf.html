@@ -115,20 +115,24 @@
                             </div>
                             <div class="panel-body">
                                   <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>PERMISSION</th>
-                                                <th>STATUS</th>
-                                                <th>INFO </th>
-                                                <th>DESCRIPTION</th>
-                                                
-                                            </tr>
+                    <table>
+                      <thead>
+                    <tr>
+                        <th>PERMISSION</th>
+                        <th>INFO </th>
+                        <th>DESCRIPTION</th>
+                      </tr>
                                         </thead>
                                         <tbody>
-                                        {{ permissions | safe}}
-                                        </tbody>
-                                        </table>
+                    {% for perm,desc in permissions.items %}
+                    <tr>
+                    <td>{{ perm }} ({{ desc.0 }})</td>
+                    <td>{{ desc.1 }}</td>
+                    <td>{{ desc.2 }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                    </table>
                                 
                             </div>
                         </div>

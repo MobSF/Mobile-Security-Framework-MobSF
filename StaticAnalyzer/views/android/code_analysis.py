@@ -16,6 +16,7 @@ from MobSF.utils import (
     PrintException
 )
 
+
 def code_analysis(app_dir, md5, perms, typ):
     """Perform the code analysis."""
     try:
@@ -118,7 +119,8 @@ def code_analysis(app_dir, md5, perms, typ):
             for jfile in files:
                 jfile_path = os.path.join(java_src, dir_name, jfile)
                 if "+" in jfile:
-                    p_2 = os.path.join(java_src, dir_name, jfile.replace("+", "x"))
+                    p_2 = os.path.join(java_src, dir_name,
+                                       jfile.replace("+", "x"))
                     shutil.move(jfile_path, p_2)
                     jfile_path = p_2
                 repath = dir_name.replace(java_src, '')
@@ -134,56 +136,70 @@ def code_analysis(app_dir, md5, perms, typ):
                         errors="ignore"
                     ) as file_pointer:
                         dat = file_pointer.read()
-                    #Initialize
+                    # Initialize
                     urls = []
                     emails = []
-
-                    #Code Analysis
-                    #print "[INFO] Doing Code Analysis on - " + jfile_path
-                    #==========================Android Security Code Review ========================
+                    # Code Analysis
+                    # print "[INFO] Doing Code Analysis on - " + jfile_path
+                    #==========================Android Security Code Review ===
                     if (
                             re.findall(r'MODE_WORLD_READABLE|Context\.MODE_WORLD_READABLE', dat) or
-                            re.findall(r'openFileOutput\(\s*".+"\s*,\s*1\s*\)', dat)
+                            re.findall(
+                                r'openFileOutput\(\s*".+"\s*,\s*1\s*\)', dat)
                     ):
-                        code['d_con_world_readable'].append(jfile_path.replace(java_src, ''))
+                        code['d_con_world_readable'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             re.findall(r'MODE_WORLD_WRITABLE|Context\.MODE_WORLD_WRITABLE', dat) or
-                            re.findall(r'openFileOutput\(\s*".+"\s*,\s*2\s*\)', dat)
+                            re.findall(
+                                r'openFileOutput\(\s*".+"\s*,\s*2\s*\)', dat)
                     ):
-                        code['d_con_world_writable'].append(jfile_path.replace(java_src, ''))
+                        code['d_con_world_writable'].append(
+                            jfile_path.replace(java_src, ''))
                     if re.findall(r'openFileOutput\(\s*".+"\s*,\s*3\s*\)', dat):
-                        code['d_con_world_rw'].append(jfile_path.replace(java_src, ''))
+                        code['d_con_world_rw'].append(
+                            jfile_path.replace(java_src, ''))
                     if re.findall(r'MODE_PRIVATE|Context\.MODE_PRIVATE', dat):
-                        code['d_con_private'].append(jfile_path.replace(java_src, ''))
+                        code['d_con_private'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
-                            'WRITE_EXTERNAL_STORAGE' in perms and
+                            any("WRITE_EXTERNAL_STORAGE" in perm for perm in perms) and
                             (
                                 '.getExternalStorage' in dat or
                                 '.getExternalFilesDir(' in dat
                             )
                     ):
-                        code['d_extstorage'].append(jfile_path.replace(java_src, ''))
-                    if 'WRITE_EXTERNAL_STORAGE' in perms and '.createTempFile(' in dat:
-                        code['d_tmpfile'].append(jfile_path.replace(java_src, ''))
+                        code['d_extstorage'].append(
+                            jfile_path.replace(java_src, ''))
+                    if (
+                            any("WRITE_EXTERNAL_STORAGE" in perm for perm in perms) and
+                            '.createTempFile(' in dat
+                    ):
+                        code['d_tmpfile'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             'setJavaScriptEnabled(true)' in dat and
                             '.addJavascriptInterface(' in dat
                     ):
-                        code['d_jsenabled'].append(jfile_path.replace(java_src, ''))
+                        code['d_jsenabled'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             '.setWebContentsDebuggingEnabled(true)' in dat and
                             'WebView' in dat
                     ):
-                        code['d_webviewdebug'].append(jfile_path.replace(java_src, ''))
+                        code['d_webviewdebug'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'onReceivedSslError(WebView' in dat and '.proceed();' in dat:
-                        code['d_webviewdisablessl'].append(jfile_path.replace(java_src, ''))
+                        code['d_webviewdisablessl'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             (
                                 'rawQuery(' in dat or
                                 'execSQL(' in dat
                             ) and 'android.database.sqlite' in dat
                     ):
-                        code['d_sqlite'].append(jfile_path.replace(java_src, ''))
+                        code['d_sqlite'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             (
                                 ('javax.net.ssl') in dat
@@ -203,36 +219,44 @@ def code_analysis(app_dir, md5, perms, typ):
                             'username = "' in dat.lower() or
                             'key = "' in dat.lower()
                     ):
-                        code['d_sensitive'].append(jfile_path.replace(java_src, ''))
+                        code['d_sensitive'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             'import dexguard.util' in dat and
                             'DebugDetector.isDebuggable' in dat
                     ):
-                        code['dex_debug'].append(jfile_path.replace(java_src, ''))
+                        code['dex_debug'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             'import dexguard.util' in dat and
                             'DebugDetector.isDebuggerConnected' in dat
                     ):
-                        code['dex_debug_con'].append(jfile_path.replace(java_src, ''))
+                        code['dex_debug_con'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             ('import dexguard.util') in dat and
                             ('EmulatorDetector.isRunningInEmulator') in dat
                     ):
-                        code['dex_emulator'].append(jfile_path.replace(java_src, ''))
+                        code['dex_emulator'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             ('import dexguard.util') in dat and
                             ('DebugDetector.isSignedWithDebugKey') in dat
                     ):
-                        code['dex_debug_key'].append(jfile_path.replace(java_src, ''))
+                        code['dex_debug_key'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'import dexguard.util' in dat and 'RootDetector.isDeviceRooted' in dat:
-                        code['dex_root'].append(jfile_path.replace(java_src, ''))
+                        code['dex_root'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'import dexguard.util' in dat and 'TamperDetector.checkApk' in dat:
-                        code['dex_tamper'].append(jfile_path.replace(java_src, ''))
+                        code['dex_tamper'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             'import dexguard.util' in dat and
                             'CertificateChecker.checkCertificate' in dat
                     ):
-                        code['dex_cert'].append(jfile_path.replace(java_src, ''))
+                        code['dex_cert'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             'org.thoughtcrime.ssl.pinning' in dat and (
                                 'PinningHelper.getPinnedHttpsURLConnection' in dat or
@@ -240,9 +264,11 @@ def code_analysis(app_dir, md5, perms, typ):
                                 'PinningSSLSocketFactory(' in dat
                             )
                     ):
-                        code['d_ssl_pin'].append(jfile_path.replace(java_src, ''))
+                        code['d_ssl_pin'].append(
+                            jfile_path.replace(java_src, ''))
                     if ('PackageManager.GET_SIGNATURES' in dat) and ('getPackageName(' in dat):
-                        code['d_app_tamper'].append(jfile_path.replace(java_src, ''))
+                        code['d_app_tamper'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             'com.noshufou.android.su' in dat or
                             'com.thirdparty.superuser' in dat or
@@ -260,33 +286,40 @@ def code_analysis(app_dir, md5, perms, typ):
                             ('"/system/xbin/which", "su"') in dat or
                             ('RootTools.isAccessGiven()') in dat
                     ):
-                        code['d_rootcheck'].append(jfile_path.replace(java_src, ''))
+                        code['d_rootcheck'].append(
+                            jfile_path.replace(java_src, ''))
                     if re.findall(r'java\.util\.Random', dat):
                         code['rand'].append(jfile_path.replace(java_src, ''))
                     if re.findall(r'Log\.(v|d|i|w|e|f|s)|System\.out\.print', dat):
                         code['log'].append(jfile_path.replace(java_src, ''))
                     if ".hashCode()" in dat:
-                        code['d_hcode'].append(jfile_path.replace(java_src, ''))
+                        code['d_hcode'].append(
+                            jfile_path.replace(java_src, ''))
                     if "getWindow().setFlags(" in dat and ".FLAG_SECURE" in dat:
-                        code['d_prevent_screenshot'].append(jfile_path.replace(java_src, ''))
+                        code['d_prevent_screenshot'].append(
+                            jfile_path.replace(java_src, ''))
                     if "SQLiteOpenHelper.getWritableDatabase(" in dat:
-                        code['sqlc_password'].append(jfile_path.replace(java_src, ''))
+                        code['sqlc_password'].append(
+                            jfile_path.replace(java_src, ''))
                     if "SQLiteDatabase.loadLibs(" in dat and "net.sqlcipher." in dat:
-                        code['d_sql_cipher'].append(jfile_path.replace(java_src, ''))
+                        code['d_sql_cipher'].append(
+                            jfile_path.replace(java_src, ''))
                     if re.findall(r'Cipher\.getInstance\(\s*"\s*AES\/ECB', dat):
                         code['ecb'].append(jfile_path.replace(java_src, ''))
                     if re.findall(r'cipher\.getinstance\(\s*"rsa/.+/nopadding', dat.lower()):
-                        code['rsa_no_pad'].append(jfile_path.replace(java_src, ''))
+                        code['rsa_no_pad'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00" in dat or
                             "0x01,0x02,0x03,0x04,0x05,0x06,0x07" in dat
                     ):
-                        code['weak_iv'].append(jfile_path.replace(java_src, ''))
+                        code['weak_iv'].append(
+                            jfile_path.replace(java_src, ''))
 
-                    #Inorder to Add rule to Code Analysis, add identifier to c, add rule here and
+                    # Inorder to Add rule to Code Analysis, add identifier to c, add rule here and
                     # define identifier description and severity the bottom of this function.
-                    #=========================Android API Analysis =========================
-                    #API Check
+                    #=========================Android API Analysis ============
+                    # API Check
 
                     if re.findall(r"System.loadLibrary\(|System.load\(", dat):
                         native = True
@@ -317,13 +350,16 @@ def code_analysis(app_dir, md5, perms, typ):
                     if 'getRuntime().exec(' in dat and 'getRuntime(' in dat:
                         code['exec'].append(jfile_path.replace(java_src, ''))
                     if 'ServerSocket' in dat and 'net.ServerSocket' in dat:
-                        code['server_socket'].append(jfile_path.replace(java_src, ''))
+                        code['server_socket'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'Socket' in dat and 'net.Socket' in dat:
                         code['socket'].append(jfile_path.replace(java_src, ''))
                     if 'DatagramPacket' in dat and 'net.DatagramPacket' in dat:
-                        code['datagramp'].append(jfile_path.replace(java_src, ''))
+                        code['datagramp'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'DatagramSocket' in dat and 'net.DatagramSocket' in dat:
-                        code['datagrams'].append(jfile_path.replace(java_src, ''))
+                        code['datagrams'].append(
+                            jfile_path.replace(java_src, ''))
                     if re.findall('IRemoteService|IRemoteService.Stub|IBinder|Intent', dat):
                         code['ipc'].append(jfile_path.replace(java_src, ''))
                     if (
@@ -341,11 +377,14 @@ def code_analysis(app_dir, md5, perms, typ):
                             'WebView' in dat and
                             'android.webkit' in dat
                     ):
-                        code['webview_addjs'].append(jfile_path.replace(java_src, ''))
+                        code['webview_addjs'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'WebView' in dat and 'loadData' in dat and 'android.webkit' in dat:
-                        code['webviewget'].append(jfile_path.replace(java_src, ''))
+                        code['webviewget'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'WebView' in dat and 'postUrl' in dat and 'android.webkit' in dat:
-                        code['webviewpost'].append(jfile_path.replace(java_src, ''))
+                        code['webviewpost'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             (
                                 'HttpURLConnection' in dat or
@@ -356,7 +395,8 @@ def code_analysis(app_dir, md5, perms, typ):
                                 'HttpRequest' in dat
                             )
                     ):
-                        code['httpcon'].append(jfile_path.replace(java_src, ''))
+                        code['httpcon'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             (
                                 'net.URLConnection' in dat
@@ -384,7 +424,8 @@ def code_analysis(app_dir, md5, perms, typ):
                                 'connect' in dat
                             )
                     ):
-                        code['httpsurl'].append(jfile_path.replace(java_src, ''))
+                        code['httpsurl'].append(
+                            jfile_path.replace(java_src, ''))
                     if (('net.URL') and ('openConnection' or 'openStream')) in dat:
                         code['nurl'].append(jfile_path.replace(java_src, ''))
                     if (
@@ -396,29 +437,36 @@ def code_analysis(app_dir, md5, perms, typ):
                                 dat
                             )
                     ):
-                        code['httpclient'].append(jfile_path.replace(java_src, ''))
+                        code['httpclient'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'app.NotificationManager' in dat and 'notify' in dat:
                         code['notify'].append(jfile_path.replace(java_src, ''))
                     if 'telephony.TelephonyManager' in dat and 'getAllCellInfo' in dat:
-                        code['cellinfo'].append(jfile_path.replace(java_src, ''))
+                        code['cellinfo'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'telephony.TelephonyManager' in dat and 'getCellLocation' in dat:
-                        code['cellloc'].append(jfile_path.replace(java_src, ''))
+                        code['cellloc'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'telephony.TelephonyManager' in dat and 'getSubscriberId' in dat:
                         code['subid'].append(jfile_path.replace(java_src, ''))
                     if 'telephony.TelephonyManager' in dat and 'getDeviceId' in dat:
                         code['devid'].append(jfile_path.replace(java_src, ''))
                     if 'telephony.TelephonyManager' in dat and 'getDeviceSoftwareVersion' in dat:
-                        code['softver'].append(jfile_path.replace(java_src, ''))
+                        code['softver'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'telephony.TelephonyManager' in dat and 'getSimSerialNumber' in dat:
-                        code['simserial'].append(jfile_path.replace(java_src, ''))
+                        code['simserial'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'telephony.TelephonyManager' in dat and 'getSimOperator' in dat:
                         code['simop'].append(jfile_path.replace(java_src, ''))
                     if 'telephony.TelephonyManager' in dat and 'getSimOperatorName' in dat:
                         code['opname'].append(jfile_path.replace(java_src, ''))
                     if 'content.ContentResolver' in dat and 'query' in dat:
-                        code['contentq'].append(jfile_path.replace(java_src, ''))
+                        code['contentq'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'java.lang.reflect.Method' in dat and 'invoke' in dat:
-                        code['refmethod'].append(jfile_path.replace(java_src, ''))
+                        code['refmethod'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'getSystemService' in dat:
                         code['gs'].append(jfile_path.replace(java_src, ''))
                     if (
@@ -429,9 +477,11 @@ def code_analysis(app_dir, md5, perms, typ):
                                 '.encode' in dat
                             )
                     ):
-                        code['bencode'].append(jfile_path.replace(java_src, ''))
+                        code['bencode'].append(
+                            jfile_path.replace(java_src, ''))
                     if 'android.util.Base64' in dat and '.decode' in dat:
-                        code['bdecode'].append(jfile_path.replace(java_src, ''))
+                        code['bdecode'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             (
                                 'dalvik.system.PathClassLoader' in dat or
@@ -447,14 +497,15 @@ def code_analysis(app_dir, md5, perms, typ):
                     ):
                         code['dex'].append(jfile_path.replace(java_src, ''))
                     if (
-                            (
-                                'java.security.MessageDigest' in dat
-                            ) and (
-                                'MessageDigestSpi' in dat or
-                                'MessageDigest' in dat
-                            )
-                        ):
-                        code['mdigest'].append(jfile_path.replace(java_src, ''))
+                        (
+                            'java.security.MessageDigest' in dat
+                        ) and (
+                            'MessageDigestSpi' in dat or
+                            'MessageDigest' in dat
+                        )
+                    ):
+                        code['mdigest'].append(
+                            jfile_path.replace(java_src, ''))
                     if (
                             (
                                 'android.location' in dat
@@ -475,18 +526,21 @@ def code_analysis(app_dir, md5, perms, typ):
                     ):
                         code['fileio'].append(jfile_path.replace(java_src, ''))
                     if re.findall(r'startActivity\(|startActivityForResult\(', dat):
-                        code['inf_act'].append(jfile_path.replace(java_src, ''))
+                        code['inf_act'].append(
+                            jfile_path.replace(java_src, ''))
                     if re.findall(r'startService\(|bindService\(', dat):
-                        code['inf_ser'].append(jfile_path.replace(java_src, ''))
+                        code['inf_ser'].append(
+                            jfile_path.replace(java_src, ''))
                     if re.findall(
                             r'sendBroadcast\(|sendOrderedBroadcast\(|sendStickyBroadcast\(', dat
                     ):
-                        code['inf_bro'].append(jfile_path.replace(java_src, ''))
+                        code['inf_bro'].append(
+                            jfile_path.replace(java_src, ''))
 
                     j_file = jfile_path.replace(java_src, '')
                     base_fl = ntpath.basename(j_file)
 
-                    #URLs My Custom regex
+                    # URLs My Custom regex
                     pattern = re.compile(
                         (
                             ur'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])'
@@ -521,7 +575,7 @@ def code_analysis(app_dir, md5, perms, typ):
                         email_n_file += (
                             "<tr><td>" + "<br>".join(emails) +
                             "</td><td><a href='../ViewSource/?file=" + escape(j_file) +
-                            "&md5=" + md5 + "&type=" + typ +"'>" + escape(base_fl) +
+                            "&md5=" + md5 + "&type=" + typ + "'>" + escape(base_fl) +
                             "</a></td></tr>"
                         )
 
@@ -529,49 +583,49 @@ def code_analysis(app_dir, md5, perms, typ):
         print "[INFO] Performing Malware Check on extracted Domains"
         domains = MalwareCheck(url_list)
         print "[INFO] Finished Code Analysis, Email and URL Extraction"
-        #API Description
+        # API Description
         api_desc = {
-            'gps':'GPS Location',
-            'crypto':'Crypto ',
+            'gps': 'GPS Location',
+            'crypto': 'Crypto ',
             'exec': 'Execute System Command ',
-            'server_socket':'TCP Server Socket ',
+            'server_socket': 'TCP Server Socket ',
             'socket': 'TCP Socket ',
             'datagramp': 'UDP Datagram Packet ',
             'datagrams': 'UDP Datagram Socket ',
             'ipc': 'Inter Process Communication ',
             'msg': 'Send SMS ',
-            'webview_addjs':'WebView JavaScript Interface ',
+            'webview_addjs': 'WebView JavaScript Interface ',
             'webview': 'WebView Load HTML/JavaScript ',
             'webviewget': 'WebView GET Request ',
             'webviewpost': 'WebView POST Request ',
             'httpcon': 'HTTP Connection ',
-            'urlcon':'URL Connection to file/http/https/ftp/jar ',
-            'jurl':'JAR URL Connection ',
-            'httpsurl':'HTTPS Connection ',
-            'nurl':'URL Connection supports file,http,https,ftp and jar ',
-            'httpclient':'HTTP Requests, Connections and Sessions ',
+            'urlcon': 'URL Connection to file/http/https/ftp/jar ',
+            'jurl': 'JAR URL Connection ',
+            'httpsurl': 'HTTPS Connection ',
+            'nurl': 'URL Connection supports file,http,https,ftp and jar ',
+            'httpclient': 'HTTP Requests, Connections and Sessions ',
             'notify': 'Android Notifications ',
-            'cellinfo':'Get Cell Information ',
-            'cellloc':'Get Cell Location ',
-            'subid':'Get Subscriber ID ',
-            'devid':'Get Device ID, IMEI,MEID/ESN etc. ',
-            'softver':'Get Software Version, IMEI/SV etc. ',
+            'cellinfo': 'Get Cell Information ',
+            'cellloc': 'Get Cell Location ',
+            'subid': 'Get Subscriber ID ',
+            'devid': 'Get Device ID, IMEI,MEID/ESN etc. ',
+            'softver': 'Get Software Version, IMEI/SV etc. ',
             'simserial': 'Get SIM Serial Number ',
             'simop': 'Get SIM Provider Details ',
-            'opname':'Get SIM Operator Name ',
-            'contentq':'Query Database of SMS, Contacts etc. ',
-            'refmethod':'Java Reflection Method Invocation ',
+            'opname': 'Get SIM Operator Name ',
+            'contentq': 'Query Database of SMS, Contacts etc. ',
+            'refmethod': 'Java Reflection Method Invocation ',
             'obf': 'Obfuscation ',
-            'gs':'Get System Service ',
-            'bencode':'Base64 Encode ',
-            'bdecode':'Base64 Decode ',
-            'dex':'Load and Manipulate Dex Files ',
+            'gs': 'Get System Service ',
+            'bencode': 'Base64 Encode ',
+            'bdecode': 'Base64 Decode ',
+            'dex': 'Load and Manipulate Dex Files ',
             'mdigest': 'Message Digest ',
             'fileio': 'Local File I/O Operations',
             'inf_act': 'Starting Activity',
             'inf_ser': 'Starting Service',
             'inf_bro': 'Sending Broadcast'
-            }
+        }
         html = ''
         for api_key in api_desc:
             if code[api_key]:
@@ -585,9 +639,9 @@ def code_analysis(app_dir, md5, perms, typ):
                     )
                 html += h_d + link + "</td></tr>"
 
-        #Security Code Review Description
+        # Security Code Review Description
         desc = {
-            'd_sensitive' :
+            'd_sensitive':
                 (
                     'Files may contain hardcoded sensitive informations like '
                     'usernames, passwords, keys etc.'
@@ -666,11 +720,11 @@ def code_analysis(app_dir, md5, perms, typ):
                 (
                     'DexGuard Root Detection code is identified.'
                 ),
-            'dex_tamper' :
+            'dex_tamper':
                 (
                     'DexGuard App Tamper Detection code is identified.'
                 ),
-            'dex_cert' :
+            'dex_cert':
                 (
                     'DexGuard Signer Certificate Tamper Detection code is identified.'
                 ),
@@ -679,58 +733,58 @@ def code_analysis(app_dir, md5, perms, typ):
                     ' This App uses an SSL Pinning Library (org.thoughtcrime.ssl.pinning) to '
                     'prevent MITM attacks in secure communication channel.'
                 ),
-            'd_root' :
+            'd_root':
                 (
                     'This App may request root (Super User) privileges.'
                 ),
-            'd_rootcheck' :
+            'd_rootcheck':
                 (
                     'This App may have root detection capabilities.'
                 ),
-            'd_hcode' :
+            'd_hcode':
                 (
                     'This App uses Java Hash Code. It\'s a weak hash function and should never be '
                     'used in Secure Crypto Implementation.'
                 ),
-            'rand' :
+            'rand':
                 (
                     'The App uses an insecure Random Number Generator.'
                 ),
-            'log' :
+            'log':
                 (
                     'The App logs information. Sensitive information should never be logged.'
                 ),
-            'd_app_tamper' :
+            'd_app_tamper':
                 (
                     'The App may use package signature for tamper detection.'
                 ),
-            'd_prevent_screenshot' :
+            'd_prevent_screenshot':
                 (
                     'This App has capabilities to prevent against Screenshots from Recent Task '
                     'History/ Now On Tap etc.'
                 ),
-            'd_sql_cipher' :
+            'd_sql_cipher':
                 (
                     'This App uses SQL Cipher. SQLCipher provides 256-bit AES encryption to sqlite '
                     'database files.'
                 ),
-            'sqlc_password' :
+            'sqlc_password':
                 (
                     'This App uses SQL Cipher. But the secret may be hardcoded.'
                 ),
-            'ecb' :
+            'ecb':
                 (
                     'The App uses ECB mode in Cryptographic encryption algorithm. ECB mode is '
                     'known to be weak as it results in the same ciphertext for identical blocks '
                     'of plaintext.'
                 ),
-            'rsa_no_pad' :
+            'rsa_no_pad':
                 (
                     'This App uses RSA Crypto without OAEP padding. The purpose of the padding '
                     'scheme is to prevent a number of attacks on RSA that only work when the '
                     'encryption is performed without padding.'
                 ),
-            'weak_iv' :
+            'weak_iv':
                 (
                     'The App may use weak IVs like "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00" or '
                     '"0x01,0x02,0x03,0x04,0x05,0x06,0x07". Not using a random IV makes the '
@@ -749,7 +803,8 @@ def code_analysis(app_dir, md5, perms, typ):
             if code[k]:
                 link = ''
                 if re.findall('d_con_private|log', k):
-                    h_d = '<tr><td>' + desc[k] + '</td><td>' + spn_info + '</td><td>'
+                    h_d = '<tr><td>' + desc[k] + \
+                        '</td><td>' + spn_info + '</td><td>'
                 elif re.findall(
                         (
                             'd_sql_cipher|d_prevent_screenshot|d_app_tamper|d_rootcheck|dex_cert|'
@@ -758,11 +813,14 @@ def code_analysis(app_dir, md5, perms, typ):
                         ),
                         k
                 ):
-                    h_d = '<tr><td>' + desc[k] + '</td><td>' + spn_sec + '</td><td>'
+                    h_d = '<tr><td>' + desc[k] + \
+                        '</td><td>' + spn_sec + '</td><td>'
                 elif re.findall('d_jsenabled', k):
-                    h_d = '<tr><td>' + desc[k] + '</td><td>' + spn_warn + '</td><td>'
+                    h_d = '<tr><td>' + desc[k] + \
+                        '</td><td>' + spn_warn + '</td><td>'
                 else:
-                    h_d = '<tr><td>' + desc[k] + '</td><td>' + spn_dang + '</td><td>'
+                    h_d = '<tr><td>' + desc[k] + \
+                        '</td><td>' + spn_dang + '</td><td>'
 
                 for elem in code[k]:
                     link += (
@@ -773,16 +831,16 @@ def code_analysis(app_dir, md5, perms, typ):
                 dang += h_d + link + "</td></tr>"
 
         code_an_dic = {
-            'api' : html,
-            'dang' : dang,
-            'urls' : url_n_file,
-            'domains' : domains,
+            'api': html,
+            'dang': dang,
+            'urls': url_n_file,
+            'domains': domains,
             'emails': email_n_file,
-            'crypto' : crypto,
-            'obfus' : obfus,
-            'reflect' : reflect,
-            'dynamic' : dynamic,
-            'native' : native
+            'crypto': crypto,
+            'obfus': obfus,
+            'reflect': reflect,
+            'dynamic': dynamic,
+            'native': native
         }
 
         return code_an_dic
