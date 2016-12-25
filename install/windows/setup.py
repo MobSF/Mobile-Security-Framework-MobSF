@@ -263,13 +263,11 @@ def tools_binscope():
 
     # Execute the installer
     print("[*] Installing BinScope to {}".format(binscope_path))
-    subprocess.check_output(
-        [
-            'msiexec',
-            'INSTALLLOCATION=' + binscope_path,
-            '/i', binscope_installer_path,
-            '/passive'
-        ]
+    os.system(
+        'msiexec' + ' '
+        'INSTALLLOCATION="' + binscope_path + '" ' +
+        '/i "' + binscope_installer_path + '" ' +
+        '/passive'
     )
 
     CONFIG['binscope']['file'] = binscope_path + "\\Binscope.exe"
@@ -326,7 +324,7 @@ def autostart():
     text = """
     @echo off
     python {} %*
-    pause""".format(mobsf_subdir_tools + rpc_file)
+    pause""".format('"' + mobsf_subdir_tools + rpc_file + '"')
     autostart_file.write(bytes(text, 'utf8'))
 
     # Close handle
