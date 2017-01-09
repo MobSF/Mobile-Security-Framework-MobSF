@@ -194,7 +194,8 @@ def PDF(request):
                             'libs': DB[0].LIBS,
                             'files': python_list(DB[0].FILES),
                             'file_analysis': DB[0].SFILESX,
-                            'strings': DB[0].STRINGS
+                            'strings': DB[0].STRINGS,
+                            'permissions': DB[0].PERMISSIONS
                         }
                         template = get_template("pdf/ios_binary_analysis_pdf.html")
                     else:

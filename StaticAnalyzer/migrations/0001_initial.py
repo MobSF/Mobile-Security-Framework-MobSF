@@ -116,6 +116,7 @@ class Migration(migrations.Migration):
                 ('FILES', models.TextField()),
                 ('SFILESX', models.TextField()),
                 ('STRINGS', models.TextField()),
+                ('PERMISSIONS', models.TextField())
             ],
         ),
         migrations.CreateModel(
