@@ -200,9 +200,12 @@
              <!-- /.box-header -->
               <h3 class="box-title"><i class="fa fa-file-text-o"></i> Permissions</h3>
             </div>
-           <div class="box-body no-padding">
+
+              {% if permissions|length > 0 %}
+              <div class="box-body no-padding">
               <div class="table-responsive">
               <table class="table table-bordered table-hover table-striped">
+
                   <thead>
                       <tr>
                           <th>Permissions</th>
@@ -226,8 +229,17 @@
                     {% endfor %}
                   </tbody>
               </table>
-
               </div>
+              {% else %}
+              <div class="box-body">
+             <div class="list-group">
+                    <p>
+                No permissions found.
+              </p>
+            </div>
+          </div>
+              {% endif %}
+
             <!-- /.box-body -->
           </div>
           <!-- /.box -->
