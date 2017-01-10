@@ -60,7 +60,9 @@
               </div>
               <div class="modal-body">
           <pre><code>
-           {{ strings|safe }}
+           {% for string in strings %}
+           {{string | safe}}
+           {% endfor %}
           </code></pre>
               </div>
 
@@ -242,7 +244,6 @@
 
             <!-- /.box-body -->
           </div>
-
 </section>
 
 
