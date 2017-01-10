@@ -76,7 +76,7 @@ def StaticAnalyzer_iOS(request):
                         'libs': DB[0].LIBS,
                         'files': python_list(DB[0].FILES),
                         'file_analysis': DB[0].SFILESX,
-                        'strings': DB[0].STRINGS,
+                        'strings': python_list(DB[0].STRINGS),
                         'permissions': python_list(DB[0].PERMISSIONS)
                     }
                 else:
@@ -155,7 +155,7 @@ def StaticAnalyzer_iOS(request):
                         'urls': DB[0].URLnFile,
                         'domains': python_dict(DB[0].DOMAINS),
                         'emails': DB[0].EmailnFile,
-                        'strings': DB[0].STRINGS
+                        'strings': python_list(DB[0].STRINGS)
                     }
                 else:
                     print "[INFO] iOS Source Code Analysis Started"
@@ -709,7 +709,7 @@ def BinaryAnalysis(SRC, TOOLS_DIR, APP_DIR):
         sl = [s if isinstance(s, unicode) else unicode(
             s, encoding="utf-8", errors="replace") for s in sl]
         sl = [escape(s) for s in sl]  # Escape evil strings
-        STRINGS = "</br>".join(sl)
+        STRINGS = sl
 
         return XML, BIN_NAME, ID, VER, SDK, PLTFM, MIN, LIBS, BIN_RES, STRINGS, PERMISSIONS
     except:

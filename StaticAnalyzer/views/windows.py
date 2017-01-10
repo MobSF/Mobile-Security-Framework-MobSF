@@ -42,69 +42,76 @@ config = None
 ##############################################################
 # Code to support Windows Static Code Analysis
 ##############################################################
-#Windows Support Functions
+# Windows Support Functions
+
+
 def staticanalyzer_windows(request):
     """Analyse a windows app."""
     try:
-        #Input validation
+        # Input validation
         print "[INFO] Windows Static Analysis Started"
-        app_dic = {} # Dict to store the binary attributes
+        app_dic = {}  # Dict to store the binary attributes
         typ = request.GET['type']
         rescan = str(request.GET.get('rescan', 0))
         md5_regex = re.match('^[0-9a-f]{32}$', request.GET['checksum'])
         if (md5_regex) and (typ in ['appx']):
-            app_dic['app_name'] = request.GET['name'] #APP ORGINAL NAME
+            app_dic['app_name'] = request.GET['name']  # APP ORGINAL NAME
             app_dic['md5'] = request.GET['checksum']
-            app_dic['app_dir'] = os.path.join(settings.UPLD_DIR, app_dic['md5']+'/')
-            app_dic['tools_dir'] = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/tools/windows/')
+            app_dic['app_dir'] = os.path.join(
+                settings.UPLD_DIR, app_dic['md5'] + '/')
+            app_dic['tools_dir'] = os.path.join(
+                settings.BASE_DIR, 'StaticAnalyzer/tools/windows/')
             if typ == 'appx':
                 # DB
-                db_entry = StaticAnalyzerWindows.objects.filter( # pylint: disable-msg=E1101
+                db_entry = StaticAnalyzerWindows.objects.filter(  # pylint: disable-msg=E1101
                     MD5=app_dic['md5']
                 )
                 if db_entry.exists() and rescan == '0':
                     print "\n[INFO] Analysis is already Done. Fetching data from the DB..."
                     context = {
-                        'title' : db_entry[0].TITLE,
-                        'name' : db_entry[0].APP_NAME,
-                        'pub_name' : db_entry[0].PUB_NAME,
-                        'size' : db_entry[0].SIZE,
+                        'title': db_entry[0].TITLE,
+                        'name': db_entry[0].APP_NAME,
+                        'pub_name': db_entry[0].PUB_NAME,
+                        'size': db_entry[0].SIZE,
                         'md5': db_entry[0].MD5,
-                        'sha1' : db_entry[0].SHA1,
-                        'sha256' : db_entry[0].SHA256,
-                        'bin_name' : db_entry[0].BINNAME,
-                        'version' :  db_entry[0].VERSION,
-                        'arch' :  db_entry[0].ARCH,
-                        'compiler_version' :  db_entry[0].COMPILER_VERSION,
-                        'visual_studio_version' :  db_entry[0].VISUAL_STUDIO_VERSION,
-                        'visual_studio_edition' :  db_entry[0].VISUAL_STUDIO_EDITION,
-                        'target_os' :  db_entry[0].TARGET_OS,
-                        'appx_dll_version' :  db_entry[0].APPX_DLL_VERSION,
-                        'proj_guid' :  db_entry[0].PROJ_GUID,
-                        'opti_tool' :  db_entry[0].OPTI_TOOL,
-                        'target_run' :  db_entry[0].TARGET_RUN,
-                        'files' : python_list(db_entry[0].FILES),
-                        'strings' : db_entry[0].STRINGS,
-                        'bin_an_results' : python_list(db_entry[0].BIN_AN_RESULTS),
-                        'bin_an_warnings' : python_list(db_entry[0].BIN_AN_WARNINGS)
+                        'sha1': db_entry[0].SHA1,
+                        'sha256': db_entry[0].SHA256,
+                        'bin_name': db_entry[0].BINNAME,
+                        'version':  db_entry[0].VERSION,
+                        'arch':  db_entry[0].ARCH,
+                        'compiler_version':  db_entry[0].COMPILER_VERSION,
+                        'visual_studio_version':  db_entry[0].VISUAL_STUDIO_VERSION,
+                        'visual_studio_edition':  db_entry[0].VISUAL_STUDIO_EDITION,
+                        'target_os':  db_entry[0].TARGET_OS,
+                        'appx_dll_version':  db_entry[0].APPX_DLL_VERSION,
+                        'proj_guid':  db_entry[0].PROJ_GUID,
+                        'opti_tool':  db_entry[0].OPTI_TOOL,
+                        'target_run':  db_entry[0].TARGET_RUN,
+                        'files': python_list(db_entry[0].FILES),
+                        'strings': python_list(db_entry[0].STRINGS),
+                        'bin_an_results': python_list(db_entry[0].BIN_AN_RESULTS),
+                        'bin_an_warnings': python_list(db_entry[0].BIN_AN_WARNINGS)
                     }
                 else:
                     print "[INFO] Windows Binary Analysis Started"
-                    app_dic['app_path'] = os.path.join(app_dic['app_dir'], app_dic['md5'] + '.appx')
+                    app_dic['app_path'] = os.path.join(
+                        app_dic['app_dir'], app_dic['md5'] + '.appx')
                     # ANALYSIS BEGINS
                     app_dic['size'] = str(FileSize(app_dic['app_path'])) + 'MB'
                     # Generate hashes
-                    app_dic['sha1'], app_dic['sha256'] = HashGen(app_dic['app_path'])
+                    app_dic['sha1'], app_dic[
+                        'sha256'] = HashGen(app_dic['app_path'])
                     # EXTRACT APPX
                     print "[INFO] Extracting APPX"
-                    app_dic['files'] = Unzip(app_dic['app_path'], app_dic['app_dir'])
+                    app_dic['files'] = Unzip(
+                        app_dic['app_path'], app_dic['app_dir'])
                     xml_dic = _parse_xml(app_dic['app_dir'])
                     bin_an_dic = _binary_analysis(app_dic)
                     # Saving to db
                     print "\n[INFO] Connecting to DB"
                     if rescan == '1':
                         print "\n[INFO] Updating Database..."
-                        StaticAnalyzerWindows.objects.filter( # pylint: disable-msg=E1101
+                        StaticAnalyzerWindows.objects.filter(  # pylint: disable-msg=E1101
                             MD5=app_dic['md5']
                         ).update(
                             TITLE='Static Analysis',
@@ -118,8 +125,10 @@ def staticanalyzer_windows(request):
                             VERSION=xml_dic['version'],
                             ARCH=xml_dic['arch'],
                             COMPILER_VERSION=xml_dic['compiler_version'],
-                            VISUAL_STUDIO_VERSION=xml_dic['visual_studio_version'],
-                            VISUAL_STUDIO_EDITION=xml_dic['visual_studio_edition'],
+                            VISUAL_STUDIO_VERSION=xml_dic[
+                                'visual_studio_version'],
+                            VISUAL_STUDIO_EDITION=xml_dic[
+                                'visual_studio_edition'],
                             TARGET_OS=xml_dic['target_os'],
                             APPX_DLL_VERSION=xml_dic['appx_dll_version'],
                             PROJ_GUID=xml_dic['proj_guid'],
@@ -144,8 +153,10 @@ def staticanalyzer_windows(request):
                             VERSION=xml_dic['version'],
                             ARCH=xml_dic['arch'],
                             COMPILER_VERSION=xml_dic['compiler_version'],
-                            VISUAL_STUDIO_VERSION=xml_dic['visual_studio_version'],
-                            VISUAL_STUDIO_EDITION=xml_dic['visual_studio_edition'],
+                            VISUAL_STUDIO_VERSION=xml_dic[
+                                'visual_studio_version'],
+                            VISUAL_STUDIO_EDITION=xml_dic[
+                                'visual_studio_edition'],
                             TARGET_OS=xml_dic['target_os'],
                             APPX_DLL_VERSION=xml_dic['appx_dll_version'],
                             PROJ_GUID=xml_dic['proj_guid'],
@@ -158,28 +169,28 @@ def staticanalyzer_windows(request):
                         )
                         db_item.save()
                     context = {
-                        'title' : 'Static Analysis',
-                        'name' : app_dic['app_name'],
-                        'pub_name' : xml_dic['pub_name'],
-                        'size' : app_dic['size'],
+                        'title': 'Static Analysis',
+                        'name': app_dic['app_name'],
+                        'pub_name': xml_dic['pub_name'],
+                        'size': app_dic['size'],
                         'md5': app_dic['md5'],
-                        'sha1' : app_dic['sha1'],
-                        'sha256' : app_dic['sha256'],
-                        'bin_name' : bin_an_dic['bin_name'],
-                        'version' : xml_dic['version'],
-                        'arch' : xml_dic['arch'],
-                        'compiler_version' : xml_dic['compiler_version'],
-                        'visual_studio_version' : xml_dic['visual_studio_version'],
-                        'visual_studio_edition' : xml_dic['visual_studio_edition'],
-                        'target_os' : xml_dic['target_os'],
-                        'appx_dll_version' : xml_dic['appx_dll_version'],
-                        'proj_guid' : xml_dic['proj_guid'],
-                        'opti_tool' : xml_dic['opti_tool'],
-                        'target_run' : xml_dic['target_run'],
-                        'files' : app_dic['files'],
-                        'strings' : bin_an_dic['strings'],
-                        'bin_an_results' : bin_an_dic['results'],
-                        'bin_an_warnings' : bin_an_dic['warnings'],
+                        'sha1': app_dic['sha1'],
+                        'sha256': app_dic['sha256'],
+                        'bin_name': bin_an_dic['bin_name'],
+                        'version': xml_dic['version'],
+                        'arch': xml_dic['arch'],
+                        'compiler_version': xml_dic['compiler_version'],
+                        'visual_studio_version': xml_dic['visual_studio_version'],
+                        'visual_studio_edition': xml_dic['visual_studio_edition'],
+                        'target_os': xml_dic['target_os'],
+                        'appx_dll_version': xml_dic['appx_dll_version'],
+                        'proj_guid': xml_dic['proj_guid'],
+                        'opti_tool': xml_dic['opti_tool'],
+                        'target_run': xml_dic['target_run'],
+                        'files': app_dic['files'],
+                        'strings': bin_an_dic['strings'],
+                        'bin_an_results': bin_an_dic['results'],
+                        'bin_an_warnings': bin_an_dic['warnings'],
                     }
                 template = "static_analysis/windows_binary_analysis.html"
                 return render(request, template, context)
@@ -190,20 +201,23 @@ def staticanalyzer_windows(request):
     except Exception as exception:
         PrintException("[ERROR] Static Analyzer Windows")
         context = {
-            'title' : 'Error',
-            'exp' : exception.message,
-            'doc' : exception.__doc__
+            'title': 'Error',
+            'exp': exception.message,
+            'doc': exception.__doc__
         }
         template = "general/error.html"
         return render(request, template, context)
 
+
 def _get_token():
     """Get the authentication token for windows vm xmlrpc client."""
     challenge = proxy.get_challenge()
-    priv_key = rsa.PrivateKey.load_pkcs1(open(settings.WINDOWS_VM_SECRET).read())
+    priv_key = rsa.PrivateKey.load_pkcs1(
+        open(settings.WINDOWS_VM_SECRET).read())
     signature = rsa.sign(challenge, priv_key, 'SHA-512')
     sig_b64 = base64.b64encode(signature)
     return sig_b64
+
 
 def _binary_analysis(app_dic):
     """Start binary analsis."""
@@ -229,8 +243,11 @@ def _binary_analysis(app_dic):
     bin_an_dic['strings'] = ""
     str_list = list(strings(bin_path))
     str_list = set(str_list)  # Make unique # pylint: disable-msg=R0204
+
+    str_list = [s if isinstance(s, unicode) else unicode(
+        s, encoding="utf-8", errors="replace") for s in str_list]
     str_list = [escape(s) for s in str_list]
-    bin_an_dic['strings'] = "</br>".join(str_list)
+    bin_an_dic['strings'] = str_list
 
     # Search for unsave function
     pattern = re.compile("(alloca|gets|memcpy|printf|scanf|sprintf|sscanf|strcat|StrCat|strcpy|StrCpy|strlen|StrLen|strncat|StrNCat|strncpy|StrNCpy|strtok|swprintf|vsnprintf|vsprintf|vswprintf|wcscat|wcscpy|wcslen|wcsncat|wcsncpy|wcstok|wmemcpy)")
@@ -243,13 +260,12 @@ def _binary_analysis(app_dic):
             }
             bin_an_dic['results'].append(result)
 
-
     # Execute binskim analysis if vm is available
     if settings.CURRENT_PLATFROM != 'Windows':
         if settings.WINDOWS_VM_IP:
             print "[INFO] Windows VM configured."
             global proxy
-            proxy  = xmlrpclib.ServerProxy( # pylint: disable-msg=C0103
+            proxy = xmlrpclib.ServerProxy(  # pylint: disable-msg=C0103
                 "http://{}:{}".format(
                     settings.WINDOWS_VM_IP,
                     settings.WINDOWS_VM_PORT
@@ -275,10 +291,13 @@ def _binary_analysis(app_dic):
         config.read(expanduser("~") + "\\MobSF\\Config\\config.txt")
 
         # Run analysis functions
-        bin_an_dic = __binskim(bin_path, bin_an_dic, run_local=True, app_dir=app_dic['app_dir'])
-        bin_an_dic = __binscope(bin_path, bin_an_dic, run_local=True, app_dir=app_dic['app_dir'])
+        bin_an_dic = __binskim(bin_path, bin_an_dic,
+                               run_local=True, app_dir=app_dic['app_dir'])
+        bin_an_dic = __binscope(bin_path, bin_an_dic,
+                                run_local=True, app_dir=app_dic['app_dir'])
 
     return bin_an_dic
+
 
 def _upload_sample(bin_path):
     """Upload sample to windows vm."""
@@ -292,6 +311,7 @@ def _upload_sample(bin_path):
     name = proxy.upload_file(binary_data, _get_token())
 
     return name
+
 
 def __binskim(name, bin_an_dic, run_local=False, app_dir=None):
     """Run the binskim analysis."""
@@ -340,6 +360,7 @@ def __binskim(name, bin_an_dic, run_local=False, app_dir=None):
     bin_an_dic = __parse_binskim(bin_an_dic, output)
     return bin_an_dic
 
+
 def __parse_binskim(bin_an_dic, output):
     """Parse output to results and warnings"""
     current_run = output['runs'][0]
@@ -374,6 +395,7 @@ def __parse_binskim(bin_an_dic, output):
 
     # Return updated dict
     return bin_an_dic
+
 
 def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
     """Run the binskim analysis."""
@@ -430,11 +452,11 @@ def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
         response = proxy.binscope(name, _get_token())
 
     res = response[response.find('<'):]
-    config = etree.XMLParser( # pylint: disable-msg=E1101
+    config = etree.XMLParser(  # pylint: disable-msg=E1101
         remove_blank_text=True,
         resolve_entities=False
     )
-    xml_file = etree.XML(bytes(res), config) # pylint: disable-msg=E1101
+    xml_file = etree.XML(bytes(res), config)  # pylint: disable-msg=E1101
 
     for item in xml_file.find('items').getchildren():
         if item.find('issueType') is not None:
@@ -468,32 +490,34 @@ def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
 
     return bin_an_dic
 
+
 def _parse_xml(app_dir):
     """Parse the AppxManifest file to get basic informations."""
     print "[INFO] Starting Binary Analysis - XML"
     xml_file = os.path.join(app_dir, "AppxManifest.xml")
     xml_dic = {
-        'version' : '',
-        'arch' : '',
-        'app_name' : '',
-        'pub_name' : '',
-        'compiler_version' : '',
-        'visual_studio_version' : '',
-        'visual_studio_edition' : '',
-        'target_os' : '',
-        'appx_dll_version' : '',
-        'proj_guid' : '',
-        'opti_tool' : '',
-        'target_run' : ''
+        'version': '',
+        'arch': '',
+        'app_name': '',
+        'pub_name': '',
+        'compiler_version': '',
+        'visual_studio_version': '',
+        'visual_studio_edition': '',
+        'target_os': '',
+        'appx_dll_version': '',
+        'proj_guid': '',
+        'opti_tool': '',
+        'target_run': ''
     }
 
     try:
         print "[INFO] Reading AppxManifest"
-        config = etree.XMLParser( # pylint: disable-msg=E1101
+        config = etree.XMLParser(  # pylint: disable-msg=E1101
             remove_blank_text=True,
             resolve_entities=False
         )
-        xml = etree.XML(open(xml_file).read(), config) # pylint: disable-msg=E1101
+        xml = etree.XML(open(xml_file).read(),
+                        config)  # pylint: disable-msg=E1101
         for child in xml.getchildren():
             # } to prevent conflict with PhoneIdentity..
             if isinstance(child.tag, str) and child.tag.endswith("}Identity"):
