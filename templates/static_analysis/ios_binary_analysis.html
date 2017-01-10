@@ -60,7 +60,9 @@
               </div>
               <div class="modal-body">
           <pre><code>
-           {{ strings|safe }}
+           {% for string in strings %}
+           {{string | safe}}
+           {% endfor %}
           </code></pre>
               </div>
 
@@ -185,6 +187,63 @@
     </div><!-- /.col -->
   </div><!-- /.row -->
 
+</section>
+
+
+<!-- ============================================================= -->
+
+
+<section id="permissions">
+  <h2 class="page-header"></h2>
+  <!-- /.box -->
+
+          <div class="box">
+          <div class="box-header">
+             <!-- /.box-header -->
+              <h3 class="box-title"><i class="fa fa-file-text-o"></i> Permissions</h3>
+            </div>
+
+              {% if permissions|length > 0 %}
+              <div class="box-body no-padding">
+              <div class="table-responsive">
+              <table class="table table-bordered table-hover table-striped">
+
+                  <thead>
+                      <tr>
+                          <th>Permissions</th>
+                          <th>Description</th>
+                          <th>Reason in Manifest</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                    {%for perm in permissions%}
+                    <tr>
+                      <td>
+                        {{ perm.0 | safe}}
+                      </td>
+                      <td>
+                        {{ perm.1 | safe}}
+                      </td>
+                      <td>
+                        {{ perm.2 | safe}}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+              </table>
+              </div>
+              {% else %}
+              <div class="box-body">
+             <div class="list-group">
+                    <p>
+                No permissions required.
+              </p>
+            </div>
+          </div>
+              {% endif %}
+
+            <!-- /.box-body -->
+          </div>
 </section>
 
 

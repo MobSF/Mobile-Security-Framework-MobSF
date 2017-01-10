@@ -71,6 +71,7 @@ class StaticAnalyzerIPA(models.Model):
     FILES = models.TextField()
     SFILESX = models.TextField()
     STRINGS = models.TextField()
+    PERMISSIONS = models.TextField()
 
 
 class StaticAnalyzerIOSZIP(models.Model):
