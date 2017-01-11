@@ -97,6 +97,7 @@ class StaticAnalyzerIOSZIP(models.Model):
     URLnFile = models.TextField()
     DOMAINS = models.TextField()
     EmailnFile = models.TextField()
+    PERMISSIONS = models.TextField()
 
 
 class StaticAnalyzerWindows(models.Model):

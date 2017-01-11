@@ -181,7 +181,9 @@
                             <div class="panel-body">
                                 <div class="list-group">
                   <p>
-                  {{ strings|safe }}
+            {% for string in strings %}
+           {{string | safe}} </br>
+           {% endfor %}
                   </p>
                                 </div>
 

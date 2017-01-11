@@ -155,7 +155,7 @@ def StaticAnalyzer_iOS(request):
                         'urls': DB[0].URLnFile,
                         'domains': python_dict(DB[0].DOMAINS),
                         'emails': DB[0].EmailnFile,
-                        'strings': python_list(DB[0].STRINGS)
+                        'permissions': python_list(DB[0].PERMISSIONS),
                     }
                 else:
                     print "[INFO] iOS Source Code Analysis Started"
@@ -166,7 +166,7 @@ def StaticAnalyzer_iOS(request):
                     SIZE = str(FileSize(APP_PATH)) + 'MB'  # FILE SIZE
                     SHA1, SHA256 = HashGen(APP_PATH)  # SHA1 & SHA256 HASHES
                     FILES, SFILES = iOS_ListFiles(APP_DIR, MD5, False, 'ios')
-                    HTML, CODEANAL, URLnFile, DOMAINS, EmailnFile, INFO_PLIST, BIN_NAME, ID, VER, SDK, PLTFM, MIN = iOS_Source_Analysis(
+                    HTML, CODEANAL, URLnFile, DOMAINS, EmailnFile, INFO_PLIST, BIN_NAME, ID, VER, SDK, PLTFM, MIN, PERMISSIONS = iOS_Source_Analysis(
                         APP_DIR, MD5)
                     LIBS, BIN_ANAL = '', ''
                     # Saving to DB
@@ -194,7 +194,8 @@ def StaticAnalyzer_iOS(request):
                                                                             CODEANAL=CODEANAL,
                                                                             URLnFile=URLnFile,
                                                                             DOMAINS=DOMAINS,
-                                                                            EmailnFile=EmailnFile)
+                                                                            EmailnFile=EmailnFile,
+                                                                            PERMISSIONS=PERMISSIONS)
                     elif RESCAN == '0':
                         print "\n[INFO] Saving to Database"
                         STATIC_DB = StaticAnalyzerIOSZIP(TITLE='Static Analysis',
@@ -218,7 +219,8 @@ def StaticAnalyzer_iOS(request):
                                                          CODEANAL=CODEANAL,
                                                          URLnFile=URLnFile,
                                                          DOMAINS=DOMAINS,
-                                                         EmailnFile=EmailnFile)
+                                                         EmailnFile=EmailnFile,
+                                                         PERMISSIONS=PERMISSIONS)
                         STATIC_DB.save()
                     context = {
                         'title': 'Static Analysis',
@@ -242,7 +244,8 @@ def StaticAnalyzer_iOS(request):
                         'insecure': CODEANAL,
                         'urls': URLnFile,
                         'domains': DOMAINS,
-                        'emails': EmailnFile
+                        'emails': EmailnFile,
+                        'permissions': PERMISSIONS,
                     }
                 template = "static_analysis/ios_source_analysis.html"
                 return render(request, template, context)
@@ -404,6 +407,7 @@ def __check_permissions(p_list):
     '''Check the permissions the app requests.'''
     # List taken from
     # https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html
+    print "[INFO] Checking Permissions"
     permissions = []
     if "NSAppleMusicUsageDescription" in p_list:
         permissions.append(
@@ -753,6 +757,7 @@ def iOS_Source_Analysis(SRC, MD5):
             SDK = ''  # p["DTSDKName"]
             PLTFM = ''  # p["DTPlatformVersion"]
             MIN = ''  # p["MinimumOSVersion"]
+            PERMISSIONS = __check_permissions(p)
 
         # Code Analysis
         EmailnFile = ''
@@ -873,6 +878,6 @@ def iOS_Source_Analysis(SRC, MD5):
 
                 dang += hd + link + "</td></tr>"
 
-        return html, dang, URLnFile, DOMAINS, EmailnFile, XML, BIN_NAME, ID, VER, SDK, PLTFM, MIN
+        return html, dang, URLnFile, DOMAINS, EmailnFile, XML, BIN_NAME, ID, VER, SDK, PLTFM, MIN, PERMISSIONS
     except:
         PrintException("[ERROR] iOS Source Code Analysis")
