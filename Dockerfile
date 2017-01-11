@@ -36,7 +36,7 @@ RUN \
 
 #Clone MobSF master
 WORKDIR /root
-RUN git clone https://github.com/ajinabraham/Mobile-Security-Framework-MobSF.git
+RUN git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF.git
 
 #Enable Virtualenv and Install Dependencies
 WORKDIR /root/Mobile-Security-Framework-MobSF
