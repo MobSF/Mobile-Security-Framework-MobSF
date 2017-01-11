@@ -69,7 +69,7 @@ Example:
 > causing the bug, and potential solutions (and your opinions on their
 > merits).
 
-Open Bugs here: https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/issues
+Open Bugs here: https://github.com/MobSF/Mobile-Security-Framework-MobSF/issues
 
 <a name="features"></a>
 ## Feature requests
@@ -103,11 +103,11 @@ project:
 
    ```bash
    # Clone your fork of the repo into the current directory
-   git clone https://github.com/ajinabraham/Mobile-Security-Framework-MobSF.git
+   git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF.git
    # Navigate to the newly cloned directory
    cd Mobile-Security-Framework-MobSF
    # Assign the original repo to a remote called "upstream"
-   git remote add upstream https://github.com/ajinabraham/Mobile-Security-Framework-MobSF.git
+   git remote add upstream https://github.com/MobSF/Mobile-Security-Framework-MobSF.git
    ```
 
 2. If you cloned a while ago, get the latest changes from upstream:
