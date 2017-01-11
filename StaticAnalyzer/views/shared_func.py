@@ -194,7 +194,7 @@ def PDF(request):
                             'libs': DB[0].LIBS,
                             'files': python_list(DB[0].FILES),
                             'file_analysis': DB[0].SFILESX,
-                            'strings': DB[0].STRINGS,
+                            'strings': python_list(DB[0].STRINGS),
                             'permissions': python_list(DB[0].PERMISSIONS)
                         }
                         template = get_template("pdf/ios_binary_analysis_pdf.html")
@@ -227,7 +227,8 @@ def PDF(request):
                             'insecure': DB[0].CODEANAL,
                             'urls': DB[0].URLnFile,
                             'domains': python_dict(DB[0].DOMAINS),
-                            'emails': DB[0].EmailnFile
+                            'emails': DB[0].EmailnFile,
+                            'permissions': python_list(DB[0].PERMISSIONS)
                         }
                         template = get_template("pdf/ios_source_analysis_pdf.html")
                     else:
@@ -260,7 +261,7 @@ def PDF(request):
                             'opti_tool':  db_entry[0].OPTI_TOOL,
                             'target_run':  db_entry[0].TARGET_RUN,
                             'files':  python_list(db_entry[0].FILES),
-                            'strings': db_entry[0].STRINGS,
+                            'strings': python_list(db_entry[0].STRINGS),
                             'bin_an_results': python_list(db_entry[0].BIN_AN_RESULTS),
                             'bin_an_warnings': python_list(db_entry[0].BIN_AN_WARNINGS)
                         }
