@@ -32,7 +32,7 @@ def printMobSFverison():
 def check_update():
     try:
         print "\n[INFO] Checking for Update."
-        github_url = "https://raw.githubusercontent.com/ajinabraham/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
+        github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
         response = urllib2.urlopen(github_url)
         html = response.read().split("\n")
         for line in html:
