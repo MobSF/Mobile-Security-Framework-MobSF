@@ -194,6 +194,17 @@ def FindJava():
                         if "oracle" in dat:
                             print "\n[INFO] Oracle Java (JDK >= 1.7) is installed!"
                             return WIN_JAVA
+            for env in ["JDK_HOME","JAVA_HOME"]:
+                java_home = os.environ.get(env)
+                if java_home and os.path.isdir(java_home):
+                    j = os.path.basename(java_home)
+                    if re.findall(JAVA_VER, j):
+                        WIN_JAVA = java_home + "/bin/"
+                        args = [WIN_JAVA + "java"]
+                        dat = RunProcess(args)
+                        if "oracle" in dat:
+                            print "\n[INFO] Oracle Java (JDK >= 1.7) is installed!"
+                            return WIN_JAVA
             PrintException("[ERROR] Oracle JDK 1.7 or above is not found!")
             return ""
         else:
