@@ -134,7 +134,7 @@ def PDF(request):
                         'minsdk': DB[0].MIN_SDK,
                         'androvername': DB[0].ANDROVERNAME,
                         'androver': DB[0].ANDROVER,
-                        'manifest': DB[0].MANIFEST_ANAL,
+                        'manifest': python_list(DB[0].MANIFEST_ANAL),
                         'permissions': python_dict(DB[0].PERMISSIONS),
                         'files': python_list(DB[0].FILES),
                         'certz': DB[0].CERTZ,

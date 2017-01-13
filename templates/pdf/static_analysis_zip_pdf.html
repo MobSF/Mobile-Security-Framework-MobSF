@@ -230,7 +230,28 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                        {{ manifest | safe}}
+                                            {% for item in manifest %}
+                      <tr>
+                        <td>
+                        {{item|key:"title" | safe}}
+                        </td>
+                        <td>
+
+                          {% if item|key:"stat" == "high" %}
+                            <span class="label label-danger">high</span>
+                          {% elif item|key:"stat" == "info" %}
+                            <span class="label label-info">info</span>
+                          {% elif item|key:"stat" == "medium" %}
+                            <span class="label label-warning">medium</span>
+                          {% endif %}
+                         
+                        </td>
+                        <td>
+                        {{item|key:"desc"}}
+                        </td>
+   
+                       </tr>
+                     {% endfor %}
                                         </tbody>
                                         </table>
                                 

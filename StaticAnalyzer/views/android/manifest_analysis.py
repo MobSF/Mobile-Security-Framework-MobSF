@@ -196,102 +196,101 @@ def get_browsable_activities(node):
         PrintException("[ERROR] Getting Browsable Activities")
 
 
-manifest_desc = {
-    'a_debuggable': (
-        'Debug Enabled For App <br>[android:debuggable=true]',
-        'high',
-        'Debugging was enabled on the app which makes it easier for reverse engineers to hook a '\
-        'debugger to it. This allows dumping a stack trace and accessing debugging helper classes.'
-    ),
-    'a_allowbackup': (
-        'Application Data can be Backed up<br>[android:allowBackup=true]',
-        'medium',
-        'This flag allows anyone to backup your application data via adb. It allows users who have'\
-        ' enabled USB debugging to copy application data off of the device.'
-    ),
-    'a_allowbackup_miss': (
-        'Application Data can be Backed up<br>[android:allowBackup] flag is missing.',
-        'medium',
-        'The flag [android:allowBackup] should be set to false. By default it is set to true and '\
-        'allows anyone to backup your application data via adb. It allows users who have enabled '\
-        'USB debugging to copy application data off of the device.'
-    ),
-    'a_testonly': (
-        'Application is in Test Mode <br>[android:testOnly=true]',
-        'high',
-        ' It may expose functionality or data outside of itself that would cause a security hole.'
-    ),
-    'a_taskaffinity': (
-        'TaskAffinity is set for Activity </br>(%s)',
-        'high',
-        'If taskAffinity is set, then other application could read the Intents sent to Activities'\
-        ' belonging to another task. Always use the default setting keeping the affinity as the '\
-        'package name in order to prevent sensitive information inside sent or received Intents '\
-        'from being read by another application.'
-    ),
-    'a_launchmode': (
-        'Launch Mode of Activity (%s) is not standard.',
-        'high',
-        'An Activity should not be having the launch mode attribute set to "singleTask/singleInstance"'\
-        ' as it becomes root Activity and it is possible for other applications to read the contents'\
-        ' of the calling Intent. So it is required to use the "standard" launch mode attribute when'\
-        ' sensitive information is included in an Intent.'
-    ),
-    'a_protected_permission': (
-        '<strong>%s</strong> (%s) is Protected by a permission.</br>%s<br>[android:exported=true]',
-        'info',
-        'A %s %s is found to be exported, but is protected by permission.'
-    ),
-    'a_not_pritected': (
-        '<strong>%s</strong> (%s) is not Protected. <br>[android:exported=true]',
-        'high',
-        'A %s %s is found to be shared with other apps on the device therefore leaving it accessible'\
-        ' to any other application on the device'
-    ),
-    'a_not_pritected_filter': (
-        '<strong>%s</strong> (%s) is not Protected.<br>An intent-filter exists.',
-        'high',
-        'A %s %s is found to be shared with other apps on the device therefore leaving it accessible'\
-        ' to any other application on the device. The presence of intent-filter indicates that the '
-        '%s is explicitly exported.'
-    ),
-    'a_improper_provider': (
-        'Improper Content Provider Permissions<br>[%s]',
-        'high',
-        'A content provider permission was set to allows access from any other app on the device. '\
-        'Content providers may contain sensitive information about an app and therefore should not'\
-        ' be shared.'
-    ),
-    'a_dailer_code': (
-        'Dailer Code: %s Found <br>[android:scheme="android_secret_code"]',
-        'high',
-        'A secret code was found in the manifest. These codes, when entered into the dialer grant'\
-        ' access to hidden content that may contain sensitive information.'
-    ),
-    'a_sms_receiver_port': (
-        'Data SMS Receiver Set on Port: %s Found<br>[android:port]',
-        'high',
-        'A binary SMS recevier is configured to listen on a port. Binary SMS messages sent to a '\
-        'device are processed by the application in whichever way the developer choses. The data'\
-        ' in this SMS should be properly validated by the application. Furthermore, the application'\
-        ' should assume that the SMS being received is from an untrusted source."'
-    ),
-    'a_high_intent_priority': (
-        'High Intent Priority (%s)<br>[android:priority]',
-        'medium',
-        'By setting an intent priority higher than another intent, the app effectively overrides'\
-        ' other requests.'
-    ),
-    'a_high_action_priority': (
-        'High Action Priority (%s)<br>[android:priority] ',
-        'medium',
-        'By setting an action priority higher than another action, the app effectively overrides'\
-        ' other requests.'
-    ),
-}
-
 def manifest_analysis(mfxml, man_data_dic):
     """Analyse manifest file."""
+    manifest_desc = {
+        'a_debuggable': (
+            'Debug Enabled For App <br>[android:debuggable=true]',
+            'high',
+            'Debugging was enabled on the app which makes it easier for reverse engineers to hook a '
+            'debugger to it. This allows dumping a stack trace and accessing debugging helper classes.'
+        ),
+        'a_allowbackup': (
+            'Application Data can be Backed up<br>[android:allowBackup=true]',
+            'medium',
+            'This flag allows anyone to backup your application data via adb. It allows users who have'
+            ' enabled USB debugging to copy application data off of the device.'
+        ),
+        'a_allowbackup_miss': (
+            'Application Data can be Backed up<br>[android:allowBackup] flag is missing.',
+            'medium',
+            'The flag [android:allowBackup] should be set to false. By default it is set to true and '
+            'allows anyone to backup your application data via adb. It allows users who have enabled '
+            'USB debugging to copy application data off of the device.'
+        ),
+        'a_testonly': (
+            'Application is in Test Mode <br>[android:testOnly=true]',
+            'high',
+            ' It may expose functionality or data outside of itself that would cause a security hole.'
+        ),
+        'a_taskaffinity': (
+            'TaskAffinity is set for Activity </br>(%s)',
+            'high',
+            'If taskAffinity is set, then other application could read the Intents sent to Activities'
+            ' belonging to another task. Always use the default setting keeping the affinity as the '
+            'package name in order to prevent sensitive information inside sent or received Intents '
+            'from being read by another application.'
+        ),
+        'a_launchmode': (
+            'Launch Mode of Activity (%s) is not standard.',
+            'high',
+            'An Activity should not be having the launch mode attribute set to "singleTask/singleInstance"'
+            ' as it becomes root Activity and it is possible for other applications to read the contents'
+            ' of the calling Intent. So it is required to use the "standard" launch mode attribute when'
+            ' sensitive information is included in an Intent.'
+        ),
+        'a_protected_permission': (
+            '<strong>%s</strong> (%s) is Protected by a permission.</br>%s<br>[android:exported=true]',
+            'info',
+            'A %s %s is found to be exported, but is protected by permission.'
+        ),
+        'a_not_pritected': (
+            '<strong>%s</strong> (%s) is not Protected. <br>[android:exported=true]',
+            'high',
+            'A %s %s is found to be shared with other apps on the device therefore leaving it accessible'
+            ' to any other application on the device'
+        ),
+        'a_not_pritected_filter': (
+            '<strong>%s</strong> (%s) is not Protected.<br>An intent-filter exists.',
+            'high',
+            'A %s %s is found to be shared with other apps on the device therefore leaving it accessible'
+            ' to any other application on the device. The presence of intent-filter indicates that the '
+            '%s is explicitly exported.'
+        ),
+        'a_improper_provider': (
+            'Improper Content Provider Permissions<br>[%s]',
+            'high',
+            'A content provider permission was set to allows access from any other app on the device. '
+            'Content providers may contain sensitive information about an app and therefore should not'
+            ' be shared.'
+        ),
+        'a_dailer_code': (
+            'Dailer Code: %s Found <br>[android:scheme="android_secret_code"]',
+            'high',
+            'A secret code was found in the manifest. These codes, when entered into the dialer grant'
+            ' access to hidden content that may contain sensitive information.'
+        ),
+        'a_sms_receiver_port': (
+            'Data SMS Receiver Set on Port: %s Found<br>[android:port]',
+            'high',
+            'A binary SMS recevier is configured to listen on a port. Binary SMS messages sent to a '
+            'device are processed by the application in whichever way the developer choses. The data'
+            ' in this SMS should be properly validated by the application. Furthermore, the application'
+            ' should assume that the SMS being received is from an untrusted source."'
+        ),
+        'a_high_intent_priority': (
+            'High Intent Priority (%s)<br>[android:priority]',
+            'medium',
+            'By setting an intent priority higher than another intent, the app effectively overrides'
+            ' other requests.'
+        ),
+        'a_high_action_priority': (
+            'High Action Priority (%s)<br>[android:priority] ',
+            'medium',
+            'By setting an action priority higher than another action, the app effectively overrides'
+            ' other requests.'
+        ),
+    }
     try:
         print "[INFO] Manifest Analysis Started"
         exp_count = dict.fromkeys(["act", "ser", "bro", "cnt"], 0)
@@ -302,7 +301,7 @@ def manifest_analysis(mfxml, man_data_dic):
         granturipermissions = mfxml.getElementsByTagName(
             "grant-uri-permission")
         permissions = mfxml.getElementsByTagName("permission")
-        ret_value = ''
+        ret_value = []
         ret_list = []
         exported = []
         browsable_activities = {}
@@ -331,16 +330,16 @@ def manifest_analysis(mfxml, man_data_dic):
         for application in applications:
 
             if application.getAttribute("android:debuggable") == "true":
-                ret_list.append(("a_debuggable",tuple(),tuple(),))
+                ret_list.append(("a_debuggable", tuple(), tuple(),))
             if application.getAttribute("android:allowBackup") == "true":
-                ret_list.append(("a_allowbackup",tuple(),tuple(),))
+                ret_list.append(("a_allowbackup", tuple(), tuple(),))
             elif application.getAttribute("android:allowBackup") == "false":
                 pass
             else:
-                ret_list.append(("a_allowbackup_miss",tuple(),tuple(),))
+                ret_list.append(("a_allowbackup_miss", tuple(), tuple(),))
             if application.getAttribute("android:testOnly") == "true":
                 # pylint: disable=C0301
-                ret_list.append(("a_testonly",tuple(),tuple(),))
+                ret_list.append(("a_testonly", tuple(), tuple(),))
             for node in application.childNodes:
                 an_or_a = ''
                 if node.nodeName == 'activity':
@@ -378,7 +377,7 @@ def manifest_analysis(mfxml, man_data_dic):
                         node.getAttribute("android:taskAffinity")
                 ):
                     item = node.getAttribute("android:name")
-                    ret_list.append(("a_taskaffinity",(item,),tuple(),))
+                    ret_list.append(("a_taskaffinity", (item,), tuple(),))
 
                 # LaunchMode
                 if (
@@ -390,7 +389,7 @@ def manifest_analysis(mfxml, man_data_dic):
                         )
                 ):
                     item = node.getAttribute("android:name")
-                    ret_list.append(("a_launchmode",(item,),tuple(),))
+                    ret_list.append(("a_launchmode", (item,), tuple(),))
                 # Exported Check
                 item = ''
                 is_inf = False
@@ -415,11 +414,13 @@ def manifest_analysis(mfxml, man_data_dic):
                                         permission_dict[
                                             node.getAttribute("android:permission")]
                                     )
-                                ret_list.append(("a_protected_permission",(itemname, item, perm + prot,),(an_or_a, itemname,),))
+                                ret_list.append(
+                                    ("a_protected_permission", (itemname, item, perm + prot,), (an_or_a, itemname,),))
                             else:
                                 if (itemname in ['Activity', 'Activity-Alias']):
                                     exported.append(item)
-                                ret_list.append(("a_not_pritected",(itemname, item,),(an_or_a, itemname,),))
+                                ret_list.append(
+                                    ("a_not_pritected", (itemname, item,), (an_or_a, itemname,),))
                                 exp_count[cnt_id] = exp_count[cnt_id] + 1
                     elif node.getAttribute("android:exported") != 'false':
                         # Check for Implicitly Exported
@@ -447,21 +448,24 @@ def manifest_analysis(mfxml, man_data_dic):
                                             permission_dict[
                                                 node.getAttribute("android:permission")]
                                         )
-                                    ret_list.append(("a_protected_permission",(itemname, item, perm + prot,),(an_or_a, itemname,),))
+                                    ret_list.append(
+                                        ("a_protected_permission", (itemname, item, perm + prot,), (an_or_a, itemname,),))
                                 else:
                                     if (itemname in ['Activity', 'Activity-Alias']):
                                         exported.append(item)
-                                    ret_list.append(("a_not_pritected_filter", (itemname, item,), (an_or_a, itemname, itemname,),))
+                                    ret_list.append(
+                                        ("a_not_pritected_filter", (itemname, item,), (an_or_a, itemname, itemname,),))
                                     exp_count[cnt_id] = exp_count[cnt_id] + 1
 
         # GRANT-URI-PERMISSIONS
         for granturi in granturipermissions:
             if granturi.getAttribute("android:pathPrefix") == '/':
-                ret_list.append(("a_improper_provider",('pathPrefix=/',),tuple(),))
+                ret_list.append(
+                    ("a_improper_provider", ('pathPrefix=/',), tuple(),))
             elif granturi.getAttribute("android:path") == '/':
-                ret_list.append(("a_improper_provider",('path=/',),tuple(),))
+                ret_list.append(("a_improper_provider", ('path=/',), tuple(),))
             elif granturi.getAttribute("android:pathPattern") == '*':
-                ret_list.append(("a_improper_provider",('path=*',),tuple(),))
+                ret_list.append(("a_improper_provider", ('path=*',), tuple(),))
         # DATA
         for data in datas:
             if data.getAttribute("android:scheme") == "android_secret_code":
@@ -476,27 +480,23 @@ def manifest_analysis(mfxml, man_data_dic):
             if intent.getAttribute("android:priority").isdigit():
                 value = intent.getAttribute("android:priority")
                 if int(value) > 100:
-                    ret_list.append(("a_high_intent_priority", (value,), tuple(),))
+                    ret_list.append(
+                        ("a_high_intent_priority", (value,), tuple(),))
         # ACTIONS
         for action in actions:
             if action.getAttribute("android:priority").isdigit():
                 value = action.getAttribute("android:priority")
                 if int(value) > 100:
-                    ret_list.append(("a_high_action_priority", (value,), tuple(),))
-        if len(ret_list) < 1:
-            ret_value = '<tr><td>None</td><td>None</td><td>None</td><tr>'
-        else:
-            for a_key, t_name, t_desc in ret_list:
-                a_template = manifest_desc.get(a_key)
-                if a_template:
-                    a_title = a_template[0] % t_name
-                    a_level = {
-                                  'info'  : '<span class="label label-info">info</span>',
-                                  'high'  : '<span class="label label-danger">high</span>',
-                                  'medium': '<span class="label label-warning">medium</span>',
-                              }.get(a_template[1])
-                    a_desc = a_template[2] % t_desc
-                    ret_value += '<tr><td>' + a_title  + '</td><td>' + a_level + '</td><td>' + a_desc +'</td><tr>\n'
+                    ret_list.append(
+                        ("a_high_action_priority", (value,), tuple(),))
+        for a_key, t_name, t_desc in ret_list:
+            a_template = manifest_desc.get(a_key)
+            if a_template:
+                a_title = a_template[0] % t_name
+                a_desc = a_template[2] % t_desc
+                ret_value.append({"title": a_title,
+                                  "stat": a_template[1],
+                                  "desc": a_desc})
         # Prepare return dict
         man_an_dic = {
             'manifest_anal': ret_value,
