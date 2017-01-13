@@ -242,18 +242,18 @@ def manifest_analysis(mfxml, man_data_dic):
         'a_protected_permission': (
             '<strong>%s</strong> (%s) is Protected by a permission.</br>%s<br>[android:exported=true]',
             'info',
-            'A %s %s is found to be exported, but is protected by permission.'
+            'A%s %s is found to be exported, but is protected by permission.'
         ),
         'a_not_pritected': (
             '<strong>%s</strong> (%s) is not Protected. <br>[android:exported=true]',
             'high',
-            'A %s %s is found to be shared with other apps on the device therefore leaving it accessible'
+            'A%s %s is found to be shared with other apps on the device therefore leaving it accessible'
             ' to any other application on the device'
         ),
         'a_not_pritected_filter': (
             '<strong>%s</strong> (%s) is not Protected.<br>An intent-filter exists.',
             'high',
-            'A %s %s is found to be shared with other apps on the device therefore leaving it accessible'
+            'A%s %s is found to be shared with other apps on the device therefore leaving it accessible'
             ' to any other application on the device. The presence of intent-filter indicates that the '
             '%s is explicitly exported.'
         ),
