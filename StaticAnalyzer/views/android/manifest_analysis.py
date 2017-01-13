@@ -483,7 +483,7 @@ def manifest_analysis(mfxml, man_data_dic):
                 value = action.getAttribute("android:priority")
                 if int(value) > 100:
                     ret_list.append(("a_high_action_priority", (value,), tuple(),))
-        if len(ret_value) < 1:
+        if len(ret_list) < 1:
             ret_value = '<tr><td>None</td><td>None</td><td>None</td><tr>'
         else:
             for a_key, t_name, t_desc in ret_list:
