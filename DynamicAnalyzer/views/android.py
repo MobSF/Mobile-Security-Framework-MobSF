@@ -1,4 +1,20 @@
 # -*- coding: utf_8 -*-
+import subprocess
+import os
+import re
+import shutil
+import tarfile
+import ntpath
+import io
+import json
+import random
+import time
+import unicodedata
+import socket
+import threading
+import base64
+import sqlite3 as sq
+
 from django.shortcuts import render
 from django.conf import settings
 from django.template.defaulttags import register
@@ -7,26 +23,9 @@ from django.utils.html import escape
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from DynamicAnalyzer.pyWebProxy.pywebproxy import *
-from MobSF.utils import PrintException, is_number, python_list, isBase64, isFileExists
+from MobSF.utils import PrintException, is_number, python_list, isBase64, isFileExists, getADB
 from MalwareAnalyzer.views import MalwareCheck
 
-import subprocess
-import os
-import re
-import shutil
-import tarfile
-import ntpath
-import platform
-import io
-import json
-import random
-import time
-import sys
-import unicodedata
-import socket
-import threading
-import base64
-import sqlite3 as sq
 #===================================
 # Dynamic Analyzer Calls begins here!
 #===================================
@@ -693,29 +692,6 @@ def WebProxy(APKDIR, ip, port):
         Proxy(ip, port, APKDIR, "on")
     except:
         PrintException("[ERROR] Starting Web Proxy")
-
-
-def getADB(TOOLSDIR):
-    print "\n[INFO] Getting ADB Location"
-    try:
-        if len(settings.ADB_BINARY) > 0 and isFileExists(settings.ADB_BINARY):
-            return settings.ADB_BINARY
-        else:
-            adb = 'adb'
-            if platform.system() == "Darwin":
-                adb_dir = os.path.join(TOOLSDIR, 'adb/mac/')
-                subprocess.call(["chmod", "777", adb_dir])
-                adb = os.path.join(TOOLSDIR, 'adb/mac/adb')
-            elif platform.system() == "Linux":
-                adb_dir = os.path.join(TOOLSDIR, 'adb/linux/')
-                subprocess.call(["chmod", "777", adb_dir])
-                adb = os.path.join(TOOLSDIR, 'adb/linux/adb')
-            elif platform.system() == "Windows":
-                adb = os.path.join(TOOLSDIR, 'adb/windows/adb.exe')
-            return adb
-    except:
-        PrintException("[ERROR] Getting ADB Location")
-        return "adb"
 
 
 def Connect(TOOLSDIR):

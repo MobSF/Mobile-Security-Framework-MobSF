@@ -381,9 +381,9 @@ else:
 
 # The below code should be loaded last.
 #============JAVA SETTINGS======================
-JAVA_PATH = utils.FindJava()
+JAVA_PATH = utils.FindJava(False)
 #===============================================
 
 #================VirtualBox Settings============
-VBOX = utils.FindVbox()
+VBOX = utils.FindVbox(False)
 #===============================================
