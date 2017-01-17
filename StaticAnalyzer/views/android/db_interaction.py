@@ -31,6 +31,7 @@ def get_context_from_db_entry(db_entry):
             'androver': db_entry[0].ANDROVER,
             'manifest': python_list(db_entry[0].MANIFEST_ANAL),
             'permissions': python_dict(db_entry[0].PERMISSIONS),
+            'binary_analysis': python_list(db_entry[0].BIN_ANALYSIS),
             'files': python_list(db_entry[0].FILES),
             'certz': db_entry[0].CERTZ,
             'activities': python_list(db_entry[0].ACTIVITIES),
@@ -68,7 +69,7 @@ def get_context_from_db_entry(db_entry):
         PrintException("[ERROR] Fetching from DB")
 
 
-def get_context_from_an(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic):
+def get_context_from_an(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, elf_an_buff):
     """Get the context for the webpage."""
     try:
         context = {
@@ -87,6 +88,7 @@ def get_context_from_an(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic
             'androver': man_data_dic['androver'],
             'manifest': man_an_dic['manifest_anal'],
             'permissions': man_an_dic['permissons'],
+            'binary_analysis': elf_an_buff,
             'files': app_dic['files'],
             'certz': app_dic['certz'],
             'activities': man_data_dic['activities'],
@@ -124,7 +126,7 @@ def get_context_from_an(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic
         PrintException("[ERROR] Rendering to Template")
 
 
-def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic):
+def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, elf_an_buff):
     """Update an DB entry."""
     try:
         # pylint: disable=E1101
@@ -144,6 +146,7 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic):
             ANDROVER=man_data_dic['androver'],
             MANIFEST_ANAL=man_an_dic['manifest_anal'],
             PERMISSIONS=man_an_dic['permissons'],
+            BIN_ANALYSIS=elf_an_buff,
             FILES=app_dic['files'],
             CERTZ=app_dic['certz'],
             ACTIVITIES=man_data_dic['activities'],
@@ -181,7 +184,7 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic):
         PrintException("[ERROR] Updating DB")
 
 
-def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic):
+def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, elf_an_buff):
     """Create a new DB-Entry."""
     try:
         static_db = StaticAnalyzerAndroid(
@@ -200,6 +203,7 @@ def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic):
             ANDROVER=man_data_dic['androver'],
             MANIFEST_ANAL=man_an_dic['manifest_anal'],
             PERMISSIONS=man_an_dic['permissons'],
+            BIN_ANALYSIS=elf_an_buff,
             FILES=app_dic['files'],
             CERTZ=app_dic['certz'],
             ACTIVITIES=man_data_dic['activities'],
@@ -363,6 +367,7 @@ def update_db_entry_zip(app_dic, man_data_dic, man_an_dic, code_an_dic):
             ANDROVER=man_data_dic['androver'],
             MANIFEST_ANAL=man_an_dic['manifest_anal'],
             PERMISSIONS=man_an_dic['permissons'],
+            BIN_ANALYSIS=[],
             FILES=app_dic['files'],
             CERTZ=app_dic['certz'],
             ACTIVITIES=man_data_dic['activities'],
@@ -419,6 +424,7 @@ def create_db_entry_zip(app_dic, man_data_dic, man_an_dic, code_an_dic):
             ANDROVER=man_data_dic['androver'],
             MANIFEST_ANAL=man_an_dic['manifest_anal'],
             PERMISSIONS=man_an_dic['permissons'],
+            BIN_ANALYSIS=[],
             FILES=app_dic['files'],
             CERTZ=app_dic['certz'],
             ACTIVITIES=man_data_dic['activities'],
