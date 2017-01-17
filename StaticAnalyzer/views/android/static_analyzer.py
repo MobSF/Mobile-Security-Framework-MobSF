@@ -57,6 +57,10 @@ from StaticAnalyzer.views.android.manifest_analysis import (
     manifest_analysis,
     get_manifest
 )
+from StaticAnalyzer.views.android.binary_analysis import (
+    elf_analysis,
+    resource_analysis,
+)
 
 
 @register.filter
@@ -129,7 +133,8 @@ def static_analyzer(request):
 
                     # Set Manifest link
                     app_dic['mani'] = '../ManifestView/?md5=' + \
-                        app_dic['md5'] + '&type=apk&bin=1'
+
+                    app_dic['md5'] + '&type=apk&bin=1'
                     man_data_dic = manifest_data(app_dic['parsed_xml'])
 
                     man_an_dic = manifest_analysis(
@@ -149,7 +154,11 @@ def static_analyzer(request):
                         man_an_dic['permissons'],
                         "apk"
                     )
-
+                    elf_an_buff = elf_analysis(
+                        man_an_dic,
+                        app_dic['app_dir'],
+                        "apk"
+                    )
                     print "\n[INFO] Generating Java and Smali Downloads"
                     gen_downloads(app_dic['app_dir'], app_dic['md5'])
 
