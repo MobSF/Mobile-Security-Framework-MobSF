@@ -1,15 +1,18 @@
 # !/usr/bin/python
 # coding=utf-8
-import os,struct
+import os
+import struct
 
 from MobSF.utils import (
     PrintException
 )
 
+
 class tinyELFFile(object):
     '''
     from pyelftools
     '''
+
     def __init__(self, stream):
         self.stream = stream
         self.stream.seek(0)
@@ -31,7 +34,7 @@ class tinyELFFile(object):
         self.unpack_endian = "<" if self.little_endian else ">"
         self.stream.seek(0)
         self.header = {
-            'e_ident':{
+            'e_ident': {
                 'EI_MAG': [self.unpack_byte() for i in range(4)],
                 'EI_CLASS': self.unpack_byte(),
                 'EI_DATA': self.unpack_byte(),
@@ -54,10 +57,11 @@ class tinyELFFile(object):
             'e_shnum': self.unpack_half(),
             'e_shstrndx': self.unpack_half(),
         }
-        xxx = self.decode_shdr(self.header['e_shoff'] + self.header['e_shstrndx'] * self.header['e_shentsize'])
+        xxx = self.decode_shdr(
+            self.header['e_shoff'] + self.header['e_shstrndx'] * self.header['e_shentsize'])
         self._file_stringtable_section = xxx['sh_offset']
 
-    def decode_shdr(self,off):
+    def decode_shdr(self, off):
         self.stream.seek(off)
         elf_shdr = {
             'sh_name': self.unpack_word(),
@@ -72,7 +76,8 @@ class tinyELFFile(object):
             'sh_entsize': self.unpack_xword(),
         }
         return elf_shdr
-    def decode_sym(self,off):
+
+    def decode_sym(self, off):
         self.stream.seek(off)
         elf_sym = {}
         elf_sym['st_name'] = self.unpack_word()
@@ -92,7 +97,7 @@ class tinyELFFile(object):
             'type': st_info_type,
         }
         elf_sym['st_other'] = {
-            'visibility' : st_other_visibility,
+            'visibility': st_other_visibility,
         }
         elf_sym['st_shndx'] = self.unpack_half()
         if self.elfclass == 32:
@@ -101,7 +106,8 @@ class tinyELFFile(object):
             elf_sym['st_value'] = self.unpack_addr()
             elf_sym['st_size'] = self.unpack_xword()
         return elf_sym
-    def decode_rel(self,off):
+
+    def decode_rel(self, off):
         self.stream.seek(off)
         elf_rel = {
             'r_offset': self.unpack_addr(),
@@ -116,17 +122,19 @@ class tinyELFFile(object):
         elf_rel['r_info_sym'] = r_info_sym
         elf_rel['r_info_type'] = r_info_type
         return elf_rel
-    def decode_rela(self,off):
+
+    def decode_rela(self, off):
         elf_rela = self.decode_rel(off)
         elf_rela['r_addend'] = self.unpack_sxword()
         return elf_rela
+
     def decode_string(self, off):
         self.stream.seek(off)
-        CHUNKSIZE = 64
+        chunksize = 64
         chunks = []
         found = False
         while True:
-            chunk = self.stream.read(CHUNKSIZE)
+            chunk = self.stream.read(chunksize)
             end_index = chunk.find(b'\x00')
             if end_index >= 0:
                 chunks.append(chunk[:end_index])
@@ -134,38 +142,47 @@ class tinyELFFile(object):
                 break
             else:
                 chunks.append(chunk)
-            if len(chunk) < CHUNKSIZE:
+            if len(chunk) < chunksize:
                 break
-        s = b''.join(chunks) if found else None
-        return s.decode('ascii')
+        strn = b''.join(chunks) if found else None
+        return strn.decode('ascii')
 
     def unpack_byte(self):
         return struct.unpack(self.unpack_endian + "B", self.stream.read(1))[0]
+
     def unpack_half(self):
         return struct.unpack(self.unpack_endian + "H", self.stream.read(2))[0]
+
     def unpack_word(self):
         return struct.unpack(self.unpack_endian + "L", self.stream.read(4))[0]
+
     def unpack_word64(self):
         return struct.unpack(self.unpack_endian + "Q", self.stream.read(8))[0]
+
     def unpack_addr(self):
         if self.elfclass == 32:
             return struct.unpack(self.unpack_endian + "L", self.stream.read(4))[0]
         else:
             return struct.unpack(self.unpack_endian + "Q", self.stream.read(8))[0]
+
     def unpack_offset(self):
         return self.unpack_addr()
+
     def unpack_sword(self):
         return struct.unpack(self.unpack_endian + "l", self.stream.read(4))[0]
+
     def unpack_xword(self):
         if self.elfclass == 32:
             return struct.unpack(self.unpack_endian + "L", self.stream.read(4))[0]
         else:
             return struct.unpack(self.unpack_endian + "Q", self.stream.read(8))[0]
+
     def unpack_sxword(self):
         if self.elfclass == 32:
             return struct.unpack(self.unpack_endian + "l", self.stream.read(4))[0]
         else:
             return struct.unpack(self.unpack_endian + "q", self.stream.read(8))[0]
+
 
 def check_elf_built(f):
     has_pi = False
@@ -179,39 +196,50 @@ def check_elf_built(f):
     }
     elffile = tinyELFFile(f)
     for i in range(elffile.header['e_shnum']):
-        section_header = elffile.decode_shdr(elffile.header['e_shoff'] + i * elffile.header['e_shentsize'])
-        name = elffile.decode_string(elffile._file_stringtable_section + section_header['sh_name'])
+        section_header = elffile.decode_shdr(
+            elffile.header['e_shoff'] + i * elffile.header['e_shentsize'])
+        name = elffile.decode_string(
+            elffile._file_stringtable_section + section_header['sh_name'])
         sectype = section_header['sh_type']
         if sectype in (4, 9):  # SHT_RELA=4,SHT_REL=9,
             if section_header['sh_entsize'] > 0:
                 for i in range(section_header['sh_size'] // section_header['sh_entsize']):
-                    elffile.stream.seek(section_header['sh_offset'] + i * section_header['sh_entsize'])
+                    elffile.stream.seek(
+                        section_header['sh_offset'] + i * section_header['sh_entsize'])
                     if section_header['sh_type'] == 9:
-                        entry = elffile.decode_rel(section_header['sh_offset'] + i * section_header['sh_entsize'])
+                        entry = elffile.decode_rel(
+                            section_header['sh_offset'] + i * section_header['sh_entsize'])
                     elif section_header['sh_type'] == 4:
-                        entry = elffile.decode_rela(section_header['sh_offset'] + i * section_header['sh_entsize'])
+                        entry = elffile.decode_rela(
+                            section_header['sh_offset'] + i * section_header['sh_entsize'])
                     else:
                         continue
                     if entry['r_info_type'] in has_pi_flag.get(elffile.header['e_machine'], []):
                         if entry['r_info_sym'] == 0:
                             has_pi = True
                             break
-        elif sectype in (2, 11, 0x6ffffff3):  # SHT_SYMTAB=2,SHT_DYNSYM=11,SHT_SUNW_LDYNSYM=0x6ffffff3,
-            strtab_header = elffile.decode_shdr(elffile.header['e_shoff'] + section_header['sh_link'] * elffile.header['e_shentsize'])
+        # SHT_SYMTAB=2,SHT_DYNSYM=11,SHT_SUNW_LDYNSYM=0x6ffffff3,
+        elif sectype in (2, 11, 0x6ffffff3):
+            strtab_header = elffile.decode_shdr(elffile.header[
+                                                'e_shoff'] + section_header['sh_link'] * elffile.header['e_shentsize'])
             if strtab_header['sh_type'] == 3:  # SHT_STRTAB=3,
                 strtab_section = strtab_header['sh_offset']
             else:
                 continue
             if section_header['sh_entsize'] > 0:
                 for i in range(section_header['sh_size'] // section_header['sh_entsize']):
-                    entry = elffile.decode_sym(section_header['sh_offset'] + i * section_header['sh_entsize'])
-                    name = elffile.decode_string(strtab_section + entry['st_name'])
+                    entry = elffile.decode_sym(
+                        section_header['sh_offset'] + i * section_header['sh_entsize'])
+                    name = elffile.decode_string(
+                        strtab_section + entry['st_name'])
                     if name == '__stack_chk_guard':
                         has_sp = True
     return has_pi, has_sp
 
+
 def resource_analysis():
     pass
+
 
 def elf_analysis(man_an_dic, app_dir, typ):
     """Perform the elf analysis."""
@@ -220,21 +248,21 @@ def elf_analysis(man_an_dic, app_dir, typ):
         elf_desc = {
             'elf_no_pi':
                 (
-                    u'Found elf built without Position Independent Executable',
+                    u'Found elf built without Position Independent Executable (PIE) flag',
                     u'high',
-                    u'In order to prevent an attacker from reliably jumping to, for example, a particular'\
-                    u' exploited function in memory, Address space layout randomization (ASLR) randomly '\
-                    u'arranges the address space positions of key data areas of a process, including the '\
-                    u'base of the executable and the positions of the stack, heap and libraries. Built with'\
+                    u'In order to prevent an attacker from reliably jumping to, for example, a particular'
+                    u' exploited function in memory, Address space layout randomization (ASLR) randomly '
+                    u'arranges the address space positions of key data areas of a process, including the '
+                    u'base of the executable and the positions of the stack, heap and libraries. Built with'
                     u' option <strong>-pie</strong>.'
                 ),
             'elf_no_sp':
                 (
                     u'Found elf built without Stack Protection',
                     u'high',
-                    u'Stack canaries can greatly increase the difficulty of exploiting a stack buffer '\
-                    u'overflow because it forces the attacker to gain control of the instruction pointer'\
-                    u' by some non-traditional means such as corrupting other important variables on the'\
+                    u'Stack canaries can greatly increase the difficulty of exploiting a stack buffer '
+                    u'overflow because it forces the attacker to gain control of the instruction pointer'
+                    u' by some non-traditional means such as corrupting other important variables on the'
                     u' stack. Built with option <strong>-fstack-protector</strong>.'
                 ),
         }
@@ -251,34 +279,27 @@ def elf_analysis(man_an_dic, app_dir, typ):
                             f = open(filepath, 'rb')
                             has_pie, has_sg = check_elf_built(f)
                             f.close()
-                            # print has_pie, has_sg, filename
                             if has_pie == False:
                                 if "nopie" in filename or "nonpie" in filename or "no-pie" in filename:
                                     pass
                                 else:
-                                    elf_an_dic['elf_no_pi'].append(filepath.replace(libdir,"lib"))
+                                    elf_an_dic['elf_no_pi'].append(
+                                        filepath.replace(libdir, "lib"))
                             if has_sg == False:
-                                elf_an_dic['elf_no_sp'].append(filepath.replace(libdir,"lib"))
-                            # if 'libffmpeg' in filename.lower():
-                            #     print filepath
+                                elf_an_dic['elf_no_sp'].append(
+                                    filepath.replace(libdir, "lib"))
                         except Exception as e:
                             pass
-        html = ''
-        for k,filelist in elf_an_dic.items():
+        res = []
+        for k, filelist in elf_an_dic.items():
             if len(filelist):
                 descs = elf_desc.get(k)
-                html += '<tr><td>'+descs[0]+'</td><td>'+descs[1]+'</td><td>'+descs[2]+'</td><td>'+" ".join(filelist)+'</td></tr>\n'
-        # TODO: show it
-        print html
-
-        return html
+                res.append({'title': descs[0],
+                            'stat': descs[1],
+                            'desc': descs[2],
+                            'file': " ".join(filelist),
+                            })
+        return res
 
     except:
         PrintException("[ERROR] Performing Code Analysis")
-
-
-
-
-
-
-

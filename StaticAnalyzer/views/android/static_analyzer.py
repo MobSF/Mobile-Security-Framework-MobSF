@@ -140,7 +140,11 @@ def static_analyzer(request):
                         app_dic['parsed_xml'],
                         man_data_dic
                     )
-
+                    elf_an_buff = elf_analysis(
+                        man_an_dic,
+                        app_dic['app_dir'],
+                        "apk"
+                    )
                     cert_dic = cert_info(
                         app_dic['app_dir'], app_dic['tools_dir'])
                     dex_2_jar(app_dic['app_path'], app_dic[
@@ -151,11 +155,6 @@ def static_analyzer(request):
                         app_dic['app_dir'],
                         app_dic['md5'],
                         man_an_dic['permissons'],
-                        "apk"
-                    )
-                    elf_an_buff = elf_analysis(
-                        man_an_dic,
-                        app_dic['app_dir'],
                         "apk"
                     )
                     print "\n[INFO] Generating Java and Smali Downloads"
@@ -179,7 +178,8 @@ def static_analyzer(request):
                                 man_data_dic,
                                 man_an_dic,
                                 code_an_dic,
-                                cert_dic
+                                cert_dic,
+                                elf_an_buff
                             )
                         elif rescan == '0':
                             print "\n[INFO] Saving to Database"
@@ -188,7 +188,8 @@ def static_analyzer(request):
                                 man_data_dic,
                                 man_an_dic,
                                 code_an_dic,
-                                cert_dic
+                                cert_dic,
+                                elf_an_buff
                             )
                     except:
                         PrintException("[ERROR] Saving to Database Failed")
@@ -197,7 +198,8 @@ def static_analyzer(request):
                         man_data_dic,
                         man_an_dic,
                         code_an_dic,
-                        cert_dic
+                        cert_dic,
+                        elf_an_buff
                     )
                 template = "static_analysis/static_analysis.html"
                 return render(request, template, context)
