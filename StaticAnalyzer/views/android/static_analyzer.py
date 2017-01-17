@@ -133,8 +133,7 @@ def static_analyzer(request):
 
                     # Set Manifest link
                     app_dic['mani'] = '../ManifestView/?md5=' + \
-
-                    app_dic['md5'] + '&type=apk&bin=1'
+                        app_dic['md5'] + '&type=apk&bin=1'
                     man_data_dic = manifest_data(app_dic['parsed_xml'])
 
                     man_an_dic = manifest_analysis(
