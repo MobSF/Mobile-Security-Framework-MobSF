@@ -33,6 +33,9 @@ class Migration(migrations.Migration):
                 ('MANIFEST_ANAL', models.TextField()),
                 ('PERMISSIONS', models.TextField()),
                 ('BIN_ANALYSIS', models.TextField()),
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                ('ANDROPERMS', models.TextField()),
+# Esteve 21.08.2016 - END - Permission Analysis with Androguard
                 ('FILES', models.TextField()),
                 ('CERTZ', models.TextField()),
                 ('ACTIVITIES', models.TextField()),
@@ -58,6 +61,9 @@ class Migration(migrations.Migration):
                 ('DOMAINS', models.TextField()),
                 ('EMAILS', models.TextField()),
                 ('STRINGS', models.TextField()),
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD
+                ('APKID', models.TextField()),
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD
                 ('ZIPPED', models.TextField()),
                 ('MANI', models.TextField()),
                 ('EXPORTED_ACT', models.TextField()),
