@@ -1000,7 +1000,7 @@ def manifest_analysis(mfxml, man_data_dic):
                                     # app will not be run on a system where the
                                     # system's API level is below 17.
                         else:
-                            if int(man_data_dic['min_sdk']) < 17:
+                            if man_data_dic['min_sdk'] and man_data_dic['target_sdk'] and int(man_data_dic['min_sdk']) < 17:
                                 if itemname == 'Content Provider' and int(man_data_dic['target_sdk']) < 17:
                                     perm = ''
                                     item = node.getAttribute("android:name")
