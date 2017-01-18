@@ -11,6 +11,9 @@ from django.utils.html import escape
 from django.template.defaulttags import register
 
 import sqlite3 as sq
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD - include import ast
+import ast
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD - incude import ast
 import io
 import re
 import os
@@ -262,6 +265,9 @@ def StaticAnalyzer(request):
                         'androver': DB[0].ANDROVER,
                         'manifest': DB[0].MANIFEST_ANAL,
                         'permissions': DB[0].PERMISSIONS,
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                        'androperms' : DB[0].ANDROPERMS,
+# Esteve 21.08.2016 - end - Permission Analysis with Androguard
                         'files': python_list(DB[0].FILES),
                         'certz': DB[0].CERTZ,
                         'activities': python_list(DB[0].ACTIVITIES),
@@ -286,6 +292,9 @@ def StaticAnalyzer(request):
                         'domains': python_dict(DB[0].DOMAINS),
                         'emails': DB[0].EMAILS,
                         'strings': python_list(DB[0].STRINGS),
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD 
+                        'apkid': DB[0].APKID,
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD 
                         'zipped': DB[0].ZIPPED,
                         'mani': DB[0].MANI,
                         'e_act': DB[0].E_ACT,
@@ -328,6 +337,12 @@ def StaticAnalyzer(request):
                     print "\n[INFO] Generating Java and Smali Downloads"
                     GenDownloads(APP_DIR, MD5)
                     STRINGS = Strings(APP_FILE, APP_DIR, TOOLS_DIR)
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD
+                    APKID=APKiD(APP_FILE,APP_DIR,TOOLS_DIR,APP_NAME)
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                    ANDROPERMS=Androguard_Permissions(APP_FILE,APP_DIR,TOOLS_DIR,MD5,"apk")
+# Esteve 21.08.2016 - end - Permission Analysis with Androguard
                     ZIPPED = '&type=apk'
 
                     print "\n[INFO] Connecting to Database"
@@ -350,6 +365,9 @@ def StaticAnalyzer(request):
                                                                                  ANDROVER=ANDROVER,
                                                                                  MANIFEST_ANAL=MANIFEST_ANAL,
                                                                                  PERMISSIONS=PERMISSIONS,
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                                                                                 ANDROPERMS = ANDROPERMS,
+# Esteve 21.08.2016 - END - Permission Analysis with Androguard
                                                                                  FILES=FILES,
                                                                                  CERTZ=CERTZ,
                                                                                  ACTIVITIES=ACTIVITIES,
@@ -374,6 +392,9 @@ def StaticAnalyzer(request):
                                                                                  DOMAINS=DOMAINS,
                                                                                  EMAILS=EMAILS,
                                                                                  STRINGS=STRINGS,
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD
+                                                                                 APKID= APKID,
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD
                                                                                  ZIPPED=ZIPPED,
                                                                                  MANI=MANI,
                                                                                  EXPORTED_ACT=EXPORTED_ACT,
@@ -401,6 +422,9 @@ def StaticAnalyzer(request):
                                                               ANDROVER=ANDROVER,
                                                               MANIFEST_ANAL=MANIFEST_ANAL,
                                                               PERMISSIONS=PERMISSIONS,
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                                                              ANDROPERMS = ANDROPERMS,
+# Esteve 21.08.2016 - END - Permission Analysis with Androguard
                                                               FILES=FILES,
                                                               CERTZ=CERTZ,
                                                               ACTIVITIES=ACTIVITIES,
@@ -425,6 +449,9 @@ def StaticAnalyzer(request):
                                                               DOMAINS=DOMAINS,
                                                               EMAILS=EMAILS,
                                                               STRINGS=STRINGS,
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD
+                                                              APKID= APKID,
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD
                                                               ZIPPED=ZIPPED,
                                                               MANI=MANI,
                                                               EXPORTED_ACT=EXPORTED_ACT,
@@ -454,6 +481,9 @@ def StaticAnalyzer(request):
                         'androver': ANDROVER,
                         'manifest': MANIFEST_ANAL,
                         'permissions': PERMISSIONS,
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                        'androperms': ANDROPERMS,
+# Esteve 21.08.2016 - END - Permission Analysis with Androguard
                         'files': FILES,
                         'certz': CERTZ,
                         'activities': ACTIVITIES,
@@ -478,6 +508,9 @@ def StaticAnalyzer(request):
                         'domains': DOMAINS,
                         'emails': EMAILS,
                         'strings': STRINGS,
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD 
+                        'apkid': APKID,
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD 
                         'zipped': ZIPPED,
                         'mani': MANI,
                         'e_act': EXPORTED_CNT["act"],
@@ -588,6 +621,10 @@ def StaticAnalyzer(request):
                                                                                      ANDROVER=ANDROVER,
                                                                                      MANIFEST_ANAL=MANIFEST_ANAL,
                                                                                      PERMISSIONS=PERMISSIONS,
+
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                                                                                     ANDROPERMS = "",
+# Esteve 21.08.2016 - END - Permission Analysis with Androguard
                                                                                      FILES=FILES,
                                                                                      CERTZ=CERTZ,
                                                                                      ACTIVITIES=ACTIVITIES,
@@ -612,6 +649,9 @@ def StaticAnalyzer(request):
                                                                                      DOMAINS=DOMAINS,
                                                                                      EMAILS=EMAILS,
                                                                                      STRINGS="",
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD 
+                                                                                     APKID= "",
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD 
                                                                                      ZIPPED="",
                                                                                      MANI=MANI,
                                                                                      EXPORTED_ACT=EXPORTED_ACT,
@@ -639,6 +679,9 @@ def StaticAnalyzer(request):
                                                                   ANDROVER=ANDROVER,
                                                                   MANIFEST_ANAL=MANIFEST_ANAL,
                                                                   PERMISSIONS=PERMISSIONS,
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard
+                                                                  ANDROPERMS = "",
+# Esteve 21.08.2016 - end - Permission Analysis with Androguard
                                                                   FILES=FILES,
                                                                   CERTZ=CERTZ,
                                                                   ACTIVITIES=ACTIVITIES,
@@ -663,6 +706,9 @@ def StaticAnalyzer(request):
                                                                   DOMAINS=DOMAINS,
                                                                   EMAILS=EMAILS,
                                                                   STRINGS="",
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD 
+                                                                  APKID= "",
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD 
                                                                   ZIPPED="",
                                                                   MANI=MANI,
                                                                   EXPORTED_ACT=EXPORTED_ACT,
@@ -1037,7 +1083,152 @@ def Jar2Java(APP_DIR, TOOLS_DIR):
     except:
         PrintException("[ERROR] Converting JAR to JAVA")
 
-
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard - begin
+def Androguard_Permissions(APP_FILE,APP_DIR,TOOLS_DIR,MD5,TYP):
+    try:
+        print "[INFO] Permission Analysis with Androguard"
+# Initialize variables
+        PERM_Manifest=[]
+        PERM_All=[]
+        PERM_All_Descriptions={}
+        Androguard_current_permission_paths=[]
+        PERM_All_Paths={}
+        PERM_All_Formatted=[]
+# Commands to be input to Androlyze are stored in the file show_Permissions_stdin
+        try:
+            f = open(TOOLS_DIR+'androguard-2.0/show_Permissions_stdin','w')
+            s = str("a, d, dx = AnalyzeAPK(\""+APP_DIR+APP_FILE+"\", decompiler=\"dad\")\n")
+            f.write(s)
+            s = str("a.get_permissions()\n")
+            f.write(s)
+            s = str("show_Permissions(dx)\n")
+            f.write(s)
+            f.close()
+        except:
+            print "[INFO] Permission Analysis with Androguard - Error creating temporary file show_Permissions_stdin"
+# Call to Androlyze 
+# The output of Androlyze is stored in the file show_Permissions_stdout
+        androlyze=TOOLS_DIR+'androguard-2.0/androlyze.py'
+        args=['python',androlyze,'-s']
+        try:
+            f = open(TOOLS_DIR+'androguard-2.0/show_Permissions_stdin', 'r')
+            g = open(TOOLS_DIR+'androguard-2.0/show_Permissions_stdout', 'w')
+            androlyze_process=subprocess.call(args,stdin=f,stdout=g)
+            f.close()
+            g.close()
+        except:
+            print "[INFO] Permission Analysis with Androguard - Error creating temporary file show_Permissions_stdout"
+# The output of androlyze is parsed so that it can be shown on the reports
+# Firstly, the output of the second command is parsed, which gives us the permissions declared in the manifest  
+        g = open(TOOLS_DIR+'androguard-2.0/show_Permissions_stdout', 'r')
+        line = g.readline()
+        while not line.startswith('['):
+            line = g.readline()
+        while not line.endswith(']\n'):
+            PERM_Manifest.append(line[2:(len(line) - 3)])
+            PERM_All.append(line[2:(len(line) - 3)])
+            line = g.readline()
+        if line == '[]\n':
+            pass
+        elif line.endswith(']\n'):
+            PERM_Manifest.append(line[2:(len(line) - 3)])
+            PERM_All.append(line[2:(len(line) - 3)])
+        for i in PERM_All:
+            PERM_All_Paths[ i ] = []    
+        line = g.readline()
+        line = g.readline()
+# Secondly, the output of the third command is parsed, which gives us the permissions used, and where they are used 
+        if line == 'In [3]: \n':
+            pass
+        else:
+            while line != '\n':
+# Here we have the permissions used
+                if line.startswith('In [3]:') and line.endswith(' :\n'):
+                    if line[8:(len(line) - 3)] in PERM_All:
+                        pass
+                    else:
+                        PERM_All.append(line[8:(len(line) - 3)])
+                        PERM_All_Paths[line[8:(len(line) - 3)]] = []
+                    permission_Androguard_current = line[8:(len(line) - 3)]
+                elif line.endswith(' :\n'):
+                    if line[0:(len(line) - 3)] in PERM_All:
+                        pass
+                    else:
+                        PERM_All.append(line[0:(len(line) - 3)])
+                        PERM_All_Paths[line[0:(len(line) - 3)]] = []
+                    permission_Androguard_current = line[0:(len(line) - 3)]
+# Here we have where the permissions used are indeed used               
+                Androguard_current_permission_paths=[]
+                line = g.readline()
+                while not line.endswith(' :\n') and line != '\n':
+                    pos = line.find(";")
+                    if pos != -1:
+                        subline11 = line[3:pos] + '.smali'
+                        subline12 = line[pos+1:]
+                        pos = subline12.find("--->")
+                        if pos != -1:
+                            subline21 = subline12[2:pos]
+                            subline22 = subline12[pos+5:]
+                        Androguard_current_permission_paths.append([line[0],subline11,subline21,subline22])
+                    line = g.readline()
+                PERM_All_Paths[permission_Androguard_current] = Androguard_current_permission_paths
+        g.close()
+# Now we add protection level, short and long description to all permissions    
+        for i in PERM_All:
+            prm = i
+            pos = i.rfind(".")
+            if pos != -1 :
+                prm = i[pos+1:]
+                try :
+                    PERM_All_Descriptions[ i ] = DVM_PERMISSIONS["MANIFEST_PERMISSION"][prm]
+                    if PERM_All_Descriptions[ i ][0] == 'dangerous':
+                        PERM_All_Descriptions[ i ].append('1')
+                        PERM_All_Descriptions[ i ].append(i)
+                    elif PERM_All_Descriptions[ i ][0] == 'signature':
+                        PERM_All_Descriptions[ i ].append('2')
+                        PERM_All_Descriptions[ i ].append(i)
+                    elif PERM_All_Descriptions[ i ][0] == 'signatureOrSystem':
+                        PERM_All_Descriptions[ i ].append('3')
+                        PERM_All_Descriptions[ i ].append(i)
+                    elif PERM_All_Descriptions[ i ][0] == 'normal':
+                        PERM_All_Descriptions[ i ].append('4')
+                        PERM_All_Descriptions[ i ].append(i)
+                except KeyError :
+                    PERM_All_Descriptions[ i ] = [ "dangerous", "Unknown permission from android reference", "Unknown permission from android reference", "1", i ]
+            else:
+                pass
+# Finally, the collected information must be formatted so that it can be shown in the reports
+        DESC=''
+        for key, value in sorted(PERM_All_Descriptions.items(), key=lambda e: (e[1][3], e[1][4])):
+            DESC=DESC + '<tr><td>' + key
+            if key not in PERM_Manifest:
+                DESC=DESC + '<br>' + '<strong>Warning: </strong>' + 'Permission declaration missing in the manifest: used but not declared' '</td>'
+            elif not PERM_All_Paths[key]:
+                DESC=DESC + '<br>' + '<strong>Warning: </strong>' + 'Permission declared in the manifest but not used' '</td>'
+            else:
+                DESC=DESC + '</td>'
+            if value[0] == 'dangerous':
+                DESC=DESC + '<td>' + '<span class="label label-danger">dangerous</span>' + '</td>'
+            elif value[0] == 'signature':
+                DESC=DESC + '<td>' + '<span class="label label-success">signature</span>' + '</td>'
+            elif value[0] == 'signatureOrSystem':
+                DESC=DESC + '<td>' + '<span class="label label-warning">SignatureOrSystem</span>' + '</td>'
+            elif value[0] == 'normal':
+                DESC=DESC + '<td>' + '<span class="label label-info">normal</span>' + '</td>'
+            DESC=DESC + '<td>' + value[1] + '</td>''<td>' + value[2] + '</td>'
+            link=''
+            for value2 in PERM_All_Paths[key]:
+                method = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + '<strong>Method: </strong>' + value2[2]
+                invocation = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + '<strong>Invocation: </strong>' + value2[3]
+                if value2[0] == '1':
+                    link = link + '<strong>File: </strong>' + '<a href=\'../ViewSource/?file='+ escape(value2[1]) + '&md5='+MD5+'&type='+TYP+'\'>'+escape(ntpath.basename(value2[1]))+'</a>' + '<br>' + method + '<br>' + invocation + '<br>'
+                else:
+                    link = link + '<strong>File: </strong>' + escape(ntpath.basename(value2[1])) + '<br>' + method + '<br>' + invocation + '<br>'
+            DESC=DESC + '<td>' + link + '</td></tr>'
+        return DESC
+    except:
+        PrintException("[ERROR] Permission Analysis with Androguard")
+# Esteve 21.08.2016 - end - Permission Analysis with Androguard
 def Strings(APP_FILE, APP_DIR, TOOLS_DIR):
     try:
         print "[INFO] Extracting Strings from APK"
@@ -1055,7 +1246,186 @@ def Strings(APP_FILE, APP_DIR, TOOLS_DIR):
         return dat
     except:
         PrintException("[ERROR] Extracting Strings from APK")
-
+# Esteve 14.08.2016 - begin - Pirated and Malicious App Detection with APKiD 
+def APKiD(APP_FILE,APP_DIR,TOOLS_DIR,APP_NAME):
+    try:
+        print "[INFO] Detecting Packers, Obfuscators, Compilers, and other stuff with APKiD"
+        RET=''
+        apkid=TOOLS_DIR+'apkid'
+        args=[apkid,'-j',APP_DIR+APP_FILE]
+        dat=ast.literal_eval(subprocess.check_output(args))
+        for key1, value1 in dat.items():
+            if key1.find('!') == -1:
+                file=APP_NAME
+            else:
+                file=key1.split('!')[1]
+            for key2, value2 in value1.items():
+                concept=key2
+                for item3 in value2:
+                    item=item3
+                    detection = False
+                    if concept == 'compiler' and item == 'Android SDK (dx)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been compiled using the <strong>'+item3+'</strong> compiler.</td><td><span class="label label-info">info</span></td><td> The file has been compiled using the standard Android SDK compiler.</td></tr>'
+                        detection = True
+                    if concept == 'compiler' and item == 'Android SDK (dexmerge)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been compiled using the <strong>'+item3+'</strong> compiler.</td><td><span class="label label-info">info</span></td><td> The file has been compiled using dexmerge, which is used for incremental builds by some IDEs (after using dx).</td></tr>'                 
+                        detection = True
+                    if concept == 'compiler' and (item == 'dexlib 1.x' or item == 'dexlib 2.x' or item == 'dexlib 2.x beta'):
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been compiled using the <strong>'+item3+'</strong> compiler.</td><td><span class="label label-danger">high</span></td><td> The file has been compiled using one of the dexlib families. This is an indicator of potential crack or malware injection.</td></tr>'
+                        detection = True
+                    if concept == 'obfuscator' and item == 'DexGuard':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been obfuscated using the <strong>'+item3+'</strong> obfuscator.</td><td><span class="label label-warning">medium</span></td><td> The file has been obfuscated. Developers sometimes use obfuscation. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'obfuscator' and item == 'DexProtect':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been obfuscated using the <strong>'+item3+'</strong> obfuscator.</td><td><span class="label label-warning">medium</span></td><td> The file has been obfuscated. Developers sometimes use obfuscation. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'obfuscator' and item == 'Bitwise AntiSkid':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been obfuscated using the <strong>'+item3+'</strong> obfuscator.</td><td><span class="label label-warning">medium</span></td><td> The file has been obfuscated. Developers sometimes use obfuscation. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'APKProtect':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been protected using the <strong>'+item3+'</strong> protector.</td><td><span class="label label-warning">medium</span></td><td> The file has been protected. Developers sometimes use protection. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Bangcle':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Kiro':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Qihoo 360':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Jiagu':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == '\'qdbh\'(?)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == '\'jpj\'packer(?)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Unicom SDK Loader':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'LIAPP':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'APP Fortify':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'NQ Shield':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Tencent':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Ijiami':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Naga':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Alibaba':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Medusa':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Baidu':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed using the <strong>'+item3+'</strong> packer.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'apk':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> looks like a common APK. <strong>'+item3+'</strong>.</td><td><span class="label label-info">info</span></td><td> The file looks like a common APK that is likely not corrupt.</td></tr>'
+                        detection = True
+                    if concept == 'signed_apk':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> looks like a common APK. <strong>'+item3+'</strong>.</td><td><span class="label label-info">info</span></td><td> The file looks like a common APK that is signed and likely not corrupt.</td></tr>'
+                        detection = True
+                    if concept == 'unsigned_apk':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> looks like a common APK. <strong>'+item3+'</strong>.</td><td><span class="label label-info">info</span></td><td> The file looks like a common APK that is not signed and likely not corrupt.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Contains a UPX ARM stub':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Contains a UPX stub':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Contains an unmodified UPX stub':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'sharelib UPX':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed: <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'UPX 3.92 (unmodified)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'UPX 3.09 (unmodified)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'UPX 3.08 (unmodified)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'UPX 3.07 (unmodified)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'UPX 3.04 (unmodified)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'UPX 3.03 (unmodified)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'UPX 3.02 (unmodified)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'UPX 3.01 (unmodified)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Bangcle/SecNeo (UPX)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'newer-style Bangcle/SecNeo (UPX)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'Ijiami (UPX)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'UPX (unknown)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer dropper' and item == 'UPX packed ELF embedded in ELF':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'UPX (unknown, modified)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer embedded' and item == 'UPX packed ELF embedded in APK':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'packer' and item == 'UPX (unknown, unmodified)':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has been packed. <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has been packed. Developers sometimes use packing. However, this is also a technique used by malware to hide its internals.</td></tr>'
+                        detection = True
+                    if concept == 'abnormal' and item == 'non-standard header size':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has a <strong>'+item3+'</strong>.</td><td><span class="label label-danger">high</span></td><td> The file has an abnormal header size. Data might have been hidden after the normal header data. This is a weird characteristic which points to potential malware activity. </td></tr>'
+                        detection = True
+                    if concept == 'abnormal anti_disassembly' and item == 'non-zero link size':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has a <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has an abnormmal link section. This is a weird characteristic. It might have been used as an anti-decompiler technique. </td></tr>'
+                        detection = True
+                    if concept == 'abnormal anti_disassembly' and item == 'non-zero link offset':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has a <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has an abnormmal link section. This is a weird characteristic. It might have been used as an anti-decompiler technique. </td></tr>'
+                        detection = True
+                    if concept == 'abnormal' and item == 'non little-endian format':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has a <strong>'+item3+'</strong>.</td><td><span class="label label-warning">medium</span></td><td> The file has an abnormmal endian magic. This is a weird characteristic. It should not run on any Android device. </td></tr>'
+                        detection = True
+                    if concept == 'abnormal' and item == 'injected data after map section':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has <strong>'+item3+'</strong>.</td><td><span class="label label-danger">high</span></td><td> The file has data injected after the map section. This is a weird characteristic which points to potential malware activity. </td></tr>'
+                        detection = True
+                    if concept == 'anti_disassembly' and item == 'illegal class name':
+                        RET=RET +'<tr><td>File <strong>'+file+'</strong> has <strong>'+item3+'s.</strong></td><td><span class="label label-warning">medium</span></td><td> The file has illegal class names. This is a weird characteristic. It might have been used as an anti-decompiler technique. </td></tr>'
+                        detection = True
+                    if detection == False:
+                        print "[INFO] A Yara rule has not been detected. Please, report this fact so that it can be included. The concerned file is \"%s\", the rule category is \"%s\", and the meta description is \"%s\"." %(file,concept,item3)
+        return RET
+    except:
+        PrintException("[ERROR] Detecting Packers, Obfuscators, Compilers, and other stuff with APKiD")
+# Esteve 14.08.2016 - end - Pirated and Malicious App Detection with APKiD 
 
 def ManifestData(mfxml, app_dir):
     try:
@@ -1582,6 +1952,9 @@ def CodeAnalysis(APP_DIR, MD5, PERMS, TYP):
             'inf_act', 'inf_ser', 'inf_bro', 'log', 'fileio', 'rand', 'd_hcode', 'd_app_tamper',
             'dex_cert', 'dex_tamper', 'd_rootcheck', 'd_root', 'd_ssl_pin', 'dex_root',
             'dex_debug_key', 'dex_debug', 'dex_debug_con', 'dex_emulator', 'd_prevent_screenshot',
+# Esteve 16.09.2016 - begin - Tap jacking prevention
+            'd_prevent_tapjacking',
+# Esteve 16.09.2016 - end
             'd_webviewdisablessl', 'd_webviewdebug', 'd_sensitive', 'd_ssl', 'd_sqlite',
             'd_con_world_readable', 'd_con_world_writable', 'd_con_private', 'd_extstorage',
             'd_tmpfile', 'd_jsenabled', 'gps', 'crypto', 'exec', 'server_socket', 'socket',
@@ -1681,9 +2054,16 @@ def CodeAnalysis(APP_DIR, MD5, PERMS, TYP):
                         c['log'].append(jfile_path.replace(JS, ''))
                     if (".hashCode()" in dat):
                         c['d_hcode'].append(jfile_path.replace(JS, ''))
-                    if ("getWindow().setFlags(" in dat) and (".FLAG_SECURE" in dat):
+# Esteve 16.09.2016 - begin - Check optimisation - Both setFlags and addFlags can be used to assign values to flags
+                    if (("getWindow().setFlags(" in dat) or ("getWindow().addFlags(" in dat)) and (".FLAG_SECURE" in dat):
+#                   if ("getWindow().setFlags(" in dat) and (".FLAG_SECURE" in dat):
+# Esteve 16.09.2016 - end
                         c['d_prevent_screenshot'].append(
                             jfile_path.replace(JS, ''))
+# Esteve 16.09.2016 - begin - Tap jacking prevention
+                    if ("setFilterTouchesWhenObscured(true)" in dat):
+                       c['d_prevent_tapjacking'].append(jfile_path.replace(JS,'')) 
+# Esteve 16.09.2016 - end
                     if ("SQLiteOpenHelper.getWritableDatabase(" in dat):
                         c['sqlc_password'].append(jfile_path.replace(JS, ''))
                     if ("SQLiteDatabase.loadLibs(" in dat) and ("net.sqlcipher." in dat):
@@ -1900,6 +2280,9 @@ def CodeAnalysis(APP_DIR, MD5, PERMS, TYP):
               'log': 'The App logs information. Sensitive information should never be logged.',
               'd_app_tamper': 'The App may use package signature for tamper detection.',
               'd_prevent_screenshot': 'This App has capabilities to prevent against Screenshots from Recent Task History/ Now On Tap etc.',
+# Esteve 16.09.2016 - begin - Tap jacking prevention
+              'd_prevent_tapjacking' : 'This app has capabilities to prevent tapjacking attacks.',
+# Esteve 16.09.2016 - end
               'd_sql_cipher': 'This App uses SQL Cipher. SQLCipher provides 256-bit AES encryption to sqlite database files.',
               'sqlc_password': 'This App uses SQL Cipher. But the secret may be hardcoded.',
               'ecb': 'The App uses ECB mode in Cryptographic encryption algorithm. ECB mode is known to be weak as it results in the same ciphertext for identical blocks of plaintext.',
@@ -1919,7 +2302,9 @@ def CodeAnalysis(APP_DIR, MD5, PERMS, TYP):
                 if (re.findall('d_con_private|log', k)):
                     hd = '<tr><td>' + dg[k] + \
                         '</td><td>' + spn_info + '</td><td>'
-                elif (re.findall('d_sql_cipher|d_prevent_screenshot|d_app_tamper|d_rootcheck|dex_cert|dex_tamper|dex_debug|dex_debug_con|dex_debug_key|dex_emulator|dex_root|d_ssl_pin', k)):
+# Esteve 16.09.2016 - begin - Tap jacking prevention - add d_prevent_tapjacking
+                elif (re.findall('d_sql_cipher|d_prevent_screenshot|d_prevent_tapjacking|d_app_tamper|d_rootcheck|dex_cert|dex_tamper|dex_debug|dex_debug_con|dex_debug_key|dex_emulator|dex_root|d_ssl_pin',k)):
+# Esteve 16.09.2016 - end
                     hd = '<tr><td>' + dg[k] + \
                         '</td><td>' + spn_sec + '</td><td>'
                 elif (re.findall('d_jsenabled', k)):
