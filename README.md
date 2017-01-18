@@ -78,3 +78,4 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 * Amrutha VC (@amruthavc) - For the new MobSF logo
 * Rahul (@c0dist) - Kali Support
 * shuxin - Android Binary Analysis
+* Esteban - Better Android Manifest Analysis and Static Analysis Improvement.
