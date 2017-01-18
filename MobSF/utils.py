@@ -123,7 +123,20 @@ def getMobSFHome(useHOME):
         PrintException("[ERROR] Creating MobSF Home Directory")
 
 
-def Migrate(BASE_DIR):
+def make_migrations(base_dir):
+    """Create Database Migrations"""
+    try:
+        manage = os.path.join(base_dir, "manage.py")
+        args = ["python", manage, "makemigrations"]
+        subprocess.call(args)
+        args = ["python", manage, "makemigrations", "StaticAnalyzer"]
+        subprocess.call(args)
+    except:
+        PrintException("[ERROR] Cannot Make Migrations")
+
+
+def migrate(BASE_DIR):
+    """Migrate Database"""
     try:
         manage = os.path.join(BASE_DIR, "manage.py")
         args = ["python", manage, "migrate"]
