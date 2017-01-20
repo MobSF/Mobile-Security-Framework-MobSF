@@ -1,6 +1,7 @@
 # !/usr/bin/python
 # coding=utf-8
 import os
+import io
 import struct
 
 from MobSF.utils import (
@@ -276,7 +277,7 @@ def elf_analysis(man_an_dic, app_dir, typ):
                     if filename.endswith(".so"):
                         try:
                             filepath = os.path.join(pdir, filename)
-                            f = open(filepath, 'rb')
+                            f = io.open(filepath, mode='rb')
                             has_pie, has_sg = check_elf_built(f)
                             f.close()
                             if has_pie == False:
