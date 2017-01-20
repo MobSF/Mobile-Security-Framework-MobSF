@@ -18,7 +18,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 ## Documentation
 * https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation
 
-##Collaborators
+## Collaborators
 
 * [Ajin Abraham](https://in.linkedin.com/in/ajinabraham)
 * [Dominik Schlecht](https://github.com/DominikSchlecht)
@@ -34,7 +34,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 ## What's New?
 * See Changelog: https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/3.-Changelog
 
-## Feature Requests & Bugs
+## Contribution, Feature Requests & Bugs
 
 * Read [CONTRIBUTING.md](https://github.com/ajinabraham/Mobile-Security-Framework-MobSF/blob/master/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
 * Features Requests: [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN). 
