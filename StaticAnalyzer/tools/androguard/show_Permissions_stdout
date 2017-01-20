@@ -1,0 +1,29 @@
+Androlyze version 3.0
+In [1]: 
+In [2]: Out[2]: 
+
+['android.permission.WRITE_EXTERNAL_STORAGE',
+ 'android.permission.READ_EXTERNAL_STORAGE',
+ 'android.permission.INTERNET']
+
+In [3]: android.permission.ACCESS_FINE_LOCATION :
+1 Landroid/support/v7/app/TwilightManager;->getLastKnownLocationForProvider(Ljava/lang/String;)Landroid/location/Location; (0xc) ---> Landroid/location/LocationManager;->isProviderEnabled(Ljava/lang/String;)Z
+1 Landroid/support/v7/app/TwilightManager;->getLastKnownLocationForProvider(Ljava/lang/String;)Landroid/location/Location; (0x1c) ---> Landroid/location/LocationManager;->getLastKnownLocation(Ljava/lang/String;)Landroid/location/Location;
+android.permission.VIBRATE :
+1 Landroid/support/v4/app/NotificationManagerCompatEclair;->postNotification(Landroid/app/NotificationManager; Ljava/lang/String; I Landroid/app/Notification;)V (0x0) ---> Landroid/app/NotificationManager;->notify(Ljava/lang/String; I Landroid/app/Notification;)V
+1 Landroid/support/v4/app/NotificationManagerCompat$ImplBase;->postNotification(Landroid/app/NotificationManager; Ljava/lang/String; I Landroid/app/Notification;)V (0x0) ---> Landroid/app/NotificationManager;->notify(I Landroid/app/Notification;)V
+android.permission.WAKE_LOCK :
+1 Landroid/support/v4/content/WakefulBroadcastReceiver;->completeWakefulIntent(Landroid/content/Intent;)Z (0x30) ---> Landroid/os/PowerManager$WakeLock;->release()V
+1 Landroid/support/v4/content/WakefulBroadcastReceiver;->startWakefulService(Landroid/content/Context; Landroid/content/Intent;)Landroid/content/ComponentName; (0x96) ---> Landroid/os/PowerManager$WakeLock;->acquire(J)V
+android.permission.ACCESS_NETWORK_STATE :
+1 Landroid/support/v4/net/ConnectivityManagerCompat;->getNetworkInfoFromBroadcast(Landroid/net/ConnectivityManager; Landroid/content/Intent;)Landroid/net/NetworkInfo; (0x1c) ---> Landroid/net/ConnectivityManager;->getNetworkInfo(I)Landroid/net/NetworkInfo;
+1 Landroid/support/v4/net/ConnectivityManagerCompatGingerbread;->isActiveNetworkMetered(Landroid/net/ConnectivityManager;)Z (0x2) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Landroid/support/v4/net/ConnectivityManagerCompatHoneycombMR2;->isActiveNetworkMetered(Landroid/net/ConnectivityManager;)Z (0x2) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Landroid/support/v4/net/ConnectivityManagerCompat$BaseConnectivityManagerCompatImpl;->isActiveNetworkMetered(Landroid/net/ConnectivityManager;)Z (0x2) ---> Landroid/net/ConnectivityManager;->getActiveNetworkInfo()Landroid/net/NetworkInfo;
+1 Ljakhar/aseem/diva/InputValidation2URISchemeActivity;->get(Landroid/view/View;)V (0x34) ---> Landroid/webkit/WebView;->loadUrl(Ljava/lang/String;)V
+android.permission.ACCESS_COARSE_LOCATION :
+1 Landroid/support/v7/app/TwilightManager;->getLastKnownLocationForProvider(Ljava/lang/String;)Landroid/location/Location; (0xc) ---> Landroid/location/LocationManager;->isProviderEnabled(Ljava/lang/String;)Z
+1 Landroid/support/v7/app/TwilightManager;->getLastKnownLocationForProvider(Ljava/lang/String;)Landroid/location/Location; (0x1c) ---> Landroid/location/LocationManager;->getLastKnownLocation(Ljava/lang/String;)Landroid/location/Location;
+
+In [4]: Do you really want to exit ([y]/n)? 
+

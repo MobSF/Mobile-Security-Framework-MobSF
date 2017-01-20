@@ -32,6 +32,7 @@ def get_context_from_db_entry(db_entry):
             'manifest': python_list(db_entry[0].MANIFEST_ANAL),
             'permissions': python_dict(db_entry[0].PERMISSIONS),
             'binary_analysis': python_list(db_entry[0].BIN_ANALYSIS),
+            'androperms': db_entry[0].ANDROPERMS,
             'files': python_list(db_entry[0].FILES),
             'certz': db_entry[0].CERTZ,
             'activities': python_list(db_entry[0].ACTIVITIES),
@@ -57,6 +58,7 @@ def get_context_from_db_entry(db_entry):
             'domains': python_dict(db_entry[0].DOMAINS),
             'emails': db_entry[0].EMAILS,
             'strings': python_list(db_entry[0].STRINGS),
+            'apkid': '',
             'zipped': db_entry[0].ZIPPED,
             'mani': db_entry[0].MANI,
             'e_act': db_entry[0].E_ACT,
@@ -69,7 +71,7 @@ def get_context_from_db_entry(db_entry):
         PrintException("[ERROR] Fetching from DB")
 
 
-def get_context_from_an(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, elf_an_buff):
+def get_context_from_an(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, elf_an_buff, androperms):
     """Get the context for the webpage."""
     try:
         context = {
@@ -89,6 +91,7 @@ def get_context_from_an(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic
             'manifest': man_an_dic['manifest_anal'],
             'permissions': man_an_dic['permissons'],
             'binary_analysis': elf_an_buff,
+            'androperms': androperms,
             'files': app_dic['files'],
             'certz': app_dic['certz'],
             'activities': man_data_dic['activities'],
@@ -114,6 +117,7 @@ def get_context_from_an(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic
             'domains': code_an_dic['domains'],
             'emails': code_an_dic['emails'],
             'strings': app_dic['strings'],
+            'apkid': '',
             'zipped': app_dic['zipped'],
             'mani': app_dic['mani'],
             'e_act': man_an_dic['exported_cnt']["act"],
@@ -126,7 +130,7 @@ def get_context_from_an(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic
         PrintException("[ERROR] Rendering to Template")
 
 
-def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, elf_an_buff):
+def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, elf_an_buff, andro_perms):
     """Update an DB entry."""
     try:
         # pylint: disable=E1101
@@ -147,6 +151,7 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, el
             MANIFEST_ANAL=man_an_dic['manifest_anal'],
             PERMISSIONS=man_an_dic['permissons'],
             BIN_ANALYSIS=elf_an_buff,
+            ANDROPERMS=andro_perms,
             FILES=app_dic['files'],
             CERTZ=app_dic['certz'],
             ACTIVITIES=man_data_dic['activities'],
@@ -172,6 +177,7 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, el
             DOMAINS=code_an_dic['domains'],
             EMAILS=code_an_dic['emails'],
             STRINGS=app_dic['strings'],
+            APKID='',
             ZIPPED=app_dic['zipped'],
             MANI=app_dic['mani'],
             EXPORTED_ACT=man_an_dic['exported_act'],
@@ -184,7 +190,7 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, el
         PrintException("[ERROR] Updating DB")
 
 
-def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, elf_an_buff):
+def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, elf_an_buff, andro_perms):
     """Create a new DB-Entry."""
     try:
         static_db = StaticAnalyzerAndroid(
@@ -204,6 +210,7 @@ def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, el
             MANIFEST_ANAL=man_an_dic['manifest_anal'],
             PERMISSIONS=man_an_dic['permissons'],
             BIN_ANALYSIS=elf_an_buff,
+            ANDROPERMS=andro_perms,
             FILES=app_dic['files'],
             CERTZ=app_dic['certz'],
             ACTIVITIES=man_data_dic['activities'],
@@ -229,6 +236,7 @@ def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, el
             DOMAINS=code_an_dic['domains'],
             EMAILS=code_an_dic['emails'],
             STRINGS=app_dic['strings'],
+            APKID='',
             ZIPPED=app_dic['zipped'],
             MANI=app_dic['mani'],
             EXPORTED_ACT=man_an_dic['exported_act'],
