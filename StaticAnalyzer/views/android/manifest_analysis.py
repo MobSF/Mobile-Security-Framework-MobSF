@@ -3,11 +3,13 @@
 
 import io
 import os
+import ntpath
 import subprocess
 
 from xml.dom import minidom
 
 from django.conf import settings
+from django.utils.html import escape
 
 from MobSF.utils import (
     PrintException,
@@ -16,7 +18,8 @@ from MobSF.utils import (
 
 # pylint: disable=E0401
 from .dvm_permissions import DVM_PERMISSIONS
-
+from androguard.misc import AnalyzeAPK
+from androguard.core.analysis.analysis import show_Permissions
 
 def get_manifest(app_dir, toosl_dir, typ, binary):
     """Get the manifest file."""
@@ -1220,6 +1223,155 @@ def manifest_analysis(mfxml, man_data_dic):
         return man_an_dic
     except:
         PrintException("[ERROR] Performing Manifest Analysis")
+
+# Esteve 21.08.2016 - begin - Permission Analysis with Androguard - begin
+
+
+def androguard_permissions(app_dic, typ):
+    """Enhanced Permission Analysis with AndroGuard"""
+    app_path = app_dic['app_path']
+    app_dir = app_dic['app_dir']
+    tools_dir = app_dic['tools_dir']
+    md5 = app_dic['md5']
+    try:
+        print "[INFO] Permission Analysis with Androguard"
+        # Initialize variables
+        perm_manifest = []
+        perm_all = []
+        perm_all_descriptions = {}
+        androguard_current_permission_paths = []
+        perm_all_paths = {}
+        perm_all_formatted = []
+        a, d, dx = AnalyzeAPK(app_path)
+        print a.get_permissions()
+        print show_Permissions(dx)
+
+        g = open(tools_dir + 'androguard/show_Permissions_stdout', 'r')
+        line = g.readline()
+        while not line.startswith('['):
+            line = g.readline()
+        while not line.endswith(']\n'):
+            perm_manifest.append(line[2:(len(line) - 3)])
+            perm_all.append(line[2:(len(line) - 3)])
+            line = g.readline()
+        if line == '[]\n':
+            pass
+        elif line.endswith(']\n'):
+            perm_manifest.append(line[2:(len(line) - 3)])
+            perm_all.append(line[2:(len(line) - 3)])
+        for i in perm_all:
+            perm_all_paths[i] = []
+        line = g.readline()
+        line = g.readline()
+# Secondly, the output of the third command is parsed, which gives us the
+# permissions used, and where they are used
+        if line == 'In [3]: \n':
+            pass
+        else:
+            while line != '\n':
+                # Here we have the permissions used
+                if line.startswith('In [3]:') and line.endswith(' :\n'):
+                    if line[8:(len(line) - 3)] in perm_all:
+                        pass
+                    else:
+                        perm_all.append(line[8:(len(line) - 3)])
+                        perm_all_paths[line[8:(len(line) - 3)]] = []
+                    permission_androguard_current = line[8:(len(line) - 3)]
+                elif line.endswith(' :\n'):
+                    if line[0:(len(line) - 3)] in perm_all:
+                        pass
+                    else:
+                        perm_all.append(line[0:(len(line) - 3)])
+                        perm_all_paths[line[0:(len(line) - 3)]] = []
+                    permission_androguard_current = line[0:(len(line) - 3)]
+# Here we have where the permissions used are indeed used
+                androguard_current_permission_paths = []
+                line = g.readline()
+                while not line.endswith(' :\n') and line != '\n':
+                    pos = line.find(";")
+                    if pos != -1:
+                        subline11 = line[3:pos] + '.smali'
+                        subline12 = line[pos + 1:]
+                        pos = subline12.find("--->")
+                        if pos != -1:
+                            subline21 = subline12[2:pos]
+                            subline22 = subline12[pos + 5:]
+                        androguard_current_permission_paths.append(
+                            [line[0], subline11, subline21, subline22])
+                    line = g.readline()
+                perm_all_paths[
+                    permission_androguard_current] = androguard_current_permission_paths
+        g.close()
+        import ipdb; ipdb.set_trace()
+# Now we add protection level, short and long description to all permissions
+        for i in perm_all:
+            prm = i
+            pos = i.rfind(".")
+            if pos != -1:
+                prm = i[pos + 1:]
+                try:
+                    perm_all_descriptions[i] = DVM_PERMISSIONS[
+                        "MANIFEST_PERMISSION"][prm]
+                    if perm_all_descriptions[i][0] == 'dangerous':
+                        perm_all_descriptions[i].append('1')
+                        perm_all_descriptions[i].append(i)
+                    elif perm_all_descriptions[i][0] == 'signature':
+                        perm_all_descriptions[i].append('2')
+                        perm_all_descriptions[i].append(i)
+                    elif perm_all_descriptions[i][0] == 'signatureOrSystem':
+                        perm_all_descriptions[i].append('3')
+                        perm_all_descriptions[i].append(i)
+                    elif perm_all_descriptions[i][0] == 'normal':
+                        perm_all_descriptions[i].append('4')
+                        perm_all_descriptions[i].append(i)
+                except KeyError:
+                    perm_all_descriptions[i] = [
+                        "dangerous", "Unknown permission from android reference", "Unknown permission from android reference", "1", i]
+            else:
+                pass
+# Finally, the collected information must be formatted so that it can be
+# shown in the reports
+        desc = ''
+        for key, value in sorted(perm_all_descriptions.items(), key=lambda e: (e[1][3], e[1][4])):
+            desc = desc + '<tr><td>' + key
+            if key not in perm_manifest:
+                desc = desc + '<br>' + '<strong>Warning: </strong>' + \
+                    'Permission declaration missing in the manifest: used but not declared' '</td>'
+            elif not perm_all_paths[key]:
+                desc = desc + '<br>' + '<strong>Warning: </strong>' + \
+                    'Permission declared in the manifest but not used' '</td>'
+            else:
+                desc = desc + '</td>'
+            if value[0] == 'dangerous':
+                desc = desc + '<td>' + '<span class="label label-danger">dangerous</span>' + '</td>'
+            elif value[0] == 'signature':
+                desc = desc + '<td>' + '<span class="label label-success">signature</span>' + '</td>'
+            elif value[0] == 'signatureOrSystem':
+                desc = desc + '<td>' + \
+                    '<span class="label label-warning">SignatureOrSystem</span>' + '</td>'
+            elif value[0] == 'normal':
+                desc = desc + '<td>' + '<span class="label label-info">normal</span>' + '</td>'
+            desc = desc + '<td>' + value[1] + \
+                '</td>''<td>' + value[2] + '</td>'
+            link = ''
+            for value2 in perm_all_paths[key]:
+                method = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + \
+                    '<strong>Method: </strong>' + value2[2]
+                invocation = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + \
+                    '<strong>Invocation: </strong>' + value2[3]
+                if value2[0] == '1':
+                    link = link + '<strong>File: </strong>' + '<a href=\'../ViewSource/?file=' + \
+                        escape(value2[1]) + '&md5=' + md5 + '&type=' + typ + '\'>' + escape(
+                            ntpath.basename(value2[1])) + '</a>' + '<br>' + method + '<br>' + invocation + '<br>'
+                else:
+                    link = link + '<strong>File: </strong>' + \
+                        escape(ntpath.basename(
+                            value2[1])) + '<br>' + method + '<br>' + invocation + '<br>'
+            desc = desc + '<td>' + link + '</td></tr>'
+        return desc
+    except:
+        PrintException("[ERROR] Permission Analysis with Androguard")
+# Esteve 21.08.2016 - end - Permission Analysis with Androguard
 
 
 def read_manifest(app_dir, tools_dir, typ, binary):

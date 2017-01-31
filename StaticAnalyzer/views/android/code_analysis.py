@@ -303,7 +303,7 @@ def code_analysis(app_dir, md5, perms, typ):
                     # flags
                     if ((("getWindow().setFlags(" in dat) or ("getWindow().addFlags(" in dat)) and
                             (".FLAG_SECURE" in dat)
-                       ):
+                        ):
                         code['d_prevent_screenshot'].append(
                             jfile_path.replace(java_src, ''))
                     # Esteve 16.09.2016 - end
@@ -533,8 +533,9 @@ def code_analysis(app_dir, md5, perms, typ):
                         code['gps'].append(jfile_path.replace(java_src, ''))
                     if re.findall(
                             (
-                                'OpenFileOutput|getSharedPreferences|SharedPreferences.Editor|'
-                                'getCacheDir|getExternalStorageState|openOrCreateDatabase'
+                                r'OpenFileOutput|getSharedPreferences|SharedPreferences\.Editor|'
+                                r'getCacheDir|getExternalStorageState|openOrCreateDatabase|'
+                                r'File\.createTempFile\('
                             ),
                             dat
                     ):
@@ -778,7 +779,7 @@ def code_analysis(app_dir, md5, perms, typ):
                     'History/ Now On Tap etc.'
                 ),
             # Esteve 16.09.2016 - begin - Tap jacking prevention
-            'd_prevent_tapjacking' :
+            'd_prevent_tapjacking':
                 (
                     'This app has capabilities to prevent tapjacking attacks.'
                 ),
@@ -825,7 +826,8 @@ def code_analysis(app_dir, md5, perms, typ):
                 if re.findall('d_con_private|log', k):
                     h_d = '<tr><td>' + desc[k] + \
                         '</td><td>' + spn_info + '</td><td>'
-                # Esteve 16.09.2016 - begin - Tap jacking prevention - add d_prevent_tapjacking
+                # Esteve 16.09.2016 - begin - Tap jacking prevention - add
+                # d_prevent_tapjacking
                 elif re.findall(
                         (
                             'd_sql_cipher|d_prevent_screenshot|d_prevent_tapjacking|d_app_tamper|'
@@ -834,7 +836,7 @@ def code_analysis(app_dir, md5, perms, typ):
                         ),
                         k
                 ):
-                # Esteve 16.09.2016 - end
+                    # Esteve 16.09.2016 - end
                     h_d = '<tr><td>' + desc[k] + \
                         '</td><td>' + spn_sec + '</td><td>'
                 elif re.findall('d_jsenabled', k):

@@ -55,7 +55,8 @@ from StaticAnalyzer.views.android.cert_analysis import (
 from StaticAnalyzer.views.android.manifest_analysis import (
     manifest_data,
     manifest_analysis,
-    get_manifest
+    get_manifest,
+    androguard_permissions,
 )
 from StaticAnalyzer.views.android.binary_analysis import (
     elf_analysis,
@@ -140,6 +141,18 @@ def static_analyzer(request):
                         app_dic['parsed_xml'],
                         man_data_dic
                     )
+                    # Esteve 21.08.2016 - begin - Permission Analysis with
+                    # Androguard
+                    andro_perms = androguard_permissions(app_dic, "apk")
+                    # Esteve 21.08.2016 - end - Permission Analysis with
+                    # Androguard
+                    # Esteve 14.08.2016 - begin - Pirated and Malicious App
+                    # Detection with APKiD
+                    # APKID = APKiD(app_dic['app_file'], app_dic['app_dir'], app_dic[
+                    #              'tools_dir'], app_dic['app_name'])
+                    # Esteve 14.08.2016 - end - Pirated and Malicious App
+                    # Detection with APKiD
+
                     elf_an_buff = elf_analysis(
                         man_an_dic,
                         app_dic['app_dir'],
@@ -179,7 +192,8 @@ def static_analyzer(request):
                                 man_an_dic,
                                 code_an_dic,
                                 cert_dic,
-                                elf_an_buff
+                                elf_an_buff,
+                                andro_perms
                             )
                         elif rescan == '0':
                             print "\n[INFO] Saving to Database"
@@ -189,7 +203,8 @@ def static_analyzer(request):
                                 man_an_dic,
                                 code_an_dic,
                                 cert_dic,
-                                elf_an_buff
+                                elf_an_buff,
+                                andro_perms
                             )
                     except:
                         PrintException("[ERROR] Saving to Database Failed")
@@ -199,7 +214,8 @@ def static_analyzer(request):
                         man_an_dic,
                         code_an_dic,
                         cert_dic,
-                        elf_an_buff
+                        elf_an_buff,
+                        andro_perms
                     )
                 template = "static_analysis/static_analysis.html"
                 return render(request, template, context)
