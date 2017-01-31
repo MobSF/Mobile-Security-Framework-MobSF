@@ -340,7 +340,7 @@ def _place_lockfile(mobsf_home):
     open(path, 'a').close()
 
 
-def local_config(mobsf_home):
+def local_config():
     """Move local config and save paths."""
     # Set the CONFIG_PATH
     #global CONFIG_PATH
@@ -352,7 +352,7 @@ def local_config(mobsf_home):
 
     # Copy predefined config to MobSF folder
     shutil.copy(
-        mobsf_home + "\\install\\windows\\config.txt",
+        os.getcwd() + "\\install\\windows\\config.txt",
         os.path.join(CONFIG_PATH, CONFIG_FILE)
     )
 
@@ -390,7 +390,7 @@ def install_locally(mobsf_home):
     #    local_config(mobsf_home, user_config)
     #else:
     #    user_config = os.path.join(mobsf_home + "\\MobSF\\")
-    local_config(mobsf_home)
+    local_config()
 
     read_config()
     #rewrite_local_config(mobsf_home)
