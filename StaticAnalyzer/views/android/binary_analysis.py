@@ -236,10 +236,51 @@ def check_elf_built(f):
                         has_sp = True
     return has_pi, has_sp
 
+def res_analysis(man_an_dic, app_dir, typ):
+    """Perform the elf analysis."""
+    try:
+        print "[INFO] Static Android Resourse Analysis Started"
+        elf_desc = {
+            'html_infected':
+                (
+                    u'Found html files infected by virus.',
+                    u'high',
+                    u'The built environment was infected by Virus, Please Scan your computer which '\
+                    u'the apk built by any Anti-Virus software.'
+                ),
+        }
+        html_an_dic = {}
+        for k in elf_desc.keys():
+            html_an_dic[k] = []
+        resraw = os.path.join(app_dir, "res", "raw")
+        assets = os.path.join(app_dir, "assets")
+        for resdir in (resraw, assets):
+            if os.path.exists(resdir) and os.path.isdir(resdir):
+                for pdir, dirl, filel in os.walk(resdir):
+                    for filename in filel:
+                        if filename.endswith(".htm") or filename.endswith(".html"):
+                            try:
+                                filepath = os.path.join(pdir, filename)
+                                f = open(filepath, 'rb')
+                                buf = f.read()
+                                f.close()
+                                if "svchost.exe" in buf:
+                                    html_an_dic['html_infected'].append(filepath.replace(app_dir,""))
+                            except Exception as e:
+                                pass
+        res = []
+        for k,filelist in html_an_dic.items():
+            if len(filelist):
+                descs = elf_desc.get(k)
+                res.append({'title': descs[0],
+                            'stat': descs[1],
+                            'desc': descs[2],
+                            'file': " ".join(filelist),
+                            })
+        return res
 
-def resource_analysis():
-    pass
-
+    except:
+        PrintException("[ERROR] Performing Resourse Analysis")
 
 def elf_analysis(man_an_dic, app_dir, typ):
     """Perform the elf analysis."""
@@ -302,4 +343,4 @@ def elf_analysis(man_an_dic, app_dir, typ):
         return res
 
     except:
-        PrintException("[ERROR] Performing Code Analysis")
+        PrintException("[ERROR] Performing Binary Analysis")
