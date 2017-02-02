@@ -32,13 +32,9 @@ from StaticAnalyzer.views.shared_func import (
 
 from StaticAnalyzer.views.android.db_interaction import (
     get_context_from_db_entry,
-    get_context_from_an,
+    get_context_from_analysis,
     update_db_entry,
     create_db_entry,
-    get_context_from_db_entry_zip,
-    get_context_from_an_zip,
-    update_db_entry_zip,
-    create_db_entry_zip
 )
 
 from StaticAnalyzer.views.android.code_analysis import code_analysis
@@ -59,7 +55,7 @@ from StaticAnalyzer.views.android.manifest_analysis import (
 )
 from StaticAnalyzer.views.android.binary_analysis import (
     elf_analysis,
-    resource_analysis,
+    res_analysis,
 )
 
 
@@ -142,12 +138,10 @@ def static_analyzer(request):
                     )
                     bin_an_buff = []
                     bin_an_buff += elf_analysis(
-                        man_an_dic,
                         app_dic['app_dir'],
                         "apk"
                     )
                     bin_an_buff += res_analysis(
-                        man_an_dic,
                         app_dic['app_dir'],
                         "apk"
                     )
@@ -199,7 +193,7 @@ def static_analyzer(request):
                             )
                     except:
                         PrintException("[ERROR] Saving to Database Failed")
-                    context = get_context_from_an(
+                    context = get_context_from_analysis(
                         app_dic,
                         man_data_dic,
                         man_an_dic,
@@ -212,10 +206,17 @@ def static_analyzer(request):
             elif typ == 'zip':
                 # Check if in DB
                 # pylint: disable=E1101
+                cert_dic = {}
+                cert_dic['cert_info'] = ''
+                cert_dic['issued'] = ''
+                bin_an_buff = []
+                app_dic['strings'] = ''
+                app_dic['zipped'] = ''
+                #Above fields are only available for APK and not ZIP
                 db_entry = StaticAnalyzerAndroid.objects.filter(
                     MD5=app_dic['md5'])
                 if db_entry.exists() and rescan == '0':
-                    context = get_context_from_db_entry_zip(db_entry)
+                    context = get_context_from_db_entry(db_entry)
                 else:
                     app_dic['app_file'] = app_dic[
                         'md5'] + '.zip'  # NEW FILENAME
@@ -274,27 +275,33 @@ def static_analyzer(request):
                             # SAVE TO DB
                             if rescan == '1':
                                 print "\n[INFO] Updating Database..."
-                                update_db_entry_zip(
+                                update_db_entry(
                                     app_dic,
                                     man_data_dic,
                                     man_an_dic,
-                                    code_an_dic
+                                    code_an_dic,
+                                    cert_dic,
+                                    bin_an_buff
                                 )
                             elif rescan == '0':
                                 print "\n[INFO] Saving to Database"
-                                create_db_entry_zip(
+                                create_db_entry(
                                     app_dic,
                                     man_data_dic,
                                     man_an_dic,
-                                    code_an_dic
+                                    code_an_dic,
+                                    cert_dic,
+                                    bin_an_buff
                                 )
                         except:
                             PrintException("[ERROR] Saving to Database Failed")
-                        context = get_context_from_an_zip(
+                        context = get_context_from_analysis(
                             app_dic,
                             man_data_dic,
                             man_an_dic,
-                            code_an_dic
+                            code_an_dic,
+                            cert_dic,
+                            bin_an_buff
                         )
                     else:
                         return HttpResponseRedirect('/zip_format/')

@@ -26,6 +26,9 @@ from StaticAnalyzer.models import StaticAnalyzerIPA
 from StaticAnalyzer.models import StaticAnalyzerIOSZIP
 from StaticAnalyzer.models import StaticAnalyzerWindows
 
+from StaticAnalyzer.views.android.db_interaction import (
+    get_context_from_db_entry
+)
 try:
     import StringIO
     StringIO = StringIO.StringIO
@@ -78,13 +81,14 @@ def Unzip(APP_PATH, EXT_PATH):
                 dat = z.open(fileinfo.filename, "r")
                 filename = fileinfo.filename
                 if not isinstance(filename, unicode):
-                    filename = unicode(fileinfo.filename, encoding="utf-8", errors="replace")
+                    filename = unicode(fileinfo.filename,
+                                       encoding="utf-8", errors="replace")
                 files.append(filename)
                 outfile = os.path.join(EXT_PATH, filename)
                 if not os.path.exists(os.path.dirname(outfile)):
                     try:
                         os.makedirs(os.path.dirname(outfile))
-                    except OSError as exc: # Guard against race condition
+                    except OSError as exc:  # Guard against race condition
                         if exc.errno != errno.EEXIST:
                             print "\n[WARN] OS Error: Race Condition"
                 if not outfile.endswith("/"):
@@ -120,55 +124,12 @@ def PDF(request):
                 DB = StaticAnalyzerAndroid.objects.filter(MD5=MD5)
                 if DB.exists():
                     print "\n[INFO] Fetching data from DB for PDF Report Generation (Android)"
-                    context = {
-                        'title': DB[0].TITLE,
-                        'name': DB[0].APP_NAME,
-                        'size': DB[0].SIZE,
-                        'md5': DB[0].MD5,
-                        'sha1': DB[0].SHA1,
-                        'sha256': DB[0].SHA256,
-                        'packagename': DB[0].PACKAGENAME,
-                        'mainactivity': DB[0].MAINACTIVITY,
-                        'targetsdk': DB[0].TARGET_SDK,
-                        'maxsdk': DB[0].MAX_SDK,
-                        'minsdk': DB[0].MIN_SDK,
-                        'androvername': DB[0].ANDROVERNAME,
-                        'androver': DB[0].ANDROVER,
-                        'manifest': python_list(DB[0].MANIFEST_ANAL),
-                        'permissions': python_dict(DB[0].PERMISSIONS),
-                        'binary_analysis': python_list(DB[0].BIN_ANALYSIS),
-                        'files': python_list(DB[0].FILES),
-                        'certz': DB[0].CERTZ,
-                        'activities': python_list(DB[0].ACTIVITIES),
-                        'receivers': python_list(DB[0].RECEIVERS),
-                        'providers': python_list(DB[0].PROVIDERS),
-                        'services': python_list(DB[0].SERVICES),
-                        'libraries': python_list(DB[0].LIBRARIES),
-                        'browsable_activities' : python_dict(DB[0].BROWSABLE),
-                        'act_count': DB[0].CNT_ACT,
-                        'prov_count': DB[0].CNT_PRO,
-                        'serv_count': DB[0].CNT_SER,
-                        'bro_count': DB[0].CNT_BRO,
-                        'certinfo': DB[0].CERT_INFO,
-                        'issued': DB[0].ISSUED,
-                        'native': DB[0].NATIVE,
-                        'dynamic': DB[0].DYNAMIC,
-                        'reflection': DB[0].REFLECT,
-                        'crypto': DB[0].CRYPTO,
-                        'obfus': DB[0].OBFUS,
-                        'api': DB[0].API,
-                        'dang': DB[0].DANG,
-                        'urls': DB[0].URLS,
-                        'domains': python_dict(DB[0].DOMAINS),
-                        'emails': DB[0].EMAILS,
-                        'strings': python_list(DB[0].STRINGS),
-                        'zipped': DB[0].ZIPPED,
-                        'mani': DB[0].MANI
-                    }
+                    context = get_context_from_db_entry(DB)
                     if TYP == 'APK':
                         template = get_template("pdf/static_analysis_pdf.html")
                     else:
-                        template = get_template("pdf/static_analysis_zip_pdf.html")
+                        template = get_template(
+                            "pdf/static_analysis_zip_pdf.html")
                 else:
                     return HttpResponse(json.dumps({"report": "Report not Found"}),
                                         content_type="application/json; charset=utf-8")
@@ -198,7 +159,8 @@ def PDF(request):
                             'strings': python_list(DB[0].STRINGS),
                             'permissions': python_list(DB[0].PERMISSIONS)
                         }
-                        template = get_template("pdf/ios_binary_analysis_pdf.html")
+                        template = get_template(
+                            "pdf/ios_binary_analysis_pdf.html")
                     else:
                         return HttpResponse(json.dumps({"report": "Report not Found"}),
                                             content_type="application/json; charset=utf-8")
@@ -231,7 +193,8 @@ def PDF(request):
                             'emails': DB[0].EmailnFile,
                             'permissions': python_list(DB[0].PERMISSIONS)
                         }
-                        template = get_template("pdf/ios_source_analysis_pdf.html")
+                        template = get_template(
+                            "pdf/ios_source_analysis_pdf.html")
                     else:
                         return HttpResponse(json.dumps({"report": "Report not Found"}),
                                             content_type="application/json; charset=utf-8")
@@ -242,7 +205,7 @@ def PDF(request):
                     )
                     if db_entry.exists():
                         print "\n[INFO] Fetching data from DB for PDF Report Generation (APPX)"
-                        
+
                         context = {
                             'title': db_entry[0].TITLE,
                             'name': db_entry[0].APP_NAME,

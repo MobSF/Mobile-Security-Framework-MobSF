@@ -3,7 +3,6 @@
 import os
 import io
 import struct
-
 from MobSF.utils import (
     PrintException
 )
@@ -184,6 +183,7 @@ class tinyELFFile(object):
         else:
             return struct.unpack(self.unpack_endian + "q", self.stream.read(8))[0]
 
+
 def check_elf_built(f):
     has_pi = False
     has_sp = False
@@ -236,17 +236,18 @@ def check_elf_built(f):
                         has_sp = True
     return has_pi, has_sp
 
-def res_analysis(man_an_dic, app_dir, typ):
+
+def res_analysis(app_dir, typ):
     """Perform the elf analysis."""
     try:
         print "[INFO] Static Android Resourse Analysis Started"
         elf_desc = {
             'html_infected':
                 (
-                    u'Found html files infected by virus.',
+                    u'Found html files infected by malware.',
                     u'high',
-                    u'The built environment was infected by Virus, Please Scan your computer which '\
-                    u'the apk built by any Anti-Virus software.'
+                    u'The built environment was probably infected by malware, The html file '
+                    u'used in this APK is infected.'
                 ),
         }
         html_an_dic = {}
@@ -261,15 +262,16 @@ def res_analysis(man_an_dic, app_dir, typ):
                         if filename.endswith(".htm") or filename.endswith(".html"):
                             try:
                                 filepath = os.path.join(pdir, filename)
-                                f = open(filepath, 'rb')
-                                buf = f.read()
-                                f.close()
+                                buf = ""
+                                with io.open(filepath, mode='rb') as filp:
+                                    buf = filp.read()
                                 if "svchost.exe" in buf:
-                                    html_an_dic['html_infected'].append(filepath.replace(app_dir,""))
+                                    html_an_dic['html_infected'].append(
+                                        filepath.replace(app_dir, ""))
                             except Exception as e:
                                 pass
         res = []
-        for k,filelist in html_an_dic.items():
+        for k, filelist in html_an_dic.items():
             if len(filelist):
                 descs = elf_desc.get(k)
                 res.append({'title': descs[0],
@@ -283,7 +285,7 @@ def res_analysis(man_an_dic, app_dir, typ):
         PrintException("[ERROR] Performing Resourse Analysis")
 
 
-def elf_analysis(man_an_dic, app_dir, typ):
+def elf_analysis(app_dir, typ):
     """Perform the elf analysis."""
     try:
         print "[INFO] Static Android Binary Analysis Started"
@@ -345,4 +347,3 @@ def elf_analysis(man_an_dic, app_dir, typ):
 
     except:
         PrintException("[ERROR] Performing Binary Analysis")
-
