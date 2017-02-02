@@ -149,7 +149,8 @@ except NameError:
             Exception('Please create a %s file with random characters \
             to generate your secret key!' % SECRET_FILE)
         #Run Once
-        utils.Migrate(BASE_DIR)
+        utils.make_migrations(BASE_DIR)
+        utils.migrate(BASE_DIR)
         utils.kali_fix(BASE_DIR)
 
 #=============================================

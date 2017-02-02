@@ -9,6 +9,8 @@ then
 	rm -rf uploads/*
 	echo "Deleting all Downloads"
 	rm -rf downloads/*
+	echo "Deleting Static Analyzer Migrations"
+	rm -rf StaticAnalyzer/migrations/*
 	echo "Deleting python byte code files"
         find . -name "*.pyc" -exec rm -rf {} \;
         echo "Deleting temp and log files"

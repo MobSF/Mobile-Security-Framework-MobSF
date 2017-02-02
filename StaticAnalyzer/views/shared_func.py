@@ -242,6 +242,7 @@ def PDF(request):
                     )
                     if db_entry.exists():
                         print "\n[INFO] Fetching data from DB for PDF Report Generation (APPX)"
+                        
                         context = {
                             'title': db_entry[0].TITLE,
                             'name': db_entry[0].APP_NAME,

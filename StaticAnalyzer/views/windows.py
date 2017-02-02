@@ -2,6 +2,7 @@
 """Windows Analysis Module."""
 import re
 import os
+import io
 from os.path import expanduser
 import platform
 
@@ -304,7 +305,7 @@ def _upload_sample(bin_path):
     print "[INFO] Uploading sample."
 
     # Upload test
-    with open(bin_path, "rb") as handle:
+    with io.open(bin_path, mode="rb") as handle:
         binary_data = xmlrpclib.Binary(handle.read())
 
     # Name of the sample is return by the remote machine

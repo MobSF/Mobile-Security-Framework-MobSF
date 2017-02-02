@@ -59,7 +59,7 @@ from StaticAnalyzer.views.android.manifest_analysis import (
 )
 from StaticAnalyzer.views.android.binary_analysis import (
     elf_analysis,
-    res_analysis
+    resource_analysis,
 )
 
 
