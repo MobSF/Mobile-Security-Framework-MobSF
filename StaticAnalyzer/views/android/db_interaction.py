@@ -11,7 +11,7 @@ from StaticAnalyzer.models import StaticAnalyzerAndroid
 
 
 def get_context_from_db_entry(db_entry):
-    """Return the context for APK/ZIP from DB."""
+    """Return the context for APK/ZIP from DB"""
     try:
         print "\n[INFO] Analysis is already Done. Fetching data from the DB..."
 
@@ -70,7 +70,7 @@ def get_context_from_db_entry(db_entry):
 
 
 def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal):
-    """Get the context from analysis results"""
+    """Get the context for APK/ZIP from analysis results"""
     try:
         context = {
             'title': 'Static Analysis',
@@ -127,7 +127,7 @@ def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, ce
 
 
 def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal):
-    """Update an DB entry."""
+    """Update an APK/ZIP DB entry"""
     try:
         # pylint: disable=E1101
         StaticAnalyzerAndroid.objects.filter(MD5=app_dic['md5']).update(
@@ -185,7 +185,7 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bi
 
 
 def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal):
-    """Create a new DB-Entry."""
+    """Create a new DB-Entry for APK/ZIP"""
     try:
         static_db = StaticAnalyzerAndroid(
             TITLE='Static Analysis',
