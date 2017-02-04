@@ -14,6 +14,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.conf import settings
 from django.utils.html import escape
+from django.utils.encoding import smart_text
 from StaticAnalyzer.views.shared_func import FileSize, HashGen, Unzip
 
 from StaticAnalyzer.models import StaticAnalyzerIPA, StaticAnalyzerIOSZIP
@@ -598,8 +599,8 @@ def BinaryAnalysis(SRC, TOOLS_DIR, APP_DIR):
         else:
             OTOOL = "otool"
         args = [OTOOL, '-L', BIN_PATH]
-        dat = subprocess.check_output(args)
-        dat = escape(dat.replace(BIN_DIR + "/", ""))
+        dat = unicode(subprocess.check_output(args), 'utf-8')
+        dat = smart_text(escape(dat.replace(BIN_DIR + "/", "")))
         LIBS = dat.replace("\n", "</br>")
         # PIE
         args = [OTOOL, '-hv', BIN_PATH]
