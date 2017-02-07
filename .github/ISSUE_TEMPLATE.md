@@ -38,4 +38,6 @@ BEFORE POSTING YOUR ISSUE/BUG
 - Reproduce issue in the latest master and try to add as much detail as possible.
 - If you're requesting a new feature/enhancement, explain why you'd like it to be added and it's importance.
 - Search this repository (top of the page) for the issue and it has not been fixed or reported already.
+- Once you open a bug, you should also provide additional information if requested. 
+- Failure to do so in 25 days will result in closure of the bug without further communication.
 -->
