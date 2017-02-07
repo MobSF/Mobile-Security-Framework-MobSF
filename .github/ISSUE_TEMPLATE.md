@@ -13,7 +13,7 @@
 ## CONSOLE OUTPUT
 
 ```
-Paste the output generated at your console/terminal while scanning an mobile app.
+Paste the output generated at your console/terminal while scanning the mobile app.
 The console log should contain the error or bug you are seeing
 (NOT REQUIRED FOR FEATURE REQUEST/ENHANCEMENT)
 ```
