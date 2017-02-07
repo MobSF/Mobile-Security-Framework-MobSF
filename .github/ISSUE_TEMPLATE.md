@@ -10,7 +10,7 @@
 3. Further steps, etc.
 ```
 
-## CONSOLE LOGS
+## CONSOLE OUTPUT
 
 ```
 Paste the output generated at your console/terminal while scanning an mobile app.
