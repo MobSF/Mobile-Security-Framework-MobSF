@@ -34,7 +34,7 @@ Paste the contents of logs/webproxy.log here
 BEFORE POSTING YOUR ISSUE/BUG
 - These comments won't show up when you submit the issue.
 - GitHub issues ARE NOT FOR SUPPORT, DISCUSSIONS AND QUESTIONS! 
-- If you have questions, use stackoverflow or slack. Use https://goo.gl/6cYU5a to get slack invitations.
+- If you have questions, use our slack channel. Request invitation here https://goo.gl/6cYU5a.
 - Installation problems with regards to requirements.txt or VirtualBox in not considered as a MobSF issue.
 - Reproduce issue in the latest master and try to add as much detail as possible.
 - If you're requesting a new feature/enhancement, explain why you'd like it to be added and it's importance.
