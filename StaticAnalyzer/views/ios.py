@@ -78,7 +78,8 @@ def StaticAnalyzer_iOS(request):
                         'files': python_list(DB[0].FILES),
                         'file_analysis': DB[0].SFILESX,
                         'strings': python_list(DB[0].STRINGS),
-                        'permissions': python_list(DB[0].PERMISSIONS)
+                        'permissions': python_list(DB[0].PERMISSIONS),
+                        'insecure_connections': python_list(DB[0].INSECCON)
                     }
                 else:
                     print "[INFO] iOS Binary (IPA) Analysis Started"
@@ -93,18 +94,18 @@ def StaticAnalyzer_iOS(request):
                     # Get Files, normalize + to x, and convert binary plist ->
                     # xml
                     FILES, SFILES = iOS_ListFiles(BIN_DIR, MD5, True, 'ipa')
-                    INFO_PLIST, BIN_NAME, ID, VER, SDK, PLTFM, MIN, LIBS, BIN_ANAL, STRINGS, PERMISSIONS = BinaryAnalysis(
+                    INFO_PLIST, BIN_NAME, ID, VER, SDK, PLTFM, MIN, LIBS, BIN_ANAL, STRINGS, PERMISSIONS, INSECCON = BinaryAnalysis(
                         BIN_DIR, TOOLS_DIR, APP_DIR)
                     # Saving to DB
                     print "\n[INFO] Connecting to DB"
                     if RESCAN == '1':
                         print "\n[INFO] Updating Database..."
                         StaticAnalyzerIPA.objects.filter(MD5=MD5).update(TITLE='Static Analysis', APPNAMEX=APP_NAME, SIZE=SIZE, MD5=MD5, SHA1=SHA1, SHA256=SHA256, INFOPLIST=INFO_PLIST,
-                                                                         BINNAME=BIN_NAME, IDF=ID, VERSION=VER, SDK=SDK, PLTFM=PLTFM, MINX=MIN, BIN_ANAL=BIN_ANAL, LIBS=LIBS, FILES=FILES, SFILESX=SFILES, STRINGS=STRINGS, PERMISSIONS=python_list(PERMISSIONS))
+                                                                         BINNAME=BIN_NAME, IDF=ID, VERSION=VER, SDK=SDK, PLTFM=PLTFM, MINX=MIN, BIN_ANAL=BIN_ANAL, LIBS=LIBS, FILES=FILES, SFILESX=SFILES, STRINGS=STRINGS, PERMISSIONS=python_list(PERMISSIONS), INSECCON=python_list(INSECCON))
                     elif RESCAN == '0':
                         print "\n[INFO] Saving to Database"
                         STATIC_DB = StaticAnalyzerIPA(TITLE='Static Analysis', APPNAMEX=APP_NAME, SIZE=SIZE, MD5=MD5, SHA1=SHA1, SHA256=SHA256, INFOPLIST=INFO_PLIST,
-                                                      BINNAME=BIN_NAME, IDF=ID, VERSION=VER, SDK=SDK, PLTFM=PLTFM, MINX=MIN, BIN_ANAL=BIN_ANAL, LIBS=LIBS, FILES=FILES, SFILESX=SFILES, STRINGS=STRINGS, PERMISSIONS=python_list(PERMISSIONS))
+                                                      BINNAME=BIN_NAME, IDF=ID, VERSION=VER, SDK=SDK, PLTFM=PLTFM, MINX=MIN, BIN_ANAL=BIN_ANAL, LIBS=LIBS, FILES=FILES, SFILESX=SFILES, STRINGS=STRINGS, PERMISSIONS=python_list(PERMISSIONS), INSECCON=python_list(INSECCON))
                         STATIC_DB.save()
                     context = {
                         'title': 'Static Analysis',
@@ -125,7 +126,8 @@ def StaticAnalyzer_iOS(request):
                         'files': FILES,
                         'file_analysis': SFILES,
                         'strings': STRINGS,
-                        'permissions': PERMISSIONS
+                        'permissions': PERMISSIONS,
+                        'insecure_connections': INSECCON
                     }
                 template = "static_analysis/ios_binary_analysis.html"
                 return render(request, template, context)
@@ -157,6 +159,7 @@ def StaticAnalyzer_iOS(request):
                         'domains': python_dict(DB[0].DOMAINS),
                         'emails': DB[0].EmailnFile,
                         'permissions': python_list(DB[0].PERMISSIONS),
+                        'insecure_connections': python_list(DB[0].INSECCON)
                     }
                 else:
                     print "[INFO] iOS Source Code Analysis Started"
@@ -167,7 +170,7 @@ def StaticAnalyzer_iOS(request):
                     SIZE = str(FileSize(APP_PATH)) + 'MB'  # FILE SIZE
                     SHA1, SHA256 = HashGen(APP_PATH)  # SHA1 & SHA256 HASHES
                     FILES, SFILES = iOS_ListFiles(APP_DIR, MD5, False, 'ios')
-                    HTML, CODEANAL, URLnFile, DOMAINS, EmailnFile, INFO_PLIST, BIN_NAME, ID, VER, SDK, PLTFM, MIN, PERMISSIONS = iOS_Source_Analysis(
+                    HTML, CODEANAL, URLnFile, DOMAINS, EmailnFile, INFO_PLIST, BIN_NAME, ID, VER, SDK, PLTFM, MIN, PERMISSIONS, INSECCON = iOS_Source_Analysis(
                         APP_DIR, MD5)
                     LIBS, BIN_ANAL = '', ''
                     # Saving to DB
@@ -196,7 +199,8 @@ def StaticAnalyzer_iOS(request):
                                                                             URLnFile=URLnFile,
                                                                             DOMAINS=DOMAINS,
                                                                             EmailnFile=EmailnFile,
-                                                                            PERMISSIONS=PERMISSIONS)
+                                                                            PERMISSIONS=PERMISSIONS,
+                                                                            INSECCON=INSECCON)
                     elif RESCAN == '0':
                         print "\n[INFO] Saving to Database"
                         STATIC_DB = StaticAnalyzerIOSZIP(TITLE='Static Analysis',
@@ -221,7 +225,8 @@ def StaticAnalyzer_iOS(request):
                                                          URLnFile=URLnFile,
                                                          DOMAINS=DOMAINS,
                                                          EmailnFile=EmailnFile,
-                                                         PERMISSIONS=PERMISSIONS)
+                                                         PERMISSIONS=PERMISSIONS,
+                                                         INSECCON=INSECCON)
                         STATIC_DB.save()
                     context = {
                         'title': 'Static Analysis',
@@ -247,6 +252,7 @@ def StaticAnalyzer_iOS(request):
                         'domains': DOMAINS,
                         'emails': EmailnFile,
                         'permissions': PERMISSIONS,
+                        'insecure_connections': INSECCON
                     }
                 template = "static_analysis/ios_source_analysis.html"
                 return render(request, template, context)
@@ -542,6 +548,21 @@ def __check_permissions(p_list):
     return permissions
 
 
+def __check_insecure_connections(p_list):
+    '''Check info.plist for insecure connection configurations.'''
+    print "[INFO] Checking for Insecure Connections"
+
+    insecure_connections = []
+
+    if 'NSAppTransportSecurity' in p_list:
+        ns_app_trans_dic = p_list['NSAppTransportSecurity']
+        if 'NSExceptionDomains' in ns_app_trans_dic:
+            for key in ns_app_trans_dic['NSExceptionDomains']:
+                insecure_connections.append(key)
+
+    return insecure_connections
+
+
 def BinaryAnalysis(SRC, TOOLS_DIR, APP_DIR):
     try:
         print "[INFO] Starting Binary Analysis"
@@ -585,6 +606,7 @@ def BinaryAnalysis(SRC, TOOLS_DIR, APP_DIR):
 
             # Check possible app-permissions
             PERMISSIONS = __check_permissions(p)
+            INSECCON = __check_insecure_connections(p)
 
         except:
             PrintException("[ERROR] - Reading from Info.plist")
@@ -716,7 +738,9 @@ def BinaryAnalysis(SRC, TOOLS_DIR, APP_DIR):
         sl = [escape(s) for s in sl]  # Escape evil strings
         STRINGS = sl
 
-        return XML, BIN_NAME, ID, VER, SDK, PLTFM, MIN, LIBS, BIN_RES, STRINGS, PERMISSIONS
+        return (
+            XML, BIN_NAME, ID, VER, SDK, PLTFM, MIN, LIBS, BIN_RES, STRINGS, PERMISSIONS, INSECCON
+        )
     except:
         PrintException("[ERROR] iOS Binary Analysis")
 
@@ -759,6 +783,7 @@ def iOS_Source_Analysis(SRC, MD5):
             PLTFM = ''  # p["DTPlatformVersion"]
             MIN = ''  # p["MinimumOSVersion"]
             PERMISSIONS = __check_permissions(p)
+            INSECCON = __check_insecure_connections(p)
 
         # Code Analysis
         EmailnFile = ''
@@ -879,6 +904,6 @@ def iOS_Source_Analysis(SRC, MD5):
 
                 dang += hd + link + "</td></tr>"
 
-        return html, dang, URLnFile, DOMAINS, EmailnFile, XML, BIN_NAME, ID, VER, SDK, PLTFM, MIN, PERMISSIONS
+        return html, dang, URLnFile, DOMAINS, EmailnFile, XML, BIN_NAME, ID, VER, SDK, PLTFM, MIN, PERMISSIONS, INSECCON
     except:
         PrintException("[ERROR] iOS Source Code Analysis")
