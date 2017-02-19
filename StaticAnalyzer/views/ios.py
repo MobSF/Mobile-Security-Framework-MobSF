@@ -549,6 +549,7 @@ def __check_permissions(p_list):
 
 
 def __check_insecure_connections(p_list):
+    '''Check info.plist for insecure connection configurations.'''
     print "[INFO] Checking for Insecure Connections"
 
     insecure_connections = []
