@@ -101,11 +101,11 @@ def StaticAnalyzer_iOS(request):
                     if RESCAN == '1':
                         print "\n[INFO] Updating Database..."
                         StaticAnalyzerIPA.objects.filter(MD5=MD5).update(TITLE='Static Analysis', APPNAMEX=APP_NAME, SIZE=SIZE, MD5=MD5, SHA1=SHA1, SHA256=SHA256, INFOPLIST=INFO_PLIST,
-                                                                         BINNAME=BIN_NAME, IDF=ID, VERSION=VER, SDK=SDK, PLTFM=PLTFM, MINX=MIN, BIN_ANAL=BIN_ANAL, LIBS=LIBS, FILES=FILES, SFILESX=SFILES, STRINGS=STRINGS, PERMISSIONS=python_list(PERMISSIONS), INSECCON=python_list(INSECCON))
+                                                                         BINNAME=BIN_NAME, IDF=ID, VERSION=VER, SDK=SDK, PLTFM=PLTFM, MINX=MIN, BIN_ANAL=BIN_ANAL, LIBS=LIBS, FILES=FILES, SFILESX=SFILES, STRINGS=STRINGS, PERMISSIONS=python_list(PERMISSIONS), INSECCON=INSECCON)
                     elif RESCAN == '0':
                         print "\n[INFO] Saving to Database"
                         STATIC_DB = StaticAnalyzerIPA(TITLE='Static Analysis', APPNAMEX=APP_NAME, SIZE=SIZE, MD5=MD5, SHA1=SHA1, SHA256=SHA256, INFOPLIST=INFO_PLIST,
-                                                      BINNAME=BIN_NAME, IDF=ID, VERSION=VER, SDK=SDK, PLTFM=PLTFM, MINX=MIN, BIN_ANAL=BIN_ANAL, LIBS=LIBS, FILES=FILES, SFILESX=SFILES, STRINGS=STRINGS, PERMISSIONS=python_list(PERMISSIONS), INSECCON=python_list(INSECCON))
+                                                      BINNAME=BIN_NAME, IDF=ID, VERSION=VER, SDK=SDK, PLTFM=PLTFM, MINX=MIN, BIN_ANAL=BIN_ANAL, LIBS=LIBS, FILES=FILES, SFILESX=SFILES, STRINGS=STRINGS, PERMISSIONS=python_list(PERMISSIONS), INSECCON=INSECCON)
                         STATIC_DB.save()
                     context = {
                         'title': 'Static Analysis',
