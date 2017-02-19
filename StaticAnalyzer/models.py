@@ -73,6 +73,7 @@ class StaticAnalyzerIPA(models.Model):
     SFILESX = models.TextField()
     STRINGS = models.TextField()
     PERMISSIONS = models.TextField()
+    INSECCON = models.TextField()
 
 
 class StaticAnalyzerIOSZIP(models.Model):
@@ -99,7 +100,7 @@ class StaticAnalyzerIOSZIP(models.Model):
     DOMAINS = models.TextField()
     EmailnFile = models.TextField()
     PERMISSIONS = models.TextField()
-
+    INSECCON = models.TextField()
 
 class StaticAnalyzerWindows(models.Model):
     TITLE = models.TextField()
