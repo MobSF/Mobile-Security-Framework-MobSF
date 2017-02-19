@@ -117,7 +117,7 @@
        <div class="col-lg-12">
          <div class="panel panel-default">
            <div class="panel-heading">
-             <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="fa fa-mobile"></span> Custom communication (as given in Info.plist)</h3><hr>
+             <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="fa fa-mobile"></span> App Transport Security (ATS)</h3><hr>
            </div>
 
            <div class="panel-body">
@@ -140,7 +140,7 @@
                          Insecure
                        </td>
                        <td>
-                         The Domain '{{ con | safe}}' is excluded from Apple best-practices on secure communication.
+                         App Transport Security (ATS) is disabled on the domain '{{ con }}'. Disabling ATS can allow insecure communication with particular servers or allow insecure loads for web views or for media, while maintaining ATS protections elsewhere in your app.
                        </td>
                      </tr>
                      {% endfor %}
@@ -152,7 +152,7 @@
                        Secure
                      </td>
                      <td>
-                       No insecure connections configured.
+                       No insecure connections configured. App Transport Security (ATS) is enabled.
                      </td>
                    </tr>
                    {% endif %}

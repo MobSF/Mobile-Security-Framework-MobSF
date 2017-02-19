@@ -11,8 +11,8 @@
             <li class="header">Static Analysis</li>
             <li class="active"><a href="#information"><i class="glyphicon glyphicon-info-sign"></i> Information</a></li>
             <li><a href="#options"><i class="fa fa-gears"></i> Options</a></li>
-            <li><a href="#permissions"><i class="fa fa-toggle-on"></i> Permissons</a></li>
-            <li><a href="#insecure_connections"><i class="fa fa-cloud-upload"></i> Communiaction</a></li>
+            <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissons</a></li>
+            <li><a href="#insecure_connections"><i class="glyphicon glyphicon-eye-open"></i> Transport Security</a></li>
             <li><a href="#binary"><i class="fa fa-mobile"></i> Binary Analysis</a></li>
             <li><a href="#file"><i class="fa fa-file-text-o"></i> File Analysis</a></li>
             <li><a href="#libraries"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</a></li>
@@ -258,7 +258,7 @@
           <div class="box">
           <div class="box-header">
              <!-- /.box-header -->
-              <h3 class="box-title"><i class="fa fa-file-text-o"></i> Custom communication (as given in Info.plist)</h3>
+              <h3 class="box-title"><i class="glyphicon glyphicon-eye-open"></i> App Transport Security (ATS)</h3>
             </div>
 
               <div class="box-body no-padding">
@@ -282,7 +282,7 @@
                           <span class="label label-danger">Insecure</span>
                         </td>
                         <td>
-                          The Domain '{{ con | safe}}' is excluded from Apple best-practices on secure communication.
+                          App Transport Security (ATS) is disabled on the domain '{{ con }}'. Disabling ATS can allow insecure communication with particular servers or allow insecure loads for web views or for media, while maintaining ATS protections elsewhere in your app.
                         </td>
                       </tr>
                       {% endfor %}
@@ -294,7 +294,7 @@
                         <span class="label label-success">Secure</span>
                       </td>
                       <td>
-                        No insecure connections configured.
+                        No insecure connections configured. App Transport Security (ATS) is enabled.
                       </td>
                     </tr>
                     {% endif %}
