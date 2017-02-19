@@ -12,7 +12,7 @@
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
-                                    <p>                                       
+                                    <p>
                                        <span class="label label-primary">File Name</span>
                                     {{ name }}
                                     </p>
@@ -22,16 +22,16 @@
                                    </p><p>
                                        <span class="label label-primary">MD5</span>
                                     {{ md5 }}
-                                    
+
                                    </p><p>
                                      <span class="label label-primary">SHA1</span>
                                     {{ sha1 }}
-                                  
+
                                      </p><p>
                                      <span class="label label-primary">SHA256</span>
                                     {{ sha256 }}
                                 </div>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -44,29 +44,29 @@
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
-                                    <p>                                       
+                                    <p>
                                     <span class="label label-primary">App Name</span>
                                     {{ bin_name }}
                                     </p>
-                                     <p>                                       
+                                     <p>
                                     <span class="label label-primary">Identifier</span>
                                     {{ id }}
                                     <span class="label label-primary">Version</span>
                                     {{ ver }}
 
                                     </p>
-                                      <p>                                       
+                                      <p>
                                     <span class="label label-primary">SDK Name</span>
                                     {{ sdk }}
                                     <span class="label label-primary">Platform Version</span>
                                     {{ pltfm }}
                                    <span class="label label-primary">Min OS Version</span>
                                     {{ min }}
-                    
+
                                     </p>
-                                      
+
                                 </div>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -115,6 +115,58 @@
            </div>
          </div>
        </div> <hr>
+
+       <div class="col-lg-12">
+         <div class="panel panel-default">
+           <div class="panel-heading">
+             <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="fa fa-mobile"></span> Custom communication (as given in Info.plist)</h3><hr>
+           </div>
+
+           <div class="panel-body">
+             <div class="table-responsive">
+               <table class="table table-bordered table-hover table-striped">
+                 <thead>
+                   <tr>
+                     <th>ISSUE</th>
+                     <th>STATUS</th>
+                     <th>DESCRIPTION</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {% if insecure_connections|length > 0 %}
+                     {%for con in insecure_connections%}
+                     <tr>
+                       <td>
+                         Exception in NSAppTransportSecurity found.
+                       <td>
+                         Insecure
+                       </td>
+                       <td>
+                         The Domain '{{ con | safe}}' is excluded from Apple best-practices on secure communication.
+                       </td>
+                     </tr>
+                     {% endfor %}
+                   {% else %}
+                   <tr>
+                     <td>
+                       None
+                     <td>
+                       Secure
+                     </td>
+                     <td>
+                       No insecure connections configured.
+                     </td>
+                   </tr>
+                   {% endif %}
+                 </tbody>
+                     </table>
+                     </div>
+                   <!-- /.box-body -->
+                 </div>
+               </div>
+             </div><hr>
+
+
              <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
@@ -129,18 +181,18 @@
                                                 <th>ISSUE</th>
                                                 <th>STATUS</th>
                                                 <th>DESCRIPTION</th>
-                                                
+
                                             </tr>
                                         </thead>
                                         <tbody>
                     {{ insecure| safe}}
                     </tbody>
                     </table>
-                                
+
                             </div>
                         </div>
                     </div>
-          </div>  
+          </div>
           <hr>
   <div class="col-lg-12">
                         <div class="panel panel-default">
@@ -153,17 +205,17 @@
                                     <table class="table table-bordered table-hover table-striped">
                                         <thead>
                                             <tr>
-                                                
+
                                                 <th>API</th>
                         <th>FILES</th>
-                                                
+
                                             </tr>
                                         </thead>
                                         <tbody>
                     {{ api | safe}}
                     </tbody>
                     </table>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -177,7 +229,7 @@
                             <div class="panel-body">
                   <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                                         {% if urls|length > 1 %} 
+                                         {% if urls|length > 1 %}
                   <thead>
                   <tr>
                      <th>URL</th>
@@ -186,11 +238,11 @@
                  </thead>
                     {% endif %}
                                         <tbody>
-                
-                  {{ urls | safe}} 
+
+                  {{ urls | safe}}
                     </tbody>
                     </table>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -204,7 +256,7 @@
                             <div class="panel-body">
                   <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                                     {% if urls|length > 1 %} 
+                                     {% if urls|length > 1 %}
                   <thead>
                   <tr>
                      <th>Domain</th>
@@ -213,9 +265,9 @@
                  </thead>
                   {% endif %}
                  <tbody>
-                
+
                   {% for domain, details in domains.items %}
-                  <tr><td>{{domain}}</td><td> 
+                  <tr><td>{{domain}}</td><td>
 
                     {% if details|key:"bad" == "yes" %}
                     <span class="label label-danger">malware</span></br>
@@ -231,10 +283,10 @@
 
                   </td> </tr>
                   {% endfor %}
-                   
+
                     </tbody>
                     </table>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -248,7 +300,7 @@
                             <div class="panel-body">
                   <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                                         {% if emails|length > 1 %} 
+                                         {% if emails|length > 1 %}
                   <thead>
                   <tr>
                      <th>Email</th>
@@ -257,11 +309,11 @@
                  </thead>
                  {% endif %}
                                         <tbody>
-                
-                  {{ emails | safe}} 
+
+                  {{ emails | safe}}
                     </tbody>
                     </table>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -284,7 +336,7 @@
                     {{ file_analysis | safe}}
                     </tbody>
                     </table>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -296,11 +348,11 @@
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
-                  <p>  
+                  <p>
                   {{ libs|safe }}
                   </p>
                                 </div>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -312,21 +364,21 @@
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
-                  <p>  
+                  <p>
                 {% for file in files %}
                   {{ file}} <br>
-                {% endfor %}                  
-                  
+                {% endfor %}
+
                   </p>
                                 </div>
-                                
+
                             </div>
                         </div>
                     </div>
                     <hr><hr>
                      <h3 align="center"> Report Generated by - MobSF | http://opensecurity.in</h3>
-       
-  
-  
-      
+
+
+
+
    {% endblock %}

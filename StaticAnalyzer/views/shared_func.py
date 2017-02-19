@@ -157,7 +157,8 @@ def PDF(request):
                             'files': python_list(DB[0].FILES),
                             'file_analysis': DB[0].SFILESX,
                             'strings': python_list(DB[0].STRINGS),
-                            'permissions': python_list(DB[0].PERMISSIONS)
+                            'permissions': python_list(DB[0].PERMISSIONS),
+                            'insecure_connections': python_list(DB[0].INSECCON),
                         }
                         template = get_template(
                             "pdf/ios_binary_analysis_pdf.html")
@@ -191,7 +192,8 @@ def PDF(request):
                             'urls': DB[0].URLnFile,
                             'domains': python_dict(DB[0].DOMAINS),
                             'emails': DB[0].EmailnFile,
-                            'permissions': python_list(DB[0].PERMISSIONS)
+                            'permissions': python_list(DB[0].PERMISSIONS),
+                            'insecure_connections': python_list(DB[0].INSECCON),
                         }
                         template = get_template(
                             "pdf/ios_source_analysis_pdf.html")
