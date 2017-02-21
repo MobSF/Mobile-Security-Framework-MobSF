@@ -161,7 +161,7 @@ except NameError:
 # ^ This is fine Do not turn it off until MobSF moves from Beta to Stable
 
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1','testserver', '*']
 # Application definition
 INSTALLED_APPS = (
     #'django.contrib.admin',

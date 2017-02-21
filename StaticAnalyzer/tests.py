@@ -1,3 +1,89 @@
-from django.test import TestCase
+#!/usr/bin/env python
+import os
+import platform
+import json
 
-# Create your tests here.
+from django.conf import settings
+from django.test import Client
+from django.http import HttpResponse
+
+from MobSF.utils import PrintException
+
+RESCAN = False
+#Set RESCAN to True if Static Analyzer Code is modified
+
+def static_analysis():
+    """Test Static Analyzer"""
+    failed = False
+    ERR_MSG = '%s'
+    if platform.system() != "Windows":
+        ERR_MSG = '\033[91m \033[1m %s \033[0m'
+    try:
+        uploaded = []
+        print "[INFO] Running Upload Test"
+        http_client = Client()
+        apk_dir = os.path.join(settings.BASE_DIR, "StaticAnalyzer/test_files/")
+        for filename in os.listdir(apk_dir):
+            fpath = os.path.join(apk_dir, filename)
+            with open(fpath) as filp:
+                response = http_client.post('/upload/', {'file': filp})
+                obj = json.loads(response.content)
+                if response.status_code == 200 and obj["status"] == "success":
+                    print "[OK] Upload OK: " + filename
+                    uploaded.append(obj["url"])
+                else:
+                    print ERR_MSG % "[ERROR] Performing Upload" + filename
+                    failed = True
+        print "[OK] Completed Upload test"
+        print "[INFO] Running Static Analysis Test"
+        for upl in uploaded:
+            if RESCAN:
+                upl = "/" + upl + "&rescan=1"
+            else:
+                upl = "/" + upl
+            resp = http_client.get(upl, follow=True)
+            if resp.status_code == 200:
+                print "[OK] Static Analysis Complete: " + upl
+            else:
+                print ERR_MSG % "[ERROR] Performing Static Analysis: " + upl
+                failed = True
+        print "[OK] Static Analysis test completed"
+        print "[INFO] Running PDF Generation Test"
+
+        pdfs = [
+            "/PDF/?md5=3a552566097a8de588b8184b059b0158&type=APK",
+            "/PDF/?md5=6c23c2970551be15f32bbab0b5db0c71&type=IPA",
+            "/PDF/?md5=52c50ae824e329ba8b5b7a0f523efffe&type=ANDZIP",
+            "/PDF/?md5=57bb5be0ea44a755ada4a93885c3825e&type=IOSZIP",
+            "/PDF/?md5=8179b557433835827a70510584f3143e&type=APPX",
+        ]
+        for pdf in pdfs:
+            resp = http_client.get(pdf)
+            if (resp.status_code == 200 and
+                        resp._headers['content-type'][1] == "application/pdf"
+                    ):
+                print "[OK] PDF Report Generated: " + pdf
+            else:
+                print ERR_MSG % "[ERROR] Generating PDF: " + pdf
+                print resp.content
+                failed = True
+        print "[OK] PDF Generation test completed"
+    except:
+        PrintException("[ERROR] Completing Static Analyzer Test")
+    return failed
+
+
+def start_test(request):
+    """View for Handling Test"""
+    print "\n[INFO] Running Static Analyzer Unit test"
+    try:
+        failed_status = static_analysis()
+        if failed_status:
+            message = "some tests failed"
+        else:
+            message = "all tests completed"
+    except:
+        message = "error"
+    print "\n\n[INFO] ALL TESTS COMPLETED!"
+    return HttpResponse(json.dumps({"static_analyzer_test": message}),
+                        content_type="application/json")

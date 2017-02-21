@@ -12,6 +12,7 @@ import StaticAnalyzer.views.android.find
 import StaticAnalyzer.views.ios
 import StaticAnalyzer.views.shared_func
 import StaticAnalyzer.views.windows
+import StaticAnalyzer.tests
 from MobSF import utils
 
 
@@ -59,6 +60,8 @@ urlpatterns = [
     url(r'^APIFuzzer/$', APITester.views.APIFuzzer),
     url(r'^StartScan/$', APITester.views.StartScan),
     url(r'^NoAPI/$', APITester.views.NoAPI),
+    #Test
+    url(r'^runtest/$', StaticAnalyzer.tests.start_test),
 ]
 
 utils.printMobSFverison()
