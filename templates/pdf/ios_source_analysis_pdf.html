@@ -1,6 +1,11 @@
 
    {% block content %}
+<style>
+body {
+    font: normal 30px Verdana, Arial, sans-serif;
+}
 
+</style>
 <h1 align="center" class="page-header">Static Analysis - {{name}} </h1>
 <hr>
 
@@ -13,22 +18,22 @@
                             <div class="panel-body">
                                 <div class="list-group">
                                     <p>
-                                       <span class="label label-primary">File Name</span>
+                                       <span class="label label-primary"><b>File Name: </b></span>
                                     {{ name }}
                                     </p>
                                     <p>
-                                       <span class="label label-primary">Size</span>
+                                       <span class="label label-primary"><b>Size: </b></span>
                                     {{ size }}
                                    </p><p>
-                                       <span class="label label-primary">MD5</span>
+                                       <span class="label label-primary"><b>MD5: </b></span>
                                     {{ md5 }}
 
                                    </p><p>
-                                     <span class="label label-primary">SHA1</span>
+                                     <span class="label label-primary"><b>SHA1: </b></span>
                                     {{ sha1 }}
 
                                      </p><p>
-                                     <span class="label label-primary">SHA256</span>
+                                     <span class="label label-primary"><b>SHA256: </b></span>
                                     {{ sha256 }}
                                 </div>
 
@@ -45,22 +50,24 @@
                             <div class="panel-body">
                                 <div class="list-group">
                                     <p>
-                                    <span class="label label-primary">App Name</span>
+                                    <span class="label label-primary"><b>App Name: </b></span>
                                     {{ bin_name }}
                                     </p>
                                      <p>
-                                    <span class="label label-primary">Identifier</span>
+                                    <span class="label label-primary"><b>Identifier: </b></span>
                                     {{ id }}
-                                    <span class="label label-primary">Version</span>
+                                    </p><p>
+                                    <span class="label label-primary"><b>Version: </b></span>
                                     {{ ver }}
 
                                     </p>
                                       <p>
-                                    <span class="label label-primary">SDK Name</span>
-                                    {{ sdk }}
-                                    <span class="label label-primary">Platform Version</span>
+                                    <span class="label label-primary"><b>SDK Name: </b></span>
+                                    {{ sdk }}</p><p>
+                                    <span class="label label-primary"><b>Platform Version: </b></span>
                                     {{ pltfm }}
-                                   <span class="label label-primary">Min OS Version</span>
+                                    </p><p>
+                                   <span class="label label-primary"><b>Min OS Version: </b></span>
                                     {{ min }}
 
                                     </p>

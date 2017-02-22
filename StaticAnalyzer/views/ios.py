@@ -15,23 +15,14 @@ from django.http import HttpResponseRedirect
 from django.conf import settings
 from django.utils.html import escape
 from django.utils.encoding import smart_text
-from StaticAnalyzer.views.shared_func import FileSize, HashGen, Unzip
 
+from StaticAnalyzer.views.shared_func import FileSize, HashGen, Unzip
 from StaticAnalyzer.models import StaticAnalyzerIPA, StaticAnalyzerIOSZIP
-from MobSF.utils import PrintException, python_list, python_dict, isDirExists, isFileExists
 from StaticAnalyzer.tools.strings import strings
 
+from MobSF.utils import PrintException, python_list, python_dict, isFileExists
+
 from MalwareAnalyzer.views import MalwareCheck
-try:
-    import xhtml2pdf.pisa as pisa
-except:
-    PrintException(
-        "[ERROR] xhtml2pdf is not installed. Cannot generate PDF reports")
-try:
-    import StringIO
-    StringIO = StringIO.StringIO
-except Exception:
-    from io import StringIO
 
 ##############################################################
 # Code to support iOS Static Code Anlysis
