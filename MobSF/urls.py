@@ -9,7 +9,7 @@ import StaticAnalyzer.views.android.smali
 import StaticAnalyzer.views.android.view_source
 import StaticAnalyzer.views.android.manifest_view
 import StaticAnalyzer.views.android.find
-import StaticAnalyzer.views.ios
+import StaticAnalyzer.views.ios.static_analyzer
 import StaticAnalyzer.views.shared_func
 import StaticAnalyzer.views.windows
 import StaticAnalyzer.tests
@@ -30,9 +30,9 @@ urlpatterns = [
     url(r'^mac_only/$', MobSF.views.mac_only),
 
     url(r'^StaticAnalyzer/$', StaticAnalyzer.views.android.static_analyzer.static_analyzer),
-    url(r'^StaticAnalyzer_iOS/$', StaticAnalyzer.views.ios.StaticAnalyzer_iOS),
+    url(r'^StaticAnalyzer_iOS/$', StaticAnalyzer.views.ios.static_analyzer.static_analyzer_ios),
     url(r'^StaticAnalyzer_Windows/$', StaticAnalyzer.views.windows.staticanalyzer_windows),
-    url(r'^ViewFile/$', StaticAnalyzer.views.ios.ViewFile),
+    url(r'^ViewFile/$', StaticAnalyzer.views.ios.static_analyzer.view_file),
     url(r'^ViewSource/$', StaticAnalyzer.views.android.view_source.run),
     url(r'^PDF/$', StaticAnalyzer.views.shared_func.PDF),
     url(r'^Smali/$', StaticAnalyzer.views.android.smali.run),

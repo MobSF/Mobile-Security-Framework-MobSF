@@ -30,6 +30,10 @@ from StaticAnalyzer.views.android.db_interaction import (
     get_context_from_db_entry
 )
 
+from StaticAnalyzer.views.ios.db_interaction import (
+    get_context_from_db_entry_ipa,
+    get_context_from_db_entry_ios
+)
 
 def FileSize(APP_PATH):
     """Return the size of the file."""
@@ -122,28 +126,7 @@ def PDF(request):
                     DB = StaticAnalyzerIPA.objects.filter(MD5=MD5)
                     if DB.exists():
                         print "\n[INFO] Fetching data from DB for PDF Report Generation (IOS IPA)"
-                        context = {
-                            'title': DB[0].TITLE,
-                            'name': DB[0].APPNAMEX,
-                            'size': DB[0].SIZE,
-                            'md5': DB[0].MD5,
-                            'sha1': DB[0].SHA1,
-                            'sha256': DB[0].SHA256,
-                            'plist': DB[0].INFOPLIST,
-                            'bin_name': DB[0].BINNAME,
-                            'id': DB[0].IDF,
-                            'ver': DB[0].VERSION,
-                            'sdk': DB[0].SDK,
-                            'pltfm': DB[0].PLTFM,
-                            'min': DB[0].MINX,
-                            'bin_anal': DB[0].BIN_ANAL,
-                            'libs': DB[0].LIBS,
-                            'files': python_list(DB[0].FILES),
-                            'file_analysis': DB[0].SFILESX,
-                            'strings': python_list(DB[0].STRINGS),
-                            'permissions': python_list(DB[0].PERMISSIONS),
-                            'insecure_connections': python_list(DB[0].INSECCON),
-                        }
+                        context = get_context_from_db_entry_ipa(DB)
                         template = get_template(
                             "pdf/ios_binary_analysis_pdf.html")
                     else:
@@ -153,32 +136,7 @@ def PDF(request):
                     DB = StaticAnalyzerIOSZIP.objects.filter(MD5=MD5)
                     if DB.exists():
                         print "\n[INFO] Fetching data from DB for PDF Report Generation (IOS ZIP)"
-                        context = {
-                            'title': DB[0].TITLE,
-                            'name': DB[0].APPNAMEX,
-                            'size': DB[0].SIZE,
-                            'md5': DB[0].MD5,
-                            'sha1': DB[0].SHA1,
-                            'sha256': DB[0].SHA256,
-                            'plist': DB[0].INFOPLIST,
-                            'bin_name': DB[0].BINNAME,
-                            'id': DB[0].IDF,
-                            'ver': DB[0].VERSION,
-                            'sdk': DB[0].SDK,
-                            'pltfm': DB[0].PLTFM,
-                            'min': DB[0].MINX,
-                            'bin_anal': DB[0].BIN_ANAL,
-                            'libs': DB[0].LIBS,
-                            'files': python_list(DB[0].FILES),
-                            'file_analysis': DB[0].SFILESX,
-                            'api': DB[0].HTML,
-                            'insecure': DB[0].CODEANAL,
-                            'urls': DB[0].URLnFile,
-                            'domains': python_dict(DB[0].DOMAINS),
-                            'emails': DB[0].EmailnFile,
-                            'permissions': python_list(DB[0].PERMISSIONS),
-                            'insecure_connections': python_list(DB[0].INSECCON),
-                        }
+                        context = get_context_from_db_entry_ios(DB)
                         template = get_template(
                             "pdf/ios_source_analysis_pdf.html")
                     else:

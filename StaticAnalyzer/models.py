@@ -90,8 +90,6 @@ class StaticAnalyzerIOSZIP(models.Model):
     SDK = models.TextField()
     PLTFM = models.TextField()
     MINX = models.TextField()
-    BIN_ANAL = models.TextField()
-    LIBS = models.TextField()
     FILES = models.TextField()
     SFILESX = models.TextField()
     HTML = models.TextField()
