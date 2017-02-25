@@ -27,16 +27,17 @@ def dex_2_jar(app_path, app_dir, tools_dir):
         args = []
         if settings.JAR_CONVERTER == "d2j":
             print "[INFO] Using JAR converter - dex2jar"
-            if platform.system() == "Windows":
-                win_fix_java(tools_dir)
-                d2j = os.path.join(tools_dir, 'd2j2/d2j-dex2jar.bat')
-            else:
-                inv = os.path.join(tools_dir, 'd2j2/d2j_invoke.sh')
-                d2j = os.path.join(tools_dir, 'd2j2/d2j-dex2jar.sh')
-                subprocess.call(["chmod", "777", d2j])
-                subprocess.call(["chmod", "777", inv])
             if len(settings.DEX2JAR_BINARY) > 0 and isFileExists(settings.DEX2JAR_BINARY):
                 d2j = settings.DEX2JAR_BINARY
+            else:
+                if platform.system() == "Windows":
+                    win_fix_java(tools_dir)
+                    d2j = os.path.join(tools_dir, 'd2j2/d2j-dex2jar.bat')
+                else:
+                    inv = os.path.join(tools_dir, 'd2j2/d2j_invoke.sh')
+                    d2j = os.path.join(tools_dir, 'd2j2/d2j-dex2jar.sh')
+                    subprocess.call(["chmod", "777", d2j])
+                    subprocess.call(["chmod", "777", inv])
             args = [
                 d2j,
                 app_dir + 'classes.dex',
