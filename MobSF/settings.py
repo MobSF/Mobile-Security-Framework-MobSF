@@ -9,11 +9,10 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
 import os
-import platform
 import imp
 from MobSF import utils
 
-import install.windows.setup as windows_setup
+from install.windows.setup import windows_config_local
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF FRAMEWORK CONFIGURATIONS
@@ -62,7 +61,7 @@ DATABASES = {
         'NAME': DB_DIR,
     }
 }
-#Postgres DB - Install psycopg2
+# Postgres DB - Install psycopg2
 '''
 DATABASES = {
     'default': {
@@ -148,7 +147,9 @@ except NameError:
         except IOError:
             Exception('Please create a %s file with random characters \
             to generate your secret key!' % SECRET_FILE)
-        #Run Once
+        # Run Once
+        #Windows Setup
+        windows_config_local(MobSF_HOME)
         utils.make_migrations(BASE_DIR)
         utils.migrate(BASE_DIR)
         utils.kali_fix(BASE_DIR)
@@ -161,7 +162,7 @@ except NameError:
 # ^ This is fine Do not turn it off until MobSF moves from Beta to Stable
 
 DEBUG = True
-ALLOWED_HOSTS = ['127.0.0.1','testserver', '*']
+ALLOWED_HOSTS = ['127.0.0.1', 'testserver', '*']
 # Application definition
 INSTALLED_APPS = (
     #'django.contrib.admin',
@@ -360,8 +361,6 @@ else:
     PYTHON3_PATH = ""
     #==============================================
     #================WINDOWS-Analysis-Settings ====
-    # Get the OS MobSF is currently running on
-    CURRENT_PLATFROM = platform.system()
 
     # Private key if rpc server is needed
     WINDOWS_VM_SECRET = 'MobSF/windows_vm_priv_key.asc'
@@ -369,14 +368,6 @@ else:
     # eg: WINDOWS_VM_IP = '127.0.0.1'
     WINDOWS_VM_IP = None
     WINDOWS_VM_PORT = '8000'
-
-    # Configure here if you are on windows
-    # Path to lock-file (so setup is only run once)
-    PATH_TO_LOCK_FILE = os.path.join(MobSF_HOME, "setup_done.txt")
-    if (os.path.isfile(PATH_TO_LOCK_FILE) is False) and CURRENT_PLATFROM == 'Windows':
-        print "[INFO] Running first time setup for windows."
-        # Setup is to-be-executed
-        windows_setup.install_locally(MobSF_HOME)
     #==============================================
     #^CONFIG-END^: Do not edit this line
 
