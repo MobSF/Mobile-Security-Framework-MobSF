@@ -218,7 +218,7 @@
                           <th>ISSUE</th>
                           <th>STATUS</th>
                           <th>DESCRIPTION</th>
-
+                          <th>INFO</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -239,6 +239,7 @@
                           </span>
                         </td>
                         <td>{{ result.desc }}</td>
+                        <td>{{ result.info }}</td>
                       </tr>
                     {% endfor %}
                     {% for warn in bin_an_warnings %}
@@ -250,6 +251,7 @@
                         </span>
                       </td>
                       <td>{{ warn.desc }}</td>
+                      <td>{{ warn.info }}
                     </tr>
                     {% endfor %}
                     </tbody>
