@@ -271,7 +271,7 @@ else:
     Examples:
     JAVA_DIRECTORY = "C:/Program Files/Java/jdk1.7.0_17/bin/"
     JAVA_DIRECTORY = "/usr/bin/"
-    DEX2JAR_BINARY = "/Users/ajin/dex2jar/d2j_invoke.sh"
+    DEX2JAR_BINARY = "/Users/ajin/dex2jar/d2j-dex2jar.sh"
     ENJARIFY_DIRECTORY = "D:/enjarify/"
     VBOXMANAGE_BINARY = "/usr/bin/VBoxManage"
     CFR_DECOMPILER_BINARY = "/home/ajin/tools/cfr.jar"
