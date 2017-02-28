@@ -66,23 +66,8 @@ def Unzip(APP_PATH, EXT_PATH):
         files = []
         with zipfile.ZipFile(APP_PATH, "r") as z:
             for fileinfo in z.infolist():
-                dat = z.open(fileinfo.filename, "r")
-                filename = fileinfo.filename
-                if not isinstance(filename, unicode):
-                    filename = unicode(fileinfo.filename,
-                                       encoding="utf-8", errors="replace")
-                files.append(filename)
-                outfile = os.path.join(EXT_PATH, filename)
-                if not os.path.exists(os.path.dirname(outfile)):
-                    try:
-                        os.makedirs(os.path.dirname(outfile))
-                    except OSError as exc:  # Guard against race condition
-                        if exc.errno != errno.EEXIST:
-                            print "\n[WARN] OS Error: Race Condition"
-                if not outfile.endswith("/"):
-                    with io.open(outfile, mode='wb') as f:
-                        f.write(dat.read())
-                dat.close()
+                files.append(fileinfo.filename)
+                z.extract(fileinfo, EXT_PATH)
         return files
     except:
         PrintException("[ERROR] Unzipping Error")
