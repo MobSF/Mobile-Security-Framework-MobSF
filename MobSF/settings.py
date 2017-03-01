@@ -21,7 +21,7 @@ from install.windows.setup import windows_config_local
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v0.9.5 Beta"
+MOBSF_VER = "v0.9.4.2 Beta"
 BANNER = """
   __  __       _    ____  _____        ___   ___  _  _   
  |  \/  | ___ | |__/ ___||  ___|_   __/ _ \ / _ \| || |  
