@@ -12,6 +12,7 @@ from MobSF.utils import (
     PrintException
 )
 
+
 def get_hardcoded_cert_keystore(files):
     """Returns the hardcoded certificate keystore."""
     try:
@@ -44,7 +45,8 @@ def cert_info(app_dir, tools_dir):
         print "[INFO] Reading Code Signing Certificate"
         cert = os.path.join(app_dir, 'META-INF/')
         cp_path = tools_dir + 'CertPrint.jar'
-        files = [f for f in os.listdir(cert) if os.path.isfile(os.path.join(cert, f))]
+        files = [f for f in os.listdir(
+            cert) if os.path.isfile(os.path.join(cert, f))]
         certfile = None
         dat = ''
         if "CERT.RSA" in files:
@@ -64,12 +66,13 @@ def cert_info(app_dir, tools_dir):
         else:
             dat = 'No Code Signing Certificate Found!'
             issued = 'missing'
-        if re.findall("Issuer: CN=Android Debug|Subject: CN=Android Debug", dat):
+        if re.findall(r"Issuer: CN=Android Debug|Subject: CN=Android Debug", dat):
             issued = 'bad'
-
+        if re.findall(r"\[SHA1withRSA\]"):
+            issued = 'bad hash'
         cert_dic = {
-            'cert_info' : dat,
-            'issued' : issued
+            'cert_info': dat,
+            'issued': issued
         }
         return cert_dic
     except:
