@@ -66,7 +66,10 @@ def Unzip(APP_PATH, EXT_PATH):
         files = []
         with zipfile.ZipFile(APP_PATH, "r") as z:
             for fileinfo in z.infolist():
-                files.append(fileinfo.filename)
+                filename = fileinfo.filename
+                if not isinstance(filename, unicode):
+                    filename = unicode(filename, encoding="utf-8", errors="replace")
+                files.append(filename)
                 z.extract(fileinfo, EXT_PATH)
         return files
     except:
