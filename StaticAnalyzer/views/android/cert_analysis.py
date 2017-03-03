@@ -68,7 +68,7 @@ def cert_info(app_dir, tools_dir):
             issued = 'missing'
         if re.findall(r"Issuer: CN=Android Debug|Subject: CN=Android Debug", dat):
             issued = 'bad'
-        if re.findall(r"\[SHA1withRSA\]"):
+        if re.findall(r"\[SHA1withRSA\]", dat):
             issued = 'bad hash'
         cert_dic = {
             'cert_info': dat,
