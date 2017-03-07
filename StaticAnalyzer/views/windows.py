@@ -378,7 +378,7 @@ def __parse_binskim(bin_an_dic, output):
                 if len(res['formattedRuleMessage']["arguments"])>2:
                     result["info"] = res['formattedRuleMessage']["arguments"][2]
                 else:
-                    result["info"] = rules[res['ruleId']]['shortDescription']
+                    result["info"] = ""
             else:
                 result = {
                     "rule_id": res['ruleId'],
