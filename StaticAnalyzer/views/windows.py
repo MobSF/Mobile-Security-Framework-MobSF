@@ -253,7 +253,7 @@ def _binary_analysis(app_dic):
     # Search for unsave function
     pattern = re.compile("(alloca|gets|memcpy|printf|scanf|sprintf|sscanf|strcat|StrCat|strcpy|StrCpy|strlen|StrLen|strncat|StrNCat|strncpy|StrNCpy|strtok|swprintf|vsnprintf|vsprintf|vswprintf|wcscat|wcscpy|wcslen|wcsncat|wcsncpy|wcstok|wmemcpy)")
     for elem in str_list:
-        if pattern.match(elem):
+        if pattern.match(elem[5:-5]):
             result = {
                 "rule_id": 'Possible Insecure Function',
                 "status": 'Insecure',
