@@ -24,7 +24,7 @@ To integrate a Windows-VM into MobSF, please following these steps.
 
 NOTE: These steps are not required, if you are running MobSF in a Windows Host.
 
-##FAQ
+## FAQ
 
 * If you see errors like this
 
