@@ -48,31 +48,31 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ## Screenshots
 
-###Static Analysis - Android APK 
+### Static Analysis - Android APK 
 
 ![android-static-analysis-apk](https://cloud.githubusercontent.com/assets/4301109/13614857/7a39189c-e598-11e5-90ff-6357b6c320bd.png)
 ![android-static-analysis-apk2](https://cloud.githubusercontent.com/assets/4301109/13614896/b7b7b53e-e598-11e5-84b5-e69c56c230a3.png)
 
-###Static Analysis - iOS IPA
+### Static Analysis - iOS IPA
 
 ![ios-static-analysis-ipa](https://cloud.githubusercontent.com/assets/4301109/13614950/e8174ac8-e598-11e5-8e03-d40ad7d9e5a4.png)
 
-###Static Analysis - Windows APPX
+### Static Analysis - Windows APPX
 ![windows-static-analysis-appx](https://cloud.githubusercontent.com/assets/4301109/20524598/1e139a1e-b0e1-11e6-8489-ee38c4392b4b.png)
 
-###Dynamic Analysis - Android APK
+### Dynamic Analysis - Android APK
 
 ![android-dynamic-analysis](https://cloud.githubusercontent.com/assets/4301109/13615043/6fe62028-e599-11e5-9c50-e44adbba114a.png)
 ![android-dynamic-report](https://cloud.githubusercontent.com/assets/4301109/13615800/104cc424-e59d-11e5-9a98-2e3b2aff7222.png)
 ![android-dynamic-report2](https://cloud.githubusercontent.com/assets/4301109/13615767/f04e5c1e-e59c-11e5-9ad1-b31598024ad4.png)
 ![android-dynamic-expact](https://cloud.githubusercontent.com/assets/4301109/13615882/6f4d9f16-e59d-11e5-9ec9-3b4c47e37389.png)
 
-###Web API Fuzzer
+### Web API Fuzzer
 
 ![api-fuzzer-start-scan](https://cloud.githubusercontent.com/assets/4301109/13615144/e992ecda-e599-11e5-88d5-e7c310980b62.png)
 ![api-fuzzer-start-report](https://cloud.githubusercontent.com/assets/4301109/13615236/5d8df210-e59a-11e5-827a-ccf642e96609.png)
 
-##Credits
+## Credits
 * Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
 * Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
 * MindMac - For writing Android Blue Pill
