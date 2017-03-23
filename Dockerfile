@@ -3,7 +3,7 @@ FROM ubuntu:16.04
 MAINTAINER Ajin Abraham <ajin25@gmail.com>
 
 ENV PDFGEN_PKGFILE wkhtmltox-0.12.1_linux-trusty-amd64.deb
-ENV PDFGEN_URL http://download.gna.org/wkhtmltopdf/0.12/0.12.1/${PDFGEN_PKGFILE}
+ENV PDFGEN_URL https://downloads.wkhtmltopdf.org/0.12/0.12.1/${PDFGEN_PKGFILE}
 
 #Update the repository sources list
 RUN apt-get update -y
@@ -42,7 +42,7 @@ RUN \
     sqlite3 \
     fontconfig-config \
     libjpeg-turbo8 \
-    fontconfig
+    fontconfig 
 
 #Cleanup
 RUN rm -rf /var/lib/apt/lists/*
