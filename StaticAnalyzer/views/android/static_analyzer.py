@@ -58,6 +58,8 @@ from StaticAnalyzer.views.android.binary_analysis import (
     res_analysis,
 )
 
+from MalwareAnalyzer.views import apkid_analysis
+
 
 @register.filter
 def key(data, key_name):
@@ -147,6 +149,8 @@ def static_analyzer(request):
                     )
                     cert_dic = cert_info(
                         app_dic['app_dir'], app_dic['tools_dir'])
+                    apkid_results = apkid_analysis(app_dic[
+                              'app_dir'])
                     dex_2_jar(app_dic['app_path'], app_dic[
                               'app_dir'], app_dic['tools_dir'])
                     dex_2_smali(app_dic['app_dir'], app_dic['tools_dir'])
@@ -179,7 +183,8 @@ def static_analyzer(request):
                                 man_an_dic,
                                 code_an_dic,
                                 cert_dic,
-                                bin_an_buff
+                                bin_an_buff,
+                                apkid_results,
                             )
                         elif rescan == '0':
                             print "\n[INFO] Saving to Database"
@@ -189,7 +194,8 @@ def static_analyzer(request):
                                 man_an_dic,
                                 code_an_dic,
                                 cert_dic,
-                                bin_an_buff
+                                bin_an_buff,
+                                apkid_results,
                             )
                     except:
                         PrintException("[ERROR] Saving to Database Failed")
@@ -199,7 +205,8 @@ def static_analyzer(request):
                         man_an_dic,
                         code_an_dic,
                         cert_dic,
-                        bin_an_buff
+                        bin_an_buff,
+                        apkid_results,
                     )
                 template = "static_analysis/static_analysis.html"
                 return render(request, template, context)
@@ -281,7 +288,8 @@ def static_analyzer(request):
                                     man_an_dic,
                                     code_an_dic,
                                     cert_dic,
-                                    bin_an_buff
+                                    bin_an_buff,
+                                    {},
                                 )
                             elif rescan == '0':
                                 print "\n[INFO] Saving to Database"
@@ -291,7 +299,8 @@ def static_analyzer(request):
                                     man_an_dic,
                                     code_an_dic,
                                     cert_dic,
-                                    bin_an_buff
+                                    bin_an_buff,
+                                    {},
                                 )
                         except:
                             PrintException("[ERROR] Saving to Database Failed")
@@ -301,7 +310,8 @@ def static_analyzer(request):
                             man_an_dic,
                             code_an_dic,
                             cert_dic,
-                            bin_an_buff
+                            bin_an_buff,
+                            {},
                         )
                     else:
                         return HttpResponseRedirect('/zip_format/')

@@ -21,7 +21,7 @@ from install.windows.setup import windows_config_local
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v0.9.4.2 Beta"
+MOBSF_VER = "v0.9.4.3 Beta"
 BANNER = """
   __  __       _    ____  _____        ___   ___  _  _   
  |  \/  | ___ | |__/ ___||  ___|_   __/ _ \ / _ \| || |  
@@ -360,6 +360,17 @@ else:
     '''
     PYTHON3_PATH = ""
     #==============================================
+
+    #========DISABLED COMPONENTS===================
+    #----------APKiD-------------------------------
+    APKID_ENABLED = False
+    # Before setting APKID_ENABLED to True,
+    # Install rednaga fork of Yara Python
+    # git clone https://github.com/rednaga/yara-python
+    # cd yara-python
+    # python setup.py install
+    #==============================================
+
     #================WINDOWS-Analysis-Settings ====
 
     # Private key if rpc server is needed

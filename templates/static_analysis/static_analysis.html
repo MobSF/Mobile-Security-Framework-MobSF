@@ -14,6 +14,7 @@
             <li><a href="#certificate"><i class="fa fa-certificate"></i> Signer Certificate</a></li>
             <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissions</a></li>
             <li><a href="#binary_analysis"><i class="fa fa-flag"></i> Binary Analysis</a></li>
+            <li><a href="#malware_analysis"><i class="fa fa-bug"></i> Malware Analysis</a></li>
             <li><a href="#android-api"><i class="fa fa-dot-circle-o"></i> Android API</a></li>
             <li><a href="#browsable"><i class="fa fa-clone"></i> Browsable Activities</a></li>
 
@@ -479,6 +480,134 @@ Production ready applications should not be signed with 'Android Debug' Certific
 </section>
 <!-- ============================================================= -->
 
+
+<section id="malware_analysis">
+  <h2 class="page-header"></h2>
+  <!-- /.box -->
+
+          <div class="box">
+          <div class="box-header">
+             <!-- /.box-header -->
+              <h3 class="box-title"><i class="fa fa-bug"></i> DEX Malware Analysis</h3>
+            </div>
+          <div class="box-body no-padding">
+             <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ANTI-VM</th>
+                                                <th>COMPILER</th>
+                                                <th>OBFUSCATOR</th>
+                                                <th>PACKER</th>
+                                                <th>DROPPER</th>
+                                                <th>ANTI-ASSEMBLY</th>
+                                                <th>ABNORMAL PATTERN</th>
+                                                
+                                            </tr>
+                                        </thead>
+
+
+                                        <tbody>
+                     
+            
+                      
+                       <tr>
+                       {% if apkid|key:"apkid_version" %}
+                        <td>
+                            {% if apkid|key:"anti_vm" == "" %}
+                              <span class="label label-info">No Anti-VM Code</span>
+                            {% else %}
+                              <span class="label label-info">Anti-VM Code Found</span></br>
+                              {% for cmp in apkid|key:"anti_vm" %}
+                               {{cmp}}</br>
+                              {% endfor %}
+                            {% endif %}
+
+                        </td>
+                  
+                        <td>
+                          {% if apkid|key:"compiler" == "" %}
+                              <span class="label label-info">Cannot Identify Compiler</span>
+                            {% else %}
+                               <span class="label label-info">Compiler Found</span></br>
+                              {% for cmp in apkid|key:"compiler" %}
+                               {{cmp}}</br>
+                              {% endfor %}
+                            {% endif %}
+                        </td>
+                 
+                        <td>
+                          {% if apkid|key:"obfuscator" == "" %}
+                              <span class="label label-info">No Obfuscator Found</span>
+                            {% else %}
+                              <span class="label label-info">Obfuscator Found</span></br>
+                              {% for cmp in apkid|key:"obfuscator" %}
+                               {{cmp}}</br>
+                              {% endfor %}
+                            {% endif %}
+                        </td>
+
+                        <td>
+                          {% if apkid|key:"packer" == "" %}
+                              <span class="label label-success">No Packer Found</span>
+                            {% else %}
+                              <span class="label label-danger">Packer Found</span></br>
+                              {% for cmp in apkid|key:"packer" %}
+                               {{cmp}}</br>
+                              {% endfor %}
+                            {% endif %}
+                        </td>
+
+                        <td>
+                          {% if apkid|key:"dropper" == "" %}
+                              <span class="label label-success">No Dropper Found</span>
+                            {% else %}
+                             <span class="label label-danger">Dropper Found</span></br>
+                              {% for cmp in apkid|key:"dropper" %}
+                               {{cmp}}</br>
+                              {% endfor %}
+                            {% endif %}
+                        </td>
+
+                        <td>
+                          {% if apkid|key:"anti_disassembly" == "" %}
+                              <span class="label label-success">No Anti-Disassembly Code</span>
+                            {% else %}
+                              <span class="label label-danger">Anti-Disassembly Code Found</span></br>
+                              {% for cmp in apkid|key:"anti_disassembly" %}
+                               {{cmp}}</br>
+                              {% endfor %}
+                          {% endif %}
+                        </td>
+
+                        <td>
+                          {% if apkid|key:"abnormal" == "" %}
+                              <span class="label label-success">No Abnormal Pattern Found</span>
+                            {% else %}
+                              <span class="label label-danger">Abnormal Pattern Found</span></br>
+                              {% for cmp in apkid|key:"abnormal" %}
+                               {{cmp}}</br>
+                              {% endfor %}
+                            {% endif %}
+                        </td>
+                         {% endif %}
+                      </tr>
+       
+                    </tbody>
+                    </table>
+                    <div class="box-body">
+                      {% if apkid|key:"apkid_version" %}
+                       <strong> APKiD: </strong>{{ apkid|key:"apkid_version" }}
+                      {% endif %}
+                      </div>
+                  </div>
+       
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+</section>
+<!-- ============================================================= -->
 
 
 <section id="android-api">
