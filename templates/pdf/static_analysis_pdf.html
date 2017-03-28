@@ -242,6 +242,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                                 <th>OBFUSCATOR</th>
                                                 <th>PACKER</th>
                                                 <th>DROPPER</th>
+                                                <th>MANIPULATOR</th>
                                                 <th>ANTI-ASSEMBLY</th>
                                                 <th>ABNORMAL PATTERN</th>
                                                 
@@ -306,6 +307,17 @@ Production ready applications should not be signed with 'Android Debug' Certific
                             {% else %}
                              <span class="label label-danger">Dropper Found</span></br>
                               {% for cmp in apkid|key:"dropper" %}
+                               {{cmp}}</br>
+                              {% endfor %}
+                            {% endif %}
+                        </td>
+
+                        <td>
+                          {% if apkid|key:"manipulator" == "" %}
+                              <span class="label label-info">No Manipulator Found</span>
+                            {% else %}
+                             <span class="label label-info">Manipulator Found</span></br>
+                              {% for cmp in apkid|key:"manipulator" %}
                                {{cmp}}</br>
                               {% endfor %}
                             {% endif %}
