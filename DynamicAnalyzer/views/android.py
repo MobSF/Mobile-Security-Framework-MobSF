@@ -1044,9 +1044,9 @@ def View(request):
                     rtyp = 'xml'
                 elif typ == 'db':
                     dat = HandleSqlite(sfile)
-                    rtyp = 'plain'
+                    rtyp = 'asciidoc'
                 elif typ == 'others':
-                    rtyp = 'plain'
+                    rtyp = 'asciidoc'
                 else:
                     return HttpResponseRedirect('/error/')
                 context = {'title': escape(ntpath.basename(fil)), 'file': escape(

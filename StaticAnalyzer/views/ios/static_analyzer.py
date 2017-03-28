@@ -90,10 +90,10 @@ def view_file(request):
                     with io.open(sfile, mode='r', encoding="utf8", errors="ignore") as flip:
                         dat = flip.read()
                 elif typ == 'db':
-                    file_format = 'plain'
+                    file_format = 'asciidoc'
                     dat = read_sqlite(sfile)
                 elif typ == 'txt' and fil == "classdump.txt":
-                    file_format = 'plain'
+                    file_format = 'cpp'
                     app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
                     cls_dump_file = os.path.join(app_dir, "classdump.txt")
                     if isFileExists(cls_dump_file):
