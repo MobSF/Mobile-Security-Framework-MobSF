@@ -15,6 +15,7 @@ import threading
 import base64
 import sqlite3 as sq
 import platform
+import io
 
 from django.shortcuts import render
 from django.conf import settings
@@ -85,10 +86,10 @@ def duplicateAVD(avd_path, reference_name, dup_name):
             os.path.join(dup_avd, 'hardware-qemu.ini'),
             os.path.join(dup_avd, 'config.ini')
         ]:
-            with open(path_to_update, 'r') as fd:
+            with io.open(path_to_update, 'r') as fd:
                 replaced_file = fd.read()
                 replaced_file = replaced_file.replace(reference_name, dup_name)
-            with open(path_to_update, 'w') as fd:
+            with io.open(path_to_update, 'w') as fd:
                 fd.write(replaced_file)
     except:
         PrintException("[ERROR] Duplicating MobSF Emulator")
@@ -297,7 +298,10 @@ def GetEnv(request):
                     DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
                 adb = getADB(TOOLS_DIR)
                 DWD_DIR = settings.DWD_DIR
-                PROXY_IP = settings.PROXY_IP  # Proxy IP
+                if settings.AVD:
+                    PROXY_IP = '127.0.0.1'
+                else:
+                    PROXY_IP = settings.PROXY_IP  # Proxy IP
                 PORT = str(settings.PORT)  # Proxy Port
                 WebProxy(APP_DIR, PROXY_IP, PORT)
                 # AVD only needs to wait, vm needs the connect function
@@ -366,7 +370,10 @@ def ScreenCast(request):
             TOOLSDIR = os.path.join(
                 settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
             adb = getADB(TOOLSDIR)
-            IP = settings.SCREEN_IP
+            if settings.AVD:
+                IP = '10.0.2.2'
+            else:
+                IP = settings.SCREEN_IP
             PORT = str(settings.SCREEN_PORT)
             if mode == "on":
                 args = [adb, "-s", getIdentifier(), "shell", "am", "startservice",
@@ -1272,7 +1279,10 @@ def ScreenCastService():
         s = socket.socket()
         if tcp_server_mode == "on":
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            ADDR = (settings.SCREEN_IP, settings.SCREEN_PORT)
+            if settings.AVD:
+                ADDR = ('127.0.0.1', settings.SCREEN_PORT)
+            else:
+                ADDR = (settings.SCREEN_IP, settings.SCREEN_PORT)
             s.bind(ADDR)
             s.listen(10)
             while (tcp_server_mode == "on"):
@@ -1282,7 +1292,7 @@ def ScreenCastService():
                     IP = settings.DEVICE_IP
                 else:
                     IP = settings.VM_IP
-                if address[0] == IP:
+                if address[0] in [IP, '127.0.0.1']:
                     '''
                     Very Basic Check to ensure that only MobSF VM/Device is allowed to connect
                     to MobSF ScreenCast Service.
