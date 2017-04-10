@@ -74,7 +74,7 @@ def guess_android_sdk_folder():
 
     elif system == 'Windows':
         username = getpass.getuser()
-        first_guess = os.path.join('C:\\Users', username, 'AppData\\Local\\Android')
+        first_guess = os.path.join('C:\\Users', username, 'AppData\\Local\\Android\\sdk')
         if os.path.exists(first_guess):
             return first_guess
 
@@ -90,7 +90,7 @@ def find_emulator_binary(sdk):
             return guess
 
     elif system == 'Windows':
-        guess = os.path.join(sdk, 'tools', 'emulator.exe')
+        guess = os.path.join(sdk, 'emulator', 'emulator.exe')
         if os.path.exists(guess):
             return guess
 
@@ -113,7 +113,7 @@ def find_adb_binary(sdk):
     return False
 
 
-def find_skin():
+def find_skin(sdk):
     # Just a basic check
     system = platform.system()
 
@@ -121,24 +121,12 @@ def find_skin():
         guess = r'/Applications/Android Studio.app/Contents/plugins/android/lib/device-art-resources/nexus_5'
         if os.path.exists(guess):
             return guess
-
-    elif system == 'Linux':
-        # TODO
-        pass
-
-    elif system == 'Windows':
-        try:
-            program_files_64 =  os.path.join(os.environ["ProgramFiles"], r'\Android\Android Studio\plugins\android\lib\device-art-resources\nexus_5')
-        except:
-            program_files_64 = ''
-        try:
-            program_files_32 =  os.path.join(os.environ["ProgramFiles(x86)"], r'\Android\Android Studio\plugins\android\lib\device-art-resources\nexus_5')
-        except:
-            program_files_32 = ''
-
-        for path in [program_files_32, program_files_64]:
-            if os.path.exists(path):
-                return path
+            
+    elif system in ['Windows', 'Linux']:
+        guess = os.path.join(sdk, 'skins', 'nexus_5')
+        if os.path.exists(guess):
+            return guess
+            
     return False
 
 
@@ -203,8 +191,7 @@ def main():
     if not os.path.exists(settings_py):
         settings_py = verify_path('MobSF/settings.py file')
 
-    # Don't really care about the skin but make a basic check..
-    skin_path = find_skin()
+    skin_path = find_skin(sdk_path)
     if not skin_path:
         skin_path = ''
 
@@ -255,10 +242,10 @@ def main():
     })
 
     replace_all_occurations_in_file(settings_py, {
-        'avd_path'       : avd_path,
-        'avd_emulator'   : emulator_binary,
-        'ADB_BINARY = ""': 'ADB_BINARY = "' + adb_path + '"',
-        'AVD = False'    : 'AVD = True'
+        '\'avd_path'       : 'r\'' + avd_path,
+        '\'avd_emulator'   : 'r\'' + emulator_binary,
+        'ADB_BINARY = ""'  : 'ADB_BINARY = r"' + adb_path + '"',
+        'AVD = False'      : 'AVD = True'
     })
 
     print "\n\nAll Done! you can now use MobSF AVD Emulator :)\n\n"
