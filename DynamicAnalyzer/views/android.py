@@ -14,6 +14,8 @@ import socket
 import threading
 import base64
 import sqlite3 as sq
+import platform
+import io
 
 from django.shortcuts import render
 from django.conf import settings
@@ -41,6 +43,186 @@ tcp_server_mode = "off"  # ScreenCast TCP Service Status
 def key(d, key_name):
     return d.get(key_name)
 
+def stopAVD(adb):
+    print "\n[INFO] Stopping MobSF Emulator"
+    try:
+        # adb -s emulator-xxxx emu kill
+        args = [adb, '-s', getIdentifier(), 'emu', 'kill']
+        subprocess.call(args)
+    except:
+        PrintException("[ERROR] Stopping MobSF Emulator")
+
+
+def deleteAVD(avd_path, avd_name):
+    print "\n[INFO] Deleting emulator files"
+    try:
+        config_file = os.path.join(avd_path, avd_name + '.ini')
+        if os.path.exists(config_file):
+            os.remove(config_file)
+
+        # TODO: Sometimes there is an error here because of the locks that avd does - check this out
+        avd_folder = os.path.join(avd_path, avd_name + '.avd')
+        if os.path.isdir(avd_folder):
+            shutil.rmtree(avd_folder)
+    except:
+        PrintException("[ERROR] Deleting emulator files")
+
+
+def duplicateAVD(avd_path, reference_name, dup_name):
+    print "\n[INFO] Duplicating MobSF Emulator"
+    try:
+        reference_ini = os.path.join(avd_path, reference_name + '.ini')
+        dup_ini       = os.path.join(avd_path, dup_name + '.ini')
+        reference_avd = os.path.join(avd_path, reference_name + '.avd')
+        dup_avd       = os.path.join(avd_path, dup_name + '.avd')
+
+        # Copy the files from the referenve avd to the one-time analysis avd
+        shutil.copyfile(reference_ini, dup_ini)
+        shutil.copytree(reference_avd, dup_avd)
+
+        # Replacing every occuration of the reference avd name to the dup one
+        for path_to_update in [
+            dup_ini,
+            os.path.join(dup_avd, 'hardware-qemu.ini'),
+            os.path.join(dup_avd, 'config.ini')
+        ]:
+            with io.open(path_to_update, 'r') as fd:
+                replaced_file = fd.read()
+                replaced_file = replaced_file.replace(reference_name, dup_name)
+            with io.open(path_to_update, 'w') as fd:
+                fd.write(replaced_file)
+    except:
+        PrintException("[ERROR] Duplicating MobSF Emulator")
+
+
+def startAVD(emulator, avd_name, emulator_port):
+    print "\n[INFO] Starting MobSF Emulator"
+    try:
+        args = [
+            emulator,
+            '-avd',
+            avd_name,
+            "-no-snapshot-save",
+            "-netspeed",
+            "full",
+            "-netdelay",
+            "none",
+            "-port",
+            str(emulator_port),
+        ]
+
+        if platform.system() == 'Darwin':
+            # There is a strage error in mac with the dyld one in a while.. this should fix it..
+            if 'DYLD_FALLBACK_LIBRARY_PATH' in os.environ.keys():
+                del os.environ['DYLD_FALLBACK_LIBRARY_PATH']
+
+        subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        PrintException("[ERROR] Starting MobSF Emulator")
+
+
+def refreshAVD(adb, avd_path, reference_name, dup_name, emulator):
+    print "\n[INFO] Refreshing MobSF Emulator"
+    try:
+        # Stop existing emulator on the spesified port
+        stopAVD(adb)
+
+        # Delete old emulator
+        deleteAVD(avd_path, dup_name)
+
+        # Copy and replace the contents of the reference machine
+        duplicateAVD(avd_path, reference_name, dup_name)
+
+        #Start emulator
+        startAVD(emulator, dup_name, settings.AVD_ADB_PORT)
+    except:
+        PrintException("[ERROR] Refreshing MobSF VM")
+
+
+def avd_load_wait(adb):
+    try:
+        emulator = getIdentifier()
+
+        print "[INFO] Wait for emulator to load"
+        args = [adb,
+                "-s",
+                emulator,
+                "wait-for-device"]
+        subprocess.call(args)
+
+        print "[INFO] Wait for dev.boot_complete loop"
+        while True:
+            args = [adb,
+                    "-s",
+                    emulator,
+                    "shell",
+                    "getprop",
+                    "dev.bootcomplete"]
+            try:
+                result =  subprocess.check_output(args)
+            except:
+                result = None
+            if result is not None and result.strip() == "1":
+                break
+            else:
+                time.sleep(1)
+
+        print "[INFO] Wait for sys.boot_complete loop"
+        while True:
+            args = [adb,
+                    "-s",
+                    emulator,
+                    "shell",
+                    "getprop",
+                    "sys.boot_completed"]
+            try:
+                result =  subprocess.check_output(args)
+            except:
+                result = None
+            if result is not None and result.strip() == "1":
+                break
+            else:
+                time.sleep(1)
+
+        print "[INFO] Wait for svc.boot_complete loop"
+        while True:
+            args = [adb,
+                    "-s",
+                    emulator,
+                    "shell",
+                    "getprop",
+                    "init.svc.bootanim"]
+            try:
+                result =  subprocess.check_output(args)
+            except:
+                result = None
+            if result is not None and result.strip() == "stopped":
+                break
+            else:
+                time.sleep(1)
+        time.sleep(5)
+        return True
+    except:
+        PrintException("[ERROR] emulator did not boot properly")
+        return False
+
+def refreshAVD(adb, avd_path, reference_name, dup_name, emulator):
+    print "\n[INFO] Refreshing MobSF Emulator"
+    try:
+        # Stop existing emulator on the spesified port
+        stopAVD(adb)
+
+        # Delete old emulator
+        deleteAVD(avd_path, dup_name)
+
+        # Copy and replace the contents of the reference machine
+        duplicateAVD(avd_path, reference_name, dup_name)
+
+        #Start emulator
+        startAVD(emulator, dup_name, settings.AVD_ADB_PORT)
+    except:
+        PrintException("[ERROR] Refreshing MobSF VM")
+
 
 def DynamicAnalyzer(request):
 
@@ -66,8 +248,13 @@ def DynamicAnalyzer(request):
                     shutil.rmtree(SCRDIR)
                 # Start DM
                 Proxy("", "", "", "")
+                TOOLS_DIR = os.path.join(settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
+                adb = getADB(TOOLS_DIR)
                 if settings.REAL_DEVICE:
                     print "\n[INFO] MobSF will perform Dynamic Analysis on real Android Device"
+                elif settings.AVD:
+                    #adb, avd_path, reference_name, dup_name, emulator
+                    refreshAVD(adb, settings.AVD_PATH, settings.AVD_REFERENCE_NAME, settings.AVD_DUP_NAME, settings.AVD_EMULATOR)
                 else:
                     # Refersh VM
                     RefreshVM(settings.UUID, settings.SUUID, settings.VBOX)
@@ -109,11 +296,20 @@ def GetEnv(request):
                 APP_PATH = APP_DIR + APP_FILE  # APP PATH
                 TOOLS_DIR = os.path.join(
                     DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
+                adb = getADB(TOOLS_DIR)
                 DWD_DIR = settings.DWD_DIR
-                PROXY_IP = settings.PROXY_IP  # Proxy IP
+                if settings.AVD:
+                    PROXY_IP = '127.0.0.1'
+                else:
+                    PROXY_IP = settings.PROXY_IP  # Proxy IP
                 PORT = str(settings.PORT)  # Proxy Port
                 WebProxy(APP_DIR, PROXY_IP, PORT)
-                Connect(TOOLS_DIR)
+                # AVD only needs to wait, vm needs the connect function
+                if settings.AVD:
+                    if not avd_load_wait(adb):
+                        return HttpResponseRedirect('/error/')
+                else:
+                    Connect(TOOLS_DIR)
                 # Change True to support non-activity components
                 InstallRun(TOOLS_DIR, APP_PATH, PKG, LNCH, True)
                 SCREEN_WIDTH, SCREEN_HEIGHT = GetRes()
@@ -174,7 +370,10 @@ def ScreenCast(request):
             TOOLSDIR = os.path.join(
                 settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
             adb = getADB(TOOLSDIR)
-            IP = settings.SCREEN_IP
+            if settings.AVD:
+                IP = '10.0.2.2'
+            else:
+                IP = settings.SCREEN_IP
             PORT = str(settings.SCREEN_PORT)
             if mode == "on":
                 args = [adb, "-s", getIdentifier(), "shell", "am", "startservice",
@@ -412,8 +611,12 @@ def DumpData(request):
                 subprocess.call([adb, "-s", getIdentifier(),
                                  "shell", "rm", "/sdcard/mobsec_status"])
                 print "\n[INFO] Creating TAR of Application Files."
-                subprocess.call([adb, "-s", getIdentifier(), "shell", "am", "startservice",
-                                 "-a", PACKAGE, "opensecurity.ajin.datapusher/.GetPackageLocation"])
+                if settings.AVD:
+                    #" tar -cvf /data/local/"+pkg+".tar /data/data/"+pkg+"/",
+                    subprocess.call([adb, "-s", getIdentifier(), "shell", "/data/local/tmp/tar.sh", PACKAGE])
+                else:
+                    subprocess.call([adb, "-s", getIdentifier(), "shell", "am", "startservice",
+                                     "-a", PACKAGE, "opensecurity.ajin.datapusher/.GetPackageLocation"])
                 print "\n[INFO] Waiting for TAR dump to complete..."
                 if settings.REAL_DEVICE:
                     timeout = settings.DEVICE_TIMEOUT
@@ -541,7 +744,11 @@ def ActivityTester(request):
                                 print "\n[INFO] Launching Activity - " + str(n) + ". " + line
                                 subprocess.call(
                                     [adb, "-s", getIdentifier(), "shell", "am", "start", "-n", PKG + "/" + line])
-                                Wait(4)
+                                # AVD is much slower, it should get extra time
+                                if settings.AVD:
+                                    Wait(6)
+                                else:
+                                    Wait(4)
                                 subprocess.call(
                                     [adb, "-s", getIdentifier(), "shell", "screencap", "-p", "/data/local/screen.png"])
                                 #? get appended from Air :-() if activity names are used
@@ -1072,7 +1279,10 @@ def ScreenCastService():
         s = socket.socket()
         if tcp_server_mode == "on":
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            ADDR = (settings.SCREEN_IP, settings.SCREEN_PORT)
+            if settings.AVD:
+                ADDR = ('127.0.0.1', settings.SCREEN_PORT)
+            else:
+                ADDR = (settings.SCREEN_IP, settings.SCREEN_PORT)
             s.bind(ADDR)
             s.listen(10)
             while (tcp_server_mode == "on"):
@@ -1082,9 +1292,9 @@ def ScreenCastService():
                     IP = settings.DEVICE_IP
                 else:
                     IP = settings.VM_IP
-                if address[0] == IP:
+                if address[0] in [IP, '127.0.0.1']:
                     '''
-                    Very Basic Check to ensure that only MobSF VM/Device is allowed to connect 
+                    Very Basic Check to ensure that only MobSF VM/Device is allowed to connect
                     to MobSF ScreenCast Service.
                     '''
                     with open(SCREEN_DIR + 'screen.png', 'wb') as f:
@@ -1134,6 +1344,8 @@ def getIdentifier():
     try:
         if settings.REAL_DEVICE:
             return settings.DEVICE_IP + ":" + str(settings.DEVICE_ADB_PORT)
+        elif settings.AVD:
+            return 'emulator-' + str(settings.AVD_ADB_PORT)
         else:
             return settings.VM_IP + ":" + str(settings.VM_ADB_PORT)
     except:
