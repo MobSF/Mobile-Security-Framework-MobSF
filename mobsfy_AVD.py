@@ -75,7 +75,8 @@ def guess_android_sdk_folder():
 
     elif system == 'Windows':
         username = getpass.getuser()
-        first_guess = os.path.join('C:\\Users', username, 'AppData\\Local\\Android\\sdk')
+        first_guess = os.path.join(
+            'C:\\Users', username, 'AppData\\Local\\Android\\sdk')
         if os.path.exists(first_guess):
             return first_guess
 
@@ -122,23 +123,25 @@ def find_skin(sdk):
         guess = r'/Applications/Android Studio.app/Contents/plugins/android/lib/device-art-resources/nexus_5'
         if os.path.exists(guess):
             return guess
-            
+
     elif system in ['Windows', 'Linux']:
         guess = os.path.join(sdk, 'skins', 'nexus_5')
         if os.path.exists(guess):
             return guess
-            
+
     return False
 
 
-# path to modify, replace dict = {'content_to_replace1': 'value_to_replace1', 'content_to_replace2': 'value_to_replace2'}
+# path to modify, replace dict = {'content_to_replace1':
+# 'value_to_replace1', 'content_to_replace2': 'value_to_replace2'}
 def replace_all_occurations_in_file(path, replace_dict):
-        with io.open(path, 'r') as fd:
-            replaced_file = fd.read()
-            for what_to_replace in replace_dict.keys():
-                replaced_file = replaced_file.replace(what_to_replace, replace_dict[what_to_replace])
-        with io.open(path, 'w') as fd:
-            fd.write(replaced_file)
+    with io.open(path, 'r') as fd:
+        replaced_file = fd.read()
+        for what_to_replace in replace_dict.keys():
+            replaced_file = replaced_file.replace(
+                what_to_replace, replace_dict[what_to_replace])
+    with io.open(path, 'w') as fd:
+        fd.write(replaced_file)
 
 
 def main():
@@ -153,16 +156,17 @@ def main():
     print_log('Starting MobSF - AVD interactive configuration script')
     print_log('Make sure to run this script ONLY after you successfuly installed leatest AndroidStudio & downloaded MobSF_ARM_Emulator.zip')
 
-
-    ################## First gather all the paths needed to make to copy operations ###############
+    # First gather all the paths needed to make to copy opera
 
     print_log('Please specify the path to MOBSF_ARM_Emulator extracted folder')
     mobsf_arm_folder = verify_path('MobSF_ARM_Emulator folder')
 
-    # Give the user the ability to change the sdk and avd folder, let me guess the other tools
+    # Give the user the ability to change the sdk and avd folder, let me guess
+    # the other tools
     guessd_sdk_path = guess_android_sdk_folder()
     if guessd_sdk_path:
-        user_approve = raw_input("Guessing Android sdk path: " + guessd_sdk_path + '\n Press Enter/alternative path')
+        user_approve = raw_input(
+            "Guessing Android sdk path: " + guessd_sdk_path + '\n Press Enter/alternative path')
         if user_approve.strip() == '':
             sdk_path = guessd_sdk_path
         elif os.path.exists(user_approve):
@@ -172,7 +176,8 @@ def main():
 
     guessd_avd_path = guess_android_avd_folder()
     if guessd_avd_path:
-        user_approve = raw_input("Guessing Android AVD folder: " + guessd_avd_path + '\n Press Enter/alternative path')
+        user_approve = raw_input(
+            "Guessing Android AVD folder: " + guessd_avd_path + '\n Press Enter/alternative path')
         if user_approve.strip() == '':
             avd_path = guessd_avd_path
         elif os.path.exists(user_approve):
@@ -198,33 +203,38 @@ def main():
 
     print_log('Finished finding all the paths needed')
 
-
-    ################## Copy the downloaded emulator and system image ####################
-
+    ################## Copy the downloaded emulator and system image #########
 
     emulator_avd = os.path.join(mobsf_arm_folder, 'Nexus5API16.avd')
     emulator_ini = os.path.join(mobsf_arm_folder, 'Nexus5API16.ini')
     new_emulator_avd = os.path.join(avd_path, 'Nexus5API16.avd')
     new_emulator_ini = os.path.join(avd_path, 'Nexus5API16.ini')
     print_log('Copying emulator files to avd folder: ' + avd_path)
-    shutil.copyfile(emulator_ini, new_emulator_ini)
-    shutil.copytree(emulator_avd, new_emulator_avd)
-
+    if is_file_exists(new_emulator_ini):
+        print_log("Emulator INI already exists")
+    else:
+        shutil.copyfile(emulator_ini, new_emulator_ini)
+    if os.path.isdir(avd_path):
+        print_log("Emulator AVD already exists")
+    else:
+        shutil.copytree(emulator_avd, new_emulator_avd)
     system_images = os.path.join(sdk_path, 'system-images')
     xposed_image_path = os.path.join(system_images, 'Xposed-android-16')
-    downloaded_xposed_image = os.path.join(mobsf_arm_folder, 'Xposed-android-16')
-    shutil.copytree(downloaded_xposed_image, xposed_image_path)
+    downloaded_xposed_image = os.path.join(
+        mobsf_arm_folder, 'Xposed-android-16')
+    if os.path.isdir(xposed_image_path):
+        print_log("Xposed image already exists")
+    else:
+        shutil.copytree(downloaded_xposed_image, xposed_image_path)
 
-
-
-    ################## Modify all the config files #######################################
+    ################## Modify all the config files ###########################
 
     print_log('Modifying config files')
 
     # Nexus5API16.ini
     replace_all_occurations_in_file(new_emulator_ini, {
         '[path_of_avd]': new_emulator_avd,
-        '[skin_path]'  : skin_path
+        '[skin_path]': skin_path
     })
 
     # Nexus5API16.avd/config.ini
@@ -234,23 +244,27 @@ def main():
 
     # Nexus5API16.avd/hardware-qemu.ini
     replace_all_occurations_in_file(os.path.join(new_emulator_avd, 'hardware-qemu.ini'), {
-        '[sdcard]'        : os.path.join(new_emulator_avd, 'sdcard.img'),
-        '[cache]'         : os.path.join(new_emulator_avd, 'cache.img'),
-        '[kernel_path]'   : os.path.join(xposed_image_path, 'kernel-qemu'),
-        '[ramdisk]'       : os.path.join(xposed_image_path, 'ramdisk.img'),
-        '[system_image]'  : os.path.join(xposed_image_path, 'system.img'),
+        '[sdcard]': os.path.join(new_emulator_avd, 'sdcard.img'),
+        '[cache]': os.path.join(new_emulator_avd, 'cache.img'),
+        '[kernel_path]': os.path.join(xposed_image_path, 'kernel-qemu'),
+        '[ramdisk]': os.path.join(xposed_image_path, 'ramdisk.img'),
+        '[system_image]': os.path.join(xposed_image_path, 'system.img'),
         '[data_partition]': os.path.join(new_emulator_avd, 'userdata.img'),
     })
 
     replace_all_occurations_in_file(settings_py, {
-        '\'avd_path'       : 'r\'' + avd_path,
-        '\'avd_emulator'   : 'r\'' + emulator_binary,
-        'ADB_BINARY = ""'  : 'ADB_BINARY = r"' + adb_path + '"',
-        'AVD = False'      : 'AVD = True'
+        '\'avd_path': 'r\'' + avd_path,
+        '\'avd_emulator': 'r\'' + emulator_binary,
+        'ADB_BINARY = ""': 'ADB_BINARY = r"' + adb_path + '"',
+        'AVD = False': 'AVD = True'
     })
 
     print "\n\nAll Done! you can now use MobSF AVD Emulator :)\n\n"
 
+
+def is_file_exists(file_path):
+    """Check if File Exists"""
+    return bool(os.path.isfile(file_path))
 
 if __name__ == '__main__':
     sys.exit(main())
