@@ -27,6 +27,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 * [Ajin Abraham](https://in.linkedin.com/in/ajinabraham)
 * [Dominik Schlecht](https://github.com/DominikSchlecht)
+* [Matan Dobrushin](https://github.com/matandobr)
 
 ## Presentations
 * OWASP APPSEC EU 2016 - [Slides](http://www.slideshare.net/ajin25/automated-mobile-application-security-assessment-with-mobsf) | [Video](https://www.youtube.com/watch?v=h00v1euuFXg)
@@ -74,6 +75,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ## Credits
 * Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
+* Matan Dobrushin - For adding Android ARM Emulator support to MobSF
 * Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
 * MindMac - For writing Android Blue Pill
 * Thomas Abraham - For JS Hacks on UI.
