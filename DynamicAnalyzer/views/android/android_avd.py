@@ -18,8 +18,9 @@ def stop_avd(adb):
     print "\n[INFO] Stopping MobSF Emulator"
     try:
         # adb -s emulator-xxxx emu kill
+        FNULL = open(os.devnull, 'w')
         args = [adb, '-s', get_identifier(), 'emu', 'kill']
-        subprocess.call(args)
+        subprocess.call(args, stderr=FNULL)
     except:
         PrintException("[ERROR] Stopping MobSF Emulator")
 

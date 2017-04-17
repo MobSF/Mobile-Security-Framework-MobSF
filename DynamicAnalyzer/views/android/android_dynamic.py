@@ -28,6 +28,9 @@ from DynamicAnalyzer.views.android.android_avd import (
     avd_load_wait,
     refresh_avd
 )
+from DynamicAnalyzer.views.android.android_virtualbox_vm import (
+    refresh_vm
+)
 from DynamicAnalyzer.views.android.android_dyn_shared import (
     connect,
     install_and_run,
@@ -35,9 +38,6 @@ from DynamicAnalyzer.views.android.android_dyn_shared import (
     get_res,
     get_identifier,
     wait,
-)
-from DynamicAnalyzer.views.android.android_virtualbox_vm import (
-    refresh_vm
 )
 from MobSF.utils import PrintException, is_number, python_list, isBase64, getADB
 from MalwareAnalyzer.views import MalwareCheck
@@ -83,6 +83,8 @@ def android_dynamic_analyzer(request):
                     settings.UPLD_DIR, md5_hash + '/screenshots-apk/')
                 if os.path.isdir(screen_dir):
                     shutil.rmtree(screen_dir)
+                else:
+                    os.makedirs(screen_dir)
                 # Start DM
                 Proxy("", "", "", "")
                 toolsdir = os.path.join(
