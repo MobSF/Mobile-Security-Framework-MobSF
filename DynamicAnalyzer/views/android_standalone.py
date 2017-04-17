@@ -2,28 +2,34 @@
 Standalone Android Dynamic Analysis
 """
 # -*- coding: utf_8 -*-
+import os
+import subprocess
 from django.shortcuts import render
 from django.conf import settings
-from django.http import HttpResponseRedirect, HttpResponse
-from django.utils.html import escape
-from DynamicAnalyzer.views.android import RefreshVM, getADB, getIdentifier, Connect
-from DynamicAnalyzer.pyWebProxy.pywebproxy import *
+from DynamicAnalyzer.views.android.android_virtualbox_vm import (
+    refresh_vm
+)
+from DynamicAnalyzer.views.android.android_dyn_shared import (
+    connect,
+    get_identifier,
+)
+from DynamicAnalyzer.pyWebProxy.pywebproxy import Proxy
+from MobSF.utils import getADB
 
-import subprocess
 
-
-def DynamicAnalyzer(request):
+def dynamic_analyzer_standalone(request):
+    """Standalone Dynamic Analysis"""
     print "\n[INFO] Starting Standalone Android Dynamic Analyzer"
-    TOOLS_DIR = os.path.join(
+    toolsdir = os.path.join(
         settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
     Proxy("", "", "", "")
     if settings.REAL_DEVICE:
         print "\n[INFO] MobSF will perform Dynamic Analysis on real Android Device"
     else:
         # Refersh VM
-        RefreshVM(settings.UUID, settings.SUUID, settings.VBOX)
-    Connect(TOOLS_DIR)
-    print GetPackages(TOOLS_DIR)
+        refresh_vm(settings.UUID, settings.SUUID, settings.VBOX)
+    connect(toolsdir)
+    print get_packages(toolsdir)
     context = {'md5': '',
                'pkg': '',
                'lng': '',
@@ -32,9 +38,10 @@ def DynamicAnalyzer(request):
     return render(request, template, context)
 
 
-def GetPackages(TOOLSDIR):
-    adb = getADB(TOOLSDIR)
-    args = [adb, "-s", getIdentifier(), "shell", "ls", "/data/data"]
+def get_packages(toolsdir):
+    """Get List of Pacakges"""
+    adb = getADB(toolsdir)
+    args = [adb, "-s", get_identifier(), "shell", "ls", "/data/data"]
     # prolly a better way to get packages is needed
     try:
         return subprocess.check_output(args)
