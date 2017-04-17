@@ -28,6 +28,7 @@ def execute_cmd(args, ret=False):
 
 def verify_path(help_msg):
     path = raw_input(help_msg + ': ')
+    path = path.strip()
     while not os.path.exists(path):
         print_log('Path specified does not exists \ no access', 'ERROR')
         path = raw_input(help_msg)
