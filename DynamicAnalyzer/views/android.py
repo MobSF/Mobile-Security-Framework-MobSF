@@ -42,6 +42,7 @@ tcp_server_mode = "off"  # ScreenCast TCP Service Status
 def key(d, key_name):
     return d.get(key_name)
 
+
 def stopAVD(adb):
     print "\n[INFO] Stopping MobSF Emulator"
     try:
@@ -59,7 +60,8 @@ def deleteAVD(avd_path, avd_name):
         if os.path.exists(config_file):
             os.remove(config_file)
 
-        # TODO: Sometimes there is an error here because of the locks that avd does - check this out
+        # TODO: Sometimes there is an error here because of the locks that avd
+        # does - check this out
         avd_folder = os.path.join(avd_path, avd_name + '.avd')
         if os.path.isdir(avd_folder):
             shutil.rmtree(avd_folder)
@@ -71,9 +73,9 @@ def duplicateAVD(avd_path, reference_name, dup_name):
     print "\n[INFO] Duplicating MobSF Emulator"
     try:
         reference_ini = os.path.join(avd_path, reference_name + '.ini')
-        dup_ini       = os.path.join(avd_path, dup_name + '.ini')
+        dup_ini = os.path.join(avd_path, dup_name + '.ini')
         reference_avd = os.path.join(avd_path, reference_name + '.avd')
-        dup_avd       = os.path.join(avd_path, dup_name + '.avd')
+        dup_avd = os.path.join(avd_path, dup_name + '.avd')
 
         # Copy the files from the referenve avd to the one-time analysis avd
         shutil.copyfile(reference_ini, dup_ini)
@@ -85,10 +87,10 @@ def duplicateAVD(avd_path, reference_name, dup_name):
             os.path.join(dup_avd, 'hardware-qemu.ini'),
             os.path.join(dup_avd, 'config.ini')
         ]:
-            with open(path_to_update, 'r') as fd:
+            with io.open(path_to_update, 'r') as fd:
                 replaced_file = fd.read()
                 replaced_file = replaced_file.replace(reference_name, dup_name)
-            with open(path_to_update, 'w') as fd:
+            with io.open(path_to_update, 'w') as fd:
                 fd.write(replaced_file)
     except:
         PrintException("[ERROR] Duplicating MobSF Emulator")
@@ -132,7 +134,7 @@ def refreshAVD(adb, avd_path, reference_name, dup_name, emulator):
         # Copy and replace the contents of the reference machine
         duplicateAVD(avd_path, reference_name, dup_name)
 
-        #Start emulator
+        # Start emulator
         startAVD(emulator, dup_name, settings.AVD_ADB_PORT)
     except:
         PrintException("[ERROR] Refreshing MobSF VM")
@@ -175,7 +177,7 @@ def avd_load_wait(adb):
                     "getprop",
                     "sys.boot_completed"]
             try:
-                result =  subprocess.check_output(args)
+                result = subprocess.check_output(args)
             except:
                 result = None
             if result is not None and result.strip() == "1":
@@ -192,7 +194,7 @@ def avd_load_wait(adb):
                     "getprop",
                     "init.svc.bootanim"]
             try:
-                result =  subprocess.check_output(args)
+                result = subprocess.check_output(args)
             except:
                 result = None
             if result is not None and result.strip() == "stopped":
@@ -217,7 +219,7 @@ def refreshAVD(adb, avd_path, reference_name, dup_name, emulator):
         # Copy and replace the contents of the reference machine
         duplicateAVD(avd_path, reference_name, dup_name)
 
-        #Start emulator
+        # Start emulator
         startAVD(emulator, dup_name, settings.AVD_ADB_PORT)
     except:
         PrintException("[ERROR] Refreshing MobSF VM")
@@ -252,7 +254,7 @@ def DynamicAnalyzer(request):
                 if settings.REAL_DEVICE:
                     print "\n[INFO] MobSF will perform Dynamic Analysis on real Android Device"
                 elif settings.AVD:
-                    #adb, avd_path, reference_name, dup_name, emulator
+                    # adb, avd_path, reference_name, dup_name, emulator
                     refreshAVD(adb, settings.AVD_PATH, settings.AVD_REFERENCE_NAME, settings.AVD_DUP_NAME, settings.AVD_EMULATOR)
                 else:
                     # Refersh VM
@@ -297,7 +299,10 @@ def GetEnv(request):
                     DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
                 adb = getADB(TOOLS_DIR)
                 DWD_DIR = settings.DWD_DIR
-                PROXY_IP = settings.PROXY_IP  # Proxy IP
+                if settings.AVD:
+                    PROXY_IP = '127.0.0.1'
+                else:
+                    PROXY_IP = settings.PROXY_IP  # Proxy IP
                 PORT = str(settings.PORT)  # Proxy Port
                 WebProxy(APP_DIR, PROXY_IP, PORT)
                 # AVD only needs to wait, vm needs the connect function
@@ -366,7 +371,10 @@ def ScreenCast(request):
             TOOLSDIR = os.path.join(
                 settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
             adb = getADB(TOOLSDIR)
-            IP = settings.SCREEN_IP
+            if settings.AVD:
+                IP = '10.0.2.2'
+            else:
+                IP = settings.SCREEN_IP
             PORT = str(settings.SCREEN_PORT)
             if mode == "on":
                 args = [adb, "-s", getIdentifier(), "shell", "am", "startservice",
@@ -463,7 +471,7 @@ def ExecuteADB(request):
             data = {}
             CMD = request.POST['cmd']
             '''
-            #Allow it Since it's functional
+            # Allow it Since it's functional
             if re.findall(";|\$\(|\|\||&&",CMD):
                 print "[ATTACK] Possible RCE"
                 return HttpResponseRedirect('/error/')
@@ -550,7 +558,7 @@ def FinalTest(request):
                 os.system(adb + ' -s ' + getIdentifier() +
                           ' logcat -d dalvikvm:W ActivityManager:I > "' + APKDIR + 'logcat.txt"')
                 print "\n[INFO] Downloading Logcat logs"
-                #os.system(adb+' -s '+getIdentifier()+' logcat -d Xposed:I *:S > "'+APKDIR + 'x_logcat.txt"')
+                # os.system(adb+' -s '+getIdentifier()+' logcat -d Xposed:I *:S > "'+APKDIR + 'x_logcat.txt"')
                 subprocess.call([adb, "-s", getIdentifier(), "pull",
                                  "/data/data/de.robv.android.xposed.installer/log/error.log", APKDIR + "x_logcat.txt"])
 
@@ -1272,7 +1280,10 @@ def ScreenCastService():
         s = socket.socket()
         if tcp_server_mode == "on":
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            ADDR = (settings.SCREEN_IP, settings.SCREEN_PORT)
+            if settings.AVD:
+                ADDR = ('127.0.0.1', settings.SCREEN_PORT)
+            else:
+                ADDR = (settings.SCREEN_IP, settings.SCREEN_PORT)
             s.bind(ADDR)
             s.listen(10)
             while (tcp_server_mode == "on"):
@@ -1282,7 +1293,7 @@ def ScreenCastService():
                     IP = settings.DEVICE_IP
                 else:
                     IP = settings.VM_IP
-                if address[0] == IP:
+                if address[0] in [IP, '127.0.0.1']:
                     '''
                     Very Basic Check to ensure that only MobSF VM/Device is allowed to connect
                     to MobSF ScreenCast Service.
@@ -1322,7 +1333,7 @@ def GetRes():
         res = res.split("x")
         if len(res) == 2:
             return res[0], res[1]
-            #width, height
+            # width, height
         return "", ""
     except:
         PrintException("[ERROR] Getting Screen Resolution")
