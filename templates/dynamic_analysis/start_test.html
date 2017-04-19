@@ -194,6 +194,10 @@ textarea:focus {
                                     	$('#start').text("Environment Created");
                                     	$('#stat').append("\nRunning HTTPS Proxy");
 
+                                    {% comment %}
+                                        Avd has mobsfCA prebuilt
+                                    {% endcomment %}
+                                    {% if AVD != True %}
                                       //Install MobSF RootCA
                                       $.ajax({
                                       url : "../MobSFCA/", 
@@ -213,6 +217,7 @@ textarea:focus {
                                               document.getElementById("er").srcdoc = xhr.responseText;
                                           }   
                                       });
+                                    {% endif %}
 
                                     	$('#stat').append("\nConnecting to VM");
                                     	$('#stat').append("\nMounting");

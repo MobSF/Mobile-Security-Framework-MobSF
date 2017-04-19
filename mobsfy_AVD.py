@@ -132,6 +132,11 @@ def find_skin(sdk):
     return False
 
 
+def is_file_exists(file_path):
+    """Check if File Exists"""
+    return bool(os.path.isfile(file_path))
+
+
 # path to modify, replace dict = {'content_to_replace1':
 # 'value_to_replace1', 'content_to_replace2': 'value_to_replace2'}
 def replace_all_occurations_in_file(path, replace_dict):
@@ -214,7 +219,7 @@ def main():
         print_log("Emulator INI already exists")
     else:
         shutil.copyfile(emulator_ini, new_emulator_ini)
-    if os.path.isdir(avd_path):
+    if os.path.isdir(new_emulator_avd):
         print_log("Emulator AVD already exists")
     else:
         shutil.copytree(emulator_avd, new_emulator_avd)
@@ -260,11 +265,6 @@ def main():
     })
 
     print "\n\nAll Done! you can now use MobSF AVD Emulator :)\n\n"
-
-
-def is_file_exists(file_path):
-    """Check if File Exists"""
-    return bool(os.path.isfile(file_path))
 
 if __name__ == '__main__':
     sys.exit(main())

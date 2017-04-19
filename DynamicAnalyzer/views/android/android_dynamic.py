@@ -102,7 +102,8 @@ def android_dynamic_analyzer(request):
                 context = {'md5': md5_hash,
                            'pkg': package,
                            'lng': launcher,
-                           'title': 'Start Testing', }
+                           'title': 'Start Testing',
+                           'AVD': settings.AVD, }
                 template = "dynamic_analysis/start_test.html"
                 return render(request, template, context)
             else:
@@ -387,24 +388,42 @@ def mobsf_ca(request):
                                  "push",
                                  rootca,
                                  "/data/local/tmp/" + settings.ROOT_CA])
-                subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "shell",
-                                 "su",
-                                 "-c",
-                                 "cp",
-                                 "/data/local/tmp/" + settings.ROOT_CA,
-                                 "/system/etc/security/cacerts/" + settings.ROOT_CA])
-                subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "shell",
-                                 "su",
-                                 "-c",
-                                 "chmod",
-                                 "644",
-                                 "/system/etc/security/cacerts/" + settings.ROOT_CA])
+                if settings.AVD:
+                    # For some reason, avd emulator does not have cp binary
+                    subprocess.call([adb,
+                                     "-s",
+                                     get_identifier(),
+                                     "shell",
+                                     "/data/local/tmp/busybox",
+                                     "cp",
+                                     "/data/local/tmp/" + settings.ROOT_CA,
+                                     "/system/etc/security/cacerts/" + settings.ROOT_CA])
+                    subprocess.call([adb,
+                                     "-s",
+                                     get_identifier(),
+                                     "shell",
+                                     "chmod",
+                                     "644",
+                                     "/system/etc/security/cacerts/" + settings.ROOT_CA])
+                else:
+                    subprocess.call([adb,
+                                     "-s",
+                                     get_identifier(),
+                                     "shell",
+                                     "su",
+                                     "-c",
+                                     "cp",
+                                     "/data/local/tmp/" + settings.ROOT_CA,
+                                     "/system/etc/security/cacerts/" + settings.ROOT_CA])
+                    subprocess.call([adb,
+                                     "-s",
+                                     get_identifier(),
+                                     "shell",
+                                     "su",
+                                     "-c",
+                                     "chmod",
+                                     "644",
+                                     "/system/etc/security/cacerts/" + settings.ROOT_CA])
                 subprocess.call([adb,
                                  "-s",
                                  get_identifier(),
@@ -414,7 +433,15 @@ def mobsf_ca(request):
                 data = {'ca': 'installed'}
             elif act == "remove":
                 print "\n[INFO] Removing MobSF RootCA"
-                subprocess.call([adb,
+                if settings.AVD:
+                    subprocess.call([adb,
+                                 "-s",
+                                 get_identifier(),
+                                 "shell",
+                                 "rm",
+                                 "/system/etc/security/cacerts/" + settings.ROOT_CA])
+                else:
+                    subprocess.call([adb,
                                  "-s",
                                  get_identifier(),
                                  "shell",

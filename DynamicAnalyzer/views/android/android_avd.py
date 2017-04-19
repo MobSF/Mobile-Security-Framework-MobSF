@@ -180,6 +180,8 @@ def avd_load_wait(adb):
             else:
                 time.sleep(1)
         time.sleep(5)
+        # Remount the partitions for RW
+        subprocess.call([adb, "-s", emulator, "remount"])
         return True
     except:
         PrintException("[ERROR] emulator did not boot properly")
