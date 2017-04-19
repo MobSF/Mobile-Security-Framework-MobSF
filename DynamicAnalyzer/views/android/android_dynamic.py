@@ -181,6 +181,8 @@ def take_screenshot(request):
                 # make sure that list only png from this directory
                 screen_dir = os.path.join(
                     settings.UPLD_DIR, md5_hash + '/screenshots-apk/')
+                if not os.path.exists(screen_dir):
+                    os.makedirs(screen_dir)
                 toolsdir = os.path.join(
                     base_dir, 'DynamicAnalyzer/tools/')  # TOOLS DIR
                 adb = getADB(toolsdir)
@@ -631,6 +633,8 @@ def exported_activity_tester(request):
                 toolsdir = os.path.join(
                     base_dir, 'DynamicAnalyzer/tools/')  # TOOLS DIR
                 screen_dir = os.path.join(app_dir, 'screenshots-apk/')
+                if not os.path.exists(screen_dir):
+                    os.makedirs(screen_dir)
                 data = {}
                 adb = getADB(toolsdir)
 
@@ -659,7 +663,11 @@ def exported_activity_tester(request):
                                      "start",
                                      "-n",
                                      package + "/" + line])
-                                wait(4)
+                                # AVD is much slower, it should get extra time
+                                if settings.AVD:
+                                    wait(8)
+                                else:
+                                    wait(4)
                                 subprocess.call(
                                     [adb,
                                      "-s",
@@ -723,6 +731,8 @@ def activity_tester(request):
                 toolsdir = os.path.join(
                     base_dir, 'DynamicAnalyzer/tools/')  # TOOLS DIR
                 screen_dir = os.path.join(app_dir, 'screenshots-apk/')
+                if not os.path.exists(screen_dir):
+                    os.makedirs(screen_dir)
                 data = {}
                 adb = getADB(toolsdir)
                 static_android_db = StaticAnalyzerAndroid.objects.filter(
@@ -749,7 +759,7 @@ def activity_tester(request):
                                      package + "/" + line])
                                 # AVD is much slower, it should get extra time
                                 if settings.AVD:
-                                    wait(6)
+                                    wait(8)
                                 else:
                                     wait(4)
                                 subprocess.call(
