@@ -140,13 +140,13 @@ def is_file_exists(file_path):
 # path to modify, replace dict = {'content_to_replace1':
 # 'value_to_replace1', 'content_to_replace2': 'value_to_replace2'}
 def replace_all_occurations_in_file(path, replace_dict):
-    with io.open(path, 'r') as fd:
-        replaced_file = fd.read()
+    with io.open(path, mode='r', encoding="utf8", errors="ignore") as fild:
+        replaced_file = fild.read()
         for what_to_replace in replace_dict.keys():
             replaced_file = replaced_file.replace(
                 what_to_replace, replace_dict[what_to_replace])
-    with io.open(path, 'w') as fd:
-        fd.write(replaced_file)
+    with io.open(path, 'w') as fild:
+        fild.write(replaced_file)
 
 
 def main():
@@ -168,6 +168,7 @@ def main():
 
     # Give the user the ability to change the sdk and avd folder, let me guess
     # the other tools
+    print_log('This script will overwrite any previously generated files.')
     guessd_sdk_path = guess_android_sdk_folder()
     if guessd_sdk_path:
         user_approve = raw_input(
@@ -216,21 +217,21 @@ def main():
     new_emulator_ini = os.path.join(avd_path, 'Nexus5API16.ini')
     print_log('Copying emulator files to avd folder: ' + avd_path)
     if is_file_exists(new_emulator_ini):
-        print_log("Emulator INI already exists")
-    else:
-        shutil.copyfile(emulator_ini, new_emulator_ini)
+        print_log("Replacing old Emulator INI")
+        os.remove(new_emulator_ini)
+    shutil.copyfile(emulator_ini, new_emulator_ini)
     if os.path.isdir(new_emulator_avd):
-        print_log("Emulator AVD already exists")
-    else:
-        shutil.copytree(emulator_avd, new_emulator_avd)
+        print_log("Replacing old Emulator AVD")
+        shutil.rmtree(new_emulator_avd)
+    shutil.copytree(emulator_avd, new_emulator_avd)
     system_images = os.path.join(sdk_path, 'system-images')
     xposed_image_path = os.path.join(system_images, 'Xposed-android-16')
     downloaded_xposed_image = os.path.join(
         mobsf_arm_folder, 'Xposed-android-16')
     if os.path.isdir(xposed_image_path):
-        print_log("Xposed image already exists")
-    else:
-        shutil.copytree(downloaded_xposed_image, xposed_image_path)
+        print_log("Replacing old Xposed image")
+        shutil.rmtree(xposed_image_path)
+    shutil.copytree(downloaded_xposed_image, xposed_image_path)
 
     ################## Modify all the config files ###########################
 
@@ -260,8 +261,7 @@ def main():
     replace_all_occurations_in_file(settings_py, {
         '\'avd_path': 'r\'' + avd_path,
         '\'avd_emulator': 'r\'' + emulator_binary,
-        'ADB_BINARY = ""': 'ADB_BINARY = r"' + adb_path + '"',
-        'AVD = False': 'AVD = True'
+        'ADB_BINARY = ""': 'ADB_BINARY = r"' + adb_path + '"'
     })
 
     print "\n\nAll Done! you can now use MobSF AVD Emulator :)\n\n"

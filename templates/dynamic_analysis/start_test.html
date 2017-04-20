@@ -195,9 +195,11 @@ textarea:focus {
                                     	$('#stat').append("\nRunning HTTPS Proxy");
 
                                     {% comment %}
-                                        Avd has mobsfCA prebuilt
+                                        AVD throws error if we overwrite files
                                     {% endcomment %}
-                                    {% if AVD != True %}
+                                    {% if AVD == True %}
+                                      $('#stat').append("\nMobSF RootCA Installed Successfully");
+                                    {% else %}
                                       //Install MobSF RootCA
                                       $.ajax({
                                       url : "../MobSFCA/", 

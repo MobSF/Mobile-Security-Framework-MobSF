@@ -23,7 +23,7 @@ def dynamic_analyzer_standalone(request):
     toolsdir = os.path.join(
         settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
     Proxy("", "", "", "")
-    if settings.REAL_DEVICE:
+    if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
         print "\n[INFO] MobSF will perform Dynamic Analysis on real Android Device"
     else:
         # Refersh VM

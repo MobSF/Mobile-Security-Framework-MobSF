@@ -20,7 +20,7 @@ def connect(toolsdir):
         subprocess.call([adb, "connect", get_identifier()])
         subprocess.call([adb, "-s", get_identifier(), "wait-for-device"])
         print "\n[INFO] Mounting"
-        if settings.REAL_DEVICE:
+        if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
             subprocess.call([adb, "-s", get_identifier(), "shell",
                              "su", "-c", "mount", "-o", "rw,remount,rw", "/system"])
         else:
@@ -99,9 +99,9 @@ def get_res():
 def get_identifier():
     """Get Device Type"""
     try:
-        if settings.REAL_DEVICE:
+        if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
             return settings.DEVICE_IP + ":" + str(settings.DEVICE_ADB_PORT)
-        elif settings.AVD:
+        elif settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
             return 'emulator-' + str(settings.AVD_ADB_PORT)
         else:
             return settings.VM_IP + ":" + str(settings.VM_ADB_PORT)

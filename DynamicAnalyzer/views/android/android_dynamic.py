@@ -90,20 +90,23 @@ def android_dynamic_analyzer(request):
                 toolsdir = os.path.join(
                     settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
                 adb = getADB(toolsdir)
-                if settings.REAL_DEVICE:
+                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
                     print "\n[INFO] MobSF will perform Dynamic Analysis on real Android Device"
-                elif settings.AVD:
+                    is_avd = False
+                elif settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     # adb, avd_path, reference_name, dup_name, emulator
+                    is_avd = True
                     refresh_avd(adb, settings.AVD_PATH, settings.AVD_REFERENCE_NAME,
                                 settings.AVD_DUP_NAME, settings.AVD_EMULATOR)
                 else:
                     # Refersh VM
+                    is_avd = False
                     refresh_vm(settings.UUID, settings.SUUID, settings.VBOX)
                 context = {'md5': md5_hash,
                            'pkg': package,
                            'lng': launcher,
                            'title': 'Start Testing',
-                           'AVD': settings.AVD, }
+                           'AVD': is_avd, }
                 template = "dynamic_analysis/start_test.html"
                 return render(request, template, context)
             else:
@@ -138,14 +141,14 @@ def get_env(request):
                 toolsdir = os.path.join(
                     base_dir, 'DynamicAnalyzer/tools/')  # TOOLS DIR
                 adb = getADB(toolsdir)
-                if settings.AVD:
+                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     proxy_ip = '127.0.0.1'
                 else:
                     proxy_ip = settings.PROXY_IP  # Proxy IP
                 port = str(settings.PORT)  # Proxy Port
                 web_proxy(app_dir, proxy_ip, port)
                 # AVD only needs to wait, vm needs the connect function
-                if settings.AVD:
+                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     if not avd_load_wait(adb):
                         print "\n[WARNING] ADB Load Wait Failed"
                         return HttpResponseRedirect('/error/')
@@ -223,7 +226,7 @@ def screen_cast(request):
             toolsdir = os.path.join(
                 settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
             adb = getADB(toolsdir)
-            if settings.AVD:
+            if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                 ip_address = '10.0.2.2'
             else:
                 ip_address = settings.SCREEN_IP
@@ -390,7 +393,7 @@ def mobsf_ca(request):
                                  "push",
                                  rootca,
                                  "/data/local/tmp/" + settings.ROOT_CA])
-                if settings.AVD:
+                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     # For some reason, avd emulator does not have cp binary
                     subprocess.call([adb,
                                      "-s",
@@ -435,7 +438,7 @@ def mobsf_ca(request):
                 data = {'ca': 'installed'}
             elif act == "remove":
                 print "\n[INFO] Removing MobSF RootCA"
-                if settings.AVD:
+                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     subprocess.call([adb,
                                  "-s",
                                  get_identifier(),
@@ -557,7 +560,7 @@ def dump_data(request):
                                  "rm",
                                  "/sdcard/mobsec_status"])
                 print "\n[INFO] Creating TAR of Application Files."
-                if settings.AVD:
+                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     # tar -cvf /data/local/"+pkg+".tar /data/data/"+pkg+"/",
                     subprocess.call([adb,
                                      "-s",
@@ -576,7 +579,7 @@ def dump_data(request):
                                      package,
                                      "opensecurity.ajin.datapusher/.GetPackageLocation"])
                 print "\n[INFO] Waiting for TAR dump to complete..."
-                if settings.REAL_DEVICE:
+                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
                     timeout = settings.DEVICE_TIMEOUT
                 else:
                     timeout = settings.VM_TIMEOUT
@@ -664,7 +667,7 @@ def exported_activity_tester(request):
                                      "-n",
                                      package + "/" + line])
                                 # AVD is much slower, it should get extra time
-                                if settings.AVD:
+                                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                                     wait(8)
                                 else:
                                     wait(4)
@@ -758,7 +761,7 @@ def activity_tester(request):
                                      "-n",
                                      package + "/" + line])
                                 # AVD is much slower, it should get extra time
-                                if settings.AVD:
+                                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                                     wait(8)
                                 else:
                                     wait(4)
@@ -1256,7 +1259,7 @@ def screencast_service():
         screen_socket = socket.socket()
         if TCP_SERVER_MODE == "on":
             screen_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            if settings.AVD:
+            if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                 addr = ('127.0.0.1', settings.SCREEN_PORT)
             else:
                 addr = (settings.SCREEN_IP, settings.SCREEN_PORT)
@@ -1265,13 +1268,13 @@ def screencast_service():
             while TCP_SERVER_MODE == "on":
                 screens, address = screen_socket.accept()
                 print "Got Connection from: ", address[0]
-                if settings.REAL_DEVICE:
+                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
                     ip_address = settings.DEVICE_IP
                 else:
                     ip_address = settings.VM_IP
                 if address[0] in [ip_address, '127.0.0.1']:
                     '''
-                    Very Basic Check to ensure that only MobSF VM/Device
+                    Very Basic Check to ensure that only MobSF VM/Device/Emulator
                     is allowed to connect to MobSF ScreenCast Service.
                     '''
                     with open(screen_dir + 'screen.png', 'wb') as flip:
