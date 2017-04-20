@@ -347,7 +347,7 @@ else:
     '''
     MobSF_VM - x86 Android 4.4.2 running on VirtualBox (Fast, not all Apps work)
     MobSF_AVD - ARM Android 4.1.2 running on Android Emulator (Slow, Most Apps work)
-    MobSF_REAL_DEVICE - Rooted Android 4.03 - 4.4 Device (Very Fast, All Apps Works)
+    MobSF_REAL_DEVICE - Rooted Android 4.03 - 4.4 Device (Very Fast, All Apps work)
     '''
 
     #================================================================================
