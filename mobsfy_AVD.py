@@ -7,6 +7,8 @@ import sys
 import getpass
 import shutil
 import io
+import string
+import re
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -137,16 +139,37 @@ def is_file_exists(file_path):
     return bool(os.path.isfile(file_path))
 
 
-# path to modify, replace dict = {'content_to_replace1':
-# 'value_to_replace1', 'content_to_replace2': 'value_to_replace2'}
-def replace_all_occurations_in_file(path, replace_dict):
+# returns an array of [str(tabs_string), str(rest_of_the_string)]
+def split_tabs(s):
+    c = re.compile(r"([\s]+)(.*)")
+    match = c.match(s)
+    if match:
+        return [match.group(1), match.group(2)]
+    else:
+        return ['', s]
+
+
+# path to modify, replace dict = {'field_to_replace1':'value1',
+#                                 'field_to_replace2': 'value2'}
+def replace_values_by_fieldnames(path, replace_dict):
+    replaced_lines = []
     with io.open(path, mode='r', encoding="utf8", errors="ignore") as fild:
-        replaced_file = fild.read()
-        for what_to_replace in replace_dict.keys():
-            replaced_file = replaced_file.replace(
-                what_to_replace, replace_dict[what_to_replace])
+        for line in fild.readlines():
+            tmp_line = line
+            if path.endswith('.py'):
+                tabs_and_str = split_tabs(line)
+            for field_to_replace in replace_dict.keys():
+                # Python files has annoying tabs that we should consider
+                if path.endswith('.py'):
+                    if tabs_and_str[1].lower().startswith(field_to_replace.lower()):
+                        tmp_line = tabs_and_str[0] + field_to_replace + " = r\"" + replace_dict[field_to_replace].strip(" \"'").lstrip("r\"") + "\"\n"
+                else:
+                    if line.startswith(field_to_replace + '='):
+                        tmp_line = field_to_replace + '=' + replace_dict[field_to_replace].strip() + '\n'
+            replaced_lines.append(tmp_line)
     with io.open(path, 'w') as fild:
-        fild.write(replaced_file)
+        # newlines are validated before
+        fild.write(string.join(replaced_lines, ''))
 
 
 def main():
@@ -188,7 +211,7 @@ def main():
             avd_path = guessd_avd_path
         elif os.path.exists(user_approve):
             avd_path = user_approve
-    if not sdk_path:
+    if not avd_path:
         avd_path = verify_path('Android AVD path')
 
     emulator_binary = find_emulator_binary(sdk_path)
@@ -205,7 +228,7 @@ def main():
 
     skin_path = find_skin(sdk_path)
     if not skin_path:
-        skin_path = ''
+        skin_path = verify_path('nexus 5 skin path')
 
     print_log('Finished finding all the paths needed')
 
@@ -238,30 +261,30 @@ def main():
     print_log('Modifying config files')
 
     # Nexus5API16.ini
-    replace_all_occurations_in_file(new_emulator_ini, {
-        '[path_of_avd]': new_emulator_avd,
-        '[skin_path]': skin_path
+    replace_values_by_fieldnames(new_emulator_ini, {
+        'path': new_emulator_avd,
+        'skin.path': skin_path
     })
 
     # Nexus5API16.avd/config.ini
-    replace_all_occurations_in_file(os.path.join(new_emulator_avd, 'config.ini'), {
-        '[skin_path]': skin_path
+    replace_values_by_fieldnames(os.path.join(new_emulator_avd, 'config.ini'), {
+        'skin.path': skin_path
     })
 
     # Nexus5API16.avd/hardware-qemu.ini
-    replace_all_occurations_in_file(os.path.join(new_emulator_avd, 'hardware-qemu.ini'), {
-        '[sdcard]': os.path.join(new_emulator_avd, 'sdcard.img'),
-        '[cache]': os.path.join(new_emulator_avd, 'cache.img'),
-        '[kernel_path]': os.path.join(xposed_image_path, 'kernel-qemu'),
-        '[ramdisk]': os.path.join(xposed_image_path, 'ramdisk.img'),
-        '[system_image]': os.path.join(xposed_image_path, 'system.img'),
-        '[data_partition]': os.path.join(new_emulator_avd, 'userdata.img'),
+    replace_values_by_fieldnames(os.path.join(new_emulator_avd, 'hardware-qemu.ini'), {
+        'hw.sdCard.path': os.path.join(new_emulator_avd, 'sdcard.img'),
+        'disk.cachePartition.path': os.path.join(new_emulator_avd, 'cache.img'),
+        'kernel.path': os.path.join(xposed_image_path, 'kernel-qemu'),
+        'disk.ramdisk.path': os.path.join(xposed_image_path, 'ramdisk.img'),
+        'disk.systemPartition.initPath': os.path.join(xposed_image_path, 'system.img'),
+        'disk.dataPartition.path': os.path.join(new_emulator_avd, 'userdata.img'),
     })
 
-    replace_all_occurations_in_file(settings_py, {
-        '\'avd_path': 'r\'' + avd_path,
-        '\'avd_emulator': 'r\'' + emulator_binary,
-        'ADB_BINARY = ""': 'ADB_BINARY = r"' + adb_path + '"'
+    replace_values_by_fieldnames(settings_py, {
+        'AVD_EMULATOR': emulator_binary,
+        'AVD_PATH': avd_path,
+        'ADB_BINARY': 'r"' + adb_path + '"'
     })
 
     print "\n\nAll Done! you can now use MobSF AVD Emulator :)\n\n"
