@@ -26,7 +26,8 @@ from StaticAnalyzer.models import StaticAnalyzerAndroid
 from DynamicAnalyzer.pyWebProxy.pywebproxy import Proxy
 from DynamicAnalyzer.views.android.android_avd import (
     avd_load_wait,
-    refresh_avd
+    refresh_avd,
+    stop_avd
 )
 from DynamicAnalyzer.views.android.android_virtualbox_vm import (
     refresh_vm
@@ -519,6 +520,9 @@ def final_test(request):
                                  "force-stop",
                                  "opensecurity.screencast"])
                 print "\n[INFO] Stopping ScreenCast Service"
+
+                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
+                    stop_avd(adb)
 
                 data = {'final': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json')

@@ -105,6 +105,10 @@ def refresh_avd(adb, avd_path, reference_name, dup_name, emulator):
         # Stop existing emulator on the spesified port
         stop_avd(adb)
 
+        # Windows has annoying lock system, it takes time for it to remove the locks after we stopped the emulator
+        if platform.system() == 'Windows':
+            time.sleep(3)
+
         # Delete old emulator
         delete_avd(avd_path, dup_name)
 
