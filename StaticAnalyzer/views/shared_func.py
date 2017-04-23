@@ -11,8 +11,10 @@ import zipfile
 import subprocess
 import platform
 import errno
-import pdfkit
-
+try:
+    import pdfkit
+except:
+    print "[WARNING] wkhtmltopdf is not installed/configured properly. PDF Report Generation is disabled"
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.template.loader import get_template
