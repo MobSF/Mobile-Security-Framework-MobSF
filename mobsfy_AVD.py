@@ -13,6 +13,13 @@ import re
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
+def get_windows_drive():
+    drive = os.getenv('WINDIR')[:1] + ':'
+    if not drive:
+        return 'C:'
+    return drive
+
+
 def print_log(str, log_type='INFO'):
     print '\n[' + log_type + '] ' + str + '\n'
 
@@ -53,8 +60,9 @@ def guess_android_avd_folder():
 
     elif system == 'Windows':
         username = getpass.getuser()
-        for path in [os.path.join('C:\\Documents and Settings', username, '.android\\avd'),
-                     os.path.join('C:\\Users', username, '.android\\avd')]:
+        drive = get_windows_drive()
+        for path in [os.path.join(drive + '\\Documents and Settings', username, '.android\\avd'),
+                     os.path.join(drive + '\\Users', username, '.android\\avd')]:
             if os.path.exists(path):
                 return path
 
@@ -63,24 +71,33 @@ def guess_android_avd_folder():
 
 def guess_android_sdk_folder():
     system = platform.system()
+    username = getpass.getuser()
 
     if system == 'Darwin':
-        username = getpass.getuser()
-        first_guess = os.path.join('/Users', username, 'Library/Android/sdk/')
-        if os.path.exists(first_guess):
-            return first_guess
+        for path in [os.path.join('/Users', username, 'Library/Android/Sdk/'),
+                     os.path.join('/Users', username, 'Library/Android/sdk/')]:
+            if os.path.exists(path):
+                return path
 
     elif system == "Linux":
-        for path in ['/usr/local/android-sdk', '/usr/local/android', '/usr/local/Android']:
+        for path in ['/usr/local/android-sdk',
+                     '/usr/local/android',
+                     '/usr/local/Android',
+                     os.path.join('~', 'Android/Sdk'),
+                     os.path.join('~', 'Android/sdk'),
+                     os.path.join('~', 'android/Sdk'),
+                     os.path.join('~', 'android/sdk')]:
             if os.path.exists(path):
                 return path
 
     elif system == 'Windows':
-        username = getpass.getuser()
-        first_guess = os.path.join(
-            'C:\\Users', username, 'AppData\\Local\\Android\\sdk')
-        if os.path.exists(first_guess):
-            return first_guess
+        drive = get_windows_drive()
+        for path in [os.path.join(drive + '\\Users', username, 'AppData\\Local\\Android\\sdk'),
+                     os.path.join(drive + '\\Users', username, 'AppData\\Local\\Android\\Sdk'),
+                     os.path.join(drive + '\\Documents and Settings', username, 'AppData\\Local\\Android\\sdk'),
+                     os.path.join(drive + '\\Documents and Settings', username, 'AppData\\Local\\Android\\Sdk')]:
+            if os.path.exists(path):
+                return path
 
     return False
 
@@ -89,14 +106,17 @@ def find_emulator_binary(sdk):
     system = platform.system()
 
     if system in ['Darwin', 'Linux']:
-        guess = os.path.join(sdk, 'tools', 'emulator')
-        if os.path.exists(guess):
-            return guess
+        # Prefer emulator folder on tools folder
+        for path in [os.path.join(sdk, 'emulator', 'emulator'),
+                     os.path.join(sdk, 'tools', 'emulator')]:
+            if os.path.exists(path):
+                return path
 
     elif system == 'Windows':
-        guess = os.path.join(sdk, 'emulator', 'emulator.exe')
-        if os.path.exists(guess):
-            return guess
+        for path in [os.path.join(sdk, 'emulator', 'emulator.exe'),
+                     os.path.join(sdk, 'tools', 'emulator.exe')]:
+            if os.path.exists(path):
+                return path
 
     return False
 
