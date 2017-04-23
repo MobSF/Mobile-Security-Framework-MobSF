@@ -1,7 +1,61 @@
 
   {% extends "base_top_only.html" %}
    {% block content %}
-    
+<link href="/static/dash/css/sweetalert2.min.css" rel="stylesheet">
+<script src="/static/dash/js/sweetalert2.min.js"></script>
+<script>
+function delete_scan(item){
+  swal({
+  title: 'Are you sure?',
+  text: "This will permanently remove the scan results from MobSF",
+  type: 'warning',
+  showCancelButton: true,
+  confirmButtonColor: '#3085d6',
+  cancelButtonColor: '#d33',
+  confirmButtonText: 'Yes',
+  cancelButtonText: 'No',
+  confirmButtonClass: 'btn btn-success',
+  cancelButtonClass: 'btn btn-danger',
+  buttonsStyling: false
+}).then(function () {
+  var md5_hash = item.id;
+  $.ajax({
+          url : '../delete_scan/', 
+          type : 'POST',
+          dataType: 'json', 
+          data : {
+                  csrfmiddlewaretoken: '{{ csrf_token }}',
+                  md5: md5_hash,
+                  },
+              success : function(json) {
+                  if (json.deleted==='yes'){
+                    swal(
+                        'Deleted!',
+                        'The scan result is deleted!',
+                        'success'
+                      ).then(function () {
+                         location.reload();
+                        })
+                  }
+                  else {
+                    swal(
+                      'Delete Failed',
+                      'Cannot delete the scan result!',
+                      'error'
+                    )
+                  }
+              },
+              error : function(xhr,errmsg,err) {
+                  swal(
+                      'Delete Failed',
+                      errmsg,
+                      'error'
+                    )
+              }   
+  });
+})
+}
+</script>
 
 <div class="box box-default">
           <div class="box-header with-border">
@@ -16,7 +70,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>MD5</th>
-                                <th>View Report</th>    
+                                <th>Report</th>    
                             </tr>
                         </thead>
                     <tbody>
@@ -24,7 +78,8 @@
                       <tr>
                         <td>{{ e.NAME }}</td>
                         <td>{{ e.MD5 }}</td>
-                        <td><a href="../{{ e.URL }}"><i class="fa fa-eye"></i> Open Report</a></td>
+                        <td><a href="../{{ e.URL }}"><i class="fa fa-eye"></i> View</a> | 
+                        <a id="{{ e.MD5 }}" onclick="delete_scan(this)"><i class="fa fa-trash"></i> Delete</a></td>
                       </tr>
                       {% endfor %}
                     </tbody>

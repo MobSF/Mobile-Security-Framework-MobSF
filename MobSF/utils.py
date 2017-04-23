@@ -157,7 +157,7 @@ def kali_fix(BASE_DIR):
 
 def FindVbox(debug=False):
     try:
-        if settings.REAL_DEVICE == False:
+        if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_VM":
             if len(settings.VBOXMANAGE_BINARY) > 0 and isFileExists(settings.VBOXMANAGE_BINARY):
                 return settings.VBOXMANAGE_BINARY
             if platform.system() == "Windows":
