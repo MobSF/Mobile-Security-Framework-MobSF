@@ -75,7 +75,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ## Credits
 * Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
-* Matan Dobrushin - For adding Android ARM Emulator support to MobSF - "Special thanks goes for cuckoo-droid, I got inspierd by their code and idea for this implementation." - Matan
+* Matan Dobrushin - For adding Android ARM Emulator support to MobSF - "pecial thanks goes for cuckoo-droid, I got inspierd by their code and idea for this implementation.
 * Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
 * MindMac - For writing Android Blue Pill
 * Thomas Abraham - For JS Hacks on UI.
