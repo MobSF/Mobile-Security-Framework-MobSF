@@ -74,16 +74,16 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 ![api-fuzzer-start-report](https://cloud.githubusercontent.com/assets/4301109/13615236/5d8df210-e59a-11e5-827a-ccf642e96609.png)
 
 ## Credits
-* Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
-* Matan Dobrushin - For adding Android ARM Emulator support to MobSF - Special thanks goes for cuckoo-droid, I got inspierd by their code and idea for this implementation.
-* Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
-* MindMac - For writing Android Blue Pill
-* Thomas Abraham - For JS Hacks on UI.
-* Anto Joseph (@antojosep007) - For the help with SuperSU.
-* Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset.
-* Abhinav Sejpal (@Abhinav_Sejpal) - For poking me with bugs and feature requests.
-* Anant Srivastava (@anantshri) - For Activity Tester Idea
+* Abhinav Sejpal (@Abhinav_Sejpal) - For poking me with bugs, feature requests, and UI & UX suggestions.
 * Amrutha VC (@amruthavc) - For the new MobSF logo
-* Rahul (@c0dist) - Kali Support
-* shuxin - Android Binary Analysis
+* Anant Srivastava (@anantshri) - For Activity Tester Idea
+* Anto Joseph (@antojosep007) - For the help with SuperSU.
+* Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
+* Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
 * Esteban - Better Android Manifest Analysis and Static Analysis Improvement.
+* Matan Dobrushin - For adding Android ARM Emulator support to MobSF - Special thanks goes for cuckoo-droid, I got inspierd by their code and idea for this implementation.
+* MindMac - For writing Android Blue Pill
+* Rahul (@c0dist) - Kali Support
+* Shuxin - Android Binary Analysis
+* Thomas Abraham - For JS Hacks on UI.
+* Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset.
