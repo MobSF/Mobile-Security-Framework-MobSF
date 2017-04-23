@@ -20,8 +20,8 @@ def get_windows_drive():
     return drive
 
 
-def print_log(str, log_type='INFO'):
-    print '\n[' + log_type + '] ' + str + '\n'
+def print_log(msg, log_type='INFO'):
+    print '\n[' + log_type + '] ' + msg + '\n'
 
 
 def execute_cmd(args, ret=False):
@@ -32,7 +32,7 @@ def execute_cmd(args, ret=False):
         else:
             subprocess.call(args)
     except Exception as e:
-        print("\n[ERROR] Executing Command - " + str(e))
+        print "\n[ERROR] Executing Command - " + str(e)
 
 
 def verify_path(help_msg):
@@ -54,7 +54,7 @@ def guess_android_avd_folder():
             return first_guess
 
     elif system == "Linux":
-        for path in ['~/.android/avd/']:
+        for path in [os.path.expanduser('~/.android/avd/')]:
             if os.path.exists(path):
                 return path
 
@@ -83,18 +83,20 @@ def guess_android_sdk_folder():
         for path in ['/usr/local/android-sdk',
                      '/usr/local/android',
                      '/usr/local/Android',
-                     os.path.join('~', 'Android/Sdk'),
-                     os.path.join('~', 'Android/sdk'),
-                     os.path.join('~', 'android/Sdk'),
-                     os.path.join('~', 'android/sdk')]:
+                     os.path.expanduser('~/Android/Sdk'),
+                     os.path.expanduser('~/Android/sdk'),
+                     os.path.expanduser('~/android/Sdk'),
+                     os.path.expanduser('~/android/sdk')]:
             if os.path.exists(path):
                 return path
 
     elif system == 'Windows':
         drive = get_windows_drive()
         for path in [os.path.join(drive + '\\Users', username, 'AppData\\Local\\Android\\sdk'),
-                     os.path.join(drive + '\\Users', username, 'AppData\\Local\\Android\\Sdk'),
-                     os.path.join(drive + '\\Documents and Settings', username, 'AppData\\Local\\Android\\sdk'),
+                     os.path.join(drive + '\\Users', username,
+                                  'AppData\\Local\\Android\\Sdk'),
+                     os.path.join(drive + '\\Documents and Settings',
+                                  username, 'AppData\\Local\\Android\\sdk'),
                      os.path.join(drive + '\\Documents and Settings', username, 'AppData\\Local\\Android\\Sdk')]:
             if os.path.exists(path):
                 return path
@@ -160,13 +162,13 @@ def is_file_exists(file_path):
 
 
 # returns an array of [str(tabs_string), str(rest_of_the_string)]
-def split_tabs(s):
-    c = re.compile(r"([\s]+)(.*)")
-    match = c.match(s)
+def split_tabs(inp_string):
+    rgx = re.compile(r"([\s]+)(.*)")
+    match = rgx.match(inp_string)
     if match:
         return [match.group(1), match.group(2)]
     else:
-        return ['', s]
+        return ['', inp_string]
 
 
 # path to modify, replace dict = {'field_to_replace1':'value1',
@@ -182,10 +184,12 @@ def replace_values_by_fieldnames(path, replace_dict):
                 # Python files has annoying tabs that we should consider
                 if path.endswith('.py'):
                     if tabs_and_str[1].lower().startswith(field_to_replace.lower()):
-                        tmp_line = tabs_and_str[0] + field_to_replace + " = r\"" + replace_dict[field_to_replace].strip(" \"'").lstrip("r\"") + "\"\n"
+                        tmp_line = tabs_and_str[0] + field_to_replace + " = r\"" + replace_dict[
+                            field_to_replace].strip(" \"'").lstrip("r\"") + "\"\n"
                 else:
                     if line.startswith(field_to_replace + '='):
-                        tmp_line = field_to_replace + '=' + replace_dict[field_to_replace].strip() + '\n'
+                        tmp_line = field_to_replace + '=' + \
+                            replace_dict[field_to_replace].strip() + '\n'
             replaced_lines.append(tmp_line)
     with io.open(path, 'w') as fild:
         # newlines are validated before
@@ -206,7 +210,7 @@ def main():
 
     # First gather all the paths needed to make to copy opera
 
-    print_log('Please specify the path to MOBSF_ARM_Emulator extracted folder')
+    print_log('Please specify the path to MobSF_ARM_Emulator extracted folder')
     mobsf_arm_folder = verify_path('MobSF_ARM_Emulator folder')
 
     # Give the user the ability to change the sdk and avd folder, let me guess
