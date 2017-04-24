@@ -520,10 +520,6 @@ def final_test(request):
                                  "force-stop",
                                  "opensecurity.screencast"])
                 print "\n[INFO] Stopping ScreenCast Service"
-
-                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
-                    stop_avd(adb)
-
                 data = {'final': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -607,6 +603,8 @@ def dump_data(request):
                                  "pull",
                                  "/data/local/" + package + ".tar",
                                  apk_dir + package + ".tar"])
+                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
+                    stop_avd(adb)
                 print "\n[INFO] Stopping ADB"
                 subprocess.call([adb,
                                  "-s",
