@@ -72,7 +72,7 @@ def Unzip(APP_PATH, EXT_PATH):
                 if not isinstance(filename, unicode):
                     filename = unicode(filename, encoding="utf-8", errors="replace")
                 files.append(filename)
-                z.extract(fileinfo, EXT_PATH)
+                z.extract(fileinfo, str(EXT_PATH))
         return files
     except:
         PrintException("[ERROR] Unzipping Error")
