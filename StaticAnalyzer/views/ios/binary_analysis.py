@@ -214,6 +214,7 @@ def class_dump_z(tools_dir, bin_path, app_dir):
                 " may use WebView Component.</td></tr>"
         return webview
     except:
+        print "[INFO] class-dump-z does not work on iOS apps developed in Swift"
         PrintException("[ERROR] - Cannot perform class dump")
 
 
@@ -257,6 +258,9 @@ def binary_analysis(src, tools_dir, app_dir):
         else:
             otool_dict = otool_analysis(bin_name, bin_path, bin_dir)
             cls_dump = class_dump_z(tools_dir, bin_path, app_dir)
+            #Classdumpz can fail on swift coded binaries
+            if not cls_dump:
+                cls_dump = ""
             strings_in_ipa = strings_on_ipa(bin_path)
             binary_analysis_dict["libs"] = otool_dict["libs"]
             binary_analysis_dict["bin_res"] = otool_dict["anal"] + cls_dump
