@@ -921,7 +921,7 @@ def handle_sqlite(sfile):
             head = ''
             for sq_row in rows:
                 elm_data = sq_row[1]
-                if isinstance(elm_data) is unicode:
+                if isinstance(elm_data, unicode):
                     elm_data = unicodedata.normalize(
                         'NFKD', elm_data).encode('ascii', 'ignore')
                 head += str(elm_data).decode('utf8', 'ignore') + " | "
@@ -932,7 +932,7 @@ def handle_sqlite(sfile):
             for sq_row in rows:
                 dat = ''
                 for each_row in sq_row:
-                    if isinstance(each_row) is unicode:
+                    if isinstance(each_row, unicode):
                         each_row = unicodedata.normalize(
                             'NFKD', each_row).encode('ascii', 'ignore')
                     dat += str(each_row).decode('utf8', 'ignore') + " | "
