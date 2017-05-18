@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-LABEL Maintainer="Ajin Abraham <ajin25@gmail.com>"
+LABEL maintainer="Ajin Abraham <ajin25@gmail.com>"
 
 ENV PDFGEN_PKGFILE wkhtmltox-0.12.1_linux-trusty-amd64.deb \
     PDFGEN_URL https://downloads.wkhtmltopdf.org/0.12/0.12.1/${PDFGEN_PKGFILE}
