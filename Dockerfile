@@ -2,8 +2,8 @@ FROM ubuntu:16.04
 
 LABEL maintainer="Ajin Abraham <ajin25@gmail.com>"
 
-ENV PDFGEN_PKGFILE wkhtmltox-0.12.1_linux-trusty-amd64.deb \
-    PDFGEN_URL https://downloads.wkhtmltopdf.org/0.12/0.12.1/${PDFGEN_PKGFILE}
+ENV PDFGEN_PKGFILE="wkhtmltox-0.12.4_linux-generic-amd64.tar.xz" 
+ENV PDFGEN_URL="https://downloads.wkhtmltopdf.org/0.12/0.12.4/${PDFGEN_PKGFILE}"
 
 #Update the repository sources list
 RUN apt-get update -y
@@ -61,9 +61,14 @@ WORKDIR /root/Mobile-Security-Framework-MobSF/MobSF
 RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' settings.py
 
 #Install pdf generator
+
+WORKDIR /tmp
 RUN wget ${PDFGEN_URL} && \
-    dpkg -i ${PDFGEN_PKGFILE} && \
-    rm -rf ${PDFGEN_PKGFILE} 2>/dev/null
+    tar xvf ${PDFGEN_PKGFILE} && \
+    rm -rf ${PDFGEN_PKGFILE} 2>/dev/null && \
+    cp -r   /tmp/wkhtmltox/* /usr/local/ && \
+    rm -fr /tmp/wkhtmltox
+
 
 #Expose MobSF Port
 EXPOSE 8000
