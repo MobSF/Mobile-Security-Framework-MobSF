@@ -44,9 +44,6 @@ RUN \
     libjpeg-turbo8 \
     fontconfig 
 
-#Cleanup
-RUN rm -rf /var/lib/apt/lists/*
-
 #Clone MobSF master
 WORKDIR /root
 RUN git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF.git
@@ -60,15 +57,19 @@ RUN pip install -r requirements.txt && \
 WORKDIR /root/Mobile-Security-Framework-MobSF/MobSF
 RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' settings.py
 
-#Install pdf generator
+# need to apply Kali fix on docker image to remove error
+RUN ./kali_fix.sh
 
+#Cleanup
+RUN rm -rf /var/lib/apt/lists/*
+
+#Install pdf generator
 WORKDIR /tmp
 RUN wget ${PDFGEN_URL} && \
     tar xvf ${PDFGEN_PKGFILE} && \
     rm -rf ${PDFGEN_PKGFILE} 2>/dev/null && \
     cp -r   /tmp/wkhtmltox/* /usr/local/ && \
     rm -fr /tmp/wkhtmltox
-
 
 #Expose MobSF Port
 EXPOSE 8000
