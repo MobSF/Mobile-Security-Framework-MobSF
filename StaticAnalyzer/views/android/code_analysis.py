@@ -129,7 +129,7 @@ def code_analysis(app_dir, md5, perms, typ):
                 repath = dir_name.replace(java_src, '')
                 if (
                         jfile.endswith('.java') and
-                        any(cls in repath for cls in settings.SKIP_CLASSES) is False
+                        any(re.search(cls, repath) for cls in settings.SKIP_CLASSES) is False
                 ):
                     dat = ''
                     with io.open(

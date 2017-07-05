@@ -241,12 +241,12 @@ else:
     #-------------------------
 
     #==========ANDROID SKIP CLASSES==========================
-
+    # Common third party classes that will be skipped during static analysis
     SKIP_CLASSES = [
-        'android/support/', 'com/google/', 'android/content/',
-        'com/android/', 'com/facebook/', 'com/twitter/',
-        'twitter4j/', 'org/apache/', 'com/squareup/okhttp/',
-        'oauth/signpost/', 'org/chromium/'
+        r'android[\\\/]{1}support[\\\/]{1}', r'com[\\\/]{1}google[\\\/]{1}', r'android[\\\/]{1}content[\\\/]{1}',
+        r'com[\\\/]{1}android[\\\/]{1}', r'com[\\\/]{1}facebook[\\\/]{1}', r'com[\\\/]{1}twitter[\\\/]{1}',
+        r'twitter4j[\\\/]{1}', r'org[\\\/]{1}apache[\\\/]{1}', r'com[\\\/]{1}squareup[\\\/]{1}okhttp[\\\/]{1}',
+        r'oauth[\\\/]{1}signpost[\\\/]{1}', r'org[\\\/]{1}chromium[\\\/]{1}'
     ]
 
     #==========DECOMPILER SETTINGS=================
@@ -309,7 +309,7 @@ else:
     CFR_DECOMPILER_BINARY = ""
     JD_CORE_DECOMPILER_BINARY = ""
     PROCYON_DECOMPILER_BINARY = ""
-    ADB_BINARY = ""
+    ADB_BINARY = r"/Users/ajin/Library/Android/Sdk/platform-tools/adb"
     ENJARIFY_DIRECTORY = ""
 
     # iOS 3P Tools
