@@ -13,13 +13,19 @@ Made with <img src="https://cloud.githubusercontent.com/assets/4301109/16754758/
 [![Blackhat Arsenal Asia 2015](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202015-blue.svg)](https://www.blackhat.com/asia-15/arsenal.html#yso-mobile-security-framework)
 [![support](https://baikal.io/badges/ajinabraham/mobsf)](https://baikal.io/ajinabraham/mobsf) 
 [![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
-[![mobile](https://img.shields.io/badge/supports-apk%2Fipa%2Fappx%2Fzip-ff69b4.svg)]()
 [![License](https://img.shields.io/:license-gpl3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![python](https://img.shields.io/badge/python-2.7-blue.svg)](https://www.python.org/downloads/)
 [![Code Issues](https://www.quantifiedcode.com/api/v1/project/d49e36d69236411bb854214737f6dfa1/badge.svg)](https://www.quantifiedcode.com/app/project/d49e36d69236411bb854214737f6dfa1)
 [![Requirements Status](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements.svg?branch=master)](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements/?branch=master)
 
 MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-release) and [BlackArch](https://blackarch.org/mobile.html)
+
+**Your generous donations will keep us motivated.** 
+
+**Donate**
+[<img alt="Donate Bitcoin" src="https://user-images.githubusercontent.com/4301109/27862054-08f80b3a-61a1-11e7-8e07-e9b953c48bab.png" height="20" width="88">](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
+
+
 ## Documentation
 * https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation
 
