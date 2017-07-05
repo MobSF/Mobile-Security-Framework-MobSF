@@ -309,7 +309,7 @@ else:
     CFR_DECOMPILER_BINARY = ""
     JD_CORE_DECOMPILER_BINARY = ""
     PROCYON_DECOMPILER_BINARY = ""
-    ADB_BINARY = r"/Users/ajin/Library/Android/Sdk/platform-tools/adb"
+    ADB_BINARY = ""
     ENJARIFY_DIRECTORY = ""
 
     # iOS 3P Tools
