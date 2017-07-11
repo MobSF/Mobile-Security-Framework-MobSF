@@ -208,6 +208,7 @@ def static_analyzer(request):
                         bin_an_buff,
                         apkid_results,
                     )
+                context['dynamic_analysis_done'] = os.path.exists(os.path.join(app_dic['app_dir'], 'logcat.txt'))
                 template = "static_analysis/static_analysis.html"
                 return render(request, template, context)
             elif typ == 'zip':
