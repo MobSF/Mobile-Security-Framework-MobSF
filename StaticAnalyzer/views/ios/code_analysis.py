@@ -5,7 +5,7 @@ import ntpath
 import shutil
 from django.utils.html import escape
 
-from MalwareAnalyzer.views import MalwareCheck
+from MalwareAnalyzer.views import malware_check
 from MobSF.utils import (
     PrintException,
 )
@@ -118,7 +118,7 @@ def ios_source_analysis(src, md5_hash):
                             "'>" + escape(base_fl) + "</a></td></tr>"
         # Domain Extraction and Malware Check
         print "[INFO] Performing Malware Check on extracted Domains"
-        code_analysis_dict["domains"] = MalwareCheck(all_urls_list)
+        code_analysis_dict["domains"] = malware_check(all_urls_list)
         print "[INFO] Finished Code Analysis, Email and URL Extraction"
 
         api_mappings = {'webv': 'WebView Component',

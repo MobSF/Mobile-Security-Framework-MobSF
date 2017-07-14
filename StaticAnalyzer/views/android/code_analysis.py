@@ -10,7 +10,7 @@ import os
 from django.conf import settings
 from django.utils.html import escape
 
-from MalwareAnalyzer.views import MalwareCheck
+from MalwareAnalyzer.views import malware_check
 
 from MobSF.utils import (
     PrintException
@@ -595,7 +595,7 @@ def code_analysis(app_dir, md5, perms, typ):
 
         # Domain Extraction and Malware Check
         print "[INFO] Performing Malware Check on extracted Domains"
-        domains = MalwareCheck(url_list)
+        domains = malware_check(url_list)
         print "[INFO] Finished Code Analysis, Email and URL Extraction"
         # API Description
         api_desc = {
