@@ -14,11 +14,11 @@ If you are running MobSF in Windows host, you do not have to configure anything,
 [![Configuring Windows VM and MobSF for Windows App Static Analysis](https://img.youtube.com/vi/17ilENuMj58/0.jpg)](https://www.youtube.com/watch?v=17ilENuMj58)
 
 
-##Caution
+## Caution
 Use separate Windows-VM for MobSF and *don't* expose it to a network range where an attack might be coming from. The best solution is to set it to host-only mode.
 
 
-##Steps for MobSF 
+## Steps for MobSF 
 To integrate a Windows-VM into MobSF, please follow these steps.
 
 * Get the IP of you VM and set in the MobSF/settings.py-File (search for `WINDOWS_VM_IP`)
