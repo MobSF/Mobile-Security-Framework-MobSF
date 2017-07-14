@@ -1,6 +1,6 @@
 #Windows App Analysis
 
-If you are running MobSF in Windows host, you do not have to configure anything, apart from intreacting with the automated installation script for the first time when you run MobSF. How ever if you are using a different host OS, you need to configure a Windows VM. Sadly [binskim](https://www.nuget.org/packages/Microsoft.CodeAnalysis.BinSkim/) is only available on windows. So even for static analysis, a windows VM is required.
+If you are running MobSF in Windows host, you do not have to configure anything, apart from interacting with the automated installation script for the first time when you run MobSF. How ever if you are using a different host OS, you need to configure a Windows VM. Sadly [binskim](https://www.nuget.org/packages/Microsoft.CodeAnalysis.BinSkim/) is only available on windows. So even for static analysis, a windows VM is required.
 
 ##Steps on the Windows-VM
 1. Install the following requirements on the VM
