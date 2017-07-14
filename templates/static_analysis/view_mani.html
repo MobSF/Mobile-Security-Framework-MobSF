@@ -3,21 +3,21 @@
   {% extends "base_top_only.html" %}
    {% block content %}
     
-<script type="text/javascript" src="/static/js/shCore.js"></script>
-  <script type="text/javascript" src="/static/js/shBrushXml.js"></script>
-  <link type="text/css" rel="stylesheet" href="/static/css/shCoreDefault.css"/>
-   <script type="text/javascript">
-  SyntaxHighlighter.defaults['quick-code'] = false;
-  SyntaxHighlighter.all();
-  </script>
+ <script type="text/javascript" src="/static/js/highlight.min.js"></script>
+
+  <link type="text/css" rel="stylesheet" href="/static/css/xcode.min.css"/>
+  <script>hljs.initHighlightingOnLoad();</script>
+
 <div class="box box-default">
      
           <div class="box-body">
 
 
         <h3>{{file}} </h3>
-         <pre class="brush: xml;" >
+    <pre> 
+      <code class="xml">
       {{ dat}}
+      </code>
      </pre>
           </div>
           <!-- /.box-body -->

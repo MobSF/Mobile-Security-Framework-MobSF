@@ -1,5 +1,5 @@
 echo 
-echo "=======================MobSF Clean Script======================="
+echo "=======================MobSF Clean Script for Unix======================="
 echo "Running this script will delete the Scan database, all files uploaded and generated."
 read -p "Are you sure? " -n 1 -r
 echo 

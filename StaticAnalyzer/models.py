@@ -51,6 +51,7 @@ class StaticAnalyzerAndroid(models.Model):
     E_SER = models.CharField(max_length=50)
     E_BRO = models.CharField(max_length=50)
     E_CNT = models.CharField(max_length=50)
+    APK_ID = models.TextField()
 
 
 class StaticAnalyzerIPA(models.Model):
@@ -73,6 +74,7 @@ class StaticAnalyzerIPA(models.Model):
     SFILESX = models.TextField()
     STRINGS = models.TextField()
     PERMISSIONS = models.TextField()
+    INSECCON = models.TextField()
 
 
 class StaticAnalyzerIOSZIP(models.Model):
@@ -89,8 +91,6 @@ class StaticAnalyzerIOSZIP(models.Model):
     SDK = models.TextField()
     PLTFM = models.TextField()
     MINX = models.TextField()
-    BIN_ANAL = models.TextField()
-    LIBS = models.TextField()
     FILES = models.TextField()
     SFILESX = models.TextField()
     HTML = models.TextField()
@@ -99,7 +99,7 @@ class StaticAnalyzerIOSZIP(models.Model):
     DOMAINS = models.TextField()
     EmailnFile = models.TextField()
     PERMISSIONS = models.TextField()
-
+    INSECCON = models.TextField()
 
 class StaticAnalyzerWindows(models.Model):
     TITLE = models.TextField()

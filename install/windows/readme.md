@@ -1,8 +1,8 @@
-#Windows App Analysis
+# Windows App Analysis
 
 If you are running MobSF in Windows host, you do not have to configure anything, apart from interacting with the automated installation script for the first time when you run MobSF. However, if you are using a different host OS, you need to configure a Windows VM. Sadly [binskim](https://www.nuget.org/packages/Microsoft.CodeAnalysis.BinSkim/) is only available on Windows. So even for static analysis, a Windows VM is required.
 
-##Steps on the Windows-VM
+## Steps on the Windows-VM
 1. Install the following requirements on the VM
   * [Python 3](https://www.python.org/downloads/)
   * rsa (via `python -m pip install rsa`)
@@ -13,18 +13,20 @@ If you are running MobSF in Windows host, you do not have to configure anything,
 ## Video: Configuring Windows VM and MobSF for Windows App Static Analysis
 [![Configuring Windows VM and MobSF for Windows App Static Analysis](https://img.youtube.com/vi/17ilENuMj58/0.jpg)](https://www.youtube.com/watch?v=17ilENuMj58)
 
+
 ##Caution
 Use separate Windows-VM for MobSF and *don't* expose it to a network range where an attack might be coming from. The best solution is to set it to host-only mode.
 
 
 ##Steps for MobSF 
 To integrate a Windows-VM into MobSF, please follow these steps.
+
 * Get the IP of you VM and set in the MobSF/settings.py-File (search for `WINDOWS_VM_IP`)
 * (If not yet done:) Copy the private rsa key from the vm to MobSF
 
 NOTE: These steps are not required, if you are running MobSF in a Windows Host.
 
-##FAQ
+## FAQ
 
 * If you see errors like this
 

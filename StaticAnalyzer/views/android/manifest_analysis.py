@@ -373,7 +373,7 @@ def manifest_analysis(mfxml, man_data_dic):
             '<strong>%s</strong> (%s) would not be Protected if the application ran on a device where'
             ' the the API level was less than 17. <br>[Content Provider, targetSdkVersion >= 17]',
             'high',
-            'The Content Provider(%s) would be exported if the application ran on a device where'
+            'The Content Provider(%s %s) would be exported if the application ran on a device where'
             ' the the API level was less than 17. In that situation, it would be shared with other'
             ' apps on the device therefore leaving it accessible to any other application on the'
             ' device.'

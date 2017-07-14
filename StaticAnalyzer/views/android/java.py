@@ -41,7 +41,7 @@ def run(request):
                             shutil.move(file_path, fp2)
                             file_path = fp2
                         fileparam = file_path.replace(src, '')
-                        if any(cls in fileparam for cls in settings.SKIP_CLASSES) is False:
+                        if any(re.search(cls, fileparam) for cls in settings.SKIP_CLASSES) is False:
                             html += (
                                 "<tr><td><a href='../ViewSource/?file=" + escape(fileparam) +
                                 "&md5=" + md5 +

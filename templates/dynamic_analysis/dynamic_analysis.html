@@ -1,13 +1,13 @@
 {% extends "base.html" %}
    {% block content %}
     <script src="/static/js/jquery.min.js"></script>
-   <script type="text/javascript" src="/static/js/shCore.js"></script>
-	<script type="text/javascript" src="/static/js/shBrushJava.js"></script>
-	<link type="text/css" rel="stylesheet" href="/static/css/shCoreDefault.css"/>
+  <script type="text/javascript" src="/static/js/highlight.min.js"></script>
+  <link type="text/css" rel="stylesheet" href="/static/css/xcode.min.css"/>
+  <script>hljs.initHighlightingOnLoad();</script>
   <style type="text/css" media="print">
   @page { size: landscape; }
 </style>
-	<script type="text/javascript">SyntaxHighlighter.all();</script>
+
 
    <!-- Left side column. contains the logo and sidebar -->
       <aside class="main-sidebar">
@@ -503,9 +503,7 @@
             <div class="box-body">
 
                             <div class="list-group">
-<pre class="brush: java;" >
-{{ http }}
-</pre>
+<pre><code class="http">{{ http }}</code></pre>
                                 </div>
             </div>
             <!-- /.box-body -->

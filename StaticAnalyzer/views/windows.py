@@ -253,7 +253,7 @@ def _binary_analysis(app_dic):
     # Search for unsave function
     pattern = re.compile("(alloca|gets|memcpy|printf|scanf|sprintf|sscanf|strcat|StrCat|strcpy|StrCpy|strlen|StrLen|strncat|StrNCat|strncpy|StrNCpy|strtok|swprintf|vsnprintf|vsprintf|vswprintf|wcscat|wcscpy|wcslen|wcsncat|wcsncpy|wcstok|wmemcpy)")
     for elem in str_list:
-        if pattern.match(elem):
+        if pattern.match(elem[5:-5]):
             result = {
                 "rule_id": 'Possible Insecure Function',
                 "status": 'Insecure',
@@ -262,7 +262,7 @@ def _binary_analysis(app_dic):
             bin_an_dic['results'].append(result)
 
     # Execute binskim analysis if vm is available
-    if settings.CURRENT_PLATFROM != 'Windows':
+    if platform.system() != 'Windows':
         if settings.WINDOWS_VM_IP:
             print "[INFO] Windows VM configured."
             global proxy
@@ -330,7 +330,7 @@ def __binskim(name, bin_an_dic, run_local=False, app_dir=None):
         path = bin_path
         output_p = "-o"
         output_d = bin_path + "_binskim"
-        # verbose = "-v"
+        verbose = "-v"
         policy_p = "--config"
         policy_d = "default"  # TODO(Other policies?)
 
@@ -340,7 +340,7 @@ def __binskim(name, bin_an_dic, run_local=False, app_dir=None):
             command,
             path,
             output_p, output_d,
-            # verbose,
+            verbose,
             policy_p, policy_d
         ]
 
@@ -369,11 +369,22 @@ def __parse_binskim(bin_an_dic, output):
     if 'results' in current_run:
         rules = output['runs'][0]['rules']
         for res in current_run['results']:
-            result = {
-                "rule_id": res['ruleId'],
-                "status": "Insecure",
-                "desc": rules[res['ruleId']]['shortDescription']
-            }
+            if res['level'] != "pass":
+                result = {
+                    "rule_id": res['ruleId'],
+                    "status": "Insecure",
+                    "desc": rules[res['ruleId']]['shortDescription']
+                }
+                if len(res['formattedRuleMessage']["arguments"])>2:
+                    result["info"] = res['formattedRuleMessage']["arguments"][2]
+                else:
+                    result["info"] = ""
+            else:
+                result = {
+                    "rule_id": res['ruleId'],
+                    "status": "Secure",
+                    "desc": rules[res['ruleId']]['shortDescription']
+                }
             bin_an_dic['results'].append(result)
     else:
         print "[WARNING] binskim has no results."

@@ -1,6 +1,11 @@
 
    {% block content %}
+<style>
+body {
+    font: normal 30px Verdana, Arial, sans-serif;
+}
 
+</style>
 <h1 align="center" class="page-header">Static Analysis - {{name}} </h1>
 <hr>
   <div class="col-lg-7">
@@ -12,22 +17,22 @@
             <div class="panel-body">
                 <div class="list-group">
                     <p>
-                       <span class="label label-primary">File Name</span>
+                       <span class="label label-primary"><b>File Name: </b></span>
                     {{ name }}
                     </p>
                     <p>
-                       <span class="label label-primary">Size</span>
+                       <span class="label label-primary"><b>Size: </b></span>
                     {{ size }}
                    </p><p>
-                       <span class="label label-primary">MD5</span>
+                       <span class="label label-primary"><b>MD5: </b></span>
                     {{ md5 }}
 
                    </p><p>
-                     <span class="label label-primary">SHA1</span>
+                     <span class="label label-primary"><b>SHA1: </b></span>
                     {{ sha1 }}
 
                      </p><p>
-                     <span class="label label-primary">SHA256</span>
+                     <span class="label label-primary"><b>SHA256: </b></span>
                     {{ sha256 }}
                 </div>
             </div>
@@ -43,19 +48,19 @@
                 <div class="panel-body">
                     <div class="list-group">
                       <p>
-                     <span class="label label-primary">App Name</span>
+                     <span class="label label-primary"><b>App Name: </b></span>
                      {{ bin_name }}
                      </p>
                      <p>
-                         <span class="label label-primary">Publisher</span>
+                         <span class="label label-primary"><b>Publisher: </b></span>
                          {{ pub_name }}
                      </p>
                      <p>
-                      <span class="label label-primary">Version</span>
+                      <span class="label label-primary"><b>Version: </b></span>
                       {{ version }}
                      </p>
                      <p>
-                      <span class="label label-primary">Arch</span>
+                      <span class="label label-primary"><b>Arch: </b></span>
                       {{ arch }}
                     </p>
                     </div>
@@ -72,35 +77,35 @@
             <div class="panel-body">
                 <div class="list-group">
                   <p>
-                 <span class="label label-primary">compiler_version</span>
+                 <span class="label label-primary"><b>Compiler Version: </b></span>
                  {{ compiler_version }}
                  </p>
                  <p>
-                     <span class="label label-primary">visual_studio_version</span>
+                     <span class="label label-primary"><b>Visual Studio Version: </b></span>
                      {{ visual_studio_version }}
                  </p>
                  <p>
-                  <span class="label label-primary">visual_studio_edition</span>
+                  <span class="label label-primary"><b>Visual Studio Edition: </b></span>
                   {{ visual_studio_edition }}
                  </p>
                  <p>
-                  <span class="label label-primary">target_os</span>
+                  <span class="label label-primary"><b>Target OS: </b></span>
                   {{ target_os }}
                  </p>
                  <p>
-                 <span class="label label-primary">appx_dll_version</span>
+                 <span class="label label-primary"><b>APPX DLL Version: </b></span>
                  {{ appx_dll_version }}
                </p>
                <p>
-                <span class="label label-primary">proj_guid</span>
+                <span class="label label-primary"><b>Proj GUID: </b></span>
                  {{ proj_guid }}
                </p>
                <p>
-                <span class="label label-primary">opti_tool</span>
+                <span class="label label-primary"><b>Opti Tool: </b></span>
                  {{ opti_tool }}
                </p>
                <p>
-                <span class="label label-primary">target_run</span>
+                <span class="label label-primary"><b>Target Run: </b></span>
                  {{ target_run }}
                </p>
                 </div>

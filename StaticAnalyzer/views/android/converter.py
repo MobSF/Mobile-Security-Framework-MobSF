@@ -27,16 +27,17 @@ def dex_2_jar(app_path, app_dir, tools_dir):
         args = []
         if settings.JAR_CONVERTER == "d2j":
             print "[INFO] Using JAR converter - dex2jar"
-            if platform.system() == "Windows":
-                win_fix_java(tools_dir)
-                d2j = os.path.join(tools_dir, 'd2j2/d2j-dex2jar.bat')
-            else:
-                inv = os.path.join(tools_dir, 'd2j2/d2j_invoke.sh')
-                d2j = os.path.join(tools_dir, 'd2j2/d2j-dex2jar.sh')
-                subprocess.call(["chmod", "777", d2j])
-                subprocess.call(["chmod", "777", inv])
             if len(settings.DEX2JAR_BINARY) > 0 and isFileExists(settings.DEX2JAR_BINARY):
                 d2j = settings.DEX2JAR_BINARY
+            else:
+                if platform.system() == "Windows":
+                    win_fix_java(tools_dir)
+                    d2j = os.path.join(tools_dir, 'd2j2/d2j-dex2jar.bat')
+                else:
+                    inv = os.path.join(tools_dir, 'd2j2/d2j_invoke.sh')
+                    d2j = os.path.join(tools_dir, 'd2j2/d2j-dex2jar.sh')
+                    subprocess.call(["chmod", "777", d2j])
+                    subprocess.call(["chmod", "777", inv])
             args = [
                 d2j,
                 app_dir + 'classes.dex',
@@ -120,7 +121,7 @@ def jar_2_java(app_dir, tools_dir):
             ):
                 jd_path = settings.CFR_DECOMPILER_BINARY
             else:
-                jd_path = os.path.join(tools_dir, 'cfr_0_115.jar')
+                jd_path = os.path.join(tools_dir, 'cfr_0_119.jar')
             args = [settings.JAVA_PATH + 'java', '-jar',
                     jd_path, jar_path, '--outputdir', output]
         elif settings.DECOMPILER == "procyon":

@@ -12,8 +12,6 @@
             <li class="active"><a href="#information"><i class="glyphicon glyphicon-info-sign"></i> Information</a></li>
             <li><a href="#options"><i class="fa fa-gears"></i> Options</a></li>
             <li><a href="#binary"><i class="fa fa-mobile"></i> Binary Analysis</a></li>
-            <!--<li><a href="#file"><i class="fa fa-file-text-o"></i> File Analysis</a></li>
-            <li><a href="#libraries"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</a></li> -->
             <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li>
             <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APPX"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li>
           </ul>
@@ -131,35 +129,35 @@
         <div class="box-body">
         <div class="list-group">
                <p>
-              <span class="label label-primary">compiler_version</span>
+              <span class="label label-primary">Compiler Version</span>
               {{ compiler_version }}
               </p>
               <p>
-                  <span class="label label-primary">visual_studio_version</span>
+                <span class="label label-primary">Visual Studio Version</span>
                   {{ visual_studio_version }}
               </p>
               <p>
-               <span class="label label-primary">visual_studio_edition</span>
+               <span class="label label-primary">Visual Studio Edition</span>
                {{ visual_studio_edition }}
               </p>
               <p>
-               <span class="label label-primary">target_os</span>
+               <span class="label label-primary">Target OS</span>
                {{ target_os }}
               </p>
               <p>
-              <span class="label label-primary">appx_dll_version</span>
+              <span class="label label-primary">APPX DLL Version</span>
               {{ appx_dll_version }}
             </p>
             <p>
-             <span class="label label-primary">proj_guid</span>
+             <span class="label label-primary">Proj GUID</span>
               {{ proj_guid }}
             </p>
             <p>
-             <span class="label label-primary">opti_tool</span>
+             <span class="label label-primary">Opti Tool</span>
               {{ opti_tool }}
             </p>
             <p>
-             <span class="label label-primary">target_run</span>
+             <span class="label label-primary">Target Run</span>
               {{ target_run }}
             </p>
        </div>
@@ -220,7 +218,7 @@
                           <th>ISSUE</th>
                           <th>STATUS</th>
                           <th>DESCRIPTION</th>
-
+                          <th>INFO</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -241,6 +239,7 @@
                           </span>
                         </td>
                         <td>{{ result.desc }}</td>
+                        <td>{{ result.info }}</td>
                       </tr>
                     {% endfor %}
                     {% for warn in bin_an_warnings %}
@@ -252,6 +251,7 @@
                         </span>
                       </td>
                       <td>{{ warn.desc }}</td>
+                      <td>{{ warn.info }}
                     </tr>
                     {% endfor %}
                     </tbody>

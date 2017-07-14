@@ -38,6 +38,18 @@ AUTOSTART = (
 # Global var so we don't have to pass it every time..
 CONFIG = ""
 
+
+def windows_config_local(path):
+    """Windows Configuration"""
+    # Configure here if you are on windows
+    # Path to lock-file (so setup is only run once)
+    path_to_lock_file = os.path.join(path, "setup_done.txt")
+    if (os.path.isfile(path_to_lock_file) is False) and platform.system() == 'Windows':
+        print("[INFO] Running first time setup for windows.")
+        # Setup is to-be-executed
+        install_locally(path)
+
+
 def download_config():
     """Download initial config file."""
 
@@ -55,7 +67,7 @@ def download_config():
 
     # Downloading File
     print("[*] Downloading config file..")
-    conf_file = urlrequest.urlopen(CONFIG_URL) # pylint: disable-msg=E1101
+    conf_file = urlrequest.urlopen(CONFIG_URL)  # pylint: disable-msg=E1101
 
     # Save content
     print("[*] Saving to File {}".format(CONFIG_FILE))
@@ -104,10 +116,9 @@ def check_dependencies():
     try:
         import rsa
         print("[+] rsa is installed.")
-    except ImportError: # pylint: disable-msg=C0103
+    except ImportError:  # pylint: disable-msg=C0103
         print("[!] rsa not installed!")
         missing_deps.append("rsa")
-
 
     if len(missing_deps) > 0:
         print("[!] Please install these missing dependencies:")
@@ -125,11 +136,12 @@ def tools_nuget():
     nuget_file_path = CONFIG['nuget']['file']
 
     # Open File
-    nuget_file_local = open(os.path.join(mobsf_subdir_tools, nuget_file_path), "wb")
+    nuget_file_local = open(os.path.join(
+        mobsf_subdir_tools, nuget_file_path), "wb")
 
     # Downloading File
     print("[*] Downloading nuget..")
-    nuget_file = urlrequest.urlopen(nuget_url) # pylint: disable-msg=E1101
+    nuget_file = urlrequest.urlopen(nuget_url)  # pylint: disable-msg=E1101
 
     # Save content
     print("[*] Saving to File {}".format(nuget_file_path))
@@ -164,7 +176,7 @@ def tools_binskim():
 
     # Search for the version number
     folder = re.search(
-        b"Microsoft\.CodeAnalysis\.BinSkim\..*('|\") ", output # pylint: disable-msg=W1401
+        b"Microsoft\.CodeAnalysis\.BinSkim\..*('|\") ", output  # pylint: disable-msg=W1401
     )
     try:
         # Substring-Foo for removing b'X's in python3
@@ -192,7 +204,7 @@ def tools_binskim():
 
     # Write to config
     with open(os.path.join(CONFIG_PATH, CONFIG_FILE), 'w') as configfile:
-        CONFIG.write(configfile) # pylint: disable-msg=E1101
+        CONFIG.write(configfile)  # pylint: disable-msg=E1101
 
 
 def _find_exe(path, exe_list):
@@ -274,14 +286,15 @@ def tools_binscope():
 
     # Write to config
     with open(os.path.join(CONFIG_PATH, CONFIG_FILE), 'w') as configfile:
-        CONFIG.write(configfile) # pylint: disable-msg=E1101
+        CONFIG.write(configfile)  # pylint: disable-msg=E1101
 
 
 def generate_secret():
     """Generate rsa keys for authentication."""
     import rsa
     print("[*] Generating secret, please hang on.")
-    # Generate keys, taken from https://stuvel.eu/python-rsa-doc/usage.html#generating-keys
+    # Generate keys, taken from
+    # https://stuvel.eu/python-rsa-doc/usage.html#generating-keys
     (pubkey, privkey) = rsa.newkeys(2048)
 
     # Save private and pub key
@@ -305,7 +318,6 @@ def generate_secret():
         input("Please press any key when done..")
     elif sys.version_info.major == 2:
         raw_input("Please press any key when done..")
-
 
 
 def autostart():
@@ -333,7 +345,8 @@ def autostart():
     print("[*] Done. Start the server.")
 
     # Execute. Beware the " " because of windows strange paths..
-    os.system('"'+batch_file+'"')
+    os.system('"' + batch_file + '"')
+
 
 def _place_lockfile(mobsf_home):
     path = os.path.join(mobsf_home, 'setup_done.txt')
@@ -356,14 +369,17 @@ def local_config():
         os.path.join(CONFIG_PATH, CONFIG_FILE)
     )
 
+
 def rewrite_local_config(mobsf_home):
     """For local installation some config-vars need to be rewritten."""
-    CONFIG['MobSF']['subdir_tools'] = mobsf_home + "\\StaticAnalyzer\\tools\\windows\\"
+    CONFIG['MobSF']['subdir_tools'] = mobsf_home + \
+        "\\StaticAnalyzer\\tools\\windows\\"
     CONFIG['MobSF']['dir'] = mobsf_home
 
     # Write to config
     with open(os.path.join(CONFIG_PATH, CONFIG_FILE), 'w') as configfile:
-        CONFIG.write(configfile) # pylint: disable-msg=E1101
+        CONFIG.write(configfile)  # pylint: disable-msg=E1101
+
 
 def rewrite_config():
     """Rewrite the config to take the profile path as the base path."""
@@ -372,36 +388,43 @@ def rewrite_config():
     CONFIG['MobSF']['dir'] = expanduser("~") + CONFIG['MobSF']['dir']
 
     # Rewrite config with new base path
-    CONFIG['MobSF']['downloads'] = CONFIG['MobSF']['dir'] + CONFIG['MobSF']['downloads']
-    CONFIG['MobSF']['tools'] = CONFIG['MobSF']['dir'] + CONFIG['MobSF']['tools']
-    CONFIG['MobSF']['samples'] = CONFIG['MobSF']['dir'] + CONFIG['MobSF']['samples']
-    CONFIG['MobSF']['key_path'] = CONFIG['MobSF']['dir'] + CONFIG['MobSF']['key_path']
-    CONFIG['MobSF']['priv_key'] = CONFIG['MobSF']['key_path'] + CONFIG['MobSF']['priv_key']
-    CONFIG['MobSF']['pub_key'] = CONFIG['MobSF']['key_path'] + CONFIG['MobSF']['pub_key']
+    CONFIG['MobSF']['downloads'] = CONFIG['MobSF'][
+        'dir'] + CONFIG['MobSF']['downloads']
+    CONFIG['MobSF']['tools'] = CONFIG['MobSF'][
+        'dir'] + CONFIG['MobSF']['tools']
+    CONFIG['MobSF']['samples'] = CONFIG['MobSF'][
+        'dir'] + CONFIG['MobSF']['samples']
+    CONFIG['MobSF']['key_path'] = CONFIG['MobSF'][
+        'dir'] + CONFIG['MobSF']['key_path']
+    CONFIG['MobSF']['priv_key'] = CONFIG['MobSF'][
+        'key_path'] + CONFIG['MobSF']['priv_key']
+    CONFIG['MobSF']['pub_key'] = CONFIG['MobSF'][
+        'key_path'] + CONFIG['MobSF']['pub_key']
 
     # Write to config
     with open(os.path.join(CONFIG_PATH, CONFIG_FILE), 'w') as configfile:
-        CONFIG.write(configfile) # pylint: disable-msg=E1101
+        CONFIG.write(configfile)  # pylint: disable-msg=E1101
 
 
 def install_locally(mobsf_home):
     """Install the MobSF-Utils on the same system as MobSF."""
-    #if user_config:
+    # if user_config:
     #    local_config(mobsf_home, user_config)
-    #else:
+    # else:
     #    user_config = os.path.join(mobsf_home + "\\MobSF\\")
     local_config()
 
     read_config()
-    #rewrite_local_config(mobsf_home)
+    # rewrite_local_config(mobsf_home)
     rewrite_config()
     create_folders()
-    #if not os.path.exists(CONFIG['MobSF']['subdir_tools']):
+    # if not os.path.exists(CONFIG['MobSF']['subdir_tools']):
     #    os.makedirs(CONFIG['MobSF']['subdir_tools'])
     tools_nuget()
     tools_binskim()
     tools_binscope()
     _place_lockfile(mobsf_home)
+
 
 def _install_remote():
     """Install the MobSF-Utils on a Windows-VM for static analysis."""

@@ -11,6 +11,8 @@
               <li class="header">Static Analysis</li>
             <li class="active"><a href="#information"><i class="glyphicon glyphicon-info-sign"></i> Information</a></li>
             <li><a href="#options"><i class="fa fa-gears"></i> Options</a></li>
+            <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissons</a></li>
+            <li><a href="#insecure_connections"><i class="glyphicon glyphicon-eye-open"></i> Transport Security</a></li>
             <li><a href="#ios-api"><i class="fa fa-dot-circle-o"></i> iOS API</a></li>
             <li><a href="#code"><i class="fa fa-code"></i> Code Analysis</a></li>
             <li><a href="#file"><i class="fa fa-file-text-o"></i> File Analysis</a></li>
@@ -23,7 +25,7 @@
               </ul>
             </li>
             <li><a href="#libraries"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</a></li>
-            <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li> 
+            <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li>
             <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=IOSZIP"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li>
           </ul>
         </div>
@@ -33,7 +35,7 @@
       <!-- Content Wrapper. Contains page content -->
       <div class="content-wrapper">
         <!-- Content Header (Page header) -->
-     
+
 <!-- Modal -->
 
         <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -49,14 +51,14 @@
            {{ plist }}
           </code></pre>
               </div>
-             
+
             </div>
             <!-- /.modal-content -->
           </div>
           <!-- /.modal-dialog -->
         </div>
         <!-- /.modal -->
-     
+
 
         <!-- Main content -->
         <div class="content body">
@@ -73,7 +75,7 @@
         </div><!-- /.box-header -->
         <div class="box-body">
            <div class="list-group">
-                  <p>                                       
+                  <p>
                       <span class="label label-primary">Name</span>
                       {{ name }}
                   </p>
@@ -87,14 +89,14 @@
                   </p>
                   <p>
                      <span class="label label-primary">SHA1</span>
-                      {{ sha1 }}                
+                      {{ sha1 }}
                   </p>
                   <p>
                      <span class="label label-primary">SHA256</span>
                     {{ sha256 }}
                 </p>
              </div>
-        
+
         </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->
@@ -106,19 +108,19 @@
         </div><!-- /.box-header -->
         <div class="box-body">
         <div class="list-group">
-               <p>                                       
+               <p>
               <span class="label label-primary">App Name</span>
               {{ bin_name }}
               </p>
-               <p>                                       
+               <p>
               <span class="label label-primary">Identifier</span>
               {{ id }}
                 <span class="label label-primary">SDK Name</span>
               {{ sdk }}
-             
+
 
               </p>
-                <p>                                       
+                <p>
              <span class="label label-primary">Version</span>
               {{ ver }}
                </p>
@@ -131,7 +133,7 @@
               {{ min }}
             </p>
        </div>
-        
+
         </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->
@@ -146,7 +148,7 @@
   <h2 class="page-header"></h2>
       <!-- Small boxes (Stat box) -->
 
- 
+
   <div class="row">
 
     <div class="col-sm-12">
@@ -165,7 +167,7 @@
       </div><!-- /.box -->
     </div><!-- /.col -->
   </div><!-- /.row -->
- 
+
 </section>
 
 
@@ -228,6 +230,63 @@
 
 <!-- ============================================================= -->
 
+<section id="insecure_connections">
+  <h2 class="page-header"></h2>
+  <!-- /.box -->
+
+          <div class="box">
+          <div class="box-header">
+             <!-- /.box-header -->
+              <h3 class="box-title"><i class="glyphicon glyphicon-eye-open"></i> App Transport Security (ATS)</h3>
+            </div>
+
+              <div class="box-body no-padding">
+              <div class="table-responsive">
+              <table class="table table-bordered table-hover table-striped">
+
+                  <thead>
+                      <tr>
+                        <th>ISSUE</th>
+                        <th>STATUS</th>
+                        <th>DESCRIPTION</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                    {% if insecure_connections|length > 0 %}
+                      {%for con in insecure_connections%}
+                      <tr>
+                        <td>
+                          Exception in NSAppTransportSecurity found.
+                        <td>
+                          <span class="label label-danger">Insecure</span>
+                        </td>
+                        <td>
+                        App Transport Security (ATS) is disabled on the domain '{{ con }}'.
+                        Disabling ATS can allow insecure communication with particular servers or allow insecure loads for web views or for media, while maintaining ATS protections elsewhere in your app.
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    {% else %}
+                    <tr>
+                      <td>
+                        None
+                      <td>
+                        <span class="label label-success">Secure</span>
+                      </td>
+                      <td>
+                        No insecure connections configured. App Transport Security (ATS) is enabled.
+                      </td>
+                    </tr>
+                    {% endif %}
+                  </tbody>
+              </table>
+              </div>
+            <!-- /.box-body -->
+          </div>
+</section>
+
+
+<!-- ============================================================= -->
 
 <section id="ios-api">
    <h2 class="page-header"></h2>
@@ -243,17 +302,17 @@
             <table class="table table-bordered table-hover table-striped">
                                         <thead>
                                             <tr>
-                                                
+
                                                 <th>API</th>
                         <th>FILES</th>
-                                                
+
                                             </tr>
                                         </thead>
                                         <tbody>
                     {{ api | safe}}
                     </tbody>
                     </table>
-                                
+
                             </div>
             <!-- /.box-body -->
           </div>
@@ -281,14 +340,14 @@
                                                 <th>ISSUE</th>
                                                 <th>STATUS</th>
                                                 <th>DESCRIPTION</th>
-                                                
+
                                             </tr>
                                         </thead>
                                         <tbody>
                     {{ insecure| safe}}
                     </tbody>
                     </table>
-                                
+
                             </div>
             </div>
             <!-- /.box-body -->
@@ -343,7 +402,7 @@
             <div class="box-body no-padding">
               <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                                         {% if urls|length > 1 %} 
+                                         {% if urls|length > 1 %}
                   <thead>
                   <tr>
                      <th>URL</th>
@@ -352,11 +411,11 @@
                  </thead>
                     {% endif %}
                                         <tbody>
-                
-                  {{ urls | safe}} 
+
+                  {{ urls | safe}}
                     </tbody>
                     </table>
-                                
+
                             </div>
             </div>
             <!-- /.box-body -->
@@ -379,7 +438,7 @@
             <div class="box-body no-padding">
               <div class="table-responsive">
                 <table class="table table-bordered table-hover table-striped">
-                  {% if urls|length > 1 %} 
+                  {% if urls|length > 1 %}
                   <thead>
                   <tr>
                      <th>Domain</th>
@@ -388,9 +447,9 @@
                  </thead>
                   {% endif %}
                  <tbody>
-                
+
                   {% for domain, details in domains.items %}
-                  <tr><td>{{domain}}</td><td> 
+                  <tr><td>{{domain}}</td><td>
 
                     {% if details|key:"bad" == "yes" %}
                     <span class="label label-danger">malware</span></br>
@@ -406,10 +465,10 @@
 
                   </td> </tr>
                   {% endfor %}
-                   
+
                     </tbody>
                     </table>
-                                
+
              </div>
             </div>
             <!-- /.box-body -->
@@ -431,7 +490,7 @@
             <div class="box-body no-padding">
               <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                                        {% if emails|length > 1 %} 
+                                        {% if emails|length > 1 %}
                   <thead>
                   <tr>
                      <th>Email</th>
@@ -440,11 +499,11 @@
                  </thead>
                  {% endif %}
                                         <tbody>
-                
-                  {{ emails | safe}} 
+
+                  {{ emails | safe}}
                     </tbody>
                     </table>
-                                
+
                             </div>
             </div>
             <!-- /.box-body -->
@@ -467,7 +526,7 @@
             <!-- /.box-header -->
             <div class="box-body">
             <div class="list-group">
-             <p>  
+             <p>
              {{ libs|safe }}
              </p>
             </div>
@@ -488,11 +547,11 @@
             <!-- /.box-header -->
             <div class="box-body">
            <div class="list-group">
-                  <p>  
+                  <p>
                 {% for file in files %}
                   {{ file}} <br>
-                {% endfor %}                  
-                  
+                {% endfor %}
+
                   </p>
                                 </div>
             </div>
@@ -503,5 +562,5 @@
         </div><!-- /.content -->
       </div><!-- /.content-wrapper -->
 
-       
+
 {% endblock %}

@@ -11,11 +11,13 @@ import zipfile
 import subprocess
 import platform
 import errno
-
+try:
+    import pdfkit
+except:
+    print "[WARNING] wkhtmltopdf is not installed/configured properly. PDF Report Generation is disabled"
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.template.loader import get_template
-from django.template.defaulttags import register
 
 from MobSF.utils import PrintException
 from MobSF.utils import python_list
@@ -29,23 +31,11 @@ from StaticAnalyzer.models import StaticAnalyzerWindows
 from StaticAnalyzer.views.android.db_interaction import (
     get_context_from_db_entry
 )
-try:
-    import StringIO
-    StringIO = StringIO.StringIO
-except Exception:
-    from io import StringIO
 
-try:
-    import xhtml2pdf.pisa as pisa
-except:
-    print """\n
-    Make sure you have installed the following dependencies in correct order and exact version.
-    xhtml2pdf==0.0.6
-    html5lib==1.0b8
-    """
-    PrintException(
-        "[ERROR] xhtml2pdf is not installed. Cannot generate PDF reports")
-
+from StaticAnalyzer.views.ios.db_interaction import (
+    get_context_from_db_entry_ipa,
+    get_context_from_db_entry_ios
+)
 
 def FileSize(APP_PATH):
     """Return the size of the file."""
@@ -78,23 +68,11 @@ def Unzip(APP_PATH, EXT_PATH):
         files = []
         with zipfile.ZipFile(APP_PATH, "r") as z:
             for fileinfo in z.infolist():
-                dat = z.open(fileinfo.filename, "r")
                 filename = fileinfo.filename
                 if not isinstance(filename, unicode):
-                    filename = unicode(fileinfo.filename,
-                                       encoding="utf-8", errors="replace")
+                    filename = unicode(filename, encoding="utf-8", errors="replace")
                 files.append(filename)
-                outfile = os.path.join(EXT_PATH, filename)
-                if not os.path.exists(os.path.dirname(outfile)):
-                    try:
-                        os.makedirs(os.path.dirname(outfile))
-                    except OSError as exc:  # Guard against race condition
-                        if exc.errno != errno.EEXIST:
-                            print "\n[WARN] OS Error: Race Condition"
-                if not outfile.endswith("/"):
-                    with io.open(outfile, mode='wb') as f:
-                        f.write(dat.read())
-                dat.close()
+                z.extract(fileinfo, str(EXT_PATH))
         return files
     except:
         PrintException("[ERROR] Unzipping Error")
@@ -138,27 +116,7 @@ def PDF(request):
                     DB = StaticAnalyzerIPA.objects.filter(MD5=MD5)
                     if DB.exists():
                         print "\n[INFO] Fetching data from DB for PDF Report Generation (IOS IPA)"
-                        context = {
-                            'title': DB[0].TITLE,
-                            'name': DB[0].APPNAMEX,
-                            'size': DB[0].SIZE,
-                            'md5': DB[0].MD5,
-                            'sha1': DB[0].SHA1,
-                            'sha256': DB[0].SHA256,
-                            'plist': DB[0].INFOPLIST,
-                            'bin_name': DB[0].BINNAME,
-                            'id': DB[0].IDF,
-                            'ver': DB[0].VERSION,
-                            'sdk': DB[0].SDK,
-                            'pltfm': DB[0].PLTFM,
-                            'min': DB[0].MINX,
-                            'bin_anal': DB[0].BIN_ANAL,
-                            'libs': DB[0].LIBS,
-                            'files': python_list(DB[0].FILES),
-                            'file_analysis': DB[0].SFILESX,
-                            'strings': python_list(DB[0].STRINGS),
-                            'permissions': python_list(DB[0].PERMISSIONS)
-                        }
+                        context = get_context_from_db_entry_ipa(DB)
                         template = get_template(
                             "pdf/ios_binary_analysis_pdf.html")
                     else:
@@ -168,31 +126,7 @@ def PDF(request):
                     DB = StaticAnalyzerIOSZIP.objects.filter(MD5=MD5)
                     if DB.exists():
                         print "\n[INFO] Fetching data from DB for PDF Report Generation (IOS ZIP)"
-                        context = {
-                            'title': DB[0].TITLE,
-                            'name': DB[0].APPNAMEX,
-                            'size': DB[0].SIZE,
-                            'md5': DB[0].MD5,
-                            'sha1': DB[0].SHA1,
-                            'sha256': DB[0].SHA256,
-                            'plist': DB[0].INFOPLIST,
-                            'bin_name': DB[0].BINNAME,
-                            'id': DB[0].IDF,
-                            'ver': DB[0].VERSION,
-                            'sdk': DB[0].SDK,
-                            'pltfm': DB[0].PLTFM,
-                            'min': DB[0].MINX,
-                            'bin_anal': DB[0].BIN_ANAL,
-                            'libs': DB[0].LIBS,
-                            'files': python_list(DB[0].FILES),
-                            'file_analysis': DB[0].SFILESX,
-                            'api': DB[0].HTML,
-                            'insecure': DB[0].CODEANAL,
-                            'urls': DB[0].URLnFile,
-                            'domains': python_dict(DB[0].DOMAINS),
-                            'emails': DB[0].EmailnFile,
-                            'permissions': python_list(DB[0].PERMISSIONS)
-                        }
+                        context = get_context_from_db_entry_ios(DB)
                         template = get_template(
                             "pdf/ios_source_analysis_pdf.html")
                     else:
@@ -236,13 +170,28 @@ def PDF(request):
                 return HttpResponse(json.dumps({"type": "Type is not Allowed"}),
                                     content_type="application/json; charset=utf-8")
             html = template.render(context)
-            result = StringIO()
-            pdf = pisa.pisaDocument(StringIO("{0}".format(
-                html.encode('utf-8'))), result, encoding='utf-8')
-            if not pdf.err:
-                return HttpResponse(result.getvalue(), content_type='application/pdf')
-            else:
-                return HttpResponseRedirect('/error/')
+            try:
+                options = {
+                    'page-size': 'A4',
+                    'quiet': '',
+                    'no-collate': '',
+                    'margin-top': '0.50in',
+                    'margin-right': '0.50in',
+                    'margin-bottom': '0.50in',
+                    'margin-left': '0.50in',
+                    'encoding': "UTF-8",
+                    'custom-header': [
+                        ('Accept-Encoding', 'gzip')
+                    ],
+                    'no-outline': None
+                }
+                pdf = pdfkit.from_string(html, False, options=options)
+                return HttpResponse(pdf, content_type='application/pdf')
+            except Exception as exp:
+                return HttpResponse(json.dumps({"pdf_error": "Cannot Generate PDF",
+                                                "err_details": str(exp)}),
+                                    content_type="application/json; charset=utf-8")
+
         else:
             return HttpResponse(json.dumps({"md5": "Invalid MD5"}),
                                 content_type="application/json; charset=utf-8")

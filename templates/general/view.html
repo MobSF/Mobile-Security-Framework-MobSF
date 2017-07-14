@@ -1,14 +1,11 @@
   {% extends "base_top_only.html" %}
    {% block content %}
-  <script type="text/javascript" src="/static/js/shCore.js"></script>
-  <script type="text/javascript" src="/static/js/shBrushPlain.js"></script>
-  <script type="text/javascript" src="/static/js/shBrushCpp.js"></script>
-  <script type="text/javascript" src="/static/js/shBrushXml.js"></script>
-  <link type="text/css" rel="stylesheet" href="/static/css/shCoreDefault.css"/>
-  <script type="text/javascript">
-  SyntaxHighlighter.defaults['quick-code'] = false;
-  SyntaxHighlighter.all();
-  </script>
+
+
+  <script type="text/javascript" src="/static/js/highlight.min.js"></script>
+    <script type="text/javascript" src="/static/js/asciidoc.min.js"></script>
+  <link type="text/css" rel="stylesheet" href="/static/css/xcode.min.css"/>
+  <script>hljs.initHighlightingOnLoad();</script>
 
 <div class="box box-default">
      
@@ -16,9 +13,7 @@
 
 
         <h3>{{file}} </h3>
-     <pre class="brush: {{ type }};" >
-      {{ dat }}
-     </pre>
+     <pre><code class="{{ type }}">{{ dat }}</code></pre>
           </div>
           <!-- /.box-body -->
         </div>

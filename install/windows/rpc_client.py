@@ -100,7 +100,7 @@ def binskim(sample, signature):
     path = config['MobSF']['samples'] + sample
     output_p = "-o"
     output_d = config['MobSF']['samples'] + sample + "_binskim"
-    # verbose = "-v"
+    verbose = "-v"
     policy_p = "--config"
     policy_d = "default"  # TODO(Other policies?)
 
@@ -110,7 +110,7 @@ def binskim(sample, signature):
         command,
         path,
         output_p, output_d,
-        # verbose,
+        verbose,
         policy_p, policy_d
     ]
 

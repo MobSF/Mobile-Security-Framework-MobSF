@@ -63,13 +63,14 @@ def get_context_from_db_entry(db_entry):
             'e_ser': db_entry[0].E_SER,
             'e_bro': db_entry[0].E_BRO,
             'e_cnt': db_entry[0].E_CNT,
+            'apkid': python_dict(db_entry[0].APK_ID),
         }
         return context
     except:
         PrintException("[ERROR] Fetching from DB")
 
 
-def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal):
+def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id):
     """Get the context for APK/ZIP from analysis results"""
     try:
         context = {
@@ -120,13 +121,14 @@ def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, ce
             'e_ser': man_an_dic['exported_cnt']["ser"],
             'e_bro': man_an_dic['exported_cnt']["bro"],
             'e_cnt': man_an_dic['exported_cnt']["cnt"],
+            'apkid': apk_id,
         }
         return context
     except:
         PrintException("[ERROR] Rendering to Template")
 
 
-def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal):
+def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id):
     """Update an APK/ZIP DB entry"""
     try:
         # pylint: disable=E1101
@@ -178,13 +180,14 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bi
             E_ACT=man_an_dic['exported_cnt']["act"],
             E_SER=man_an_dic['exported_cnt']["ser"],
             E_BRO=man_an_dic['exported_cnt']["bro"],
-            E_CNT=man_an_dic['exported_cnt']["cnt"]
+            E_CNT=man_an_dic['exported_cnt']["cnt"],
+            APK_ID=apk_id,
         )
     except:
         PrintException("[ERROR] Updating DB")
 
 
-def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal):
+def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id):
     """Create a new DB-Entry for APK/ZIP"""
     try:
         static_db = StaticAnalyzerAndroid(
@@ -235,7 +238,8 @@ def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bi
             E_ACT=man_an_dic['exported_cnt']["act"],
             E_SER=man_an_dic['exported_cnt']["ser"],
             E_BRO=man_an_dic['exported_cnt']["bro"],
-            E_CNT=man_an_dic['exported_cnt']["cnt"]
+            E_CNT=man_an_dic['exported_cnt']["cnt"],
+            APK_ID=apk_id,
         )
         static_db.save()
     except:
