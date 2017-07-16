@@ -1,2 +1,0 @@
-""" slave packages """
-import os

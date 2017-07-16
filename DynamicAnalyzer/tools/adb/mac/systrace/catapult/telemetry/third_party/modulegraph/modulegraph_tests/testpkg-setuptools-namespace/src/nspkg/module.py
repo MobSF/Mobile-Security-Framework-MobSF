@@ -1,1 +1,0 @@
-""" nspkg.module """
